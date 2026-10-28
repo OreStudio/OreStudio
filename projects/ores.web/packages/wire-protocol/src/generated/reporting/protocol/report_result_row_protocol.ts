@@ -89,7 +89,7 @@ export interface ListReportResultRowsRequest {
 
 export interface ListReportResultRowsResponse {
     result: Result;
-    report_result_rows: ReportResultRow[];
+    rows: ReportResultRow[];
     total: number;
 }
 
@@ -128,7 +128,7 @@ export interface PutManyReportResultRowsRequest {
 
 export interface PutManyReportResultRowsResponse {
     result: Result;
-    report_result_rows: ReportResultRow[];
+    rows: ReportResultRow[];
 }
 
 export interface DeleteReportResultRowRequest {

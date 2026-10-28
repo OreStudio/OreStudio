@@ -105,7 +105,7 @@ struct list_report_result_rows_request {
 
 struct list_report_result_rows_response {
     ores::utility::domain::result result;
-    std::vector<ores::reporting::domain::report_result_row> report_result_rows;
+    std::vector<ores::reporting::domain::report_result_row> rows;
     std::uint64_t total;
 };
 
@@ -180,7 +180,7 @@ struct put_many_report_result_rows_request {
 
 struct put_many_report_result_rows_response {
     ores::utility::domain::result result;
-    std::vector<ores::reporting::domain::report_result_row> report_result_rows;
+    std::vector<ores::reporting::domain::report_result_row> rows;
 };
 
 struct delete_report_result_row_request {

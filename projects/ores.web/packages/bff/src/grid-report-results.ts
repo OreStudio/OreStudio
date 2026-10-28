@@ -159,15 +159,6 @@ export interface BaselineSummary {
 
 export type ResultsAnswer = TradeAnswer | AggregateAnswer;
 
-const TAR_BLOCK_BYTES = 512;
-const TAR_NAME_OFFSET = 0;
-const TAR_NAME_LENGTH = 100;
-const TAR_SIZE_OFFSET = 124;
-const TAR_SIZE_LENGTH = 12;
-const TAR_TYPE_OFFSET = 156;
-const TAR_TYPE_LENGTH = 1;
-const TAR_BASE_OCTAL = 8;
-
 /** What the records say about the trades in a run. */
 interface TradeRecords {
     readonly counterpartyName: ReadonlyMap<string, string>;
@@ -694,13 +685,13 @@ async function rowsOfRun(session: LiveSession, runId: string): Promise<RowsAnswe
         },
         z.looseObject({
             result: resultSchema,
-            report_result_rows: z.array(row).default([]),
+            rows: z.array(row).default([]),
         }),
     );
     if (reply.result.outcome !== 'ok') {
         throw refusal(reply.result);
     }
-    if (reply.report_result_rows.length === 0) {
+    if (reply.rows.length === 0) {
         return {
             rows: [],
             reason: 'no-rows',
@@ -715,7 +706,7 @@ async function rowsOfRun(session: LiveSession, runId: string): Promise<RowsAnswe
     const figureText = (value: unknown): string =>
         typeof value === 'number' ? String(value) : text(value);
     const measures = new Map<string, Record<string, string>>();
-    for (const entry of reply.report_result_rows) {
+    for (const entry of reply.rows) {
         const tradeId = text(entry['subject_id']);
         const measure = text(entry['measure']);
         if (tradeId === '' || !KNOWN_MEASURES.has(measure)) {

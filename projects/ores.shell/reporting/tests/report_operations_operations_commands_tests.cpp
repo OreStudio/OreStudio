@@ -70,6 +70,7 @@ TEST_CASE("report_operations_operations_registers_every_declared_command", "[com
              std::string{"report_operations prepare-ore-package"},
              std::string{"report_operations submit-compute"},
              std::string{"report_operations collect-compute-results"},
+             std::string{"report_operations post-process-results"},
              std::string{"report_operations finalise-report"},
              std::string{"report_operations fail-report"},
              std::string{"report_operations resolve-prepared-input"},
@@ -78,7 +79,7 @@ TEST_CASE("report_operations_operations_registers_every_declared_command", "[com
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 16 command(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 17 command(s).";
 }
 
 TEST_CASE("report_operations_operations_process_trigger_report_instance_requires_a_session",
@@ -839,6 +840,75 @@ TEST_CASE("report_operations_operations_process_collect_compute_results_reaches_
                                                                                "sample",
                                                                                "sample",
                                                                            });
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    // Whether the command carries a token or not, everything ahead of the
+    // transport is satisfied, which is what the absence of a connection proves.
+    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_post_process_results_requires_a_session",
+          "[commands]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_post_process_results(out,
+                                                                        session,
+                                                                        std::vector<std::string>{
+                                                                            "sample",
+                                                                            "sample",
+                                                                            "sample",
+                                                                            "sample",
+                                                                        });
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_post_process_results_reports_the_expected_count",
+          "[commands]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_post_process_results(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    CHECK(out.str().find("Expected 4 arguments, got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("report_operations_operations_process_post_process_results_reaches_the_transport",
+          "[commands]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    report_operations_operations_commands::process_post_process_results(out,
+                                                                        session,
+                                                                        std::vector<std::string>{
+                                                                            "sample",
+                                                                            "sample",
+                                                                            "sample",
+                                                                            "sample",
+                                                                        });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the

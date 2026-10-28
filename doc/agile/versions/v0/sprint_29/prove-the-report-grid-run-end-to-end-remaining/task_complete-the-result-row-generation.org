@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 7904CF60-DE60-4E1B-8A29-7271D0F2DFD3
+:END:
+#+title: Task: Complete the result row's generation
+#+description: The result row entity's generated layers were never committed, and its repository was hand-edited to add read_by_run. Regeneration now wins: the layers are committed, the run read goes through the generated filter, and the read is paged and permission-checked.
+#+type: task
+#+level: s1
+#+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/complete-the-result-row-generation
+#+pr: 3986
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The reporting component regenerates to exactly what is committed, a run's rows are read
+through the generated handler, which honours the page, the filters and the read
+permission, and posting a run leaves every earlier run's rows live.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- check_component_drift.py --component reporting exits zero.
+- A run's rows are read through reporting.v1.report_result_rows.list, and the service applies limit, offset and every filter member.
+- The read checks reporting::report_result_rows:read, and the permission is seeded and granted to Member.
+- The hand-written run_result_rows_handler and its read_by_run are gone.
+- Inserting a run's rows closes nothing of another run: the soft-update trigger names
+  the natural key, which includes the run.
+- Codegen refuses a model that states the soft-update trigger without a bitemporal
+  natural key, so the trigger cannot be generated with a tenant-wide close.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3986][#3986]] | [reporting] Generate the result row's service and handler |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Merged as #3986. The entity regenerates to exactly what is committed: every
+layer, from the generator, and nothing hand-edited. A run's rows are read
+through the generated list, which applies the page, every filter member and
+the read permission, and answers the true total.
+
+The generation also exposed the defect this task fixed beyond its first scope:
+the soft-update trigger closed every current row of the tenant before each
+insert, so posting a run erased the rows of every run before it. The model now
+states the natural key and the trigger names the run, so a run's rows stay live
+until something prunes them, and a re-post replaces only its own version.
+
+Proven: the full tree builds; the three reporting suites pass; the trigger test
+left 24 current rows before an insert for another run and 25 after; the live
+read returns 24 rows through the generated path; and the reporting drift check
+exits zero. Codegen now refuses the trigger without a key.
+
+The review's one open point, a generated list with no ceiling of its own, is
+captured rather than fixed here, because it is a page policy for every
+generated list and not this entity's fault.

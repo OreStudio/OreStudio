@@ -154,6 +154,23 @@ The file and the row the marshal read, for provenance.
 :rls_tenant_isolation:         true
 :END:
 
+** Bitemporal natural keys
+
+A run's rows are its own. The insert trigger closes the current row of the same
+key, and the key names the run, so posting one run never closes another run's
+rows. Without the key the trigger would close every current row of the tenant,
+and a report would erase the reports before it.
+
+| column             | nullable |
+|--------------------+----------|
+| party_id           | false    |
+| report_instance_id | false    |
+| as_of              | false    |
+| subject_type       | false    |
+| subject_id         | false    |
+| measure            | false    |
+| currency           | false    |
+
 * C++
 
 ** Flags
@@ -169,46 +186,6 @@ The file and the row the marshal read, for provenance.
 :entity_singular_words: report result row
 :entity_plural_words:   report result rows
 :END:
-
-** Custom repository methods
-
-A run's rows are read together, so the screen asks for the rows of one run
-rather than a page of the table.
-
-*** Repository declarations
-
-#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-    /**
-     * @brief Reads the rows one run produced, in the order the run wrote them.
-     *
-     * A run's rows are read together or not at all, so the filter is the run
-     * rather than a page of the table. The caller states no order: the screen
-     * sorts what it draws, and the store's own order is by the subject the row is
-     * about.
-     */
-    std::vector<domain::report_result_row> read_by_run(context ctx, const std::string& run_id);
-#+end_src
-
-*** Repository implementations
-
-#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
-std::vector<domain::report_result_row>
-report_result_row_repository::read_by_run(context ctx, const std::string& run_id) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<report_result_row_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value() &&
-                                            "report_instance_id"_c == run_id) |
-                       query_builder::order_by("subject_id"_c);
-
-    return query_builder::execute_read_query<report_result_row_entity, domain::report_result_row>(
-        ctx,
-        query,
-        [](const auto& entities) { return report_result_row_mapper::map(entities); },
-        lg(),
-        "Reading the rows of a run");
-}
-#+end_src
 
 ** Table display
 

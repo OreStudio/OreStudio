@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 78F77E19-24D3-4276-BE36-E7182F9D6504
+:END:
+#+title: Task: Hold the basket's initial price as the decimal the domain now states
+#+description: The trading domain moved a basket constituent's initial price from a double to an exact decimal, but the synthetic writer still assigns the plan's optional double to it, so ores.synthetic.core.lib does not compile on main. Convert at the boundary the decimal type names for it.
+#+type: task
+#+level: s1
+#+filetags: :make_main_green_after_the_sqlgen_removal:sprint_29:v0:
+#+owner: marco
+#+branch: hotfix/hold-the-basket-price-as-a-decimal
+#+pr: 4021
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DA440A05-E0C4-4961-85E3-54DB9B478004][Make main green after the sqlgen removal]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Main compiles again. The writer converts the plan's drawn price at the boundary the decimal type exists for, instead of main staying red until someone happens to rebuild the target.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DA440A05-E0C4-4961-85E3-54DB9B478004][Make main green after the sqlgen removal]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- ores.synthetic.core.lib compiles on main.
+- The conversion goes through decimal::from_double, the boundary the type documents for a value the source already holds as a double.
+- A suite that covers the basket write is green.
+
+* Plan
+
+Reproduce first: build the library from a clean tree at =origin/main= with
+the change stashed, so the failure is shown to predate the branch. Then
+convert the drawn price through the existing =maybe_money= helper, which is
+the =decimal::from_double= boundary the type documents, and build and run the
+suite that links the library.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Suite size after the fix | 1733 assertions in 78 test cases | =ores.synthetic.core.tests= | =c18fc190ad= |
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4021][#4021]] | [synthetic] Hold the basket's initial price as the decimal the domain states |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Main compiles again. The writer converts the plan's drawn price with
+=maybe_money=, so the row carries the same value through
+=decimal::from_double= that the trading domain now declares.
+
+Measured: =ores.synthetic.core.lib= failed to compile at
+=trading_trade_population_writer.cpp:901= on a clean tree at =origin/main=
+with this branch stashed, and compiles after the change. =ores.synthetic.core.tests=
+passes with 1,733 assertions in 78 test cases.
+
+The break came in with =e2e0718a66=, which changed the domain field to a
+decimal and left this assignment alone. Nothing here changes what the basket
+states; it restores the build and the value the column was already meant to
+hold.

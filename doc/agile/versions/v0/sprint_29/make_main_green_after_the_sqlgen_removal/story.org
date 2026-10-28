@@ -8,7 +8,7 @@
 #+filetags: :build:ci:testing:sprint_29:v0:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment: brave_hopper
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -23,7 +23,7 @@ the reflect-cpp removal retires.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                                 |
+| State         | STARTED                                 |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Done; every local check passes.        |
 | Waiting on    | Nothing.                               |
@@ -40,6 +40,7 @@ the reflect-cpp removal retires.
 |------+-------+-------+-----+-------------|
 | [[id:06FADE9D-06F3-4809-9B97-16E0415E556E][Scaffold story: Make main green after the sqlgen removal]] | DONE | 2026-10-28 | 2026-10-28 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:49C5CB14-56BF-4028-900B-6EF8383BDD9C][Fix what the checks and CI find on main]] | DONE | 2026-10-28 | 2026-10-28 | Initial task for: Make main green after the sqlgen removal |
+| [[id:78F77E19-24D3-4276-BE36-E7182F9D6504][Hold the basket's initial price as the decimal the domain now states]] | DONE | 2026-10-28 | 2026-10-28 | The trading domain moved a basket constituent's initial price from a double to an exact decimal, but the synthetic writer still assigns the plan's optional double to it, so ores.synthetic.core.lib does not compile on main. Convert at the boundary the decimal type names for it. |
 
 * Decisions
 

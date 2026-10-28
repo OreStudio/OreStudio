@@ -25,7 +25,7 @@ import { PATHS } from '../../shell/paths.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { api, type MarketRegime, type RecordRow, type TraceFeed } from '../../api/client.js';
 import { show } from '../../refdata/records.js';
-import { Button, Notice } from '../../ui/Primitives.js';
+import { Button, Dialog, Fact, Field, Input, Notice, Select } from '../../ui/Primitives.js';
 import { lawText } from './marketTrace.js';
 import { regimeLabel, useMarketRegime, useMarketTrace } from './useMarketRegime.js';
 
@@ -76,21 +76,24 @@ export async function saveArrivals(steps: {
 const MODELS = ['periodic', 'poisson', 'hawkes'] as const;
 type Model = (typeof MODELS)[number];
 
+/** What saving a feed's arrivals needs. */
+type SaveArrivalsLaw = (
+    model: Model,
+    ratio: number,
+    decay: number,
+    sensitivity: number,
+    intent: { readonly reasonCode: string; readonly commentary: string },
+) => Promise<void>;
+
 /**
  * One feed's arrivals: the model its ticks arrive under, the two numbers that
  * say how a burst feeds itself, and how hard the feed follows the market.
  *
  * This is the feed's own view and nothing else's: it reads the market and cannot
  * change it, and it never shows another feed. The market itself is set on the
- * Market regime tab of the feeds window.
+ * Synthetic screen's Market tab.
  *
- * The two Hawkes numbers are kept in the row whatever the model is, but only a
- * Hawkes feed reads them, so they are disabled under the other two models rather
- * than hidden: a person switching models sees what will be used.
- *
- * A running feed drew its law when it started and keeps it, as it keeps its
- * process, so the tab edits it all the same and offers to restart the feed on the
- * law saved, as the Process tab does.
+ * The tab reads, and Edit opens the dialog that writes, as a record's sections do.
  */
 export function ArrivalsPanel({
     feed,
@@ -110,17 +113,99 @@ export function ArrivalsPanel({
     readonly mayWriteFeed: boolean;
     /** Whether the feed runs, and so runs on the law it started with until it starts again. */
     readonly running?: boolean;
-    readonly save: (
-        model: Model,
-        ratio: number,
-        decay: number,
-        sensitivity: number,
-        intent: { readonly reasonCode: string; readonly commentary: string },
-    ) => Promise<void>;
+    readonly save: SaveArrivalsLaw;
     /** Stops and starts the feed, so it draws its law again. */
     readonly restart?: () => Promise<void>;
     /** Re-reads the feed once a save is done, so the next edit is against what was stored. */
     readonly saved?: () => Promise<void>;
+}): ReactNode {
+    const { t } = useTranslation();
+    const [editing, setEditing] = useState(false);
+    const model = modelOf(feed);
+    const hawkes = model === 'hawkes';
+    return (
+        <section className="space-y-4" aria-label={t('marketdata.arrivals.title')}>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+                <p className="text-sm text-ink-muted">{t('marketdata.arrivals.lead')}</p>
+                {mayWriteFeed ? (
+                    <Button icon="edit" onClick={() => setEditing(true)}>
+                        {t('refdata.records.edit')}
+                    </Button>
+                ) : null}
+            </div>
+
+            <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <Fact
+                    label={t('marketdata.arrivals.model')}
+                    value={t(`marketdata.arrivals.model.${model}`)}
+                />
+                <Fact
+                    label={t('marketdata.arrivals.sensitivity')}
+                    value={String(numberOf(feed, 'sensitivity', 1))}
+                />
+                <Fact
+                    label={t('marketdata.arrivals.ratio')}
+                    value={hawkes ? String(numberOf(feed, 'branching_ratio', 0)) : '—'}
+                />
+                <Fact
+                    label={t('marketdata.arrivals.decay')}
+                    value={hawkes ? String(numberOf(feed, 'decay', 1)) : '—'}
+                />
+            </dl>
+
+            {/* Read only, and the only global fact on this tab. */}
+            <p className="flex flex-wrap items-baseline gap-x-3 text-sm text-ink-muted">
+                {t('marketdata.arrivals.market', {
+                    state:
+                        market === undefined
+                            ? t('marketdata.arrivals.marketUnknown')
+                            : regimeLabel(market, t),
+                })}
+                <Link to={`${PATHS.synthetic}?tab=regime`} className="text-accent hover:underline">
+                    {t('marketdata.arrivals.openMarket')}
+                </Link>
+            </p>
+
+            <p data-running-law className="font-mono text-xs text-ink-muted">
+                {law === undefined
+                    ? t('marketdata.arrivals.notRunning')
+                    : t('marketdata.arrivals.runningLaw', { law: lawText(law, t) })}
+            </p>
+
+            {editing ? (
+                <ArrivalsDialog
+                    feed={feed}
+                    running={running}
+                    save={save}
+                    restart={restart}
+                    saved={saved}
+                    onClose={() => setEditing(false)}
+                />
+            ) : null}
+        </section>
+    );
+}
+
+/**
+ * Edits a feed's arrivals: the model, the sensitivity, and the two Hawkes numbers, which only a
+ * Hawkes feed reads and so are disabled under the other two models rather than hidden, so a
+ * person switching models sees what will be used. A running feed keeps the law it started with,
+ * as it keeps its process, so the dialog offers to restart it on the law saved.
+ */
+export function ArrivalsDialog({
+    feed,
+    running,
+    save,
+    restart,
+    saved,
+    onClose,
+}: {
+    readonly feed: RecordRow;
+    readonly running: boolean;
+    readonly save: SaveArrivalsLaw;
+    readonly restart?: (() => Promise<void>) | undefined;
+    readonly saved?: (() => Promise<void>) | undefined;
+    readonly onClose: () => void;
 }): ReactNode {
     const { t } = useTranslation();
     const [restartAfter, setRestartAfter] = useState(true);
@@ -147,83 +232,87 @@ export function ArrivalsPanel({
             saved,
             restart: running && restartAfter ? restart : undefined,
         });
+        setSaving(false);
         if (outcome.kind === 'failed') {
             setError(outcome.message);
         } else if (outcome.kind === 'restartFailed') {
             setError(t('marketdata.arrivals.restartFailed', { message: outcome.message }));
+        } else {
+            onClose();
         }
-        setSaving(false);
     };
 
     return (
-        <section className="space-y-4" aria-label={t('marketdata.arrivals.title')}>
-            <p className="text-sm text-ink-muted">{t('marketdata.arrivals.lead')}</p>
-
+        <Dialog
+            title={t('marketdata.arrivals.editTitle', { feed: show(feed['source_name']) })}
+            onClose={onClose}
+            footer={
+                <>
+                    <Button variant="ghost" onClick={onClose}>
+                        {t('refdata.records.cancel')}
+                    </Button>
+                    <Button
+                        variant="primary"
+                        pending={saving}
+                        disabled={!changed}
+                        onClick={() => void saveNow()}
+                    >
+                        {t('entity.save')}
+                    </Button>
+                </>
+            }
+        >
             <div className="grid gap-4 sm:grid-cols-2">
-                <label className="grid gap-1">
-                    <span className="text-xs uppercase tracking-wide text-ink-faint">
-                        {t('marketdata.arrivals.model')}
-                    </span>
-                    <select
+                <Field label={t('marketdata.arrivals.model')}>
+                    <Select
                         value={model}
-                        disabled={!mayWriteFeed}
                         onChange={(event) => setModel(event.target.value as Model)}
-                        className="rounded-md border border-line bg-surface-base px-2 py-1"
                     >
                         {MODELS.map((option) => (
                             <option key={option} value={option}>
                                 {t(`marketdata.arrivals.model.${option}`)}
                             </option>
                         ))}
-                    </select>
-                </label>
-
-                <NumberField
+                    </Select>
+                </Field>
+                <Field
                     label={t('marketdata.arrivals.sensitivity')}
-                    help={t('marketdata.arrivals.sensitivityHelp')}
-                    value={sensitivity}
-                    disabled={!mayWriteFeed}
-                    onChange={setSensitivity}
-                />
-                <NumberField
+                    hint={t('marketdata.arrivals.sensitivityHelp')}
+                >
+                    <Input
+                        type="number"
+                        step="any"
+                        value={sensitivity}
+                        onChange={(event) => setSensitivity(Number(event.target.value))}
+                    />
+                </Field>
+                <Field
                     label={t('marketdata.arrivals.ratio')}
-                    help={t('marketdata.arrivals.ratioHelp')}
-                    value={ratio}
-                    disabled={!mayWriteFeed || !hawkes}
-                    onChange={setRatio}
-                />
-                <NumberField
+                    hint={t('marketdata.arrivals.ratioHelp')}
+                >
+                    <Input
+                        type="number"
+                        step="any"
+                        value={ratio}
+                        disabled={!hawkes}
+                        onChange={(event) => setRatio(Number(event.target.value))}
+                    />
+                </Field>
+                <Field
                     label={t('marketdata.arrivals.decay')}
-                    help={t('marketdata.arrivals.decayHelp')}
-                    value={decay}
-                    disabled={!mayWriteFeed || !hawkes}
-                    onChange={setDecay}
-                />
+                    hint={t('marketdata.arrivals.decayHelp')}
+                >
+                    <Input
+                        type="number"
+                        step="any"
+                        value={decay}
+                        disabled={!hawkes}
+                        onChange={(event) => setDecay(Number(event.target.value))}
+                    />
+                </Field>
             </div>
-
-            {/* Read only, and the only global fact on this tab. */}
-            <p className="flex flex-wrap items-baseline gap-x-3 text-sm text-ink-muted">
-                {t('marketdata.arrivals.market', {
-                    state:
-                        market === undefined
-                            ? t('marketdata.arrivals.marketUnknown')
-                            : regimeLabel(market, t),
-                })}
-                <Link to={`${PATHS.synthetic}?tab=regime`} className="text-accent hover:underline">
-                    {t('marketdata.arrivals.openMarket')}
-                </Link>
-            </p>
-
-            <p data-running-law className="font-mono text-xs text-ink-muted">
-                {law === undefined
-                    ? t('marketdata.arrivals.notRunning')
-                    : t('marketdata.arrivals.runningLaw', { law: lawText(law, t) })}
-            </p>
-
-            {error === null ? null : <Notice tone="error">{error}</Notice>}
-
-            {running && changed && mayWriteFeed ? (
-                <div className="space-y-2 rounded-md border border-line p-3 text-sm">
+            {running ? (
+                <div className="mt-4 space-y-2 rounded-md border border-line p-3 text-sm">
                     <p>{t('marketdata.arrivals.runningNote')}</p>
                     <label className="flex items-center gap-2">
                         <input
@@ -235,24 +324,12 @@ export function ArrivalsPanel({
                     </label>
                 </div>
             ) : null}
-
-            <div className="flex items-center gap-2">
-                <Button
-                    variant="primary"
-                    size="sm"
-                    pending={saving}
-                    disabled={!mayWriteFeed || !changed}
-                    onClick={() => void saveNow()}
-                >
-                    {t('entity.save')}
-                </Button>
-                {changed ? (
-                    <span className="text-xs text-ink-muted">
-                        {t('marketdata.arrivals.unsaved')}
-                    </span>
-                ) : null}
-            </div>
-        </section>
+            {error === null ? null : (
+                <div className="mt-4">
+                    <Notice tone="error">{error}</Notice>
+                </div>
+            )}
+        </Dialog>
     );
 }
 
@@ -273,13 +350,7 @@ export function ArrivalsTab({
     readonly feed: RecordRow;
     readonly mayWriteFeed: boolean;
     readonly running: boolean;
-    readonly save: (
-        model: Model,
-        ratio: number,
-        decay: number,
-        sensitivity: number,
-        intent: { readonly reasonCode: string; readonly commentary: string },
-    ) => Promise<void>;
+    readonly save: SaveArrivalsLaw;
 }): ReactNode {
     const queries = useQueryClient();
     const source = show(feed['source_name']);
@@ -302,35 +373,6 @@ export function ArrivalsTab({
                 await queries.invalidateQueries({ queryKey: ['history'] });
             }}
         />
-    );
-}
-
-function NumberField({
-    label,
-    help,
-    value,
-    disabled,
-    onChange,
-}: {
-    readonly label: string;
-    readonly help: string;
-    readonly value: number;
-    readonly disabled: boolean;
-    readonly onChange: (next: number) => void;
-}): ReactNode {
-    return (
-        <label className="grid gap-1">
-            <span className="text-xs uppercase tracking-wide text-ink-faint">{label}</span>
-            <input
-                type="number"
-                step="any"
-                value={value}
-                disabled={disabled}
-                onChange={(event) => onChange(Number(event.target.value))}
-                className="rounded-md border border-line bg-surface-base px-2 py-1 disabled:opacity-50"
-            />
-            <span className="text-xs text-ink-faint">{help}</span>
-        </label>
     );
 }
 

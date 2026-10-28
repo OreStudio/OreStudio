@@ -157,25 +157,38 @@ test.describe('the market, as the system administrator', () => {
     }) => {
         await openMarket(page, 'laws');
         await page.getByRole('link', { name: 'Arrivals tab →' }).first().click();
-        const sensitivity = page.getByRole('spinbutton', { name: /Sensitivity to the market/ });
+        const section = page.getByRole('region', { name: 'Tick arrivals' });
         const law = page.locator('[data-running-law]');
-        const save = page.getByRole('button', { name: 'Save' });
         await expect(law).toContainText('Running now');
-        const before = await sensitivity.inputValue();
-        const target = Number(before) === 1.5 ? '1.25' : '1.5';
+        // The tab reads; its fields are in the dialog its Edit opens.
+        await expect(section.getByRole('spinbutton')).toHaveCount(0);
 
+        const setSensitivity = async (value: string): Promise<void> => {
+            await section.getByRole('button', { name: 'Edit' }).click();
+            const dialog = page.getByRole('dialog');
+            await dialog.getByRole('spinbutton', { name: /Sensitivity to the market/ }).fill(value);
+            await expect(dialog.getByText('The feed is running on its old law.')).toBeVisible();
+            await expect(
+                dialog.getByRole('checkbox', { name: 'Restart it to apply' }),
+            ).toBeChecked();
+            await dialog.getByRole('button', { name: 'Save' }).click();
+            await expect(dialog).toHaveCount(0);
+        };
+
+        const before =
+            (await section
+                .locator('div', {
+                    has: page.locator('dt', { hasText: 'Sensitivity to the market' }),
+                })
+                .locator('dd')
+                .textContent()) ?? '1';
+        const target = Number(before) === 1.5 ? '1.25' : '1.5';
         try {
-            await sensitivity.fill(target);
-            await expect(page.getByText('The feed is running on its old law.')).toBeVisible();
-            await expect(page.getByRole('checkbox', { name: 'Restart it to apply' })).toBeChecked();
-            await save.click();
+            await setSensitivity(target);
             await expect(law).toContainText(`×${Number(target).toFixed(2)}`, { timeout: 20_000 });
         } finally {
             // Whatever failed above, the feed goes back to the value it had.
-            if ((await sensitivity.inputValue()) !== before) {
-                await sensitivity.fill(before);
-                await save.click();
-            }
+            await setSensitivity(before);
         }
         await expect(law).toContainText(`×${Number(before).toFixed(2)}`, { timeout: 20_000 });
     });

@@ -219,7 +219,15 @@ export function LawsView({
                                                     )}
                                                 </td>
                                                 <td className="px-2 py-1.5">
-                                                    {t(`marketdata.marketRegime.modes.${law.mode}`)}
+                                                    <FeedLink
+                                                        sourceName={law.sourceName}
+                                                        pages={pages}
+                                                        tab="arrivals"
+                                                    >
+                                                        {t(
+                                                            `marketdata.marketRegime.modes.${law.mode}`,
+                                                        )}
+                                                    </FeedLink>
                                                 </td>
                                                 <td className="px-2 py-1.5 text-right tabular-nums">
                                                     {clean(law.rate * 3600, 4)}

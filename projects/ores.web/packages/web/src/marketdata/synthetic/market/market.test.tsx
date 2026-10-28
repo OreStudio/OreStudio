@@ -631,8 +631,10 @@ describe('the market’s links to its feeds', () => {
         expect(
             render(<LawsView trace={trace()} raster={raster()} now={NOW} pages={pages} />),
         ).toContain('href="/market-data/synthetic/fx/feed-1"');
-        expect(render(<FitView regime={regime()} trace={trace()} pages={pages} />)).toContain(
-            'href="/market-data/synthetic/fx/feed-1?tab=arrivals"',
+        const fit = render(<FitView regime={regime()} trace={trace()} pages={pages} />);
+        expect(fit).toContain('href="/market-data/synthetic/fx/feed-1"');
+        expect(fit).toMatch(
+            /href="\/market-data\/synthetic\/fx\/feed-1\?tab=arrivals"[^>]*>Hawkes</,
         );
         expect(render(<TraceView trace={trace()} pages={pages} />)).toContain(
             'href="/market-data/synthetic/fx/feed-1"',
@@ -658,6 +660,27 @@ describe('the market’s links to its feeds', () => {
             />,
         );
         expect(html).toContain('href="/market-data/synthetic/fx/feed-1"');
+    });
+
+    it('opens the feed’s Arrivals tab from its law on Arrivals and Laws', () => {
+        const pages = feedPages(raster());
+        const lanes = render(
+            <ArrivalsView
+                raster={raster()}
+                trace={trace()}
+                now={NOW}
+                window={120}
+                onWindow={() => undefined}
+                pages={pages}
+            />,
+        );
+        expect(lanes).toMatch(
+            /href="\/market-data\/synthetic\/fx\/feed-1\?tab=arrivals"[^>]*>Hawkes · n/,
+        );
+        const laws = render(<LawsView trace={trace()} raster={raster()} now={NOW} pages={pages} />);
+        expect(laws).toMatch(
+            /href="\/market-data\/synthetic\/fx\/feed-1\?tab=arrivals"[^>]*>Hawkes</,
+        );
     });
 
     it('names a feed the list does not know yet without a link', () => {

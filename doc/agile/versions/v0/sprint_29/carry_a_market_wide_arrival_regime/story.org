@@ -74,6 +74,7 @@ and the per-series laws survive it.
 | [[id:797C9E4E-8F40-49C2-ACC3-5BB8C4243A27][Split the market regime tab into screens of their own]] | DONE | 2026-10-28 | 2026-10-28 | The Market regime tab does every job on one page: it reads the market, forces it, sets what moves it, draws every feed's arrivals, checks each feed against its law and logs the loop. Give each job a tab of its own, in the look Gemini's review argued, and drop what the review invented. |
 | [[id:EBEF2FA8-D56E-4F04-ADE5-9D4C2F546587][Let a running feed's arrivals be edited]] | DONE | 2026-10-28 | 2026-10-28 | A feed's Arrivals tab locked its fields while the feed ran, and every synthetic feed runs, so no feed could leave the periodic law. Its Save also rendered as bare text. Edit a running feed as the Process tab does, and offer to restart it on the law saved. |
 | [[id:B44680C6-2B6C-4E7A-B01A-44F608807594][Summarise a feed's process where feeds are listed]] | DONE | 2026-10-28 | 2026-10-28 | The feed listings name a feed's arrival law but not its price process, and nothing shows the process's parameters without opening the feed. Give every listing a process tag that names the process and, opened, summarises its parameters. |
+| [[id:4DE45251-DA69-4E0E-85D7-7A84188ABBD5][Open a feed's arrivals from its law]] | DONE | 2026-10-28 | 2026-10-28 | The market's lists name each feed's arrival law (periodic, Poisson, Hawkes) as plain text. The law is set on the feed's Arrivals tab, so the law itself should open it. |
 
 * Decisions
 

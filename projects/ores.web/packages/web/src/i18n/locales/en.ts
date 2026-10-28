@@ -4754,6 +4754,7 @@ export const en: SourceCatalogue = {
             unsaved: 'Unsaved changes',
             runningNote: 'The feed is running on its old law.',
             openMarket: 'Open the market →',
+            editTitle: 'Edit the arrivals of {feed}',
             restart: 'Restart it to apply',
             restartFailed:
                 'Saved, but the restart failed: {message}. The feed runs on its old law until it starts again.',

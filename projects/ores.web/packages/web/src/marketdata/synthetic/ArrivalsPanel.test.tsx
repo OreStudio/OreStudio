@@ -23,7 +23,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import type { MarketRegime, RecordRow } from '../../api/client.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
-import { ArrivalsPanel, saveArrivals } from './ArrivalsPanel.js';
+import { ArrivalsDialog, ArrivalsPanel, saveArrivals } from './ArrivalsPanel.js';
 
 const noSave = (): Promise<void> => Promise.resolve();
 
@@ -65,26 +65,35 @@ function disabledAfter(html: string, label: string): boolean {
     return /\sdisabled(=|\s|\/?>)/.test(tag);
 }
 
+function dialog(row: RecordRow, running = false): string {
+    return renderToStaticMarkup(
+        <TranslationProvider>
+            <ArrivalsDialog feed={row} running={running} save={noSave} onClose={() => undefined} />
+        </TranslationProvider>,
+    );
+}
+
 describe('a feed’s arrivals tab', () => {
-    it('shows the model and the three numbers', () => {
+    it('reads the model and the three numbers, with no field to type in', () => {
         const html = render(feed());
         expect(html).toContain('Tick arrival model');
+        expect(html).toContain('Hawkes');
         expect(html).toContain('Branching ratio');
-        expect(html).toContain('Decay, per second');
-        expect(html).toContain('Sensitivity to the market');
-    });
-
-    it('enables the Hawkes numbers for a Hawkes feed', () => {
-        const html = render(feed());
-        expect(disabledAfter(html, 'Branching ratio')).toBe(false);
-    });
-
-    it('disables the Hawkes numbers for a model that does not read them', () => {
-        // The values stay in the row, so a person switching models sees what
-        // will be used; they are disabled rather than hidden.
-        const html = render(feed({ arrival_mode: 'periodic' }));
-        expect(disabledAfter(html, 'Branching ratio')).toBe(true);
         expect(html).toContain('0.6');
+        expect(html).toContain('Sensitivity to the market');
+        expect(html).toContain('1.3');
+        expect(html).not.toContain('<input');
+        expect(html).not.toContain('<select');
+    });
+
+    it('reads no Hawkes numbers for a model that does not use them', () => {
+        const html = render(feed({ arrival_mode: 'periodic' }));
+        expect(html).not.toContain('0.6');
+    });
+
+    it('offers Edit to a caller who may write the feed, and not to one who may not', () => {
+        expect(render(feed())).toMatch(/<button[^>]*>.*Edit<\/button>/);
+        expect(render(feed(), false)).not.toContain('Edit</button>');
     });
 
     it('reads the market state the run reports, and says when it cannot be read', () => {
@@ -94,25 +103,30 @@ describe('a feed’s arrivals tab', () => {
         expect(render(feed())).toContain('the market state is not readable right now');
     });
 
-    it('edits a running feed, which keeps its old law until it starts again', () => {
-        const html = render(feed({ arrival_mode: 'periodic' }), true, undefined, true);
-        expect(html).not.toMatch(/<select[^>]*disabled/);
-        expect(disabledAfter(html, 'Sensitivity to the market')).toBe(false);
-    });
-
-    it('saves with a button, which waits for a change', () => {
-        const html = render(feed());
-        expect(html).toMatch(/<button[^>]*disabled=""[^>]*>[^<]*Save/);
-        expect(html).not.toContain('btn primary');
-    });
-
     it('links to the market, which is set on the Synthetic screen’s Market tab', () => {
         expect(render(feed())).toContain('href="/market-data/synthetic?tab=regime"');
     });
+});
 
-    it('refuses to edit when the caller may not write', () => {
-        const html = render(feed(), false);
-        expect(html).toContain('disabled');
+describe('the dialog that edits a feed’s arrivals', () => {
+    it('enables the Hawkes numbers for a Hawkes feed', () => {
+        expect(disabledAfter(dialog(feed()), 'Branching ratio')).toBe(false);
+    });
+
+    it('disables the Hawkes numbers for a model that does not read them, and keeps their values', () => {
+        const html = dialog(feed({ arrival_mode: 'periodic' }));
+        expect(disabledAfter(html, 'Branching ratio')).toBe(true);
+        expect(html).toContain('0.6');
+    });
+
+    it('offers a restart for a running feed, ticked, and nothing for a stopped one', () => {
+        expect(dialog(feed(), true)).toContain('The feed is running on its old law.');
+        expect(dialog(feed(), true)).toMatch(/type="checkbox" checked=""/);
+        expect(dialog(feed(), false)).not.toContain('The feed is running on its old law.');
+    });
+
+    it('saves with a button, which waits for a change', () => {
+        expect(dialog(feed())).toMatch(/<button[^>]*disabled=""[^>]*>[^<]*Save/);
     });
 });
 

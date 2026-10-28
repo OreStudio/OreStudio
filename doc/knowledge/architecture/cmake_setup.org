@@ -80,6 +80,25 @@ CMake build types come from =CMakePresets.json= base configurations:
 The preset's =build_type= axis picks one of these. The compiler axis
 sets warning levels, the generator axis sets Ninja vs Make.
 
+** Windows compile definitions
+
+The root =CMakeLists.txt= sets two definitions on every Windows target.
+Neither suppresses a diagnostic; both stop =<windows.h>= defining
+something that breaks a header this project includes.
+
+- =WIN32_LEAN_AND_MEAN= keeps =<windows.h>= from including the legacy
+  =WinSock.h=, which conflicts with the =WinSock2.h= that Boost.Asio
+  pulls in.
+- =NOMINMAX= keeps =<windows.h>= from defining =min= and =max= as
+  function-like macros. A unity unit that includes =<windows.h>= before
+  reflect-cpp otherwise expands =std::numeric_limits<T>::max()= as a
+  macro call with no arguments. The build then fails inside rfl's own
+  headers -- =rfl/Literal.hpp=, =rfl/Variant.hpp= and =rfl/Generic.hpp= --
+  with =too few arguments provided to function-like macro invocation=.
+
+Both are compile definitions, so they hold for every header in the
+translation unit and no include order can undo them.
+
 ** Building via compass
 
 =compass build= is the day-to-day entry point: it reads the

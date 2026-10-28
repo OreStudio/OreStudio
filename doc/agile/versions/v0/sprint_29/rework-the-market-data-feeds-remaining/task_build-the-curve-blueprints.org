@@ -145,6 +145,10 @@ task and name that file in the Command column.
   derivation in =compute_curve= is a separate gap.
 - *Retire.* The record has no status, so the page draws the state it can infer
   ("no set in use since ...") and offers no action.
+- *The as-of is a text field.* The standard's field table has no instant kind, so
+  the Check tab takes the instant in one line of text, held in the address as
+  =?asof=, and says nothing it cannot. Adding the kind is the capture the journey
+  names.
 
 * Test Scenarios
 

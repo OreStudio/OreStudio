@@ -407,6 +407,7 @@ export const AREA_CARDS = {
         'pricingEngines',
         'sensitivityTemplates',
         'curveConfigurations',
+        'conventions',
         'engineSettings',
     ],
     tenants: ['tenants'],

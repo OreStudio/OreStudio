@@ -113,6 +113,23 @@ test.describe('the market, read by a tenant', () => {
         await expect(laws.getByRole('textbox')).toHaveCount(0);
     });
 
+    test('summarises a feed’s process from Laws, and opens its Process tab', async ({ page }) => {
+        await openMarket(page, 'laws');
+        const laws = page.getByRole('region', { name: 'Every feed’s law' });
+        await laws.locator('button[aria-expanded="false"]').first().click();
+        const summary = page.getByRole('dialog', { name: /its parameters/ });
+        await expect(summary).toBeVisible();
+        await expect(summary.locator('dl div').first()).toBeVisible();
+        await expect(summary.getByRole('link', { name: 'Open the Process tab →' })).toHaveAttribute(
+            'href',
+            /\/market-data\/synthetic\/(fx|ir)\/.+\?tab=(process|behaviour)$/,
+        );
+        await laws.locator('button[aria-expanded="false"]').last().click();
+        await expect(page.getByRole('dialog', { name: /its parameters/ })).toHaveCount(1);
+        await page.keyboard.press('Escape');
+        await expect(page.getByRole('dialog', { name: /its parameters/ })).toHaveCount(0);
+    });
+
     test('checks each feed against its law on Fit, with the loop’s health', async ({ page }) => {
         await openMarket(page, 'fit');
         await expect(page.getByRole('region', { name: 'Each feed against its law' })).toBeVisible();

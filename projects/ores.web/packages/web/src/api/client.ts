@@ -603,6 +603,8 @@ const feedRasterSchema = z.object({
             /** The feed's id and kind, so a screen can open the feed's own page. */
             id: z.string().default(''),
             kind: z.string().default(''),
+            /** The process the feed's prices come from, by its code. */
+            engine: z.string().default(''),
             sourceName: z.string(),
             label: z.string(),
             assetClass: z.string(),

@@ -8,7 +8,7 @@
 #+filetags: :sprint_29:v0:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment: prime_origin
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -71,6 +71,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:3E5A507D-85B5-4CBC-AEA0-4F676026ABB8][Build the published curve screens]] | STARTED | 2026-10-27 | | Implement the signed-off prototype: the list, the record page with its four tabs, the last-N overlay, the comparison, the history and the queue subject. |
 | [[id:10F30D46-7821-4831-B756-4AE462A8BEDB][Design the bootstrapping screens]] | DONE | 2026-10-28 | 2026-10-28 | The Qt app has the IR curve bootstrapping screens; the web has none. The journeys and the prototype come before any code. |
 | [[id:5E222CAA-EC8C-4A16-A835-6C76FD660406][Build the curve blueprint screens]] | STARTED | 2026-10-28 | | Implement the signed-off prototype with the standard record infrastructure. |
+| [[id:D8092FA1-9513-4CF1-8388-B51AADC32DCD][Complete the publish policies]] | STARTED | 2026-10-28 | | The zero-approval path, the maker/checker pair and the publish notice are decided and not built. |
 
 * Decisions
 

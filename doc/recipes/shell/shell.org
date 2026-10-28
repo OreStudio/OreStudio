@@ -1839,3 +1839,19 @@ tangled into the runnable script library
 * Structure Identifiers
 
 - [[id:20A29E19-EF1F-5DD2-91D5-CBD35E9F93FE][How do I run the structure_identifiers commands from the shell?]]
+
+* Approval Kind Parts
+
+- [[id:0B0246F7-EAAA-5149-8619-EC3D7B817F18][How do I run the approval_kind_parts commands from the shell?]]
+
+* Engine Settings Changes
+
+- [[id:6662CB60-C858-53D0-B464-7161194CAAD9][How do I run the engine_settings_changes commands from the shell?]]
+
+* Fx Spot Fixing Items
+
+- [[id:25C0E1E0-67F4-5803-9D6C-70D1EB6AC8B2][How do I run the fx_spot_fixing_items commands from the shell?]]
+
+* Provider Terms Operations
+
+- [[id:0B96E0C3-F288-537D-94A6-54F411A41E60][How do I run the provider_terms_operations commands from the shell?]]

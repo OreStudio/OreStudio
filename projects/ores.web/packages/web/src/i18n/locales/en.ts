@@ -395,8 +395,8 @@ export const en: SourceCatalogue = {
                 description: 'Description',
             },
             'reporting.engine_settings_change': {
-                imply_todays_fixings: 'Imply today\'s fixings',
-                include_todays_cash_flows: 'Include today\'s cash flows',
+                imply_todays_fixings: "Imply today's fixings",
+                include_todays_cash_flows: "Include today's cash flows",
                 include_reference_date_events: 'Include reference date events',
                 enrich_index_fixings: 'Enrich index fixings',
                 ignore_fixing_lag: 'Ignore fixing lag',
@@ -3423,7 +3423,7 @@ export const en: SourceCatalogue = {
             step: {
                 list: 'Counterparties',
                 membershipHistory: 'Membership history',
-            identity: 'Identity',
+                identity: 'Identity',
                 identifiers: 'Identifiers',
                 contacts: 'Contacts',
                 agreements: 'Legal agreements',
@@ -3729,7 +3729,8 @@ export const en: SourceCatalogue = {
             chosen: 'Chosen',
             noneChosen: 'No trade chosen yet. Two at least, and they share one counterparty.',
             chosenCount: '{count} trades chosen',
-            mixedCounterparties: 'Every trade in a structure shares one counterparty, and these do not. Remove one to continue.',
+            mixedCounterparties:
+                'Every trade in a structure shares one counterparty, and these do not. Remove one to continue.',
             pick: 'Trades no structure has grouped',
             pickColumn: 'Choose',
             none: 'Every trade is already grouped into a structure.',
@@ -3785,29 +3786,36 @@ export const en: SourceCatalogue = {
             partyShared: 'Shared by every leg, for the life of the structure.',
             partyMixed: 'The legs state more than one party, which the store should refuse.',
             counterpartyShared: 'Shared by every leg, for the life of the structure.',
-            kindProsePackage: 'A container. Nothing economic binds the legs, so it has no template and any role.',
-            kindProseOther: 'One deal for the customer: the template fixes the roles its legs take.',
+            kindProsePackage:
+                'A container. Nothing economic binds the legs, so it has no template and any role.',
+            kindProseOther:
+                'One deal for the customer: the template fixes the roles its legs take.',
             inside: 'Inside',
             insideRoot: 'This is the root of its tree.',
             insideChild: 'This sits inside the structure named above.',
             confirmation: 'Confirmation',
             pricing: 'Pricing',
-            confirmsProseLegs: 'The customer holds each trade under its own terms, even though they were executed together.',
-            confirmsProseOne: 'The customer holds the deal as one: its terms are the structure\'s, not the legs\'.',
+            confirmsProseLegs:
+                'The customer holds each trade under its own terms, even though they were executed together.',
+            confirmsProseOne:
+                "The customer holds the deal as one: its terms are the structure's, not the legs'.",
             pricesProseLegs: 'No leg depends on another, so the price is the sum of the parts.',
             pricesProseOne: 'The legs price together, so the deal is priced as one instrument.',
             ofTheDeal: 'Of the deal',
             ofEachTrade: 'Of each trade',
             externalProseLegs: 'Each leg moves on its own: see the Members tab.',
             externalProseOne: 'The deal moves as one, so a change to a leg changes the deal.',
-            tradesProseLegs: 'A package confirms trade by trade. Each leg has its own external version, and the customer quotes the one for the trade they hold.',
-            tradesProseOne: 'The deal confirms as one document, so the legs are read together with it.',
+            tradesProseLegs:
+                'A package confirms trade by trade. Each leg has its own external version, and the customer quotes the one for the trade they hold.',
+            tradesProseOne:
+                'The deal confirms as one document, so the legs are read together with it.',
             unlink: 'Unlink',
             bookLeg: 'Book a leg',
             withTemplate: 'A structure of the {template} template.',
             legCount: '{count} legs',
             treeMeta: '{inner} inner structures · root {root}',
-            priceNotRead: 'Pricing is not read yet. An inception P&L report is the work that comes first.',
+            priceNotRead:
+                'Pricing is not read yet. An inception P&L report is the work that comes first.',
             pickerTruncated: 'Showing {shown} of {total} trades.',
         },
         booking: {
@@ -6063,8 +6071,7 @@ export const en: SourceCatalogue = {
         save: 'Save',
         propose: 'Propose a change',
         proposal: {
-            raised:
-                'This is a proposal. The settings in force did not change: the approval decides the change.',
+            raised: 'This is a proposal. The settings in force did not change: the approval decides the change.',
             follow: 'Follow the approval',
         },
         documentation: 'Documentation',

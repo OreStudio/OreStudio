@@ -3450,7 +3450,7 @@ const pt: SourceCatalogue = {
             step: {
                 list: 'Contrapartes',
                 membershipHistory: 'Histórico de pertença',
-            identity: 'Identidade',
+                identity: 'Identidade',
                 identifiers: 'Identificadores',
                 contacts: 'Contactos',
                 agreements: 'Acordos jurídicos',
@@ -3754,9 +3754,11 @@ const pt: SourceCatalogue = {
             counterparty: 'Contraparte',
             allCounterparties: 'Todas as contrapartes',
             chosen: 'Escolhidas',
-            noneChosen: 'Nenhuma transação escolhida. Pelo menos duas, e partilham uma contraparte.',
+            noneChosen:
+                'Nenhuma transação escolhida. Pelo menos duas, e partilham uma contraparte.',
             chosenCount: '{count} transações escolhidas',
-            mixedCounterparties: 'Todas as transações de uma estrutura partilham uma contraparte, e estas não. Retire uma para continuar.',
+            mixedCounterparties:
+                'Todas as transações de uma estrutura partilham uma contraparte, e estas não. Retire uma para continuar.',
             pick: 'Transações que nenhuma estrutura agrupou',
             pickColumn: 'Escolher',
             none: 'Cada transação já está agrupada numa estrutura.',
@@ -3810,16 +3812,19 @@ const pt: SourceCatalogue = {
             party: 'Parte',
             counterpartyLabel: 'Contraparte',
             partyShared: 'Partilhada por cada perna, durante a vida da estrutura.',
-            partyMixed: 'As pernas indicam mais de uma parte, o que o armazenamento deveria recusar.',
+            partyMixed:
+                'As pernas indicam mais de uma parte, o que o armazenamento deveria recusar.',
             counterpartyShared: 'Partilhada por cada perna, durante a vida da estrutura.',
-            kindProsePackage: 'Um contentor. Nada económico liga as pernas, por isso não tem modelo nem papel fixo.',
+            kindProsePackage:
+                'Um contentor. Nada económico liga as pernas, por isso não tem modelo nem papel fixo.',
             kindProseOther: 'Um negócio para o cliente: o modelo fixa os papéis das suas pernas.',
             inside: 'Dentro',
             insideRoot: 'É a raiz da sua árvore.',
             insideChild: 'Está dentro da estrutura indicada acima.',
             confirmation: 'Confirmação',
             pricing: 'Preço',
-            confirmsProseLegs: 'O cliente detém cada transação nos seus próprios termos, ainda que executadas em conjunto.',
+            confirmsProseLegs:
+                'O cliente detém cada transação nos seus próprios termos, ainda que executadas em conjunto.',
             confirmsProseOne: 'O cliente detém o negócio como um só: os termos são da estrutura.',
             pricesProseLegs: 'Nenhuma perna depende de outra, o preço é a soma das partes.',
             pricesProseOne: 'As pernas são preçadas em conjunto, o negócio é um só instrumento.',
@@ -3827,14 +3832,16 @@ const pt: SourceCatalogue = {
             ofEachTrade: 'De cada transação',
             externalProseLegs: 'Cada perna evolui sozinha: ver o separador Membros.',
             externalProseOne: 'O negócio evolui como um todo: alterar uma perna altera-o.',
-            tradesProseLegs: 'Um pacote confirma transação a transação. Cada perna tem a sua versão externa, e o cliente cita a da transação que detém.',
+            tradesProseLegs:
+                'Um pacote confirma transação a transação. Cada perna tem a sua versão externa, e o cliente cita a da transação que detém.',
             tradesProseOne: 'O negócio confirma como um só documento, as pernas leem-se com ele.',
             unlink: 'Desligar',
             bookLeg: 'Reservar uma perna',
             withTemplate: 'Uma estrutura do modelo {template}.',
             legCount: '{count} pernas',
             treeMeta: '{inner} estruturas internas · raiz {root}',
-            priceNotRead: 'O preço ainda não é lido. Um relatório de P&L inicial é o trabalho que vem primeiro.',
+            priceNotRead:
+                'O preço ainda não é lido. Um relatório de P&L inicial é o trabalho que vem primeiro.',
             pickerTruncated: 'A mostrar {shown} de {total} transações.',
         },
         booking: {
@@ -6105,8 +6112,7 @@ const pt: SourceCatalogue = {
         save: 'Salvar',
         propose: 'Propor uma alteração',
         proposal: {
-            raised:
-                'Isto é uma proposta. As definições em vigor não mudaram: a aprovação decide a alteração.',
+            raised: 'Isto é uma proposta. As definições em vigor não mudaram: a aprovação decide a alteração.',
             follow: 'Seguir a aprovação',
         },
         documentation: 'Documentação',

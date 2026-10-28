@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: inbox
-Tables: 17
+Tables: 18
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -47,6 +47,7 @@ Keys this group states reach into:
 - ores_refdata_counterparty_changes_tbl (refdata)
 - ores_refdata_counterparty_identifier_changes_tbl (refdata)
 - ores_refdata_party_counterparty_changes_tbl (refdata)
+- ores_reporting_engine_settings_changes_tbl (reporting)
 - ores_trading_trade_authorisation_requests_tbl (trading)
 end note
 
@@ -117,6 +118,38 @@ package "inbox" #FCE4EC {
     a hand-written trigger in inbox_approval_decision_rules_create.sql checks
     both. One person approves a request at most once: the unique index below
     states it.
+    end note
+
+    entity ores_inbox_approval_kind_parts_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * kind_code : text <<PK, FK>>
+        * part_code : text <<PK, FK>>
+        --
+        * version : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+          closed_by : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_inbox_approval_kind_parts_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Approval Kind Part Table
+    A kind of request names the parts its requests always need, and a part may be
+    named by many kinds. The parts are the state of the thing the request would
+    change, so a kind that governs several independent sections names one part for
+    each, and a request of that kind takes the parts of the sections it touches.
+    Before this table held them, the parts of a request were the parts its policy
+    named, and a kind whose parts are not a policy of columns had nowhere to state
+    them. The engine run settings are the first such kind: its fixings and building
+    groups change the numbers a run computes, and no column policy names them.
+    A kind that names no parts here is decided by the decider permission and the
+    approval count its own row carries, as the role request is.
     end note
 
     entity ores_inbox_approval_kinds_tbl <<temporal>> #C6F0D8 {
@@ -603,6 +636,8 @@ ores_inbox_approval_requests_tbl ||--o{ ores_inbox_approval_decisions_tbl : "has
 ores_inbox_approval_decision_types_tbl ||--o{ ores_inbox_approval_decisions_tbl : "has"
 ores_inbox_approval_parts_tbl ||--o{ ores_inbox_approval_decisions_tbl : "has"
 ores_inbox_hold_reasons_tbl ||--o{ ores_inbox_approval_decisions_tbl : "has"
+ores_inbox_approval_kinds_tbl ||--o{ ores_inbox_approval_kind_parts_tbl : "has"
+ores_inbox_approval_parts_tbl ||--o{ ores_inbox_approval_kind_parts_tbl : "has"
 ores_inbox_approval_parts_tbl ||--o{ ores_inbox_approval_policies_tbl : "has"
 ores_inbox_approval_requests_tbl ||--o{ ores_inbox_approval_request_parts_tbl : "has"
 ores_inbox_approval_parts_tbl ||--o{ ores_inbox_approval_request_parts_tbl : "has"

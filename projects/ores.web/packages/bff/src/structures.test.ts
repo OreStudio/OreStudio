@@ -53,9 +53,8 @@ function buildTestServer(replies: Readonly<Record<string, unknown>>): {
                 members?: readonly { trade_id: string }[];
             };
             if (subject === 'trading.v1.structure_members.list' && canned.members !== undefined) {
-                const asked = (
-                    body as { filter?: { trade_id_one_of?: readonly string[] | null } }
-                ).filter?.trade_id_one_of;
+                const asked = (body as { filter?: { trade_id_one_of?: readonly string[] | null } })
+                    .filter?.trade_id_one_of;
                 const members =
                     asked === null || asked === undefined
                         ? canned.members
@@ -139,13 +138,13 @@ function repliesWith(extra: Readonly<Record<string, unknown>> = {}) {
         [lists.structures]: { result: ok, structures: [structureRow] },
         [lists.identifiers]: {
             result: ok,
-            identifiers: [{ structure_id: STRUCTURE, id_type: 'Internal', id_value: 'PKG-83ffae10' }],
+            identifiers: [
+                { structure_id: STRUCTURE, id_type: 'Internal', id_value: 'PKG-83ffae10' },
+            ],
         },
         [lists.members]: {
             result: ok,
-            members: [
-                { trade_id: LEG, structure_id: STRUCTURE, role: 'leg', sequence_number: 1 },
-            ],
+            members: [{ trade_id: LEG, structure_id: STRUCTURE, role: 'leg', sequence_number: 1 }],
         },
         [lists.tradeIdentifiers]: {
             result: ok,
@@ -237,7 +236,9 @@ describe('the structure page route', () => {
     });
 
     it('answers 404 for a structure that is not there', async () => {
-        const { server, sessionId } = buildTestServer(repliesWith({ [lists.structures]: { result: ok, structures: [] } }));
+        const { server, sessionId } = buildTestServer(
+            repliesWith({ [lists.structures]: { result: ok, structures: [] } }),
+        );
         const answer = await send(server, sessionId, `/api/structures/${STRUCTURE}`);
         expect(answer.statusCode).toBe(404);
     });
@@ -256,7 +257,11 @@ describe('adding a leg', () => {
         });
 
         expect(answer.statusCode).toBe(201);
-        expect(answer.json()).toMatchObject({ tradeId: FREE_TRADE, role: 'leg', sequenceNumber: 2 });
+        expect(answer.json()).toMatchObject({
+            tradeId: FREE_TRADE,
+            role: 'leg',
+            sequenceNumber: 2,
+        });
         const written = calls.find((call) => call.subject === lists.putMember);
         expect(written?.body).toMatchObject({
             change: {
@@ -316,11 +321,7 @@ describe('the add-a-leg picker', () => {
                 },
             }),
         );
-        const answer = await send(
-            server,
-            sessionId,
-            `/api/structures/${STRUCTURE}/leg-candidates`,
-        );
+        const answer = await send(server, sessionId, `/api/structures/${STRUCTURE}/leg-candidates`);
 
         expect(answer.statusCode).toBe(200);
         const rows = answer.json().rows as readonly { id: string }[];
@@ -329,7 +330,7 @@ describe('the add-a-leg picker', () => {
 });
 
 describe('what the routes refuse', () => {
-    it('refuses to unlink a trade that is another structure\'s leg', async () => {
+    it("refuses to unlink a trade that is another structure's leg", async () => {
         const { server, sessionId, calls } = buildTestServer(
             repliesWith({
                 [lists.members]: {
@@ -380,7 +381,9 @@ describe('what the routes refuse', () => {
             tradeIds: [FREE_TRADE, LEG],
         });
 
-        expect(answer.json()).toMatchObject({ message: 'A trade in the grouping is already a leg of a structure.' });
+        expect(answer.json()).toMatchObject({
+            message: 'A trade in the grouping is already a leg of a structure.',
+        });
         expect(answer.statusCode).toBe(409);
         // The refusal comes before the structure write: no orphan is left.
         expect(calls.some((call) => call.subject === lists.putStructure)).toBe(false);

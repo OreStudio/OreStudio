@@ -75,7 +75,10 @@ const legBodySchema = z.object({
 
 /** The intent every leg this screen writes carries. */
 function intent(): { readonly reason_code: string; readonly commentary: string } {
-    return { reason_code: 'system.new_record', commentary: 'Added to the structure from its page.' };
+    return {
+        reason_code: 'system.new_record',
+        commentary: 'Added to the structure from its page.',
+    };
 }
 
 /** The precondition that refuses a write over a row that already exists. */
@@ -175,12 +178,9 @@ async function resolveStructure(
         }
     }
 
-    const found = await readAll(
-        session,
-        structureSubjects.list_structures_request,
-        'structures',
-        { filter: { id_one_of: [structureId] } },
-    );
+    const found = await readAll(session, structureSubjects.list_structures_request, 'structures', {
+        filter: { id_one_of: [structureId] },
+    });
     const structure = found[0];
     if (structure === undefined) {
         throw notFound('No structure has that reference.');
@@ -315,7 +315,6 @@ function assembleTree(
     return assemble(rootId, '', 0);
 }
 
-
 const groupBodySchema = z.object({
     kind: z.string().trim().min(1).max(64),
     tradeIds: z.array(z.uuid()).min(2).max(50),
@@ -379,20 +378,16 @@ async function ungroupedTrades(
         instrument_type: text(entry['instrument_type']),
         counterparty_id: text(entry['counterparty_id']),
         counterparty_name:
-            counterpartyOf.get(text(entry['counterparty_id'])) ??
-            text(entry['counterparty_id']),
+            counterpartyOf.get(text(entry['counterparty_id'])) ?? text(entry['counterparty_id']),
         trade_date: text(entry['trade_date']),
     }));
 }
-
 
 /** How a kind confirms and prices, which the screen states beside the kind. */
 function verdictsOf(kind: string): { confirms: string; prices: string } {
     const asOne = kind !== 'Package';
     return {
-        confirms: asOne
-            ? 'Confirmed as one document'
-            : 'Each leg confirms on its own',
+        confirms: asOne ? 'Confirmed as one document' : 'Each leg confirms on its own',
         prices: asOne ? 'Priced as a whole' : 'Priced leg by leg',
     };
 }
@@ -468,7 +463,6 @@ async function optional<T>(read: () => Promise<T>, fallback: T): Promise<T> {
     }
 }
 
-
 /**
  * The words a type code reads as when the catalogue has no name for it.
  *
@@ -493,7 +487,6 @@ export function registerStructureRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
 ): void {
-
     /*
      * FIXME: the tree a structure sits in is read whole, because the store
      * answers structures by id and members by trade. A tenant with many thousand
@@ -547,7 +540,9 @@ export function registerStructureRoutes(
                 },
             },
         );
-        const chosen = body.tradeIds.map((id) => summaries.find((entry) => text(entry['id']) === id));
+        const chosen = body.tradeIds.map((id) =>
+            summaries.find((entry) => text(entry['id']) === id),
+        );
         if (chosen.some((entry) => entry === undefined)) {
             throw invalidRequest('A trade being grouped is not one this session can read.');
         }
@@ -640,7 +635,6 @@ export function registerStructureRoutes(
         reply.status(201);
         return { id: structureId, reference: references.get(structureId) ?? '' };
     });
-
 
     /**
      * The structures the tenant holds, as the list screen draws them.
@@ -818,30 +812,28 @@ export function registerStructureRoutes(
         ]);
         const mine = members.filter((entry) => text(entry['structure_id']) === structureId);
         const allTradeIds = [
-            ...new Set(
-                members.map((entry) => text(entry['trade_id'])).filter((id) => id !== ''),
-            ),
+            ...new Set(members.map((entry) => text(entry['trade_id'])).filter((id) => id !== '')),
         ];
 
-        const [structureReferences, tradeReferences, trades, catalogue, states] =
-            await Promise.all([
-            referencesOf(
-                session,
-                'structure',
-                structures.map((entry) => text(entry['id'])).filter((id) => id !== ''),
-            ),
-            referencesOf(session, 'trade', allTradeIds),
-            tradesByIds(session, allTradeIds),
-            catalogueOf(session),
-            optional(() => statesOf(session, allTradeIds), new Map<string, string>()),
-        ]);
+        const [structureReferences, tradeReferences, trades, catalogue, states] = await Promise.all(
+            [
+                referencesOf(
+                    session,
+                    'structure',
+                    structures.map((entry) => text(entry['id'])).filter((id) => id !== ''),
+                ),
+                referencesOf(session, 'trade', allTradeIds),
+                tradesByIds(session, allTradeIds),
+                catalogueOf(session),
+                optional(() => statesOf(session, allTradeIds), new Map<string, string>()),
+            ],
+        );
 
         const nameOf = (type: string): string => {
             const named = catalogue.names.get(type) ?? '';
             return named !== '' && named !== type ? named : humanise(type);
         };
-        const classOf = (type: string): string =>
-            assetClassOf(catalogue.classes.get(type) ?? '');
+        const classOf = (type: string): string => assetClassOf(catalogue.classes.get(type) ?? '');
         const legs = mine
             .map((member) => {
                 const tradeId = text(member['trade_id']);
@@ -884,9 +876,7 @@ export function registerStructureRoutes(
         const party = {
             id: partyId,
             name:
-                partyId !== '' && partyId === session.party?.id
-                    ? (session.party?.name ?? '')
-                    : '',
+                partyId !== '' && partyId === session.party?.id ? (session.party?.name ?? '') : '',
             shared: legPartyIds.length <= 1,
         };
 
@@ -924,7 +914,6 @@ export function registerStructureRoutes(
             roles: [...FREE_ROLES],
         };
     });
-
 
     /**
      * Taking a trade out of a structure.

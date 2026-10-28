@@ -380,11 +380,9 @@ function registerTradePageRoute(
             session,
             structureMemberSubjects.list_structure_members_request,
             'members',
-            { filter: { trade_id_one_of: [id] } },
+            { filter: { trade_id_one_of: [id] }, as_of: null },
         );
-        const memberStructures = distinct(
-            memberships.map((entry) => text(entry['structure_id'])),
-        );
+        const memberStructures = distinct(memberships.map((entry) => text(entry['structure_id'])));
         const memberIdentifiers =
             memberStructures.length === 0
                 ? []
@@ -397,6 +395,7 @@ function registerTradePageRoute(
                               structure_id: null,
                               structure_id_one_of: memberStructures,
                           },
+                          as_of: null,
                       },
                   );
         const referenceOfStructure = new Map(
@@ -535,10 +534,7 @@ async function enrich(
     const identifiersOf = bestIdentifier(identifiers);
     const structureIdentifierOf = new Map(
         structureIdentifiers
-            .map(
-                (entry) =>
-                    [text(entry['structure_id']), text(entry['id_value'])] as const,
-            )
+            .map((entry) => [text(entry['structure_id']), text(entry['id_value'])] as const)
             .filter(([structureId, value]) => structureId !== '' && value !== ''),
     );
     const bookOf = nameById(books, 'name');

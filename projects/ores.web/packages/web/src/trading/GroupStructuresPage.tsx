@@ -83,7 +83,10 @@ export function GroupStructuresPage(): ReactNode {
                 left.reference.localeCompare(right.reference),
         );
     const counterparties = useMemo(
-        () => new Set(rows.filter((row) => chosen.includes(row.id)).map((row) => row.counterparty_id)),
+        () =>
+            new Set(
+                rows.filter((row) => chosen.includes(row.id)).map((row) => row.counterparty_id),
+            ),
         [rows, chosen],
     );
     const mixed = counterparties.size > 1;
@@ -176,14 +179,13 @@ export function GroupStructuresPage(): ReactNode {
                             </thead>
                             <tbody>
                                 {rows.map((row) => (
-                                    <tr
-                                        key={row.id}
-                                        className="border-b border-line last:border-0"
-                                    >
+                                    <tr key={row.id} className="border-b border-line last:border-0">
                                         <td className="px-3 py-2">
                                             <input
                                                 type="checkbox"
-                                                aria-label={row.reference === '' ? row.id : row.reference}
+                                                aria-label={
+                                                    row.reference === '' ? row.id : row.reference
+                                                }
                                                 checked={chosen.includes(row.id)}
                                                 onChange={() => toggle(row.id)}
                                             />

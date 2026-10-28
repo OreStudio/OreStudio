@@ -29,10 +29,7 @@ import { PATHS } from '../shell/paths.js';
 import { Button, Tag } from '../ui/Primitives.js';
 
 /** The path of a structure, by the reference the desk knows it by. */
-export function structurePathFor(row: {
-    readonly id: string;
-    readonly reference: string;
-}): string {
+export function structurePathFor(row: { readonly id: string; readonly reference: string }): string {
     return `${PATHS.structures}/${encodeURIComponent(row.reference === '' ? row.id : row.reference)}`;
 }
 
@@ -101,7 +98,10 @@ export function StructuresPage(): ReactNode {
                     header: t('trading.structures.identifier'),
                     mono: true,
                     cell: (row) => (
-                        <span style={{ paddingLeft: `${row.depth * 18}px` }} className="inline-block">
+                        <span
+                            style={{ paddingLeft: `${row.depth * 18}px` }}
+                            className="inline-block"
+                        >
                             {row.depth > 0 ? '└ ' : ''}
                             <Link
                                 className="text-accent hover:text-accent-bright"

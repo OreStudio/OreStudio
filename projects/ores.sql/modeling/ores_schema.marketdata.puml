@@ -32,9 +32,16 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: marketdata
-Tables: 23
+Tables: 24
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
+end note
+
+note as OtherGroups
+Keys this group states reach into:
+- ores_inbox_approval_requests_tbl (inbox)
+- ores_refdata_ir_curve_bootstrap_configs_tbl (refdata)
+- ores_refdata_parties_tbl (refdata)
 end note
 
 '
@@ -97,6 +104,73 @@ package "marketdata" #E3F2FD {
     A party that uses a composite needs the derived right on the provider of every input. A composite with a
     missing right gets no values and shows the reason. The rule is named by a code, so a later rule needs no schema
     change. The system tenant owns the rows and every tenant reads them.
+    end note
+
+    entity ores_marketdata_curve_publishes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * request_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * bootstrap_config_id : uuid <<FK>>
+        * output_series_id : uuid <<FK>>
+        * as_of : timestamptz
+        * published_by : text
+          published_at : timestamptz
+        * withdrawn_by : text
+          withdrawn_at : timestamptz
+        * withdrawn_reason_code : text
+          withdrawal_request_id : uuid <<FK>>
+          superseded_at : timestamptz
+          superseded_by_request_id : uuid <<FK>>
+          superseded_as_of : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_curve_publishes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Publish Table
+    The detail row of one marketdata.curve_publish approval request: the subject
+    the request authorises, and the record of the act once the subject is published.
+    A request is a header. What it is about lives here, keyed by the request's own
+    id, exactly as a proposed book change lives in ores.refdata.book_change and is
+    keyed by its request. The subject is three facts and no more: the curve
+    configuration whose output is published, the as-of instant the bootstrap reads
+    the market at, and the party the configuration belongs to (party_id). The curve
+    is named by its configuration because that is what the publish call names. The
+    series the output is written to (output_series_id) is carried beside it because
+    the reader that serves a published curve starts from a series and not from a
+    configuration.
+    published_at and published_by are the publication record. Both are empty
+    while the request waits, and both are written in one act when the approved
+    subject is published: the timestamp is the instant the published set moved, and
+    the username is the account that applied it. The row is bitemporal, so the
+    applied version is a new version of the same row and the history holds the
+    unapplied subject beside it. request_id is the natural key, so a request
+    authorises one publish and no second apply can find a row to write.
+    A set ends once, and the end is two more facts on the same row rather than a
+    second entity. withdrawn_at, withdrawn_by, withdrawn_reason_code and
+    withdrawal_request_id are the withdrawal: the instant, the account, the reason
+    and the request that authorised it, written as a new version of this row. The
+    withdrawal is not a deletion: the published facts stay, so the set a desk priced
+    from is still readable afterwards. superseded_at,
+    superseded_by_request_id and superseded_as_of are the supersession: a later
+    publish replaced this set, and the link names the successor's request and the
+    as-of it was built at. A supersession is a publish and not a second act, so the
+    successor's own apply writes it on this row.
+    The state a reader sees is a function of these facts and is stored nowhere:
+    withdrawn when withdrawn_at holds an instant, superseded when superseded_at
+    does, published when published_at does, and a candidate otherwise.
+    The row is not a client's to write: the raise writes it, the gate reads it, and
+    the apply stamps it. A client reads it to decide a request or to audit a curve.
     end note
 
     entity ores_marketdata_delivery_counts_tbl <<temporal>> #C6F0D8 {
@@ -560,6 +634,13 @@ package "marketdata" #E3F2FD {
         * kind : text
         * description : text
         * display_order : integer
+        * terms_url : text
+        * terms_credit : text
+        * allows_storage : boolean
+        * credential_ref : text
+        * terms_accepted_digest : text
+        * terms_accepted_by : text
+          terms_accepted_at : timestamptz
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -877,6 +958,7 @@ package "marketdata" #E3F2FD {
 '
 ' ==================== Relationships ====================
 '
+ores_marketdata_market_series_tbl ||--o{ ores_marketdata_curve_publishes_tbl : "has"
 ores_marketdata_market_series_tbl ||--o{ ores_marketdata_market_series_asset_classes_tbl : "has"
 
 ' Local Variables:

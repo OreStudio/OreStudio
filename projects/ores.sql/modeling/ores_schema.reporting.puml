@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: reporting
-Tables: 35
+Tables: 36
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -993,6 +993,37 @@ package "reporting" #E0F7FA {
     fsm_state_id points to the current state in ores_dq_fsm_states_tbl.
     started_at is NULL when the instance is cancelled or skipped before execution
     begins. completed_at is NULL while running or in a terminal-before-start state.
+    end note
+
+    entity ores_reporting_report_result_rows_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        * as_of : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * report_instance_id : uuid <<FK>>
+        * subject_type : text
+        * subject_id : uuid <<FK>>
+        * measure : text
+        * currency : text
+        * report_definition_id : uuid <<FK>>
+          counterparty_id : uuid <<FK>>
+        * figure : double
+        * source : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_result_rows_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report result row Table
+    One figure a run produced, for one subject in one measure, at the run's priced
+    date. The row is written once, with the run, and never edited; a correction is a
+    new run. as_of is the run's priced date, and it is the time column of the
+    series. The canonical row's shape and the reason it is narrow are stated in the
+    report post processing note.
     end note
 
     entity ores_reporting_report_trigger_events_tbl  #F7E5FF {

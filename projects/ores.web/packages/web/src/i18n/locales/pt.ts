@@ -4956,7 +4956,7 @@ const pt: SourceCatalogue = {
             },
             laws: {
                 title: 'A lei de cada feed',
-                lead: 'Lida aqui, definida no feed. Uma lei pertence ao seu feed, por isso cada linha abre o separador Chegadas desse feed, o único sítio onde se edita uma lei; o feed adota uma nova lei quando voltar a arrancar.',
+                lead: 'Lida aqui, definida no feed. Uma lei pertence ao seu feed, por isso a lei abre o separador Chegadas desse feed, o único sítio onde se edita uma lei, e os seus números surgem ao passar o cursor; o feed adota uma nova lei quando voltar a arrancar.',
                 feeds: 'feeds',
                 intensity: 'Intensidade',
                 stableWhen: 'Estável se',

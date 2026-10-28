@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 20E7BF4D-1AD6-4998-97A1-119EF39FAF42
+:END:
+#+title: Task: Fold a law's numbers into its tooltip
+#+description: The Laws table spends five columns on a law's numbers and one on a link to the Arrivals tab, which the law itself already opens. Keep the feed, its process, its law and its last minute of ticks, and show the numbers in the law's tooltip.
+#+type: task
+#+level: s1
+#+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
+#+owner: marco
+#+branch: feature/fold-a-laws-numbers-into-its-tooltip
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person scanning the Laws table reads each feed, its process and its law at a glance, and hovers the law for its numbers or clicks it to set them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- The Laws table has the feed, process, law and last 60 s columns, and no column of numbers or of links.
+- The law's tooltip states its rate an hour, its sensitivity, and for a Hawkes law its branching, decay and whether it is stable.
+- Clicking the law opens the feed's Arrivals tab.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The Market tab's Laws table has four columns: the feed, its process, its law and
+its last minute of ticks. The five number columns (ticks an hour, sensitivity,
+branching, decay, stable) moved into the law's tooltip, one to a line, the
+Hawkes three only for a Hawkes law. The column of Arrivals tab links is gone,
+since the law itself opens the feed's Arrivals tab. The table's lead says so.
+
+Evidence: web tests pass (230 in marketdata/synthetic and i18n), typecheck clean,
+and the harness passes 15 of 15 live: it checks the four headers, the law's link
+and its tooltip, and that no Arrivals tab link is left. A screenshot of the table
+was checked. Held for the user's review of the UI before merge.
+

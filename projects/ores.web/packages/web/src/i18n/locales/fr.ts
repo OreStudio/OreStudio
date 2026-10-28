@@ -4989,7 +4989,7 @@ const fr: SourceCatalogue = {
             },
             laws: {
                 title: 'La loi de chaque flux',
-                lead: 'Lue ici, fixée sur le flux. Une loi appartient à son flux : chaque ligne ouvre l’onglet Arrivées de ce flux, seul endroit où l’on modifie une loi ; le flux prend une nouvelle loi à son prochain démarrage.',
+                lead: 'Lue ici, fixée sur le flux. Une loi appartient à son flux : la loi ouvre l’onglet Arrivées de ce flux, seul endroit où l’on modifie une loi, et ses nombres s’affichent au survol ; le flux prend une nouvelle loi à son prochain démarrage.',
                 feeds: 'flux',
                 intensity: 'Intensité',
                 stableWhen: 'Stable si',

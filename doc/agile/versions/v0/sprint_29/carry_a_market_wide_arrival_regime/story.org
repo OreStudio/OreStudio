@@ -75,6 +75,7 @@ and the per-series laws survive it.
 | [[id:EBEF2FA8-D56E-4F04-ADE5-9D4C2F546587][Let a running feed's arrivals be edited]] | DONE | 2026-10-28 | 2026-10-28 | A feed's Arrivals tab locked its fields while the feed ran, and every synthetic feed runs, so no feed could leave the periodic law. Its Save also rendered as bare text. Edit a running feed as the Process tab does, and offer to restart it on the law saved. |
 | [[id:B44680C6-2B6C-4E7A-B01A-44F608807594][Summarise a feed's process where feeds are listed]] | DONE | 2026-10-28 | 2026-10-28 | The feed listings name a feed's arrival law but not its price process, and nothing shows the process's parameters without opening the feed. Give every listing a process tag that names the process and, opened, summarises its parameters. |
 | [[id:4DE45251-DA69-4E0E-85D7-7A84188ABBD5][Open a feed's arrivals from its law]] | DONE | 2026-10-28 | 2026-10-28 | The market's lists name each feed's arrival law (periodic, Poisson, Hawkes) as plain text. The law is set on the feed's Arrivals tab, so the law itself should open it. |
+| [[id:20E7BF4D-1AD6-4998-97A1-119EF39FAF42][Fold a law's numbers into its tooltip]] | DONE | 2026-10-28 | 2026-10-28 | The Laws table spends five columns on a law's numbers and one on a link to the Arrivals tab, which the law itself already opens. Keep the feed, its process, its law and its last minute of ticks, and show the numbers in the law's tooltip. |
 
 * Decisions
 

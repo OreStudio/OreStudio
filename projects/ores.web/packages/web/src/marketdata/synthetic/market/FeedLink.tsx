@@ -43,6 +43,7 @@ export function FeedLink({
     sourceName,
     pages,
     tab,
+    title,
     children,
     className,
 }: {
@@ -50,17 +51,24 @@ export function FeedLink({
     readonly pages: FeedPages;
     /** The tab of the feed's page to open, such as `arrivals`. */
     readonly tab?: string;
+    /** What a reader sees on hover, such as the numbers behind a law. */
+    readonly title?: string;
     readonly children?: ReactNode;
     readonly className?: string;
 }): ReactNode {
     const page = pages.get(sourceName);
     const name = children ?? sourceName;
     if (page === undefined) {
-        return <span className={className}>{name}</span>;
+        return (
+            <span className={className} title={title}>
+                {name}
+            </span>
+        );
     }
     return (
         <Link
             to={tab === undefined ? page : `${page}?tab=${tab}`}
+            title={title}
             onClick={(event) => event.stopPropagation()}
             className={cx(
                 'underline decoration-ink-faint decoration-dotted underline-offset-2 hover:text-accent hover:decoration-solid',

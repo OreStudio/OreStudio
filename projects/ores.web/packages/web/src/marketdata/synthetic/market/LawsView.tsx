@@ -19,12 +19,10 @@
  */
 
 import { useState, type ReactNode } from 'react';
-import { Link } from 'react-router';
 import type { FeedRaster, MarketTrace, TraceFeed } from '../../../api/client.js';
 import { useTranslation } from '../../../i18n/Provider.js';
 import { cx } from '../../../ui/Primitives.js';
 import { assetClassColour } from '../../assetClassColour.js';
-import { feedPageOf } from '../feedTree.js';
 import { ProcessTag } from '../processSummary.js';
 import { markGroups } from '../marketRaster.js';
 import { providerOf } from './ArrivalsView.js';
@@ -50,6 +48,37 @@ export function lawRows(
 ): readonly LawRow[] {
     const feeds = new Map((raster?.feeds ?? []).map((feed) => [feed.sourceName, feed]));
     return (trace?.feeds ?? []).map((law) => ({ law, feed: feeds.get(law.sourceName) }));
+}
+
+/**
+ * The numbers behind a law, one to a line, as the law's tooltip reads them: its rate an hour
+ * and its sensitivity, and for a Hawkes law its branching, its decay and whether it settles.
+ */
+export function lawTooltip(
+    law: TraceFeed,
+    t: (key: string, values?: Readonly<Record<string, string | number>>) => string,
+): string {
+    const line = (column: string, value: string): string =>
+        `${t(`marketdata.market.laws.columns.${column}`)}: ${value}`;
+    const lines = [
+        line('perHour', clean(law.rate * 3600, 4)),
+        line('sensitivity', clean(law.sensitivity, 3)),
+    ];
+    if (law.mode === 'hawkes') {
+        lines.push(
+            line('branching', clean(law.branchingRatio, 3)),
+            line('decay', clean(law.decay, 3)),
+            line(
+                'stable',
+                t(
+                    lawStable(law)
+                        ? 'marketdata.market.laws.stable'
+                        : 'marketdata.market.laws.runsAway',
+                ),
+            ),
+        );
+    }
+    return lines.join('\n');
 }
 
 /** Whether a law's clustering settles: always for the memoryless laws, below one for Hawkes. */
@@ -143,44 +172,21 @@ export function LawsView({
                         <table className="w-full font-mono text-xs">
                             <thead>
                                 <tr className="border-b border-line text-left">
-                                    {(
-                                        [
-                                            'feed',
-                                            'process',
-                                            'law',
-                                            'perHour',
-                                            'sensitivity',
-                                            'branching',
-                                            'decay',
-                                            'stable',
-                                            'recent',
-                                        ] as const
-                                    ).map((column) => (
-                                        <th
-                                            key={column}
-                                            className={cx(
-                                                'px-2 py-1.5 font-semibold',
-                                                [
-                                                    'perHour',
-                                                    'sensitivity',
-                                                    'branching',
-                                                    'decay',
-                                                ].includes(column) && 'text-right',
-                                            )}
-                                        >
-                                            <MicroLabel>
-                                                {t(`marketdata.market.laws.columns.${column}`)}
-                                            </MicroLabel>
-                                        </th>
-                                    ))}
-                                    <th />
+                                    {(['feed', 'process', 'law', 'recent'] as const).map(
+                                        (column) => (
+                                            <th key={column} className="px-2 py-1.5 font-semibold">
+                                                <MicroLabel>
+                                                    {t(`marketdata.market.laws.columns.${column}`)}
+                                                </MicroLabel>
+                                            </th>
+                                        ),
+                                    )}
                                 </tr>
                             </thead>
                             <tbody>
                                 {rows
                                     .filter((row) => shown.has(row.law.mode as Law))
                                     .map(({ law, feed }) => {
-                                        const hawkes = law.mode === 'hawkes';
                                         const recent =
                                             feed === undefined
                                                 ? []
@@ -223,45 +229,12 @@ export function LawsView({
                                                         sourceName={law.sourceName}
                                                         pages={pages}
                                                         tab="arrivals"
+                                                        title={lawTooltip(law, t)}
                                                     >
                                                         {t(
                                                             `marketdata.marketRegime.modes.${law.mode}`,
                                                         )}
                                                     </FeedLink>
-                                                </td>
-                                                <td className="px-2 py-1.5 text-right tabular-nums">
-                                                    {clean(law.rate * 3600, 4)}
-                                                </td>
-                                                <td className="px-2 py-1.5 text-right tabular-nums">
-                                                    {clean(law.sensitivity, 3)}
-                                                </td>
-                                                <td className="px-2 py-1.5 text-right tabular-nums">
-                                                    {hawkes ? clean(law.branchingRatio, 3) : '—'}
-                                                </td>
-                                                <td className="px-2 py-1.5 text-right tabular-nums">
-                                                    {hawkes ? clean(law.decay, 3) : '—'}
-                                                </td>
-                                                <td className="px-2 py-1.5">
-                                                    {hawkes ? (
-                                                        <span
-                                                            className={cx(
-                                                                'rounded-chip border px-1.5 text-[10px] font-semibold uppercase',
-                                                                lawStable(law)
-                                                                    ? 'border-up/40 text-up'
-                                                                    : 'border-down/40 text-down',
-                                                            )}
-                                                        >
-                                                            {t(
-                                                                lawStable(law)
-                                                                    ? 'marketdata.market.laws.stable'
-                                                                    : 'marketdata.market.laws.runsAway',
-                                                            )}
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-ink-faint">
-                                                            {t('marketdata.market.laws.always')}
-                                                        </span>
-                                                    )}
                                                 </td>
                                                 <td className="px-2 py-1.5">
                                                     <svg
@@ -286,16 +259,6 @@ export function LawsView({
                                                             />
                                                         ))}
                                                     </svg>
-                                                </td>
-                                                <td className="px-2 py-1.5 text-right whitespace-nowrap">
-                                                    {feed === undefined || feed.id === '' ? null : (
-                                                        <Link
-                                                            to={`${feedPageOf(feed)}?tab=arrivals`}
-                                                            className="text-accent hover:underline"
-                                                        >
-                                                            {t('marketdata.market.laws.open')}
-                                                        </Link>
-                                                    )}
                                                 </td>
                                             </tr>
                                         );

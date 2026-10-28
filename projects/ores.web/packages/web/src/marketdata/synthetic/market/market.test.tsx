@@ -46,7 +46,7 @@ import { feedPages } from './FeedLink.js';
 import { FitView, ratioPosition } from './FitView.js';
 import { FoldCard } from './FoldCard.js';
 import { foldHistory, ticksBySecond } from './fold.js';
-import { LawsView, lawRows, lawStable } from './LawsView.js';
+import { LawsView, lawRows, lawStable, lawTooltip } from './LawsView.js';
 import { MarketStrip } from './MarketStrip.js';
 import { NowView, heldFor, marketChanges } from './NowView.js';
 import { clean, compact, duration } from './numbers.js';
@@ -474,6 +474,25 @@ describe('the Laws tab', () => {
         expect(html).toContain('href="/market-data/synthetic/ir/feed-2?tab=arrivals"');
         expect(html).toContain('stable');
         expect(html).not.toContain('<input');
+    });
+
+    it('keeps the feed, process, law and last minute, with the numbers on the law', () => {
+        const html = render(
+            <LawsView trace={trace()} raster={raster()} now={NOW} pages={feedPages(raster())} />,
+        );
+        expect(html).not.toContain('Ticks an hour</span></th>');
+        expect(html).not.toContain('Arrivals tab →');
+        expect(html).toContain('title="Ticks an hour: 3600');
+    });
+
+    it('states a Hawkes law’s branching, decay and stability in its tooltip, and only the rate and sensitivity otherwise', () => {
+        const t = (key: string): string => key.split('.').pop() ?? key;
+        expect(lawTooltip(law(), t)).toBe(
+            'perHour: 3600\nsensitivity: 1.2\nbranching: 0.6\ndecay: 2\nstable: stable',
+        );
+        expect(lawTooltip(law({ mode: 'periodic', sensitivity: 1 }), t)).toBe(
+            'perHour: 3600\nsensitivity: 1',
+        );
     });
 
     it('calls a Hawkes law that would not settle unstable, and the memoryless laws always stable', () => {

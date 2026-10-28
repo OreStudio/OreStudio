@@ -102,14 +102,24 @@ test.describe('the market, read by a tenant', () => {
         );
     });
 
-    test('reads each feed’s law on Laws and links to the feed', async ({ page }) => {
+    test('reads each feed’s law on Laws, with its numbers on the law, which opens its arrivals', async ({
+        page,
+    }) => {
         await openMarket(page, 'laws');
         const laws = page.getByRole('region', { name: 'Every feed’s law' });
-        const link = laws.getByRole('link', { name: 'Arrivals tab →' }).first();
-        await expect(link).toHaveAttribute(
+        const law = laws.getByRole('link', { name: /^(Periodic|Poisson|Hawkes)$/ }).first();
+        await expect(law).toHaveAttribute(
             'href',
             /\/market-data\/synthetic\/(fx|ir)\/.+\?tab=arrivals$/,
         );
+        await expect(law).toHaveAttribute('title', /Ticks an hour: .+\nSensitivity: /);
+        await expect(laws.getByRole('columnheader')).toHaveText([
+            'Feed',
+            'Process',
+            'Law',
+            'Last 60 s',
+        ]);
+        await expect(laws.getByRole('link', { name: 'Arrivals tab →' })).toHaveCount(0);
         await expect(laws.getByRole('textbox')).toHaveCount(0);
     });
 
@@ -156,7 +166,11 @@ test.describe('the market, as the system administrator', () => {
         page,
     }) => {
         await openMarket(page, 'laws');
-        await page.getByRole('link', { name: 'Arrivals tab →' }).first().click();
+        await page
+            .getByRole('region', { name: 'Every feed’s law' })
+            .getByRole('link', { name: /^(Periodic|Poisson|Hawkes)$/ })
+            .first()
+            .click();
         const section = page.getByRole('region', { name: 'Tick arrivals' });
         const law = page.locator('[data-running-law]');
         await expect(law).toContainText('Running now');

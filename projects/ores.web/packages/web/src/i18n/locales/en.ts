@@ -4925,7 +4925,7 @@ export const en: SourceCatalogue = {
             },
             laws: {
                 title: 'Every feed’s law',
-                lead: 'Read here, set on the feed. A law belongs to its feed, so each row opens that feed’s Arrivals tab, the one place a law is edited; the feed takes a new law when it next starts.',
+                lead: 'Read here, set on the feed. A law belongs to its feed, so the law opens that feed’s Arrivals tab, the one place a law is edited, and its numbers show when the pointer rests on it; the feed takes a new law when it next starts.',
                 feeds: 'feeds',
                 intensity: 'Intensity',
                 stableWhen: 'Stable when',

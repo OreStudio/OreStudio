@@ -4016,10 +4016,11 @@ package "refdata" #FFF3E0 {
         * version : integer
         * output_series_id : uuid <<FK>>
         * party_id : uuid <<FK>>
+        * name : text
         * currency_code : text <<FK>>
         * index_tenor : text
         * curve_family_role : text
-        * discount_curve_config_id : uuid <<FK>>
+          discount_curve_config_id : uuid <<FK>>
         * interpolation_method : text
         * day_count_convention : text
         * tenor_convention_code : text
@@ -4066,8 +4067,7 @@ package "refdata" #FFF3E0 {
     the feed's tick for that pillar landed in. A raw-grid reference would be a
     second spelling of the same input, with nothing keeping the two in step.
     curve_family_role (FUNDING/PROJECTION) and
-    discount_curve_config_id (self-referencing, nil-uuid sentinel for
-    FUNDING) encode
+    discount_curve_config_id (self-referencing, null for FUNDING) encode
     [[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]]'s Funding-before-Projection build-order
     dependency as data: a PROJECTION config's discount_curve_config_id
     must point at a FUNDING config (strict two-tier, no chaining --

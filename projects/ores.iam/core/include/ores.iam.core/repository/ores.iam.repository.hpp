@@ -22,7 +22,7 @@
 /**
  * @brief Database persistence layer for IAM domain types.
  *
- * Provides ORM support using sqlgen including entities, mappers, and
+ * Provides persistence on the libpq layer, including entities, mappers, and
  * repositories for account, login_info, role, permission, and related
  * types. Supports temporal versioning.
  */

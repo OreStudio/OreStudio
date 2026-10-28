@@ -47,7 +47,7 @@ seed_profile_parameter_mapper::map(const seed_profile_parameter_entity& v) {
     domain::seed_profile_parameter r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.seed_profile_id = boost::lexical_cast<boost::uuids::uuid>(v.seed_profile_id);
 
 

@@ -25,8 +25,8 @@
 #ifndef ORES_IAM_CORE_REPOSITORY_SESSION_ENTITY_HPP
 #define ORES_IAM_CORE_REPOSITORY_SESSION_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,11 +42,11 @@ struct session_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_iam_sessions_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
-    sqlgen::PrimaryKey<std::string> start_time;
+    std::string id;
+    std::string start_time;
     std::string tenant_id;
     std::string account_id;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> end_time;
+    std::optional<db_timestamp> end_time;
     std::string client_ip;
     std::string client_identifier = "";
     std::uint16_t client_version_major = 0;
@@ -55,6 +55,27 @@ struct session_entity {
     std::uint64_t bytes_received = 0;
     std::string country_code = "";
     std::string protocol = "binary";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = session_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::key("start_time", &e::start_time) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("account_id", &e::account_id) |
+               query_builder::bind("end_time", &e::end_time) |
+               query_builder::bind("client_ip", &e::client_ip) |
+               query_builder::bind("client_identifier", &e::client_identifier) |
+               query_builder::bind("client_version_major", &e::client_version_major) |
+               query_builder::bind("client_version_minor", &e::client_version_minor) |
+               query_builder::bind("bytes_sent", &e::bytes_sent) |
+               query_builder::bind("bytes_received", &e::bytes_received) |
+               query_builder::bind("country_code", &e::country_code) |
+               query_builder::bind("protocol", &e::protocol);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const session_entity& v);

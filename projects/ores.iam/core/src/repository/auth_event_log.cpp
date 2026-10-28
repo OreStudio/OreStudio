@@ -18,7 +18,7 @@
  *
  */
 #include "ores.iam.core/repository/auth_event_log.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.iam.core/repository/audit_scope.hpp"
@@ -201,7 +201,7 @@ auth_event_log::read_events(const context& ctx,
     const auto to_bound =
         to_time.has_value() ? std::optional(datetime::to_iso8601_utc(*to_time)) : std::nullopt;
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
         std::vector<std::optional<std::string>>{tenant_id,

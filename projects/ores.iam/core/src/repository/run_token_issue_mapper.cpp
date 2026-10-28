@@ -43,8 +43,8 @@ domain::run_token_issue run_token_issue_mapper::map(const run_token_issue_entity
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::run_token_issue r;
-    r.id = v.id.value();
-    r.issued_at = timestamp_to_timepoint(std::string_view{v.issued_at.value()});
+    r.id = v.id;
+    r.issued_at = timestamp_to_timepoint(std::string_view{v.issued_at});
     r.tenant_id = v.tenant_id;
     r.party_id = v.party_id;
     r.grant_id = v.grant_id;

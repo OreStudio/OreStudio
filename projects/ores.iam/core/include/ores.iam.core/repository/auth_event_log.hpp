@@ -27,7 +27,6 @@
 #include <chrono>
 #include <cstdint>
 #include <optional>
-#include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
 

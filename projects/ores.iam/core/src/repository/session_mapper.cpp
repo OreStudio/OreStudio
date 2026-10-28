@@ -49,8 +49,8 @@ domain::session session_mapper::map(const session_entity& v) {
 
     domain::session r;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
-    r.start_time = timestamp_to_timepoint(std::string_view{v.start_time.value()});
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
+    r.start_time = timestamp_to_timepoint(std::string_view{v.start_time});
     r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id);
     r.end_time =
         v.end_time.has_value() ? std::optional(timestamp_to_timepoint(*v.end_time)) : std::nullopt;

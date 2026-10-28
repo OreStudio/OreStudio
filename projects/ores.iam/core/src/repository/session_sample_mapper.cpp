@@ -47,8 +47,8 @@ domain::session_sample session_sample_mapper::map(const session_sample_entity& v
 
     domain::session_sample r;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.session_id = boost::lexical_cast<boost::uuids::uuid>(v.session_id.value());
-    r.sample_time = timestamp_to_timepoint(std::string_view{v.sample_time.value()});
+    r.session_id = boost::lexical_cast<boost::uuids::uuid>(v.session_id);
+    r.sample_time = timestamp_to_timepoint(std::string_view{v.sample_time});
     r.bytes_sent = v.bytes_sent;
     r.bytes_received = v.bytes_received;
     r.latency_ms = v.latency_ms;

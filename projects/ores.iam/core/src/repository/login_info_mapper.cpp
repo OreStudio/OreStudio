@@ -47,7 +47,7 @@ domain::login_info login_info_mapper::map(const login_info_entity& v) {
 
     domain::login_info r;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id.value());
+    r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id);
     r.last_ip = boost::asio::ip::make_address(v.last_ip);
     r.last_attempt_ip = boost::asio::ip::make_address(v.last_attempt_ip);
     r.failed_logins = v.failed_logins;

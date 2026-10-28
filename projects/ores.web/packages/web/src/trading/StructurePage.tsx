@@ -438,14 +438,14 @@ export function StructurePage(): ReactNode {
                         </Link>
                     )}
                 </div>
-                <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+                <div className="grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
+                    <TreePanel record={record} />
                     <div className="space-y-4">
                         {tabs.bar}
                         {tabs.tab === 'members' && <MembersTab record={record} />}
                         {tabs.tab === 'price' && <PriceTab />}
                         {tabs.tab === 'history' && <HistoryTab record={record} />}
                     </div>
-                    <TreePanel record={record} />
                 </div>
             </div>
         </Frame>

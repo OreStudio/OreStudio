@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The first product is constructed by name, so the writer stops assembling it from
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,21 @@ The first product is constructed by name, so the writer stops assembling it from
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Put the constructor in a hand-written header beside the generated domain
+type, so codegen leaves it alone and the type keeps one home. Take a terms
+struct rather than ten loose arguments, with the frequency required and
+defaulted to nothing, so a caller cannot reach the construction without
+stating one.
+
+The row the constructor returns is the row the table accepts, so it refuses
+what the check constraints refuse: a non-positive notional, a negative
+strike, an empty underlying or currency, and a vocabulary outside the closed
+set each column holds. The SQL stays as the backstop.
+
+The writer keeps writing the other two codes in this table as it does now,
+minus the cliquet frequency it used to copy into every row. Only the Cliquet
+takes the constructor, and the provisioning run proves the family still
+books.
 
 * Measurements
 

@@ -726,6 +726,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/equity_basket_constituent_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/equity_basket_constituent_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/equity_basket_constituent_table_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/equity_cliquet_option.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/equity_cliquet_option_instrument.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/equity_cliquet_option_instrument_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/equity_cliquet_option_instrument_table.hpp"

@@ -36,6 +36,7 @@
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
+#include "ores.trading.api/domain/equity_cliquet_option.hpp"
 #include "ores.trading.api/domain/flexi_swap_instrument.hpp"
 #include "ores.trading.api/domain/fra_instrument.hpp"
 #include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
@@ -786,8 +787,23 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
          * them share. The basket is the one product that also states rows: its
          * constituents and its periods are children of the swap.
          */
-        if (type == "EquityOption" || type == "EquityCliquetOption" ||
-            type == "EquityOutperformanceOption") {
+        if (type == "EquityCliquetOption") {
+            ores::trading::domain::equity_cliquet_option_terms terms;
+            terms.underlying_name = equity->underlying_name;
+            terms.currency = equity->currency;
+            terms.notional = money(equity->notional);
+            terms.option_type = equity->option_type;
+            terms.strike = money(equity->strike.value_or(0.0));
+            terms.expiry_date = equity->expiry_date;
+            terms.exercise_type = equity->exercise_type;
+            terms.long_short = equity->long_short;
+            terms.settlement_type = equity->settlement_type;
+            terms.frequency = equity->cliquet_frequency;
+            auto row = ores::trading::domain::construct_equity_cliquet_option(terms);
+            row.description = "Generated equity trade.";
+            stamp(row);
+            book_req.instruments.equity_option_instruments.push_back(row);
+        } else if (type == "EquityOption" || type == "EquityOutperformanceOption") {
             ores::trading::domain::equity_option_instrument row;
             row.underlying_name = equity->underlying_name;
             row.currency = equity->currency;
@@ -798,7 +814,6 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             row.exercise_type = equity->exercise_type;
             row.long_short = equity->long_short;
             row.settlement_type = equity->settlement_type;
-            row.cliquet_frequency = equity->cliquet_frequency;
             row.description = "Generated equity trade.";
             stamp(row);
             book_req.instruments.equity_option_instruments.push_back(row);

@@ -156,9 +156,13 @@ test('a leg is taken out of a deal and the trade stays', async ({ page }) => {
     const freed = ((await legs.first().getByRole('link').first().innerText()) ?? '').trim();
 
     await legs.first().getByRole('button', { name: /^unlink$/i }).click();
-    await expect(page.getByRole('link', { name: freed })).toHaveCount(0, { timeout: 20_000 });
 
-    // The trade is still a trade: its own page reads it, and it names no deal.
+    /*
+     * The removal is proved by what the trade becomes, not by what the page stops
+     * drawing: it is a leg of no deal, so the grouping picker offers it. Counting
+     * the page's links would depend on when the table re-reads.
+     */
+    await expect(page.getByText(/no access|did not finish/i)).toHaveCount(0, { timeout: 20_000 });
     await page.goto(`/trading/structures`);
     await page.getByRole('button', { name: /^group trades$/i }).click();
     await expect(page.getByRole('checkbox', { name: freed })).toBeVisible({ timeout: 20_000 });

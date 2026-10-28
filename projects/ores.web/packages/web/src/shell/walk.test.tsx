@@ -231,8 +231,9 @@ describe('the routes of the application', () => {
         PATHS.reporting,
         // Opened from an oresmd URL, so no card leads to it.
         '/market-data/series',
-        // The Import steps, opened from the currencies list's Import (RS-ORE-05).
+        // The Import steps, opened from the kind's list's Import (RS-ORE-05).
         '/refdata/currencies/import',
+        `${PATHS.pricingEngines}/import`,
     ]);
 
     /** Routes that are a record's page, a redirect or outside the signed-in shell. */

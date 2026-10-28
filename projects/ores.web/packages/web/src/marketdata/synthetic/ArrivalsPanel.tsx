@@ -210,9 +210,17 @@ export function ArrivalsDialog({
     const { t } = useTranslation();
     const [restartAfter, setRestartAfter] = useState(true);
     const [model, setModel] = useState<Model>(modelOf(feed));
-    const [ratio, setRatio] = useState(numberOf(feed, 'branching_ratio', 0));
-    const [decay, setDecay] = useState(numberOf(feed, 'decay', 1));
-    const [sensitivity, setSensitivity] = useState(numberOf(feed, 'sensitivity', 1));
+    // What was typed, so a cleared field reads as empty rather than as zero.
+    const [ratioText, setRatioText] = useState(String(numberOf(feed, 'branching_ratio', 0)));
+    const [decayText, setDecayText] = useState(String(numberOf(feed, 'decay', 1)));
+    const [sensitivityText, setSensitivityText] = useState(
+        String(numberOf(feed, 'sensitivity', 1)),
+    );
+    const ratio = Number(ratioText);
+    const decay = Number(decayText);
+    const sensitivity = Number(sensitivityText);
+    const unreadable = (text: string): boolean =>
+        text.trim() === '' || !Number.isFinite(Number(text));
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -222,6 +230,7 @@ export function ArrivalsDialog({
         ratio !== numberOf(feed, 'branching_ratio', 0) ||
         decay !== numberOf(feed, 'decay', 1) ||
         sensitivity !== numberOf(feed, 'sensitivity', 1);
+    const invalid = unreadable(sensitivityText) || unreadable(ratioText) || unreadable(decayText);
 
     const saveNow = async (): Promise<void> => {
         setSaving(true);
@@ -254,7 +263,7 @@ export function ArrivalsDialog({
                     <Button
                         variant="primary"
                         pending={saving}
-                        disabled={!changed}
+                        disabled={!changed || invalid}
                         onClick={() => void saveNow()}
                     >
                         {t('entity.save')}
@@ -282,8 +291,9 @@ export function ArrivalsDialog({
                     <Input
                         type="number"
                         step="any"
-                        value={sensitivity}
-                        onChange={(event) => setSensitivity(Number(event.target.value))}
+                        value={sensitivityText}
+                        aria-invalid={unreadable(sensitivityText) ? true : undefined}
+                        onChange={(event) => setSensitivityText(event.target.value)}
                     />
                 </Field>
                 <Field
@@ -293,9 +303,10 @@ export function ArrivalsDialog({
                     <Input
                         type="number"
                         step="any"
-                        value={ratio}
+                        value={ratioText}
+                        aria-invalid={unreadable(ratioText) ? true : undefined}
                         disabled={!hawkes}
-                        onChange={(event) => setRatio(Number(event.target.value))}
+                        onChange={(event) => setRatioText(event.target.value)}
                     />
                 </Field>
                 <Field
@@ -305,9 +316,10 @@ export function ArrivalsDialog({
                     <Input
                         type="number"
                         step="any"
-                        value={decay}
+                        value={decayText}
+                        aria-invalid={unreadable(decayText) ? true : undefined}
                         disabled={!hawkes}
-                        onChange={(event) => setDecay(Number(event.target.value))}
+                        onChange={(event) => setDecayText(event.target.value)}
                     />
                 </Field>
             </div>

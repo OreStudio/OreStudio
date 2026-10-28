@@ -81,7 +81,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A cleared field is saved as zero | ArrivalsPanel.tsx | Accept | The dialog keeps what was typed; an empty or unreadable field is invalid and holds Save back. |
+| 2 | After a failed restart Save is disabled | ArrivalsPanel.tsx | Note | The save is stored, so there is nothing left to save; the message names the restart. |
+| 3 | The facts show a dash where the dialog shows values | ArrivalsPanel.tsx | Note | Intended: the facts show what the law uses, the dialog what is stored. |
+| 4 | compass check skipped | — | Note | At the user's request. |
 
 * Result
 

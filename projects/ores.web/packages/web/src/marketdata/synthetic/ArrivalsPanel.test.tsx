@@ -125,6 +125,12 @@ describe('the dialog that edits a feed’s arrivals', () => {
         expect(dialog(feed(), false)).not.toContain('The feed is running on its old law.');
     });
 
+    it('reads a stored value as typed, so an empty field is not taken for zero', () => {
+        const html = dialog(feed({ sensitivity: 1.3 }));
+        expect(html).toContain('value="1.3"');
+        expect(html).not.toContain('aria-invalid="true"');
+    });
+
     it('saves with a button, which waits for a change', () => {
         expect(dialog(feed())).toMatch(/<button[^>]*disabled=""[^>]*>[^<]*Save/);
     });

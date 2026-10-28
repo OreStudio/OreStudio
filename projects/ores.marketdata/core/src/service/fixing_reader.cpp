@@ -137,7 +137,8 @@ fixing_reader::window(ores::database::context ctx,
     name_the_source(ctx, request.item, series, response);
 
     // The window is the days that end on the last date, both ends included; a day with no
-    // fixing, a weekend or a holiday, is skipped.
+    // fixing, a weekend or a holiday, is skipped. The days are between 1 and max_days here,
+    // so the first date is always a real date.
     const auto from = std::chrono::year_month_day(std::chrono::sys_days(request.to) -
                                                   std::chrono::days(request.days - 1));
     const auto found = repository::fixing_read_repository{}.between(

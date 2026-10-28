@@ -54,6 +54,8 @@ constexpr year_month_day d(int y, unsigned m, unsigned day) {
 struct reader_fixture {
     ores::testing::scoped_database_helper db;
     boost::uuids::uuid party;
+    // A second party the session sees. It is a made-up id: a series does not check that its
+    // party exists, which lets one test hold one item under two parties.
     boost::uuids::uuid other;
     ores::database::context owner;
 
@@ -236,6 +238,7 @@ TEST_CASE("a_window_over_the_ceiling_or_of_no_days_is_refused", "[fixing_reader]
     const auto uri = reader_fixture::item("CEIL");
     f.series(uri, "ore");
 
+    CHECK(f.window(uri, d(2026, 10, 23), fixing_reader::max_days).result.outcome == outcome::ok);
     CHECK(f.window(uri, d(2026, 10, 23), fixing_reader::max_days + 1).result.code ==
           "range_too_large");
     CHECK(f.window(uri, d(2026, 10, 23), 0).result.code == "range_inverted");

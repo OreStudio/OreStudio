@@ -128,6 +128,13 @@ via its "Verifies task" field.
 | 4 | Check the window against the broker's message cap | fixing_reader.hpp | Note | 3,660 fixings at about 40 bytes is about 150 KB, under the cap; the tick read keeps 375 KB. |
 | 5 | Epoch microseconds through a double could be off by one | fixing_read_repository.cpp | Decline | PostgreSQL 18 here; =extract= returns =numeric=, so the value is exact. |
 | 6 | fixing_reader.cpp uses chrono without including it | fixing_reader.cpp | Accept | Included. |
+| 7 | The window read has no test over NATS | messaging_fixing_read_handler_tests.cpp | Accept | Window with and without the permission, over NATS. |
+| 8 | The handler's other branches are untested on the wire | messaging_fixing_read_handler_tests.cpp | Accept | A body that does not decode is refused bad_request; the party case is the reader's and is tested there. |
+| 9 | The exception text goes to the client | fixing_read_handler.hpp | Decline | The repository's convention: series_ticks_handler puts e.what() in the result message too. |
+| 10 | The ambiguity tests rely on a made-up party | service_fixing_reader_tests.cpp | Accept | A comment says why it works. |
+| 11 | The window edges: exactly max_days, and the first day | service_fixing_reader_tests.cpp | Accept in part | A window of exactly max_days is accepted. The first day is already covered: the 4-day window ending 10-23 starts on 10-20, which holds a fixing that the test expects. |
+| 12 | The ambiguity reason is a contract if parsed | fixing_reader.cpp | Note | No client parses it; clients read the code. |
+| 13 | Say why the first date of the window is safe | fixing_reader.cpp | Accept | Commented. |
 
 * Result
 

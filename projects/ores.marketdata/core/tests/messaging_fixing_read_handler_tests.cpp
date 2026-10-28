@@ -51,8 +51,11 @@ namespace fixing_read_handler_test {
 using namespace std::chrono;
 using ores::marketdata::messaging::get_fixing_request;
 using ores::marketdata::messaging::get_fixing_response;
+using ores::marketdata::messaging::get_fixing_window_request;
+using ores::marketdata::messaging::get_fixing_window_response;
 
 const std::string fixing_subject("ores.test.fixing_read.get");
+const std::string window_subject("ores.test.fixing_read.window");
 const std::string fixing_read_permission("marketdata::market_fixings:read");
 
 struct fixing_handler_fixture {
@@ -60,6 +63,7 @@ struct fixing_handler_fixture {
     ores::nats::service::client nats;
     std::optional<ores::security::jwt::jwt_authenticator> verifier;
     std::optional<ores::nats::service::subscription> sub;
+    std::optional<ores::nats::service::subscription> window_sub;
     boost::uuids::uuid party;
     std::string item;
 
@@ -92,6 +96,34 @@ struct fixing_handler_fixture {
                 ores::marketdata::messaging::fixing_read_handler h(nats, db.context(), verifier);
                 h.get_fixing(std::move(msg));
             });
+        window_sub = nats.queue_subscribe(
+            window_subject, "ores.marketdata.service", [this](ores::nats::message msg) {
+                ores::marketdata::messaging::fixing_read_handler h(nats, db.context(), verifier);
+                h.get_fixing_window(std::move(msg));
+            });
+    }
+
+    std::unordered_map<std::string, std::string> bearer(const std::vector<std::string>& roles) {
+        const auto token = ores::marketdata::tests::mint_token(
+            db.tenant_id().to_string(), party, {boost::uuids::to_string(party)}, roles);
+        std::unordered_map<std::string, std::string> headers;
+        headers[std::string(ores::nats::headers::authorization)] =
+            std::string(ores::nats::headers::bearer_prefix) + token;
+        return headers;
+    }
+
+    ores::nats::message ask_window(const std::vector<std::string>& roles) {
+        get_fixing_window_request req;
+        req.item = item;
+        req.to = year_month_day{year{2026}, October, day{23}};
+        req.days = 5;
+        return nats.request_sync(
+            window_subject, ores::nats::default_wire_codec().encode(req), bearer(roles));
+    }
+
+    ores::nats::message ask_raw(const std::vector<std::byte>& body,
+                                const std::vector<std::string>& roles) {
+        return nats.request_sync(fixing_subject, body, bearer(roles));
     }
 
     ores::nats::message ask(const std::vector<std::string>& roles) {
@@ -136,4 +168,41 @@ TEST_CASE("a_token_without_the_fixing_read_permission_is_refused_forbidden",
 
     REQUIRE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
     CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
+}
+
+TEST_CASE("a_token_with_the_fixing_read_permission_gets_the_window_over_nats",
+          "[fixing_read_handler][integration]") {
+    fixing_handler_fixture f;
+
+    const auto reply = f.ask_window({fixing_read_permission});
+
+    REQUIRE_FALSE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
+    const auto decoded =
+        ores::nats::default_wire_codec()
+            .decode<fixing_read_handler_test::get_fixing_window_response>(reply.data);
+    REQUIRE(decoded);
+    CHECK(decoded->days == 5);
+    CHECK(decoded->used == 1);
+    CHECK(decoded->values == std::vector<std::string>{"1.1500"});
+}
+
+TEST_CASE("a_window_without_the_fixing_read_permission_is_refused_forbidden",
+          "[fixing_read_handler][integration]") {
+    fixing_handler_fixture f;
+
+    const auto reply = f.ask_window({"marketdata::market_observations:read"});
+
+    REQUIRE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
+    CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
+}
+
+TEST_CASE("a_fixing_request_that_does_not_decode_is_refused_bad_request",
+          "[fixing_read_handler][integration]") {
+    fixing_handler_fixture f;
+    const std::vector<std::byte> junk{std::byte{0xc1}, std::byte{0xff}, std::byte{0x00}};
+
+    const auto reply = f.ask_raw(junk, {fixing_read_permission});
+
+    REQUIRE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
+    CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "bad_request");
 }

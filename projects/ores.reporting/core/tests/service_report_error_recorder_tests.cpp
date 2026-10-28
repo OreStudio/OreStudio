@@ -146,7 +146,7 @@ TEST_CASE("a run that failed its analytics carries one error row per trade it co
     const auto instance_id = write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
-    std::vector<ores::reporting::service::engine_log_error> errors;
+    std::vector<ores::reporting::service::engine_log_row> errors;
     for (int i = 0; i < 3; ++i) {
         errors.push_back({.severity = "error",
                           .scope = "Trade",
@@ -208,7 +208,7 @@ TEST_CASE("an error about a trade carries the version the run read and the date 
     write_bundle(ctx, instance_id, std::string{"{\""} + trade_id + "\":3}");
 
     ores::reporting::service::report_error_recorder recorder(ctx);
-    const std::vector<ores::reporting::service::engine_log_error> errors{
+    const std::vector<ores::reporting::service::engine_log_row> errors{
         {.severity = "error",
          .scope = "Trade",
          .message = "did not find object of type yield curve",
@@ -242,7 +242,7 @@ TEST_CASE("an error about a trade the manifest does not name is recorded with no
     write_bundle(ctx, instance_id, R"({"033b4053-fe1d-5901-bc2f-7d95afe91f07":3})");
 
     ores::reporting::service::report_error_recorder recorder(ctx);
-    const std::vector<ores::reporting::service::engine_log_error> errors{
+    const std::vector<ores::reporting::service::engine_log_row> errors{
         {.severity = "error",
          .scope = "Trade",
          .message = "did not find object of type yield curve",
@@ -307,7 +307,7 @@ TEST_CASE("an error whose scope the vocabulary does not hold costs its own row o
     const auto instance_id = write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
-    const std::vector<ores::reporting::service::engine_log_error> errors{
+    const std::vector<ores::reporting::service::engine_log_row> errors{
         {.severity = "error",
          .scope = "Curve",
          .message = "yield curve building failed for curve(s) Yield/GBP/GBP1D",
@@ -349,7 +349,7 @@ TEST_CASE("the run's failure row points at the reasons when they are there",
     const auto instance_id = write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
-    const std::vector<ores::reporting::service::engine_log_error> errors{
+    const std::vector<ores::reporting::service::engine_log_row> errors{
         {.severity = "error",
          .scope = "Curve",
          .message = "yield curve building failed for curve(s) Yield/GBP/GBP1D",
@@ -395,7 +395,7 @@ TEST_CASE("the run-level failure is stored beside the engine's own errors", "[se
     const auto instance_id = write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
-    const std::vector<ores::reporting::service::engine_log_error> errors{
+    const std::vector<ores::reporting::service::engine_log_row> errors{
         {.severity = "error",
          .scope = "Curve",
          .message = "yield curve building failed for curve(s) Yield/GBP/GBP1D",
@@ -427,14 +427,14 @@ TEST_CASE("a batch whose scopes were all unplaceable does not block the next one
     const auto instance_id = write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
-    const std::vector<ores::reporting::service::engine_log_error> unplaceable{
+    const std::vector<ores::reporting::service::engine_log_row> unplaceable{
         {.severity = "error",
          .scope = "Something the engine grew",
          .message = "a scope no reader can place",
          .subject = "trade",
          .subject_id = "033b4053-fe1d-5901-bc2f-7d95afe91f00",
          .detail = {}}};
-    const std::vector<ores::reporting::service::engine_log_error> placeable{
+    const std::vector<ores::reporting::service::engine_log_row> placeable{
         {.severity = "error",
          .scope = "Curve",
          .message = "yield curve building failed for curve(s) Yield/GBP/GBP1D",
@@ -458,7 +458,7 @@ TEST_CASE("a run's errors are stored once however often its output is read",
     const auto instance_id = write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
-    const std::vector<ores::reporting::service::engine_log_error> errors{
+    const std::vector<ores::reporting::service::engine_log_row> errors{
         {.severity = "error",
          .scope = "Curve",
          .message = "yield curve building failed for curve(s) Yield/GBP/GBP1D",

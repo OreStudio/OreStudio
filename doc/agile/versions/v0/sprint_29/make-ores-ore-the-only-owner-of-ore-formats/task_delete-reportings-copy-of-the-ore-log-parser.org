@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/delete-reportings-copy-of-the-ore-log-parser
+#+pr: 4030
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ reporting holds no ORE log grammar. The canonical rows the node writes are the o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-27                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
 
 * Acceptance
 
@@ -41,9 +41,28 @@ reporting holds no ORE log grammar. The canonical rows the node writes are the o
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The chain already carries the answer: =post_process_results= runs after
+=collect_compute_results=, and it records each result's canonical log rows
+through =record_run_log=. The failure path in =collect_results= records the log
+of the result that failed, before it refuses. So the archive parser has no job
+left on either path, and the collect step stops reading the archive for errors at
+all.
+
+Two things move with the parser:
+
+- The row type stays. =engine_log_error= is what the canonical reader produces
+  and what the error recorder writes, and its header loses everything that
+  decodes the engine's text: the line parser, the archive reader, the JSON
+  search, the category mapping and the text-log fallback. The header is renamed
+  after the type it holds.
+- The rows keep the meaning the table had. The old reader stored warnings and
+  errors only; the canonical file holds every line the engine wrote, so the
+  recorder keeps the severities the screen shows and drops the rest. A run whose
+  log is all notices records nothing, as before.
+
+The refusal paths the task asks about are already stated by the canonical
+reader's suite: a wrong header, a short row, a wrong field count, a quote that
+never closes and an empty file each have a case.
 
 * Measurements
 
@@ -57,7 +76,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Lines of reporting that name the engine's log format | 0 (was 4 files) | =grep -rn "StructuredMessage\|log_structured" projects/ores.reporting --include=*.cpp --include=*.hpp | wc -l= | (this branch) |
+| Cases of the deleted parser suite | 6 | =git show HEAD:projects/ores.reporting/core/tests/service_engine_error_log_tests.cpp | grep -c "^TEST_CASE"= | (this branch) |
+| =ores.reporting.core.tests= | passed, 56.85s | =compass test run -- -R ores.reporting.core.tests= | (this branch) |
+| =ores.reporting.api.tests= | passed, 1.66s | =compass test run -- -R ores.reporting.api.tests= | (this branch) |
 
 * Notes
 
@@ -76,12 +98,56 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4030][#4030]] | [reporting] Keep the canonical rows and delete the engine's log grammar |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Recording the log per result keeps only the first result's errors, because the recorder writes a run's account once | report_execution_handler.cpp | Accepted | Every result's rows are gathered and written in one call; the failure path passes its single result the same way. |
+| 2 | The write sat at the end of post-processing, so a run whose rows were refused recorded nothing | report_execution_handler.cpp | Accepted | The write moved before the rows are loaded; the account no longer depends on the rows landing. |
+| 3 | The canonical rows carried no detail, so every stored row lost the exception the old reader kept | engine_log.cpp, canonical_log_reader.cpp | Accepted | `detail` is the tenth column, written from the event the node already holds; the reader's header and field count move to ten, with a case. |
+| 4 | A severity outside error/warning is dropped silently, and an unknown engine category reads as notice | engine_log.cpp | Accepted | An unknown category reads as an error, so a failure nobody has seen before cannot be dropped. |
+| 5 | The row type is named for errors but holds every line | engine_log_row.hpp | Accepted | Renamed to `engine_log_row`, with a doc that says which severities the service keeps. |
+| 6 | Stale prose: the recorder's class doc names the engine's structured log; the row header uses org-mode emphasis; the api model names a core type | several | Accepted | All corrected; the model no longer names another component's type. |
+| 7 | Unused `<span>` include left by the deletion, and an unused logger in the new test | several | Accepted | Both removed. |
+| 8 | The failure path in `collect_results` has no test | — | Not changed | The decision it makes is the recorder's, which is tested; the path itself needs a compute job. Recorded as a limitation. |
+| — | The review bot did not run: the same infrastructure error, at no cost, before reading anything. The round was run as two parallel reviews, standards and spec | — | — | Both reviews are in the Notes above as rows 1-8. |
 
 * Result
+
+reporting holds no ORE log grammar. =engine_error_log.cpp=, its header's two
+readers and the six-case suite are deleted, and the header is now
+=engine_log_error.hpp= holding the row type alone. The test fixture of the
+engine's JSON lines went with them.
+
+Both paths record the run's errors from the canonical rows:
+
+- =post_process_results= records the log the node wrote for each result, which is
+  where a run that completed gets its account;
+- the failure path in =collect_results= records the failed result's log before it
+  refuses, which is where a run that did not complete gets its account.
+
+The collect step no longer parses the archive at all: it keeps the output as the
+run's output and leaves the account to the rows. The body it downloads is still
+stored, so nothing is lost.
+
+The rows keep the table's meaning. The canonical file holds every line the
+engine wrote, so the recorder keeps the severities the screen shows -- =error=
+and =warning= -- and drops the rest, with a case that says a notice is not a
+problem. A run's log says nothing went wrong returns before the write rather
+than asking the table to take no rows.
+
+The review of this task found that two of its claims did not hold, and both are
+fixed here. Recording per result kept only the first result's errors, because the
+recorder writes a run's account once; the rows of all results are now gathered
+into one write. And the write sat at the end of post-processing, so a run whose
+rows were refused recorded nothing; it now happens before the rows are loaded.
+The canonical rows also gained a =detail= column, without which every stored row
+lost the exception the old reader kept.
+
+The refusal paths the task asks about are the canonical reader's: a wrong
+header, a short row, a wrong field count, a quote that never closes and an empty
+file each have a case in =results_canonical_log_reader_tests.cpp=.
+
+* Review

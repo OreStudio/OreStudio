@@ -26,12 +26,13 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.reporting.core/export.hpp"
+#include "ores.reporting.core/service/engine_log_row.hpp"
 #include "ores.service/service/cache/run_token_cache.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include <cstddef>
 #include <optional>
-#include <span>
 #include <string>
+#include <vector>
 
 namespace ores::reporting::messaging {
 
@@ -96,27 +97,27 @@ private:
                               const std::string& error_message);
 
     /**
-     * @brief Records the errors the run's own output carries.
-     *
-     * The engine writes its errors into the output the run fetched, so the
-     * account of them arrives with the results and is stored against the run
-     * once they are. A read that finds nothing, or finds what it cannot read,
-     * is logged and not fatal: the run still has a report.
-     */
-    void record_engine_errors(const std::string& tenant_id,
-                              const std::string& instance_id,
-                              std::span<const std::byte> archive);
-
-    /**
-     * @brief Records the log rows the node wrote for one compute result.
+     * @brief Reads the log rows the node wrote for one compute result.
      *
      * The node alone knows how the engine writes its log, so the service reads
-     * the rows it marshalled and stores them: the run's log is the node's
-     * contract, not the engine's file.
+     * the rows it marshalled: the run's log is the node's contract, not the
+     * engine's file.
      */
-    void record_run_log(const std::string& tenant_id,
-                        const std::string& report_instance_id,
-                        const std::string& result_id);
+    [[nodiscard]] std::vector<service::engine_log_row>
+    read_run_log_rows(const std::string& tenant_id,
+                      const std::string& report_instance_id,
+                      const std::string& result_id);
+
+    /**
+     * @brief Records the log of every result of one run, in one write.
+     *
+     * A run is stored against its errors once, so the rows of all its results
+     * are gathered here and written together. A call per result would keep only
+     * the first, because the recorder knows when a run already holds its errors.
+     */
+    void record_run_logs(const std::string& tenant_id,
+                         const std::string& report_instance_id,
+                         const std::vector<std::string>& result_ids);
 
     /**
      * @brief A client that carries the run's token, for calls to an owner.

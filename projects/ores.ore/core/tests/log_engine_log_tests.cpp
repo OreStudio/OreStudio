@@ -179,8 +179,9 @@ TEST_CASE("the canonical log csv states its header and quotes what it must", "[o
     const auto events = parse_engine_log_text(curve_line + "\n", "log.txt");
     const auto text = canonical_log_csv(events);
 
-    CHECK(text.rfind("ordinal,severity,scope,message,subject,subject_id,cause,event_time,source\n",
-                     0) == 0);
+    CHECK(text.rfind(
+              "ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,source\n",
+              0) == 0);
     CHECK(text.find("1,error,Curve,") != std::string::npos);
 }
 
@@ -431,4 +432,20 @@ TEST_CASE("a log states how many lines it holds", "[ore][log]") {
     CHECK(line_count("one\ntwo") == 2);
     CHECK(line_count("one\r\ntwo\r\n") == 2);
     CHECK(line_count(std::string("\xEF\xBB\xBF") + "one\n") == 1);
+}
+
+TEST_CASE("the canonical rows state the detail the engine gave", "[ore][log]") {
+    using ores::ore::log::canonical_log_csv;
+
+    const auto events = parse_engine_log_text(
+        "ERROR [2026-Oct-27 20:00:00.000000] (x.cpp:1) : StructuredMessage { \"category\": "
+        "\"Error\", \"group\": \"Trade\", \"message\": \"did not build\", \"sub_fields\": [ "
+        "{ \"name\": \"tradeId\", \"value\": \"T1\" }, { \"name\": \"exceptionType\", "
+        "\"value\": \"Error building trade\" } ] }\n",
+        "log.txt");
+
+    REQUIRE(events.size() == 1);
+    const auto text = canonical_log_csv(events);
+    CHECK(text.find("exceptionType") != std::string::npos);
+    CHECK(text.find("Error building trade") != std::string::npos);
 }

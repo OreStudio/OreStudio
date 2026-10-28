@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.reporting.core/export.hpp"
-#include "ores.reporting.core/service/engine_error_log.hpp"
+#include "ores.reporting.core/service/engine_log_row.hpp"
 #include <string>
 #include <vector>
 
@@ -32,9 +32,9 @@ namespace ores::reporting::service {
  * @brief Writes a run's errors against the run.
  *
  * The two places a run's errors come from reach this one recorder, so that a
- * reader finds them in one table: the engine's structured log, which the run's
- * own output carries, and the platform's own account of a step it could not
- * complete, which never reaches the engine.
+ * reader finds them in one table: the canonical log rows the node wrote for the
+ * run, and the platform's own account of a step it could not complete, which
+ * never reaches the engine.
  *
  * A repair that cannot be written is returned rather than thrown, because the
  * caller still has a run to finish and a refusal is what it has to record.
@@ -44,12 +44,16 @@ public:
     explicit report_error_recorder(ores::database::context ctx);
 
     /**
-     * @brief Writes what the engine said about the run.
+     * @brief Writes the run's log rows that say something went wrong.
+     *
+     * The rows cover every line the node marshalled; the ones whose severity is
+     * @c error or @c warning are written, and the rest are dropped, because a
+     * notice is not a reason.
      *
      * @return An empty string on success, or why the errors were not written.
      */
     [[nodiscard]] std::string record_engine_errors(const std::string& report_instance_id,
-                                                   const std::vector<engine_log_error>& errors);
+                                                   const std::vector<engine_log_row>& errors);
 
     /**
      * @brief Writes the platform's own reason the run failed.

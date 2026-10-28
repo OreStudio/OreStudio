@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D0DECE4-B91C-4855-96E9-A302A6B99E19][Run the public sources from the Official rates screen]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -83,3 +83,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story is scaffolded and wired into Sprint 29: one story and four tasks.
+The prototype is the first task; the pause and backfill decisions are tasks of
+their own, and the health read is the one task that can be built now.
+
+The analysis taken with the user on 2026-10-28 rides in the story's Goal and
+Decisions: health is a read the system already answers, freshness is not tick
+age, pause is a demand decision, a chosen backfill range is an adapter request,
+and the prototype comes before the controls.

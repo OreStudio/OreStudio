@@ -49,7 +49,7 @@ The analysis this story carries, taken with the user on 2026-10-28:
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:1048DB09-9987-4199-9129-EDBC94A6A640][Scaffold story: Run the public sources from the Official rates screen]] | STARTED | 2026-10-28 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:1048DB09-9987-4199-9129-EDBC94A6A640][Scaffold story: Run the public sources from the Official rates screen]] | DONE | 2026-10-28 | 2026-10-28 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:7F3AB01E-C043-46EB-BABD-A5F3DE9DEDCB][Prototype the provider row and the provider page]] | BACKLOG | | | One static prototype of the row and the page, with competing answers for the paused state and the freshness line, before any control is built. |
 | [[id:3003F16C-C239-4C5C-A36A-29A2D376EEE1][Show each provider's freshness and its adapter's health]] | BACKLOG | | | Each public provider states whether its data is arriving, in the words a daily source needs, from the adapter status the marketdata service already reports. |
 | [[id:EFAC2D06-56C6-41FD-856E-2B2AB415A947][Decide how a provider is paused]] | BACKLOG | | | A decision, not a control: whether a pause is a fact about demand or a provider state, and what it does to the provider's fixings and its feeds. |

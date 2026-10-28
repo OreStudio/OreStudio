@@ -20,9 +20,10 @@
 #include "ores.compute.wrapper/app/log_publisher.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
-#include "ores.ore.core/log/ore_log_parser.hpp"
+#include "ores.ore.core/log/engine_log.hpp"
 #include "ores.telemetry.core/messaging/logs_protocol.hpp"
 #include <fstream>
+#include <iterator>
 #include <string>
 #include <vector>
 
@@ -38,6 +39,28 @@ inline auto& log_publisher_lg() {
 }
 
 constexpr std::size_t batch_size = 200;
+
+/**
+ * @brief The level this node forwards a line under, or nothing when it forwards none.
+ *
+ * The telemetry store names its levels after the ones a person reads, and the
+ * engine names its own: the table is the one translation, and it is the
+ * telemetry contract's vocabulary rather than the engine's.
+ */
+std::string telemetry_level(const ores::ore::log::engine_log_event& event) {
+    if (ores::ore::log::is_memory_report(event))
+        return "debug";
+    const auto& word = event.level_word;
+    if (word == "DATA")
+        return "debug";
+    if (word == "NOTICE")
+        return "info";
+    if (word == "WARNING" || word == "WARN")
+        return "warn";
+    if (word == "ERROR" || word == "ALERT")
+        return "error";
+    return {};
+}
 
 void publish_batch(ores::nats::service::client& nats,
                    ores::telemetry::messaging::publish_log_entries_request& req) {
@@ -65,22 +88,24 @@ void publish_ore_logs(ores::nats::service::client& nats,
     req.source_name = "ores.compute.ore_log";
     req.tag = result_id;
 
+    std::string text;
+    text.assign(std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>());
+
     std::size_t parsed = 0;
     std::size_t skipped = 0;
-    std::string line;
-    while (std::getline(f, line)) {
-        const auto parsed_line = ores::ore::log::parse_ore_log_line(line);
-        if (!parsed_line) {
+    for (const auto& event : ores::ore::log::parse_engine_log_text(text, "log.txt")) {
+        auto level = telemetry_level(event);
+        if (level.empty() || !event.engine_format || !event.occurred_at) {
             ++skipped;
             continue;
         }
         ores::telemetry::messaging::publish_log_entry_item item;
-        item.level = parsed_line->level;
+        item.level = std::move(level);
         item.timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                parsed_line->timestamp.time_since_epoch())
+                                event.occurred_at->time_since_epoch())
                                 .count();
-        item.component = parsed_line->source;
-        item.message = parsed_line->message;
+        item.component = event.location;
+        item.message = event.message;
         req.entries.push_back(std::move(item));
         ++parsed;
 

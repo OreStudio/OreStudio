@@ -18,8 +18,15 @@
  *
  */
 #include "ores.ore.core/log/engine_log.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <boost/json.hpp>
+#include <array>
+#include <chrono>
+#include <cstdlib>
+#include <cstring>
+#include <optional>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -54,16 +61,73 @@ std::string severity_of_category(std::string_view category) {
     return "notice";
 }
 
+/** The severity a level word means, in the store's vocabulary. */
 std::string severity_of_word(std::string_view word) {
     if (word == "WARNING" || word == "WARN")
         return "warning";
     if (word == "ERROR" || word == "ALERT" || word == "FATAL")
         return "error";
-    if (word == "DEBUG")
+    if (word == "DEBUG" || word == "DATA")
         return "debug";
     if (word == "INFO")
         return "info";
     return "notice";
+}
+
+/**
+ * @brief Whether the first word of a line is one the engine puts on a line.
+ *
+ * A line whose first word is not one of these did not come from the engine's
+ * logger, so a client that forwards the engine's lines to a log store has
+ * nothing to forward.
+ */
+bool is_engine_level(std::string_view word) {
+    return word == "DATA" || word == "NOTICE" || word == "WARNING" || word == "WARN" ||
+           word == "ERROR" || word == "ALERT" || word == "DEBUG" || word == "INFO" ||
+           word == "FATAL";
+}
+
+/** The text the engine wrote in parentheses, or empty when it wrote none. */
+std::string location_in_parentheses(std::string_view line) {
+    const auto open = line.find('(');
+    if (open == std::string_view::npos)
+        return {};
+    const auto close = line.find(')', open);
+    if (close == std::string_view::npos)
+        return {};
+    return std::string(line.substr(open + 1, close - open - 1));
+}
+
+/**
+ * @brief The time the engine stated in brackets, as a value in UTC.
+ *
+ * The engine writes =YYYY-Mon-DD HH:MM:SS= and a fractional second of up to six
+ * digits, which it does not always write in full: =123= means three hundred and
+ * twenty-three milliseconds, so the digits are scaled rather than read as one
+ * number of microseconds.
+ */
+std::optional<std::chrono::system_clock::time_point> time_as_value(std::string_view stated) {
+    if (stated.empty())
+        return std::nullopt;
+
+    const auto dot = stated.rfind('.');
+    const auto date_time = dot == std::string_view::npos ? stated : stated.substr(0, dot);
+    long microseconds = 0;
+    if (dot != std::string_view::npos) {
+        const auto fraction = stated.substr(dot + 1);
+        std::array<char, 7> scaled = {'0', '0', '0', '0', '0', '0', '\0'};
+        const auto digits = std::min(fraction.size(), std::size_t{6});
+        std::memcpy(scaled.data(), fraction.data(), digits);
+        microseconds = std::strtol(scaled.data(), nullptr, 10);
+    }
+
+    try {
+        return ores::platform::time::datetime::from_utc_format(std::string(date_time),
+                                                               engine_timestamp_format.data()) +
+               std::chrono::microseconds(microseconds);
+    } catch (const std::invalid_argument&) {
+        return std::nullopt;
+    }
 }
 
 std::string time_between_brackets(std::string_view line) {
@@ -77,20 +141,33 @@ std::string time_between_brackets(std::string_view line) {
 }
 
 /**
+ * @brief What a line states after the engine's separator, and whether it had one.
+ */
+struct stated_message {
+    std::string text;
+    /**
+     * @brief Whether the line carried the separator the engine writes between
+     * the location that logged it and what it said.
+     */
+    bool after_separator = false;
+};
+
+/**
  * @brief The message after the engine's own separator, which is what the line says.
  *
  * The engine writes the file that logged the line between parentheses and then
  * the separator, so the message is what follows the closed parenthesis. A line
  * that names no file falls back to the first separator, and a line with neither
- * is all message. The message itself may hold a separator -- =group = setup :
- * nThreads = 1= is one message -- so the first separator is only a fallback.
+ * is all message and states no separator. The message itself may hold a
+ * separator -- =group = setup : nThreads = 1= is one message -- so the first
+ * separator is only a fallback.
  *
  * A line that names no file but whose message holds a parenthesis is read as if
  * the parenthesis named the file, and the message is cut at the separator after
  * it. The engine states its file on every line it writes, so this is a limit of
  * the shape rather than of a line it writes today.
  */
-std::string message_after_separator(std::string_view line) {
+stated_message message_after_separator(std::string_view line) {
     const auto file = line.find('(');
     if (file != std::string_view::npos) {
         const auto close = line.find(')', file);
@@ -99,16 +176,17 @@ std::string message_after_separator(std::string_view line) {
             if (after != std::string_view::npos) {
                 if (line.substr(after, 1) == ":") {
                     const auto message = line.find_first_not_of(' ', after + 1);
-                    return message == std::string_view::npos ? std::string() :
-                                                               std::string(line.substr(message));
+                    return {message == std::string_view::npos ? std::string() :
+                                                                std::string(line.substr(message)),
+                            true};
                 }
             }
         }
     }
     const auto separator = line.find(" : ");
     if (separator == std::string_view::npos)
-        return std::string(line);
-    return std::string(line.substr(separator + 3));
+        return {std::string(line), false};
+    return {std::string(line.substr(separator + 3)), true};
 }
 
 std::string curve_name_of(std::string_view reference);
@@ -136,7 +214,9 @@ bool apply_structured(std::string_view payload, engine_log_event& event) {
         return false;
 
     const auto& obj = value.as_object();
-    event.severity = severity_of_category(string_field(obj, "category"));
+    const auto category = string_field(obj, "category");
+    if (!category.empty())
+        event.severity = severity_of_category(category);
     event.scope = string_field(obj, "group");
     event.message = string_field(obj, "message");
 
@@ -294,6 +374,20 @@ void for_each_line(std::string_view text, Visit&& visit) {
 
 }
 
+std::string field_of(const engine_log_event& event, std::string_view name) {
+    if (event.fields.empty())
+        return {};
+    boost::system::error_code ec;
+    const auto value = json::parse(event.fields, ec);
+    if (ec || !value.is_object())
+        return {};
+    return string_field(value.as_object(), name);
+}
+
+bool is_memory_report(const engine_log_event& event) {
+    return event.severity == "warning" && event.message.ends_with(engine_memory_report_suffix);
+}
+
 std::string canonical_log_csv(const std::vector<engine_log_event>& events) {
     const auto quoted = [](std::string_view field) {
         if (field.find_first_of(",\"\n\r") == std::string_view::npos)
@@ -325,16 +419,21 @@ std::vector<engine_log_event> parse_engine_log_text(std::string_view text,
     for_each_line(text, [&](std::string_view line, std::size_t ordinal) {
         engine_log_event event;
         event.ordinal = ordinal;
+        event.level_word = word_at_start(line);
+        event.severity = severity_of_word(event.level_word);
         event.event_time = time_between_brackets(line);
+        event.occurred_at = time_as_value(event.event_time);
+        event.location = location_in_parentheses(line);
         event.source = std::string(source_file);
-        event.severity = severity_of_word(word_at_start(line));
 
         const auto payload = message_after_separator(line);
-        if (payload.starts_with(structured_marker) && apply_structured(payload, event)) {
+        event.engine_format = is_engine_level(event.level_word) && event.occurred_at &&
+                              !event.location.empty() && payload.after_separator;
+        if (payload.text.starts_with(structured_marker) && apply_structured(payload.text, event)) {
             if (event.message.empty())
-                event.message = payload;
+                event.message = payload.text;
         } else {
-            event.message = payload;
+            event.message = payload.text;
         }
         events.push_back(std::move(event));
     });
@@ -351,8 +450,10 @@ std::vector<engine_log_event> parse_engine_log_json(std::string_view text,
         if (!apply_structured(line, event)) {
             event.severity = "notice";
             event.message = std::string(line);
-        } else if (event.message.empty()) {
-            event.message = std::string(line);
+        } else {
+            event.engine_format = true;
+            if (event.message.empty())
+                event.message = std::string(line);
         }
         events.push_back(std::move(event));
     });

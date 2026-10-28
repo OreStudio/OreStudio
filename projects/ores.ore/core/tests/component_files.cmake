@@ -28,7 +28,6 @@ set(files
     "hierarchy_hierarchy_builder_tests.cpp"
     "log_engine_log_tests.cpp"
     "log_engine_run_verdict_tests.cpp"
-    "log_ore_log_parser_tests.cpp"
     "main.cpp"
     "market_fx_quote_convention_checker_tests.cpp"
     "market_market_data_parser_tests.cpp"

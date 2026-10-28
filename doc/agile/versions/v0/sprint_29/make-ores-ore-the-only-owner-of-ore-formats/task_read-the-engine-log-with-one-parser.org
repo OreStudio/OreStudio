@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/read-the-engine-log-with-one-parser
+#+pr: 4023
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ One parser in ores.ore reads the engine's log, and every consumer of the log rea
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-27                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
 
 * Acceptance
 
@@ -41,9 +41,28 @@ One parser in ores.ore reads the engine's log, and every consumer of the log rea
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+engine_log already reads both logs, but it keeps less than its two clients read
+from the old parser, so it gains the rest of what the engine states on a line:
+
+- the severity word as the engine wrote it, because the telemetry publisher
+  forwards the engine's own level names and must keep sending the same ones;
+- the location in parentheses, which the publisher sends as the entry's
+  component;
+- the time the engine stated, as a value, so no client parses the engine's
+  timestamp again;
+- whether the line stated the engine's fields at all. Both clients today read
+  only lines the old parser recognised, and a line that is only text must not
+  become a telemetry row or an error.
+
+The verdict also carries a hand-written reader of the structured message: it
+searches the line for =name=/=value= pairs to name the trade or the curve. The
+event already states the subject and the fields, so the verdict reads those, and
+the search goes.
+
+Then the old parser, its header and its suite are deleted. Its cases are not
+dropped: the level mapping, the memory report, the microsecond scaling and the
+refusal of a line without the engine's shape move to the engine log's suite,
+which is the one suite that covers both logs.
 
 * Measurements
 
@@ -57,7 +76,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Parsers of the engine log | 2 → 1 | =grep -rln "parse_ore_log_line" projects/ --include=*.cpp= | (this branch) |
+| Cases of the one suite | 27 (18 belonged to the deleted suite) | =grep -c "^TEST_CASE" projects/ores.ore/core/tests/log_engine_log_tests.cpp= | (this branch) |
+| =ores.ore.core.tests= | passed, 23.94s | =compass test run -- -R ores.ore.core.tests= | (this branch) |
+| =ores.compute.core.tests= | passed, 19.42s | =compass test run -- -R ores.compute.core.tests= | (this branch) |
+| =ores.reporting.core.tests= | passed, 51.68s | =compass test run -- -R ores.reporting.core.tests= | (this branch) |
 
 * Notes
 
@@ -76,12 +99,36 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4023][#4023]] | [ore] Read the engine's log with one parser |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| — | The review bot did not run: three requests each failed within a second with an infrastructure error, at no cost, before reading anything | — | Not reviewed by the bot | The branch was reviewed by hand instead: the publisher keeps the old level table and the old skip set, the verdict's reasons keep their wording, and the comment on =message_after_separator= was moved back onto its function after the diff review found it orphaned. |
 
 * Result
+
+The engine's log has one reader. =ore_log_parser=, its header and its 18-case
+suite are deleted, and its two clients read =engine_log=:
+
+- the compute node's log publisher, which still sends the same entries under the
+  same telemetry level names: the engine's own level word is kept on the event
+  for exactly that translation, and a line the engine did not write in its own
+  shape is still not forwarded;
+- the run verdict, which also loses its hand-written search of the structured
+  message for =tradeId=/=curveId= pairs. It asks the event for those fields now,
+  so the JSON is read in one place.
+
+=engine_log= gained what those clients read from the old parser and it did not
+keep: the level word, the location that logged the line, the time as a value,
+and whether the line stated the engine's fields at all. Two faults surfaced on
+the way: a structured message with no category was downgraded to =notice=, and
+the verdict's own fixture stated its sub-fields in a shape the engine never
+writes. Both are fixed.
+
+One break on main is fixed here because it stopped these suites from building:
+the synthetic trade writer assigned a =double= into the =decimal= type that
+carries a basket constituent's initial price.
+
+* Review

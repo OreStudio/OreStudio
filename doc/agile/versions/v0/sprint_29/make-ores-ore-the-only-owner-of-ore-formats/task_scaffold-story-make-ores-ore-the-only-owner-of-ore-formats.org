@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: F342D0EF-6F47-4823-A3A9-254CD37E5A8B
+:END:
+#+title: Task: Scaffold story: Make ores.ore the only owner of ORE formats
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
+#+owner: marco
+#+branch: feature/scaffold-the-ore-formats-story
+#+pr: 3952
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story exists with its tasks, its decisions and its sprint wiring, so the work can be picked up task by task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] |
+| Now          | The story, its nine work tasks and the sprint wiring are written. The scaffolding is being committed. |
+| Waiting on   | Nothing.                               |
+| Next         | Commit the scaffolding and open the scaffold pull request. |
+| Last touched | 2026-10-27                               |
+
+* Acceptance
+
+- The story and its nine work tasks exist and are linked to each other and to the sprint.
+- The story states the goal, the acceptance, the decisions from the audit and what is out of scope.
+- The scaffolding is committed on its own branch and the sprint table names the story.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3952][#3952]] | [agile] Scaffold the story that owns ORE formats |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

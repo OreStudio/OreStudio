@@ -30,6 +30,46 @@ import { regimeLabel, useMarketRegime, useMarketTrace } from './useMarketRegime.
 /** The reason an arrivals change is recorded under: a code, the same in every language. */
 const REASON_CODE = 'system.update';
 
+/** How a save of the arrivals ended: stored, stored but not restarted, or not stored. */
+export type ArrivalsSaveOutcome =
+    | { readonly kind: 'saved' }
+    | { readonly kind: 'restartFailed'; readonly message: string }
+    | { readonly kind: 'failed'; readonly message: string };
+
+function messageOf(cause: unknown): string {
+    return cause instanceof Error ? cause.message : String(cause);
+}
+
+/**
+ * Stores the arrivals, re-reads the feed, and restarts it when asked. The feed is re-read as
+ * soon as the save is stored, so a restart that fails cannot leave the form comparing against
+ * the old row; and a failed restart is told apart from a failed save, since the law is stored
+ * either way.
+ */
+export async function saveArrivals(steps: {
+    readonly save: () => Promise<void>;
+    readonly saved?: (() => Promise<void>) | undefined;
+    readonly restart?: (() => Promise<void>) | undefined;
+}): Promise<ArrivalsSaveOutcome> {
+    try {
+        await steps.save();
+    } catch (cause) {
+        return { kind: 'failed', message: messageOf(cause) };
+    }
+    await steps.saved?.();
+    if (steps.restart === undefined) {
+        return { kind: 'saved' };
+    }
+    try {
+        await steps.restart();
+        await steps.saved?.();
+        return { kind: 'saved' };
+    } catch (cause) {
+        await steps.saved?.();
+        return { kind: 'restartFailed', message: messageOf(cause) };
+    }
+}
+
 /** The models a feed's ticks can arrive under. */
 const MODELS = ['periodic', 'poisson', 'hawkes'] as const;
 type Model = (typeof MODELS)[number];
@@ -99,20 +139,18 @@ export function ArrivalsPanel({
     const saveNow = async (): Promise<void> => {
         setSaving(true);
         setError(null);
-        try {
-            await save(model, ratio, decay, sensitivity, {
-                reasonCode: REASON_CODE,
-                commentary: '',
-            });
-            if (running && restartAfter && restart !== undefined) {
-                await restart();
-            }
-            await saved?.();
-        } catch (cause) {
-            setError(cause instanceof Error ? cause.message : String(cause));
-        } finally {
-            setSaving(false);
+        const outcome = await saveArrivals({
+            save: () =>
+                save(model, ratio, decay, sensitivity, { reasonCode: REASON_CODE, commentary: '' }),
+            saved,
+            restart: running && restartAfter ? restart : undefined,
+        });
+        if (outcome.kind === 'failed') {
+            setError(outcome.message);
+        } else if (outcome.kind === 'restartFailed') {
+            setError(t('marketdata.arrivals.restartFailed', { message: outcome.message }));
         }
+        setSaving(false);
     };
 
     return (

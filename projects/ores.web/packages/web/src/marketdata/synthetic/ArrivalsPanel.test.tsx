@@ -22,7 +22,7 @@ import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { MarketRegime, RecordRow } from '../../api/client.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
-import { ArrivalsPanel } from './ArrivalsPanel.js';
+import { ArrivalsPanel, saveArrivals } from './ArrivalsPanel.js';
 
 const noSave = (): Promise<void> => Promise.resolve();
 
@@ -106,5 +106,49 @@ describe('a feed’s arrivals tab', () => {
     it('refuses to edit when the caller may not write', () => {
         const html = render(feed(), false);
         expect(html).toContain('disabled');
+    });
+});
+
+describe('saving a feed’s arrivals', () => {
+    function steps(fail?: 'save' | 'restart') {
+        const calls: string[] = [];
+        return {
+            calls,
+            save: async () => {
+                calls.push('save');
+                if (fail === 'save') throw new Error('refused');
+            },
+            saved: async () => {
+                calls.push('saved');
+            },
+            restart: async () => {
+                calls.push('restart');
+                if (fail === 'restart') throw new Error('no bus');
+            },
+        };
+    }
+
+    it('stores, re-reads, restarts and re-reads again', async () => {
+        const run = steps();
+        expect(await saveArrivals(run)).toEqual({ kind: 'saved' });
+        expect(run.calls).toEqual(['save', 'saved', 'restart', 'saved']);
+    });
+
+    it('tells a failed restart from a failed save, and still re-reads the feed', async () => {
+        const run = steps('restart');
+        expect(await saveArrivals(run)).toEqual({ kind: 'restartFailed', message: 'no bus' });
+        expect(run.calls).toEqual(['save', 'saved', 'restart', 'saved']);
+    });
+
+    it('neither re-reads nor restarts when the save is refused', async () => {
+        const run = steps('save');
+        expect(await saveArrivals(run)).toEqual({ kind: 'failed', message: 'refused' });
+        expect(run.calls).toEqual(['save']);
+    });
+
+    it('skips the restart when it is not asked for', async () => {
+        const run = steps();
+        expect(await saveArrivals({ save: run.save, saved: run.saved })).toEqual({ kind: 'saved' });
+        expect(run.calls).toEqual(['save', 'saved']);
     });
 });

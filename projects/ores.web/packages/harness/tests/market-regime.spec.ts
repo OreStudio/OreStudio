@@ -147,14 +147,19 @@ test.describe('the market, as the system administrator', () => {
         const before = await sensitivity.inputValue();
         const target = Number(before) === 1.5 ? '1.25' : '1.5';
 
-        await sensitivity.fill(target);
-        await expect(page.getByText('The feed is running on its old law.')).toBeVisible();
-        await expect(page.getByRole('checkbox', { name: 'Restart it to apply' })).toBeChecked();
-        await save.click();
-        await expect(law).toContainText(`×${Number(target).toFixed(2)}`, { timeout: 20_000 });
-
-        await sensitivity.fill(before);
-        await save.click();
+        try {
+            await sensitivity.fill(target);
+            await expect(page.getByText('The feed is running on its old law.')).toBeVisible();
+            await expect(page.getByRole('checkbox', { name: 'Restart it to apply' })).toBeChecked();
+            await save.click();
+            await expect(law).toContainText(`×${Number(target).toFixed(2)}`, { timeout: 20_000 });
+        } finally {
+            // Whatever failed above, the feed goes back to the value it had.
+            if ((await sensitivity.inputValue()) !== before) {
+                await sensitivity.fill(before);
+                await save.click();
+            }
+        }
         await expect(law).toContainText(`×${Number(before).toFixed(2)}`, { timeout: 20_000 });
     });
 

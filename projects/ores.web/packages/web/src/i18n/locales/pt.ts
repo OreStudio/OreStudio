@@ -4785,6 +4785,8 @@ const pt: SourceCatalogue = {
             unsaved: 'Alterações por guardar',
             runningNote: 'O feed está a correr com a sua lei antiga.',
             restart: 'Reiniciá-lo para aplicar',
+            restartFailed:
+                'Guardado, mas o reinício falhou: {message}. O feed corre com a sua lei antiga até voltar a arrancar.',
         },
         market: {
             title: 'O mercado',

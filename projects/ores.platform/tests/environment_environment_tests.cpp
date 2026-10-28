@@ -17,10 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-// The tests compare the provider with the C runtime, so they call std::getenv,
-// which the Windows CRT marks deprecated.
-#define _CRT_SECURE_NO_WARNINGS
-
+#include "c_runtime_environment.hpp"
 #include "ores.platform/environment/environment.hpp"
 #include "ores.platform/environment/fake_environment_provider.hpp"
 #include "ores.platform/environment/real_environment_provider.hpp"
@@ -33,6 +30,8 @@
 #include <unordered_map>
 
 namespace {
+
+namespace tests = ores::platform::tests;
 
 using ores::platform::environment::environment;
 using ores::platform::environment::environment_provider;
@@ -161,10 +160,10 @@ TEST_CASE("swap_provider_returns_the_previous_provider", "[environment]") {
 }
 
 TEST_CASE("default_provider_reads_the_process_environment", "[environment]") {
-    const char* path_from_c_runtime = std::getenv("PATH");
-    REQUIRE(path_from_c_runtime != nullptr);
+    const auto path_from_c_runtime = tests::c_runtime_environment_variable("PATH");
+    REQUIRE(path_from_c_runtime.has_value());
 
-    CHECK(environment::get_value("PATH") == std::optional<std::string>(path_from_c_runtime));
+    CHECK(environment::get_value("PATH") == path_from_c_runtime);
 }
 
 TEST_CASE("real_environment_provider_round_trips_a_variable", "[environment]") {
@@ -177,7 +176,7 @@ TEST_CASE("real_environment_provider_round_trips_a_variable", "[environment]") {
 
     provider.unset(name);
     CHECK_FALSE(provider.get(name).has_value());
-    CHECK(std::getenv(name.c_str()) == nullptr);
+    CHECK_FALSE(tests::c_runtime_environment_variable(name).has_value());
 }
 
 TEST_CASE("real_environment_provider_get_returns_empty_optional_for_absent_variable",
@@ -199,18 +198,15 @@ TEST_CASE("real_environment_provider_set_overwrites_an_existing_value", "[enviro
     provider.unset(name);
 }
 
-TEST_CASE("real_environment_provider_set_is_visible_to_std_getenv", "[environment]") {
-#ifndef _WIN32
+TEST_CASE("real_environment_provider_set_is_visible_to_the_c_runtime", "[environment]") {
     real_environment_provider provider;
-    const std::string name("ORES_PLATFORM_TEST_VISIBLE_TO_GETENV");
+    const std::string name("ORES_PLATFORM_TEST_VISIBLE_TO_C_RUNTIME");
 
     provider.set(name, "visible");
-    const char* from_c_runtime = std::getenv(name.c_str());
-    REQUIRE(from_c_runtime != nullptr);
-    CHECK(std::string(from_c_runtime) == "visible");
+    const auto from_c_runtime = tests::c_runtime_environment_variable(name);
+    REQUIRE(from_c_runtime.has_value());
+    CHECK(*from_c_runtime == "visible");
 
     provider.unset(name);
-#else
-    SKIP("the C runtime keeps its own environment block on Windows");
-#endif
+    CHECK_FALSE(tests::c_runtime_environment_variable(name).has_value());
 }

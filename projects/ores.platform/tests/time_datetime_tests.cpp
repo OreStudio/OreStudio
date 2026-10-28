@@ -17,10 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "c_runtime_environment.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.platform/time/time_utils.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cstdlib>
+
+namespace tests = ores::platform::tests;
 #include <ctime>
 #include <stdexcept>
 #include <string>
@@ -283,20 +286,19 @@ TEST_CASE("to_iso8601_utc_writes_the_same_bytes_whatever_the_process_timezone",
     const auto instant = make_utc(2026, 10, 17, 13, 0, 9) + std::chrono::microseconds{512000};
     constexpr auto expected = "2026-10-17 13:00:09.512000Z";
 
-    const char* original = std::getenv("TZ");
-    const bool had_original = original != nullptr;
-    const std::string saved = had_original ? std::string{original} : std::string{};
+    const auto original = tests::c_runtime_environment_variable("TZ");
+    const std::string saved = original.value_or("");
 
     for (const char* zone : {"UTC", "Europe/London", "America/New_York"}) {
-        setenv("TZ", zone, 1);
-        tzset();
+        tests::c_runtime_set_environment_variable("TZ", zone);
+        tests::c_runtime_reload_environment_clock();
         CHECK(datetime::to_iso8601_utc(instant) == expected);
         CHECK(datetime::from_iso8601_utc(expected) == instant);
     }
 
-    if (had_original)
-        setenv("TZ", saved.c_str(), 1);
+    if (original)
+        tests::c_runtime_set_environment_variable("TZ", saved);
     else
-        unsetenv("TZ");
-    tzset();
+        tests::c_runtime_unset_environment_variable("TZ");
+    tests::c_runtime_reload_environment_clock();
 }

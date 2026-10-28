@@ -124,8 +124,13 @@ const HISTORY_TYPES = new Set([
     'ores.refdata.counterparty_identifier',
     'ores.refdata.counterparty_contact_information',
     // Trading's own records: a trade and a deal read their versions here, and a
-    // leg's link or unlink is a version of the membership.
+    // leg's link or unlink is a version of the membership. A trade's parts have
+    // versions of their own, which its page reads beside the trade's own.
     'ores.trading.trade',
+    'ores.trading.trade_booking',
+    'ores.trading.trade_state',
+    'ores.trading.trade_portfolio',
+    'ores.trading.trade_additional_field',
     'ores.trading.structure',
     'ores.trading.structure_member',
     ...SYNTHETIC_HISTORY_TYPES,

@@ -122,6 +122,7 @@
 #include "ores.trading.core/messaging/trade_identifier_registrar.hpp"
 #include "ores.trading.core/messaging/trade_link_registrar.hpp"
 #include "ores.trading.core/messaging/trade_link_type_registrar.hpp"
+#include "ores.trading.core/messaging/trade_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_operations_handler.hpp"
 #include "ores.trading.core/messaging/trade_party_role_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_party_role_registrar.hpp"
@@ -298,6 +299,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     register_return_type_history_provider(hist_registry);
     register_settlement_type_history_provider(hist_registry);
     register_trade_additional_field_history_provider(hist_registry);
+    register_trade_history_provider(hist_registry);
     register_trade_portfolio_history_provider(hist_registry);
     register_trade_booking_history_provider(hist_registry);
     register_trade_id_type_history_provider(hist_registry);

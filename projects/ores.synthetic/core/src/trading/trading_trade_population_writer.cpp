@@ -898,7 +898,7 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
                 constituent.underlying_name = member.name;
                 constituent.underlying_kind = member.kind;
                 constituent.weight = member.weight;
-                constituent.initial_price = member.initial_price;
+                constituent.initial_price = maybe_money(member.initial_price);
                 stamp_child(constituent);
                 book_req.instruments.equity_basket_constituents.push_back(constituent);
             }

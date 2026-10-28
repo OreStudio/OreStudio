@@ -108,6 +108,7 @@ using ores::workflow::service::workflow_registry;
 using ores::workflow::service::workflow_step_def;
 using ores::workflow::service::workflow_step_results;
 
+
 /**
  * @brief The engine over a test tenant, with the bus and store either side.
  */
@@ -794,6 +795,27 @@ TEST_CASE("a retry re-dispatches the failed step under its own identity", "[engi
     CHECK(rows.back().state_id == f.step_states.require("in_progress"));
     CHECK(rows.back().error.empty());
     CHECK(wait_for_instance(commands, instance_id, 4, std::chrono::milliseconds(300)).size() == 3);
+
+    /*
+     * The resumed step is watched, as a freshly dispatched one is. Its clock
+     * was restamped by the retry, so a budget that has already passed for the
+     * failed attempt does not fail the new one: nothing happens until the
+     * resumed attempt itself outlives its deadline.
+     */
+    CHECK(f.engine->expire_overdue_steps() == 0);
+
+    // The clock the retry restamped is the one the sweep reads, so winding that
+    // back is what makes the resumed attempt overdue.
+    {
+        auto resumed = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+        REQUIRE(!resumed.empty());
+        REQUIRE(resumed.back().command_published_at.has_value());
+        auto step = resumed.back();
+        step.command_published_at = *step.command_published_at - std::chrono::seconds{120};
+        steps.write(f.h.context(), step);
+    }
+    CHECK(f.engine->expire_overdue_steps() == 1);
+
     BOOST_LOG_SEV(lg, debug) << "Retry re-dispatched step " << failed_step_id;
 }
 
@@ -1788,6 +1810,38 @@ TEST_CASE("workflow_engine leaves a queued step alone",
     const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
     REQUIRE(rows.size() == 1);
     CHECK(rows.front().state_id == f.step_states.require("in_progress"));
+}
+
+TEST_CASE("workflow_engine stops a step no worker ever claimed",
+          "[engine][integration]") {
+    auto lg(make_logger(test_suite));
+
+    /*
+     * Waiting for a queue has to end. A service that is alive and reporting,
+     * with nothing bound to the command's stream, would otherwise hold the step
+     * for ever and leave the run in progress with no error at all. The cap is a
+     * multiple of the budget, and the reason says plainly that nobody took it.
+     */
+    fixture f(engine_tenant::service);
+    f.register_steps(
+        "test_unclaimed_workflow", {"one"}, failure_policy::compensate, std::chrono::seconds{60});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_unclaimed_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    workflow_step_repository steps;
+    backdate_dispatch(f.h.context(), steps, instance_id, std::chrono::seconds(700));
+    f.engine->note_service_seen("ores.test.service", std::chrono::system_clock::now());
+
+    CHECK(f.engine->expire_overdue_steps() == 1);
+
+    const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+    CHECK(rows.front().state_id == f.step_states.require("failed"));
+    CHECK(rows.front().error.find("No worker ever claimed it") != std::string::npos);
 }
 
 TEST_CASE("workflow_engine gives a claimed step its whole budget",

@@ -377,7 +377,8 @@ private:
      */
     std::string deadline_failure_text(const domain::workflow_step& step,
                                       std::chrono::seconds budget,
-                                      std::chrono::seconds silent_for);
+                                      std::chrono::seconds silent_for,
+                                      bool claimed);
 
     /**
      * @brief When the service that owns a command subject last reported.

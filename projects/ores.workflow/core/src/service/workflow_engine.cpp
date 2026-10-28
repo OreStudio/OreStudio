@@ -218,6 +218,18 @@ std::string component_of_subject(const std::string& subject) {
     return dot == std::string::npos ? subject : subject.substr(0, dot);
 }
 
+/**
+ * @brief How many step budgets a command may wait in a queue before it fails.
+ *
+ * A step no worker has claimed is not silent, so its budget measures the wrong
+ * thing and the sweep waits. But waiting must end: a service that is alive and
+ * reporting, with no consumer bound to the command's stream, would otherwise
+ * hold the step for ever and leave the run in progress with no error. Ten
+ * budgets is long enough for any queue this deployment produces and short
+ * enough that a missing consumer is reported rather than waited out.
+ */
+constexpr int unclaimed_queue_budget_multiple = 10;
+
 /// Whether a service name is the one a component's commands belong to.
 bool service_owns_component(const std::string& service_name, const std::string& component) {
     return service_name == "ores." + component + ".service" ||
@@ -1292,10 +1304,19 @@ workflow_engine::last_seen_of(const std::string& subject) {
 
 std::string workflow_engine::deadline_failure_text(const domain::workflow_step& step,
                                                    std::chrono::seconds budget,
-                                                   std::chrono::seconds silent_for) {
+                                                   std::chrono::seconds silent_for,
+                                                   bool claimed) {
     std::string reason = "The step did not answer within " + describe_seconds(budget) +
                          " of its command being published (subject " + step.command_subject +
                          "); it has been silent for " + describe_seconds(silent_for) + ".";
+
+    if (!claimed) {
+        reason += " No worker ever claimed it, so it waited in the " +
+                  component_of_subject(step.command_subject) +
+                  " service's queue for its whole budget and longer; the command may have had "
+                  "no consumer bound to it.";
+        return reason;
+    }
 
     // What the engine knows about the service that owes this step an answer.
     // It states the evidence and stops there: a service that is running but
@@ -1405,7 +1426,11 @@ std::size_t workflow_engine::expire_overdue_steps() {
             const auto claimed_at = claim_repo_.claimed_at(ctx_, step.id);
             if (!claimed_at) {
                 const auto seen = last_seen_of(step.command_subject);
-                if (seen && *seen >= *step.command_published_at) {
+                const auto queued_for =
+                    std::chrono::duration_cast<std::chrono::seconds>(now -
+                                                                    *step.command_published_at);
+                if (seen && *seen >= *step.command_published_at &&
+                    queued_for < waiting.budget * unclaimed_queue_budget_multiple) {
                     ++it;
                     continue;
                 }
@@ -1425,7 +1450,8 @@ std::size_t workflow_engine::expire_overdue_steps() {
                 ++it;
                 continue;
             }
-            const auto reason = deadline_failure_text(step, waiting.budget, silent_for);
+            const auto reason =
+                deadline_failure_text(step, waiting.budget, silent_for, claimed_at.has_value());
             BOOST_LOG_SEV(lg(), error) << "Step outlived its deadline:" << " workflow="
                                        << boost::uuids::to_string(waiting.instance_id)
                                        << " step=" << step.name << " reason=" << reason;
@@ -1550,6 +1576,16 @@ workflow_engine::retry_instance(const boost::uuids::uuid& instance_id,
     set_instance_state(instance.id, instance_states_.require("in_progress"), "", "");
     publish_command(*target, instance.id, instance.tenant_id.to_uuid());
     publish_status_event(instance.id, instance.tenant_id.to_uuid());
+
+    /*
+     * The resumed step is watched from here, exactly as a dispatched one is:
+     * the sweep walks the steps the engine handed out, and a retry hands one
+     * out just as a start does. Its clock is restamped for the same reason a
+     * recovery restamps it -- the budget belongs to this attempt, not to the
+     * failed one it replaces.
+     */
+    note_awaiting(*target, instance.id, instance.tenant_id.to_uuid());
+    stamp_command_published(target->id);
 
     BOOST_LOG_SEV(lg(), info) << "Retried step " << target->step_index << " (" << target->name
                               << ") for instance " << instance_id_str;

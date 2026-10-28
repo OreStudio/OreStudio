@@ -49,6 +49,7 @@ target_link_libraries(${tests_target_name}
         ${lib_target_name}
         ores.utility.lib
         ores.storage.core.lib
+        ores.refdata.core.lib
         ores.testing.lib
         ores.logging.lib
         Catch2::Catch2

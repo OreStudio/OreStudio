@@ -43,7 +43,7 @@ domain::tenant_status tenant_status_mapper::map(const tenant_status_entity& v) {
     domain::tenant_status r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.status = v.status.value();
+    r.status = v.status;
 
     r.name = v.name;
 

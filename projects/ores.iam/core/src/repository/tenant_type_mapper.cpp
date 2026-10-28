@@ -43,7 +43,7 @@ domain::tenant_type tenant_type_mapper::map(const tenant_type_entity& v) {
     domain::tenant_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.type = v.type.value();
+    r.type = v.type;
 
     r.name = v.name;
 

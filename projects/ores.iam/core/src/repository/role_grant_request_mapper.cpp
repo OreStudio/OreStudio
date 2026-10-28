@@ -45,7 +45,7 @@ domain::role_grant_request role_grant_request_mapper::map(const role_grant_reque
     domain::role_grant_request r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.request_id = boost::lexical_cast<boost::uuids::uuid>(v.request_id.value());
+    r.request_id = boost::lexical_cast<boost::uuids::uuid>(v.request_id);
     r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

@@ -44,7 +44,7 @@ domain::permission permission_mapper::map(const permission_entity& v) {
 
     domain::permission r;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
 
     r.code = v.code;
 

@@ -366,10 +366,6 @@ consumers onto full-row upserts.
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
-#include <sqlgen/aggregations.hpp>
-#include <sqlgen/select_from.hpp>
-#include <sqlgen/to.hpp>
-#include <sqlgen/update.hpp>
 #+end_src
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
@@ -405,18 +401,18 @@ consumers onto full-row upserts.
 std::optional<domain::session>
 session_repository::read(context ctx, const boost::uuids::uuid& session_id) {
     const auto session_id_str = boost::lexical_cast<std::string>(session_id);
-    const auto query = sqlgen::read<std::vector<session_entity>> |
-                       where("id"_c == session_id_str) |
-                       limit(static_cast<std::size_t>(1));
+    const auto query = query_builder::read<std::vector<session_entity>> |
+                       query_builder::where("id"_c == session_id_str) | query_builder::limit(1);
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    if (r->empty()) {
+    const auto sessions = query_builder::execute_read_query<session_entity, domain::session>(
+        ctx,
+        query,
+        [](const auto& entities) { return session_mapper::map(entities); },
+        lg(),
+        "Reading session");
+    if (sessions.empty())
         return std::nullopt;
-    }
-
-    return session_mapper::map(r->front());
+    return sessions.front();
 }
 
 void session_repository::update_bytes(context ctx,
@@ -424,19 +420,17 @@ void session_repository::update_bytes(context ctx,
                                       const std::chrono::system_clock::time_point& start_time,
                                       std::uint64_t bytes_sent,
                                       std::uint64_t bytes_received) {
-    const auto session_id_str = boost::lexical_cast<std::string>(session_id);
-    const auto start_time_str = ores::platform::time::datetime::to_db_string(start_time);
-
-    const auto query = sqlgen::update<session_entity>(
-                           "bytes_sent"_c.set(static_cast<std::int64_t>(bytes_sent)),
-                           "bytes_received"_c.set(static_cast<std::int64_t>(bytes_received))) |
-                       where("id"_c == session_id_str && "start_time"_c == start_time_str);
-
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(begin_transaction)
-                       .and_then(query)
-                       .and_then(commit);
-    ensure_success(r, lg());
+    query_builder::execute_parameterized_multi_column_query(
+        ctx,
+        std::string("update ") + session_entity::tablename +
+            " set bytes_sent = $1::bigint, bytes_received = $2::bigint"
+            " where id = $3::uuid and start_time = $4::timestamptz",
+        {std::to_string(bytes_sent),
+         std::to_string(bytes_received),
+         boost::lexical_cast<std::string>(session_id),
+         ores::platform::time::datetime::to_db_string(start_time)},
+        lg(),
+        "Updating session bytes");
 }
 
 void session_repository::end_session(context ctx,
@@ -445,22 +439,18 @@ void session_repository::end_session(context ctx,
                                      const std::chrono::system_clock::time_point& end_time,
                                      std::uint64_t bytes_sent,
                                      std::uint64_t bytes_received) {
-    const auto session_id_str = boost::lexical_cast<std::string>(session_id);
-    const auto start_time_str = ores::platform::time::datetime::to_db_string(start_time);
-    const auto end_time_str = ores::platform::time::datetime::to_db_string(end_time);
-    const auto end_time_ts = std::optional<db_timestamp>(db_timestamp{end_time_str});
-
-    const auto query = sqlgen::update<session_entity>(
-                           "end_time"_c.set(end_time_ts),
-                           "bytes_sent"_c.set(static_cast<std::int64_t>(bytes_sent)),
-                           "bytes_received"_c.set(static_cast<std::int64_t>(bytes_received))) |
-                       where("id"_c == session_id_str && "start_time"_c == start_time_str);
-
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(begin_transaction)
-                       .and_then(query)
-                       .and_then(commit);
-    ensure_success(r, lg());
+    query_builder::execute_parameterized_multi_column_query(
+        ctx,
+        std::string("update ") + session_entity::tablename +
+            " set end_time = $1::timestamptz, bytes_sent = $2::bigint,"
+            " bytes_received = $3::bigint where id = $4::uuid and start_time = $5::timestamptz",
+        {ores::platform::time::datetime::to_db_string(end_time),
+         std::to_string(bytes_sent),
+         std::to_string(bytes_received),
+         boost::lexical_cast<std::string>(session_id),
+         ores::platform::time::datetime::to_db_string(start_time)},
+        lg(),
+        "Ending session");
 }
 
 std::vector<domain::session> session_repository::read_by_account(context ctx,
@@ -468,66 +458,56 @@ std::vector<domain::session> session_repository::read_by_account(context ctx,
                                                                  std::uint32_t limit_count,
                                                                  std::uint32_t offset_count) {
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
+    auto query = query_builder::read<std::vector<session_entity>> |
+                 query_builder::where("account_id"_c == account_id_str) |
+                 query_builder::order_by("start_time"_c.desc()) |
+                 query_builder::offset(offset_count);
+    if (limit_count > 0)
+        query = std::move(query) | query_builder::limit(limit_count);
 
-    std::vector<session_entity> entities;
-    if (limit_count > 0) {
-        const auto query =
-            sqlgen::read<std::vector<session_entity>> | where("account_id"_c == account_id_str) |
-            order_by("start_time"_c.desc()) | sqlgen::offset(static_cast<std::size_t>(offset_count)) |
-            sqlgen::limit(static_cast<std::size_t>(limit_count));
-        const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-        ensure_success(r, lg());
-        entities = *r;
-    } else {
-        const auto query =
-            sqlgen::read<std::vector<session_entity>> | where("account_id"_c == account_id_str) |
-            order_by("start_time"_c.desc()) | sqlgen::offset(static_cast<std::size_t>(offset_count));
-        const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-        ensure_success(r, lg());
-        entities = *r;
-    }
-
-    return session_mapper::map(entities);
+    return query_builder::execute_read_query<session_entity, domain::session>(
+        ctx,
+        query,
+        [](const auto& entities) { return session_mapper::map(entities); },
+        lg(),
+        "Reading sessions by account");
 }
 
 std::vector<domain::session>
 session_repository::read_active_by_account(context ctx, const boost::uuids::uuid& account_id) {
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
-    const auto query = sqlgen::read<std::vector<session_entity>> |
-                       where("account_id"_c == account_id_str && "end_time"_c.is_null()) |
-                       order_by("start_time"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<session_entity>> |
+        query_builder::where("account_id"_c == account_id_str && query_builder::is_null("end_time")) |
+        query_builder::order_by("start_time"_c.desc());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    return session_mapper::map(*r);
+    return query_builder::execute_read_query<session_entity, domain::session>(
+        ctx,
+        query,
+        [](const auto& entities) { return session_mapper::map(entities); },
+        lg(),
+        "Reading active sessions by account");
 }
 
 std::uint32_t session_repository::count_by_account(context ctx,
                                                    const boost::uuids::uuid& account_id) {
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
-
-    struct count_result {
-        long long count;
-    };
-
-    const auto query = sqlgen::select_from<session_entity>(sqlgen::count().as<"count">()) |
-                       where("account_id"_c == account_id_str) | sqlgen::to<count_result>;
-
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    return static_cast<std::uint32_t>(r->count);
+    const auto query = query_builder::read<std::vector<session_entity>>;
+    return query_builder::execute_count_query(
+        ctx, query, "account_id"_c == account_id_str, lg(), "Counting sessions by account");
 }
 
 std::vector<domain::session> session_repository::read_all_active(context ctx) {
-    const auto query = sqlgen::read<std::vector<session_entity>> |
-                       where("end_time"_c.is_null()) | order_by("start_time"_c.desc());
+    const auto query = query_builder::read<std::vector<session_entity>> |
+                       query_builder::where(query_builder::is_null("end_time")) |
+                       query_builder::order_by("start_time"_c.desc());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    return session_mapper::map(*r);
+    return query_builder::execute_read_query<session_entity, domain::session>(
+        ctx,
+        query,
+        [](const auto& entities) { return session_mapper::map(entities); },
+        lg(),
+        "Reading all active sessions");
 }
 #+end_src
 

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/move-ores-iam-repositories-to-libpq
+#+pr: 3975
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Step 3 of 7, one component. ores.iam reads and writes through the libpq layer an
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -42,9 +42,12 @@ Step 3 of 7, one component. ores.iam reads and writes through the libpq layer an
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. State =#+repository_backend: libpq= in the iam component overview and
+   regenerate its repositories, entities and mappers.
+2. Move the hand-written sqlgen repository code in iam to the query builder.
+3. Build the tree and run the suites of iam and of the components that call
+   its repositories. Calls made inside a sqlgen unit of work join it through
+   the bridge of #3961.
 
 * Measurements
 
@@ -58,9 +61,20 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| iam repositories generated on libpq | 25 | =compass codegen regenerate --component iam-cpp --address ores= | this PR |
+| sqlgen in iam's repository sources | 0 files | =grep -rl sqlgen projects/ores.iam/core/{include,src}/*/repository= | this PR |
+| Suites | ores.iam, ores.http, ores.inbox, ores.marketdata, ores.refdata.core and ores.trading.core: 19 of 19 pass | =ctest= | this PR |
+| Unity build of the whole tree | Green | =cmake --build build/output/linux-clang-release-ninja -- -k 0= | this PR |
 
 * Notes
+
+** Hand-written code
+
+The pastes of the account, role and session models are ported. The session paste's two updates have no query builder form and run as parameterized SQL; its reads and its count go through the builder. tenant_lookups and the two audit logs (auth_event_log, run_token_issue_log) move to the builder's raw helpers and drop their sqlgen includes, and auth_event_handler reads the entity keys without .value(). The aggregate header's comment names the libpq layer.
+
+** What else
+
+The regenerate is limited to the repository address, to keep main's unrelated drift out of a backend move.
 
 * Test Scenarios
 
@@ -77,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3975][#3975]] | [iam] Move the iam repositories to libpq |
 
 * Review
 
@@ -86,3 +100,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=ores.iam= runs on the libpq layer. Its 25 repositories are generated
+through the query builder, and its repository sources carry no sqlgen. The pastes of the account, role and session models are ported. The session paste's two updates have no query builder form and run as parameterized SQL; its reads and its count go through the builder. tenant_lookups and the two audit logs (auth_event_log, run_token_issue_log) move to the builder's raw helpers and drop their sqlgen includes, and auth_event_handler reads the entity keys without .value(). The aggregate header's comment names the libpq layer.

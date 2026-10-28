@@ -45,7 +45,7 @@ domain::account_role account_role_mapper::map(const account_role_entity& v) {
     domain::account_role r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id.value());
+    r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id);
     r.role_id = boost::lexical_cast<boost::uuids::uuid>(v.role_id);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

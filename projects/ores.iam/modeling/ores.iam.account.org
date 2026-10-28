@@ -501,10 +501,10 @@ export of a tenant's accounts is not an export of the platform's.
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::account> account_repository::read_all(context ctx) {
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<account_entity>> |
-                       where("tenant_id"_c == tid) | order_by("valid_from"_c.desc());
+    const auto query = query_builder::read<std::vector<account_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::order_by("valid_from"_c.desc());
 
-    return execute_read_query<account_entity, domain::account>(
+    return query_builder::execute_read_query<account_entity, domain::account>(
         ctx,
         query,
         [](const auto& entities) { return account_mapper::map(entities); },
@@ -538,12 +538,12 @@ account_repository::read_latest_by_username(context ctx, const std::string& user
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<account_entity>> |
-                       where("tenant_id"_c == tid && "username"_c == username &&
+    const auto query = query_builder::read<std::vector<account_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "username"_c == username &&
                              "valid_to"_c == max.value()) |
-                       order_by("valid_from"_c.desc());
+                       query_builder::order_by("valid_from"_c.desc());
 
-    return execute_read_query<account_entity, domain::account>(
+    return query_builder::execute_read_query<account_entity, domain::account>(
         ctx,
         query,
         [](const auto& entities) { return account_mapper::map(entities); },
@@ -573,12 +573,12 @@ account_repository::read_latest_by_email(context ctx, const std::string& email) 
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<account_entity>> |
-                       where("tenant_id"_c == tid && "email"_c == email &&
+    const auto query = query_builder::read<std::vector<account_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "email"_c == email &&
                              "valid_to"_c == max.value()) |
-                       order_by("valid_from"_c.desc());
+                       query_builder::order_by("valid_from"_c.desc());
 
-    return execute_read_query<account_entity, domain::account>(
+    return query_builder::execute_read_query<account_entity, domain::account>(
         ctx,
         query,
         [](const auto& entities) { return account_mapper::map(entities); },

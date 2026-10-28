@@ -25,7 +25,6 @@
 #include "ores.logging/make_logger.hpp"
 #include <chrono>
 #include <cstddef>
-#include <sqlgen/postgres.hpp>
 #include <string>
 #include <string_view>
 #include <vector>

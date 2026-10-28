@@ -25,8 +25,8 @@
 #ifndef ORES_IAM_CORE_REPOSITORY_AUTH_EVENT_ENTITY_HPP
 #define ORES_IAM_CORE_REPOSITORY_AUTH_EVENT_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,8 +42,8 @@ struct auth_event_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_iam_auth_events_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
-    sqlgen::PrimaryKey<std::string> event_time;
+    std::string id;
+    std::string event_time;
     std::string tenant_id;
     std::string account_id;
     std::string event_type;
@@ -51,6 +51,23 @@ struct auth_event_entity {
     std::string session_id;
     std::string party_id;
     std::string error_detail;
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = auth_event_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::key("event_time", &e::event_time) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("account_id", &e::account_id) |
+               query_builder::bind("event_type", &e::event_type) |
+               query_builder::bind("username", &e::username) |
+               query_builder::bind("session_id", &e::session_id) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("error_detail", &e::error_detail);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const auth_event_entity& v);

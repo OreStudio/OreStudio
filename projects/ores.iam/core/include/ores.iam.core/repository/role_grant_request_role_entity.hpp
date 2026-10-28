@@ -25,8 +25,8 @@
 #ifndef ORES_IAM_CORE_REPOSITORY_ROLE_GRANT_REQUEST_ROLE_ENTITY_HPP
 #define ORES_IAM_CORE_REPOSITORY_ROLE_GRANT_REQUEST_ROLE_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -44,11 +44,11 @@ struct role_grant_request_role_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_iam_role_grant_request_roles_tbl";
 
-    sqlgen::PrimaryKey<std::string> request_id;
+    std::string request_id;
     std::string tenant_id;
     std::string role_id;
     int version = 0;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> applied_at;
+    std::optional<db_timestamp> applied_at;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -56,6 +56,26 @@ struct role_grant_request_role_entity {
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
     std::optional<std::string> closed_by;
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = role_grant_request_role_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("request_id", &e::request_id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("role_id", &e::role_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("applied_at", &e::applied_at) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to) |
+               query_builder::bind("closed_by", &e::closed_by);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const role_grant_request_role_entity& v);

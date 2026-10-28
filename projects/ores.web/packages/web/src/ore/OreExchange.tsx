@@ -27,7 +27,7 @@ import { JourneyPage } from '../journeys/JourneyPage.js';
 import type { JourneyStep } from '../journeys/runtime.js';
 import { markStale } from '../refdata/records.js';
 import { Crumbs, ReasonFields, useReason } from '../refdata/shared.js';
-import { useAreaRoot } from '../shell/AreaTrail.js';
+import { useAreaRoot, type AreaName } from '../shell/AreaTrail.js';
 import { Button, Dialog, LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
 import { Icon } from '../ui/Icon.js';
 import { toast } from '../ui/Toasts.js';
@@ -336,6 +336,8 @@ export interface OreImportDone {
 export interface OreImportKind {
     /** The key of the kind's words: its plural. */
     readonly words: string;
+    /** The area the kind's screens sit under, which the trail starts from. */
+    readonly area: AreaName;
     readonly rootElement: string;
     readonly listPath: string;
     /**
@@ -368,7 +370,7 @@ export function OreImportPage({ kind }: { readonly kind: OreImportKind }): React
     const navigate = useNavigate();
     const queries = useQueryClient();
     const crumbs = [
-        ...useAreaRoot('refdata'),
+        ...useAreaRoot(kind.area),
         { label: t(`${kind.words}.title`), to: kind.listPath },
         { label: t('refdata.ore.import') },
     ];

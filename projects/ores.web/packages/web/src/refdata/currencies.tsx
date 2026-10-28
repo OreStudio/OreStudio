@@ -280,6 +280,7 @@ export function CurrencyImportPage(): ReactNode {
         }));
     const kind: OreImportKind = {
         words: 'refdata.currencies',
+        area: 'refdata',
         targetKind: 'table',
         rootElement: ORE_DOCUMENT.rootElement,
         listPath: ORE_DOCUMENT.listPath,

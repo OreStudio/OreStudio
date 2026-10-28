@@ -79,6 +79,7 @@ export function PricingEngineImportPage(): ReactNode {
 
     const kind: OreImportKind = {
         words: 'pricingEngines',
+        area: 'reporting',
         targetKind: 'configuration',
         rootElement: 'PricingEngines',
         listPath: PATHS.pricingEngines,

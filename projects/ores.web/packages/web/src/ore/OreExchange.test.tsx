@@ -110,6 +110,7 @@ const PREVIEW: OreImportPreview = {
 
 const KIND: OreImportKind = {
     words: 'pricingEngines',
+    area: 'reporting',
     targetKind: 'configuration',
     rootElement: 'PricingEngines',
     listPath: '/reporting/pricing-engines',

@@ -4307,6 +4307,15 @@ const fr: SourceCatalogue = {
         },
         choices: {
             ore_currency_type: { Major: 'Majeure', Metal: 'Métal', Crypto: 'Crypto' },
+            curve_family_role: {
+                FUNDING: 'Financement',
+                PROJECTION: 'Projection',
+            },
+            interpolation_method: {
+                LOG_LINEAR_DISCOUNT: "Log-linéaire sur le facteur d'actualisation",
+                FLAT_FORWARD_THEN_LOG_LINEAR: 'Forward plat, puis log-linéaire',
+                CUBIC_SPLINE: 'Spline cubique',
+            },
             report_type: { risk: 'Rapport de risque' },
             regulatory_book_type: {
                 Trading: 'Portefeuille de négociation',
@@ -4671,6 +4680,8 @@ const fr: SourceCatalogue = {
                 "Un ensemble le devient lorsqu'une personne publie un candidat approuvé, dans le parcours de publication.",
             setsNote:
                 "Un ensemble se retrouve par le plan dont il a été construit, que la lecture transporte ; le contrat de liste n'a pas encore de filtre pour cela, donc l'onglet lit les ensembles de la partie et retient le sien.",
+            removeWarning:
+                "Ceci supprime le plan et ses {count} piliers. Les {sets} ensemble(s) qu'il a alimentés restent où ils sont : un ensemble publié n'est jamais supprimé avec une recette, et le desk le lit par son propre enregistrement.",
             historyLead:
                 "Les versions de la recette et celles de chaque pilier, de la plus récente à la plus ancienne, chacune nommée par sa partie. Un pilier supprimé de la recette n'est pas dans ce flux.",
             usedByNone: "Aucune projection ne s'actualise sur cette recette.",
@@ -4759,6 +4770,10 @@ const fr: SourceCatalogue = {
                 addPillar: 'Ajouter un pilier',
                 openPillars: 'Ouvrir les piliers',
                 editBlueprint: 'Modifier le plan',
+            },
+            tabs: {
+                check: 'Contrôle',
+                sets: 'Ensembles publiés',
             },
             checks: {
                 one_pillar: 'La recette tient au moins un pilier.',

@@ -4279,6 +4279,15 @@ const pt: SourceCatalogue = {
         },
         choices: {
             ore_currency_type: { Major: 'Principal', Metal: 'Metal', Crypto: 'Cripto' },
+            curve_family_role: {
+                FUNDING: 'Financiamento',
+                PROJECTION: 'Projecao',
+            },
+            interpolation_method: {
+                LOG_LINEAR_DISCOUNT: 'Log-linear no fator de atualizacao',
+                FLAT_FORWARD_THEN_LOG_LINEAR: 'Forward plano, depois log-linear',
+                CUBIC_SPLINE: 'Spline cubica',
+            },
             report_type: { risk: 'Relatório de risco' },
             regulatory_book_type: {
                 Trading: 'Carteira de negociação',
@@ -4640,6 +4649,8 @@ const pt: SourceCatalogue = {
                 'Um conjunto torna-se num quando alguem publica um candidato aprovado, na jornada de publicacao.',
             setsNote:
                 'Um conjunto encontra-se pela planta a partir da qual foi construido, que a leitura transporta; o contrato de lista ainda nao tem filtro para isso, por isso o separador le os conjuntos da parte e retem o seu.',
+            removeWarning:
+                'Isto remove a planta e os seus {count} pilares. Os {sets} conjunto(s) que alimentou ficam onde estao: um conjunto publicado nunca e eliminado com uma receita, e a mesa le-o pelo seu proprio registo.',
             historyLead:
                 'As versoes da receita e as versoes de cada pilar, da mais recente para a mais antiga, cada uma nomeada pela sua parte. Um pilar eliminado da receita nao esta neste fluxo.',
             usedByNone: 'Nenhuma projecao se desconta nesta receita.',
@@ -4728,6 +4739,10 @@ const pt: SourceCatalogue = {
                 addPillar: 'Adicionar um pilar',
                 openPillars: 'Abrir os pilares',
                 editBlueprint: 'Editar a planta',
+            },
+            tabs: {
+                check: 'Verificacao',
+                sets: 'Conjuntos publicados',
             },
             checks: {
                 one_pillar: 'A receita tem pelo menos um pilar.',

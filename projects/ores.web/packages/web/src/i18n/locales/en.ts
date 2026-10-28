@@ -4250,6 +4250,15 @@ export const en: SourceCatalogue = {
         },
         choices: {
             ore_currency_type: { Major: 'Major', Metal: 'Metal', Crypto: 'Crypto' },
+            curve_family_role: {
+                FUNDING: 'Funding',
+                PROJECTION: 'Projection',
+            },
+            interpolation_method: {
+                LOG_LINEAR_DISCOUNT: 'Log-linear on the discount factor',
+                FLAT_FORWARD_THEN_LOG_LINEAR: 'Flat forward, then log-linear',
+                CUBIC_SPLINE: 'Cubic spline',
+            },
             report_type: { risk: 'Risk report' },
             regulatory_book_type: { Trading: 'Trading book', Banking: 'Banking book' },
             pre_processing: { execute: 'Execute', substitute: 'Substitute' },
@@ -4608,6 +4617,8 @@ export const en: SourceCatalogue = {
                 'A set becomes one when a person publishes an approved candidate, in the publish journey.',
             setsNote:
                 "A set is found by the blueprint it was built from, which the read carries; the list contract has no filter for it yet, so the tab reads the party's sets and picks this one's.",
+            removeWarning:
+                'This removes the blueprint and its {count} pillars. The {sets} set(s) it fed stay where they are: a published set is never deleted with a recipe, and the desk reads it by its own record.',
             historyLead:
                 "The recipe's versions and every pillar's versions, newest first, each named by its part. A pillar deleted from the recipe is not in this stream.",
             usedByNone: 'No projection discounts off this recipe.',
@@ -4695,6 +4706,10 @@ export const en: SourceCatalogue = {
                 addPillar: 'Add a pillar',
                 openPillars: 'Open the pillars',
                 editBlueprint: 'Edit the blueprint',
+            },
+            tabs: {
+                check: 'Check',
+                sets: 'Published sets',
             },
             checks: {
                 one_pillar: 'The recipe holds at least one pillar.',

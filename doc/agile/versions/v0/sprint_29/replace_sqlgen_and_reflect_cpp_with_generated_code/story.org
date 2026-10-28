@@ -89,6 +89,7 @@ Every component reads and writes the database through generated statements on a 
 | [[id:7254F18A-2C86-4264-8E69-413AF69C760E][Measure the full build after the move]] | BACKLOG | | | Measure the full build without sqlgen and reflect-cpp against the baseline and against the unity build of step 1. |
 | [[id:6237A857-BD6E-431A-8B89-9F6F0452CA39][Close the gaps the unity build review found]] | DONE | 2026-10-27 | 2026-10-27 | Group the collision check by target, read every namespace and the test headers in the type-name check, keep the exclusion choice stable, record relative log paths, pin the CMake minimum, give lint a fallback without git, and reword the own-or-system RLS comment. |
 | [[id:672C8E2B-0209-4437-B166-77177E322C4B][Fix the test failures found after the unity build merge]] | DONE | | 2026-10-27 | The full ctest run after PR #3904 merged found the vendor catalogue test still expecting 86 ids per provider, which main's per-feed catalogue seed had made wrong, and a second feed ingest test that times out under load. |
+| [[id:A2FCBFF0-2BF7-472F-9FB6-BCFD1EA34CB9][Update the report chain tests for post-processing]] | DONE | 2026-10-28 | 2026-10-28 | 0b3f87fedd added post_process_results to the report execution chain and left four reporting api tests expecting the old chain. |
 
 * Decisions
 

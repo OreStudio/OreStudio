@@ -91,6 +91,7 @@ TEST_CASE("a run that executes every phase builds the chain it always built",
                                                       "prepare_ore_package",
                                                       "submit_compute",
                                                       "collect_compute_results",
+                                                      "post_process_results",
                                                       "finalise"});
 }
 
@@ -104,8 +105,11 @@ TEST_CASE("a run that replaces both phases builds the substituted chain", "[work
 
 TEST_CASE("a run substitutes one phase at a time", "[workflow][reporting]") {
     CHECK(names_of(steps_for(run_request("substitute", "prepared/input.tar.gz", "execute"))) ==
-          std::vector<std::string>{
-              "resolve_prepared_input", "submit_compute", "collect_compute_results", "finalise"});
+          std::vector<std::string>{"resolve_prepared_input",
+                                   "submit_compute",
+                                   "collect_compute_results",
+                                   "post_process_results",
+                                   "finalise"});
 
     CHECK(names_of(steps_for(run_request("execute", "", "ignore"))) ==
           std::vector<std::string>{"gather_trades",
@@ -262,7 +266,7 @@ TEST_CASE("a package instance runs the very steps a production instance runs",
     const auto production = steps_for(run_request("execute", "", "execute", "production"));
 
     REQUIRE(package.size() == 5);
-    REQUIRE(production.size() == 7);
+    REQUIRE(production.size() == 8);
     // The package steps are the first four of the production chain, and finalise: none
     // of them is a variant made for the package.
     for (std::size_t i = 0; i < 4; ++i) {
@@ -270,7 +274,7 @@ TEST_CASE("a package instance runs the very steps a production instance runs",
         CHECK(package[i].command_subject == production[i].command_subject);
         CHECK(package[i].compensation_subject == production[i].compensation_subject);
     }
-    CHECK(package[4].name == production[6].name);
+    CHECK(package[4].name == production[7].name);
 }
 
 TEST_CASE("an instance that names no kind is a production instance", "[workflow][reporting]") {
@@ -317,7 +321,7 @@ TEST_CASE("finalise waits for the step whose result it completes", "[workflow][r
 
     const auto collected = steps_for(run_request("execute", "", "execute", "production"));
     REQUIRE(collected.back().name == "finalise");
-    CHECK(waits_for(collected.back(), "collect_compute_results"));
+    CHECK(waits_for(collected.back(), "post_process_results"));
 
     const auto ignored = steps_for(run_request("execute", "", "ignore", "production"));
     REQUIRE(ignored.back().name == "finalise");

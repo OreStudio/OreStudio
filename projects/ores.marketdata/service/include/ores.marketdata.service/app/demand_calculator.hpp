@@ -27,6 +27,7 @@
 #include "ores.marketdata.api/domain/market_data_mapping.hpp"
 #include "ores.marketdata.api/domain/market_data_source.hpp"
 #include "ores.marketdata.api/domain/market_data_vendor_instrument.hpp"
+#include "ores.marketdata.api/domain/provider.hpp"
 #include "ores.marketdata.api/domain/route.hpp"
 #include "ores.marketdata.api/domain/subscription.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
@@ -47,6 +48,8 @@ namespace ores::marketdata::service::app {
  * @brief What the demand of the adapters is computed from.
  */
 struct demand_catalogue {
+    /// The providers, whose terms decide whether their sources are asked for anything.
+    std::vector<domain::provider> providers;
     std::vector<domain::market_data_source> sources;
     std::vector<domain::market_data_vendor_instrument> instruments;
     std::vector<domain::market_data_mapping> mappings;
@@ -80,7 +83,8 @@ struct refused_demand {
 /**
  * @brief What one route demands: the items of its party and the vendor ids that name them.
  *
- * A route whose party holds no right to the provider is not entitled, and demands nothing.
+ * A route whose party holds no right to the provider, or whose provider's terms do not let its
+ * data be fetched, is not entitled, demands nothing, and says why.
  */
 struct party_demand {
     ores::utility::uuid::tenant_id tenant_id = ores::utility::uuid::tenant_id::system();
@@ -90,6 +94,9 @@ struct party_demand {
     /// The name of the source, which is the id of its adapter.
     std::string adapter_id;
     bool entitled = false;
+    /// Why the route is not entitled: @c not_entitled or @c terms_not_accepted. Empty when it
+    /// is.
+    std::string refusal;
     /// The vendor ids that name each item, by the oresmd URI of the item.
     std::map<std::string, std::vector<messaging::vendor_id>> items;
 };

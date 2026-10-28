@@ -88,18 +88,14 @@ struct pg_result_guard {
 };
 
 /**
- * @brief Builds connection string from credentials.
+ * @brief The connection string of a context's connection options.
+ *
+ * UTC is forced at connect time, so timestamp values come back as
+ * "YYYY-MM-DD HH:MM:SS+00", which from_iso8601_utc expects, without a SET
+ * round trip per call.
  */
-std::string build_connection_string(const sqlgen::postgres::Credentials& creds) {
-    std::ostringstream oss;
-    oss << "host=" << creds.host << " port=" << creds.port << " dbname=" << creds.dbname
-        << " user=" << creds.user << " password="
-        << creds.password
-        // Force UTC at connect time so timestamp values are returned as
-        // "YYYY-MM-DD HH:MM:SS+00", which from_iso8601_utc expects.
-        // Setting this in the connection string avoids a SET round-trip per call.
-        << " options=-c\\ timezone=UTC";
-    return oss.str();
+std::string build_connection_string(const pq::connection_options& options) {
+    return options.conninfo() + " options='-c timezone=UTC'";
 }
 
 /**
@@ -135,7 +131,7 @@ void set_pg_config(PGconn* conn,
 /**
  * @brief Sets the tenant context on a connection for RLS policies.
  *
- * This mirrors what tenant_aware_pool does when acquiring a connection.
+ * This mirrors what a libpq transaction sets for its context.
  * Must be called after connecting but before executing queries.
  */
 void set_tenant_context(PGconn* conn,
@@ -170,7 +166,7 @@ void set_tenant_context(PGconn* conn,
 
 /**
  * @brief Sets the full session context on a raw connection, mirroring
- * tenant_aware_pool::acquire(). Sets tenant, party, visible_party_ids,
+ * a libpq transaction. Sets tenant, party, visible_party_ids,
  * and actor from the context object.
  */
 void set_full_context(PGconn* conn, const context& ctx, logging::logger_t& lg) {
@@ -216,8 +212,8 @@ std::vector<std::string> execute_raw_string_query(context ctx,
 
     std::vector<std::string> result;
 
-    // Create direct libpq connection using credentials from context
-    const auto conn_str = build_connection_string(ctx.credentials());
+    // A connection of its own, with the context's connection options
+    const auto conn_str = build_connection_string(ctx.connection_options());
     pg_connection_guard conn_guard(PQconnectdb(conn_str.c_str()));
 
     if (PQstatus(conn_guard.conn) != CONNECTION_OK) {
@@ -259,8 +255,8 @@ std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
 
     std::map<std::string, std::vector<std::string>> result;
 
-    // Create direct libpq connection using credentials from context
-    const auto conn_str = build_connection_string(ctx.credentials());
+    // A connection of its own, with the context's connection options
+    const auto conn_str = build_connection_string(ctx.connection_options());
     pg_connection_guard conn_guard(PQconnectdb(conn_str.c_str()));
 
     if (PQstatus(conn_guard.conn) != CONNECTION_OK) {
@@ -308,8 +304,8 @@ std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_qu
 
     std::vector<std::vector<std::optional<std::string>>> result;
 
-    // Create direct libpq connection using credentials from context
-    const auto conn_str = build_connection_string(ctx.credentials());
+    // A connection of its own, with the context's connection options
+    const auto conn_str = build_connection_string(ctx.connection_options());
     pg_connection_guard conn_guard(PQconnectdb(conn_str.c_str()));
 
     if (PQstatus(conn_guard.conn) != CONNECTION_OK) {
@@ -360,8 +356,8 @@ void execute_raw_command(context ctx,
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
 
-    // Create direct libpq connection using credentials from context
-    const auto conn_str = build_connection_string(ctx.credentials());
+    // A connection of its own, with the context's connection options
+    const auto conn_str = build_connection_string(ctx.connection_options());
     pg_connection_guard conn_guard(PQconnectdb(conn_str.c_str()));
 
     if (PQstatus(conn_guard.conn) != CONNECTION_OK) {
@@ -419,8 +415,8 @@ std::vector<std::string> execute_parameterized_string_query(context ctx,
 
     std::vector<std::string> result;
 
-    // Create direct libpq connection using credentials from context
-    const auto conn_str = build_connection_string(ctx.credentials());
+    // A connection of its own, with the context's connection options
+    const auto conn_str = build_connection_string(ctx.connection_options());
     pg_connection_guard conn_guard(PQconnectdb(conn_str.c_str()));
 
     if (PQstatus(conn_guard.conn) != CONNECTION_OK) {
@@ -480,8 +476,8 @@ void execute_parameterized_command(context ctx,
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql << " with " << params.size()
                              << " parameters";
 
-    // Create direct libpq connection using credentials from context
-    const auto conn_str = build_connection_string(ctx.credentials());
+    // A connection of its own, with the context's connection options
+    const auto conn_str = build_connection_string(ctx.connection_options());
     pg_connection_guard conn_guard(PQconnectdb(conn_str.c_str()));
 
     if (PQstatus(conn_guard.conn) != CONNECTION_OK) {
@@ -562,7 +558,7 @@ execute_parameterized_multi_column_query(context ctx,
         return std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - from).count();
     };
 
-    const auto conn_str = build_connection_string(ctx.credentials());
+    const auto conn_str = build_connection_string(ctx.connection_options());
     pg_connection_guard conn_guard(PQconnectdb(conn_str.c_str()));
     const auto connected_ms = ms_since(began);
 

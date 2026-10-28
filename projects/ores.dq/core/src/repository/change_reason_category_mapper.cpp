@@ -43,7 +43,7 @@ change_reason_category_mapper::map(const change_reason_category_entity& v) {
     domain::change_reason_category r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

@@ -123,9 +123,9 @@ series_axis_value_repository::read_latest_for_series(
     if (series_ids.empty())
         return {};
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<series_axis_value_entity>> |
-                       where("tenant_id"_c == tid && "series_id"_c.in(series_ids));
-    return execute_read_query<series_axis_value_entity, domain::series_axis_value>(
+    const auto query = query_builder::read<std::vector<series_axis_value_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "series_id"_c.in(series_ids));
+    return query_builder::execute_read_query<series_axis_value_entity, domain::series_axis_value>(
         ctx,
         query,
         [](const auto& entities) { return series_axis_value_mapper::map(entities); },

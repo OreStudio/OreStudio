@@ -245,10 +245,8 @@ public:
      * when it has not approved and every part of an earlier answer order has,
      * so a part decider sees a request when its turn comes and not before.
      */
-    request_page queue(const decidable_scope& scope,
-                       const boost::uuids::uuid& excluding,
-                       int offset,
-                       int limit);
+    request_page
+    queue(const decidable_scope& scope, const boost::uuids::uuid& excluding, int offset, int limit);
 
     /**
      * @brief The requests the caller may decide, not raised by them, that were
@@ -264,10 +262,9 @@ public:
      * which for an answered request is the moment of the answer. A window of
      * zero answers nothing.
      */
-    std::vector<domain::approval_request>
-    recently_answered(const decidable_scope& scope,
-                      const boost::uuids::uuid& excluding,
-                      std::chrono::seconds window);
+    std::vector<domain::approval_request> recently_answered(const decidable_scope& scope,
+                                                            const boost::uuids::uuid& excluding,
+                                                            std::chrono::seconds window);
 
     /**
      * @brief The requests an account raised, newest first.

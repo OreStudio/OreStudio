@@ -124,8 +124,6 @@ ID of the permission granted to the role; must exist in ores_iam_permissions_tbl
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #+end_src
 
 ** Conventions

@@ -49,11 +49,11 @@ domain::instrument_schedule instrument_schedule_mapper::map(const instrument_sch
     domain::instrument_schedule r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
-    r.owner_role = v.owner_role.value();
-    r.owner_number = boost::lexical_cast<int>(v.owner_number.value());
-    r.schedule_role = v.schedule_role.value();
-    r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.owner_role = v.owner_role;
+    r.owner_number = boost::lexical_cast<int>(v.owner_number);
+    r.schedule_role = v.schedule_role;
+    r.sequence_number = boost::lexical_cast<int>(v.sequence_number);
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.schedule_kind = v.schedule_kind;
     r.start_date =

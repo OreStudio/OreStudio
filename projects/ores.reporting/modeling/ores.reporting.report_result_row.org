@@ -53,6 +53,7 @@ The party that owns the run.
 :type:         uuid
 :cpp_type:     boost::uuids::uuid
 :natural_key:  true
+:filterable:   true
 :END:
 
 The run that produced the figure.
@@ -97,6 +98,7 @@ The engine's own identifier for the record.
 :type:         text
 :cpp_type:     std::string
 :natural_key:  true
+:filterable:   true
 :END:
 
 The engine's name for the figure: =npv=, =npv_base=, =notional=, =delta=,
@@ -110,6 +112,17 @@ The engine's name for the figure: =npv=, =npv_base=, =notional=, =delta=,
 :END:
 
 The currency the figure is stated in, empty when the measure has none.
+
+** counterparty_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     true
+:END:
+
+The counterparty the engine stated beside the trade, when it stated one. It is a
+dimension of the row rather than a measure: the screen groups by it, and reading it
+here is what spares a request from joining the trading records.
 
 ** figure
 :PROPERTIES:
@@ -141,11 +154,37 @@ The file and the row the marshal read, for provenance.
 :rls_tenant_isolation:         true
 :END:
 
+** Bitemporal natural keys
+
+A run's rows are its own. The insert trigger closes the current row of the same
+key, and the key names the run, so posting one run never closes another run's
+rows. Without the key the trigger would close every current row of the tenant,
+and a report would erase the reports before it.
+
+| column             | nullable |
+|--------------------+----------|
+| party_id           | false    |
+| report_instance_id | false    |
+| as_of              | false    |
+| subject_type       | false    |
+| subject_id         | false    |
+| measure            | false    |
+| currency           | false    |
+
 * C++
 
 ** Flags
 :PROPERTIES:
 :subcomponent:  api
+:END:
+
+** Repository
+
+:PROPERTIES:
+:entity_singular_short: row
+:entity_plural_short:   rows
+:entity_singular_words: report result row
+:entity_plural_words:   report result rows
 :END:
 
 ** Table display

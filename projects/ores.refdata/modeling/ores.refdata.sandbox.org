@@ -379,8 +379,6 @@ $$ language plpgsql stable set search_path = public, pg_temp;
 #+begin_src cpp :name includes
 #include <optional>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #+end_src
 
 ** Conventions

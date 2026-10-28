@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr: 3685
+#+branch: feature/load-published-quotes-from-the-public-sources
+#+pr: 3985
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
 #+updated: 2026-10-24
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The system holds what the ECB, the Federal Reserve, the Treasury and other publi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Superseded before any code: see Result. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-10-23                               |
 
 * Acceptance
@@ -44,9 +44,40 @@ The system holds what the ECB, the Federal Reserve, the Treasury and other publi
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The first slice loads the ECB through Frankfurter, and nothing else. Each step
+ends in a check.
+
+1. Read the terms. Frankfurter (MIT) and the ECB disclaimer were read on
+   2026-10-28 and recorded on the sources page. Done.
+2. Model the five entities in =ores.marketdata/modeling= and generate them:
+   =publisher=, =publisher_series=, =quote_load=, =quote_fetch= and
+   =published_quote=. =published_quote= is a hypertable on =ts= with a one year
+   chunk, after the pattern of =tick=. Check: the schema creates, and pgTAP
+   tests pass.
+3. Seed the ECB publisher, with its terms URL, =terms_read_at= and credit,
+   and its series mapping for the pairs the ECB carries. Check: a test reads
+   the mapping.
+4. Add an HTTPS GET for the fetcher. The only outbound client today,
+   =ores.storage='s =http_client=, takes =http://= only. OpenSSL and
+   Boost.Beast are already linked, so this adds no dependency. The fetcher
+   takes the transport as an interface, so its tests run on stored payloads
+   with no network. Check: a test against a stored body.
+5. Write the Frankfurter fetcher: =/v2/providers/ecb/rates?from=&to== for one
+   provider, never the blended rate. Check: tests on stored payloads,
+   including a missing day and an empty range.
+6. Write the loader behind =marketdata.v1.ops.seed_published_quotes=, with the
+   permission =marketdata::published_quotes:seed=. It records the load and the
+   fetch, keeps the raw body in =ores.storage= with its SHA-256, skips a day
+   already loaded unless asked to refresh, and refuses a publisher with no
+   =terms_read_at=. Check: a service test seeds twice and counts once.
+7. Add the shell command =quotes seed --publisher ecb --from --to
+   [--refresh]=. Check: a live run against the hosted API.
+8. Write the reader: =latest(item, on_or_before)= and =window(item, to, days)=,
+   each with its provenance, and a cross rate marked derived. Check: unit
+   tests, and one that reads with no calibration present.
+
+Not in this slice: the other publishers, the daily job, the calibration task,
+and the acceptance screen of [[id:4DFF1284-F24A-4815-B723-B7A22B4815E8][Show the public sources' terms in the first run]].
 
 * Measurements
 
@@ -64,6 +95,9 @@ task and name that file in the Command column.
 
 * Notes
 
+- The acceptance of a publisher's terms by the system administrator moves to [[id:4DFF1284-F24A-4815-B723-B7A22B4815E8][Show the public sources' terms in the first run]] (2026-10-28). This task keeps =terms_read_at= on the publisher and the rule that a publisher with none is not fetched.
+- First slice, agreed on 2026-10-28: the ECB through Frankfurter only. The table, the provenance tables, the Frankfurter fetcher tested on stored payloads, =quotes seed= and the reader. The other publishers, the daily job and the calibration follow.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -79,12 +113,35 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3985][#3985]] | [doc] Make public sources adapters that publish durable fixings |
 | [[https://github.com/OreStudio/OreStudio/pull/3685][#3685]] | [agile] Propose the architecture of the published quotes |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The sprint 28 story still describes published_quote | sprint_28 story.org | Accept | Marked superseded, linked to the new title. |
+| 2 | The abandoned task should say why and point on | this task | Note | Its Result already does. |
+| 3 | An overlapping backfill after a restart | public_source_fixings.org | Accept | The store skips a stored vendor id and time; durable task acceptance. |
+| 4 | The instant of a date-only fixing | public_source_fixings.org | Accept | The provider's publication time in UTC, else end of day; catalogue task acceptance. |
+| 5 | Coverage counts repeated without a date | public_source_fixings.org | Accept | Kept in the dated coverage section only. |
+| 6 | Terms that change after values are stored | public_source_fixings.org | Accept | Stored values stay; a withdrawal lets the administrator delete them; terms task acceptance. |
+| 7 | created date of a rewritten page | public_source_fixings.org | Note | Intended: same ID, same page, history kept. |
+| 8 | Link the Frankfurter per-provider path | synthetic_calibration_sources.org | Accept | The documentation link names it. |
 
 * Result
+
+Abandoned on 2026-10-28, before any table was built. Two questions changed the
+design. Asked whether the existing tables carry published quotes, the catalogue,
+the vendor mapping and the DQ pipeline held four of the five proposed tables.
+Then the DQ path was itself set aside: DQ is for canned snapshots, and a public
+source publishes every day, so a restarted feed should take the newest value.
+
+The work continues as the story
+[[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]]:
+each publisher is a provider, one adapter publishes their rates as durable
+fixing ticks, and a feed starts from the latest one. The terms of Frankfurter
+and the ECB, read in step 1 of this task's plan, are on the sources page. The
+design and its history are in
+[[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]].
+

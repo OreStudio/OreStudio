@@ -25,8 +25,8 @@
 #ifndef ORES_REPORTING_CORE_REPOSITORY_REPORT_INSTANCE_ENTITY_HPP
 #define ORES_REPORTING_CORE_REPOSITORY_REPORT_INSTANCE_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct report_instance_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_reporting_report_instances_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
 
@@ -57,9 +57,9 @@ struct report_instance_entity {
     std::string trigger_id;
     std::string output_message;
     std::optional<std::string> output_storage_key;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> started_at;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> completed_at;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> priced_at;
+    std::optional<db_timestamp> started_at;
+    std::optional<db_timestamp> completed_at;
+    std::optional<db_timestamp> priced_at;
     std::optional<std::string> price_note;
     std::string modified_by;
     std::string performed_by;
@@ -67,6 +67,36 @@ struct report_instance_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = report_instance_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) | query_builder::bind("name", &e::name) |
+               query_builder::bind("description", &e::description) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("definition_id", &e::definition_id) |
+               query_builder::bind("kind", &e::kind) |
+               query_builder::bind("run_grant_id", &e::run_grant_id) |
+               query_builder::bind("fsm_state_id", &e::fsm_state_id) |
+               query_builder::bind("trigger_id", &e::trigger_id) |
+               query_builder::bind("output_message", &e::output_message) |
+               query_builder::bind("output_storage_key", &e::output_storage_key) |
+               query_builder::bind("started_at", &e::started_at) |
+               query_builder::bind("completed_at", &e::completed_at) |
+               query_builder::bind("priced_at", &e::priced_at) |
+               query_builder::bind("price_note", &e::price_note) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const report_instance_entity& v);

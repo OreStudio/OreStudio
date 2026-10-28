@@ -25,8 +25,8 @@
 #ifndef ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_INSTANCE_ENTITY_HPP
 #define ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_INSTANCE_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct workflow_instance_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_workflow_workflow_instances_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
     std::string type;
@@ -55,14 +55,42 @@ struct workflow_instance_entity {
     std::optional<std::string> correlation_id;
     std::string created_by;
     int step_count = 0;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> completed_at;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> last_event_at;
+    std::optional<db_timestamp> completed_at;
+    std::optional<db_timestamp> last_event_at;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = workflow_instance_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) | query_builder::bind("type", &e::type) |
+               query_builder::bind("target_kind", &e::target_kind) |
+               query_builder::bind("target_id", &e::target_id) |
+               query_builder::bind("state_id", &e::state_id) |
+               query_builder::bind("request_json", &e::request_json) |
+               query_builder::bind("result_json", &e::result_json) |
+               query_builder::bind("error", &e::error) |
+               query_builder::bind("correlation_id", &e::correlation_id) |
+               query_builder::bind("created_by", &e::created_by) |
+               query_builder::bind("step_count", &e::step_count) |
+               query_builder::bind("completed_at", &e::completed_at) |
+               query_builder::bind("last_event_at", &e::last_event_at) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const workflow_instance_entity& v);

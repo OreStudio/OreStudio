@@ -483,8 +483,9 @@ TEST_CASE("the runner rejects an id whose generator cannot be built",
 
 TEST_CASE("the runner survives a generator whose start throws", "[simulator_adapter][runner]") {
     generator_runner runner([] {
-        return std::vector{generator_offer{
-            .id = bbg_id("EUR/USD"), .make = [] { return std::make_shared<failing_generator>(); }}};
+        return std::vector{generator_offer{.id = bbg_id("EUR/USD"), .make = [] {
+                                               return std::make_shared<failing_generator>();
+                                           }}};
     });
 
     const auto out = runner.apply({bbg_id("EUR/USD")});
@@ -715,7 +716,10 @@ TEST_CASE("the offers are the startable system configs of the provider that have
             [](const auto&, const auto&) {
                 return std::optional<ores::synthetic::domain::market_data_generation_config>{};
             },
-        .containers = [containers](const auto&) { return containers(); }});
+        .containers =
+            [containers](const auto&) {
+                return containers();
+            }});
 
     svc::feed_kind kind;
     kind.kind = std::string(ores::synthetic::feed::fx_spot_feed_kind);
@@ -867,6 +871,7 @@ TEST_CASE("a curve that serves an adapter publishes a tick under each pillar's o
          resolved_pillar("3M", "6M", "FRA", 90, 180)},
         idle,
         1.0,
+        1.0,
         std::move(targets));
 
     feed.tick({.elapsed_seconds = 1.0, .observed_at = std::chrono::system_clock::now()});
@@ -908,6 +913,7 @@ TEST_CASE("a curve whose process takes no variable step advances one tick howeve
         ores::analytics::quant::domain::arrival_spec{.mode = "periodic", .ticks_per_hour = 3600},
         {resolved_pillar("SPOT", "3M", "DEPOSIT", 0, 90)},
         idle,
+        1.0,
         1.0,
         {{.start_tenor_code = "SPOT",
           .end_tenor_code = "3M",

@@ -43,7 +43,7 @@ ore_parameter_value_set_catalogue_mapper::map(const ore_parameter_value_set_cata
     domain::ore_parameter_value_set_catalogue r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.name = v.name;
     r.relation = v.relation;
     r.description = v.description;

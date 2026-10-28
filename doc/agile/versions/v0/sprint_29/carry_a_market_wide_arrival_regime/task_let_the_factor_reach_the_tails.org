@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: 22CD9DD2-0FFE-4BB1-B139-636A0A70A207
+:END:
+#+title: Task: Let the factor reach the tails
+#+description: Reweight an FX feed's Gaussian mixture toward its wide components as activity rises, renormalised so the mean holds, so a pinned panic produces gaps and kurtosis rather than a wider walk of the same shape.
+#+type: task
+#+level: s1
+#+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
+#+owner: marco
+#+branch: feature/let-the-factor-reach-the-tails
+#+pr: 3959
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A pinned panic produces gaps and heavy tails, not only a wider walk: as activity
+rises, an FX feed's mixture moves weight toward its wide components, and the shape
+of its returns changes with the market.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                             |
+
+* Acceptance
+
+- The weights move with =A= by a stated rule, renormalised to sum to one.
+- The reweighting is variance-preserving: the stdevs are rescaled after the
+  weights move, so the loading remains the only channel to sigma and the
+  calibration test of the previous task still holds.
+- The mean of the series is unchanged.
+- The kurtosis of returns rises with activity; a test states the window and the
+  sampling interval it measures.
+- A feed with the tail channel off behaves exactly as it does today.
+
+* Plan
+
+- Deviation from the acceptance: the weights do not move. A variance-preserving
+  move of weight toward the wide components can lower the kurtosis (0.8/0.2 on
+  stdevs one to four: 9.75 falls to about 4.4), so the rule spreads the stdevs
+  instead: =stdev ^ (1 + tilt)=, rescaled to the variance, with
+  =tilt = tail_loading * ln pace=. The kurtosis then rises with activity for any
+  mixture whose stdevs differ, and the weights and the mean hold.
+- The switch is one market-wide =tail_loading=, default zero, set with the
+  market's other numbers. A per-feed switch would need a column on the
+  generation configs; it waits until a feed needs a different loading.
+- The scheduler passes the tilt on the tick context, and the FX feed sets it on
+  the process before each step. Both mixture processes take it.
+
+1. The reweighting function on the mixture the FX feeds carry, with its
+   renormalisation and the variance-preserving rescale.
+2. The test: the same seed under calm and under a pinned active market, kurtosis
+   and mean compared.
+3. A switch per feed, so the channel can be turned off while it is being proved.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3959][#3959]] | [quant] Let the market's activity reach a mixture's tails |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A full replace lets an older client reset the loading | market-regime.ts | Not changed; test added | The shell echoes the current loading. The BFF's strict schema requires =tailLoading=, so a body without it is a 400. A test now covers this. |
+| 2 | An unbounded loading degenerates the mixture | operational_clock.cpp | Accept | The loading is refused above ten, with the number named. The BFF and the form carry the bound. |
+| 3 | Lines past 100 columns | handler, shell | Accept | clang-format was run on the branch's C++ files. |
+| 4 | The FX feed's comment is longer than the call needs | fx_spot_feed.cpp | Accept | The comment is removed. =set_tail_tilt= documents itself. |
+| 5 | No test for a negative tilt on the process or a zero-weight component | mixture_tilt_tests.cpp | Accept | Both tests are added. The sampled mean and variance were already checked under a tilt. |
+
+* Result
+
+An FX feed's mixture now leans toward its tails as the market gets busier. At
+each tick the tilt is =tail_loading * ln pace=. Each stdev becomes
+=stdev ^ (1 + tilt)=, rescaled so the variance holds. The weights and the means
+do not move, so the mean holds too. =tail_loading= is a market-wide number. It
+defaults to zero, and the system tenant sets it beside the market's other
+numbers (shell, BFF and the tab).
+
+This deviates from the acceptance, which asked the weights to move. A
+variance-preserving move of weight can lower the kurtosis: weights of 0.8/0.2 on
+stdevs in the ratio one to four fall from 9.75 to about 4.4. Spreading the
+stdevs raises the kurtosis for any mixture whose stdevs differ. The market
+volatility channel note records the reason.
+
+Evidence:
+- The analytic test over tilts from -1 to 2 checks that the weights and means
+  are fixed, the mean and variance hold to 1e-12, and the kurtosis rises
+  strictly.
+- The sampled test takes 200,000 one-tick log-returns from one seed, untilted
+  and at 2 ln 2 (a pinned active market at loading 2). The kurtosis rises by
+  more than 2 and matches the analytic value within 10%. The variance holds
+  within 3%, and the mean holds within 4 standard errors.
+- A process that is never tilted, or is tilted by zero, draws the same path
+  bit for bit.
+- The scheduler passes 2 ln 2 at a pinned active pace, and zero once the
+  loading is set back to zero. A negative loading is refused.
+- Live: =tail_loading=2= was set and the market pinned active while the feeds
+  ticked. The loading was then restored, and =-1= was refused naming the
+  number. The harness spec passes 9 of 9.
+
+A per-feed switch is not built. It needs a column on the generation configs,
+and it waits until a feed needs a loading of its own.
+

@@ -46,7 +46,7 @@ cms_spread_option_convention_mapper::map(const cms_spread_option_convention_enti
     domain::cms_spread_option_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = v.id.value();
+    r.id = v.id;
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.forward_start = v.forward_start;
     r.spot_days = v.spot_days;

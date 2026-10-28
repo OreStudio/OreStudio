@@ -645,8 +645,8 @@ delete come from the standard template.
 
 *** Repository impl includes
 
-No extra includes needed — =<sqlgen/postgres.hpp>=, =bitemporal_operations.hpp=,
-and =helpers.hpp= are already in the standard template output.
+No extra includes needed — the query builder and =helpers.hpp= are already
+in the standard template output.
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
 #+end_src
@@ -657,11 +657,11 @@ and =helpers.hpp= are already in the standard template output.
 std::vector<domain::country> country_repository::read_all(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all country versions.";
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<country_entity>> |
-                       where("tenant_id"_c == tid) |
-                       order_by("valid_from"_c.desc());
+    const auto query = query_builder::read<std::vector<country_entity>> |
+                       query_builder::where("tenant_id"_c == tid) |
+                       query_builder::order_by("valid_from"_c.desc());
 
-    return execute_read_query<country_entity, domain::country>(
+    return query_builder::execute_read_query<country_entity, domain::country>(
         ctx,
         query,
         [](const auto& entities) { return country_mapper::map(entities); },

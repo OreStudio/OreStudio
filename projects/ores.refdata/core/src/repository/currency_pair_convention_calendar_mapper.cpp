@@ -43,7 +43,7 @@ currency_pair_convention_calendar_mapper::map(const currency_pair_convention_cal
     domain::currency_pair_convention_calendar r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.pair_code = v.pair_code.value();
+    r.pair_code = v.pair_code;
     r.calendar_code = v.calendar_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

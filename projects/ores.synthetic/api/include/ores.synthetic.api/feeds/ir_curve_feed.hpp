@@ -99,6 +99,7 @@ public:
                   const ores::analytics::quant::domain::arrival_spec& arrival,
                   std::vector<ir_curve_resolved_entry> entries,
                   ores::analytics::quant::service::tick_scheduler& scheduler,
+                  double step_speed,
                   double sensitivity = 1.0,
                   std::vector<ir_pillar_quote_target> adapter_targets = {});
 
@@ -148,8 +149,10 @@ private:
     std::vector<std::string> series_uris_;
     std::vector<std::string> datum_uris_;
     std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process_;
-    /// The arrival rate in ticks per second, the unit a step is counted in.
-    double ticks_per_second_;
+    /// The simulated seconds one step of the process covers: the market speed the
+    /// process was built with over the arrival rate. A later speed changes how many
+    /// steps a tick covers, and not how long a step is.
+    double step_seconds_;
     /// The row's arrival law, which the scheduler draws this series' gaps from.
     ores::analytics::quant::domain::arrival_spec arrival_;
     ores::analytics::quant::service::tick_scheduler& scheduler_;

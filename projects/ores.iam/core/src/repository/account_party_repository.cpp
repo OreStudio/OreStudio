@@ -23,8 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/repository/account_party_repository.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
@@ -39,16 +38,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
-#include <sqlgen/aggregations.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/select_from.hpp>
-#include <sqlgen/to.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -56,13 +45,13 @@
 
 namespace ores::iam::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string account_party_repository::sql() {
-    return generate_create_table_sql<account_party_entity>(lg());
+    return query_builder::insert_statement_sql<account_party_entity>(lg());
 }
 
 account_party_repository::account_party_repository(context ctx)
@@ -121,7 +110,7 @@ void account_party_repository::write(const domain::account_party& account_party,
     BOOST_LOG_SEV(lg(), debug) << "Writing account party to database: " << account_party.account_id
                                << "/" << account_party.party_id;
     const auto t = apply_claim(account_party, claim);
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx_, account_party_mapper::map(t), lg(), "writing account party to database");
 }
 
@@ -134,18 +123,18 @@ void account_party_repository::write(
     batch.reserve(account_parties.size());
     for (std::size_t i = 0; i < account_parties.size(); ++i)
         batch.push_back(apply_claim(account_parties[i], claims[i]));
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx_, account_party_mapper::map(batch), lg(), "writing account parties to database");
 }
 
 std::vector<domain::account_party> account_party_repository::read_latest() {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<account_party_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("account_id"_c, "party_id"_c);
+    const auto query = query_builder::read<std::vector<account_party_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("account_id"_c, "party_id"_c);
 
-    return execute_read_query<account_party_entity, domain::account_party>(
+    return query_builder::execute_read_query<account_party_entity, domain::account_party>(
         ctx_,
         query,
         [](const auto& entities) { return account_party_mapper::map(entities); },
@@ -159,12 +148,12 @@ std::vector<domain::account_party> account_party_repository::read_latest(std::ui
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<account_party_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("account_id"_c, "party_id"_c) | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<account_party_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("account_id"_c, "party_id"_c) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_read_query<account_party_entity, domain::account_party>(
+    return query_builder::execute_read_query<account_party_entity, domain::account_party>(
         ctx_,
         query,
         [](const auto& entities) { return account_party_mapper::map(entities); },
@@ -181,11 +170,12 @@ account_party_repository::read_latest(const boost::uuids::uuid& account_id,
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<account_party_entity>> |
-                       where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
+    const auto query =
+        query_builder::read<std::vector<account_party_entity>> |
+        query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
                              "party_id"_c == party_id_str && "valid_to"_c == max.value());
 
-    return execute_read_query<account_party_entity, domain::account_party>(
+    return query_builder::execute_read_query<account_party_entity, domain::account_party>(
         ctx_,
         query,
         [](const auto& entities) { return account_party_mapper::map(entities); },
@@ -197,19 +187,12 @@ std::uint32_t account_party_repository::get_total_account_party_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account parties count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::select_from<account_party_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<account_party_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<account_party_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting account parties");
     BOOST_LOG_SEV(lg(), debug) << "Total active account parties count: " << count;
     return count;
 }
@@ -221,12 +204,13 @@ account_party_repository::read_latest_by_account(const boost::uuids::uuid& accou
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<account_party_entity>> |
-                       where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
+    const auto query =
+        query_builder::read<std::vector<account_party_entity>> |
+        query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
                              "valid_to"_c == max.value()) |
-                       order_by("party_id"_c);
+        query_builder::order_by("party_id"_c);
 
-    auto rows = execute_read_query<account_party_entity, domain::account_party>(
+    auto rows = query_builder::execute_read_query<account_party_entity, domain::account_party>(
         ctx_,
         query,
         [](const auto& entities) { return account_party_mapper::map(entities); },
@@ -243,12 +227,12 @@ account_party_repository::read_latest_by_party(const boost::uuids::uuid& party_i
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<account_party_entity>> |
-        where("tenant_id"_c == tid && "party_id"_c == party_id_str && "valid_to"_c == max.value()) |
-        order_by("account_id"_c);
+    const auto query = query_builder::read<std::vector<account_party_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("account_id"_c);
 
-    auto rows = execute_read_query<account_party_entity, domain::account_party>(
+    auto rows = query_builder::execute_read_query<account_party_entity, domain::account_party>(
         ctx_,
         query,
         [](const auto& entities) { return account_party_mapper::map(entities); },
@@ -266,12 +250,14 @@ std::vector<domain::account_party> account_party_repository::read_latest_by_acco
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<account_party_entity>> |
-                       where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
+    const auto query =
+        query_builder::read<std::vector<account_party_entity>> |
+        query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
                              "valid_to"_c == max.value()) |
-                       order_by("party_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        query_builder::order_by("party_id"_c) | query_builder::offset(offset) |
+        query_builder::limit(limit);
 
-    auto rows = execute_read_query<account_party_entity, domain::account_party>(
+    auto rows = query_builder::execute_read_query<account_party_entity, domain::account_party>(
         ctx_,
         query,
         [](const auto& entities) { return account_party_mapper::map(entities); },
@@ -288,20 +274,14 @@ std::uint32_t account_party_repository::get_total_account_party_count_by_account
                                << account_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::select_from<account_party_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
-                             "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+    const auto query =
+        query_builder::read<std::vector<account_party_entity>> |
+        query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<account_party_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting account parties");
     BOOST_LOG_SEV(lg(), debug) << "Total active account parties count by account: " << count;
     return count;
 }
@@ -313,20 +293,13 @@ std::uint32_t account_party_repository::get_total_account_party_count_by_party(
                                << party_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<account_party_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "party_id"_c == party_id_str && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<account_party_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
+                                            "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<account_party_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting account parties");
     BOOST_LOG_SEV(lg(), debug) << "Total active account parties count by party: " << count;
     return count;
 }
@@ -338,11 +311,12 @@ account_party_repository::read_all_by_account(const boost::uuids::uuid& account_
 
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<account_party_entity>> |
-                       where("tenant_id"_c == tid && "account_id"_c == account_id_str) |
-                       order_by("party_id"_c, "valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<account_party_entity>> |
+        query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str) |
+        query_builder::order_by("party_id"_c, "valid_from"_c.desc());
 
-    return execute_read_query<account_party_entity, account_party_history_row>(
+    return query_builder::execute_read_query<account_party_entity, account_party_history_row>(
         ctx_,
         query,
         [](const auto& entities) {
@@ -403,12 +377,13 @@ account_party_repository::remove(const boost::uuids::uuid& account_id,
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<account_party_entity> |
-                       where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
+    const auto query =
+        query_builder::delete_from<account_party_entity> |
+        query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
                              "party_id"_c == party_id_str && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
-    execute_delete_query(ctx_, query, lg(), "removing account party from database");
+    query_builder::execute_delete_query(ctx_, query, lg(), "removing account party from database");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -434,10 +409,12 @@ void account_party_repository::remove_by_account(const boost::uuids::uuid& accou
 
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<account_party_entity> |
-                       where("tenant_id"_c == tid && "account_id"_c == account_id_str);
+    const auto query =
+        query_builder::delete_from<account_party_entity> |
+        query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str);
 
-    execute_delete_query(ctx_, query, lg(), "removing all account parties from database");
+    query_builder::execute_delete_query(
+        ctx_, query, lg(), "removing all account parties from database");
 }
 
 

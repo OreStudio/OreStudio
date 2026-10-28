@@ -98,6 +98,9 @@
 \ir ./reporting_ore_parameter_value_set_catalogues_notify_trigger_drop.sql
 \ir ./reporting_ore_parameter_value_set_catalogues_drop.sql
 
+\ir ./reporting_report_result_rows_notify_trigger_drop.sql
+\ir ./reporting_report_result_rows_drop.sql
+
 \ir ./reporting_engine_settings_group_settings_notify_trigger_drop.sql
 \ir ./reporting_engine_settings_group_settings_drop.sql
 \ir ./reporting_engine_settings_groups_notify_trigger_drop.sql

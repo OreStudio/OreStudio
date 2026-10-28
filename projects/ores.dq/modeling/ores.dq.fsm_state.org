@@ -126,8 +126,6 @@ Whether this is a terminal state.
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #+end_src
 
 ** Conventions
@@ -178,7 +176,7 @@ fsm_state_repository::read_latest_by_machine_name(context ctx,
     // The raw read takes the timestamp as text: MAX_TIMESTAMP is the same
     // instant make_timestamp parses for the generated reads below, so the two
     // agree on which row is current.
-    const auto machine_ids = execute_parameterized_string_query(
+    const auto machine_ids = query_builder::execute_parameterized_string_query(
         ctx,
         "select id::text from ores_dq_fsm_machines_tbl "
         "where name = $1 and valid_to = $2",
@@ -191,10 +189,10 @@ fsm_state_repository::read_latest_by_machine_name(context ctx,
         return {};
     }
 
-    const auto query = sqlgen::read<std::vector<fsm_state_entity>> |
-                       where("machine_id"_c == machine_ids.front() &&
+    const auto query = query_builder::read<std::vector<fsm_state_entity>> |
+                       query_builder::where("machine_id"_c == machine_ids.front() &&
                              "valid_to"_c == max.value()) |
-                       order_by("name"_c);
+                       query_builder::order_by("name"_c);
 
     return execute_read_query<fsm_state_entity, domain::fsm_state>(
         ctx,

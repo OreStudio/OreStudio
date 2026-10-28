@@ -49,7 +49,7 @@ report_trigger_event_mapper::map(const report_trigger_event_entity& v) {
 
     domain::report_trigger_event r;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.report_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.report_definition_id);
     r.trigger_type = v.trigger_type;
     r.scheduler_job_id =

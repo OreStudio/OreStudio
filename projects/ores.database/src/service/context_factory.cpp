@@ -20,6 +20,7 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/domain/database_options.hpp"
 #include "ores.database/domain/exceptions.hpp"
+#include "ores.database/pq/store_error.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/schema_fingerprint.hpp"
 #include "ores.platform/environment/environment.hpp"
@@ -126,25 +127,14 @@ context context_factory::make_context(const configuration& cfg) {
         throw std::runtime_error("context_factory: service_account must not be empty");
     }
 
-    const auto credentials = to_credentials(cfg.database_options);
+    auto options = to_connection_options(cfg.database_options);
+    options.application_name = cfg.service_account;
 
-    // The underlying pool probes fail fast; the retry policy (num_attempts,
-    // wait, backoff shape) is applied by tenant_aware_pool::acquire().
-    sqlgen::ConnectionPoolConfig pool_config{
-        .size = cfg.pool_size, .num_attempts = 1, .wait_time_in_seconds = 0};
-
-    auto pool_result = make_connection_pool<context::connection_type>(pool_config, credentials);
-
-    if (!pool_result) {
-        throw db_connection_exception("Failed to create connection pool: " +
-                                      std::string(pool_result.error().what()));
-    }
-
-    pool_acquire_policy policy{.num_attempts = cfg.num_attempts,
-                               .wait_time_in_seconds = cfg.wait_time_in_seconds,
-                               .strategy = cfg.database_options.pool_backoff == "linear" ?
-                                               pool_backoff_strategy::linear :
-                                               pool_backoff_strategy::exponential};
+    const pq::open_policy policy{.attempts = cfg.num_attempts,
+                                 .wait = std::chrono::seconds(cfg.wait_time_in_seconds),
+                                 .shape = cfg.database_options.pool_backoff == "linear" ?
+                                              pq::backoff::linear :
+                                              pq::backoff::exponential};
 
     // Convert string tenant to tenant_id, defaulting to system tenant
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
@@ -157,12 +147,20 @@ context context_factory::make_context(const configuration& cfg) {
         tenant_id = *tenant_result;
     }
 
-    context r(std::move(*pool_result),
-              credentials,
+    context r(std::move(options),
               std::move(tenant_id),
               /*actor=*/"",
               cfg.service_account,
               policy);
+
+    r.set_pq_pool_size(cfg.pool_size);
+    // Open the pool now, under the open policy, so a service that cannot
+    // reach its database fails at start rather than at its first request.
+    try {
+        (void)r.pq_pool();
+    } catch (const pq::store_error& e) {
+        throw db_connection_exception("Failed to create connection pool: " + std::string(e.what()));
+    }
 
     verify_schema_fingerprint(r, cfg.database_options.database);
 

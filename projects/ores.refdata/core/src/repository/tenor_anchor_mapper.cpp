@@ -43,7 +43,7 @@ domain::tenor_anchor tenor_anchor_mapper::map(const tenor_anchor_entity& v) {
     domain::tenor_anchor r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.description = v.description.value_or("");
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;

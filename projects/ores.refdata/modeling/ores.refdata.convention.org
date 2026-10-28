@@ -232,8 +232,6 @@ lives in a part table, so no group here is per-kind.
 #+begin_src cpp :name includes
 #include <string>
 #include <optional>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #+end_src
 
 ** Conventions

@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: 9737ADE6-1D54-414B-B834-2E3E474068FB
+:END:
+#+title: Task: Let libpq repositories join an open sqlgen transaction
+#+description: A libpq repository called inside a sqlgen unit of work runs on that transaction's connection, so components can move one at a time.
+#+type: task
+#+level: s1
+#+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
+#+owner: marco
+#+branch: feature/let-libpq-repositories-join-sqlgen-transactions
+#+pr: 3961
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A repository on the libpq layer, called with a context bound to a sqlgen
+unit of work, runs inside that unit of work's transaction. Components then
+move to libpq one at a time, whatever transactions they share.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- A libpq write inside a sqlgen unit of work rolls back and commits with it.
+- A libpq read inside a sqlgen unit of work sees that unit of work's
+  uncommitted writes.
+- A libpq call outside any unit of work still runs in its own transaction.
+
+* Plan
+
+1. A third patch on the sqlgen overlay port gives =Session= a =conn()= and
+   =Connection= a =native_handle()=, so the =PGconn= of an open sqlgen
+   transaction can be reached.
+2. =pq::connection::borrow= wraps that =PGconn= and never closes it.
+3. =pq::transaction::join= runs on the borrowed connection. It sends no
+   =begin= and no =set_config=, because the connection is already in the
+   transaction with the tenant and party sqlgen set on it. Commit and
+   rollback are left to sqlgen. Every statement runs unnamed, because a
+   borrowed connection keeps no record of what is prepared on it.
+4. =database::transact= joins when the context holds an open sqlgen
+   transaction, where it used to refuse.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Bridge cases in the unit of work suite | 4 new, all pass: rollback, commit, read of an uncommitted sqlgen write, named statement run twice | =ores.database.tests '[unit_of_work]'= | this PR |
+| Tenant of a joined call | The one sqlgen set on the connection | =ores.database.tests '[pq]'= | this PR |
+| Unity build of the whole tree | Green | =cmake --build build/output/linux-clang-release-ninja -- -k 0= | this PR |
+
+* Notes
+
+** Why
+
+Moving ores.inbox showed that three hand-written services share one sqlgen
+unit of work across components: the book and counterparty proposals of
+ores.refdata lock an inbox approval request and apply their change together,
+and the curve publish gate of ores.marketdata raises its approval with the
+publish. A moved component's repository refused that transaction, so inbox,
+refdata and marketdata would have had to move in one PR. The bridge lets each
+move alone, and it goes with sqlgen.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3961][#3961]] | [database] Let libpq repositories join an open sqlgen transaction |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Joining after the unit of work ended | =context_transact.hpp= | Accept | The session keeps its connection after commit, outside any transaction, so the call would run in autocommit. It is now refused; a test covers it. |
+| 2 | A re-scoped tenant is ignored silently | =pq_layer_tests.cpp= | Accept | The test name now states the limit. sqlgen repositories behave the same. |
+| 3 | =borrow(nullptr)= | =connection.cpp= | Accept | Assert added. |
+| 4 | =conn()->conn()= is hard to read | =context_transact.hpp= | Accept | Named =detail::open_connection_of=, which holds the check. |
+| 5 | A failed statement aborts the sqlgen transaction | =transaction.hpp= | Accept | Said in the =join= doc comment. |
+| 6 | Keep the port version in step with the patch | =portfile.cmake= | Accept | No change now. |
+
+* Result
+
+=database::transact= joins an open sqlgen unit of work instead of refusing
+it. A third patch on the sqlgen overlay port exposes the connection, a
+borrowed =pq::connection= wraps it, and =pq::transaction::join= runs on it
+with no =begin=, no =set_config= and unnamed statements, leaving commit and
+rollback to sqlgen. Components can now move to libpq in any order.

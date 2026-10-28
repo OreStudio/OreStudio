@@ -46,7 +46,7 @@ domain::party party_mapper::map(const party_entity& v) {
     domain::party r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
 
     r.short_code = v.short_code;
 

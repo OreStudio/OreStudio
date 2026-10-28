@@ -50,6 +50,10 @@ struct canonical_row {
      */
     std::string currency;
     /**
+     * @brief The counterparty the engine stated beside the trade, empty when it stated none.
+     */
+    std::string counterparty_id;
+    /**
      * @brief The figure as the engine stated it.
      */
     double figure = 0.0;
@@ -90,7 +94,7 @@ struct marshal_outcome {
  * @param source_file  the file name, written to every row's source.
  */
 [[nodiscard]] ORES_ORE_CORE_EXPORT marshal_outcome marshal_npv_csv(std::string_view csv,
-                                                                 std::string_view source_file);
+                                                                   std::string_view source_file);
 
 /**
  * @brief The canonical rows as the newline-delimited CSV the loader reads.

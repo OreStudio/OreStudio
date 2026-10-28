@@ -371,7 +371,6 @@ resolves the name for the party it publishes to and writes the portfolio scope r
 #include <optional>
 #include <ostream>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #include <boost/uuid/uuid.hpp>
 #+end_src
 
@@ -491,6 +490,16 @@ struct book_scope_entity {
     std::string book_id;
     std::optional<db_timestamp> valid_from = "9999-12-31 23:59:59";
     std::optional<db_timestamp> valid_to = "9999-12-31 23:59:59";
+    static constexpr auto columns() {
+        using e = book_scope_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("risk_report_config_id", &e::risk_report_config_id) |
+               query_builder::bind("book_id", &e::book_id) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 struct binding_entity {
@@ -503,6 +512,17 @@ struct binding_entity {
     std::string configuration_id;
     std::optional<db_timestamp> valid_from = "9999-12-31 23:59:59";
     std::optional<db_timestamp> valid_to = "9999-12-31 23:59:59";
+    static constexpr auto columns() {
+        using e = binding_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("report_definition_id", &e::report_definition_id) |
+               query_builder::bind("configuration_type_code", &e::configuration_type_code) |
+               query_builder::bind("configuration_id", &e::configuration_id) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 struct portfolio_scope_entity {
@@ -514,6 +534,16 @@ struct portfolio_scope_entity {
     std::string portfolio_id;
     std::optional<db_timestamp> valid_from = "9999-12-31 23:59:59";
     std::optional<db_timestamp> valid_to = "9999-12-31 23:59:59";
+    static constexpr auto columns() {
+        using e = portfolio_scope_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("risk_report_config_id", &e::risk_report_config_id) |
+               query_builder::bind("portfolio_id", &e::portfolio_id) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 }
@@ -534,12 +564,12 @@ risk_report_config_repository::find_by_definition_id(context ctx,
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto bound =
-        sqlgen::read<std::vector<binding_entity>> |
-        where("tenant_id"_c == tid && "report_definition_id"_c == definition_id &&
+        query_builder::read<std::vector<binding_entity>> |
+        query_builder::where("tenant_id"_c == tid && "report_definition_id"_c == definition_id &&
               "configuration_type_code"_c == std::string("risk_report_config") &&
               "valid_to"_c == max.value());
 
-    const auto bindings = execute_read_query<binding_entity, binding_entity>(
+    const auto bindings = query_builder::execute_read_query<binding_entity, binding_entity>(
         ctx,
         bound,
         [](const auto& entities) { return entities; },
@@ -548,12 +578,12 @@ risk_report_config_repository::find_by_definition_id(context ctx,
     if (bindings.empty())
         return std::nullopt;
 
-    const auto query = sqlgen::read<std::vector<risk_report_config_entity>> |
-                       where("tenant_id"_c == tid &&
+    const auto query = query_builder::read<std::vector<risk_report_config_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
                              "configuration_id"_c == bindings.front().configuration_id &&
                              "valid_to"_c == max.value());
 
-    auto results = execute_read_query<risk_report_config_entity, domain::risk_report_config>(
+    auto results = query_builder::execute_read_query<risk_report_config_entity, domain::risk_report_config>(
         ctx,
         query,
         [](const auto& entities) { return risk_report_config_mapper::map(entities); },
@@ -585,14 +615,14 @@ risk_report_config_repository::resolve_book_ids(context ctx,
         "SELECT id::text FROM "
         "ores_reporting_resolve_book_ids_for_config_fn($1::uuid, $2::uuid, $3::uuid) AS t(id)";
 
-    return execute_parameterized_string_query(
+    return query_builder::execute_parameterized_string_query(
         ctx, sql, {tid, config_id, definition_id}, lg(), "Resolving book IDs for risk_report_config");
 }
 
 std::optional<std::string>
 risk_report_config_repository::regulatory_book_type_of(context ctx,
                                                        const std::string& definition_id) {
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx,
         "SELECT ores_reporting_definition_regulatory_type_fn($1::uuid, $2::uuid)",
         {ctx.tenant_id().to_string(), definition_id},
@@ -617,11 +647,11 @@ risk_report_config_repository::get_book_scope(context ctx, const std::string& co
 
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<book_scope_entity>> |
-                       where("tenant_id"_c == tid && "risk_report_config_id"_c == config_id &&
+    const auto query = query_builder::read<std::vector<book_scope_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "risk_report_config_id"_c == config_id &&
                              "valid_to"_c == max.value());
 
-    auto rows = execute_read_query<book_scope_entity, book_scope_entity>(
+    auto rows = query_builder::execute_read_query<book_scope_entity, book_scope_entity>(
         ctx, query, [](const auto& entities) { return entities; }, lg(), "Reading book scope");
 
     std::vector<std::string> book_ids;
@@ -647,11 +677,11 @@ risk_report_config_repository::get_portfolio_scope(context ctx, const std::strin
 
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<portfolio_scope_entity>> |
-                       where("tenant_id"_c == tid && "risk_report_config_id"_c == config_id &&
+    const auto query = query_builder::read<std::vector<portfolio_scope_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "risk_report_config_id"_c == config_id &&
                              "valid_to"_c == max.value());
 
-    auto rows = execute_read_query<portfolio_scope_entity, portfolio_scope_entity>(
+    auto rows = query_builder::execute_read_query<portfolio_scope_entity, portfolio_scope_entity>(
         ctx, query, [](const auto& entities) { return entities; }, lg(), "Reading portfolio scope");
 
     std::vector<std::string> portfolio_ids;

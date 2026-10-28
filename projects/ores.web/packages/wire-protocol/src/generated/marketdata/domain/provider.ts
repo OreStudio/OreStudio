@@ -38,6 +38,13 @@ export interface Provider {
     kind: string;
     description: string;
     display_order: number;
+    terms_url: string;
+    terms_credit: string;
+    allows_storage: boolean;
+    credential_ref: string;
+    terms_accepted_digest: string;
+    terms_accepted_by: string;
+    terms_accepted_at: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

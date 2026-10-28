@@ -20,7 +20,7 @@
 #ifndef ORES_DATABASE_REPOSITORY_DB_TYPES_HPP
 #define ORES_DATABASE_REPOSITORY_DB_TYPES_HPP
 
-#include "sqlgen/Timestamp.hpp"
+#include <rfl/Timestamp.hpp>
 
 namespace ores::database::repository {
 
@@ -29,10 +29,10 @@ namespace ores::database::repository {
  *
  * All timestamptz columns map to this type. The format matches PostgreSQL's
  * output when the session timezone is UTC: "YYYY-MM-DD HH:MM:SS".
- * DB sessions are forced to UTC in tenant_aware_pool::acquire() so this
+ * DB sessions are forced to UTC by every transaction, so this
  * format is always correct regardless of the host machine timezone.
  */
-using db_timestamp = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">;
+using db_timestamp = rfl::Timestamp<"%Y-%m-%d %H:%M:%S">;
 
 }
 

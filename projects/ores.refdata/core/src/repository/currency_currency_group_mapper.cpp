@@ -43,7 +43,7 @@ currency_currency_group_mapper::map(const currency_currency_group_entity& v) {
     domain::currency_currency_group r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.currency_iso_code = v.currency_iso_code.value();
+    r.currency_iso_code = v.currency_iso_code;
     r.currency_group_code = v.currency_group_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

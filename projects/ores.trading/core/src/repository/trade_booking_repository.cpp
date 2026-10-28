@@ -23,12 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
 #include "ores.database/repository/range_bound.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/trade_booking.hpp"
 #include "ores.trading.api/domain/trade_booking_json_io.hpp" // IWYU pragma: keep.
@@ -43,16 +40,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -61,13 +48,13 @@
 
 namespace ores::trading::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string trade_booking_repository::sql() {
-    return generate_create_table_sql<trade_booking_entity>(lg());
+    return query_builder::insert_statement_sql<trade_booking_entity>(lg());
 }
 
 bool trade_booking_repository::is_sortable(std::string_view field) {
@@ -82,65 +69,69 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
-trade_booking_list_order(const ores::utility::domain::order& order,
-                         std::initializer_list<std::string> default_columns,
-                         bool default_descending) {
+query_builder::order trade_booking_list_order(const ores::utility::domain::order& order,
+                                              std::initializer_list<std::string> default_columns,
+                                              bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"trade_id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"trade_id"});
     if (!trade_booking_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of trade bookings cannot be ordered by " + order.field +
                                     ".");
-    return make_order({order.field}, order.descending, {"trade_id"});
+    return query_builder::make_order({order.field}, order.descending, {"trade_id"});
 }
 
 /*
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
+std::optional<query_builder::condition>
 trade_booking_filter_condition(const std::optional<messaging::trade_bookings_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->trade_date)
-        r.push_back(*filter->trade_date ? equals("trade_date", filter_value(**filter->trade_date)) :
-                                          is_null("trade_date"));
+        r.push_back(*filter->trade_date ?
+                        query_builder::equals("trade_date",
+                                              query_builder::filter_value(**filter->trade_date)) :
+                        query_builder::is_null("trade_date"));
     if (filter->execution_timestamp)
-        r.push_back(*filter->execution_timestamp ?
-                        equals("execution_timestamp", filter_value(**filter->execution_timestamp)) :
-                        is_null("execution_timestamp"));
+        r.push_back(
+            *filter->execution_timestamp ?
+                query_builder::equals("execution_timestamp",
+                                      query_builder::filter_value(**filter->execution_timestamp)) :
+                query_builder::is_null("execution_timestamp"));
     if (filter->trade_id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->trade_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("trade_id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("trade_id", std::move(values)));
     }
     if (filter->trade_date_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->trade_date_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("trade_date", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("trade_date", std::move(values)));
     }
     if (filter->execution_timestamp_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->execution_timestamp_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("execution_timestamp", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("execution_timestamp", std::move(values)));
     }
     if (filter->trade_date_from) {
         const auto bound = range_bound(*filter->trade_date_from, range_end::from, false);
         if (!bound)
             throw std::invalid_argument("The bound " + *filter->trade_date_from +
                                         " of trade_date_from is not a valid date or time.");
-        r.push_back(at_least("trade_date", filter_value(*bound)));
+        r.push_back(query_builder::at_least("trade_date", query_builder::filter_value(*bound)));
     }
     if (filter->trade_date_to) {
         const auto bound = range_bound(*filter->trade_date_to, range_end::to, false);
         if (!bound)
             throw std::invalid_argument("The bound " + *filter->trade_date_to +
                                         " of trade_date_to is not a valid date or time.");
-        r.push_back(at_most("trade_date", filter_value(*bound)));
+        r.push_back(query_builder::at_most("trade_date", query_builder::filter_value(*bound)));
     }
     if (filter->execution_timestamp_from) {
         const auto bound = range_bound(*filter->execution_timestamp_from, range_end::from, true);
@@ -148,16 +139,18 @@ trade_booking_filter_condition(const std::optional<messaging::trade_bookings_fil
             throw std::invalid_argument(
                 "The bound " + *filter->execution_timestamp_from +
                 " of execution_timestamp_from is not a valid date or time.");
-        r.push_back(at_least("execution_timestamp", filter_value(*bound)));
+        r.push_back(
+            query_builder::at_least("execution_timestamp", query_builder::filter_value(*bound)));
     }
     if (filter->execution_timestamp_to) {
         const auto bound = range_bound(*filter->execution_timestamp_to, range_end::to, true);
         if (!bound)
             throw std::invalid_argument("The bound " + *filter->execution_timestamp_to +
                                         " of execution_timestamp_to is not a valid date or time.");
-        r.push_back(at_most("execution_timestamp", filter_value(*bound)));
+        r.push_back(
+            query_builder::at_most("execution_timestamp", query_builder::filter_value(*bound)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -214,7 +207,7 @@ void trade_booking_repository::write(context ctx,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade booking. " << "trade_id: " << v.trade_id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, trade_booking_mapper::map(t), lg(), "Writing trade booking to database.");
 }
 
@@ -227,18 +220,18 @@ void trade_booking_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, trade_booking_mapper::map(batch), lg(), "Writing trade bookings to database.");
 }
 
 std::vector<domain::trade_booking> trade_booking_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_booking_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("trade_id"_c);
+    const auto query = query_builder::read<std::vector<trade_booking_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("trade_id"_c);
 
-    return execute_read_query<trade_booking_entity, domain::trade_booking>(
+    return query_builder::execute_read_query<trade_booking_entity, domain::trade_booking>(
         ctx,
         query,
         [](const auto& entities) { return trade_booking_mapper::map(entities); },
@@ -251,11 +244,11 @@ trade_booking_repository::read_latest(context ctx, const std::string& trade_id) 
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade booking. " << "trade_id: " << trade_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<trade_booking_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<trade_booking_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
+                                            "valid_to"_c == max.value());
 
-    return execute_read_query<trade_booking_entity, domain::trade_booking>(
+    return query_builder::execute_read_query<trade_booking_entity, domain::trade_booking>(
         ctx,
         query,
         [](const auto& entities) { return trade_booking_mapper::map(entities); },
@@ -269,11 +262,11 @@ std::vector<domain::trade_booking> trade_booking_repository::read_all(context ct
     BOOST_LOG_SEV(lg(), debug) << "Reading all trade booking versions. "
                                << "trade_id: " << trade_id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_booking_entity>> |
-                       where("tenant_id"_c == tid && "trade_id"_c == trade_id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query = query_builder::read<std::vector<trade_booking_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<trade_booking_entity, domain::trade_booking>(
+    return query_builder::execute_read_query<trade_booking_entity, domain::trade_booking>(
         ctx,
         query,
         [](const auto& entities) { return trade_booking_mapper::map(entities); },
@@ -286,17 +279,18 @@ std::optional<domain::trade_booking> trade_booking_repository::read_at_version(
     BOOST_LOG_SEV(lg(), debug) << "Reading trade booking at version. " << "trade_id: " << trade_id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<trade_booking_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "version"_c == version) |
-        sqlgen::limit(1);
+    const auto query = query_builder::read<std::vector<trade_booking_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
+                                            "version"_c == version) |
+                       query_builder::limit(1);
 
-    const auto entities = execute_read_query<trade_booking_entity, domain::trade_booking>(
-        ctx,
-        query,
-        [](const auto& entities) { return trade_booking_mapper::map(entities); },
-        lg(),
-        "Reading trade booking at version.");
+    const auto entities =
+        query_builder::execute_read_query<trade_booking_entity, domain::trade_booking>(
+            ctx,
+            query,
+            [](const auto& entities) { return trade_booking_mapper::map(entities); },
+            lg(),
+            "Reading trade booking at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -320,11 +314,11 @@ trade_booking_repository::remove_status trade_booking_repository::remove(
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<trade_booking_entity> |
-                       where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+    const auto query = query_builder::delete_from<trade_booking_entity> |
+                       query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing trade booking from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing trade booking from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -347,14 +341,16 @@ trade_booking_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade bookings with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_booking_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<trade_booking_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
-    return execute_ordered_read_query<trade_booking_entity, domain::trade_booking>(
+    return query_builder::execute_ordered_read_query<trade_booking_entity, domain::trade_booking>(
         ctx,
         query,
         trade_booking_list_order(order, {"trade_id"}, false),
-        narrowed(valid_at(as_of), trade_booking_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                trade_booking_filter_condition(filter)),
         [](const auto& entities) { return trade_booking_mapper::map(entities); },
         lg(),
         "Reading latest trade bookings with pagination.");
@@ -367,13 +363,14 @@ std::uint32_t trade_booking_repository::get_total_trade_booking_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade booking count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<trade_booking_entity>> | where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<trade_booking_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
-    return execute_count_query<trade_booking_entity>(
+    return query_builder::execute_count_query<trade_booking_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), trade_booking_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                trade_booking_filter_condition(filter)),
         lg(),
         "Counting trade bookings");
 }
@@ -384,10 +381,10 @@ trade_booking_repository::read_latest(context ctx, const std::vector<std::string
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<trade_booking_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value());
-    auto result = execute_read_query<trade_booking_entity, domain::trade_booking>(
+    const auto query = query_builder::read<std::vector<trade_booking_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+                                            "valid_to"_c == max.value());
+    auto result = query_builder::execute_read_query<trade_booking_entity, domain::trade_booking>(
         ctx,
         query,
         [](const auto& entities) { return trade_booking_mapper::map(entities); },
@@ -407,10 +404,10 @@ void trade_booking_repository::remove(context ctx, const std::vector<std::string
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::delete_from<trade_booking_entity> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing trade bookings.");
+    const auto query = query_builder::delete_from<trade_booking_entity> |
+                       query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+                                            "valid_to"_c == max.value());
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing trade bookings.");
 }
 
 

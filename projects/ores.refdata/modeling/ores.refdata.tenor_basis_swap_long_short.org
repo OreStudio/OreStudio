@@ -300,8 +300,6 @@ the coupon treatment, and the change audit that =ores.dq= owns.
 #+begin_src cpp :name includes
 #include <string>
 #include <optional>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #+end_src
 
 ** Conventions

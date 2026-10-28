@@ -25,8 +25,8 @@
 #ifndef ORES_IAM_CORE_REPOSITORY_SESSION_SAMPLE_ENTITY_HPP
 #define ORES_IAM_CORE_REPOSITORY_SESSION_SAMPLE_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,12 +42,26 @@ struct session_sample_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_iam_session_samples_tbl";
 
-    sqlgen::PrimaryKey<std::string> session_id;
-    sqlgen::PrimaryKey<std::string> sample_time;
+    std::string session_id;
+    std::string sample_time;
     std::string tenant_id;
     std::int64_t bytes_sent;
     std::int64_t bytes_received;
     std::int64_t latency_ms;
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = session_sample_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("session_id", &e::session_id) |
+               query_builder::key("sample_time", &e::sample_time) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("bytes_sent", &e::bytes_sent) |
+               query_builder::bind("bytes_received", &e::bytes_received) |
+               query_builder::bind("latency_ms", &e::latency_ms);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const session_sample_entity& v);

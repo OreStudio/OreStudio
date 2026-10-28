@@ -23,11 +23,8 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/repository/account_type_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.iam.api/domain/account_type.hpp"
 #include "ores.iam.api/domain/account_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/account_type_protocol.hpp"
@@ -41,16 +38,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -59,13 +46,13 @@
 
 namespace ores::iam::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string account_type_repository::sql() {
-    return generate_create_table_sql<account_type_entity>(lg());
+    return query_builder::insert_statement_sql<account_type_entity>(lg());
 }
 
 bool account_type_repository::is_sortable(std::string_view field) {
@@ -80,33 +67,34 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy account_type_list_order(const ores::utility::domain::order& order,
-                                                 std::initializer_list<std::string> default_columns,
-                                                 bool default_descending) {
+query_builder::order account_type_list_order(const ores::utility::domain::order& order,
+                                             std::initializer_list<std::string> default_columns,
+                                             bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"type"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"type"});
     if (!account_type_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of account types cannot be ordered by " + order.field +
                                     ".");
-    return make_order({order.field}, order.descending, {"type"});
+    return query_builder::make_order({order.field}, order.descending, {"type"});
 }
 
 /*
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
+std::optional<query_builder::condition>
 account_type_filter_condition(const std::optional<messaging::account_types_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->type_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->type_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("type", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("type", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -163,7 +151,7 @@ void account_type_repository::write(context ctx,
                                     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing account type. " << "type: " << v.type;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, account_type_mapper::map(t), lg(), "Writing account type to database.");
 }
 
@@ -176,18 +164,18 @@ void account_type_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, account_type_mapper::map(batch), lg(), "Writing account types to database.");
 }
 
 std::vector<domain::account_type> account_type_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<account_type_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("type"_c);
+    const auto query = query_builder::read<std::vector<account_type_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("type"_c);
 
-    return execute_read_query<account_type_entity, domain::account_type>(
+    return query_builder::execute_read_query<account_type_entity, domain::account_type>(
         ctx,
         query,
         [](const auto& entities) { return account_type_mapper::map(entities); },
@@ -200,11 +188,11 @@ std::vector<domain::account_type> account_type_repository::read_latest(context c
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account type. " << "type: " << type;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<account_type_entity>> |
-        where("tenant_id"_c == tid && "type"_c == type && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<account_type_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "type"_c == type &&
+                                            "valid_to"_c == max.value());
 
-    return execute_read_query<account_type_entity, domain::account_type>(
+    return query_builder::execute_read_query<account_type_entity, domain::account_type>(
         ctx,
         query,
         [](const auto& entities) { return account_type_mapper::map(entities); },
@@ -217,11 +205,11 @@ std::vector<domain::account_type> account_type_repository::read_all(context ctx,
                                                                     const std::string& type) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all account type versions. " << "type: " << type;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<account_type_entity>> |
-                       where("tenant_id"_c == tid && "type"_c == type) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query = query_builder::read<std::vector<account_type_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "type"_c == type) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<account_type_entity, domain::account_type>(
+    return query_builder::execute_read_query<account_type_entity, domain::account_type>(
         ctx,
         query,
         [](const auto& entities) { return account_type_mapper::map(entities); },
@@ -234,16 +222,18 @@ std::optional<domain::account_type> account_type_repository::read_at_version(
     BOOST_LOG_SEV(lg(), debug) << "Reading account type at version. " << "type: " << type
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<account_type_entity>> |
-                       where("tenant_id"_c == tid && "type"_c == type && "version"_c == version) |
-                       sqlgen::limit(1);
+    const auto query =
+        query_builder::read<std::vector<account_type_entity>> |
+        query_builder::where("tenant_id"_c == tid && "type"_c == type && "version"_c == version) |
+        query_builder::limit(1);
 
-    const auto entities = execute_read_query<account_type_entity, domain::account_type>(
-        ctx,
-        query,
-        [](const auto& entities) { return account_type_mapper::map(entities); },
-        lg(),
-        "Reading account type at version.");
+    const auto entities =
+        query_builder::execute_read_query<account_type_entity, domain::account_type>(
+            ctx,
+            query,
+            [](const auto& entities) { return account_type_mapper::map(entities); },
+            lg(),
+            "Reading account type at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -266,11 +256,11 @@ account_type_repository::remove_status account_type_repository::remove(
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<account_type_entity> |
-                       where("tenant_id"_c == tid && "type"_c == type &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+    const auto query = query_builder::delete_from<account_type_entity> |
+                       query_builder::where("tenant_id"_c == tid && "type"_c == type &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing account type from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing account type from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -293,14 +283,16 @@ account_type_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account types with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<account_type_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<account_type_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
-    return execute_ordered_read_query<account_type_entity, domain::account_type>(
+    return query_builder::execute_ordered_read_query<account_type_entity, domain::account_type>(
         ctx,
         query,
         account_type_list_order(order, {"type"}, false),
-        narrowed(valid_at(as_of), account_type_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                account_type_filter_condition(filter)),
         [](const auto& entities) { return account_type_mapper::map(entities); },
         lg(),
         "Reading latest account types with pagination.");
@@ -313,12 +305,14 @@ std::uint32_t account_type_repository::get_total_type_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account type count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<account_type_entity>> | where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<account_type_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
-    return execute_count_query<account_type_entity>(
+    return query_builder::execute_count_query<account_type_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), account_type_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                account_type_filter_condition(filter)),
         lg(),
         "Counting account types");
 }
@@ -329,10 +323,10 @@ account_type_repository::read_latest(context ctx, const std::vector<std::string>
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<account_type_entity>> |
-        where("tenant_id"_c == tid && "type"_c.in(types) && "valid_to"_c == max.value());
-    auto result = execute_read_query<account_type_entity, domain::account_type>(
+    const auto query = query_builder::read<std::vector<account_type_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "type"_c.in(types) &&
+                                            "valid_to"_c == max.value());
+    auto result = query_builder::execute_read_query<account_type_entity, domain::account_type>(
         ctx,
         query,
         [](const auto& entities) { return account_type_mapper::map(entities); },
@@ -352,10 +346,10 @@ void account_type_repository::remove(context ctx, const std::vector<std::string>
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::delete_from<account_type_entity> |
-        where("tenant_id"_c == tid && "type"_c.in(types) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing account types.");
+    const auto query = query_builder::delete_from<account_type_entity> |
+                       query_builder::where("tenant_id"_c == tid && "type"_c.in(types) &&
+                                            "valid_to"_c == max.value());
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing account types.");
 }
 
 

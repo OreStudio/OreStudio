@@ -349,8 +349,6 @@ The import names the agreement by number and the counterparty by LEI where the s
 #+begin_src cpp :name includes
 #include <optional>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #+end_src
 
 ** Conventions

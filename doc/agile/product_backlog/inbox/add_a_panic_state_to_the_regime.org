@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 6A3176DA-D4A5-4F4E-9F5F-5821754C6C64
+:END:
+#+title: Add a panic state to the regime
+#+description: A third state above active: rare, short and much faster, entered only from active and left back to active, so the chain can show a market that is not just busy but disorderly. The chain becomes a three-state Markov chain, the calm multiplier is derived so the mean pace stays one, and a person can pin panic as they pin active.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:synthetic:arrival:regime:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The chain gains a third state, panic, above active. Panic is entered only from
+active and left only back to active, so a panic is always a spike on top of a
+busy spell and never a jump out of a calm one. It has its own multiplier, for
+example four, and its own mean spell, short (a minute rather than five), and a
+rate at which an active market tips into it, low (once an hour on average). The
+calm multiplier is still derived, from the three states' long-run shares, so
+the mean pace stays one; a panic that is too frequent or too fast leaves no
+positive calm multiplier and is refused, naming the share, as the two-state
+chain refuses today.
+
+Everything downstream follows the pace, so it needs no change of its own: the
+heat's share rides on the panic multiplier, every feed's rate scales by it, and
+the tail loading tilts by =ln 4= rather than =ln 2=, so prices gap hardest in a
+panic. A person can pin panic as they pin active, and the Market screen gives it
+its own colour (the product's =down=) on the state badge, the bands and the
+folded hour.
+
+* Why
+
+Two states say a market is quiet or busy. A stress run and a demonstration want
+the third thing a desk means by a bad day: not busier, but disorderly, for a
+short while. Today the nearest is to pin active and raise the tail loading,
+which makes a busy market rougher everywhere rather than a panic that comes and
+goes. Gemini's review drew a third state as well (*volatile burst*).
+
+The chain is small and owned by one loop, so a third state is a contained
+change: the dwell draws, the transition rule, the calm multiplier's derivation
+and the inverse =time_to_reach= all generalise from two states to a little
+three-state matrix. The settings grow by three numbers, the read and the trace
+by one state name, and the screens by one colour.
+
+It is independent of making the transition rates depend on the heat: a panic
+can be exogenous, entered by the chain's own draws, and the heat coupling can
+come later and apply to every transition, panic's included.
+
+* References
+
+- [[file:../../../prototypes/market_data/control-how-a-market-ticks/review/][Gemini's review of the Market regime tab]]
+- [[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][The market's volatility channel]] — the tail loading a panic would drive hardest.
+- [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]] — the chain and the operational clock it changes.
+
+* See also
+
+- [[id:A86E0A3E-DC69-4406-B383-3B1146BD664B][Let the heat turn the regime]] — the other half: rates that depend on the heat.
+- [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] — the story that built the two-state chain.

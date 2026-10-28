@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: E035E264-B94F-4CA5-927E-D7F681441C5B
+:END:
+#+title: Add an ACD arrival law
+#+description: An autoregressive conditional duration law, Engle and Russell's ACD(1,1), beside periodic, Poisson and Hawkes: the expected gap depends on the last gap and the last expectation, so long and short gaps cluster the way trade durations do.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:synthetic:arrival:quant:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A fourth arrival law beside periodic, Poisson and Hawkes: Engle and Russell's
+ACD(1,1). The expected gap is =psi_i = omega + alpha * gap_(i-1) + beta * psi_(i-1)=,
+and a gap is =psi_i= times a unit-mean draw. It is a value with visible state, as
+the other laws are, drawn from the series' keyed stream, and it is stable while
+=alpha + beta < 1=.
+
+* Why
+
+Gemini's review offered it in a model selector. Hawkes clusters arrivals by
+exciting an intensity; ACD clusters them by making a short gap likely to follow
+a short gap. Trade durations are the data ACD was written for, and they are
+what a desk would calibrate a feed to. It costs one law, its validation, its
+column on the feed's Arrivals tab, and its compensator for the fit tests.
+
+* References
+
+- [[file:../../../prototypes/market_data/control-how-a-market-ticks/review/][Gemini's review of the Market regime tab]]
+- [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]]
+- Engle and Russell (1998), "Autoregressive conditional duration", Econometrica 66(5).
+
+* See also
+
+- [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] — the story that built the market these extend.

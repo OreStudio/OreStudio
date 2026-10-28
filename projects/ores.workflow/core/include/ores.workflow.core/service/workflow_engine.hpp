@@ -377,7 +377,18 @@ private:
      */
     std::string deadline_failure_text(const domain::workflow_step& step,
                                       std::chrono::seconds budget,
-                                      std::chrono::seconds silent_for);
+                                      std::chrono::seconds silent_for,
+                                      bool claimed);
+
+    /**
+     * @brief When the service that owns a command subject last reported.
+     *
+     * Empty when nothing has reported as that component since this engine
+     * started. The deadline reads it to tell a command whose handler is absent
+     * from one whose handler is simply busy with earlier work.
+     */
+    std::optional<std::chrono::system_clock::time_point>
+    last_seen_of(const std::string& subject);
 
     /**
      * @brief Publishes a step command to the domain service.

@@ -25,8 +25,8 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_LEI_RELATIONSHIP_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_LEI_RELATIONSHIP_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,19 +42,53 @@ struct lei_relationship_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_dq_lei_relationships_artefact_tbl";
 
-    sqlgen::PrimaryKey<std::string> relationship_start_node_node_id;
+    std::string relationship_start_node_node_id;
     std::string tenant_id;
     std::string relationship_start_node_node_id_type;
     std::string relationship_end_node_node_id;
     std::string relationship_end_node_node_id_type;
     std::string relationship_relationship_type;
     std::string relationship_relationship_status;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> relationship_period_1_start_date;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> relationship_period_1_end_date;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> registration_initial_registration_date;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> registration_last_update_date;
+    std::optional<db_timestamp> relationship_period_1_start_date;
+    std::optional<db_timestamp> relationship_period_1_end_date;
+    std::optional<db_timestamp> registration_initial_registration_date;
+    std::optional<db_timestamp> registration_last_update_date;
     std::optional<std::string> registration_registration_status;
     std::optional<std::string> registration_validation_sources;
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = lei_relationship_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() |
+               query_builder::key("relationship_start_node_node_id",
+                                  &e::relationship_start_node_node_id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("relationship_start_node_node_id_type",
+                                   &e::relationship_start_node_node_id_type) |
+               query_builder::bind("relationship_end_node_node_id",
+                                   &e::relationship_end_node_node_id) |
+               query_builder::bind("relationship_end_node_node_id_type",
+                                   &e::relationship_end_node_node_id_type) |
+               query_builder::bind("relationship_relationship_type",
+                                   &e::relationship_relationship_type) |
+               query_builder::bind("relationship_relationship_status",
+                                   &e::relationship_relationship_status) |
+               query_builder::bind("relationship_period_1_start_date",
+                                   &e::relationship_period_1_start_date) |
+               query_builder::bind("relationship_period_1_end_date",
+                                   &e::relationship_period_1_end_date) |
+               query_builder::bind("registration_initial_registration_date",
+                                   &e::registration_initial_registration_date) |
+               query_builder::bind("registration_last_update_date",
+                                   &e::registration_last_update_date) |
+               query_builder::bind("registration_registration_status",
+                                   &e::registration_registration_status) |
+               query_builder::bind("registration_validation_sources",
+                                   &e::registration_validation_sources);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const lei_relationship_entity& v);

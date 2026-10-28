@@ -4,15 +4,14 @@ Run::
 
     python3 -m pytest projects/ores.codegen/tests/test_inet_entity_projection.py
 
-sqlgen cannot transpile or bind ``boost::asio::ip::address``: its parsing
-layer rejects the type with a ``static_assert``. A NOT NULL column whose
+The query builder's text codec holds no ``boost::asio::ip::address``. A NOT NULL column whose
 domain member is that type therefore reaches the entity struct as
 ``std::string``, and the mapper converts between the string and the address
 -- the same shape a required timestamp already gets.
 
 The projection follows the column's ``:cpp_type:``, not its ``:type: inet``
 SQL type. An inet column that already declares ``std::string`` binds as text
-and needs no conversion; the asio type breaks sqlgen whatever SQL type it is
+and needs no conversion; the asio type has no text form whatever SQL type it is
 declared under. These cases pin that choice.
 """
 import sys
@@ -107,7 +106,7 @@ def _render_mapper(tmp_path, columns):
 
 
 def test_an_address_column_reaches_the_entity_as_a_string(tmp_path):
-    """The entity is the database row type, and sqlgen cannot bind an address."""
+    """The entity is the database row type, and its text codec holds no address."""
     entity = _render_entity(
         tmp_path, PRIMARY_KEY + _ip_column("boost::asio::ip::address"))
     assert "std::string last_ip;" in entity

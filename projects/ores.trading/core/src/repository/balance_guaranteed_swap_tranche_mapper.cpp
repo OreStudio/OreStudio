@@ -47,8 +47,8 @@ balance_guaranteed_swap_tranche_mapper::map(const balance_guaranteed_swap_tranch
     domain::balance_guaranteed_swap_tranche r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
-    r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.sequence_number = boost::lexical_cast<int>(v.sequence_number);
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.description = v.description;
     r.security_id = v.security_id;

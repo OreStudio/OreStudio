@@ -23,8 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/repository/tenor_convention_resolution_repository.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -37,16 +36,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
-#include <sqlgen/aggregations.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/select_from.hpp>
-#include <sqlgen/to.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -54,13 +43,13 @@
 
 namespace ores::refdata::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string tenor_convention_resolution_repository::sql() {
-    return generate_create_table_sql<tenor_convention_resolution_entity>(lg());
+    return query_builder::insert_statement_sql<tenor_convention_resolution_entity>(lg());
 }
 
 tenor_convention_resolution_repository::tenor_convention_resolution_repository(context ctx)
@@ -122,10 +111,10 @@ void tenor_convention_resolution_repository::write(
     BOOST_LOG_SEV(lg(), debug) << "Writing tenor convention resolution to database: "
                                << resolution.convention_code << "/" << resolution.tenor_code;
     const auto t = apply_claim(resolution, claim);
-    execute_write_query(ctx_,
-                        tenor_convention_resolution_mapper::map(t),
-                        lg(),
-                        "writing tenor convention resolution to database");
+    query_builder::execute_write_query(ctx_,
+                                       tenor_convention_resolution_mapper::map(t),
+                                       lg(),
+                                       "writing tenor convention resolution to database");
 }
 
 void tenor_convention_resolution_repository::write(
@@ -137,22 +126,22 @@ void tenor_convention_resolution_repository::write(
     batch.reserve(resolutions.size());
     for (std::size_t i = 0; i < resolutions.size(); ++i)
         batch.push_back(apply_claim(resolutions[i], claims[i]));
-    execute_write_query(ctx_,
-                        tenor_convention_resolution_mapper::map(batch),
-                        lg(),
-                        "writing tenor convention resolutions to database");
+    query_builder::execute_write_query(ctx_,
+                                       tenor_convention_resolution_mapper::map(batch),
+                                       lg(),
+                                       "writing tenor convention resolutions to database");
 }
 
 std::vector<domain::tenor_convention_resolution>
 tenor_convention_resolution_repository::read_latest() {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<tenor_convention_resolution_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("convention_code"_c, "tenor_code"_c);
+    const auto query = query_builder::read<std::vector<tenor_convention_resolution_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("convention_code"_c, "tenor_code"_c);
 
-    return execute_read_query<tenor_convention_resolution_entity,
-                              domain::tenor_convention_resolution>(
+    return query_builder::execute_read_query<tenor_convention_resolution_entity,
+                                             domain::tenor_convention_resolution>(
         ctx_,
         query,
         [](const auto& entities) { return tenor_convention_resolution_mapper::map(entities); },
@@ -166,13 +155,13 @@ tenor_convention_resolution_repository::read_latest(std::uint32_t offset, std::u
                                << offset << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<tenor_convention_resolution_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("convention_code"_c, "tenor_code"_c) | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<tenor_convention_resolution_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("convention_code"_c, "tenor_code"_c) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_read_query<tenor_convention_resolution_entity,
-                              domain::tenor_convention_resolution>(
+    return query_builder::execute_read_query<tenor_convention_resolution_entity,
+                                             domain::tenor_convention_resolution>(
         ctx_,
         query,
         [](const auto& entities) { return tenor_convention_resolution_mapper::map(entities); },
@@ -190,12 +179,13 @@ tenor_convention_resolution_repository::read_latest(const std::string& conventio
     const auto convention_code_str = convention_code;
     const auto tenor_code_str = tenor_code;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<tenor_convention_resolution_entity>> |
-                       where("tenant_id"_c == tid && "convention_code"_c == convention_code &&
+    const auto query =
+        query_builder::read<std::vector<tenor_convention_resolution_entity>> |
+        query_builder::where("tenant_id"_c == tid && "convention_code"_c == convention_code &&
                              "tenor_code"_c == tenor_code && "valid_to"_c == max.value());
 
-    return execute_read_query<tenor_convention_resolution_entity,
-                              domain::tenor_convention_resolution>(
+    return query_builder::execute_read_query<tenor_convention_resolution_entity,
+                                             domain::tenor_convention_resolution>(
         ctx_,
         query,
         [](const auto& entities) { return tenor_convention_resolution_mapper::map(entities); },
@@ -207,19 +197,12 @@ std::uint32_t tenor_convention_resolution_repository::get_total_resolution_count
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tenor convention resolutions count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<tenor_convention_resolution_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<tenor_convention_resolution_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<tenor_convention_resolution_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting tenor convention resolutions");
     BOOST_LOG_SEV(lg(), debug) << "Total active tenor convention resolutions count: " << count;
     return count;
 }
@@ -232,18 +215,19 @@ tenor_convention_resolution_repository::read_latest_by_convention(
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<tenor_convention_resolution_entity>> |
-                       where("tenant_id"_c == tid && "convention_code"_c == convention_code &&
+    const auto query =
+        query_builder::read<std::vector<tenor_convention_resolution_entity>> |
+        query_builder::where("tenant_id"_c == tid && "convention_code"_c == convention_code &&
                              "valid_to"_c == max.value()) |
-                       order_by("tenor_code"_c);
+        query_builder::order_by("tenor_code"_c);
 
-    auto rows =
-        execute_read_query<tenor_convention_resolution_entity, domain::tenor_convention_resolution>(
-            ctx_,
-            query,
-            [](const auto& entities) { return tenor_convention_resolution_mapper::map(entities); },
-            lg(),
-            "Reading latest tenor convention resolutions by convention.");
+    auto rows = query_builder::execute_read_query<tenor_convention_resolution_entity,
+                                                  domain::tenor_convention_resolution>(
+        ctx_,
+        query,
+        [](const auto& entities) { return tenor_convention_resolution_mapper::map(entities); },
+        lg(),
+        "Reading latest tenor convention resolutions by convention.");
 
     return rows;
 }
@@ -255,18 +239,18 @@ tenor_convention_resolution_repository::read_latest_by_tenor(const std::string& 
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<tenor_convention_resolution_entity>> |
-        where("tenant_id"_c == tid && "tenor_code"_c == tenor_code && "valid_to"_c == max.value()) |
-        order_by("convention_code"_c);
+    const auto query = query_builder::read<std::vector<tenor_convention_resolution_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "tenor_code"_c == tenor_code &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("convention_code"_c);
 
-    auto rows =
-        execute_read_query<tenor_convention_resolution_entity, domain::tenor_convention_resolution>(
-            ctx_,
-            query,
-            [](const auto& entities) { return tenor_convention_resolution_mapper::map(entities); },
-            lg(),
-            "Reading latest tenor convention resolutions by tenor.");
+    auto rows = query_builder::execute_read_query<tenor_convention_resolution_entity,
+                                                  domain::tenor_convention_resolution>(
+        ctx_,
+        query,
+        [](const auto& entities) { return tenor_convention_resolution_mapper::map(entities); },
+        lg(),
+        "Reading latest tenor convention resolutions by tenor.");
 
     return rows;
 }
@@ -279,18 +263,20 @@ tenor_convention_resolution_repository::read_latest_by_convention(
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<tenor_convention_resolution_entity>> |
-                       where("tenant_id"_c == tid && "convention_code"_c == convention_code &&
+    const auto query =
+        query_builder::read<std::vector<tenor_convention_resolution_entity>> |
+        query_builder::where("tenant_id"_c == tid && "convention_code"_c == convention_code &&
                              "valid_to"_c == max.value()) |
-                       order_by("tenor_code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        query_builder::order_by("tenor_code"_c) | query_builder::offset(offset) |
+        query_builder::limit(limit);
 
-    auto rows =
-        execute_read_query<tenor_convention_resolution_entity, domain::tenor_convention_resolution>(
-            ctx_,
-            query,
-            [](const auto& entities) { return tenor_convention_resolution_mapper::map(entities); },
-            lg(),
-            "Reading latest tenor convention resolutions by convention (paginated).");
+    auto rows = query_builder::execute_read_query<tenor_convention_resolution_entity,
+                                                  domain::tenor_convention_resolution>(
+        ctx_,
+        query,
+        [](const auto& entities) { return tenor_convention_resolution_mapper::map(entities); },
+        lg(),
+        "Reading latest tenor convention resolutions by convention (paginated).");
 
     return rows;
 }
@@ -302,21 +288,14 @@ std::uint32_t tenor_convention_resolution_repository::get_total_resolution_count
         << convention_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
-        sqlgen::select_from<tenor_convention_resolution_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "convention_code"_c == convention_code &&
-              "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+        query_builder::read<std::vector<tenor_convention_resolution_entity>> |
+        query_builder::where("tenant_id"_c == tid && "convention_code"_c == convention_code &&
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<tenor_convention_resolution_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting tenor convention resolutions");
     BOOST_LOG_SEV(lg(), debug) << "Total active tenor convention resolutions count by convention: "
                                << count;
     return count;
@@ -328,20 +307,13 @@ std::uint32_t tenor_convention_resolution_repository::get_total_resolution_count
         << "Retrieving total active tenor convention resolutions count. Tenor: " << tenor_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<tenor_convention_resolution_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "tenor_code"_c == tenor_code && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<tenor_convention_resolution_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "tenor_code"_c == tenor_code &&
+                                            "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<tenor_convention_resolution_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting tenor convention resolutions");
     BOOST_LOG_SEV(lg(), debug) << "Total active tenor convention resolutions count by tenor: "
                                << count;
     return count;
@@ -354,12 +326,13 @@ tenor_convention_resolution_repository::read_all_by_convention(const std::string
         << convention_code;
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<tenor_convention_resolution_entity>> |
-                       where("tenant_id"_c == tid && "convention_code"_c == convention_code) |
-                       order_by("tenor_code"_c, "valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<tenor_convention_resolution_entity>> |
+        query_builder::where("tenant_id"_c == tid && "convention_code"_c == convention_code) |
+        query_builder::order_by("tenor_code"_c, "valid_from"_c.desc());
 
-    return execute_read_query<tenor_convention_resolution_entity,
-                              tenor_convention_resolution_history_row>(
+    return query_builder::execute_read_query<tenor_convention_resolution_entity,
+                                             tenor_convention_resolution_history_row>(
         ctx_,
         query,
         [](const auto& entities) {
@@ -420,12 +393,14 @@ tenor_convention_resolution_repository::remove(const std::string& convention_cod
     const auto convention_code_str = convention_code;
     const auto tenor_code_str = tenor_code;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<tenor_convention_resolution_entity> |
-                       where("tenant_id"_c == tid && "convention_code"_c == convention_code &&
+    const auto query =
+        query_builder::delete_from<tenor_convention_resolution_entity> |
+        query_builder::where("tenant_id"_c == tid && "convention_code"_c == convention_code &&
                              "tenor_code"_c == tenor_code && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
-    execute_delete_query(ctx_, query, lg(), "removing tenor convention resolution from database");
+    query_builder::execute_delete_query(
+        ctx_, query, lg(), "removing tenor convention resolution from database");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -452,10 +427,11 @@ void tenor_convention_resolution_repository::remove_by_convention(
                                << convention_code;
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<tenor_convention_resolution_entity> |
-                       where("tenant_id"_c == tid && "convention_code"_c == convention_code);
+    const auto query =
+        query_builder::delete_from<tenor_convention_resolution_entity> |
+        query_builder::where("tenant_id"_c == tid && "convention_code"_c == convention_code);
 
-    execute_delete_query(
+    query_builder::execute_delete_query(
         ctx_, query, lg(), "removing all tenor convention resolutions from database");
 }
 

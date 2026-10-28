@@ -47,7 +47,7 @@ domain::bond_repo bond_repo_mapper::map(const bond_repo_entity& v) {
     domain::bond_repo r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.repo_type = v.repo_type;
     r.repo_rate =

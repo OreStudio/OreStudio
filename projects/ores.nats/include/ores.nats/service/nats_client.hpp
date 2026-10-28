@@ -148,6 +148,34 @@ public:
     void clear_auth();
 
     /**
+     * @brief Callable that signs the session in again once it has been refused.
+     *
+     * The interactive counterpart of @c token_provider: the caller that holds
+     * the credentials -- a shell, a desktop client -- supplies a way to open a
+     * fresh session, and the client calls it when the server refuses a request
+     * with @c token_expired or @c max_session_exceeded. Returning true means
+     * the session now holds a usable token.
+     */
+    using session_renewer = std::function<bool()>;
+
+    /**
+     * @brief Give the client a way to re-sign-in when its token is refused.
+     *
+     * A refusal is safe to retry: the server rejects an expired token before
+     * it acts on a request, so the work was not done. The client therefore
+     * renews once and sends the request again, and throws
+     * @c session_expired_error only when the renewal fails or the fresh token
+     * is refused too. Without a renewer the refusal throws, as it always has,
+     * and the caller is responsible for signing in again.
+     */
+    void set_session_renewer(session_renewer renewer);
+
+    /**
+     * @brief Forget the renewer, so a logged-out session renews nothing.
+     */
+    void clear_session_renewer();
+
+    /**
      * @brief Return current auth info.
      * @throws std::runtime_error if not logged in.
      */
@@ -267,6 +295,12 @@ private:
     // Interactive path state
     std::shared_ptr<client> owned_client_;
     std::optional<login_info> auth_;
+
+    // How this session signs in again when its token is refused.
+    session_renewer session_renewer_;
+
+    // Set while a renewal runs, so a refusal inside it cannot renew again.
+    bool renewing_ = false;
 
     // Service path state
     client* external_client_ = nullptr;

@@ -39,7 +39,6 @@ set(files
     "pricing_engine_database_roundtrip_tests.cpp"
     "pricing_engines_import_tests.cpp"
     "results_canonical_rows_tests.cpp"
-    "run_store_database_tests.cpp"
     "scanner_directory_scanner_tests.cpp"
     "todays_market_database_roundtrip_tests.cpp"
     "xml_binding_tests.cpp"

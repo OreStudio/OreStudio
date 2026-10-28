@@ -30,6 +30,7 @@ import {
 import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_definition_protocol';
 import { subjects as instanceSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_instance_protocol';
 import { subjects as errorSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_error_event_protocol';
+import { subjects as operationsSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_operations_protocol';
 import { invalidRequest, notFound } from './errors.js';
 import { NO_ORDER, refusal, resultSchema, row, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
@@ -72,6 +73,37 @@ async function readRuns(
         throw refusal(reply.result);
     }
     return reply.instances;
+}
+
+/**
+ * Runs a report definition on demand.
+ *
+ * The trigger belongs to the scheduler's own operation, so the BFF sends it the
+ * request the scheduler sends: the definition and the tenant that owns it. The
+ * handler applies the definition's concurrency policy, creates the run and
+ * dispatches the workflow, and answers the run it created.
+ */
+export async function triggerReportRun(
+    session: LiveSession,
+    definitionId: string,
+): Promise<string> {
+    const reply = await session.client.callAuthenticated(
+        operationsSubjects.trigger_report_instance_request,
+        {
+            report_definition_id: definitionId,
+            tenant_id: session.tenantId,
+            job_instance_id: 0,
+            kind: 'production',
+        },
+        z.looseObject({
+            result: resultSchema,
+            report_instance_id: z.string().default(''),
+        }),
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw refusal(reply.result);
+    }
+    return reply.report_instance_id;
 }
 
 export async function readRun(
@@ -259,6 +291,17 @@ export function registerGridReportRunRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
 ): void {
+    /** Starts a run of the report definition, and answers the run it created. */
+    server.post('/api/reporting/reports/:id/run', async (request): Promise<{ runId: string }> => {
+        const session = requireSession(request);
+        const parsed = idParamsSchema.safeParse(request.params);
+        if (!parsed.success) {
+            throw invalidRequest('The address names an id that is not a uuid.');
+        }
+        const runId = await triggerReportRun(session, parsed.data.id);
+        return { runId };
+    });
+
     /** The runs of one report, newest first, with the state each reached. */
     server.get(
         '/api/reporting/reports/:id/runs',

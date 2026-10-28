@@ -42,7 +42,7 @@ domain::party_status party_status_mapper::map(const party_status_entity& v) {
     domain::party_status r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

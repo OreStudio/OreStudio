@@ -23,11 +23,8 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/repository/bond_leg_amount_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/bond_leg_amount.hpp"
@@ -45,16 +42,6 @@
 #include <initializer_list>
 #include <optional>
 #include <set>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -64,13 +51,13 @@
 
 namespace ores::trading::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string bond_leg_amount_repository::sql() {
-    return generate_create_table_sql<bond_leg_amount_entity>(lg());
+    return query_builder::insert_statement_sql<bond_leg_amount_entity>(lg());
 }
 
 bool bond_leg_amount_repository::is_sortable(std::string_view field) {
@@ -85,40 +72,42 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
-bond_leg_amount_list_order(const ores::utility::domain::order& order,
-                           std::initializer_list<std::string> default_columns,
-                           bool default_descending) {
+query_builder::order bond_leg_amount_list_order(const ores::utility::domain::order& order,
+                                                std::initializer_list<std::string> default_columns,
+                                                bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns,
-                          default_descending != order.descending,
-                          {"trade_id", "leg_role", "leg_number", "amount_role", "sequence_number"});
+        return query_builder::make_order(
+            default_columns,
+            default_descending != order.descending,
+            {"trade_id", "leg_role", "leg_number", "amount_role", "sequence_number"});
     if (!bond_leg_amount_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of bond leg amounts cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field},
-                      order.descending,
-                      {"trade_id", "leg_role", "leg_number", "amount_role", "sequence_number"});
+    return query_builder::make_order(
+        {order.field},
+        order.descending,
+        {"trade_id", "leg_role", "leg_number", "amount_role", "sequence_number"});
 }
 
 /*
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
+std::optional<query_builder::condition>
 bond_leg_amount_filter_condition(const std::optional<messaging::bond_leg_amounts_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->trade_id)
-        r.push_back(equals("trade_id", filter_value(*filter->trade_id)));
+        r.push_back(
+            query_builder::equals("trade_id", query_builder::filter_value(*filter->trade_id)));
     if (filter->trade_id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->trade_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("trade_id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("trade_id", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -190,7 +179,7 @@ void bond_leg_amount_repository::write(context ctx,
                                << " amount_role: " << v.amount_role
                                << " sequence_number: " << v.sequence_number;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, bond_leg_amount_mapper::map(t), lg(), "Writing bond leg amount to database.");
 }
 
@@ -203,7 +192,7 @@ void bond_leg_amount_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, bond_leg_amount_mapper::map(batch), lg(), "Writing bond leg amounts to database.");
 }
 
@@ -211,11 +200,12 @@ std::vector<domain::bond_leg_amount> bond_leg_amount_repository::read_latest(con
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<bond_leg_amount_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c, "leg_role"_c, "leg_number"_c, "amount_role"_c, "sequence_number"_c);
+        query_builder::read<std::vector<bond_leg_amount_entity>> |
+        query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        query_builder::order_by(
+            "trade_id"_c, "leg_role"_c, "leg_number"_c, "amount_role"_c, "sequence_number"_c);
 
-    return execute_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
+    return query_builder::execute_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
         ctx,
         query,
         [](const auto& entities) { return bond_leg_amount_mapper::map(entities); },
@@ -237,12 +227,13 @@ bond_leg_amount_repository::read_latest(context ctx,
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<bond_leg_amount_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "leg_role"_c == leg_role &&
-              "leg_number"_c == leg_number && "amount_role"_c == amount_role &&
-              "sequence_number"_c == sequence_number && "valid_to"_c == max.value());
+        query_builder::read<std::vector<bond_leg_amount_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
+                             "leg_role"_c == leg_role && "leg_number"_c == leg_number &&
+                             "amount_role"_c == amount_role &&
+                             "sequence_number"_c == sequence_number && "valid_to"_c == max.value());
 
-    return execute_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
+    return query_builder::execute_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
         ctx,
         query,
         [](const auto& entities) { return bond_leg_amount_mapper::map(entities); },
@@ -264,13 +255,14 @@ bond_leg_amount_repository::read_all(context ctx,
                                << " sequence_number: " << sequence_number;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<bond_leg_amount_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "leg_role"_c == leg_role &&
-              "leg_number"_c == leg_number && "amount_role"_c == amount_role &&
-              "sequence_number"_c == sequence_number) |
-        order_by("version"_c.desc(), "valid_from"_c.desc());
+        query_builder::read<std::vector<bond_leg_amount_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
+                             "leg_role"_c == leg_role && "leg_number"_c == leg_number &&
+                             "amount_role"_c == amount_role &&
+                             "sequence_number"_c == sequence_number) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
+    return query_builder::execute_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
         ctx,
         query,
         [](const auto& entities) { return bond_leg_amount_mapper::map(entities); },
@@ -293,18 +285,20 @@ bond_leg_amount_repository::read_at_version(context ctx,
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<bond_leg_amount_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "leg_role"_c == leg_role &&
-              "leg_number"_c == leg_number && "amount_role"_c == amount_role &&
-              "sequence_number"_c == sequence_number && "version"_c == version) |
-        sqlgen::limit(1);
+        query_builder::read<std::vector<bond_leg_amount_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
+                             "leg_role"_c == leg_role && "leg_number"_c == leg_number &&
+                             "amount_role"_c == amount_role &&
+                             "sequence_number"_c == sequence_number && "version"_c == version) |
+        query_builder::limit(1);
 
-    const auto entities = execute_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
-        ctx,
-        query,
-        [](const auto& entities) { return bond_leg_amount_mapper::map(entities); },
-        lg(),
-        "Reading bond leg amount at version.");
+    const auto entities =
+        query_builder::execute_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
+            ctx,
+            query,
+            [](const auto& entities) { return bond_leg_amount_mapper::map(entities); },
+            lg(),
+            "Reading bond leg amount at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -322,12 +316,13 @@ std::vector<domain::bond_leg_amount> bond_leg_amount_repository::read_latest_by_
                                << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<bond_leg_amount_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "valid_to"_c == max.value()) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<bond_leg_amount_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
+    return query_builder::execute_ordered_read_query<bond_leg_amount_entity,
+                                                     domain::bond_leg_amount>(
         ctx,
         query,
         bond_leg_amount_list_order(
@@ -347,15 +342,16 @@ std::uint32_t bond_leg_amount_repository::get_total_bond_leg_amount_count_by_tra
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<bond_leg_amount_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<bond_leg_amount_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
+                                            "valid_to"_c == max.value());
 
-    return execute_count_query<bond_leg_amount_entity>(ctx,
-                                                       query,
-                                                       bond_leg_amount_filter_condition(filter),
-                                                       lg(),
-                                                       "Counting bond leg amounts by trade_id");
+    return query_builder::execute_count_query<bond_leg_amount_entity>(
+        ctx,
+        query,
+        bond_leg_amount_filter_condition(filter),
+        lg(),
+        "Counting bond leg amounts by trade_id");
 }
 
 
@@ -372,12 +368,13 @@ std::vector<domain::bond_leg_amount> bond_leg_amount_repository::read_by_trade_i
         make_timestamp(ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<bond_leg_amount_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "valid_from"_c < vt.value() &&
-              "valid_to"_c > vf.value()) |
-        order_by("trade_id"_c, "leg_role"_c, "leg_number"_c, "amount_role"_c, "sequence_number"_c);
+        query_builder::read<std::vector<bond_leg_amount_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
+                             "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
+        query_builder::order_by(
+            "trade_id"_c, "leg_role"_c, "leg_number"_c, "amount_role"_c, "sequence_number"_c);
 
-    return execute_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
+    return query_builder::execute_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
         ctx,
         query,
         [](const auto& entities) { return bond_leg_amount_mapper::map(entities); },
@@ -413,13 +410,15 @@ bond_leg_amount_repository::remove(context ctx,
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::delete_from<bond_leg_amount_entity> |
-        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "leg_role"_c == leg_role &&
-              "leg_number"_c == leg_number && "amount_role"_c == amount_role &&
-              "sequence_number"_c == sequence_number && "valid_to"_c == max.value() &&
-              "version"_c == expected);
+        query_builder::delete_from<bond_leg_amount_entity> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
+                             "leg_role"_c == leg_role && "leg_number"_c == leg_number &&
+                             "amount_role"_c == amount_role &&
+                             "sequence_number"_c == sequence_number &&
+                             "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing bond leg amount from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing bond leg amount from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -448,15 +447,18 @@ std::vector<domain::bond_leg_amount> bond_leg_amount_repository::read_latest(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest bond leg amounts with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_leg_amount_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<bond_leg_amount_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
-    return execute_ordered_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
+    return query_builder::execute_ordered_read_query<bond_leg_amount_entity,
+                                                     domain::bond_leg_amount>(
         ctx,
         query,
         bond_leg_amount_list_order(
             order, {"trade_id", "leg_role", "leg_number", "amount_role", "sequence_number"}, false),
-        narrowed(valid_at(as_of), bond_leg_amount_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                bond_leg_amount_filter_condition(filter)),
         [](const auto& entities) { return bond_leg_amount_mapper::map(entities); },
         lg(),
         "Reading latest bond leg amounts with pagination.");
@@ -469,13 +471,14 @@ std::uint32_t bond_leg_amount_repository::get_total_bond_leg_amount_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond leg amount count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<bond_leg_amount_entity>> | where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<bond_leg_amount_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
-    return execute_count_query<bond_leg_amount_entity>(
+    return query_builder::execute_count_query<bond_leg_amount_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), bond_leg_amount_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                bond_leg_amount_filter_condition(filter)),
         lg(),
         "Counting bond leg amounts");
 }
@@ -493,18 +496,20 @@ bond_leg_amount_repository::read_latest(context ctx,
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<bond_leg_amount_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "leg_role"_c.in(leg_roles) &&
-              "leg_number"_c.in(leg_numbers) && "amount_role"_c.in(amount_roles) &&
-              "sequence_number"_c.in(sequence_numbers) && "valid_to"_c == max.value());
-    auto result = execute_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
-        ctx,
-        query,
-        [](const auto& entities) { return bond_leg_amount_mapper::map(entities); },
-        lg(),
-        "Reading latest bond leg amounts by ids.");
+        query_builder::read<std::vector<bond_leg_amount_entity>> |
+        query_builder::where(
+            "tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "leg_role"_c.in(leg_roles) &&
+            "leg_number"_c.in(leg_numbers) && "amount_role"_c.in(amount_roles) &&
+            "sequence_number"_c.in(sequence_numbers) && "valid_to"_c == max.value());
+    auto result =
+        query_builder::execute_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
+            ctx,
+            query,
+            [](const auto& entities) { return bond_leg_amount_mapper::map(entities); },
+            lg(),
+            "Reading latest bond leg amounts by ids.");
     // Compound key: the query above is a per-column .in() cross-product
-    // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
+    // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
     if (leg_roles.size() != trade_ids.size() || leg_numbers.size() != trade_ids.size() ||
         amount_roles.size() != trade_ids.size() || sequence_numbers.size() != trade_ids.size())

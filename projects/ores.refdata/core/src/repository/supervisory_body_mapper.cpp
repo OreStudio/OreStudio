@@ -43,8 +43,8 @@ domain::supervisory_body supervisory_body_mapper::map(const supervisory_body_ent
     domain::supervisory_body r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
-    r.coding_scheme_code = v.coding_scheme_code.value();
+    r.code = v.code;
+    r.coding_scheme_code = v.coding_scheme_code;
     r.source = v.source.value_or("");
     r.description = v.description.value_or("");
     r.modified_by = v.modified_by;

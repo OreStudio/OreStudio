@@ -18,19 +18,18 @@
  *
  */
 #include "ores.iam.core/repository/tenant_lookups.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.iam.api/domain/tenant_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/tenant_entity.hpp"
 #include "ores.iam.core/repository/tenant_mapper.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <sqlgen/postgres.hpp>
 
 namespace ores::iam::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
@@ -47,10 +46,11 @@ static auto& tenant_lookups_lg() {
 
 std::vector<domain::tenant> read_all_active_tenants(const ores::database::context& ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, tenant_lookups_lg()));
-    const auto query = sqlgen::read<std::vector<tenant_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("name"_c);
+    const auto query = query_builder::read<std::vector<tenant_entity>> |
+                       query_builder::where("valid_to"_c == max.value()) |
+                       query_builder::order_by("name"_c);
 
-    return execute_read_query<tenant_entity, domain::tenant>(
+    return query_builder::execute_read_query<tenant_entity, domain::tenant>(
         ctx,
         query,
         [](const auto& entities) { return tenant_mapper::map(entities); },
@@ -64,10 +64,10 @@ std::vector<domain::tenant> read_active_tenant_by_id(const ores::database::conte
 
     const auto max(make_timestamp(MAX_TIMESTAMP, tenant_lookups_lg()));
     const auto id_str = boost::lexical_cast<std::string>(id);
-    const auto query = sqlgen::read<std::vector<tenant_entity>> |
-                       where("id"_c == id_str && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<tenant_entity>> |
+                       query_builder::where("id"_c == id_str && "valid_to"_c == max.value());
 
-    return execute_read_query<tenant_entity, domain::tenant>(
+    return query_builder::execute_read_query<tenant_entity, domain::tenant>(
         ctx,
         query,
         [](const auto& entities) { return tenant_mapper::map(entities); },
@@ -80,10 +80,11 @@ std::vector<domain::tenant> read_active_tenant_by_hostname(const ores::database:
     BOOST_LOG_SEV(tenant_lookups_lg(), debug) << "Reading latest tenant by hostname: " << hostname;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, tenant_lookups_lg()));
-    const auto query = sqlgen::read<std::vector<tenant_entity>> |
-                       where("hostname"_c == hostname && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<tenant_entity>> |
+        query_builder::where("hostname"_c == hostname && "valid_to"_c == max.value());
 
-    return execute_read_query<tenant_entity, domain::tenant>(
+    return query_builder::execute_read_query<tenant_entity, domain::tenant>(
         ctx,
         query,
         [](const auto& entities) { return tenant_mapper::map(entities); },
@@ -93,11 +94,12 @@ std::vector<domain::tenant> read_active_tenant_by_hostname(const ores::database:
 
 std::vector<domain::tenant> read_registration_default_tenant(const ores::database::context& ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, tenant_lookups_lg()));
-    const auto query = sqlgen::read<std::vector<tenant_entity>> |
-                       where("is_registration_default"_c == true && "valid_to"_c == max.value()) |
-                       limit(1);
+    const auto query =
+        query_builder::read<std::vector<tenant_entity>> |
+        query_builder::where("is_registration_default"_c == true && "valid_to"_c == max.value()) |
+        query_builder::limit(1);
 
-    return execute_read_query<tenant_entity, domain::tenant>(
+    return query_builder::execute_read_query<tenant_entity, domain::tenant>(
         ctx,
         query,
         [](const auto& entities) { return tenant_mapper::map(entities); },

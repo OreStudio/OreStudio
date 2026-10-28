@@ -48,7 +48,7 @@ notification_recipient_mapper::map(const notification_recipient_entity& v) {
     domain::notification_recipient r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.notification_id = boost::lexical_cast<boost::uuids::uuid>(v.notification_id.value());
+    r.notification_id = boost::lexical_cast<boost::uuids::uuid>(v.notification_id);
     r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id);
     r.read_at =
         v.read_at.has_value() ? std::optional(timestamp_to_timepoint(*v.read_at)) : std::nullopt;

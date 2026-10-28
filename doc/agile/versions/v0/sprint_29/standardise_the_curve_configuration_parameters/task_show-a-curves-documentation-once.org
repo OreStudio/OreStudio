@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 3CC45817-25E2-43AF-A337-7CF5212F349C
+:END:
+#+title: Task: Show a curve's documentation once
+#+description: The workbench draws a leaf's help under its value and the same sentence again in the documentation panel, because for a curve the guide supplies one sentence as both help and description. The documentation belongs in the panel it is collapsed under, as the leaf standard states, so the row shows the label and the value and nothing else.
+#+type: task
+#+level: s1
+#+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
+#+owner: marco
+#+branch: feature/show-a-curves-documentation-once
+#+pr: 3955
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-27                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- *One sentence, two places.* The contract gives a curve leaf a =help= and a
+  =description= that are the same guide line, so the row's hint and the
+  documentation panel printed it twice. The hint is gone: a row that is read and
+  not changed states its label and its value, and the documentation is read where
+  it is collapsed, which is what the
+  [[id:852207A6-6785-43E6-A5D6-2D5C2C374101][ORE element and leaf screen standard]] states for a leaf in read mode.
+  The engine settings and conventions screens already draw it this way, so this
+  page was the odd one out.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3955][#3955]] | [web] Show a curve's documentation once |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A curve's documentation appears once, in the panel it is collapsed under. The
+row states the label, the required mark and the value, as the engine settings and
+conventions screens do, and the ten browser tests include one that fails if the
+sentence returns under the value.

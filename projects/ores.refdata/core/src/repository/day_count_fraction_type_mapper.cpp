@@ -43,7 +43,7 @@ day_count_fraction_type_mapper::map(const day_count_fraction_type_entity& v) {
     domain::day_count_fraction_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.name = v.name;
     r.description = v.description;
     r.display_order = v.display_order;

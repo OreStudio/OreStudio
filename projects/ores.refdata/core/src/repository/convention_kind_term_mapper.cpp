@@ -43,7 +43,7 @@ convention_kind_term_mapper::map(const convention_kind_term_entity& v) {
     domain::convention_kind_term r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.kind_code = v.kind_code;
     r.entity_name = v.entity_name;
     r.column_name = v.column_name;

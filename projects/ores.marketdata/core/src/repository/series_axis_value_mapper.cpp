@@ -44,9 +44,9 @@ domain::series_axis_value series_axis_value_mapper::map(const series_axis_value_
 
     domain::series_axis_value r;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.series_id = boost::lexical_cast<boost::uuids::uuid>(v.series_id.value());
-    r.axis_field = v.axis_field.value();
-    r.value = v.value.value();
+    r.series_id = boost::lexical_cast<boost::uuids::uuid>(v.series_id);
+    r.axis_field = v.axis_field;
+    r.value = v.value;
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.sequence = v.sequence;
 

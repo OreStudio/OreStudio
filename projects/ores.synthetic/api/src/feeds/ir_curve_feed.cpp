@@ -63,6 +63,7 @@ ir_curve_feed::ir_curve_feed(
     const ores::analytics::quant::domain::arrival_spec& arrival,
     std::vector<ir_curve_resolved_entry> entries,
     ores::analytics::quant::service::tick_scheduler& scheduler,
+    double step_speed,
     double sensitivity,
     std::vector<ir_pillar_quote_target> adapter_targets)
     : nats_(nats)
@@ -71,7 +72,7 @@ ir_curve_feed::ir_curve_feed(
     , currency_code_(std::move(currency_code))
     , role_(std::move(role))
     , process_(std::move(process))
-    , ticks_per_second_(arrival.ticks_per_hour / 3600.0)
+    , step_seconds_(step_speed / (arrival.ticks_per_hour / 3600.0))
     , arrival_(arrival)
     , scheduler_(scheduler)
     , sensitivity_(sensitivity)
@@ -127,7 +128,8 @@ void ir_curve_feed::start() {
     handle_ = scheduler_.add({.series = ores::analytics::quant::math::series_key(source_name_),
                               .arrival = arrival_,
                               .sensitivity = sensitivity_,
-                              .name = source_name_},
+                              .name = source_name_,
+                              .group = "interest_rates"},
                              [this](const ores::analytics::quant::service::tick_context& context) {
                                  return tick(context);
                              });
@@ -135,11 +137,8 @@ void ir_curve_feed::start() {
 
 std::string ir_curve_feed::tick(const ores::analytics::quant::service::tick_context& context) {
     const auto n = published_.fetch_add(1, std::memory_order_relaxed) + 1;
-    // A nominal tick of the curve is the market speed over its rate in simulated seconds, the
-    // step the process was built with, so the simulated time a tick covers is that many of them.
-    const double nominal = scheduler_.market_speed() / ticks_per_second_;
     const double elapsed_ticks =
-        context.simulated_seconds > 0.0 ? context.simulated_seconds / nominal : 1.0;
+        context.simulated_seconds > 0.0 ? context.simulated_seconds / step_seconds_ : 1.0;
 
     // The scheduler decides when a curve publishes, and the model steps one tick of its own time.
     // A process whose law is written for an arbitrary step takes the simulated time instead, so
@@ -333,8 +332,10 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
         }
     }
 
-    const double step_years =
-        curve_step_years(scheduler.market_speed(), static_cast<double>(cfg.ticks_per_hour));
+    // Read once, so the step the process is built with and the step the feed counts in agree
+    // even when the speed changes while the feed is built.
+    const double step_speed = scheduler.market_speed();
+    const double step_years = curve_step_years(step_speed, static_cast<double>(cfg.ticks_per_hour));
 
     auto process = ores::synthetic::domain::map_parameters_to_yield_curve_process(
         cfg.process_type,
@@ -374,6 +375,7 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
                                            arrival,
                                            std::move(resolved),
                                            scheduler,
+                                           step_speed,
                                            cfg.sensitivity,
                                            std::move(adapter_targets));
 }

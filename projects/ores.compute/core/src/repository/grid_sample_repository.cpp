@@ -27,10 +27,8 @@
 #include "ores.compute.api/domain/grid_sample_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.core/repository/grid_sample_entity.hpp"
 #include "ores.compute.core/repository/grid_sample_mapper.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/stated_order.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -42,17 +40,6 @@
 #include <initializer_list>
 #include <optional>
 #include <set>
-#include <sqlgen/begin_transaction.hpp>
-#include <sqlgen/commit.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/insert.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -62,13 +49,13 @@
 
 namespace ores::compute::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string grid_sample_repository::sql() {
-    return generate_create_table_sql<grid_sample_entity>(lg());
+    return query_builder::insert_statement_sql<grid_sample_entity>(lg());
 }
 
 bool grid_sample_repository::is_sortable(std::string_view field) {
@@ -83,16 +70,16 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy grid_sample_list_order(const ores::utility::domain::order& order,
-                                                std::initializer_list<std::string> default_columns,
-                                                bool default_descending) {
+query_builder::order grid_sample_list_order(const ores::utility::domain::order& order,
+                                            std::initializer_list<std::string> default_columns,
+                                            bool default_descending) {
     if (order.field.empty())
-        return make_order(
+        return query_builder::make_order(
             default_columns, default_descending != order.descending, {"id", "sampled_at"});
     if (!grid_sample_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of grid samples cannot be ordered by " + order.field +
                                     ".");
-    return make_order({order.field}, order.descending, {"id", "sampled_at"});
+    return query_builder::make_order({order.field}, order.descending, {"id", "sampled_at"});
 }
 
 }
@@ -145,10 +132,10 @@ void grid_sample_repository::write(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Writing sample. " << "id: " << v.id
                                << " sampled_at: " << v.sampled_at;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_op(ctx,
-                     sqlgen::insert_or_replace(grid_sample_mapper::map(t)),
-                     lg(),
-                     "Writing sample to database.");
+    query_builder::execute_write_op(ctx,
+                                    query_builder::insert_or_replace(grid_sample_mapper::map(t)),
+                                    lg(),
+                                    "Writing sample to database.");
 }
 
 void grid_sample_repository::write(context ctx,
@@ -159,17 +146,18 @@ void grid_sample_repository::write(context ctx,
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_op(ctx,
-                     sqlgen::insert_or_replace(grid_sample_mapper::map(batch)),
-                     lg(),
-                     "Writing grid samples to database.");
+    query_builder::execute_write_op(
+        ctx,
+        query_builder::insert_or_replace(grid_sample_mapper::map(batch)),
+        lg(),
+        "Writing grid samples to database.");
 }
 
 std::vector<domain::grid_sample> grid_sample_repository::read_latest(context ctx) {
-    const auto query =
-        sqlgen::read<std::vector<grid_sample_entity>> | order_by("id"_c, "sampled_at"_c);
+    const auto query = query_builder::read<std::vector<grid_sample_entity>> |
+                       query_builder::order_by("id"_c, "sampled_at"_c);
 
-    return execute_read_query<grid_sample_entity, domain::grid_sample>(
+    return query_builder::execute_read_query<grid_sample_entity, domain::grid_sample>(
         ctx,
         query,
         [](const auto& entities) { return grid_sample_mapper::map(entities); },
@@ -181,10 +169,10 @@ std::vector<domain::grid_sample> grid_sample_repository::read_latest(
     context ctx, const std::string& id, const std::string& sampled_at) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest sample. " << "id: " << id
                                << " sampled_at: " << sampled_at;
-    const auto query = sqlgen::read<std::vector<grid_sample_entity>> |
-                       where("id"_c == id && "sampled_at"_c == sampled_at);
+    const auto query = query_builder::read<std::vector<grid_sample_entity>> |
+                       query_builder::where("id"_c == id && "sampled_at"_c == sampled_at);
 
-    return execute_read_query<grid_sample_entity, domain::grid_sample>(
+    return query_builder::execute_read_query<grid_sample_entity, domain::grid_sample>(
         ctx,
         query,
         [](const auto& entities) { return grid_sample_mapper::map(entities); },
@@ -198,11 +186,11 @@ std::vector<domain::grid_sample> grid_sample_repository::read_all(context ctx,
                                                                   const std::string& sampled_at) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all sample versions. " << "id: " << id
                                << " sampled_at: " << sampled_at;
-    const auto query = sqlgen::read<std::vector<grid_sample_entity>> |
-                       where("id"_c == id && "sampled_at"_c == sampled_at) |
-                       order_by("id"_c, "sampled_at"_c);
+    const auto query = query_builder::read<std::vector<grid_sample_entity>> |
+                       query_builder::where("id"_c == id && "sampled_at"_c == sampled_at) |
+                       query_builder::order_by("id"_c, "sampled_at"_c);
 
-    return execute_read_query<grid_sample_entity, domain::grid_sample>(
+    return query_builder::execute_read_query<grid_sample_entity, domain::grid_sample>(
         ctx,
         query,
         [](const auto& entities) { return grid_sample_mapper::map(entities); },
@@ -226,10 +214,11 @@ grid_sample_repository::remove(context ctx,
     if (current.empty())
         return remove_status::missing;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<grid_sample_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "sampled_at"_c == sampled_at);
+    const auto query =
+        query_builder::delete_from<grid_sample_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "sampled_at"_c == sampled_at);
 
-    execute_delete_query(ctx, query, lg(), "Removing sample from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing sample from database.");
     return remove_status::removed;
 }
 
@@ -246,10 +235,10 @@ grid_sample_repository::read_latest(context ctx,
                                     const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest grid samples with offset: " << offset
                                << " and limit: " << limit;
-    const auto query = sqlgen::read<std::vector<grid_sample_entity>> | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<grid_sample_entity>> |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<grid_sample_entity, domain::grid_sample>(
+    return query_builder::execute_ordered_read_query<grid_sample_entity, domain::grid_sample>(
         ctx,
         query,
         grid_sample_list_order(order, {"id", "sampled_at"}, false),
@@ -261,9 +250,9 @@ grid_sample_repository::read_latest(context ctx,
 
 std::optional<domain::grid_sample> grid_sample_repository::read_newest(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading newest sample";
-    const auto query = sqlgen::read<std::vector<grid_sample_entity>> |
-                       order_by("sampled_at"_c.desc()) | sqlgen::limit(1);
-    const auto rows = execute_read_query<grid_sample_entity, domain::grid_sample>(
+    const auto query = query_builder::read<std::vector<grid_sample_entity>> |
+                       query_builder::order_by("sampled_at"_c.desc()) | query_builder::limit(1);
+    const auto rows = query_builder::execute_read_query<grid_sample_entity, domain::grid_sample>(
         ctx,
         query,
         [](const auto& entities) { return grid_sample_mapper::map(entities); },
@@ -277,9 +266,9 @@ std::optional<domain::grid_sample> grid_sample_repository::read_newest(context c
 std::uint32_t grid_sample_repository::get_total__count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sample count";
 
-    const auto query = sqlgen::read<std::vector<grid_sample_entity>>;
+    const auto query = query_builder::read<std::vector<grid_sample_entity>>;
 
-    return execute_count_query<grid_sample_entity>(
+    return query_builder::execute_count_query<grid_sample_entity>(
         ctx, query, std::nullopt, lg(), "Counting grid samples");
 }
 
@@ -287,16 +276,16 @@ std::vector<domain::grid_sample> grid_sample_repository::read_latest(
     context ctx, const std::vector<std::string>& ids, const std::vector<std::string>& sampled_ats) {
     if (ids.empty() || sampled_ats.empty())
         return {};
-    const auto query = sqlgen::read<std::vector<grid_sample_entity>> |
-                       where("id"_c.in(ids) && "sampled_at"_c.in(sampled_ats));
-    auto result = execute_read_query<grid_sample_entity, domain::grid_sample>(
+    const auto query = query_builder::read<std::vector<grid_sample_entity>> |
+                       query_builder::where("id"_c.in(ids) && "sampled_at"_c.in(sampled_ats));
+    auto result = query_builder::execute_read_query<grid_sample_entity, domain::grid_sample>(
         ctx,
         query,
         [](const auto& entities) { return grid_sample_mapper::map(entities); },
         lg(),
         "Reading latest grid samples by ids.");
     // Compound key: the query above is a per-column .in() cross-product
-    // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
+    // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
     if (sampled_ats.size() != ids.size())
         throw std::invalid_argument(

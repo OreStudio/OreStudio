@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: F6329386-C419-4AC2-8BFC-25996A76E238
+:END:
+#+title: A step that waited in a queue is called silent
+#+description: The engine's step deadline counts from dispatch, so a step queued behind a slow one is failed as silent; a real failure then leaves a tenant half-built, because a run's provisioning cannot be resumed.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Count a workflow step's deadline from the moment a service starts the step,
+not from the moment its command was dispatched, and let a run be resumed from
+the step that failed without deleting what it already published.
+
+* Why
+
+A provisioning run on 2026-10-27 reached 7 of its 8 steps and then failed the
+eighth as silent. The step had been dispatched together with two others, and
+the service ran them one at a time: the step spent its whole two-minute budget
+queued behind a password change and never started. The engine had already
+stamped the step's start time at dispatch, so it could not tell a step that was
+waiting from one that had begun and stopped reporting, and it failed a healthy
+step.
+
+What made the false failure expensive is the second half. The tenant stayed in
+`bootstrapping`, the page then showed the setup wizard instead of the data, and
+re-running `provision tenant` refused because the tenant existed. The only
+supported repair is `workflow retry <instance> --step_name <name>`, which
+requires knowing the instance id from the database. An operator does not.
+
+The two belong together because either alone is a half-fix: a correct deadline
+still leaves a run that a real failure strands, and a resumable run still fails
+steps that were merely queued.
+
+* References
+
+- `projects/ores.workflow/core/src/service/workflow_engine.cpp` — the deadline
+  sweep and `deadline_failure_text`.
+- `projects/ores.shell/workflow/src/app/commands/workflow/workflow_operations_commands.cpp`
+  — `workflow retry`, the repair that exists but is not offered where a person
+  would look for it.
+
+* See also
+
+- [[id:71A6BC0C-0DCA-404A-9F86-CC0817448927][Mint a credential for long automated work]] — the other defect the same run
+  exposed.

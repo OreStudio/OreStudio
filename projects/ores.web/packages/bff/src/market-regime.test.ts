@@ -119,7 +119,7 @@ function buildTestServer(replies: Readonly<Record<string, unknown>>): {
 function send(
     server: ReturnType<typeof buildServer>,
     sessionId: string | undefined,
-    method: 'GET' | 'POST',
+    method: 'GET' | 'POST' | 'PUT',
     url: string,
     payload?: unknown,
 ): ReturnType<ReturnType<typeof buildServer>['inject']> {
@@ -134,6 +134,8 @@ function send(
 const GET_SUBJECT = 'synthetic.v1.ops.get_market_regime';
 const PIN_SUBJECT = 'synthetic.v1.ops.pin_market_regime';
 const TRACE_SUBJECT = 'synthetic.v1.ops.get_market_trace';
+const CONFIGURE_SUBJECT = 'synthetic.v1.ops.configure_market';
+const HISTORY_SUBJECT = 'synthetic.v1.ops.get_market_history';
 
 /** What the service answers with when nothing has moved the heat. */
 const NO_HEAT = { heat: 0, jump: 0.5, decay: 20, samples: [] };
@@ -333,6 +335,9 @@ describe('the market regime', () => {
             seconds: 60,
             feeds: [
                 {
+                    id: '',
+                    kind: '',
+                    engine: '',
                     sourceName: 'live.eurusd',
                     label: 'EUR/USD',
                     assetClass: 'fx',
@@ -341,6 +346,9 @@ describe('the market regime', () => {
                     expectedPerSecond: 1,
                 },
                 {
+                    id: '',
+                    kind: '',
+                    engine: '',
                     sourceName: 'live.usdsofr',
                     label: 'USD SOFR',
                     assetClass: 'interest_rates',
@@ -415,6 +423,9 @@ describe('the market regime', () => {
                 // The feed that runs comes first, and the one that stopped keeps
                 // its row: a picture that dropped it could not show it is silent.
                 {
+                    id: '',
+                    kind: '',
+                    engine: '',
                     sourceName: 'live.gbpusd',
                     label: 'GBP/USD',
                     assetClass: 'fx',
@@ -423,6 +434,9 @@ describe('the market regime', () => {
                     expectedPerSecond: 1,
                 },
                 {
+                    id: '',
+                    kind: '',
+                    engine: '',
                     sourceName: 'live.eurusd',
                     label: 'EUR/USD',
                     assetClass: 'fx',
@@ -462,6 +476,9 @@ describe('the market regime', () => {
             seconds: 120,
             feeds: [
                 {
+                    id: '',
+                    kind: '',
+                    engine: '',
                     sourceName: 'live.eurusd',
                     label: 'EUR/USD',
                     assetClass: 'fx',
@@ -471,6 +488,175 @@ describe('the market regime', () => {
                 },
             ],
         });
+    });
+});
+
+describe('the market settings', () => {
+    const SETTINGS = {
+        wakeRate: 0.002,
+        calmRate: 0.004,
+        jump: 0.5,
+        decay: 20,
+        speed: 2880,
+        tailLoading: 1.5,
+    };
+
+    it('sends the five numbers and reports the regime the service holds after', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [CONFIGURE_SUBJECT]: {
+                ...CALM,
+                speed: 2880,
+                wake_rate: 0.002,
+                calm_rate: 0.004,
+                tail_loading: 1.5,
+            },
+        });
+
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/market-regime/settings',
+            SETTINGS,
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({
+            speed: 2880,
+            wakeRate: 0.002,
+            calmRate: 0.004,
+            tailLoading: 1.5,
+        });
+        expect(calls).toEqual([
+            {
+                subject: CONFIGURE_SUBJECT,
+                body: {
+                    wake_rate: 0.002,
+                    calm_rate: 0.004,
+                    jump: 0.5,
+                    decay: 20,
+                    speed: 2880,
+                    tail_loading: 1.5,
+                },
+            },
+        ]);
+    });
+
+    it('reports numbers the service refuses as a bad request, in the service’s words', async () => {
+        const message = "operational_clock: the heat's loop gain, jump / decay, is 1.25";
+        const { server, sessionId } = buildTestServer({
+            [CONFIGURE_SUBJECT]: { success: false, message },
+        });
+
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/market-regime/settings',
+            { ...SETTINGS, jump: 25 },
+        );
+
+        expect(response.statusCode).toBe(400);
+        expect(response.json().message).toBe(message);
+    });
+
+    it('refuses settings without a tail loading, so an old client cannot reset it', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const { tailLoading: _left, ...older } = SETTINGS;
+
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/market-regime/settings',
+            older,
+        );
+
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
+    it('refuses a speed that is not positive before the service hears of it', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/market-regime/settings',
+            { ...SETTINGS, speed: 0 },
+        );
+
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+});
+
+describe('the market history', () => {
+    it('reads an hour by the second, or ten minutes by the tenth, and reports the counts', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [HISTORY_SUBJECT]: {
+                success: true,
+                message: '',
+                slot_seconds: 0.1,
+                groups: ['fx', 'interest_rates'],
+                bins: [{ at: '2026-10-28T12:00:00Z', counts: [3, 1], pace: 2, active_share: 1 }],
+            },
+        });
+
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/market-history?resolution=tenth',
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            slotSeconds: 0.1,
+            groups: ['fx', 'interest_rates'],
+            bins: [{ at: '2026-10-28T12:00:00Z', counts: [3, 1], pace: 2, activeShare: 1 }],
+        });
+        expect(calls).toEqual([
+            { subject: HISTORY_SUBJECT, body: { resolution: 'tenth', seconds: 600 } },
+        ]);
+    });
+
+    it('reads a shorter stretch when asked, and never more than the resolution keeps', async () => {
+        const answer = { success: true, message: '', slot_seconds: 1, groups: [], bins: [] };
+        const { server, sessionId, calls } = buildTestServer({ [HISTORY_SUBJECT]: answer });
+
+        await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/market-history?resolution=second&seconds=150',
+        );
+        await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/market-history?resolution=tenth&seconds=3600',
+        );
+
+        expect(calls).toEqual([
+            { subject: HISTORY_SUBJECT, body: { resolution: 'second', seconds: 150 } },
+            { subject: HISTORY_SUBJECT, body: { resolution: 'tenth', seconds: 600 } },
+        ]);
+    });
+
+    it('refuses a resolution it does not know before the service hears of it', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/market-history?resolution=minute',
+        );
+
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
     });
 });
 
@@ -646,6 +832,8 @@ describe('the market trace feeds', () => {
                 effectiveRate: 2.02,
                 phase: 0.37,
                 excess: 0,
+                branchingRatio: 0,
+                decay: 0,
             },
         ]);
     });

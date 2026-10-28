@@ -21,7 +21,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import { useParams, useSearchParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import {
     orderTimeline,
     recordEvents,
@@ -233,10 +233,15 @@ function DetailsTab({
                         {formatDateTime(record.as_of, language)}
                     </Fact>
                     <Fact label={t('marketdata.published.details.series')}>
-                        <span className="break-all">{record.series_uri}</span>
+                        <Link
+                            className="break-all text-accent hover:underline"
+                            to={`/market-data/evolution?uri=${encodeURIComponent(record.series_uri)}`}
+                        >
+                            {record.series_uri}
+                        </Link>
                     </Fact>
                     <Fact label={t('marketdata.published.details.config')}>
-                        {record.bootstrap_config_id}
+                        <span className="break-all">{record.bootstrap_config_id}</span>
                     </Fact>
                     <Fact label={t('marketdata.published.columns.state')}>
                         {t(`marketdata.published.state.${state}`)}
@@ -258,7 +263,12 @@ function DetailsTab({
                             : formatDateTime(record.published_at, language)}
                     </Fact>
                     <Fact label={t('marketdata.published.details.request')}>
-                        {record.request_id}
+                        <Link
+                            className="text-accent hover:underline"
+                            to={`/requests/${encodeURIComponent(record.request_id)}`}
+                        >
+                            {record.request_id}
+                        </Link>
                     </Fact>
                     <Fact label={t('marketdata.published.columns.points')}>
                         {String(record.point_count)}
@@ -286,9 +296,16 @@ function DetailsTab({
                                         : record.withdrawn_reason_code}
                                 </Fact>
                                 <Fact label={t('marketdata.published.details.endRequest')}>
-                                    {record.withdrawal_request_id === ''
-                                        ? t('marketdata.published.details.noRequest')
-                                        : record.withdrawal_request_id}
+                                    {record.withdrawal_request_id === '' ? (
+                                        t('marketdata.published.details.noRequest')
+                                    ) : (
+                                        <Link
+                                            className="text-accent hover:underline"
+                                            to={`/requests/${encodeURIComponent(record.withdrawal_request_id)}`}
+                                        >
+                                            {record.withdrawal_request_id}
+                                        </Link>
+                                    )}
                                 </Fact>
                             </>
                         ) : (
@@ -299,9 +316,16 @@ function DetailsTab({
                                         : formatDateTime(record.superseded_at, language)}
                                 </Fact>
                                 <Fact label={t('marketdata.published.details.successorRequest')}>
-                                    {record.superseded_by_request_id === ''
-                                        ? '—'
-                                        : record.superseded_by_request_id}
+                                    {record.superseded_by_request_id === '' ? (
+                                        '—'
+                                    ) : (
+                                        <Link
+                                            className="text-accent hover:underline"
+                                            to={`/requests/${encodeURIComponent(record.superseded_by_request_id)}`}
+                                        >
+                                            {record.superseded_by_request_id}
+                                        </Link>
+                                    )}
                                 </Fact>
                                 <Fact label={t('marketdata.published.details.successorAsOf')}>
                                     {record.superseded_as_of === null

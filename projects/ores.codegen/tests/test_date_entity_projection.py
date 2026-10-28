@@ -6,9 +6,9 @@ Run::
 
 A plain (non-key) column whose ``:type:`` is ``date`` and whose domain
 member is ``std::chrono::year_month_day`` is the shape every trading
-instrument date column needs (defect 2, trade model cleanup). sqlgen
-cannot bind ``year_month_day`` -- its parsing layer rejects the type with
-a ``static_assert`` -- so the entity struct stays the ISO-8601
+instrument date column needs (defect 2, trade model cleanup). The query
+builder's text codec holds no ``year_month_day``, so the entity struct stays
+the ISO-8601
 ``std::string`` the database column stores, exactly as the refdata date
 columns already do, and the mapper converts at the boundary with
 ``ores::platform::time::datetime::from_iso8601_date`` /
@@ -161,7 +161,7 @@ def test_a_plain_date_is_a_calendar_date_in_the_domain_struct(tmp_path):
 
 
 def test_a_plain_date_reaches_the_entity_as_an_iso_string(tmp_path):
-    """The entity is the database row type, and sqlgen cannot bind a date."""
+    """The entity is the database row type, and its text codec holds no date."""
     entity = _render_entity(tmp_path)
     assert "std::string settlement_date;" in entity
     assert "std::optional<std::string> optional_settlement_date;" in entity

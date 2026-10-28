@@ -179,11 +179,11 @@ std::vector<domain::demand_interval> read_latest_all_tenants(context ctx);
 std::vector<domain::demand_interval>
 demand_interval_repository::read_latest_all_tenants(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<demand_interval_entity>> |
-                       where("valid_to"_c == max.value()) |
-                       order_by("id"_c);
+    const auto query = query_builder::read<std::vector<demand_interval_entity>> |
+                       query_builder::where("valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
-    return execute_read_query<demand_interval_entity, domain::demand_interval>(
+    return query_builder::execute_read_query<demand_interval_entity, domain::demand_interval>(
         ctx,
         query,
         [](const auto& entities) { return demand_interval_mapper::map(entities); },
@@ -208,7 +208,6 @@ demand_interval_repository::read_latest_all_tenants(context ctx) {
 #include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

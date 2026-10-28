@@ -40,4 +40,32 @@ with their new documentation.
 - `doc/knowledge/ui/ore_element_and_leaf_screen_standard.org` — what the page
   must show.
 
+* Result
+
+Done on 2026-10-27 against a provisioned tenant on bright_faraday, with a
+browser rather than a fixture, and it failed: the page had not been seen since
+the parts were grouped. Three things were wrong, and the third was the one the
+suite could not have caught.
+
+1. The list answered 500. The central row is grouped too, so the wire nests
+   `id` and `version` one level; the BFF read them off the top and its own body
+   schema rejected the reply. The record page matched a party the same way and
+   said the convention did not exist.
+2. The record page then drew every term the kind declares, so a convention
+   holding only the long and short form was shown the paying and receiving
+   form's terms as defaults. Two of those terms carry the same name on both
+   forms, so they drew twice.
+3. The tests passed throughout, because their fixtures wrote the central row
+   flat by hand. A fixture that does not come from the wire cannot catch the
+   wire.
+
+All three are fixed, and the check is now `packages/harness/tests/
+convention-record.spec.ts`: it opens a convention of each form on the live
+fleet and asserts the documentation of each term, and that a one-form
+convention is told nothing about the other form.
+
+The frontend that was being served was also from an older build than the
+source, so the page could not be judged until it was rebuilt. That is how this
+run started.
+
 

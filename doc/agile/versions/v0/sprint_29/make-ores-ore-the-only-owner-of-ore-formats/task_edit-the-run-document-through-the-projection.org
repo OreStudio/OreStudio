@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: B77C6385-7DE1-46D7-B5B2-A3EA79EDD737
+:END:
+#+title: Task: Edit the run document through the projection
+#+description: The package handler finds the as-of date by searching for the text name="asofDate">, and finds the latest market data date by looking for a tab in column nine. Both formats have an owner in ores.ore, and neither edit goes through it.
+#+type: task
+#+level: s1
+#+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The package handler states a date change as a document change and asks the codec for the facts it needs, so no caller depends on how ORE spells an element.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-27                               |
+
+* Acceptance
+
+- No code searches for an ORE element name or attribute spelling.
+- The as-of date is read and set through the run document projection.
+- The latest market data date comes from the market data reader.
+- Tests cover a document whose marker sits in a comment, and one that writes its attributes in another order.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

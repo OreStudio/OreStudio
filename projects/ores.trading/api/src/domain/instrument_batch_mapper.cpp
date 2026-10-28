@@ -247,13 +247,11 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                     batch.equity_position_option_underlyings.end(),
                     v.underlyings.begin(),
                     v.underlyings.end());
-                batch.equity_basket_constituents.insert(
-                    batch.equity_basket_constituents.end(),
-                    v.basket_constituents.begin(),
-                    v.basket_constituents.end());
-                batch.equity_swap_periods.insert(batch.equity_swap_periods.end(),
-                                                 v.periods.begin(),
-                                                 v.periods.end());
+                batch.equity_basket_constituents.insert(batch.equity_basket_constituents.end(),
+                                                        v.basket_constituents.begin(),
+                                                        v.basket_constituents.end());
+                batch.equity_swap_periods.insert(
+                    batch.equity_swap_periods.end(), v.periods.begin(), v.periods.end());
                 batch.range_bounds.insert(
                     batch.range_bounds.end(), v.range_bounds.begin(), v.range_bounds.end());
             } else if constexpr (std::is_same_v<T, commodity_instrument_data>) {

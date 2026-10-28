@@ -23,11 +23,8 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/lei_entity_repository.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
 #include "ores.dq.api/domain/lei_entity.hpp"
 #include "ores.dq.api/domain/lei_entity_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/messaging/lei_entity_protocol.hpp"
@@ -41,19 +38,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/begin_transaction.hpp>
-#include <sqlgen/commit.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/insert.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -62,13 +46,13 @@
 
 namespace ores::dq::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string lei_entity_repository::sql() {
-    return generate_create_table_sql<lei_entity_entity>(lg());
+    return query_builder::insert_statement_sql<lei_entity_entity>(lg());
 }
 
 bool lei_entity_repository::is_sortable(std::string_view field) {
@@ -83,33 +67,34 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy lei_entity_list_order(const ores::utility::domain::order& order,
-                                               std::initializer_list<std::string> default_columns,
-                                               bool default_descending) {
+query_builder::order lei_entity_list_order(const ores::utility::domain::order& order,
+                                           std::initializer_list<std::string> default_columns,
+                                           bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"lei"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"lei"});
     if (!lei_entity_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of LEI entities cannot be ordered by " + order.field +
                                     ".");
-    return make_order({order.field}, order.descending, {"lei"});
+    return query_builder::make_order({order.field}, order.descending, {"lei"});
 }
 
 /*
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
+std::optional<query_builder::condition>
 lei_entity_filter_condition(const std::optional<messaging::lei_entities_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->lei_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->lei_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("lei", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("lei", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -155,10 +140,10 @@ void lei_entity_repository::write(context ctx,
                                   const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing LEI entity. " << "lei: " << v.lei;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_op(ctx,
-                     sqlgen::insert_or_replace(lei_entity_mapper::map(t)),
-                     lg(),
-                     "Writing LEI entity to database.");
+    query_builder::execute_write_op(ctx,
+                                    query_builder::insert_or_replace(lei_entity_mapper::map(t)),
+                                    lg(),
+                                    "Writing LEI entity to database.");
 }
 
 void lei_entity_repository::write(context ctx,
@@ -169,16 +154,17 @@ void lei_entity_repository::write(context ctx,
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_op(ctx,
-                     sqlgen::insert_or_replace(lei_entity_mapper::map(batch)),
-                     lg(),
-                     "Writing LEI entities to database.");
+    query_builder::execute_write_op(ctx,
+                                    query_builder::insert_or_replace(lei_entity_mapper::map(batch)),
+                                    lg(),
+                                    "Writing LEI entities to database.");
 }
 
 std::vector<domain::lei_entity> lei_entity_repository::read_latest(context ctx) {
-    const auto query = sqlgen::read<std::vector<lei_entity_entity>> | order_by("lei"_c);
+    const auto query =
+        query_builder::read<std::vector<lei_entity_entity>> | query_builder::order_by("lei"_c);
 
-    return execute_read_query<lei_entity_entity, domain::lei_entity>(
+    return query_builder::execute_read_query<lei_entity_entity, domain::lei_entity>(
         ctx,
         query,
         [](const auto& entities) { return lei_entity_mapper::map(entities); },
@@ -189,9 +175,10 @@ std::vector<domain::lei_entity> lei_entity_repository::read_latest(context ctx) 
 std::vector<domain::lei_entity> lei_entity_repository::read_latest(context ctx,
                                                                    const std::string& lei) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest LEI entity. " << "lei: " << lei;
-    const auto query = sqlgen::read<std::vector<lei_entity_entity>> | where("lei"_c == lei);
+    const auto query =
+        query_builder::read<std::vector<lei_entity_entity>> | query_builder::where("lei"_c == lei);
 
-    return execute_read_query<lei_entity_entity, domain::lei_entity>(
+    return query_builder::execute_read_query<lei_entity_entity, domain::lei_entity>(
         ctx,
         query,
         [](const auto& entities) { return lei_entity_mapper::map(entities); },
@@ -203,10 +190,10 @@ std::vector<domain::lei_entity> lei_entity_repository::read_latest(context ctx,
 std::vector<domain::lei_entity> lei_entity_repository::read_all(context ctx,
                                                                 const std::string& lei) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all LEI entity versions. " << "lei: " << lei;
-    const auto query =
-        sqlgen::read<std::vector<lei_entity_entity>> | where("lei"_c == lei) | order_by("lei"_c);
+    const auto query = query_builder::read<std::vector<lei_entity_entity>> |
+                       query_builder::where("lei"_c == lei) | query_builder::order_by("lei"_c);
 
-    return execute_read_query<lei_entity_entity, domain::lei_entity>(
+    return query_builder::execute_read_query<lei_entity_entity, domain::lei_entity>(
         ctx,
         query,
         [](const auto& entities) { return lei_entity_mapper::map(entities); },
@@ -226,10 +213,10 @@ lei_entity_repository::remove_status lei_entity_repository::remove(
     if (current.empty())
         return remove_status::missing;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::delete_from<lei_entity_entity> | where("tenant_id"_c == tid && "lei"_c == lei);
+    const auto query = query_builder::delete_from<lei_entity_entity> |
+                       query_builder::where("tenant_id"_c == tid && "lei"_c == lei);
 
-    execute_delete_query(ctx, query, lg(), "Removing LEI entity from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing LEI entity from database.");
     return remove_status::removed;
 }
 
@@ -245,10 +232,10 @@ lei_entity_repository::read_latest(context ctx,
                                    const std::optional<messaging::lei_entities_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest LEI entities with offset: " << offset
                                << " and limit: " << limit;
-    const auto query = sqlgen::read<std::vector<lei_entity_entity>> | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<lei_entity_entity>> |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<lei_entity_entity, domain::lei_entity>(
+    return query_builder::execute_ordered_read_query<lei_entity_entity, domain::lei_entity>(
         ctx,
         query,
         lei_entity_list_order(order, {"lei"}, false),
@@ -262,9 +249,9 @@ std::uint32_t lei_entity_repository::get_total_entity_count(
     context ctx, const std::optional<messaging::lei_entities_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active LEI entity count";
 
-    const auto query = sqlgen::read<std::vector<lei_entity_entity>>;
+    const auto query = query_builder::read<std::vector<lei_entity_entity>>;
 
-    return execute_count_query<lei_entity_entity>(
+    return query_builder::execute_count_query<lei_entity_entity>(
         ctx, query, lei_entity_filter_condition(filter), lg(), "Counting LEI entities");
 }
 
@@ -272,8 +259,9 @@ std::vector<domain::lei_entity>
 lei_entity_repository::read_latest(context ctx, const std::vector<std::string>& leis) {
     if (leis.empty())
         return {};
-    const auto query = sqlgen::read<std::vector<lei_entity_entity>> | where("lei"_c.in(leis));
-    auto result = execute_read_query<lei_entity_entity, domain::lei_entity>(
+    const auto query = query_builder::read<std::vector<lei_entity_entity>> |
+                       query_builder::where("lei"_c.in(leis));
+    auto result = query_builder::execute_read_query<lei_entity_entity, domain::lei_entity>(
         ctx,
         query,
         [](const auto& entities) { return lei_entity_mapper::map(entities); },
@@ -292,9 +280,9 @@ void lei_entity_repository::remove(context ctx, const std::vector<std::string>& 
     if (leis.empty())
         return;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::delete_from<lei_entity_entity> | where("tenant_id"_c == tid && "lei"_c.in(leis));
-    execute_delete_query(ctx, query, lg(), "Batch removing LEI entities.");
+    const auto query = query_builder::delete_from<lei_entity_entity> |
+                       query_builder::where("tenant_id"_c == tid && "lei"_c.in(leis));
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing LEI entities.");
 }
 
 

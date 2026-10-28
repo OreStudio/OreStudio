@@ -204,3 +204,67 @@ TEST_CASE("withdraw refuses a rate that was never enrolled", "[operational_clock
     clock.withdraw(2.0);
     CHECK(clock.population_rate() == 0.0);
 }
+
+TEST_CASE("a reconfigured clock moves differently from now and keeps what passed",
+          "[operational_clock]") {
+    operational_clock clock(busy, market_stream(17));
+    clock.enrol(5.0);
+    for (int i = 0; i < 4; ++i)
+        clock.record_event();
+    clock.advance(0.25);
+    const double tau = clock.tau();
+    const double heat = clock.heat();
+    const auto state = clock.state();
+    const double left = *clock.next_transition_in();
+    const double old_rate = state == market_state::calm ? busy.wake_rate : busy.calm_rate;
+
+    auto slower = busy;
+    slower.wake_rate = 1.0;
+    slower.calm_rate = 4.0;
+    slower.jump = 1.0;
+    slower.decay = 4.0;
+    clock.reconfigure(slower);
+
+    CHECK(clock.tau() == tau);
+    CHECK(clock.heat() == heat);
+    CHECK(clock.state() == state);
+    const double new_rate = state == market_state::calm ? slower.wake_rate : slower.calm_rate;
+    CHECK(*clock.next_transition_in() == Catch::Approx(left * old_rate / new_rate));
+    // Active a fifth of the time at two, so calm is three quarters.
+    CHECK(clock.multiplier(market_state::calm) == Catch::Approx(0.75));
+    CHECK(clock.loop_gain() == 0.25);
+
+    clock.pin(state);
+    clock.advance(0.1);
+    CHECK(clock.heat() == Catch::Approx(heat * std::exp(-0.4)));
+}
+
+TEST_CASE("a refused reconfigure names the number and changes nothing", "[operational_clock]") {
+    operational_clock clock(busy, market_stream(19));
+    const double left = *clock.next_transition_in();
+
+    auto runaway = busy;
+    runaway.jump = 2.5;
+    CHECK_THROWS_WITH(clock.reconfigure(runaway), Catch::Matchers::ContainsSubstring("is 1.25"));
+    auto stopped = busy;
+    stopped.speed = -3.0;
+    CHECK_THROWS_WITH(clock.reconfigure(stopped), Catch::Matchers::ContainsSubstring("is -3"));
+
+    CHECK(clock.loop_gain() == 0.25);
+    CHECK(clock.speed() == busy.speed);
+    CHECK(*clock.next_transition_in() == left);
+}
+
+TEST_CASE("simulated time counts each stretch of tau at the speed then in force",
+          "[operational_clock]") {
+    operational_clock clock(busy, market_stream(23));
+    clock.pin(market_state::active);
+    clock.advance(1.0);
+    const double first = clock.tau();
+    auto faster = busy;
+    faster.speed = 2.0 * busy.speed;
+    clock.reconfigure(faster);
+    clock.advance(1.0);
+    const double second = clock.tau() - first;
+    CHECK(clock.simulated() == Catch::Approx(busy.speed * first + faster.speed * second));
+}

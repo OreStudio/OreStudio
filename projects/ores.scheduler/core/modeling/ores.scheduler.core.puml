@@ -69,7 +69,7 @@ namespace ores #F2F2F2 {
             class job_definition_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : optional<string>
                 +version : int
                 +job_name : string
@@ -113,7 +113,7 @@ namespace ores #F2F2F2 {
             class job_instance_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<int64_t>
+                +id : int64_t
                 +tenant_id : optional<string>
                 +party_id : optional<string>
                 +job_definition_id : string

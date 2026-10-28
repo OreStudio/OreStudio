@@ -43,7 +43,7 @@ approval_decision_type_mapper::map(const approval_decision_type_entity& v) {
     domain::approval_decision_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

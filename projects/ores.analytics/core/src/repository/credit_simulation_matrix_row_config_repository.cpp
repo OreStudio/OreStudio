@@ -28,11 +28,8 @@
 #include "ores.analytics.api/messaging/credit_simulation_matrix_row_config_protocol.hpp"
 #include "ores.analytics.core/repository/credit_simulation_matrix_row_config_entity.hpp"
 #include "ores.analytics.core/repository/credit_simulation_matrix_row_config_mapper.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/log/sources/severity_feature.hpp>
@@ -42,16 +39,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -60,13 +47,13 @@
 
 namespace ores::analytics::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string credit_simulation_matrix_row_config_repository::sql() {
-    return generate_create_table_sql<credit_simulation_matrix_row_config_entity>(lg());
+    return query_builder::insert_statement_sql<credit_simulation_matrix_row_config_entity>(lg());
 }
 
 bool credit_simulation_matrix_row_config_repository::is_sortable(std::string_view field) {
@@ -81,42 +68,44 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
+query_builder::order
 credit_simulation_matrix_row_config_list_order(const ores::utility::domain::order& order,
                                                std::initializer_list<std::string> default_columns,
                                                bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!credit_simulation_matrix_row_config_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of matrix rows cannot be ordered by " + order.field +
                                     ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 /*
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition> credit_simulation_matrix_row_config_filter_condition(
+std::optional<query_builder::condition> credit_simulation_matrix_row_config_filter_condition(
     const std::optional<messaging::credit_simulation_matrix_row_configs_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->transition_matrix_id)
-        r.push_back(equals("transition_matrix_id", filter_value(*filter->transition_matrix_id)));
+        r.push_back(query_builder::equals(
+            "transition_matrix_id", query_builder::filter_value(*filter->transition_matrix_id)));
     if (filter->id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
     }
     if (filter->transition_matrix_id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->transition_matrix_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("transition_matrix_id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("transition_matrix_id", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -179,10 +168,10 @@ void credit_simulation_matrix_row_config_repository::write(
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing matrix row. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx,
-                        credit_simulation_matrix_row_config_mapper::map(t),
-                        lg(),
-                        "Writing matrix row to database.");
+    query_builder::execute_write_query(ctx,
+                                       credit_simulation_matrix_row_config_mapper::map(t),
+                                       lg(),
+                                       "Writing matrix row to database.");
 }
 
 void credit_simulation_matrix_row_config_repository::write(
@@ -194,22 +183,23 @@ void credit_simulation_matrix_row_config_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        credit_simulation_matrix_row_config_mapper::map(batch),
-                        lg(),
-                        "Writing matrix rows to database.");
+    query_builder::execute_write_query(ctx,
+                                       credit_simulation_matrix_row_config_mapper::map(batch),
+                                       lg(),
+                                       "Writing matrix rows to database.");
 }
 
 std::vector<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<credit_simulation_matrix_row_config_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+    const auto query =
+        query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
+        query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        query_builder::order_by("id"_c);
 
-    return execute_read_query<credit_simulation_matrix_row_config_entity,
-                              domain::credit_simulation_matrix_row_config>(
+    return query_builder::execute_read_query<credit_simulation_matrix_row_config_entity,
+                                             domain::credit_simulation_matrix_row_config>(
         ctx,
         query,
         [](const auto& entities) {
@@ -224,11 +214,12 @@ credit_simulation_matrix_row_config_repository::read_latest(context ctx, const s
     BOOST_LOG_SEV(lg(), debug) << "Reading latest matrix row. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<credit_simulation_matrix_row_config_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
-    return execute_read_query<credit_simulation_matrix_row_config_entity,
-                              domain::credit_simulation_matrix_row_config>(
+    return query_builder::execute_read_query<credit_simulation_matrix_row_config_entity,
+                                             domain::credit_simulation_matrix_row_config>(
         ctx,
         query,
         [](const auto& entities) {
@@ -244,15 +235,16 @@ credit_simulation_matrix_row_config_repository::read_latest_by_from_rating(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest matrix row by from_rating: " << from_rating;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<credit_simulation_matrix_row_config_entity>> |
-                       where("tenant_id"_c == tid && "from_rating"_c == from_rating &&
+    const auto query =
+        query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
+        query_builder::where("tenant_id"_c == tid && "from_rating"_c == from_rating &&
                              "valid_to"_c == max.value());
 
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
     // finder with a parent column is pinned to its parent's party already.
-    auto found = execute_read_query<credit_simulation_matrix_row_config_entity,
-                                    domain::credit_simulation_matrix_row_config>(
+    auto found = query_builder::execute_read_query<credit_simulation_matrix_row_config_entity,
+                                                   domain::credit_simulation_matrix_row_config>(
         ctx,
         query,
         [](const auto& entities) {
@@ -270,12 +262,13 @@ credit_simulation_matrix_row_config_repository::read_any_by_from_rating(
     context ctx, const std::string& from_rating) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any matrix row by from_rating: " << from_rating;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<credit_simulation_matrix_row_config_entity>> |
-                       where("tenant_id"_c == tid && "from_rating"_c == from_rating) |
-                       order_by("valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
+        query_builder::where("tenant_id"_c == tid && "from_rating"_c == from_rating) |
+        query_builder::order_by("valid_from"_c.desc());
 
-    auto found = execute_read_query<credit_simulation_matrix_row_config_entity,
-                                    domain::credit_simulation_matrix_row_config>(
+    auto found = query_builder::execute_read_query<credit_simulation_matrix_row_config_entity,
+                                                   domain::credit_simulation_matrix_row_config>(
         ctx,
         query,
         [](const auto& entities) {
@@ -300,12 +293,13 @@ std::vector<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all matrix row versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<credit_simulation_matrix_row_config_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<credit_simulation_matrix_row_config_entity,
-                              domain::credit_simulation_matrix_row_config>(
+    return query_builder::execute_read_query<credit_simulation_matrix_row_config_entity,
+                                             domain::credit_simulation_matrix_row_config>(
         ctx,
         query,
         [](const auto& entities) {
@@ -322,19 +316,21 @@ credit_simulation_matrix_row_config_repository::read_at_version(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading matrix row at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<credit_simulation_matrix_row_config_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
-                       sqlgen::limit(1);
+    const auto query =
+        query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+        query_builder::limit(1);
 
-    const auto entities = execute_read_query<credit_simulation_matrix_row_config_entity,
-                                             domain::credit_simulation_matrix_row_config>(
-        ctx,
-        query,
-        [](const auto& entities) {
-            return credit_simulation_matrix_row_config_mapper::map(entities);
-        },
-        lg(),
-        "Reading matrix row at version.");
+    const auto entities =
+        query_builder::execute_read_query<credit_simulation_matrix_row_config_entity,
+                                          domain::credit_simulation_matrix_row_config>(
+            ctx,
+            query,
+            [](const auto& entities) {
+                return credit_simulation_matrix_row_config_mapper::map(entities);
+            },
+            lg(),
+            "Reading matrix row at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -355,13 +351,14 @@ credit_simulation_matrix_row_config_repository::read_latest_by_transition_matrix
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<credit_simulation_matrix_row_config_entity>> |
-        where("tenant_id"_c == tid && "transition_matrix_id"_c == transition_matrix_id &&
-              "valid_to"_c == max.value()) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+        query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
+        query_builder::where("tenant_id"_c == tid &&
+                             "transition_matrix_id"_c == transition_matrix_id &&
+                             "valid_to"_c == max.value()) |
+        query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<credit_simulation_matrix_row_config_entity,
-                                      domain::credit_simulation_matrix_row_config>(
+    return query_builder::execute_ordered_read_query<credit_simulation_matrix_row_config_entity,
+                                                     domain::credit_simulation_matrix_row_config>(
         ctx,
         query,
         credit_simulation_matrix_row_config_list_order(order, {"id"}, false),
@@ -385,11 +382,12 @@ credit_simulation_matrix_row_config_repository::get_total_row_count_by_transitio
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<credit_simulation_matrix_row_config_entity>> |
-        where("tenant_id"_c == tid && "transition_matrix_id"_c == transition_matrix_id &&
-              "valid_to"_c == max.value());
+        query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
+        query_builder::where("tenant_id"_c == tid &&
+                             "transition_matrix_id"_c == transition_matrix_id &&
+                             "valid_to"_c == max.value());
 
-    return execute_count_query<credit_simulation_matrix_row_config_entity>(
+    return query_builder::execute_count_query<credit_simulation_matrix_row_config_entity>(
         ctx,
         query,
         credit_simulation_matrix_row_config_filter_condition(filter),
@@ -416,11 +414,11 @@ credit_simulation_matrix_row_config_repository::remove(context ctx,
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<credit_simulation_matrix_row_config_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+    const auto query = query_builder::delete_from<credit_simulation_matrix_row_config_entity> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing matrix row from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing matrix row from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -444,15 +442,18 @@ credit_simulation_matrix_row_config_repository::read_latest(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest matrix rows with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<credit_simulation_matrix_row_config_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query =
+        query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
+        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
+        query_builder::limit(limit);
 
-    return execute_ordered_read_query<credit_simulation_matrix_row_config_entity,
-                                      domain::credit_simulation_matrix_row_config>(
+    return query_builder::execute_ordered_read_query<credit_simulation_matrix_row_config_entity,
+                                                     domain::credit_simulation_matrix_row_config>(
         ctx,
         query,
         credit_simulation_matrix_row_config_list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), credit_simulation_matrix_row_config_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                credit_simulation_matrix_row_config_filter_condition(filter)),
         [](const auto& entities) {
             return credit_simulation_matrix_row_config_mapper::map(entities);
         },
@@ -467,13 +468,15 @@ std::uint32_t credit_simulation_matrix_row_config_repository::get_total_row_coun
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active matrix row count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<credit_simulation_matrix_row_config_entity>> |
-                       where("tenant_id"_c == tid);
+    const auto query =
+        query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
+        query_builder::where("tenant_id"_c == tid);
 
-    return execute_count_query<credit_simulation_matrix_row_config_entity>(
+    return query_builder::execute_count_query<credit_simulation_matrix_row_config_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), credit_simulation_matrix_row_config_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                credit_simulation_matrix_row_config_filter_condition(filter)),
         lg(),
         "Counting matrix rows");
 }
@@ -485,10 +488,11 @@ credit_simulation_matrix_row_config_repository::read_latest(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<credit_simulation_matrix_row_config_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    auto result = execute_read_query<credit_simulation_matrix_row_config_entity,
-                                     domain::credit_simulation_matrix_row_config>(
+    const auto query =
+        query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result = query_builder::execute_read_query<credit_simulation_matrix_row_config_entity,
+                                                    domain::credit_simulation_matrix_row_config>(
         ctx,
         query,
         [](const auto& entities) {
@@ -511,9 +515,10 @@ void credit_simulation_matrix_row_config_repository::remove(context ctx,
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<credit_simulation_matrix_row_config_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing matrix rows.");
+    const auto query =
+        query_builder::delete_from<credit_simulation_matrix_row_config_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing matrix rows.");
 }
 
 

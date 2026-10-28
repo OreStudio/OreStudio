@@ -284,7 +284,6 @@ trigger's DQ validation (see below) remains the production guard, and
 #+begin_src cpp :name includes
 #include <optional>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

@@ -46,7 +46,7 @@ intraday_power_load_convention_mapper::map(const intraday_power_load_convention_
     domain::intraday_power_load_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = v.id.value();
+    r.id = v.id;
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.explicit_load_profile = v.explicit_load_profile;
     r.business_day_load_rules = v.business_day_load_rules;

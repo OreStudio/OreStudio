@@ -46,7 +46,7 @@ trade_authorisation_request_mapper::map(const trade_authorisation_request_entity
     domain::trade_authorisation_request r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.request_id = boost::lexical_cast<boost::uuids::uuid>(v.request_id.value());
+    r.request_id = boost::lexical_cast<boost::uuids::uuid>(v.request_id);
     r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
     r.trade_version = v.trade_version;
     r.modified_by = v.modified_by;

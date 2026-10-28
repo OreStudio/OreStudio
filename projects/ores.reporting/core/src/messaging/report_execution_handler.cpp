@@ -19,20 +19,20 @@
  */
 #include "ores.reporting.core/messaging/report_execution_handler.hpp"
 #include "ores.compute.api/messaging/result_protocol.hpp"
-#include "ores.compute.api/net/compute_storage.hpp"
 #include "ores.compute.api/messaging/workunit_protocol.hpp"
+#include "ores.compute.api/net/compute_storage.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.client/client/run_token_minter.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.api/domain/report_result_row.hpp"
+#include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
 #include "ores.reporting.core/repository/report_result_row_repository.hpp"
-#include "ores.reporting.core/results/canonical_reader.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
+#include "ores.reporting.core/results/canonical_reader.hpp"
 #include "ores.reporting.core/service/engine_error_log.hpp"
 #include "ores.reporting.core/service/execution_storage_plan.hpp"
 #include "ores.reporting.core/service/report_error_recorder.hpp"
@@ -928,8 +928,8 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
             try {
                 body = transfer.download_blob(bucket, key);
             } catch (const std::exception& read) {
-                refuse(std::format("The rows of result {} were not read: {}", result_id,
-                                   read.what()));
+                refuse(
+                    std::format("The rows of result {} were not read: {}", result_id, read.what()));
                 return;
             }
             auto read_rows =
@@ -948,8 +948,7 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
             return;
         }
 
-        const auto as_of =
-            instance->priced_at.value_or(std::chrono::system_clock::now());
+        const auto as_of = instance->priced_at.value_or(std::chrono::system_clock::now());
         std::vector<domain::report_result_row> rows;
         rows.reserve(outcome.rows.size());
         for (const auto& row : outcome.rows) {
@@ -961,18 +960,30 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                                    row.subject_id));
                 return;
             }
-            rows.push_back(domain::report_result_row{
-                .id = boost::uuids::random_generator()(),
-                .party_id = instance->party_id,
-                .report_instance_id = sg(req.report_instance_id),
-                .as_of = as_of,
-                .subject_type = row.subject_type,
-                .subject_id = subject,
-                .measure = row.measure,
-                .currency = row.currency,
-                .report_definition_id = instance->definition_id,
-                .figure = row.figure,
-                .source = row.source});
+            boost::uuids::uuid counterparty{};
+            if (!row.counterparty_id.empty()) {
+                try {
+                    counterparty = sg(row.counterparty_id);
+                } catch (const std::exception&) {
+                    refuse(std::format(
+                        "The run's rows state a counterparty '{}' that is not a record id.",
+                        row.counterparty_id));
+                    return;
+                }
+            }
+            rows.push_back(
+                domain::report_result_row{.id = boost::uuids::random_generator()(),
+                                          .party_id = instance->party_id,
+                                          .report_instance_id = sg(req.report_instance_id),
+                                          .as_of = as_of,
+                                          .subject_type = row.subject_type,
+                                          .subject_id = subject,
+                                          .measure = row.measure,
+                                          .currency = row.currency,
+                                          .report_definition_id = instance->definition_id,
+                                          .counterparty_id = counterparty,
+                                          .figure = row.figure,
+                                          .source = row.source});
         }
 
         repository::report_result_row_repository repo;
@@ -981,8 +992,8 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
         post_process_results_result result;
         result.success = true;
         result.rows_loaded = static_cast<int>(rows.size());
-        result.message = std::format("Loaded {} rows for run {}", rows.size(),
-                                     req.report_instance_id);
+        result.message =
+            std::format("Loaded {} rows for run {}", rows.size(), req.report_instance_id);
 
         BOOST_LOG_SEV(lg(), info) << "post_process_results complete | instance="
                                   << req.report_instance_id << " rows=" << rows.size();

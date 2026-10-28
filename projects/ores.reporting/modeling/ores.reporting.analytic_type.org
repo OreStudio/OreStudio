@@ -126,7 +126,6 @@ The order the analytic appears in a list.
 #+begin_src cpp :name includes
 #include <string>
 #include <optional>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

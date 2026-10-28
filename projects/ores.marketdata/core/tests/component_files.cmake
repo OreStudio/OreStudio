@@ -67,6 +67,7 @@ set(files
     "service_series_tick_reader_tests.cpp"
     "subscription_eventing_integration_tests.cpp"
     "subscription_interval_eventing_integration_tests.cpp"
+    "terms_provider_terms_tests.cpp"
     "vendor_notation_catalogue_tests.cpp"
     "vendor_notation_corpus_tests.cpp"
 )

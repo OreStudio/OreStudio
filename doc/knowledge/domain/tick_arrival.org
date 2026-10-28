@@ -60,6 +60,37 @@ removed one from another thread is a command the loop applies at its clock's
 now. =remove= and =pin= return once the loop has applied them, so a feed may
 destroy what its body points at, and a reply to a pin shows the pin in force.
 
+The system tenant can also change the market's numbers while it runs: the
+chain's two rates, the heat's jump and decay, the market speed, and the tail
+loading that tilts a spot price's shape with the pace (see the market volatility
+channel note). =configure=
+is a command like a pin. It applies at the loop's now and goes in the trace as a
+=configure= event. What has passed stays as it was. The heat keeps its level and
+fades at the new decay. The dwell in progress keeps its unit draw, so it ends at
+the new rate's share of it. The calm multiplier is computed again, so the mean
+pace stays at one. The clock refuses a set whose loop gain is one or more, a rate
+or a speed that is not positive, or rates that leave no positive calm multiplier.
+The refusal names the number, and then nothing changes.
+
+The clock counts simulated seconds as it counts tau: each stretch of tau times
+the speed in force while it passed. A tick's simulated seconds are the change in
+that count, so a speed change reaches every spot feed at its next tick. A curve
+fixes its step from the speed when it starts, because a scheme that only
+approximates its law is checked against that step. It keeps that step until it
+starts again, and it counts a tick's simulated seconds in steps of that length.
+The settings are on the shell (=synthetic regime set=) and on the Market regime
+tab, read only for a tenant.
+
+The loop keeps two records a screen reads. Each heat reading, taken every
+100 ms, carries the market's intensity λ(t): the ticks a second every series'
+law asks for at that instant, its intensity times its sensitivity times the
+pace. And an arrival history counts the ticks of each group by slot: an hour by
+the second and ten minutes by the tenth of a second, with the mean pace and the
+active share of each slot. A series names its group, and a feed names its asset
+class. The history is a count, not a list of ticks, so it costs the same at any
+tick rate; the Market screen folds it into a temporal raster, a column a minute
+and a cell a second of it, where a regime spell shows as a band of columns.
+
 The scheduler holds no database, messaging or logging code, so it keeps the
 rule of =ores.analytics.quant=. The synthetic side holds only the feeds. Any
 other consumer can pace itself the same way without linking the synthetic

@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 84E84D0E-4EBA-46DD-85C0-40463293D22B
+:END:
+#+title: Story: Make ores.ore the only owner of ORE formats
+#+description: The ORE codec reads and writes ORE documents and reaches no other component's tables, services or runtime; the file names ORE gives its inputs, the engine's log lines and the edits to a run document all live in ores.ore, and a build check keeps them there.
+#+type: story
+#+level: s2
+#+filetags: :ore:architecture:codec:sprint_29:v0:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+ores.ore converts between ORE formats and our domain types and does nothing else. Every ORE-defined format is read and written in one place, the component's dependencies are api contracts rather than other components' cores, and a build check stops the boundary from drifting again.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | The story is scaffolded and scoped from an audit of the codec's dependencies. No work task has started. |
+| Waiting on    | Nothing.                               |
+| Next          | [[id:B46F663A-361B-478C-9124-8220698FC897][Remove the database store from the ORE codec]], which drops four of the six unjustified links on its own. |
+| Last touched  | 2026-10-27                               |
+
+* Acceptance
+
+- ores.ore.core links no other component's core or service library; its dependencies are api contracts, logging, platform, utility, pugixml and Boost.
+- The codec performs no database work: it opens no session, calls no repository and writes no table.
+- The setup parameter that names each ORE input file is declared in ores.ore and checked against external/ore/xsd, not read from a configuration table.
+- One parser reads the engine's log, and it reads both log.txt and log_structured.json.
+- A build check fails when a component's core library links another component's core or service library.
+- The ORE document kinds the codec recognises, and the formats it converts in each direction, are recorded in one place and agree with external/ore/xsd.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B46F663A-361B-478C-9124-8220698FC897][Remove the database store from the ORE codec]] | BACKLOG | | | The ORE codec's run store writes reporting, refdata and analytics tables through their repositories and services, and only its own tests call it. Remove the import and export, keep the package helpers, and drop the core libraries the codec no longer needs. |
+| [[id:DB1BED52-46E6-4736-954A-CB1A014BCEF5][Move the conventions bundle into refdata's contract]] | BACKLOG | | | conventions_package.hpp includes ores.refdata.core for conventions_bundle_row, a three-field payload type. That one type is why the ORE codec depends on refdata's service layer. Move the bundle types to refdata.api, where the stage and commit protocol that carries them lives. |
+| [[id:591D3F6E-3DA9-4A8D-8CFE-77497D1AEB37][Declare the ORE input files in ores.ore]] | BACKLOG | | | The run configuration import learns that the conventions document is named by the conventionsFile setup parameter by reading reporting's file_types.ore_parameter column, a seed generated from external/ore. A fact of ore.xsd belongs in ores.ore. |
+| [[id:D839BB0D-CE10-423A-B0EB-61D68925F0F2][Read the engine log with one parser]] | BACKLOG | | | ores.ore carries two log parsers. ore_log_parser returns a normalised line and has one client, the compute node's log publisher; engine_log reads both log.txt and log_structured.json. Two readers of one format disagree eventually. |
+| [[id:B77C6385-7DE1-46D7-B5B2-A3EA79EDD737][Edit the run document through the projection]] | BACKLOG | | | The package handler finds the as-of date by searching for the text name="asofDate">, and finds the latest market data date by looking for a tab in column nine. Both formats have an owner in ores.ore, and neither edit goes through it. |
+| [[id:38CBD4E5-6339-4453-A28C-172C025F7AAB][Delete reporting's copy of the ORE log parser]] | BACKLOG | | | reporting parses ORE's log.txt itself in engine_error_log, and cannot link ores.ore while the codec depends on reporting. With the codec clean, reporting keeps the canonical row type and deletes the grammar. |
+| [[id:AD82918C-283A-4C32-9324-BAC29219230A][Move the cross-component tests out of the ORE codec]] | BACKLOG | | | Nine test files in the codec's suite need a database, and three of them read reporting's tables rather than the codec: the configuration type seed, reporting's configuration repository, and the run store this story deletes. |
+| [[id:34D0D200-DC5D-46FF-8ABD-89D1EAB5B6D4][Fail a build that links another component's core]] | BACKLOG | | | Nothing stops a component's core from linking another component's core or service, which is how the ORE codec reached into reporting. Encode the rule in the component model and check it in CI. |
+| [[id:8ADBE19F-10E6-449B-BB82-4A1201488801][Classify every ORE document and record what we convert]] | BACKLOG | | | document_kind knows six of the thirteen generated families, so the directory scanner cannot name a run document, a curve configuration or a today's market. Five families have a binding and reach nothing. |
+| [[id:F342D0EF-6F47-4823-A3A9-254CD37E5A8B][Scaffold story: Make ores.ore the only owner of ORE formats]] | DONE | 2026-10-27 | 2026-10-28 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+
+* Notes
+
+The audit that scoped the story measured six dependencies the codec does not
+justify. The Status table claims the run store drops four of them, which is
+the table below.
+
+| # | Dependency | Kind | Why it is there | Dropped by |
+|---+------------+------+-----------------+------------|
+| 1 | =ores.database= | public | the run store's session context | the run store |
+| 2 | =ores.analytics.core= | private | the run store's document services | the run store |
+| 3 | =ores.reporting.core= | private | the run store's repositories | the run store |
+| 4 | =ores.refdata.core= | public | the conventions bundle type, and the run store's curve service | the run store and the bundle move |
+| 5 | =ores.nats= | public | nothing the codec uses; the generated core profile adds it | the profile, or a per-component override |
+| 6 | =ores.dq.api= | private | four change-reason constants in the planner | the planner taking them as a parameter |
+
+The api contracts the codec keeps are justified by the mapping it performs:
+=ores.refdata.api=, =ores.trading.api= and =ores.analytics.api=. =ores.reporting.api=
+stays for the run document projection, which is the conversion the component
+exists to perform.
+
+* Decisions
+
+- 2026-10-27: The story is scoped from an audit of the codec's dependencies. The codec itself is clean: =xml/generated= is produced from =external/ore/xsd= by our own generator, and no XML parser exists outside the component. Every finding sits above the codec — the run store, two public headers, and one test suite.
+- 2026-10-27: The run store's =import_run= and =export_run= are deleted rather than re-homed. The live import is =run_configuration_operations=, which reaches each owner over NATS with a delegated token. The database path has no production caller, and only its own tests keep it alive. The package helpers stay, because an ORE input directory and its layout are ORE artefacts.
+- 2026-10-27: =reporting.api= stays a codec dependency. Mapping =ore.xml= into our run document is the conversion this component exists to perform, and the reporting contract is a leaf. What changes is the kind of edge that remains: no =core=, no =service=.
+- 2026-10-27: The XML binding generator is not revisited. xsdcpp is removed and the generator is ours. Its missing drift check is recorded out of scope so that it is not lost.
+- 2026-10-27: The state before the work is measured, not assumed. =libores.ore.core.so= declares 22 ORES libraries, including =reporting.core=, =analytics.core=, =refdata.core=, =service= and =database=. =ores.compute.wrapper= links the codec, so the compute node process loads the reporting service layer to parse a log and marshal a CSV.
+
+* Out of scope
+
+- A drift check for the XML binding generator. =regenerate_xml_bindings.sh= supports =XML_BINDINGS_OUT= for one, but no test and no CI job runs it, so the committed tables can disagree with =external/ore/xsd=. The component overview claims the check exists.
+- The conventions import and export redesign, which has a story of its own.
+- The =oresmd://= URI grammar, hand-built in =ores.ore.service=, =ores.iam.core=, =ores.synthetic.api= and the shell. It is our format, not ORE's.

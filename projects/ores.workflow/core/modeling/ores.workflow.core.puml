@@ -85,7 +85,7 @@ namespace ores #F2F2F2 {
             class workflow_instance_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +type : string
@@ -138,7 +138,7 @@ namespace ores #F2F2F2 {
             class workflow_step_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +workflow_id : string

@@ -111,7 +111,8 @@ void conventions_mapper::reverse_tenor_basis_swap(
         w.set_optional_text("ReceiveFrequency", p.rec_leg.receive_frequency);
         w.set_optional_flag("SpreadOnRec", p.coupon.spread_on_rec);
         w.set_optional_flag("IncludeSpread", p.coupon.include_spread);
-        put_enum(w, "SubPeriodsCouponType", p.coupon.sub_periods_coupon_type, "sub-periods coupon type");
+        put_enum(
+            w, "SubPeriodsCouponType", p.coupon.sub_periods_coupon_type, "sub-periods coupon type");
         w.set_optional_flag("PayIsAveraged", p.pay_leg.pay_is_averaged);
         w.set_optional_flag("RecIsAveraged", p.rec_leg.rec_is_averaged);
         return;
@@ -124,7 +125,8 @@ void conventions_mapper::reverse_tenor_basis_swap(
         w.set_optional_text("ShortPayTenor", l.short_leg.short_pay_tenor);
         w.set_optional_flag("SpreadOnShort", l.short_leg.spread_on_short);
         w.set_optional_flag("IncludeSpread", l.coupon.include_spread);
-        put_enum(w, "SubPeriodsCouponType", l.coupon.sub_periods_coupon_type, "sub-periods coupon type");
+        put_enum(
+            w, "SubPeriodsCouponType", l.coupon.sub_periods_coupon_type, "sub-periods coupon type");
     }
 }
 

@@ -18,6 +18,7 @@
  */
 #include "ores.database/pq/connection.hpp"
 #include "ores.database/pq/store_error.hpp"
+#include "ores.logging/make_logger.hpp"
 #include <charconv>
 
 namespace ores::database::pq {
@@ -83,11 +84,33 @@ std::span<const std::byte> result::value(int row, int column) const noexcept {
     return {data, static_cast<std::size_t>(PQgetlength(handle_.get(), row, column))};
 }
 
+std::string_view result::text(int row, int column) const noexcept {
+    return {PQgetvalue(handle_.get(), row, column),
+            static_cast<std::size_t>(PQgetlength(handle_.get(), row, column))};
+}
+
 std::uint64_t result::affected() const {
     const std::string_view tag = PQcmdTuples(handle_.get());
     std::uint64_t n = 0;
     std::from_chars(tag.data(), tag.data() + tag.size(), n);
     return n;
+}
+
+namespace {
+
+/**
+ * @brief Logs a server notice at debug level; libpq's default prints it to
+ * stderr.
+ */
+void log_notice(void*, const char* message) {
+    using namespace ores::logging;
+    static auto lg = make_logger("ores.database.pq.connection");
+    std::string_view text(message);
+    if (!text.empty() && text.back() == '\n')
+        text.remove_suffix(1);
+    BOOST_LOG_SEV(lg, debug) << text;
+}
+
 }
 
 connection::connection(const connection_options& options)
@@ -96,7 +119,9 @@ connection::connection(const connection_options& options)
         throw store_error("Could not allocate a connection", "", error_kind::retryable);
     if (PQstatus(handle_.get()) != CONNECTION_OK)
         throw store_error(message_of(*this, "Could not connect"), "08001", error_kind::retryable);
+    PQsetNoticeProcessor(handle_.get(), log_notice, nullptr);
 }
+
 
 bool connection::healthy() const noexcept {
     return PQstatus(handle_.get()) == CONNECTION_OK;

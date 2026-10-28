@@ -19,6 +19,7 @@
  */
 #include "ores.workflow.core/repository/step_claim_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <string>
 
@@ -88,6 +89,17 @@ bool step_claim_repository::release(context ctx, const boost::uuids::uuid& step_
                                                  "releasing the claim on a workflow step");
     return !rows.empty() && !rows.front().empty() && rows.front().front() &&
            std::stoll(*rows.front().front()) > 0;
+}
+
+std::optional<std::chrono::system_clock::time_point>
+step_claim_repository::claimed_at(context ctx, const boost::uuids::uuid& step_id) {
+    static const std::string sql =
+        "SELECT claimed_at FROM ores_workflow_step_claims_tbl WHERE step_id = $1::uuid";
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx, sql, {boost::uuids::to_string(step_id)}, lg(), "reading when a step was claimed");
+    if (rows.empty() || rows.front().empty() || !rows.front().front())
+        return std::nullopt;
+    return timestamp_to_timepoint(std::string_view{*rows.front().front()});
 }
 
 std::optional<std::string> step_claim_repository::holder(context ctx,

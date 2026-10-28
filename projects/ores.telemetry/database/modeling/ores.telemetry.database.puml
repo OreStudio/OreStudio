@@ -28,9 +28,9 @@ namespace ores #F2F2F2 {
                 class telemetry_entity <<struct>> {
                     +schema : constexpr static const char*
                     +tablename : constexpr static const char*
-                    +id : sqlgen::PrimaryKey<string>
+                    +id : string
                     +tenant_id : string
-                    +timestamp : sqlgen::PrimaryKey<db_timestamp>
+                    +timestamp : db_timestamp
                     +source : string
                     +source_name : string
                     +session_id : optional<string>
@@ -67,8 +67,8 @@ namespace ores #F2F2F2 {
                 class nats_server_sample_entity <<struct>> {
                     +schema : constexpr static const char*
                     +tablename : constexpr static const char*
-                    +sampled_at : sqlgen::PrimaryKey<db_timestamp>
-                    +tenant_id : sqlgen::PrimaryKey<string>
+                    +sampled_at : db_timestamp
+                    +tenant_id : string
                     +in_msgs : int64_t
                     +out_msgs : int64_t
                     +in_bytes : int64_t
@@ -80,17 +80,17 @@ namespace ores #F2F2F2 {
                 class service_sample_entity <<struct>> {
                     +schema : constexpr static const char*
                     +tablename : constexpr static const char*
-                    +sampled_at : sqlgen::PrimaryKey<db_timestamp>
-                    +service_name : sqlgen::PrimaryKey<string>
-                    +instance_id : sqlgen::PrimaryKey<string>
+                    +sampled_at : db_timestamp
+                    +service_name : string
+                    +instance_id : string
                     +version : string
                 }
                 class nats_stream_sample_entity <<struct>> {
                     +schema : constexpr static const char*
                     +tablename : constexpr static const char*
-                    +sampled_at : sqlgen::PrimaryKey<db_timestamp>
-                    +tenant_id : sqlgen::PrimaryKey<string>
-                    +stream_name : sqlgen::PrimaryKey<string>
+                    +sampled_at : db_timestamp
+                    +tenant_id : string
+                    +stream_name : string
                     +messages : int64_t
                     +bytes : int64_t
                     +consumer_count : int

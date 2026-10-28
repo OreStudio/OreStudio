@@ -26,7 +26,7 @@ import { AreaTrail } from '../../shell/AreaTrail.js';
 import { PageHeader } from '../../ui/Primitives.js';
 import { useTabs } from '../../ui/Tabs.js';
 import { DashboardTab } from './DashboardTab.js';
-import { MarketRegimeTab } from './MarketRegimeTab.js';
+import { MarketTab } from './market/MarketTab.js';
 import { ProviderTab } from './ProviderTab.js';
 
 const TABS = ['dashboard', 'provider', 'regime'] as const;
@@ -35,7 +35,7 @@ const TABS = ['dashboard', 'provider', 'regime'] as const;
 const PANES: Readonly<Record<string, () => ReactNode>> = {
     dashboard: DashboardTab,
     provider: ProviderTab,
-    regime: MarketRegimeTab,
+    regime: MarketTab,
 };
 
 /**

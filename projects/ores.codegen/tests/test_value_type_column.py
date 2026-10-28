@@ -6,8 +6,7 @@ Run::
 
 A column whose ``:cpp_type:`` is a value type -- a domain class such as
 ``cron_expression`` that wraps a string behind a validated constructor --
-cannot be serialised by sqlgen, which rejects the type inside its parsing
-layer. The model opts in with ``:is_value_type: true`` and the entity layer
+has no form in the query builder's text codec. The model opts in with ``:is_value_type: true`` and the entity layer
 carries the string instead, with the mapper converting through the type's own
 ``to_string()`` and ``from_string()``. The domain layer keeps the value type,
 so validation still happens on the way in and on the way out.

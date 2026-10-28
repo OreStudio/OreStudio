@@ -825,10 +825,9 @@ def _service_find_by_code_columns(value: Any) -> list[str]:
 
 
 # Includes the repository entity-header template emits itself, plus the
-# tokens legacy org "Entity includes" blocks add that no emitted member can
-# require: Timestamp.hpp arrives via db_types.hpp (always emitted, and it
-# includes Timestamp.hpp), and every uuid-typed column and PK/FK side
-# renders as std::string, so boost uuid headers are never needed. <cstdint>
+# tokens org "Entity includes" blocks add that no emitted member can
+# require: every uuid-typed column and PK/FK side renders as std::string, so
+# boost uuid headers are never needed. <cstdint>
 # appears in drift-rollout-era blocks as a stale transcription of pre-org
 # headers; the canonical entity headers compile without it and the registry
 # pins them byte-for-byte. Filtering these tokens keeps regeneration
@@ -839,8 +838,6 @@ _ENTITY_HEADER_STANDARD_INCLUDES = frozenset({
     "<optional>",
     "<ostream>",
     '"ores.database/repository/db_types.hpp"',
-    '"sqlgen/PrimaryKey.hpp"',
-    '"sqlgen/Timestamp.hpp"',
     "<boost/uuid/uuid.hpp>",
     "<cstdint>",
 })
@@ -980,8 +977,8 @@ def _split_columns_section(cols: OrgNode) -> tuple[
                 ":natural_key:"
             )
         # A key column is read by renderers that carry their own type
-        # projection: the entity declares the primary key as
-        # sqlgen::PrimaryKey<std::string>, the natural-key block renders the
+        # projection: the entity declares the primary key as std::string,
+        # the natural-key block renders the
         # raw cpp_type, and the mapper's key branches convert by is_text,
         # is_uuid, is_int and is_timestamp. None of them carries
         # :is_value_type:, so a value-type key would reach the entity layer as
@@ -1526,6 +1523,18 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
                 {"column": r["column"], "is_nullable": _parse_typed(r.get("nullable", "false"))}
                 for r in rows if r.get("column")
             ]
+        # The close-on-insert names the row it replaces by the key it is given.
+        # With no key it closes every current row of the tenant instead, so one
+        # report's rows would close the rows of every report before it. That is
+        # never what a model means, so a model that states the trigger without
+        # the key stops the generation rather than losing the rows.
+        if (de.get("sql", {}).get("bitemporal_trigger") == "soft_update_delete"
+                and not de.get("sql", {}).get("bitemporal_natural_keys")):
+            raise ValueError(
+                f"{de.get('entity_singular') or 'entity'}: "
+                "':bitemporal_trigger: soft_update_delete' needs a "
+                "'** Bitemporal natural keys' table under '* SQL'; without it "
+                "the insert trigger closes every current row of the tenant")
         # party_id_from_book_id is a struct feature: the insert trigger
         # derives both party_id and portfolio_id from book_id, because the
         # book states both. The struct supplies the book table and the
@@ -2383,7 +2392,7 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
                 # same standard set as domain entities (see
                 # _ENTITY_HEADER_STANDARD_INCLUDES). Without the filter a
                 # junction org repeating the set re-emits the covered tokens
-                # (e.g. sqlgen/Timestamp.hpp) on regeneration.
+                # (e.g. <optional>) on regeneration.
                 "entity": [
                     t for t in _includes_from_named_block(ent)
                     if t not in _ENTITY_HEADER_STANDARD_INCLUDES

@@ -86,7 +86,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             h.list(std::move(msg));
         }));
 
-    // The market-wide arrival factor: one read and one pin, both for the run.
+    // The market-wide arrival factor: a read, a pin, its settings and its trace, all for the run.
     BOOST_LOG_SEV(registrar_lg(), ores::logging::info)
         << "SUBSCRIBE: "
         << nats.make_subject(
@@ -109,6 +109,22 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [&nats, &scheduler, ctx, verifier](ores::nats::message msg) {
             market_regime_handler h(nats, scheduler, ctx, verifier);
             h.pin(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(ores::synthetic::messaging::configure_market_request::nats_subject),
+        queue,
+        [&nats, &scheduler, ctx, verifier](ores::nats::message msg) {
+            market_regime_handler h(nats, scheduler, ctx, verifier);
+            h.configure(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(ores::synthetic::messaging::get_market_history_request::nats_subject),
+        queue,
+        [&nats, &scheduler, ctx, verifier](ores::nats::message msg) {
+            market_regime_handler h(nats, scheduler, ctx, verifier);
+            h.history(std::move(msg));
         }));
 
     subs.push_back(nats.queue_subscribe(

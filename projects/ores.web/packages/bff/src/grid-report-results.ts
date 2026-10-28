@@ -20,23 +20,50 @@
  */
 
 import type { FastifyInstance, FastifyRequest } from 'fastify';
-import { gunzipSync } from 'node:zlib';
 import { z } from 'zod';
 import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
+import { subjects as resultRowSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_result_row_protocol';
 import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
 import { subjects as portfolioSubjects } from '@ores/wire-protocol/generated/refdata/protocol/portfolio_protocol';
 import { subjects as bookingSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_booking_protocol';
 import { invalidRequest, notFound } from './errors.js';
-import { readAll, resultSchema, row, text } from './refdata-calls.js';
+import { NO_ORDER, readAll, refusal, resultSchema, row, text } from './refdata-calls.js';
 import { fetchStored } from './grid-downloads.js';
 import { readRun, readRunStates as readStates } from './grid-report-runs.js';
 import type { LiveSession } from './sessions.js';
 
+/** The uuid a row carries when the engine stated no counterparty. */
+const NIL_UUID = '00000000-0000-0000-0000-000000000000';
+
+/** A record id the row states, or nothing when it states none. */
+const statedId = (value: unknown): string => {
+    const id = text(value);
+    return id === NIL_UUID ? '' : id;
+};
+
+/** The measures the screen reads, and the ones it leaves for another screen. */
+const KNOWN_MEASURES = new Set(['npv', 'npv_base', 'notional']);
+
+/** How many rows one run's read asks for: a large run, not a whole table. */
+const RESULT_ROW_LIMIT = 20000;
+
+/** The rows of a run, and what the screen needs to group them. */
+interface RowsAnswer {
+    readonly rows: readonly RunResultRow[];
+    readonly reason: ResultReason;
+    readonly recordsComplete: boolean;
+    readonly counterpartyParent: ReadonlyMap<string, string>;
+    readonly counterpartyName: ReadonlyMap<string, string>;
+    readonly bookPortfolio: ReadonlyMap<string, string>;
+    readonly portfolioName: ReadonlyMap<string, string>;
+    readonly portfolioParent: ReadonlyMap<string, string>;
+}
+
 /*
  * The results a run wrote, at the level a reader asks for.
  *
- * The engine writes one row per trade into npv.csv, and nothing else reads that
- * file. The BFF reads it here, joins the trades to their books and names their
+ * The engine's figures are loaded into the result table by the post-processor,
+ * and the BFF reads them from there: it joins the trades to their books and names their
  * counterparties, and rolls the figures up when the reader asks for a book or a
  * counterparty view. The browser receives rows rather than four lists to join.
  *
@@ -98,7 +125,7 @@ export interface AggregateRow {
 }
 
 /** Why a report has no rows to show. */
-export type ResultReason = '' | 'no-run' | 'no-output' | 'no-result-file' | 'no-figures';
+export type ResultReason = '' | 'no-run' | 'no-rows' | 'no-figures';
 
 interface TradeAnswer {
     readonly level: 'trade';
@@ -132,130 +159,6 @@ export interface BaselineSummary {
 
 export type ResultsAnswer = TradeAnswer | AggregateAnswer;
 
-const TAR_BLOCK_BYTES = 512;
-const TAR_NAME_OFFSET = 0;
-const TAR_NAME_LENGTH = 100;
-const TAR_SIZE_OFFSET = 124;
-const TAR_SIZE_LENGTH = 12;
-const TAR_TYPE_OFFSET = 156;
-const TAR_TYPE_LENGTH = 1;
-const TAR_BASE_OCTAL = 8;
-
-/** The entries of a tar archive, by name. */
-export function entriesOf(archive: Buffer): Map<string, Buffer> {
-    const entries = new Map<string, Buffer>();
-    let offset = 0;
-    while (offset + TAR_BLOCK_BYTES <= archive.length) {
-        const header = archive.subarray(offset, offset + TAR_BLOCK_BYTES);
-        if (header.every((byte) => byte === 0)) {
-            break;
-        }
-        const name = header
-            .subarray(TAR_NAME_OFFSET, TAR_NAME_OFFSET + TAR_NAME_LENGTH)
-            .toString('utf8')
-            .replace(/\0.*$/, '');
-        const sizeText = header
-            .subarray(TAR_SIZE_OFFSET, TAR_SIZE_OFFSET + TAR_SIZE_LENGTH)
-            .toString('utf8')
-            .replace(/\0.*$/, '')
-            .trim();
-        const size = Number.parseInt(sizeText, TAR_BASE_OCTAL);
-        const type = header
-            .subarray(TAR_TYPE_OFFSET, TAR_TYPE_OFFSET + TAR_TYPE_LENGTH)
-            .toString('utf8');
-        const start = offset + TAR_BLOCK_BYTES;
-        if (!Number.isFinite(size) || size < 0 || start + size > archive.length) {
-            break;
-        }
-        if (type === '0' || type === '') {
-            entries.set(name, archive.subarray(start, start + size));
-        }
-        offset = start + Math.ceil(size / TAR_BLOCK_BYTES) * TAR_BLOCK_BYTES;
-    }
-    return entries;
-}
-
-/** One CSV line, honouring the quotes the engine writes around a name with a comma. */
-function splitCsv(line: string): string[] {
-    const fields: string[] = [];
-    let field = '';
-    let quoted = false;
-    for (let i = 0; i < line.length; i += 1) {
-        const c = line[i];
-        if (quoted) {
-            if (c === '"' && line[i + 1] === '"') {
-                field += '"';
-                i += 1;
-            } else if (c === '"') {
-                quoted = false;
-            } else {
-                field += c;
-            }
-            continue;
-        }
-        if (c === '"') {
-            quoted = true;
-        } else if (c === ',') {
-            fields.push(field);
-            field = '';
-        } else if (c !== '\r') {
-            field += c;
-        }
-    }
-    fields.push(field);
-    return fields;
-}
-
-const COLUMNS = {
-    trade_id: 'TradeId',
-    trade_type: 'TradeType',
-    npv: 'NPV',
-    npv_currency: 'NpvCurrency',
-    npv_base: 'NPV(Base)',
-    notional: 'Notional',
-    notional_currency: 'NotionalCurrency',
-    counterparty: 'CounterParty',
-} as const;
-
-/**
- * The rows of npv.csv, or nothing when the file names no trade and no figure.
- *
- * The header the engine writes starts with a hash, and a file can start with a
- * byte-order mark, so both are taken off before the columns are read by name.
- */
-export function rowsOf(rawCsv: string): readonly RunResultRow[] | null {
-    const csv = rawCsv.replace(/^\uFEFF/, '');
-    const lines = csv.split('\n').filter((line) => line.trim() !== '');
-    if (lines.length === 0) {
-        return [];
-    }
-    const header = splitCsv((lines[0] ?? '').replace(/^#/, ''));
-    const index = (name: string): number => header.indexOf(name);
-    if (index(COLUMNS.trade_id) < 0 || index(COLUMNS.npv) < 0) {
-        return null;
-    }
-    return lines
-        .slice(1)
-        .map((line) => {
-            const fields = splitCsv(line);
-            const at = (name: string): string => fields[index(name)] ?? '';
-            return {
-                trade_id: at(COLUMNS.trade_id),
-                trade_type: at(COLUMNS.trade_type),
-                npv: at(COLUMNS.npv),
-                npv_currency: at(COLUMNS.npv_currency),
-                npv_base: at(COLUMNS.npv_base),
-                notional: at(COLUMNS.notional),
-                notional_currency: at(COLUMNS.notional_currency),
-                counterparty: at(COLUMNS.counterparty),
-                counterparty_name: '',
-                book_id: '',
-                book_name: '',
-            };
-        })
-        .filter((row) => row.trade_id !== '');
-}
-
 /** What the records say about the trades in a run. */
 interface TradeRecords {
     readonly counterpartyName: ReadonlyMap<string, string>;
@@ -269,7 +172,7 @@ interface TradeRecords {
 }
 
 /**
- * The names and books behind the ids npv.csv writes.
+ * The names and books behind the ids the run's rows carry.
  *
  * A read that fails leaves the names empty rather than failing the figures. A
  * trade with no booking keeps an empty book, which the book level shows as
@@ -756,41 +659,42 @@ function figureOf(row: AggregateRow): number {
     }, 0);
 }
 
-/** The rows of a run's result, or the reason there are none. */
-async function tradeRowsOfKey(
-    session: LiveSession,
-    key: string,
-): Promise<{
-    rows: readonly RunResultRow[];
-    reason: ResultReason;
-    recordsComplete: boolean;
-    counterpartyParent: ReadonlyMap<string, string>;
-    counterpartyName: ReadonlyMap<string, string>;
-    bookPortfolio: ReadonlyMap<string, string>;
-    portfolioName: ReadonlyMap<string, string>;
-    portfolioParent: ReadonlyMap<string, string>;
-}> {
-    if (key === '') {
-        return {
-            rows: [],
-            reason: 'no-output',
-            recordsComplete: true,
-            counterpartyParent: new Map(),
-            counterpartyName: new Map(),
-            bookPortfolio: new Map(),
-            portfolioName: new Map(),
-            portfolioParent: new Map(),
-        };
-    }
-    const archive = await fetchStored(session, key);
-    const tar = archive[0] === 0x1f && archive[1] === 0x8b ? gunzipSync(archive) : archive;
-    const resultFile = [...entriesOf(tar).entries()].find(
-        ([name]) => name.split('/').pop()?.toLowerCase() === 'npv.csv',
+/**
+ * The rows of a run's result, or the reason there are none.
+ *
+ * The rows are the post-processor's: one per subject, measure and currency, read
+ * from the result table by the run they belong to. A run that completed before the
+ * post-processor existed has no rows, and answers the reason the screen states
+ * rather than reading the archive it left behind.
+ */
+async function rowsOfRun(session: LiveSession, runId: string): Promise<RowsAnswer> {
+    const reply = await session.client.callAuthenticated(
+        resultRowSubjects.list_report_result_rows_request,
+        {
+            filter: {
+                report_instance_id: runId,
+                measure: null,
+                id_one_of: null,
+                report_instance_id_one_of: null,
+                measure_one_of: null,
+            },
+            as_of: null,
+            offset: 0,
+            limit: RESULT_ROW_LIMIT,
+            order: NO_ORDER,
+        },
+        z.looseObject({
+            result: resultSchema,
+            rows: z.array(row).default([]),
+        }),
     );
-    if (resultFile === undefined) {
+    if (reply.result.outcome !== 'ok') {
+        throw refusal(reply.result);
+    }
+    if (reply.rows.length === 0) {
         return {
             rows: [],
-            reason: 'no-result-file',
+            reason: 'no-rows',
             recordsComplete: true,
             counterpartyParent: new Map(),
             counterpartyName: new Map(),
@@ -799,8 +703,57 @@ async function tradeRowsOfKey(
             portfolioParent: new Map(),
         };
     }
-    const rows = rowsOf(resultFile[1].toString('utf8'));
-    if (rows === null) {
+    const figureText = (value: unknown): string =>
+        typeof value === 'number' ? String(value) : text(value);
+    const measures = new Map<string, Record<string, string>>();
+    for (const entry of reply.rows) {
+        const tradeId = text(entry['subject_id']);
+        const measure = text(entry['measure']);
+        if (tradeId === '' || !KNOWN_MEASURES.has(measure)) {
+            continue;
+        }
+        const figures = measures.get(tradeId) ?? {
+            npv: '',
+            npv_currency: '',
+            npv_base: '',
+            notional: '',
+            notional_currency: '',
+            counterparty: statedId(entry['counterparty_id']),
+        };
+        const figure = figureText(entry['figure']);
+        switch (measure) {
+            case 'npv':
+                figures['npv'] = figure;
+                figures['npv_currency'] = text(entry['currency']);
+                break;
+            case 'npv_base':
+                figures['npv_base'] = figure;
+                break;
+            case 'notional':
+                figures['notional'] = figure;
+                figures['notional_currency'] = text(entry['currency']);
+                break;
+            default:
+                break;
+        }
+        measures.set(tradeId, figures);
+    }
+    const rows = [...measures.entries()]
+        .filter(([, figures]) => figures['npv'] !== '')
+        .map(([tradeId, figures]): RunResultRow => ({
+            trade_id: tradeId,
+            trade_type: '',
+            npv: figures['npv'] ?? '',
+            npv_currency: figures['npv_currency'] ?? '',
+            npv_base: figures['npv_base'] ?? '',
+            notional: figures['notional'] ?? '',
+            notional_currency: figures['notional_currency'] ?? '',
+            counterparty: figures['counterparty'] ?? '',
+            counterparty_name: '',
+            book_id: '',
+            book_name: '',
+        }));
+    if (rows.length === 0) {
         return {
             rows: [],
             reason: 'no-figures',
@@ -826,12 +779,12 @@ async function tradeRowsOfKey(
 }
 
 /** The answer for the level the reader asked for. */
-async function resultsOfKey(
+async function resultsOfRun(
     session: LiveSession,
-    key: string,
+    runId: string,
     level: ResultLevel,
 ): Promise<ResultsAnswer> {
-    const read = await tradeRowsOfKey(session, key);
+    const read = await rowsOfRun(session, runId);
     const totals = totalsOf(read.rows, (row) => ({
         amount: row.npv,
         currency: row.npv_currency,
@@ -878,16 +831,15 @@ async function resultsOfKey(
  * The two runs are read at the same level and compared row by row. A level that
  * is not an aggregate is not compared, because a trade is read on its own.
  */
-async function comparedOfKey(
+async function comparedOfRuns(
     session: LiveSession,
-    key: string,
-    baselineKey: string,
-    level: 'book' | 'counterparty',
+    runId: string,
     baselineId: string,
+    level: 'book' | 'counterparty',
 ): Promise<AggregateAnswer> {
     const [current, earlier] = await Promise.all([
-        resultsOfKey(session, key, level),
-        resultsOfKey(session, baselineKey, level),
+        resultsOfRun(session, runId, level),
+        resultsOfRun(session, baselineId, level),
     ]);
     if (current.level === 'trade' || earlier.level === 'trade') {
         throw new Error('a trade level is not compared');
@@ -979,12 +931,11 @@ export function registerGridReportResultsRoutes(
             if (earlierStates.get(query.data.baseline) !== 'completed') {
                 throw invalidRequest('The run compared with has not completed.');
             }
-            const compared = await comparedOfKey(
+            const compared = await comparedOfRuns(
                 session,
-                text(run['output_storage_key']),
-                text(earlierRun['output_storage_key']),
-                query.data.by,
+                parsed.data.id,
                 query.data.baseline,
+                query.data.by,
             );
             request.log.info(
                 'reporting results: run %s compared with %s at the %s level',
@@ -994,7 +945,7 @@ export function registerGridReportResultsRoutes(
             );
             return compared;
         }
-        const answer = await resultsOfKey(session, text(run['output_storage_key']), query.data.by);
+        const answer = await resultsOfRun(session, parsed.data.id, query.data.by);
         if (!answer.recordsComplete) {
             request.log.warn(
                 'reporting results: the books or counterparties behind run %s were not read',

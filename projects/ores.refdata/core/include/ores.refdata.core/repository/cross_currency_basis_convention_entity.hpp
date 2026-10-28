@@ -25,8 +25,8 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CROSS_CURRENCY_BASIS_CONVENTION_ENTITY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CROSS_CURRENCY_BASIS_CONVENTION_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct cross_currency_basis_convention_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_refdata_cross_currency_basis_conventions_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
     std::string party_id;
@@ -77,6 +77,49 @@ struct cross_currency_basis_convention_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = cross_currency_basis_convention_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("settlement_days", &e::settlement_days) |
+               query_builder::bind("settlement_calendar", &e::settlement_calendar) |
+               query_builder::bind("roll_convention", &e::roll_convention) |
+               query_builder::bind("flat_index", &e::flat_index) |
+               query_builder::bind("spread_index", &e::spread_index) |
+               query_builder::bind("eom", &e::eom) |
+               query_builder::bind("is_resettable", &e::is_resettable) |
+               query_builder::bind("flat_index_is_resettable", &e::flat_index_is_resettable) |
+               query_builder::bind("flat_tenor", &e::flat_tenor) |
+               query_builder::bind("spread_tenor", &e::spread_tenor) |
+               query_builder::bind("spread_payment_lag", &e::spread_payment_lag) |
+               query_builder::bind("flat_payment_lag", &e::flat_payment_lag) |
+               query_builder::bind("spread_include_spread", &e::spread_include_spread) |
+               query_builder::bind("spread_lookback", &e::spread_lookback) |
+               query_builder::bind("spread_fixing_days", &e::spread_fixing_days) |
+               query_builder::bind("spread_rate_cutoff", &e::spread_rate_cutoff) |
+               query_builder::bind("spread_is_averaged", &e::spread_is_averaged) |
+               query_builder::bind("spread_observation_shift", &e::spread_observation_shift) |
+               query_builder::bind("flat_include_spread", &e::flat_include_spread) |
+               query_builder::bind("flat_lookback", &e::flat_lookback) |
+               query_builder::bind("flat_fixing_days", &e::flat_fixing_days) |
+               query_builder::bind("flat_rate_cutoff", &e::flat_rate_cutoff) |
+               query_builder::bind("flat_is_averaged", &e::flat_is_averaged) |
+               query_builder::bind("flat_observation_shift", &e::flat_observation_shift) |
+               query_builder::bind("oresmd_uri", &e::oresmd_uri) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const cross_currency_basis_convention_entity& v);

@@ -23,11 +23,8 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.core/repository/market_data_vendor_instrument_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/market_data_vendor_instrument.hpp"
@@ -43,16 +40,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -61,13 +48,13 @@
 
 namespace ores::marketdata::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string market_data_vendor_instrument_repository::sql() {
-    return generate_create_table_sql<market_data_vendor_instrument_entity>(lg());
+    return query_builder::insert_statement_sql<market_data_vendor_instrument_entity>(lg());
 }
 
 bool market_data_vendor_instrument_repository::is_sortable(std::string_view field) {
@@ -84,68 +71,71 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
+query_builder::order
 market_data_vendor_instrument_list_order(const ores::utility::domain::order& order,
                                          std::initializer_list<std::string> default_columns,
                                          bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!market_data_vendor_instrument_repository::is_sortable(order.field))
         throw std::invalid_argument(
             "A list of market data vendor instruments cannot be ordered by " + order.field + ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 /*
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition> market_data_vendor_instrument_filter_condition(
+std::optional<query_builder::condition> market_data_vendor_instrument_filter_condition(
     const std::optional<messaging::market_data_vendor_instruments_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->provider_code)
-        r.push_back(equals("provider_code", filter_value(*filter->provider_code)));
+        r.push_back(query_builder::equals("provider_code",
+                                          query_builder::filter_value(*filter->provider_code)));
     if (filter->id_scheme)
-        r.push_back(equals("id_scheme", filter_value(*filter->id_scheme)));
+        r.push_back(
+            query_builder::equals("id_scheme", query_builder::filter_value(*filter->id_scheme)));
     if (filter->field)
-        r.push_back(equals("field", filter_value(*filter->field)));
+        r.push_back(query_builder::equals("field", query_builder::filter_value(*filter->field)));
     if (filter->minted)
-        r.push_back(equals("minted", filter_value(*filter->minted)));
+        r.push_back(query_builder::equals("minted", query_builder::filter_value(*filter->minted)));
     if (filter->id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
     }
     if (filter->provider_code_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->provider_code_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("provider_code", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("provider_code", std::move(values)));
     }
     if (filter->id_scheme_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_scheme_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id_scheme", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id_scheme", std::move(values)));
     }
     if (filter->field_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->field_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("field", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("field", std::move(values)));
     }
     if (filter->minted_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->minted_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("minted", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("minted", std::move(values)));
     }
     if (filter->search && !filter->search->empty())
-        r.push_back(contains_any({"external_id"}, *filter->search));
-    return all_of(std::move(r));
+        r.push_back(query_builder::contains_any({"external_id"}, *filter->search));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -207,10 +197,10 @@ void market_data_vendor_instrument_repository::write(
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market data vendor instrument. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx,
-                        market_data_vendor_instrument_mapper::map(t),
-                        lg(),
-                        "Writing market data vendor instrument to database.");
+    query_builder::execute_write_query(ctx,
+                                       market_data_vendor_instrument_mapper::map(t),
+                                       lg(),
+                                       "Writing market data vendor instrument to database.");
 }
 
 void market_data_vendor_instrument_repository::write(
@@ -222,10 +212,10 @@ void market_data_vendor_instrument_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        market_data_vendor_instrument_mapper::map(batch),
-                        lg(),
-                        "Writing market data vendor instruments to database.");
+    query_builder::execute_write_query(ctx,
+                                       market_data_vendor_instrument_mapper::map(batch),
+                                       lg(),
+                                       "Writing market data vendor instruments to database.");
 }
 
 std::vector<domain::market_data_vendor_instrument>
@@ -233,13 +223,13 @@ market_data_vendor_instrument_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query =
-        sqlgen::read<std::vector<market_data_vendor_instrument_entity>> |
-        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+    const auto query = query_builder::read<std::vector<market_data_vendor_instrument_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
-    return execute_read_query<market_data_vendor_instrument_entity,
-                              domain::market_data_vendor_instrument>(
+    return query_builder::execute_read_query<market_data_vendor_instrument_entity,
+                                             domain::market_data_vendor_instrument>(
         ctx,
         query,
         [](const auto& entities) { return market_data_vendor_instrument_mapper::map(entities); },
@@ -253,12 +243,12 @@ market_data_vendor_instrument_repository::read_latest(context ctx, const std::st
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = sqlgen::read<std::vector<market_data_vendor_instrument_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
-                             "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<market_data_vendor_instrument_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "id"_c == id && "valid_to"_c == max.value());
 
-    return execute_read_query<market_data_vendor_instrument_entity,
-                              domain::market_data_vendor_instrument>(
+    return query_builder::execute_read_query<market_data_vendor_instrument_entity,
+                                             domain::market_data_vendor_instrument>(
         ctx,
         query,
         [](const auto& entities) { return market_data_vendor_instrument_mapper::map(entities); },
@@ -274,12 +264,13 @@ market_data_vendor_instrument_repository::read_latest_by_external_id(
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = sqlgen::read<std::vector<market_data_vendor_instrument_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+    const auto query =
+        query_builder::read<std::vector<market_data_vendor_instrument_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
                              "external_id"_c == external_id && "valid_to"_c == max.value());
 
-    return execute_read_query<market_data_vendor_instrument_entity,
-                              domain::market_data_vendor_instrument>(
+    return query_builder::execute_read_query<market_data_vendor_instrument_entity,
+                                             domain::market_data_vendor_instrument>(
         ctx,
         query,
         [](const auto& entities) { return market_data_vendor_instrument_mapper::map(entities); },
@@ -294,13 +285,13 @@ market_data_vendor_instrument_repository::read_any_by_external_id(context ctx,
                                << external_id;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query =
-        sqlgen::read<std::vector<market_data_vendor_instrument_entity>> |
-        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "external_id"_c == external_id) |
-        order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+    const auto query = query_builder::read<std::vector<market_data_vendor_instrument_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "external_id"_c == external_id) |
+                       query_builder::order_by("valid_from"_c.desc()) | query_builder::limit(1);
 
-    return execute_read_query<market_data_vendor_instrument_entity,
-                              domain::market_data_vendor_instrument>(
+    return query_builder::execute_read_query<market_data_vendor_instrument_entity,
+                                             domain::market_data_vendor_instrument>(
         ctx,
         query,
         [](const auto& entities) { return market_data_vendor_instrument_mapper::map(entities); },
@@ -315,12 +306,13 @@ market_data_vendor_instrument_repository::read_all(context ctx, const std::strin
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = sqlgen::read<std::vector<market_data_vendor_instrument_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<market_data_vendor_instrument_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<market_data_vendor_instrument_entity,
-                              domain::market_data_vendor_instrument>(
+    return query_builder::execute_read_query<market_data_vendor_instrument_entity,
+                                             domain::market_data_vendor_instrument>(
         ctx,
         query,
         [](const auto& entities) { return market_data_vendor_instrument_mapper::map(entities); },
@@ -336,13 +328,13 @@ market_data_vendor_instrument_repository::read_at_version(context ctx,
                                << "id: " << id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = sqlgen::read<std::vector<market_data_vendor_instrument_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
-                             "version"_c == version) |
-                       sqlgen::limit(1);
+    const auto query = query_builder::read<std::vector<market_data_vendor_instrument_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "id"_c == id && "version"_c == version) |
+                       query_builder::limit(1);
 
-    const auto entities = execute_read_query<market_data_vendor_instrument_entity,
-                                             domain::market_data_vendor_instrument>(
+    const auto entities = query_builder::execute_read_query<market_data_vendor_instrument_entity,
+                                                            domain::market_data_vendor_instrument>(
         ctx,
         query,
         [](const auto& entities) { return market_data_vendor_instrument_mapper::map(entities); },
@@ -372,11 +364,12 @@ market_data_vendor_instrument_repository::remove(context ctx,
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<market_data_vendor_instrument_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+    const auto query = query_builder::delete_from<market_data_vendor_instrument_entity> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing market data vendor instrument from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing market data vendor instrument from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -401,16 +394,17 @@ market_data_vendor_instrument_repository::read_latest(
                                << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = sqlgen::read<std::vector<market_data_vendor_instrument_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<market_data_vendor_instrument_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<market_data_vendor_instrument_entity,
-                                      domain::market_data_vendor_instrument>(
+    return query_builder::execute_ordered_read_query<market_data_vendor_instrument_entity,
+                                                     domain::market_data_vendor_instrument>(
         ctx,
         query,
         market_data_vendor_instrument_list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), market_data_vendor_instrument_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                market_data_vendor_instrument_filter_condition(filter)),
         [](const auto& entities) { return market_data_vendor_instrument_mapper::map(entities); },
         lg(),
         "Reading latest market data vendor instruments with pagination.");
@@ -424,13 +418,14 @@ std::uint32_t market_data_vendor_instrument_repository::get_total_vendor_instrum
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = sqlgen::read<std::vector<market_data_vendor_instrument_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys));
+    const auto query = query_builder::read<std::vector<market_data_vendor_instrument_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
-    return execute_count_query<market_data_vendor_instrument_entity>(
+    return query_builder::execute_count_query<market_data_vendor_instrument_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), market_data_vendor_instrument_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                market_data_vendor_instrument_filter_condition(filter)),
         lg(),
         "Counting market data vendor instruments");
 }
@@ -443,11 +438,11 @@ market_data_vendor_instrument_repository::read_latest(context ctx,
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = sqlgen::read<std::vector<market_data_vendor_instrument_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
-    auto result = execute_read_query<market_data_vendor_instrument_entity,
-                                     domain::market_data_vendor_instrument>(
+    const auto query = query_builder::read<std::vector<market_data_vendor_instrument_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result = query_builder::execute_read_query<market_data_vendor_instrument_entity,
+                                                    domain::market_data_vendor_instrument>(
         ctx,
         query,
         [](const auto& entities) { return market_data_vendor_instrument_mapper::map(entities); },
@@ -468,9 +463,11 @@ void market_data_vendor_instrument_repository::remove(context ctx,
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<market_data_vendor_instrument_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing market data vendor instruments.");
+    const auto query =
+        query_builder::delete_from<market_data_vendor_instrument_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Batch removing market data vendor instruments.");
 }
 
 

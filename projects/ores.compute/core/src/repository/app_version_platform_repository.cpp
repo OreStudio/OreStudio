@@ -27,8 +27,7 @@
 #include "ores.compute.api/domain/app_version_platform_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.core/repository/app_version_platform_entity.hpp"
 #include "ores.compute.core/repository/app_version_platform_mapper.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -39,16 +38,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
-#include <sqlgen/aggregations.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/select_from.hpp>
-#include <sqlgen/to.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -57,13 +46,13 @@
 
 namespace ores::compute::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string app_version_platform_repository::sql() {
-    return generate_create_table_sql<app_version_platform_entity>(lg());
+    return query_builder::insert_statement_sql<app_version_platform_entity>(lg());
 }
 
 app_version_platform_repository::app_version_platform_repository(context ctx)
@@ -126,10 +115,10 @@ void app_version_platform_repository::write(
                                << app_version_platform.app_version_id << "/"
                                << app_version_platform.platform_id;
     const auto t = apply_claim(app_version_platform, claim);
-    execute_write_query(ctx_,
-                        app_version_platform_mapper::map(t),
-                        lg(),
-                        "writing app version platform to database");
+    query_builder::execute_write_query(ctx_,
+                                       app_version_platform_mapper::map(t),
+                                       lg(),
+                                       "writing app version platform to database");
 }
 
 void app_version_platform_repository::write(
@@ -141,22 +130,23 @@ void app_version_platform_repository::write(
     batch.reserve(app_version_platforms.size());
     for (std::size_t i = 0; i < app_version_platforms.size(); ++i)
         batch.push_back(apply_claim(app_version_platforms[i], claims[i]));
-    execute_write_query(ctx_,
-                        app_version_platform_mapper::map(batch),
-                        lg(),
-                        "writing app version platforms to database");
+    query_builder::execute_write_query(ctx_,
+                                       app_version_platform_mapper::map(batch),
+                                       lg(),
+                                       "writing app version platforms to database");
 }
 
 std::vector<domain::app_version_platform> app_version_platform_repository::read_latest() {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query =
-        sqlgen::read<std::vector<app_version_platform_entity>> |
-        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
-        order_by("app_version_id"_c, "platform_id"_c);
+    const auto query = query_builder::read<std::vector<app_version_platform_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("app_version_id"_c, "platform_id"_c);
 
-    return execute_read_query<app_version_platform_entity, domain::app_version_platform>(
+    return query_builder::execute_read_query<app_version_platform_entity,
+                                             domain::app_version_platform>(
         ctx_,
         query,
         [](const auto& entities) { return app_version_platform_mapper::map(entities); },
@@ -171,13 +161,14 @@ app_version_platform_repository::read_latest(std::uint32_t offset, std::uint32_t
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query =
-        sqlgen::read<std::vector<app_version_platform_entity>> |
-        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
-        order_by("app_version_id"_c, "platform_id"_c) | sqlgen::offset(offset) |
-        sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<app_version_platform_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("app_version_id"_c, "platform_id"_c) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_read_query<app_version_platform_entity, domain::app_version_platform>(
+    return query_builder::execute_read_query<app_version_platform_entity,
+                                             domain::app_version_platform>(
         ctx_,
         query,
         [](const auto& entities) { return app_version_platform_mapper::map(entities); },
@@ -196,12 +187,14 @@ app_version_platform_repository::read_latest(const boost::uuids::uuid& app_versi
     const auto platform_id_str = boost::uuids::to_string(platform_id);
     const auto tid = ctx_.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = sqlgen::read<std::vector<app_version_platform_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+    const auto query =
+        query_builder::read<std::vector<app_version_platform_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
                              "app_version_id"_c == app_version_id_str &&
                              "platform_id"_c == platform_id_str && "valid_to"_c == max.value());
 
-    return execute_read_query<app_version_platform_entity, domain::app_version_platform>(
+    return query_builder::execute_read_query<app_version_platform_entity,
+                                             domain::app_version_platform>(
         ctx_,
         query,
         [](const auto& entities) { return app_version_platform_mapper::map(entities); },
@@ -213,21 +206,14 @@ std::uint32_t app_version_platform_repository::get_total_app_version_platform_co
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active app version platforms count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query =
-        sqlgen::select_from<app_version_platform_entity>(sqlgen::count().as<"count">()) |
-        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<app_version_platform_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<app_version_platform_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting app version platforms");
     BOOST_LOG_SEV(lg(), debug) << "Total active app version platforms count: " << count;
     return count;
 }
@@ -242,13 +228,14 @@ app_version_platform_repository::read_latest_by_app_version(
     const auto app_version_id_str = boost::uuids::to_string(app_version_id);
     const auto tid = ctx_.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query =
-        sqlgen::read<std::vector<app_version_platform_entity>> |
-        where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
-              "app_version_id"_c == app_version_id_str && "valid_to"_c == max.value()) |
-        order_by("platform_id"_c);
+    const auto query = query_builder::read<std::vector<app_version_platform_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "app_version_id"_c == app_version_id_str &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("platform_id"_c);
 
-    auto rows = execute_read_query<app_version_platform_entity, domain::app_version_platform>(
+    auto rows = query_builder::execute_read_query<app_version_platform_entity,
+                                                  domain::app_version_platform>(
         ctx_,
         query,
         [](const auto& entities) { return app_version_platform_mapper::map(entities); },
@@ -264,7 +251,7 @@ app_version_platform_repository::read_latest_by_app_version(
             ids += boost::uuids::to_string(rows[i].platform_id);
         }
         ids += "}";
-        const auto codes = execute_parameterized_multi_column_query(
+        const auto codes = query_builder::execute_parameterized_multi_column_query(
             ctx_,
             "SELECT \"id\"::text, \"code\"::text"
             "  FROM ores_compute_platforms_tbl"
@@ -295,12 +282,14 @@ app_version_platform_repository::read_latest_by_platform(const boost::uuids::uui
     const auto platform_id_str = boost::uuids::to_string(platform_id);
     const auto tid = ctx_.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = sqlgen::read<std::vector<app_version_platform_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+    const auto query =
+        query_builder::read<std::vector<app_version_platform_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
                              "platform_id"_c == platform_id_str && "valid_to"_c == max.value()) |
-                       order_by("app_version_id"_c);
+        query_builder::order_by("app_version_id"_c);
 
-    auto rows = execute_read_query<app_version_platform_entity, domain::app_version_platform>(
+    auto rows = query_builder::execute_read_query<app_version_platform_entity,
+                                                  domain::app_version_platform>(
         ctx_,
         query,
         [](const auto& entities) { return app_version_platform_mapper::map(entities); },
@@ -320,13 +309,15 @@ app_version_platform_repository::read_latest_by_app_version(
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query =
-        sqlgen::read<std::vector<app_version_platform_entity>> |
-        where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
-              "app_version_id"_c == app_version_id_str && "valid_to"_c == max.value()) |
-        order_by("platform_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<app_version_platform_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "app_version_id"_c == app_version_id_str &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("platform_id"_c) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
-    auto rows = execute_read_query<app_version_platform_entity, domain::app_version_platform>(
+    auto rows = query_builder::execute_read_query<app_version_platform_entity,
+                                                  domain::app_version_platform>(
         ctx_,
         query,
         [](const auto& entities) { return app_version_platform_mapper::map(entities); },
@@ -342,7 +333,7 @@ app_version_platform_repository::read_latest_by_app_version(
             ids += boost::uuids::to_string(rows[i].platform_id);
         }
         ids += "}";
-        const auto codes = execute_parameterized_multi_column_query(
+        const auto codes = query_builder::execute_parameterized_multi_column_query(
             ctx_,
             "SELECT \"id\"::text, \"code\"::text"
             "  FROM ores_compute_platforms_tbl"
@@ -372,22 +363,15 @@ std::uint32_t app_version_platform_repository::get_total_app_version_platform_co
         << "Retrieving total active app version platforms count. App Version: " << app_version_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query =
-        sqlgen::select_from<app_version_platform_entity>(sqlgen::count().as<"count">()) |
-        where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
-              "app_version_id"_c == app_version_id_str && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<app_version_platform_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "app_version_id"_c == app_version_id_str &&
+                                            "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<app_version_platform_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting app version platforms");
     BOOST_LOG_SEV(lg(), debug) << "Total active app version platforms count by app_version: "
                                << count;
     return count;
@@ -400,22 +384,15 @@ std::uint32_t app_version_platform_repository::get_total_app_version_platform_co
                                << platform_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
-        sqlgen::select_from<app_version_platform_entity>(sqlgen::count().as<"count">()) |
-        where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
-              "platform_id"_c == platform_id_str && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+        query_builder::read<std::vector<app_version_platform_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "platform_id"_c == platform_id_str && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<app_version_platform_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting app version platforms");
     BOOST_LOG_SEV(lg(), debug) << "Total active app version platforms count by platform: " << count;
     return count;
 }
@@ -448,12 +425,14 @@ app_version_platform_repository::remove(const boost::uuids::uuid& app_version_id
     const auto app_version_id_str = boost::uuids::to_string(app_version_id);
     const auto platform_id_str = boost::uuids::to_string(platform_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<app_version_platform_entity> |
-                       where("tenant_id"_c == tid && "app_version_id"_c == app_version_id_str &&
+    const auto query =
+        query_builder::delete_from<app_version_platform_entity> |
+        query_builder::where("tenant_id"_c == tid && "app_version_id"_c == app_version_id_str &&
                              "platform_id"_c == platform_id_str && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
-    execute_delete_query(ctx_, query, lg(), "removing app version platform from database");
+    query_builder::execute_delete_query(
+        ctx_, query, lg(), "removing app version platform from database");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -481,10 +460,12 @@ void app_version_platform_repository::remove_by_app_version(
 
     const auto app_version_id_str = boost::uuids::to_string(app_version_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<app_version_platform_entity> |
-                       where("tenant_id"_c == tid && "app_version_id"_c == app_version_id_str);
+    const auto query =
+        query_builder::delete_from<app_version_platform_entity> |
+        query_builder::where("tenant_id"_c == tid && "app_version_id"_c == app_version_id_str);
 
-    execute_delete_query(ctx_, query, lg(), "removing all app version platforms from database");
+    query_builder::execute_delete_query(
+        ctx_, query, lg(), "removing all app version platforms from database");
 }
 
 

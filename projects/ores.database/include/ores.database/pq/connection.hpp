@@ -76,6 +76,11 @@ public:
     [[nodiscard]] std::span<const std::byte> value(int row, int column) const noexcept;
 
     /**
+     * @brief A value of a statement that asked for text results.
+     */
+    [[nodiscard]] std::string_view text(int row, int column) const noexcept;
+
+    /**
      * @brief The rows a write touched, from the command tag.
      */
     [[nodiscard]] std::uint64_t affected() const;
@@ -87,6 +92,15 @@ private:
         }
     };
     std::unique_ptr<PGresult, deleter> handle_;
+};
+
+/**
+ * @brief Closes a connection the layer opened.
+ */
+struct connection_closer final {
+    void operator()(PGconn* c) const noexcept {
+        PQfinish(c);
+    }
 };
 
 /**
@@ -124,12 +138,7 @@ public:
     void mark_prepared(std::string_view name);
 
 private:
-    struct deleter {
-        void operator()(PGconn* c) const noexcept {
-            PQfinish(c);
-        }
-    };
-    std::unique_ptr<PGconn, deleter> handle_;
+    std::unique_ptr<PGconn, connection_closer> handle_;
     std::unordered_set<std::string> prepared_;
 };
 

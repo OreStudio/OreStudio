@@ -50,7 +50,7 @@ equity_cliquet_option_instrument_mapper::map(const equity_cliquet_option_instrum
     domain::equity_cliquet_option_instrument r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;

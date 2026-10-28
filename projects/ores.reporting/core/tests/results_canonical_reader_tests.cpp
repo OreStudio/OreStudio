@@ -25,13 +25,14 @@ namespace {
 
 using ores::reporting::results::read_canonical_csv;
 
-const std::string header = "subject_type,subject_id,measure,currency,figure,source\n";
+const std::string header =
+    "subject_type,subject_id,measure,currency,counterparty_id,figure,source\n";
 
 }
 
 TEST_CASE("a well formed file is read row by row", "[results][canonical_reader]") {
-    const auto outcome = read_canonical_csv(header + "trade,T1,npv,GBP,12.5,npv.csv\n"
-                                                    "trade,T1,delta,GBP,-3,npv.csv\n");
+    const auto outcome = read_canonical_csv(header + "trade,T1,npv,GBP,C1,12.5,npv.csv\n"
+                                                     "trade,T1,delta,GBP,C1,-3,npv.csv\n");
 
     REQUIRE(outcome.refusals.empty());
     REQUIRE(outcome.rows.size() == 2);
@@ -39,11 +40,13 @@ TEST_CASE("a well formed file is read row by row", "[results][canonical_reader]"
     CHECK(outcome.rows[0].measure == "npv");
     CHECK(outcome.rows[0].currency == "GBP");
     CHECK(outcome.rows[0].figure == 12.5);
+    CHECK(outcome.rows[0].counterparty_id == "C1");
     CHECK(outcome.rows[0].source == "npv.csv");
     CHECK(outcome.rows[1].figure == -3.0);
 }
 
-TEST_CASE("a file whose header is not the contract is refused whole", "[results][canonical_reader]") {
+TEST_CASE("a file whose header is not the contract is refused whole",
+          "[results][canonical_reader]") {
     const auto outcome = read_canonical_csv("a,b,c\n1,2,3\n");
 
     REQUIRE(outcome.rows.empty());
@@ -51,19 +54,20 @@ TEST_CASE("a file whose header is not the contract is refused whole", "[results]
     CHECK(outcome.refusals[0].find("header") != std::string::npos);
 }
 
-TEST_CASE("a row with the wrong number of fields is refused by line", "[results][canonical_reader]") {
-    const auto outcome = read_canonical_csv(header + "trade,T1,npv,GBP,1.0\n");
+TEST_CASE("a row with the wrong number of fields is refused by line",
+          "[results][canonical_reader]") {
+    const auto outcome = read_canonical_csv(header + "trade,T1,npv,GBP,C1,1.0\n");
 
     REQUIRE(outcome.rows.empty());
     REQUIRE(outcome.refusals.size() == 1);
     CHECK(outcome.refusals[0].find("line 2") != std::string::npos);
-    CHECK(outcome.refusals[0].find("fields, not six") != std::string::npos);
+    CHECK(outcome.refusals[0].find("fields, not seven") != std::string::npos);
 }
 
 TEST_CASE("a row with no subject or a figure that is not one is refused",
           "[results][canonical_reader]") {
-    const auto outcome =
-        read_canonical_csv(header + "trade,,npv,GBP,1.0,npv.csv\ntrade,T2,npv,GBP,n/a,npv.csv\n");
+    const auto outcome = read_canonical_csv(
+        header + "trade,,npv,GBP,C1,1.0,npv.csv\ntrade,T2,npv,GBP,C1,n/a,npv.csv\n");
 
     REQUIRE(outcome.rows.empty());
     REQUIRE(outcome.refusals.size() == 2);
@@ -71,7 +75,8 @@ TEST_CASE("a row with no subject or a figure that is not one is refused",
     CHECK(outcome.refusals[1].find("not a figure") != std::string::npos);
 }
 
-TEST_CASE("an empty file is refused rather than read as no results", "[results][canonical_reader]") {
+TEST_CASE("an empty file is refused rather than read as no results",
+          "[results][canonical_reader]") {
     const auto outcome = read_canonical_csv("");
 
     CHECK(outcome.rows.empty());

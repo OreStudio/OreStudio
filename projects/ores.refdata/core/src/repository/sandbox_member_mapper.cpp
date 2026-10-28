@@ -45,7 +45,7 @@ domain::sandbox_member sandbox_member_mapper::map(const sandbox_member_entity& v
     domain::sandbox_member r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.sandbox_id = boost::lexical_cast<boost::uuids::uuid>(v.sandbox_id);
 
     r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id);

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.reporting.core/results/canonical_reader.hpp"
-
 #include <charconv>
 #include <cstddef>
 #include <string>
@@ -27,7 +26,8 @@
 namespace ores::reporting::results {
 namespace {
 
-constexpr std::string_view expected_header = "subject_type,subject_id,measure,currency,figure,source";
+constexpr std::string_view expected_header =
+    "subject_type,subject_id,measure,currency,counterparty_id,figure,source";
 
 std::vector<std::string> split_fields(std::string_view line) {
     std::vector<std::string> fields;
@@ -92,9 +92,9 @@ read_outcome read_canonical_csv(std::string_view csv) {
             continue;
 
         const auto fields = split_fields(line);
-        if (fields.size() != 6) {
+        if (fields.size() != 7) {
             outcome.refusals.push_back("line " + std::to_string(line_number) + " states " +
-                                       std::to_string(fields.size()) + " fields, not six.");
+                                       std::to_string(fields.size()) + " fields, not seven.");
             continue;
         }
 
@@ -102,16 +102,17 @@ read_outcome read_canonical_csv(std::string_view csv) {
                           .subject_id = fields[1],
                           .measure = fields[2],
                           .currency = fields[3],
+                          .counterparty_id = fields[4],
                           .figure = 0.0,
-                          .source = fields[5]};
+                          .source = fields[6]};
         if (row.subject_type.empty() || row.subject_id.empty() || row.measure.empty()) {
             outcome.refusals.push_back("line " + std::to_string(line_number) +
                                        " states no subject or no measure.");
             continue;
         }
-        if (!figure_of(fields[4], row.figure)) {
+        if (!figure_of(fields[5], row.figure)) {
             outcome.refusals.push_back("line " + std::to_string(line_number) + " states '" +
-                                       fields[4] + "', which is not a figure.");
+                                       fields[5] + "', which is not a figure.");
             continue;
         }
         outcome.rows.push_back(std::move(row));

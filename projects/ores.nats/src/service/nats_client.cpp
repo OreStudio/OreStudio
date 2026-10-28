@@ -46,6 +46,10 @@ void nats_client::disconnect() {
         owned_client_.reset();
     }
     auth_.reset();
+    // The renewer holds the credentials that opened the session, so a
+    // disconnect that kept it would keep a password alive after the session
+    // it belongs to has ended.
+    session_renewer_ = nullptr;
     BOOST_LOG_SEV(lg(), info) << "Disconnected from NATS";
 }
 
@@ -61,6 +65,17 @@ void nats_client::set_auth(login_info info) {
 
 void nats_client::clear_auth() {
     auth_.reset();
+    // A logged-out session has nothing to renew into, and keeping the renewer
+    // would let the credential outlive the logout that was meant to end it.
+    session_renewer_ = nullptr;
+}
+
+void nats_client::set_session_renewer(session_renewer renewer) {
+    session_renewer_ = std::move(renewer);
+}
+
+void nats_client::clear_session_renewer() {
+    session_renewer_ = nullptr;
 }
 
 bool nats_client::is_logged_in() const noexcept {
@@ -130,21 +145,58 @@ message nats_client::do_authenticated_request(std::string_view subject,
         return reply;
     }
 
-    // Interactive path: reactive — throw on server-signalled expiry.
+    // Interactive path: reactive — a refused token is renewed once when the
+    // session holds a way to sign in again, and throws when it does not.
     if (!auth_)
         throw std::runtime_error("Not authenticated");
 
-    std::unordered_map<std::string, std::string> hdrs{
-        {std::string(headers::authorization), std::string(headers::bearer_prefix) + auth_->jwt}};
-    if (!delegation_token_.empty())
-        hdrs[std::string(headers::delegated_authorization)] =
-            std::string(headers::bearer_prefix) + delegation_token_;
-    if (!correlation_id_.empty())
-        hdrs[std::string(headers::nats_correlation_id)] = correlation_id_;
-    if (!session_id_.empty())
-        hdrs[std::string(headers::nats_session_id)] = session_id_;
+    const auto send = [&]() {
+        std::unordered_map<std::string, std::string> hdrs{
+            {std::string(headers::authorization),
+             std::string(headers::bearer_prefix) + auth_->jwt}};
+        if (!delegation_token_.empty())
+            hdrs[std::string(headers::delegated_authorization)] =
+                std::string(headers::bearer_prefix) + delegation_token_;
+        if (!correlation_id_.empty())
+            hdrs[std::string(headers::nats_correlation_id)] = correlation_id_;
+        if (!session_id_.empty())
+            hdrs[std::string(headers::nats_session_id)] = session_id_;
+        return active_client().request_sync(subject, body, hdrs, timeout);
+    };
 
-    const auto reply = active_client().request_sync(subject, body, hdrs, timeout);
+    auto reply = send();
+
+    const auto refused = [&reply]() {
+        const auto it = reply.headers.find(std::string(headers::x_error));
+        if (it == reply.headers.end())
+            return false;
+        return it->second == "token_expired" || it->second == "max_session_exceeded";
+    };
+
+    if (refused() && session_renewer_ && !renewing_) {
+        // The server refuses an expired token before it acts on the request, so
+        // the work was not done and sending it again is not a second attempt at
+        // something that may already have happened.
+        BOOST_LOG_SEV(lg(), info) << "Session expired on " << subject
+                                  << "; signing in again and retrying once";
+        /*
+         * Signing in is itself made of requests, and the party selection among
+         * them can be refused too. The guard keeps that refusal from calling
+         * back into this path: a renewal inside a renewal would never settle.
+         *
+         * The guard is a plain bool, and this holds for an interactive session
+         * only: one thread drives one client, because the command that is
+         * running is the one that renews. A client shared across threads would
+         * need it to be an atomic, together with the credential it protects.
+         */
+        struct renewing_guard {
+            bool& flag;
+            ~renewing_guard() { flag = false; }
+        } guard{renewing_};
+        renewing_ = true;
+        if (session_renewer_() && auth_)
+            reply = send();
+    }
 
     const auto x_error_it = reply.headers.find(std::string(headers::x_error));
     if (x_error_it == reply.headers.end())
@@ -159,18 +211,29 @@ message nats_client::do_authenticated_request(std::string_view subject,
 nats_client nats_client::with_delegation(std::string token) const {
     nats_client copy = *this;
     copy.delegation_token_ = std::move(token);
+    // A delegated client speaks for another caller. Renewing it would open a
+    // session for this process instead, which is not the identity being
+    // forwarded, so the copy carries no renewer.
+    copy.session_renewer_ = nullptr;
     return copy;
 }
 
 nats_client nats_client::with_correlation_id(std::string cid) const {
     nats_client copy = *this;
     copy.correlation_id_ = std::move(cid);
+    // A renewer signs in the client it was given, not this copy. A copy that
+    // kept it would renew the original's session and then send the copy's own
+    // stale token, which the server refuses for a second time.
+    copy.session_renewer_ = nullptr;
     return copy;
 }
 
 nats_client nats_client::with_session_id(std::string sid) const {
     nats_client copy = *this;
     copy.session_id_ = std::move(sid);
+    // See with_correlation_id: a renewer belongs to the client that owns the
+    // session, not to a view of it.
+    copy.session_renewer_ = nullptr;
     return copy;
 }
 

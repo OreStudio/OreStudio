@@ -46,8 +46,8 @@ domain::trade_identifier trade_identifier_mapper::map(const trade_identifier_ent
     domain::trade_identifier r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
-    r.id_type = v.id_type.value();
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.id_type = v.id_type;
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.id_value = v.id_value;
     r.issuing_party_id =

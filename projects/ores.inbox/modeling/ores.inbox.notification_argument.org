@@ -129,8 +129,6 @@ ores_inbox_notifications_tbl.
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #+end_src
 
 ** Conventions

@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: 10F30D46-7821-4831-B756-4AE462A8BEDB
+:END:
+#+title: Task: Design the bootstrapping screens
+#+description: The Qt app has the IR curve bootstrapping screens; the web has none. The journeys and the prototype come before any code.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/design-the-bootstrapping-screens
+#+pr: 3991
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Journeys and a signed-off-ready prototype describe the bootstrapping screens for the web, from the Qt prior art.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- A journey for managing an IR curve bootstrap configuration, with its screens, fields and actions.
+- A prototype with its design note, group row and inventory, awaiting sign-off. No implementation.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Journey pages added to the market data group | 2 | =git show --stat 13287c06= | 13287c06381f |
+| Prototypes the market data group lists | 25 | =python3 build/scripts/check_prototype_inventory.py= | 8742f4888acd |
+| Query states of the prototype that render their markers | 29 | =google-chrome --headless=new --dump-dom 'file://\$PWD/doc/prototypes/market_data/curve-blueprints/index.html?bp=SEK-STIBOR-6M&tab=check'=, run for each state, with a =--user-data-dir= because the headless browser cannot create one | 8742f4888acd |
+
+* Notes
+
+The journeys name the record a *curve blueprint*, the word the market data group
+already uses for the IR curve bootstrap config, and keep the model's words for
+the permission codes.
+
+The Qt workbench is prior art for the job and not for the layout. The journeys
+record each place they part from it: a record page replaces the three-tab
+workbench, the pillars become parts written one at a time, the source series is
+not asked for at all, the output series is minted by the server, the derived
+pillar order is stated rather than silently applied, and the copy becomes the
+kind's own action with the three fields that name the curve.
+
+Two defects in the prior art are named in the journey so they are not inherited:
+the delete confirmation names a UUID twice instead of the curve, and the
+discount-curve picker's first column is headed "Output Series Id" while it draws
+the series' qualifier.
+
+The prototype was rendered headless for every state the design note lists. The
+verification needs a =--user-data-dir= and a writable profile: bare headless
+Chrome fails with "Failed to create a unique user data directory".
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3991][#3991]] | [marketdata] Design the curve blueprint screens |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Signed off on 2026-10-28, with two small points applied.
+
+- Two journeys: maintain the curve blueprints, and check that a blueprint
+  builds. They name the record a curve blueprint, its five tabs, its dialogs,
+  and the Qt workbench's departures with a reason for each.
+- The prototype draws the list, the record, five tabs, four dialogs, the in-dialog
+  record picker, and the Market data area card, with 34 states verified headless.
+- Every coded value is drawn through one renderer, after the app's CodedValue:
+  a pill where the label catalogue paints it, the code where it does not. The
+  note lists the six domains the seed would need and that the curve codes are
+  plain until it has them.
+- The card: Curve blueprints, first in the Market data area, at
+  /market-data/curve-blueprints, reading refdata::ir_curve_bootstrap_configs:read,
+  in the words the other cards use.
+
+Open, recorded in the note and the journeys: the record's key, the minted output
+series, retire, delete while published, whether Check is a tab, the Curves menu
+entry, and whether the seed gains the six badge domains.
+
+The journeys and the prototype are on branch =feature/design-the-bootstrapping-screens=
+in two commits:
+
+| Commit | What it holds |
+|--------+---------------|
+| =13287c06= | The journeys: maintain the curve blueprints, and check that a curve blueprint builds |
+| =8742f48= | The prototype, its design note, the group row and the counts |
+
+The prototype answers both journeys and does not mirror them. The design note
+carries a coverage table for each, naming every step, the part of the screen
+that carries it, and what is deliberately not drawn.
+
+Four things a journey asks for have no home on the page, and each is recorded in
+the note: a *retire* action, because the record has no status; a message under a
+wrong field, because the only wrong value the page can draw is a pillar the Check
+tab judges; a test result held against a version; and a save that writes the
+recipe and its pillars together.
+
+No code changed. No route, no BFF entry and no React screen was added.

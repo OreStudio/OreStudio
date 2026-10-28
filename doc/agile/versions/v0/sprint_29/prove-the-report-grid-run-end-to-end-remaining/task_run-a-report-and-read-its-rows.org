@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 77CC92BD-4F9E-42A6-84F8-45265F2DAA91
+:END:
+#+title: Task: Run a report from its page and read its rows
+#+description: A report definition runs on demand from its own page, the run is followed to the grid and its jobs, and the results the screen draws are the rows the post-processor loaded rather than the archive it used to parse.
+#+type: task
+#+level: s1
+#+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/run-a-report-and-read-its-rows
+#+pr: 3929
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A reader can start a run where the report is defined, watch it reach the grid, and open what it produced without leaving the reporting area.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-27                               |
+
+* Acceptance
+
+- The report definition page states a Run action that triggers a run and shows the new run in the runs list.
+- The runs list states the run's state as it moves through the pipeline, and the run page names the compute batch and its jobs.
+- The results screen draws from ores_reporting_report_result_rows_tbl, and nothing in the request path parses npv.csv.
+- A manual test scenario walks the whole path: run, grid, jobs, results.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Rows the table holds for run =e31abdee-0dbe-404c-977d-80539b44fe17= | 24, which is 8 trades for each of =npv=, =npv_base= and =notional= | =compass sql -- -c "select measure, count(*) from ores_reporting_report_result_rows_tbl where report_instance_id = 'e31abdee-0dbe-404c-977d-80539b44fe17' group by measure"= | 3ffd149319 |
+| NPV of that run | 40,960,906.05 HKD at 2026-05-05; its notional is 38,322,972.60 | =compass sql -- -c "select measure, sum(figure)::numeric(24,2) from ores_reporting_report_result_rows_tbl where report_instance_id = 'e31abdee-…' group by measure"= | 3ffd149319 |
+
+* Notes
+
+- =compass sql= describes the row set of every run that post-processed on this environment, so four runs each carry the same 24 rows. Only one of them was triggered from the report page.
+- The entity's codegen drift is not clean. =check_component_drift.py --component reporting= reports twelve untracked files it would materialise: the eventing header, the generator header and source, the CRUD handler and registrar, the history field mapper, the service, and the service-side event registrar for =report_result_row=. The generated CRUD service cannot serve this entity, so those layers were left out of the branch; the generator still emits them. The codegen drift job did not catch it because =codegen-drift.yml= does not watch =projects/ores.reporting/modeling/=. This is follow-up work: either the model states the layers it does not generate, or the job watches the model.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:E3DE4489-A296-4C4D-8E18-07EF24C2A8EB][Run a report and read its rows]] | BACKLOG | The six-step path: run, follow, read. |
+| [[id:6171D630-64A0-4D98-85DA-07BB553CE79E][Run a report through the grid and read every result]] | BACKLOG | Twelve steps from the page to the rows in the store, marked =swift_curie=. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3929][#3929]] | [web] Run a report from its page and read its rows |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The row limit and offset are ignored, so the read is unbounded, and =total= is the returned count rather than the true one | =run_result_rows_handler.cpp=, =grid-report-results.ts= | Fixed | The BFF sends =limit: 20000= and the service reads every row of the run. The number is about three per trade, so a large run is an unbounded reply on one NATS subject. | Fixed in #3986: The generated service applies =offset= and =limit= and answers =total= from =get_total_row_count=.
+| 2 | The handler drops the filter members it accepts | =run_result_rows_handler.cpp= | Fixed | It reads only =filter->report_instance_id=; =measure= and =measure_one_of= are ignored, and =report_instance_id_one_of= with them. | Fixed in #3986: The generated service applies every filter member, =measure= and the =*_one_of= lists included.
+| 3 | Neither the handler nor the BFF checks a read permission | =run_result_rows_handler.cpp= | Fixed | =make_request_context= authenticates the caller and nothing checks a permission. The generated CRUD handler is the reference. | Fixed in #3986: The generated handler checks =reporting::report_result_rows:read=, and the permission is seeded and granted to Member.
+| 4 | Dead constants and a dead route remain in the BFF | =grid-report-results.ts= | Fixed | The =TAR_*= constants are still defined and nothing uses them. | Fixed in #3986: The =TAR_*= constants are removed.
+| 5 | Shared repository helpers were renamed in a generated file | =report_result_row_repository.cpp= | Resolved | The file carries the generated marker, and the prefixed names are what the generator emits for this entity. The drift check runs clean on the files that are committed; what it does report is the twelve missing layers, recorded under Notes. |
+| 6 | Minor points: include order, the counterparty refusal, the silent trigger failure, =job_instance_id: 0=, and the missing BFF test | several | Partially | Recorded as written; none blocks the feature. | Fixed in #3986: the include order.
+
+
+* Result
+
+Merged as #3929. A person starts a run from the report definition's own page, the page lists the new run, the run page names its state and the batch and jobs it reached, and the results screen draws from =ores_reporting_report_result_rows_tbl=. The request path no longer parses an archive: the BFF asks =reporting.v1.report_result_rows.list= for the run and the service reads the rows by run.
+
+The review found no blocking defect. Two of its points are settled: the value the post-processor writes is the figure the screen draws, and point 5 is generation, not hand-editing. The other four stand, and the run should be read with them in mind: the read returns every row of the run with no bound, four filter members are ignored, no permission is checked, and the BFF keeps dead tar constants. They are recorded in =* Review= for follow-up work.
+
+One defect was found after the merge and is recorded under Notes: the entity's generation is not fully committed, so =check_component_drift.py --component reporting= fails on twelve untracked files. The drift job did not see it because it does not watch =projects/ores.reporting/modeling/=.
+

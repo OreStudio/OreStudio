@@ -23,8 +23,6 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
-#include <sqlgen/ConnectionPool.hpp>
-#include <sqlgen/postgres.hpp>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -32,18 +30,20 @@
 namespace {
 
 /**
- * @brief A context with no connections, so a call that reaches storage fails.
+ * @brief A context whose database is unreachable, so a call that reaches
+ * storage fails.
  *
  * The staged dispatch decodes a payload before it writes, so these cases need
- * no database at all. The empty pool states that: a test that reaches storage
- * fails rather than opening a connection.
+ * no database at all. The pool opens on first use against a port nothing
+ * listens on, once: a test that reaches storage fails at once.
  */
 ores::database::context database_less_context() {
-    sqlgen::postgres::Credentials credentials;
-    sqlgen::ConnectionPool<ores::database::context::connection_type> pool(
-        sqlgen::ConnectionPoolConfig{.size = 0}, credentials);
     return ores::database::context(
-        std::move(pool), std::move(credentials), ores::utility::uuid::tenant_id::system());
+        ores::database::pq::connection_options{.host = "127.0.0.1", .port = 1, .dbname = "none"},
+        ores::utility::uuid::tenant_id::system(),
+        "",
+        "",
+        ores::database::pq::open_policy{.attempts = 1});
 }
 
 }

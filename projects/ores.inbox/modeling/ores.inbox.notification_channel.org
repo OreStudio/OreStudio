@@ -120,7 +120,6 @@ faker::number::integer(1, 100)
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

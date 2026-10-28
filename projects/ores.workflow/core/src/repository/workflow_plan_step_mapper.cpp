@@ -45,7 +45,7 @@ domain::workflow_plan_step workflow_plan_step_mapper::map(const workflow_plan_st
     domain::workflow_plan_step r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.workflow_id = boost::lexical_cast<boost::uuids::uuid>(v.workflow_id);
     r.step_index = v.step_index;
     r.name = v.name;

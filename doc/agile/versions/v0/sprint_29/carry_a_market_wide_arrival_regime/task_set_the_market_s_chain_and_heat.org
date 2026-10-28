@@ -7,41 +7,65 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/set-the-market-s-chain-and-heat
+#+pr: 3957
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
 #+updated: 2026-10-26
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The system administrator sets how the installation's market behaves while it
+runs, without restarting the synthetic service: how often the regime turns,
+how hard a panic spreads, and how fast the simulated world runs. Today the
+regime rates, the heat's jump and decay, and the market speed are fixed in the
+service at start.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-26                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                             |
 
 * Acceptance
 
--
+- The scheduler takes a command that sets the regime's two transition rates,
+  the heat's jump and decay, and the market speed, applied at the clock's now
+  and recorded in the trace.
+- A set whose heat loop gain is one or more, or a speed that is not positive, is
+  refused with the number named.
+- A speed change reaches a curve's step when the curve next starts, and the tab
+  says so.
+- The Market regime tab offers the five numbers to a system session beside the
+  switch, and shows them read-only to a tenant.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The clock gets =reconfigure=. It validates first, through the same check as
+  its constructor, so a refusal changes nothing. It keeps the heat and the
+  dwell's unit draw, and computes the calm multiplier again.
+- The clock counts simulated seconds beside tau, each stretch at the speed in
+  force. A tick's simulated seconds are the change in that count, so a speed
+  change splits correctly across a gap.
+- The scheduler's =configure= is a command like =pin=. It validates in the
+  caller's thread, then applies on the loop and records a =configure= event.
+- A curve keeps the speed it was built with as its step length. A spot feed
+  takes the new speed at once.
+- One NATS verb, =synthetic.v1.ops.configure_market=, system-only like the pin.
+  It replies with the regime, as a pin does. A refusal is =success= false with
+  the clock's message.
+- Shell =synthetic regime set name=value ...=; BFF =PUT
+  /api/synthetic/market-regime/settings=; a form on the tab.
 
 * Measurements
 
@@ -74,12 +98,41 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3957][#3957]] | [synthetic] Set the market's chain, heat and speed while it runs |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Shell accepts a partial number such as =2880x= | synthetic_commands.cpp | Accept | The whole value must parse. |
+| 2 | Read, change, write is not atomic | shell, web | Decline | Only the system tenant sets the market; a lost edit shows on the next read. |
+| 3 | Handler reads the active multiplier from a snapshot | market_regime_handler.hpp | Decline | Nothing sets the active multiplier; a task that adds a setter changes this function. |
+| 4 | A variable-step curve at a high speed could pass its scheme's step | ir_curve_feed.cpp | Decline | No curve process takes a variable step today; only the mixtures and OU do, and none bounds its step. |
+| 5 | An empty field sends zero | MarketRegimeTab.tsx | Accept | An empty or unreadable field is marked invalid and holds Apply back. |
+| 6 | Test that a refused reconfigure changes nothing | operational_clock_tests.cpp | Already done | "a refused reconfigure names the number and changes nothing" checks the gain, the speed and the dwell. |
 
 * Result
+
+The system tenant now sets the chain's two rates, the heat's jump and decay,
+and the market speed while the service runs. The clock validates first and
+then reconfigures from its now, keeping the heat and the dwell's unit draw. It
+counts simulated seconds at the speed in force, so a spot feed takes a new
+speed at its next tick. A curve keeps the step it started with.
+
+The verb is =synthetic.v1.ops.configure_market=, and the pin's system-only
+guard protects it. The shell has =synthetic regime set=, the BFF has =PUT
+/api/synthetic/market-regime/settings=, and the tab has a form. A tenant sees
+the five numbers read only.
+
+Live check on prime_origin:
+- A tenant admin was refused with forbidden.
+- =jump=40= was refused: "the heat's loop gain, jump / decay, is 2".
+- =speed=-1= was refused: "speed is -1".
+- =wake_rate=0.01= was refused, because an active share of 0.75 leaves no
+  positive calm multiplier at an active multiplier of 2.
+- =speed=2880 wake_rate=0.003= applied, the trace showed one =configure=
+  event, and the restore applied.
+
+Tests: the quant suite and the synthetic api suite pass under ctest. The web
+vitest (202) and the BFF regime tests (19) pass. The harness spec passes 9 of 9.
+

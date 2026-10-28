@@ -23,10 +23,8 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/subject_area_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.dq.api/domain/subject_area.hpp"
 #include "ores.dq.api/domain/subject_area_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/subject_area_entity.hpp"
@@ -40,14 +38,6 @@
 #include <initializer_list>
 #include <optional>
 #include <set>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -57,13 +47,13 @@
 
 namespace ores::dq::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string subject_area_repository::sql() {
-    return generate_create_table_sql<subject_area_entity>(lg());
+    return query_builder::insert_statement_sql<subject_area_entity>(lg());
 }
 
 bool subject_area_repository::is_sortable(std::string_view field) {
@@ -78,16 +68,16 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy subject_area_list_order(const ores::utility::domain::order& order,
-                                                 std::initializer_list<std::string> default_columns,
-                                                 bool default_descending) {
+query_builder::order subject_area_list_order(const ores::utility::domain::order& order,
+                                             std::initializer_list<std::string> default_columns,
+                                             bool default_descending) {
     if (order.field.empty())
-        return make_order(
+        return query_builder::make_order(
             default_columns, default_descending != order.descending, {"name", "domain_name"});
     if (!subject_area_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of subject areas cannot be ordered by " + order.field +
                                     ".");
-    return make_order({order.field}, order.descending, {"name", "domain_name"});
+    return query_builder::make_order({order.field}, order.descending, {"name", "domain_name"});
 }
 
 }
@@ -145,7 +135,7 @@ void subject_area_repository::write(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Writing subject area. " << "name: " << v.name
                                << " domain_name: " << v.domain_name;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, subject_area_mapper::map(t), lg(), "Writing subject area to database.");
 }
 
@@ -158,16 +148,17 @@ void subject_area_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, subject_area_mapper::map(batch), lg(), "Writing subject areas to database.");
 }
 
 std::vector<domain::subject_area> subject_area_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<subject_area_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("name"_c, "domain_name"_c);
+    const auto query = query_builder::read<std::vector<subject_area_entity>> |
+                       query_builder::where("valid_to"_c == max.value()) |
+                       query_builder::order_by("name"_c, "domain_name"_c);
 
-    return execute_read_query<subject_area_entity, domain::subject_area>(
+    return query_builder::execute_read_query<subject_area_entity, domain::subject_area>(
         ctx,
         query,
         [](const auto& entities) { return subject_area_mapper::map(entities); },
@@ -180,11 +171,11 @@ std::vector<domain::subject_area> subject_area_repository::read_latest(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest subject area. " << "name: " << name
                                << " domain_name: " << domain_name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query =
-        sqlgen::read<std::vector<subject_area_entity>> |
-        where("name"_c == name && "domain_name"_c == domain_name && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<subject_area_entity>> |
+                       query_builder::where("name"_c == name && "domain_name"_c == domain_name &&
+                                            "valid_to"_c == max.value());
 
-    return execute_read_query<subject_area_entity, domain::subject_area>(
+    return query_builder::execute_read_query<subject_area_entity, domain::subject_area>(
         ctx,
         query,
         [](const auto& entities) { return subject_area_mapper::map(entities); },
@@ -197,11 +188,11 @@ std::vector<domain::subject_area> subject_area_repository::read_all(
     context ctx, const std::string& name, const std::string& domain_name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all subject area versions. " << "name: " << name
                                << " domain_name: " << domain_name;
-    const auto query = sqlgen::read<std::vector<subject_area_entity>> |
-                       where("name"_c == name && "domain_name"_c == domain_name) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query = query_builder::read<std::vector<subject_area_entity>> |
+                       query_builder::where("name"_c == name && "domain_name"_c == domain_name) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<subject_area_entity, domain::subject_area>(
+    return query_builder::execute_read_query<subject_area_entity, domain::subject_area>(
         ctx,
         query,
         [](const auto& entities) { return subject_area_mapper::map(entities); },
@@ -213,17 +204,18 @@ std::optional<domain::subject_area> subject_area_repository::read_at_version(
     context ctx, const std::string& name, const std::string& domain_name, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading subject area at version. " << "name: " << name
                                << " domain_name: " << domain_name << " version: " << version;
-    const auto query =
-        sqlgen::read<std::vector<subject_area_entity>> |
-        where("name"_c == name && "domain_name"_c == domain_name && "version"_c == version) |
-        sqlgen::limit(1);
+    const auto query = query_builder::read<std::vector<subject_area_entity>> |
+                       query_builder::where("name"_c == name && "domain_name"_c == domain_name &&
+                                            "version"_c == version) |
+                       query_builder::limit(1);
 
-    const auto entities = execute_read_query<subject_area_entity, domain::subject_area>(
-        ctx,
-        query,
-        [](const auto& entities) { return subject_area_mapper::map(entities); },
-        lg(),
-        "Reading subject area at version.");
+    const auto entities =
+        query_builder::execute_read_query<subject_area_entity, domain::subject_area>(
+            ctx,
+            query,
+            [](const auto& entities) { return subject_area_mapper::map(entities); },
+            lg(),
+            "Reading subject area at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -250,12 +242,12 @@ subject_area_repository::remove(context ctx,
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::delete_from<subject_area_entity> |
-        where("tenant_id"_c == tid && "name"_c == name && "domain_name"_c == domain_name &&
-              "valid_to"_c == max.value() && "version"_c == expected);
+    const auto query = query_builder::delete_from<subject_area_entity> |
+                       query_builder::where("tenant_id"_c == tid && "name"_c == name &&
+                                            "domain_name"_c == domain_name &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing subject area from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing subject area from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -278,14 +270,14 @@ subject_area_repository::read_latest(context ctx,
                                      const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest subject areas with offset: " << offset
                                << " and limit: " << limit;
-    const auto query = sqlgen::read<std::vector<subject_area_entity>> | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<subject_area_entity>> |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<subject_area_entity, domain::subject_area>(
+    return query_builder::execute_ordered_read_query<subject_area_entity, domain::subject_area>(
         ctx,
         query,
         subject_area_list_order(order, {"name", "domain_name"}, false),
-        narrowed(valid_at(as_of), std::nullopt),
+        query_builder::narrowed(query_builder::valid_at(as_of), std::nullopt),
         [](const auto& entities) { return subject_area_mapper::map(entities); },
         lg(),
         "Reading latest subject areas with pagination.");
@@ -296,10 +288,14 @@ subject_area_repository::get_total_area_count(context ctx,
                                               const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active subject area count";
 
-    const auto query = sqlgen::read<std::vector<subject_area_entity>>;
+    const auto query = query_builder::read<std::vector<subject_area_entity>>;
 
-    return execute_count_query<subject_area_entity>(
-        ctx, query, narrowed(valid_at(as_of), std::nullopt), lg(), "Counting subject areas");
+    return query_builder::execute_count_query<subject_area_entity>(
+        ctx,
+        query,
+        query_builder::narrowed(query_builder::valid_at(as_of), std::nullopt),
+        lg(),
+        "Counting subject areas");
 }
 
 std::vector<domain::subject_area>
@@ -309,17 +305,18 @@ subject_area_repository::read_latest(context ctx,
     if (names.empty() || domain_names.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<subject_area_entity>> |
-                       where("name"_c.in(names) && "domain_name"_c.in(domain_names) &&
+    const auto query =
+        query_builder::read<std::vector<subject_area_entity>> |
+        query_builder::where("name"_c.in(names) && "domain_name"_c.in(domain_names) &&
                              "valid_to"_c == max.value());
-    auto result = execute_read_query<subject_area_entity, domain::subject_area>(
+    auto result = query_builder::execute_read_query<subject_area_entity, domain::subject_area>(
         ctx,
         query,
         [](const auto& entities) { return subject_area_mapper::map(entities); },
         lg(),
         "Reading latest subject areas by ids.");
     // Compound key: the query above is a per-column .in() cross-product
-    // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
+    // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
     if (domain_names.size() != names.size())
         throw std::invalid_argument(

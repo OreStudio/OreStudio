@@ -28,7 +28,9 @@
 #include "ores.marketdata.api/domain/provider.hpp"
 #include "ores.marketdata.api/domain/provider_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.core/repository/provider_entity.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <boost/log/sources/severity_feature.hpp>
+#include <optional>
 #include <vector>
 
 namespace ores::marketdata::repository {
@@ -42,13 +44,22 @@ domain::provider provider_mapper::map(const provider_entity& v) {
     domain::provider r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 
     r.kind = v.kind;
     r.description = v.description;
     r.display_order = v.display_order;
+    r.terms_url = v.terms_url;
+    r.terms_credit = v.terms_credit;
+    r.allows_storage = v.allows_storage;
+    r.credential_ref = v.credential_ref;
+    r.terms_accepted_digest = v.terms_accepted_digest;
+    r.terms_accepted_by = v.terms_accepted_by;
+    r.terms_accepted_at = v.terms_accepted_at.has_value() ?
+                              std::optional(timestamp_to_timepoint(*v.terms_accepted_at)) :
+                              std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -72,6 +83,16 @@ provider_entity provider_mapper::map(const domain::provider& v) {
     r.kind = v.kind;
     r.description = v.description;
     r.display_order = v.display_order;
+    r.terms_url = v.terms_url;
+    r.terms_credit = v.terms_credit;
+    r.allows_storage = v.allows_storage;
+    r.credential_ref = v.credential_ref;
+    r.terms_accepted_digest = v.terms_accepted_digest;
+    r.terms_accepted_by = v.terms_accepted_by;
+    r.terms_accepted_at =
+        v.terms_accepted_at.has_value() ?
+            std::optional(ores::platform::time::datetime::to_db_string(*v.terms_accepted_at)) :
+            std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

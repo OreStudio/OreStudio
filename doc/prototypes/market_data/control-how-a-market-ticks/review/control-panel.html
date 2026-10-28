@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Regime & Stochastic Tick Arrival Engine</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            950: '#07090e',
+                            900: '#0c0e14',
+                            850: '#11141d',
+                            800: '#161a26',
+                            700: '#23293a',
+                            600: '#333b52',
+                        },
+                        cyan: {
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            950: '#082f49'
+                        },
+                        emerald: {
+                            400: '#34d399',
+                            500: '#10b981',
+                            950: '#064e3b'
+                        },
+                        amber: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            950: '#451a03'
+                        },
+                        rose: {
+                            400: '#fb7185',
+                            500: '#f43f5e',
+                            950: '#4c0519'
+                        }
+                    },
+                    fontFamily: {
+                        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Courier New', 'monospace'],
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0c0e14;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #23293a;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #333b52;
+        }
+        
+        .tab-active {
+            border-bottom: 2px solid #38bdf8;
+            color: #38bdf8;
+        }
+        .glow-emerald {
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+        }
+        .glow-amber {
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
+        }
+        .glow-rose {
+            box-shadow: 0 0 12px rgba(244, 63, 94, 0.25);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 12px rgba(14, 165, 233, 0.25);
+        }
+    </style>
+</head>
+<body class="bg-dark-950 text-slate-300 font-sans antialiased min-h-screen flex flex-col selection:bg-cyan-500 selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-dark-900 border-b border-dark-700 px-6 py-3 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-50">
+        <div class="flex items-center space-x-6">
+            <div class="flex items-center space-x-3">
+                <div class="h-8 w-8 rounded bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                    <i class="fa-solid font-mono text-sm">λ</i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-100 text-base tracking-wide flex items-center gap-2">
+                        TICK_REGIME_ENGINE <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-dark-700 text-cyan-400 border border-dark-600">v2.4.0-CPP-CORE</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">High-Frequency Stochastic Arrival & Market Regime Controller</p>
+                </div>
+            </div>
+            
+            <nav class="hidden md:flex space-x-1 text-sm font-medium border-l border-dark-700 pl-6">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-3 py-1.5 rounded-md hover:text-slate-100 text-slate-400 transition-colors tab-active">
+                    <i class="fa-solid fa-gauge-high mr-2 text-xs"></i>Dashboard
+                </button>
+                <button onclick="switchTab('stochastic')" id="nav-stochastic" class="px-3 py-1.5 rounded-md hover:text-slate-100 text-slate-400 transition-colors">
+                    <i class="fa-solid fa-diagram-project mr-2 text-xs"></i>Stochastic Models
+                </button>
+                <button onclick="switchTab('regime')" id="nav-regime" class="px-3 py-1.5 rounded-md hover:text-slate-100 text-slate-400 transition-colors">
+                    <i class="fa-solid fa-sliders mr-2 text-xs"></i>Market Regime & Heat
+                </button>
+                <button onclick="switchTab('matrix')" id="nav-matrix" class="px-3 py-1.5 rounded-md hover:text-slate-100 text-slate-400 transition-colors">
+                    <i class="fa-solid fa-network-wired mr-2 text-xs"></i>Cross-Asset Hawkes
+                </button>
+            </nav>
+        </div>
+
+        <!-- System Controls & Global Status -->
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2 bg-dark-850 px-3 py-1.5 rounded-md border border-dark-700 text-xs font-mono">
+                <span id="engine-status-dot" class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-slate-400">ENGINE:</span>
+                <span id="engine-status-text" class="text-emerald-400 font-semibold">RUNNING (LIVE)</span>
+            </div>
+
+            <button id="toggle-engine-btn" onclick="toggleEngine()" class="bg-rose-950/40 hover:bg-rose-900/50 text-rose-400 border border-rose-800/60 text-xs px-3 py-1.5 rounded font-mono font-medium transition-colors flex items-center gap-1.5">
+                <i class="fa-solid fa-power-off"></i> Pause Engine
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 p-4 md:p-6 max-w-[1700px] w-full mx-auto space-y-6">
+
+        <!-- Top Telemetry Row -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
+            <!-- Metric 1: State -->
+            <div class="bg-dark-900 border border-dark-700 p-3 rounded-lg flex flex-col justify-between">
+                <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold font-mono">REGIME STATE</div>
+                <div class="mt-2 flex items-center justify-between">
+                    <span id="telemetry-state-badge" class="px-2.5 py-1 rounded text-xs font-mono font-bold uppercase bg-emerald-950 text-emerald-400 border border-emerald-800/60 glow-emerald">
+                        CALM
+                    </span>
+                    <i class="fa-solid fa-wave-square text-slate-600 text-sm"></i>
+                </div>
+            </div>
+
+            <!-- Metric 2: Multiplier -->
+            <div class="bg-dark-900 border border-dark-700 p-3 rounded-lg flex flex-col justify-between">
+                <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold font-mono">MULTIPLIER</div>
+                <div class="mt-1 flex items-baseline justify-between">
+                    <span id="telemetry-multiplier" class="text-xl font-bold font-mono text-slate-100">×1.00</span>
+                    <span class="text-[10px] text-slate-500 font-mono">scale factor</span>
+                </div>
+            </div>
+
+            <!-- Metric 3: Pace -->
+            <div class="bg-dark-900 border border-dark-700 p-3 rounded-lg flex flex-col justify-between">
+                <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold font-mono">INTENSITY (PACE)</div>
+                <div class="mt-1 flex items-baseline justify-between">
+                    <span id="telemetry-pace" class="text-xl font-bold font-mono text-cyan-400">×1.02</span>
+                    <span class="text-[10px] text-slate-500 font-mono">λ(t) ratio</span>
+                </div>
+            </div>
+
+            <!-- Metric 4: Heat Loop Gain -->
+            <div class="bg-dark-900 border border-dark-700 p-3 rounded-lg flex flex-col justify-between">
+                <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold font-mono">HEAT LOOP GAIN</div>
+                <div class="mt-1 flex items-baseline justify-between">
+                    <span id="telemetry-heat" class="text-xl font-bold font-mono text-amber-400">0.025</span>
+                    <span class="text-[10px] text-slate-500 font-mono">of 1.0</span>
+                </div>
+            </div>
+
+            <!-- Metric 5: Ticks / Sec -->
+            <div class="bg-dark-900 border border-dark-700 p-3 rounded-lg flex flex-col justify-between">
+                <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold font-mono">TICKS / SEC</div>
+                <div class="mt-1 flex items-baseline justify-between">
+                    <span id="telemetry-tps" class="text-xl font-bold font-mono text-emerald-400">68.4</span>
+                    <span class="text-[10px] text-emerald-500/80 font-mono"><i class="fa-solid fa-arrow-up text-[9px] mr-0.5"></i> real-time</span>
+                </div>
+            </div>
+
+            <!-- Metric 6: Queue Heap Size -->
+            <div class="bg-dark-900 border border-dark-700 p-3 rounded-lg flex flex-col justify-between">
+                <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold font-mono">HEAP QUEUE</div>
+                <div class="mt-1 flex items-baseline justify-between">
+                    <span id="telemetry-heap" class="text-xl font-bold font-mono text-slate-200">104</span>
+                    <span class="text-[10px] text-slate-500 font-mono">events</span>
+                </div>
+            </div>
+
+            <!-- Metric 7: Lateness -->
+            <div class="bg-dark-900 border border-dark-700 p-3 rounded-lg flex flex-col justify-between col-span-2 sm:col-span-1">
+                <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold font-mono">LATENESS (C++)</div>
+                <div class="mt-1 flex items-baseline justify-between">
+                    <span id="telemetry-latency" class="text-xl font-bold font-mono text-slate-100">0.8 ms</span>
+                    <span id="telemetry-latency-max" class="text-[10px] text-slate-400 font-mono">max 3.2 ms</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB CONTENT: Dashboard -->
+        <div id="tab-dashboard" class="space-y-6">
+
+            <!-- Real-time Chart & Control Bar -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Main Intensity Graph (2 Columns) -->
+                <div class="lg:col-span-2 bg-dark-900 border border-dark-700 rounded-xl p-5 flex flex-col justify-between space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-sm font-bold font-mono text-slate-200 uppercase tracking-wide flex items-center gap-2">
+                                <i class="fa-solid fa-chart-line text-cyan-400"></i> Real-time Arrival Intensity λ(t) & Ticks
+                            </h2>
+                            <p class="text-xs text-slate-400">Stochastic intensity dynamics with self-excitation spikes</p>
+                        </div>
+                        <div class="flex items-center space-x-2 text-xs font-mono">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/40">
+                                <span class="h-1.5 w-1.5 rounded-full bg-cyan-400 mr-1.5"></span> λ(t) Hawkes
+                            </span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/40">
+                                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 mr-1.5"></span> Tick Count
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="h-64 w-full relative">
+                        <canvas id="intensityChart"></canvas>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs font-mono text-slate-400 pt-2 border-t border-dark-800">
+                        <span>Model Active: <strong id="active-model-name" class="text-cyan-400">Hawkes Exponential</strong></span>
+                        <span>Seed: <strong id="current-seed-display" class="text-slate-200">42</strong></span>
+                        <span>Market Speed: <strong id="current-speed-display" class="text-slate-200">1440x</strong></span>
+                    </div>
+                </div>
+
+                <!-- Quick Action Override Panel (1 Column) -->
+                <div class="bg-dark-900 border border-dark-700 rounded-xl p-5 flex flex-col justify-between space-y-4">
+                    <div>
+                        <h2 class="text-sm font-bold font-mono text-slate-200 uppercase tracking-wide flex items-center gap-2 mb-1">
+                            <i class="fa-solid fa-bolt text-amber-400"></i> Regime State Override
+                        </h2>
+                        <p class="text-xs text-slate-400 mb-4">Directly force or transition the market condition</p>
+
+                        <!-- Force Buttons -->
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-mono uppercase text-slate-400 font-semibold block">State Override</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button onclick="setRegimeState('AUTO')" id="btn-state-auto" class="py-2 px-3 rounded font-mono text-xs font-bold transition-all border bg-cyan-500/10 text-cyan-400 border-cyan-500/50 shadow-sm">
+                                    AUTO
+                                </button>
+                                <button onclick="setRegimeState('CALM')" id="btn-state-calm" class="py-2 px-3 rounded font-mono text-xs font-bold transition-all border bg-dark-800 text-slate-400 border-dark-700 hover:bg-dark-700">
+                                    CALM
+                                </button>
+                                <button onclick="setRegimeState('ACTIVE')" id="btn-state-active" class="py-2 px-3 rounded font-mono text-xs font-bold transition-all border bg-dark-800 text-slate-400 border-dark-700 hover:bg-dark-700">
+                                    ACTIVE
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Manual Shock Injection -->
+                        <div class="mt-5 space-y-2">
+                            <label class="text-[11px] font-mono uppercase text-slate-400 font-semibold block">Inject Exogenous Tick Burst</label>
+                            <div class="flex gap-2">
+                                <button onclick="injectShock(25)" class="flex-1 py-2 px-3 bg-amber-950/40 hover:bg-amber-900/60 border border-amber-700/60 text-amber-400 rounded font-mono text-xs font-medium transition-colors">
+                                    +25 Ticks
+                                </button>
+                                <button onclick="injectShock(100)" class="flex-1 py-2 px-3 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-700/60 text-rose-400 rounded font-mono text-xs font-medium transition-colors">
+                                    +100 Ticks Shock
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- System Chain Auto-Info -->
+                        <div class="mt-5 p-3 rounded-lg bg-dark-850 border border-dark-700/80 text-xs text-slate-400 space-y-1">
+                            <div class="flex justify-between font-mono">
+                                <span>SET BY:</span>
+                                <span class="text-slate-200">The chain, turning on its own</span>
+                            </div>
+                            <div class="flex justify-between font-mono">
+                                <span>REASON:</span>
+                                <span id="regime-reason" class="text-emerald-400">Heat within normal bounds</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-dark-800 flex justify-between items-center text-xs font-mono text-slate-500">
+                        <span>Auto-transition status</span>
+                        <span class="text-emerald-400"><i class="fa-solid fa-circle text-[8px] mr-1"></i> CHAIN ACTIVE</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Primary Form Controls: "WHAT MOVES THE MARKET" -->
+            <div class="bg-dark-900 border border-dark-700 rounded-xl p-6 shadow-xl relative">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-5 border-b border-dark-800 pb-4">
+                    <div>
+                        <h2 class="text-sm font-bold font-mono text-slate-100 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-gears text-cyan-400"></i> What Moves The Market — Regime Dynamics
+                        </h2>
+                        <p class="text-xs text-slate-400">Configure transition rates, heat generation, decay constants, and tail parameters without float truncation artifacts</p>
+                    </div>
+                    
+                    <button onclick="applyRegimeForm()" class="bg-cyan-500 hover:bg-cyan-400 text-dark-950 font-mono font-bold text-xs px-5 py-2 rounded shadow-md transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-check"></i> Apply Configuration
+                    </button>
+                </div>
+
+                <form id="regime-form" onsubmit="event.preventDefault(); applyRegimeForm();" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                        
+                        <!-- Input 1: Calm to Active -->
+                        <div class="bg-dark-850 p-3.5 rounded-lg border border-dark-700 space-y-2">
+                            <label class="block text-xs font-mono font-semibold text-slate-300">
+                                Calm to active, /sec
+                            </label>
+                            <input type="number" step="any" id="inp-calm-to-active" 
+                                class="w-full bg-dark-950 border border-dark-600 rounded px-3 py-2 font-mono text-sm text-slate-100 focus:outline-none focus:border-cyan-500 transition-colors"
+                                value="0.0016666666666666668" oninput="updateDerivedDuration('calm-to-active', this.value, 'calm-avg-span')">
+                            <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                                <span>Mean duration:</span>
+                                <span id="calm-avg-span" class="text-cyan-400 font-semibold">600.0 s (10m)</span>
+                            </div>
+                        </div>
+
+                        <!-- Input 2: Active to Calm -->
+                        <div class="bg-dark-850 p-3.5 rounded-lg border border-dark-700 space-y-2">
+                            <label class="block text-xs font-mono font-semibold text-slate-300">
+                                Active to calm, /sec
+                            </label>
+                            <input type="number" step="any" id="inp-active-to-calm" 
+                                class="w-full bg-dark-950 border border-dark-600 rounded px-3 py-2 font-mono text-sm text-slate-100 focus:outline-none focus:border-cyan-500 transition-colors"
+                                value="0.0033333333333333335" oninput="updateDerivedDuration('active-to-calm', this.value, 'active-avg-span')">
+                            <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                                <span>Mean duration:</span>
+                                <span id="active-avg-span" class="text-cyan-400 font-semibold">300.0 s (5m)</span>
+                            </div>
+                        </div>
+
+                        <!-- Input 3: Heat one tick adds -->
+                        <div class="bg-dark-850 p-3.5 rounded-lg border border-dark-700 space-y-2">
+                            <label class="block text-xs font-mono font-semibold text-slate-300">
+                                Heat one tick adds
+                            </label>
+                            <input type="number" step="0.01" id="inp-heat-tick-adds" 
+                                class="w-full bg-dark-950 border border-dark-600 rounded px-3 py-2 font-mono text-sm text-slate-100 focus:outline-none focus:border-cyan-500 transition-colors"
+                                value="0.50">
+                            <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                                <span>Impact per event:</span>
+                                <span class="text-amber-400">+0.50 gain</span>
+                            </div>
+                        </div>
+
+                        <!-- Input 4: Heat decay, a second -->
+                        <div class="bg-dark-850 p-3.5 rounded-lg border border-dark-700 space-y-2">
+                            <label class="block text-xs font-mono font-semibold text-slate-300">
+                                Heat decay half-life (s)
+                            </label>
+                            <input type="number" step="0.1" id="inp-heat-decay" 
+                                class="w-full bg-dark-950 border border-dark-600 rounded px-3 py-2 font-mono text-sm text-slate-100 focus:outline-none focus:border-cyan-500 transition-colors"
+                                value="20.0">
+                            <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                                <span>Decay constant:</span>
+                                <span id="heat-decay-rate" class="text-slate-300">0.035 /s</span>
+                            </div>
+                        </div>
+
+                        <!-- Input 5: Market speed -->
+                        <div class="bg-dark-850 p-3.5 rounded-lg border border-dark-700 space-y-2">
+                            <label class="block text-xs font-mono font-semibold text-slate-300">
+                                Market speed multiplier
+                            </label>
+                            <input type="number" step="1" id="inp-market-speed" 
+                                class="w-full bg-dark-950 border border-dark-600 rounded px-3 py-2 font-mono text-sm text-slate-100 focus:outline-none focus:border-cyan-500 transition-colors"
+                                value="1440">
+                            <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                                <span>Ratio:</span>
+                                <span class="text-emerald-400">1440 sim s / wall s</span>
+                            </div>
+                        </div>
+
+                        <!-- Input 6: Tail loading -->
+                        <div class="bg-dark-850 p-3.5 rounded-lg border border-dark-700 space-y-2">
+                            <label class="block text-xs font-mono font-semibold text-slate-300">
+                                Tail loading ($\xi$)
+                            </label>
+                            <input type="number" step="0.05" id="inp-tail-loading" 
+                                class="w-full bg-dark-950 border border-dark-600 rounded px-3 py-2 font-mono text-sm text-slate-100 focus:outline-none focus:border-cyan-500 transition-colors"
+                                value="0.00">
+                            <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                                <span>Fat-tail shape:</span>
+                                <span class="text-slate-400">Exponential</span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="mt-4 text-[11px] font-mono text-slate-500 flex items-center justify-between border-t border-dark-800/80 pt-3">
+                    <span><i class="fa-solid fa-circle-info mr-1 text-cyan-400"></i> Form values are formatted cleanly to prevent floating-point binary representation artifacts (e.g. IEEE 754 precision issues).</span>
+                    <span id="form-apply-timestamp" class="text-slate-400">Ready</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB CONTENT: Stochastic Models -->
+        <div id="tab-stochastic" class="hidden space-y-6">
+            <div class="bg-dark-900 border border-dark-700 rounded-xl p-6">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-6 border-b border-dark-800 pb-4">
+                    <div>
+                        <h2 class="text-base font-bold font-mono text-slate-100 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-square-root-variable text-cyan-400"></i> Point Process & Stochastic Duration Selector
+                        </h2>
+                        <p class="text-xs text-slate-400">Select and calibrate microstructural tick arrival specifications</p>
+                    </div>
+
+                    <!-- Model Switcher Radio Group -->
+                    <div class="flex bg-dark-950 p-1 rounded-lg border border-dark-700 text-xs font-mono font-medium">
+                        <button onclick="selectStochasticModel('hawkes')" id="radio-hawkes" class="px-4 py-1.5 rounded-md bg-cyan-500 text-dark-950 font-bold transition-all">
+                            Hawkes Process
+                        </button>
+                        <button onclick="selectStochasticModel('acd')" id="radio-acd" class="px-4 py-1.5 rounded-md text-slate-400 hover:text-slate-100 transition-all">
+                            ACD Model
+                        </button>
+                        <button onclick="selectStochasticModel('poisson')" id="radio-poisson" class="px-4 py-1.5 rounded-md text-slate-400 hover:text-slate-100 transition-all">
+                            Inhomogeneous Poisson
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hawkes Process Subpanel -->
+                <div id="model-panel-hawkes" class="space-y-6">
+                    <div class="p-4 bg-cyan-950/20 border border-cyan-800/40 rounded-lg text-xs text-cyan-200 font-mono">
+                        <p class="font-semibold text-cyan-400 mb-1"><i class="fa-solid fa-book-bookmark mr-1"></i> Hawkes Self-Exciting Process Formulation</p>
+                        $$\lambda(t) = \mu + \sum_{t_k < t} \alpha \, e^{-\beta (t - t_k)}$$
+                        where $\mu$ is baseline rate, $\alpha$ is self-excitation jump, and $\beta$ is memory decay rate. Spectral radius $n^* = \alpha/\beta < 1.0$ for stability.
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div class="bg-dark-850 p-4 rounded-lg border border-dark-700 space-y-2">
+                            <label class="text-xs font-mono font-semibold text-slate-200 block">Baseline Intensity ($\mu$)</label>
+                            <input type="number" id="hawkes-mu" step="0.01" value="0.50" class="w-full bg-dark-950 border border-dark-600 rounded px-3 py-2 font-mono text-sm text-slate-100 focus:outline-none focus:border-cyan-500">
+                            <p class="text-[11px] text-slate-400 font-mono">Autonomous tick arrival rate per second</p>
+                        </div>
+
+                        <div class="bg-dark-850 p-4 rounded-lg border border-dark-700 space-y-2">
+                            <label class="text-xs font-mono font-semibold text-slate-200 block">Self-Excitation ($\alpha$)</label>
+                            <input type="number" id="hawkes-alpha" step="0.01" value="0.45" class="w-full bg-dark-950 border border-dark-600 rounded px-3 py-2 font-mono text-sm text-slate-100 focus:outline-none focus:border-cyan-500" oninput="calculateBranchingRatio()">
+                            <p class="text-[11px] text-slate-400 font-mono">Intensity jump on tick arrival</p>
+                        </div>
+
+                        <div class="bg-dark-850 p-4 rounded-lg border border-dark-700 space-y-2">
+                            <label class="text-xs font-mono font-semibold text-slate-200 block">Decay Rate ($\beta$)</label>
+                            <input type="number" id="hawkes-beta" step="0.01" value="1.20" class="w-full bg-dark-950 border border-dark-600 rounded px-3 py-2 font-mono text-sm text-slate-100 focus:outline-none focus:border-cyan-500" oninput="calculateBranchingRatio()">
+                            <p class="text-[11px] text-slate-400 font-mono">Memory decay coefficient</p>
+                        </div>
+                    </div>
+
+                    <!-- Branching ratio check -->
+                    <div class="p-3 bg-dark-850 rounded-lg border border-dark-700 flex items-center justify-between text-xs font-mono">
+                        <div>
+                            <span class="text-slate-400">Branching Ratio ($n^* = \alpha / \beta$):</span>
+                            <span id="branching-ratio-val" class="ml-2 font-bold text-emerald-400">0.375</span>
+                        </div>
+                        <span id="branching-ratio-status" class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60">STABLE (n* < 1.0)</span>
+                    </div>
+                </div>
+
+                <!-- ACD Subpanel -->
+                <div id="model-panel-acd" class="hidden space-y-6">
+                    <div class="p-4 bg-amber-950/20 border border-amber-800/40 rounded-lg text-xs text-amber-200 font-mono">
+                        <p class="font-semibold text-amber-400 mb-1"><i class="fa-solid fa-book-bookmark mr-1"></i> Autoregressive Conditional Duration (ACD(1,1))</p>
+                        $$\psi_i = E[\Delta t_i | \mathcal{F}_{i-1}] = \omega + \alpha \Delta t_{i-1} + \beta \psi_{i-1}$$
+                        Models time duration $\Delta t$ between consecutive market ticks (Engle & Russell, 1998).
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div class="bg-dark-850 p-4 rounded-lg border border-dark-700 space-y-2">
+                            <label class="text-xs font-mono font-semibold text-slate-200 block">Baseline Duration ($\omega$)</label>
+                            <input type="number" id="acd-omega" step="0.001" value="0.05" class="w-full bg-dark-950 border border-dark-600 rounded px-3 py-2 font-mono text-sm text-slate-100 focus:outline-none focus:border-cyan-500">
+                        </div>
+                        <div class="bg-dark-850 p-4 rounded-lg border border-dark-700 space-y-2">
+                            <label class="text-xs font-mono font-semibold text-slate-200 block">ARCH Coefficient ($\alpha$)</label>
+                            <input type="number" id="acd-alpha" step="0.01" value="0.10" class="w-full bg-dark-950 border border-dark-600 rounded px-3 py-2 font-mono text-sm text-slate-100 focus:outline-none focus:border-cyan-500">
+                        </div>
+                        <div class="bg-dark-850 p-4 rounded-lg border border-dark-700 space-y-2">
+                            <label class="text-xs font-mono font-semibold text-slate-200 block">GARCH Coefficient ($\beta$)</label>
+                            <input type="number" id="acd-beta" step="0.01" value="0.85" class="w-full bg-dark-950 border border-dark-600 rounded px-3 py-2 font-mono text-sm text-slate-100 focus:outline-none focus:border-cyan-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Poisson Subpanel -->
+                <div id="model-panel-poisson" class="hidden space-y-6">
+                    <div class="p-4 bg-slate-850 border border-dark-600 rounded-lg text-xs text-slate-300 font-mono">
+                        <p class="font-semibold text-slate-200 mb-1"><i class="fa-solid fa-book-bookmark mr-1"></i> Inhomogeneous Poisson Baseline</p>
+                        Memoryless arrivals with deterministic time-varying rate $\lambda(t) = \lambda_0 \cdot \text{RegimeMultiplier}(t)$.
+                    </div>
+
+                    <div class="max-w-md bg-dark-850 p-4 rounded-lg border border-dark-700 space-y-2">
+                        <label class="text-xs font-mono font-semibold text-slate-200 block">Poisson Rate ($\lambda_0$)</label>
+                        <input type="number" id="poisson-rate" step="1.0" value="50.0" class="w-full bg-dark-950 border border-dark-600 rounded px-3 py-2 font-mono text-sm text-slate-100 focus:outline-none focus:border-cyan-500">
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button onclick="applyStochasticModel()" class="bg-cyan-500 hover:bg-cyan-400 text-dark-950 font-mono font-bold text-xs px-5 py-2 rounded shadow transition-all">
+                        Activate Selected Stochastic Model
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB CONTENT: Regime & Heat -->
+        <div id="tab-regime" class="hidden space-y-6">
+            <div class="bg-dark-900 border border-dark-700 rounded-xl p-6">
+                <h2 class="text-base font-bold font-mono text-slate-100 uppercase tracking-wider mb-2">
+                    <i class="fa-solid fa-fire-flame-curved text-amber-400"></i> Heat Loop & Market Microstructure Feedback
+                </h2>
+                <p class="text-xs text-slate-400 mb-6">Configure how trade volume feeds back into non-linear market volatility heat</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-dark-850 border border-dark-700 p-5 rounded-lg space-y-4">
+                        <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase">Thermal Decay Curve</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1">
+                                    <span class="text-slate-400">Heat Absorption Capacity</span>
+                                    <span class="text-slate-100 font-bold">100.0 Units</span>
+                                </div>
+                                <div class="w-full bg-dark-950 rounded-full h-2 overflow-hidden border border-dark-700">
+                                    <div id="heat-capacity-bar" class="bg-gradient-to-r from-cyan-500 via-amber-500 to-rose-500 h-full w-[25%] transition-all"></div>
+                                </div>
+                            </div>
+
+                            <div class="pt-2 text-xs text-slate-400 space-y-1 font-mono">
+                                <div class="flex justify-between">
+                                    <span>Current Heat Level:</span>
+                                    <span id="regime-heat-level" class="text-amber-400 font-bold">25.4 / 100</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Volatility Expansion:</span>
+                                    <span id="regime-vol-expansion" class="text-slate-200">+2.54%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-dark-850 border border-dark-700 p-5 rounded-lg space-y-4">
+                        <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase">Automated Trigger Thresholds</h3>
+                        <div class="space-y-3 text-xs font-mono">
+                            <div class="flex justify-between items-center bg-dark-950 p-2.5 rounded border border-dark-700">
+                                <span class="text-slate-300">CALM &rarr; ACTIVE Threshold</span>
+                                <input type="number" value="40.0" class="w-20 bg-dark-900 border border-dark-600 px-2 py-1 rounded text-right text-slate-100">
+                            </div>
+                            <div class="flex justify-between items-center bg-dark-950 p-2.5 rounded border border-dark-700">
+                                <span class="text-slate-300">ACTIVE &rarr; VOLATILE BURST Threshold</span>
+                                <input type="number" value="80.0" class="w-20 bg-dark-900 border border-dark-600 px-2 py-1 rounded text-right text-slate-100">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB CONTENT: Cross-Asset Hawkes Matrix -->
+        <div id="tab-matrix" class="hidden space-y-6">
+            <div class="bg-dark-900 border border-dark-700 rounded-xl p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 class="text-base font-bold font-mono text-slate-100 uppercase tracking-wider">
+                            <i class="fa-solid fa-network-wired text-cyan-400"></i> Multivariate Cross-Excitation Matrix ($\boldsymbol{A}$)
+                        </h2>
+                        <p class="text-xs text-slate-400">Inter-asset tick arrival spillovers: $\alpha_{ij}$ represents impact of asset $j$ tick on asset $i$ intensity</p>
+                    </div>
+                    <button onclick="resetMatrix()" class="text-xs font-mono px-3 py-1.5 rounded bg-dark-800 hover:bg-dark-700 text-slate-300 border border-dark-600">
+                        Reset Matrix
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs font-mono text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-dark-700 text-slate-400 bg-dark-850">
+                                <th class="p-3">Triggered Asset ($i$) \ Cause ($j$)</th>
+                                <th class="p-3 text-cyan-400">SPY (S&P 500)</th>
+                                <th class="p-3 text-emerald-400">QQQ (Nasdaq)</th>
+                                <th class="p-3 text-amber-400">AAPL (Tech)</th>
+                                <th class="p-3 text-rose-400">TLT (Bonds)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-dark-800 text-slate-200">
+                            <tr>
+                                <td class="p-3 font-bold text-cyan-400 bg-dark-850/50">SPY (S&P 500)</td>
+                                <td class="p-2"><input type="number" step="0.05" value="0.40" class="w-full bg-dark-950 border border-dark-700 rounded p-1.5 text-slate-100 text-center"></td>
+                                <td class="p-2"><input type="number" step="0.05" value="0.25" class="w-full bg-dark-950 border border-dark-700 rounded p-1.5 text-slate-100 text-center"></td>
+                                <td class="p-2"><input type="number" step="0.05" value="0.15" class="w-full bg-dark-950 border border-dark-700 rounded p-1.5 text-slate-100 text-center"></td>
+                                <td class="p-2"><input type="number" step="0.05" value="0.05" class="w-full bg-dark-950 border border-dark-700 rounded p-1.5 text-slate-100 text-center"></td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-bold text-emerald-400 bg-dark-850/50">QQQ (Nasdaq)</td>
+                                <td class="p-2"><input type="number" step="0.05" value="0.30" class="w-full bg-dark-950 border border-dark-700 rounded p-1.5 text-slate-100 text-center"></td>
+                                <td class="p-2"><input type="number" step="0.05" value="0.45" class="w-full bg-dark-950 border border-dark-700 rounded p-1.5 text-slate-100 text-center"></td>
+                                <td class="p-2"><input type="number" step="0.05" value="0.20" class="w-full bg-dark-950 border border-dark-700 rounded p-1.5 text-slate-100 text-center"></td>
+                                <td class="p-2"><input type="number" step="0.05" value="0.02" class="w-full bg-dark-950 border border-dark-700 rounded p-1.5 text-slate-100 text-center"></td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-bold text-amber-400 bg-dark-850/50">AAPL (Tech)</td>
+                                <td class="p-2"><input type="number" step="0.05" value="0.20" class="w-full bg-dark-950 border border-dark-700 rounded p-1.5 text-slate-100 text-center"></td>
+                                <td class="p-2"><input type="number" step="0.05" value="0.35" class="w-full bg-dark-950 border border-dark-700 rounded p-1.5 text-slate-100 text-center"></td>
+                                <td class="p-2"><input type="number" step="0.05" value="0.50" class="w-full bg-dark-950 border border-dark-700 rounded p-1.5 text-slate-100 text-center"></td>
+                                <td class="p-2"><input type="number" step="0.05" value="0.00" class="w-full bg-dark-950 border border-dark-700 rounded p-1.5 text-slate-100 text-center"></td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-bold text-rose-400 bg-dark-850/50">TLT (Bonds)</td>
+                                <td class="p-2"><input type="number" step="0.05" value="0.10" class="w-full bg-dark-950 border border-dark-700 rounded p-1.5 text-slate-100 text-center"></td>
+                                <td class="p-2"><input type="number" step="0.05" value="0.05" class="w-full bg-dark-950 border border-dark-700 rounded p-1.5 text-slate-100 text-center"></td>
+                                <td class="p-2"><input type="number" step="0.05" value="0.02" class="w-full bg-dark-950 border border-dark-700 rounded p-1.5 text-slate-100 text-center"></td>
+                                <td class="p-2"><input type="number" step="0.05" value="0.30" class="w-full bg-dark-950 border border-dark-700 rounded p-1.5 text-slate-100 text-center"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4 p-3 bg-dark-850 rounded border border-dark-700 flex justify-between items-center text-xs font-mono">
+                    <span class="text-slate-400">Max Eigenvalue $\rho(\boldsymbol{A}/\beta)$: <strong class="text-emerald-400">0.824</strong> (Subcritical / Stationary)</span>
+                    <button onclick="showToast('Cross-excitation matrix updated successfully.')" class="bg-cyan-500 hover:bg-cyan-400 text-dark-950 font-bold px-4 py-1.5 rounded">Save Adjacency Matrix</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-dark-850 border border-cyan-500/50 text-cyan-300 font-mono text-xs px-4 py-3 rounded-lg shadow-2xl flex items-center gap-3 transition-opacity duration-300 opacity-0 pointer-events-none z-50">
+        <i class="fa-solid fa-circle-check text-cyan-400 text-base"></i>
+        <span id="toast-message">Configuration updated.</span>
+    </div>
+
+    <!-- MathJax for rendering equations -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Control Logic & Simulation Script -->
+    <script>
+        // Global Engine State
+        const state = {
+            isRunning: true,
+            regimeState: 'AUTO', // 'AUTO', 'CALM', 'ACTIVE', 'VOLATILE'
+            effectiveState: 'CALM',
+            multiplier: 1.0,
+            marketSpeed: 1440,
+            heatGainPerTick: 0.50,
+            heatDecayHalfLife: 20.0,
+            heatLevel: 2.5,
+            tailLoading: 0.0,
+            
+            // Model Selection
+            activeModel: 'hawkes', // 'hawkes', 'acd', 'poisson'
+            
+            // Hawkes Params
+            hawkes: { mu: 0.50, alpha: 0.45, beta: 1.20, intensity: 0.50 },
+            // ACD Params
+            acd: { omega: 0.05, alpha: 0.10, beta: 0.85, lastDuration: 0.02 },
+            // Poisson Params
+            poisson: { rate: 50.0 },
+
+            // Telemetry
+            tps: 68.4,
+            heapQueue: 99,
+            latency: 1.0,
+            latencyMax: 3.2
+        };
+
+        // Formatting Helpers
+        function formatCleanFloat(val, digits = 6) {
+            const num = parseFloat(val);
+            if (isNaN(num)) return '0';
+            // Clean rounding to resolve float representation artifacts
+            return Number(Math.round(num + 'e' + digits) + 'e-' + digits).toString();
+        }
+
+        function formatDurationFromRate(ratePerSec) {
+            const rate = parseFloat(ratePerSec);
+            if (isNaN(rate) || rate <= 0) return 'Infinity';
+            const seconds = 1.0 / rate;
+            if (seconds >= 60) {
+                const mins = (seconds / 60).toFixed(1);
+                return `${seconds.toFixed(1)} s (${mins}m)`;
+            }
+            return `${seconds.toFixed(2)} s`;
+        }
+
+        function updateDerivedDuration(type, val, targetId) {
+            const el = document.getElementById(targetId);
+            if (el) {
+                el.innerText = formatDurationFromRate(val);
+            }
+        }
+
+        // Tab Switching
+        function switchTab(tabId) {
+            ['dashboard', 'stochastic', 'regime', 'matrix'].forEach(t => {
+                const content = document.getElementById(`tab-${t}`);
+                const nav = document.getElementById(`nav-${t}`);
+                if (content && nav) {
+                    if (t === tabId) {
+                        content.classList.remove('hidden');
+                        nav.classList.add('tab-active');
+                    } else {
+                        content.classList.add('hidden');
+                        nav.classList.remove('tab-active');
+                    }
+                }
+            });
+        }
+
+        // Stochastic Model Selection
+        function selectStochasticModel(modelType) {
+            state.activeModel = modelType;
+            ['hawkes', 'acd', 'poisson'].forEach(m => {
+                const panel = document.getElementById(`model-panel-${m}`);
+                const btn = document.getElementById(`radio-${m}`);
+                if (panel && btn) {
+                    if (m === modelType) {
+                        panel.classList.remove('hidden');
+                        btn.classList.add('bg-cyan-500', 'text-dark-950', 'font-bold');
+                        btn.classList.remove('text-slate-400');
+                    } else {
+                        panel.classList.add('hidden');
+                        btn.classList.remove('bg-cyan-500', 'text-dark-950', 'font-bold');
+                        btn.classList.add('text-slate-400');
+                    }
+                }
+            });
+
+            const activeNameMap = {
+                hawkes: 'Hawkes Process (Self-Exciting)',
+                acd: 'Autoregressive Conditional Duration',
+                poisson: 'Inhomogeneous Poisson'
+            };
+            document.getElementById('active-model-name').innerText = activeNameMap[modelType];
+        }
+
+        function calculateBranchingRatio() {
+            const a = parseFloat(document.getElementById('hawkes-alpha').value) || 0;
+            const b = parseFloat(document.getElementById('hawkes-beta').value) || 1;
+            const ratio = (a / b).toFixed(3);
+            
+            const ratioValEl = document.getElementById('branching-ratio-val');
+            const statusEl = document.getElementById('branching-ratio-status');
+            
+            if (ratioValEl && statusEl) {
+                ratioValEl.innerText = ratio;
+                if (parseFloat(ratio) >= 1.0) {
+                    ratioValEl.className = 'ml-2 font-bold text-rose-400';
+                    statusEl.className = 'px-2 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800/60';
+                    statusEl.innerText = 'UNSTABLE (n* ≥ 1.0)';
+                } else {
+                    ratioValEl.className = 'ml-2 font-bold text-emerald-400';
+                    statusEl.className = 'px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60';
+                    statusEl.innerText = 'STABLE (n* < 1.0)';
+                }
+            }
+        }
+
+        // Regime State Setters
+        function setRegimeState(newState) {
+            state.regimeState = newState;
+            
+            // Button Styles
+            ['auto', 'calm', 'active'].forEach(s => {
+                const btn = document.getElementById(`btn-state-${s}`);
+                if (btn) {
+                    if (s.toUpperCase() === newState) {
+                        btn.className = 'py-2 px-3 rounded font-mono text-xs font-bold transition-all border bg-cyan-500/20 text-cyan-400 border-cyan-500/50 shadow-sm';
+                    } else {
+                        btn.className = 'py-2 px-3 rounded font-mono text-xs font-bold transition-all border bg-dark-800 text-slate-400 border-dark-700 hover:bg-dark-700';
+                    }
+                }
+            });
+
+            if (newState !== 'AUTO') {
+                state.effectiveState = newState;
+                document.getElementById('regime-reason').innerText = `Forced manually to ${newState}`;
+            } else {
+                document.getElementById('regime-reason').innerText = `Heat within normal bounds`;
+            }
+
+            updateTelemetryUI();
+            showToast(`Market regime set to ${newState}`);
+        }
+
+        function injectShock(ticks) {
+            state.heatLevel += ticks * state.heatGainPerTick * 0.1;
+            state.hawkes.intensity += ticks * 0.2;
+            showToast(`Injected +${ticks} exogenous tick burst into stream.`);
+        }
+
+        function toggleEngine() {
+            state.isRunning = !state.isRunning;
+            const btn = document.getElementById('toggle-engine-btn');
+            const dot = document.getElementById('engine-status-dot');
+            const txt = document.getElementById('engine-status-text');
+
+            if (state.isRunning) {
+                btn.className = 'bg-rose-950/40 hover:bg-rose-900/50 text-rose-400 border border-rose-800/60 text-xs px-3 py-1.5 rounded font-mono font-medium transition-colors flex items-center gap-1.5';
+                btn.innerHTML = '<i class="fa-solid fa-power-off"></i> Pause Engine';
+                dot.className = 'h-2 w-2 rounded-full bg-emerald-500 animate-pulse';
+                txt.innerText = 'RUNNING (LIVE)';
+                txt.className = 'text-emerald-400 font-semibold';
+                showToast('Stochastic Engine resumed.');
+            } else {
+                btn.className = 'bg-emerald-950/40 hover:bg-emerald-900/50 text-emerald-400 border border-emerald-800/60 text-xs px-3 py-1.5 rounded font-mono font-medium transition-colors flex items-center gap-1.5';
+                btn.innerHTML = '<i class="fa-solid fa-play"></i> Resume Engine';
+                dot.className = 'h-2 w-2 rounded-full bg-amber-500';
+                txt.innerText = 'PAUSED';
+                txt.className = 'text-amber-400 font-semibold';
+                showToast('Stochastic Engine paused.');
+            }
+        }
+
+        // Apply Regime Form Input Cleanly
+        function applyRegimeForm() {
+            const calmVal = document.getElementById('inp-calm-to-active').value;
+            const activeVal = document.getElementById('inp-active-to-calm').value;
+            const heatAdd = document.getElementById('inp-heat-tick-adds').value;
+            const heatDecay = document.getElementById('inp-heat-decay').value;
+            const mktSpeed = document.getElementById('inp-market-speed').value;
+            const tailLoad = document.getElementById('inp-tail-loading').value;
+
+            // Format inputs cleanly without float artifacts
+            document.getElementById('inp-calm-to-active').value = formatCleanFloat(calmVal, 8);
+            document.getElementById('inp-active-to-calm').value = formatCleanFloat(activeVal, 8);
+            document.getElementById('inp-heat-tick-adds').value = formatCleanFloat(heatAdd, 2);
+            document.getElementById('inp-heat-decay').value = formatCleanFloat(heatDecay, 1);
+            document.getElementById('inp-market-speed').value = formatCleanFloat(mktSpeed, 0);
+            document.getElementById('inp-tail-loading').value = formatCleanFloat(tailLoad, 2);
+
+            state.marketSpeed = parseFloat(mktSpeed);
+            state.heatGainPerTick = parseFloat(heatAdd);
+            state.heatDecayHalfLife = parseFloat(heatDecay);
+            state.tailLoading = parseFloat(tailLoad);
+
+            document.getElementById('current-speed-display').innerText = `${state.marketSpeed}x`;
+            document.getElementById('form-apply-timestamp').innerText = `Applied at ${new Date().toLocaleTimeString()}`;
+
+            showToast('Regime parameters updated cleanly.');
+        }
+
+        function applyStochasticModel() {
+            if (state.activeModel === 'hawkes') {
+                state.hawkes.mu = parseFloat(document.getElementById('hawkes-mu').value) || 0.5;
+                state.hawkes.alpha = parseFloat(document.getElementById('hawkes-alpha').value) || 0.45;
+                state.hawkes.beta = parseFloat(document.getElementById('hawkes-beta').value) || 1.2;
+            } else if (state.activeModel === 'acd') {
+                state.acd.omega = parseFloat(document.getElementById('acd-omega').value) || 0.05;
+                state.acd.alpha = parseFloat(document.getElementById('acd-alpha').value) || 0.10;
+                state.acd.beta = parseFloat(document.getElementById('acd-beta').value) || 0.85;
+            } else if (state.activeModel === 'poisson') {
+                state.poisson.rate = parseFloat(document.getElementById('poisson-rate').value) || 50.0;
+            }
+            showToast(`${state.activeModel.toUpperCase()} process parameters updated.`);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = msg;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        function resetMatrix() {
+            showToast('Adjacency matrix reset to default subcritical parameters.');
+        }
+
+        // Live Telemetry UI Sync
+        function updateTelemetryUI() {
+            const stateBadge = document.getElementById('telemetry-state-badge');
+            if (state.effectiveState === 'CALM') {
+                stateBadge.innerText = 'CALM';
+                stateBadge.className = 'px-2.5 py-1 rounded text-xs font-mono font-bold uppercase bg-emerald-950 text-emerald-400 border border-emerald-800/60 glow-emerald';
+                state.multiplier = 1.0;
+            } else if (state.effectiveState === 'ACTIVE') {
+                stateBadge.innerText = 'ACTIVE';
+                stateBadge.className = 'px-2.5 py-1 rounded text-xs font-mono font-bold uppercase bg-amber-950 text-amber-400 border border-amber-800/60 glow-amber';
+                state.multiplier = 2.0;
+            } else {
+                stateBadge.innerText = 'VOLATILE BURST';
+                stateBadge.className = 'px-2.5 py-1 rounded text-xs font-mono font-bold uppercase bg-rose-950 text-rose-400 border border-rose-800/60 glow-rose';
+                state.multiplier = 4.5;
+            }
+
+            document.getElementById('telemetry-multiplier').innerText = `×${state.multiplier.toFixed(2)}`;
+            document.getElementById('telemetry-pace').innerText = `×${(state.hawkes.intensity / Math.max(0.1, state.hawkes.mu)).toFixed(2)}`;
+            document.getElementById('telemetry-heat').innerText = formatCleanFloat(state.heatLevel / 100, 3);
+            document.getElementById('telemetry-tps').innerText = formatCleanFloat(state.tps, 1);
+            document.getElementById('telemetry-heap').innerText = Math.round(state.heapQueue);
+            document.getElementById('telemetry-latency').innerText = `${formatCleanFloat(state.latency, 1)} ms`;
+            document.getElementById('telemetry-latency-max').innerText = `at most ${formatCleanFloat(state.latencyMax, 1)} ms`;
+
+            // Regime Heat Progress Bar
+            const capacityBar = document.getElementById('heat-capacity-bar');
+            const heatLevelTxt = document.getElementById('regime-heat-level');
+            const volExpTxt = document.getElementById('regime-vol-expansion');
+            if (capacityBar) capacityBar.style.width = `${Math.min(100, state.heatLevel)}%`;
+            if (heatLevelTxt) heatLevelTxt.innerText = `${formatCleanFloat(state.heatLevel, 1)} / 100`;
+            if (volExpTxt) volExpTxt.innerText = `+${formatCleanFloat(state.heatLevel * 0.1, 2)}%`;
+        }
+
+        // Chart Setup
+        let chart;
+        function initChart() {
+            const ctx = document.getElementById('intensityChart').getContext('2d');
+            
+            const initialLabels = Array.from({length: 40}, (_, i) => `${-39 + i}s`);
+            const initialIntensity = Array.from({length: 40}, () => 0.5);
+            const initialTicks = Array.from({length: 40}, () => 50);
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: initialLabels,
+                    datasets: [
+                        {
+                            label: 'Intensity λ(t)',
+                            data: initialIntensity,
+                            borderColor: '#38bdf8',
+                            backgroundColor: 'rgba(56, 189, 248, 0.08)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Tick Count / s',
+                            data: initialTicks,
+                            borderColor: '#34d399',
+                            borderWidth: 1.5,
+                            borderDash: [4, 4],
+                            fill: false,
+                            tension: 0.1,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(51, 59, 82, 0.3)' },
+                            ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 } }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            grid: { color: 'rgba(51, 59, 82, 0.3)' },
+                            ticks: { color: '#38bdf8', font: { family: 'JetBrains Mono', size: 10 } },
+                            title: { display: true, text: 'λ(t)', color: '#38bdf8', font: { family: 'JetBrains Mono', size: 10 } }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: { drawOnChartArea: false },
+                            ticks: { color: '#34d399', font: { family: 'JetBrains Mono', size: 10 } },
+                            title: { display: true, text: 'Ticks/s', color: '#34d399', font: { family: 'JetBrains Mono', size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Real-time Simulation Loop
+        function simulationLoop() {
+            if (state.isRunning) {
+                const dt = 0.5; // half second tick interval
+
+                // 1. Heat decay
+                const decayConst = Math.LN2 / state.heatDecayHalfLife;
+                state.heatLevel = Math.max(0, state.heatLevel * Math.exp(-decayConst * dt));
+
+                // 2. Auto state transition check based on heat
+                if (state.regimeState === 'AUTO') {
+                    if (state.heatLevel > 65.0) {
+                        state.effectiveState = 'VOLATILE BURST';
+                    } else if (state.heatLevel > 25.0) {
+                        state.effectiveState = 'ACTIVE';
+                    } else {
+                        state.effectiveState = 'CALM';
+                    }
+                }
+
+                // 3. Compute Hawkes Intensity λ(t) dynamics
+                if (state.activeModel === 'hawkes') {
+                    // Hawkes intensity decays towards baseline mu * multiplier
+                    const targetMu = state.hawkes.mu * state.multiplier;
+                    state.hawkes.intensity = targetMu + (state.hawkes.intensity - targetMu) * Math.exp(-state.hawkes.beta * dt);
+                    
+                    // Stochastic arrival check (Poisson jump)
+                    if (Math.random() < (state.hawkes.intensity * dt * 0.8)) {
+                        state.hawkes.intensity += state.hawkes.alpha;
+                        state.heatLevel += state.heatGainPerTick;
+                    }
+                    state.tps = state.hawkes.intensity * 70.0;
+
+                } else if (state.activeModel === 'acd') {
+                    const expectedDur = state.acd.omega + state.acd.alpha * state.acd.lastDuration + state.acd.beta * 0.05;
+                    state.acd.lastDuration = expectedDur * (0.8 + Math.random() * 0.4);
+                    state.tps = (1.0 / Math.max(0.001, state.acd.lastDuration)) * state.multiplier;
+                    state.hawkes.intensity = state.tps / 50.0;
+
+                } else { // Poisson
+                    state.tps = state.poisson.rate * state.multiplier * (0.9 + Math.random() * 0.2);
+                    state.hawkes.intensity = state.tps / 60.0;
+                }
+
+                // Random latency jitter simulation
+                state.latency = 0.7 + Math.random() * 0.6;
+                state.latencyMax = Math.max(state.latencyMax, state.latency + Math.random() * 1.5);
+                state.heapQueue = Math.floor(80 + state.tps * 0.4 + (Math.random() * 10 - 5));
+
+                // Update Chart Data
+                if (chart) {
+                    chart.data.labels.shift();
+                    chart.data.labels.push(`${new Date().toLocaleTimeString().split(' ')[0]}`);
+                    chart.data.datasets[0].data.shift();
+                    chart.data.datasets[0].data.push(state.hawkes.intensity);
+                    chart.data.datasets[1].data.shift();
+                    chart.data.datasets[1].data.push(state.tps);
+                    chart.update();
+                }
+
+                updateTelemetryUI();
+            }
+
+            setTimeout(simulationLoop, 500);
+        }
+
+        // Initialize on Load
+        window.onload = function() {
+            initChart();
+            calculateBranchingRatio();
+            updateDerivedDuration('calm-to-active', document.getElementById('inp-calm-to-active').value, 'calm-avg-span');
+            updateDerivedDuration('active-to-calm', document.getElementById('inp-active-to-calm').value, 'active-avg-span');
+            simulationLoop();
+        };
+    </script>
+</body>
+</html>

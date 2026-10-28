@@ -41,7 +41,7 @@ delivery_outcome_type_mapper::map(const delivery_outcome_type_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::delivery_outcome_type r;
-    r.code = v.code.value();
+    r.code = v.code;
     r.description = v.description;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;

@@ -243,14 +243,15 @@ the section above for details.
 Party isolation mirrors the tenant RLS pattern but adds a second layer of
 filtering. Both layers are enforced simultaneously.
 
-** Session Variables
+** Transaction Settings
 
-At login, three values are set on the database session:
+Every transaction a request opens sets three values, local to that
+transaction:
 
 #+begin_src sql
-SET app.current_tenant_id = 'tenant-uuid';          -- existing (tenant RLS)
-SET app.current_party_id  = 'party-uuid';           -- new (user's party)
-SET app.visible_party_ids = '{uuid1,uuid2,...}';     -- new (subtree set)
+select set_config('app.current_tenant_id', $1, true),  -- tenant RLS
+       set_config('app.current_party_id',  $2, true),  -- the user's party
+       set_config('app.visible_party_ids', $3, true);  -- the subtree set
 #+end_src
 
 The =visible_party_ids= array contains the user's party plus all its
@@ -280,7 +281,8 @@ WITH RECURSIVE party_tree AS (
 SELECT array_agg(id) FROM party_tree;
 #+end_src
 
-The result is stored as the =app.visible_party_ids= session variable. For the
+The result is signed into the access token as the =visible_party_ids= claim,
+and each transaction of a request sets it as =app.visible_party_ids=. For the
 system party, this query returns all parties in the tenant.
 
 ** RLS Policy Pattern
@@ -331,106 +333,55 @@ prevents cross-tenant data access.
 
 * Database Context
 
-** Extended =context= Class
+** Party-aware =context=
 
-The database context gains party awareness alongside tenant awareness:
+The database context carries the party alongside the tenant:
 
 #+begin_src cpp
 class context {
 public:
-    explicit context(sqlgen::ConnectionPool<connection_type> connection_pool,
-                     sqlgen::postgres::Credentials credentials,
-                     utility::uuid::tenant_id tenant_id);
-
     const utility::uuid::tenant_id& tenant_id() const;
+    std::optional<boost::uuids::uuid> party_id() const;
+    const std::vector<boost::uuids::uuid>& visible_party_ids() const;
 
-    // Create a new context with a different tenant (shares connection pool)
-    context with_tenant(utility::uuid::tenant_id tenant_id) const;
-
-    // Create a new context with tenant + party (shares connection pool)
+    context with_tenant(utility::uuid::tenant_id tenant_id, std::string actor) const;
     context with_party(utility::uuid::tenant_id tenant_id,
                        boost::uuids::uuid party_id,
-                       std::vector<boost::uuids::uuid> visible_party_ids) const;
-
-private:
-    tenant_aware_pool<connection_type> connection_pool_;   // existing
-    sqlgen::postgres::Credentials credentials_;
-};
-#+end_src
-
-** Extended =tenant_aware_pool=
-
-The pool wrapper sets all session variables on connection acquisition:
-
-#+begin_src cpp
-template <class Connection>
-class tenant_aware_pool {
-public:
-    expected<AcquiredConnection, sqlgen::Error> acquire() {
-        auto conn = pool_.acquire();
-        if (!conn) {
-            return sqlgen::error(conn.error());
-        }
-
-        // Set tenant context (existing)
-        (*conn)->exec(fmt::format(
-            "SET app.current_tenant_id = '{}'",
-            tenant_id_.to_string()));
-
-        // Set party context (new)
-        if (party_id_) {
-            (*conn)->exec(fmt::format(
-                "SET app.current_party_id = '{}'",
-                boost::uuids::to_string(*party_id_)));
-
-            (*conn)->exec(fmt::format(
-                "SET app.visible_party_ids = '{{{}}}'",
-                format_uuid_array(visible_party_ids_)));
-        }
-
-        return conn;
-    }
-
-private:
-    sqlgen::ConnectionPool<Connection> pool_;
-    utility::uuid::tenant_id tenant_id_;
-    std::optional<boost::uuids::uuid> party_id_;           // new
-    std::vector<boost::uuids::uuid> visible_party_ids_;     // new
+                       std::vector<boost::uuids::uuid> visible_party_ids,
+                       std::string actor) const;
 };
 #+end_src
 
 Key properties:
 
-- Party context is optional (not all operations require party scope).
-- When set, both tenant and party session variables are configured.
-- The =visible_party_ids= array is formatted as a PostgreSQL array literal.
+- Party context is optional: not all operations need party scope.
+- Every copy shares the one pool, so a party-scoped context costs no
+  connection of its own.
 
-* Session Management
+** Transaction-local party settings
 
-** Extended Session Data
+=pq::transaction= sends the context's settings with =begin=, in one pipeline
+with the first statement. A context with a party sets =app.current_party_id=
+and =app.visible_party_ids=; a context without one sets them empty, which the
+party policies read as no party context (see the RLS policy pattern above). The settings are local to the
+transaction, so the next transaction on the same pooled connection starts with
+no party. The visible parties travel as one array parameter.
 
-Each authenticated session stores party context alongside tenant context:
+* Access Token
 
-#+begin_src cpp
-struct session_data {
-    boost::uuids::uuid id;
-    boost::uuids::uuid account_id;
-    utility::uuid::tenant_id tenant_id;
-    boost::uuids::uuid party_id;                            // new
-    std::vector<boost::uuids::uuid> visible_party_ids;      // new
-    std::string username;
-    std::chrono::system_clock::time_point created_at;
-    std::chrono::system_clock::time_point last_activity;
-};
-#+end_src
+** Party claims
 
-** Session-Party Binding
+The access token carries the party alongside the tenant: the =party_id= claim
+names the active party, and the =visible_party_ids= claim lists that party and
+its descendants.
+
+** Token-Party Binding
 
 Party binding follows the same principles as tenant binding:
 
-- Resolved at login time (after party selection).
-- Immutable for the session lifetime.
-- Used for all subsequent requests in that session.
+- Resolved at login time, after party selection.
+- Signed into the token, so a request cannot change it.
+- Used for every request that carries the token.
 
 * Login Flow
 
@@ -483,7 +434,7 @@ Party binding follows the same principles as tenant binding:
            │
            ▼
 ┌──────────────────────┐
-│ Create session with  │
+│ Sign a token with    │
 │ tenant + party +     │
 │ visible set          │
 └──────────────────────┘
@@ -491,17 +442,17 @@ Party binding follows the same principles as tenant binding:
 
 ** Per-Request Context Creation
 
-The =make_request_context()= method gains party awareness:
+=ores::service::service::make_request_context()= narrows the service's base
+context to the token's tenant and party:
 
 #+begin_src cpp
-database::context make_request_context(
-    const comms::service::session_data& session) {
-    return ctx_.with_party(
-        session.tenant_id,
-        session.party_id,
-        session.visible_party_ids);
-}
+return base_ctx
+    .with_party(*tid_result, party_id, std::move(visible_ids),
+                claims->username.value_or(""))
+    .with_roles(claims->roles);
 #+end_src
+
+A token with no party gives a tenant-only context.
 
 * UI Considerations
 
@@ -573,27 +524,27 @@ positions between parties in the same group require special handling
 | Operation                            | Cost                            |
 |--------------------------------------+---------------------------------|
 | Recursive CTE for visible party set  | ~1ms for typical hierarchies    |
-| Array formatting for session variable | Negligible                      |
+| Array claim in the access token       | Negligible                      |
 
 ** Per-Request Overhead
 
 | Operation                                | Cost              |
 |------------------------------------------+-------------------|
-| SET app.current_party_id                 | Part of query     |
-| SET app.visible_party_ids                | Part of query     |
+| set_config of the party settings         | Part of =begin=   |
 | =ANY(uuid[])= check in RLS policy       | O(n), n = parties |
 
 For realistic hierarchies (up to a few hundred parties per tenant), the
 performance impact is negligible.
 
-** Memory Per Session
+** Memory Per Request
 
 | Component                  | Size                           |
 |----------------------------+--------------------------------|
 | party_id (UUID)            | 16 bytes                       |
 | visible_party_ids (vector) | 16 bytes * party count         |
 
-For a tenant with 100 parties, visible_party_ids adds ~1.6 KB per session.
+For a tenant with 100 parties, visible_party_ids adds about 1.6 KB to each
+request's context.
 
 * Relationship to Tenant Isolation
 
@@ -635,7 +586,7 @@ Party isolation is a strict refinement of tenant isolation:
 | iam       | [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]]           | Companion tenant isolation document  |
 | iam       | [[id:AAD74D7C-4789-4E54-8B02-EC60231D78A5][Multi-Party Login Flow]]               | Account-party rules and login flow   |
 | utility   | [[proj:projects/ores.utility/include/ores.utility/uuid/tenant_id.hpp]]            | Tenant ID wrapper type               |
-| database  | [[proj:projects/ores.database/include/ores.database/domain/tenant_aware_pool.hpp]] | Connection pool with tenant context |
+| database  | [[proj:projects/ores.database/include/ores.database/pq/transaction.hpp]]          | Transaction-local party settings     |
 | database  | [[proj:projects/ores.database/include/ores.database/domain/context.hpp]]          | Database context with tenant         |
 | refdata   | [[proj:projects/ores.refdata/include/ores.refdata/domain/party.hpp]]              | Party domain type                    |
 | iam       | =ores_iam_account_parties_tbl=                                                    | Account-party junction table         |

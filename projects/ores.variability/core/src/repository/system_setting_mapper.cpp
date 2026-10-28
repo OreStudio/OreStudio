@@ -45,7 +45,7 @@ domain::system_setting system_setting_mapper::map(const system_setting_entity& v
     domain::system_setting r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
 
     r.name = v.name;
 

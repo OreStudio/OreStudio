@@ -43,8 +43,8 @@ series_classification_rule_mapper::map(const series_classification_rule_entity& 
     domain::series_classification_rule r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.series_type = v.series_type.value();
-    r.metric = v.metric.value();
+    r.series_type = v.series_type;
+    r.metric = v.metric;
     r.asset_class_source = v.asset_class_source;
     r.asset_class_code = v.asset_class_code;
     r.series_subclass_code = v.series_subclass_code;

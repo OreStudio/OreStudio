@@ -1,0 +1,338 @@
+:PROPERTIES:
+:ID: FBD32402-C71F-4730-A3D2-70BA1D5F3868
+:END:
+#+title: User Journey: Maintain the curve blueprints
+#+description: A trader or quant keeps the desk's curve blueprints, the recipes that turn a raw instrument grid into a discount curve: they list them, open one, read its pillars and its conventions, add and change it, copy it, read the curves and published sets it feeds, and delete it.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader or quant keeps the desk's curve blueprints, the recipes that turn a raw instrument grid into a discount curve: they list them, open one, read its pillars and its conventions, add and change it, copy it, read the curves and published sets it feeds, and delete it.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want the desk's curve recipes to be right, and to know what each one feeds
+before I change it." The journey is done when the blueprint is saved with its
+pillars in maturity order, its conventions read back as they were set, and the
+person has read the curves and the published sets that stand on it.
+
+* Actor and trigger
+
+The actor is a trader who holds the market-data management role, or a quant
+acting for the desk. The trader is the maker: the blueprint is theirs to author.
+
+Reading needs =refdata::ir_curve_bootstrap_configs:read=. Changing a blueprint
+or one of its pillars needs =refdata::ir_curve_bootstrap_configs:write=.
+Deleting needs =refdata::ir_curve_bootstrap_configs:delete=. Reading the output
+series the blueprint publishes into needs =marketdata::market_series:read=, and
+reading the sets published from it needs =marketdata::curve_publishes:read=. The
+permission codes keep the model's words; the screen calls the record a curve
+blueprint.
+
+The trigger is one of five events. The desk quotes a currency that has no curve.
+The desk must publish a curve it does not publish yet. The market no longer
+quotes a pillar. A convention is wrong for a currency. A bootstrap failed and
+the recipe is the cause. The journey starts at *Market data*, then *Curve blueprints*, and
+ends on the blueprint's record page.
+
+Four facts shape the screens.
+
+- A blueprint is a recipe, not a curve. Nothing it holds reaches pricing until a
+  person publishes a set built from it. See
+  [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]].
+- The record has no name of its own. It is named by its output series: the
+  market series it publishes into, whose oresmd URI reads as a curve. The screen
+  titles it by that URI.
+- Its pillars are parts: rows that belong to the blueprint alone and carry their
+  own versions. See the /Part/ rule in
+  [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]].
+- The record carries one of two roles. A =FUNDING= blueprint anchors its family.
+  A =PROJECTION= blueprint names the =FUNDING= blueprint it discounts off.
+
+* Steps
+
+The screens are the record screens of the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]: a list, a
+record page with the tabs Details, Pillars, Check, Published sets and History,
+and dialogs for add, edit, copy and delete. This journey adds no layout of its
+own. The breadcrumb follows [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]]:
+Home, Market data, Curve blueprints.
+
+1. *List the blueprints.* The person opens *Market data* and then *Curve blueprints*. The
+   system lists the blueprints of the party the session acts in: the output
+   series' URI first and in monospace, then the currency, the role, the index
+   tenor, the interpolation method, the day count, the pillars the blueprint
+   holds, and its version.
+2. *Search and filter.* The person searches by the output series' URI and
+   filters by currency and by role. A search that matches nothing says so and
+   offers to clear it.
+3. *Open a blueprint.* A click on a row opens the record page on its Details
+   tab. The person reads the currency, the index tenor, the role, the
+   interpolation method, the day count, the tenor convention and the split
+   tenor, then the output series as a link to the series' own read.
+4. *Read the pillars.* The person opens the *Pillars* tab. The system lists the
+   parts in maturity order: sequence, start tenor, end tenor, curve role, the
+   version, and who changed the row and when. A blueprint with no pillar is
+   drawn with "None yet." and its Add.
+5. *Add a blueprint.* The person chooses *Add*. The dialog asks for the
+   currency, the index tenor, the role, the discount curve when the role is
+   =PROJECTION=, the interpolation method, the day count and the tenor
+   convention. It does not ask for the output series: the server mints the
+   series from the currency, the index tenor and the role, and the new record
+   links to it. It asks for the split tenor only for the two-segment method,
+   =FLAT_FORWARD_THEN_LOG_LINEAR=, whose knot is a choice of its own; for a
+   single-segment method the split tenor is the last pillar's end tenor, and the
+   server sets it. The write carries the reason =system.new_record=, stated in a
+   note, and the system then opens the new blueprint's page.
+6. *Define the pillars.* The blueprint is saved before it has parts, so the
+   person adds pillars from the page the write just opened. *Add* under the
+   pillars panel opens one dialog per pillar: the start tenor, chosen from the
+   tenor codes, the end tenor, also from the tenor codes, and the curve role,
+   =DEPOSIT=, =FRA= or =SWAP=. The panel states what a pillar is: one
+   instrument's date range, not a single point, so a one-month deposit starting
+   today is start tenor =SPOT= and end tenor =1M=. Each row offers History, Edit
+   and Delete.
+7. *Read the order.* The system orders the pillars by maturity, from each row's
+   end tenor, and shows that order as the sequence. A row entered out of order
+   is drawn in its place, and the panel says the order is derived and not
+   typed. A =DEPOSIT= row that does not start at =SPOT= is refused under the
+   start tenor field, because a deposit starts today.
+8. *Change a blueprint.* The person chooses *Edit*. The record dialog opens with
+   the current values and asks for a change reason for an amendment. A role that
+   changes from =FUNDING= to =PROJECTION= asks for the discount curve in the
+   same dialog; the server refuses a change to =FUNDING= while a projection
+   still discounts off the blueprint, and the dialog says so in the server's
+   words.
+9. *Copy a blueprint.* The person chooses *Copy blueprint*, the kind's own
+   action on the record header. The Add dialog opens with the conventions and
+   the pillar list of this blueprint carried over, and asks for the currency,
+   the index tenor and the role, because those are what make it another curve.
+   The dialog says how many pillars it copies, and that the copy is a new
+   record with its own pillars.
+10. *Check the recipe.* The person opens the *Check* tab and reads whether this
+    blueprint builds. See
+    [[id:62728AF9-01AD-4FBF-B022-83DCD64204A9][Check that a curve blueprint builds]];
+    this journey only owns the tab.
+11. *Read the published sets.* The person opens the *Published sets* tab. The
+    system lists the sets published from this blueprint, newest first: the
+    as-of they were built at, the party, the publisher, the published instant,
+    the points they hold and their state. A row opens the published record. A
+    blueprint nobody has published from is drawn with "None yet." and one
+    sentence that names the publish journey.
+12. *Read what it feeds.* The Details tab carries two things beyond the fields.
+    The output series is a link, and its points are the curve the market reads.
+    A value *Used by* lists the projection blueprints that name this one as
+    their discount curve, each as a link; when there are more than three the
+    value links to the list filtered by this blueprint, a filter the list read does not have yet (see What is missing, item 5).
+13. *Read the history.* The person opens the *History* tab, the shared timeline
+    of the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]].
+    The stream is the blueprint's own versions and every pillar's versions,
+    merged newest first and each entry named by its pillar. Revert is offered
+    on any version but the current one to a person who may write.
+14. *Delete a blueprint.* The person chooses *Delete*. The remove dialog names
+    what is lost: the pillars are deleted first with the same reason, the
+    output series and the points already published into it stay, and the
+    today the published sets keep their history and name a blueprint that no longer
+    exists. The server refuses the delete while a projection names this
+    blueprint as its discount curve, and the dialog says so before the person
+    asks.
+15. *Leave.* The person goes back to the list. Nothing has been published, and
+    no curve has been built.
+
+Step 10 is the only step another journey owns. Step 6 is one
+write for each pillar and step 8 is one more, so a blueprint with eight pillars
+is ten writes and not one. The journey records it rather than hiding it: see
+/What is missing/.
+
+* Screens and wireframes
+
+The list and the record page of the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]], with the
+record dialog, the pillar dialog, the copy dialog and the remove dialog. The
+wireframe is not drawn; the prototype is the design record of the layout.
+
+- Screen :: the list of curve blueprints, the record page with its five tabs,
+  and the dialogs the steps name
+- States :: an empty list, the list, a record, a blueprint with no pillars, a
+  check that failed, a blueprint that feeds a published set, and a removed
+  blueprint
+- Source :: =doc/prototypes/market_data/curve-blueprints/index.html=
+
+* Prototype
+
+A static page at =doc/prototypes/market_data/curve-blueprints/index.html=: mock
+data only, no backend, no build step and no session. It argues that a blueprint
+is a record a person maintains and reads, with its pillars as parts, its check
+as a tab, and the published sets that stand on it in the same page. The design
+note is =doc/prototypes/market_data/curve-blueprints.org=.
+
+- Surfaces :: the list, the record page, and the dialogs the record opens
+- States :: =?state=none=, =?state=nomatch=, =?state=loading=, =?state=error=,
+  a record with no pillars, a failed check, a blueprint that feeds a published
+  set, and a removed blueprint
+- Open :: =/OreStudio/doc/prototypes/market_data/curve-blueprints/= once the
+  site is built, or the file directly
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =ir_curve_bootstrap_config= | The blueprint row: currency, index tenor, role, discount curve, interpolation, day count, tenor convention, split tenor, output series | [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][ores.refdata.ir_curve_bootstrap_config]] |
+| =ir_curve_bootstrap_pillar= | The pillar list as parts of the blueprint: sequence, start and end tenor, curve role | [[id:5DC8A225-A2FD-4ECC-8284-C1D333F0EB3A][ores.refdata.ir_curve_bootstrap_pillar]] |
+| =market_series= | The output series the blueprint publishes into, and its oresmd URI | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
+| =curve_publish= | The sets published from the blueprint, their as-of, publisher and state | [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] |
+| =currency= | The currency the curve is quoted in, and the list's filter | [[id:035402B2-0136-44A5-BDB0-601F6864A9FA][ores.refdata.currency]] |
+| =tenor= | The index tenor, the pillar tenors and the split tenor | [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][ores.refdata.tenor]] |
+| =tenor_convention= | The convention the pillars resolve their dates under | [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][ores.refdata.tenor_convention]] |
+| =curve_role= | The instrument-pricing role of a pillar | [[id:D9A9B2C5-2C22-456A-851F-B458E0568CD3][ores.refdata.curve_role]] |
+| =day_count_fraction_type= | The day count the bootstrap applies | [[id:D639B3AB-7421-4A7C-A17A-02000709E22F][ores.refdata.day_count_fraction_type]] |
+
+The config and its pillars are versioned, so each has a history. The output
+series and the published sets are soft references across components, and the
+blueprint never hard-links them.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| List | List the party's blueprints | =refdata.v1.ir_curve_bootstrap_configs.list= | exists |
+| List | List the currencies the list filters on | =refdata.v1.currencies.list= | exists |
+| Open | Read one blueprint | =refdata.v1.ir_curve_bootstrap_configs.get= | exists |
+| Read the pillars | List the blueprint's pillars | =refdata.v1.ir_curve_bootstrap_pillars.list= | exists |
+| Add | Write the blueprint, which mints the output series | =refdata.v1.ir_curve_bootstrap_configs.put= | exists |
+| Add | Fill the pickers: tenors, curve roles, day counts, tenor conventions | =refdata.v1.tenors.list=, =refdata.v1.curve_roles.list=, =refdata.v1.day_count_fraction_types.list=, =refdata.v1.tenor_conventions.list= | exists |
+| Add | Read the discount curve candidates: the currency's =FUNDING= blueprints | =refdata.v1.ir_curve_bootstrap_configs.list= | exists |
+| Define the pillars | Write, change or remove a pillar | =refdata.v1.ir_curve_bootstrap_pillars.put=, =.delete= | exists |
+| Read the output series | Read a market series and its oresmd URI | =marketdata.v1.market_series.list= | exists |
+| Read what it feeds | List the blueprints that name this one as their discount curve | =refdata.v1.ir_curve_bootstrap_configs.list= | partial |
+| Read the published sets | List the sets published from this blueprint | =marketdata.v1.ops.list_published_curves= | partial |
+| Read the history | Read every version with its diff | =refdata.v1.history.get= | exists |
+| Delete | Delete the pillars, then the blueprint | =refdata.v1.ir_curve_bootstrap_pillars.delete=, =refdata.v1.ir_curve_bootstrap_configs.delete= | exists |
+
+The history request is the generic one, with =entity_type=
+=ores.refdata.ir_curve_bootstrap_config= or
+=ores.refdata.ir_curve_bootstrap_pillar=. Saving a blueprint and its pillars is
+two kinds of write, and no operation composes them.
+
+* What is missing
+
+1. *There is no web screen and no route.* No page, HTTP route or shell verb
+   reaches this record: the BFF's record registry names neither the config nor
+   the pillar. The candidate is a registry entry, a write schema, a field table
+   and a screen. Until then the journey runs only from the shell.
+2. *Nothing writes the config and its pillars together.* Two generated
+   resources, two =put= subjects, and no operation that applies a recipe. A
+   failure between the writes leaves a blueprint with a partly updated pillar
+   list. The candidate is an operation that saves the two together.
+3. *The pillars are read whole.* The list request has no filter by
+   =bootstrap_config_id=, so the screen reads every pillar of the party and
+   filters on the page. The candidate is a filter on the list contract.
+4. *Nothing lists the sets of one blueprint.* =marketdata.v1.ops.list_published_curves=
+   filters by party, search, candidates and ended sets, and not by
+   =bootstrap_config_id=, which the set carries. The candidate is one more
+   filter. Until then the *Published sets* tab filters on the page.
+5. *Nothing lists the projections of one blueprint.* The same list read answers
+   it by =discount_curve_config_id=, which it cannot filter on. The candidate is
+   a filter on the discount curve.
+6. *No read says what a blueprint feeds.* The output series, the projections
+   that discount off it and the sets published from it are three reads in two
+   components. The candidate is one read of a blueprint's dependants. Until
+   then the screen joins them by the ids it read.
+7. *The record has no name.* See /What this journey leaves undecided/.
+8. *The currency and the index tenor are two columns and one idea.* A curve is
+   named by its currency and its index tenor, and no read treats the pair as one
+   scope. The candidate is the typed curve identity the bootstrap journey also
+   names.
+
+* Where this journey departs from the Qt screen
+
+The Qt prior art is the =CurveBuilderWorkbench=, opened by
+=IrCurveBootstrapConfigController=, with =BootstrapConfigPickerDialog= for the
+copy and for the discount curve. It is the record of what the bootstrapping job
+needs. The web screen is the record screen standard's, so it differs in these
+places, on purpose.
+
+#+ATTR_HTML: :class hug-leading
+| Qt | Here | Why |
+|----+------+-----|
+| One non-modal workbench with three tabs: Conventions, Pillars, Build & Diagnostics | A record page with five tabs: Details, Pillars, Check, Published sets, History | The tabs are the record standard's, and each answers one question: what the recipe is, what it is built from, whether it builds, what stands on it, and what changed |
+| Save writes the config and then every pillar in one press | The blueprint is saved first, and then each pillar is a part with its own write and its own reason | The parts rule of the record standard says the parent is saved before its panel offers Add, and the server has no operation that writes both |
+| A Source Series field, browsed from a market series picker | Not asked at all | The config names no input series: each pillar reads the series its own tenor and role resolve to. The field survives in the Qt workbench and nowhere in the model |
+| An Output Series field, browsed from a market series picker, which can create a series inline | Not asked: the server mints the output series from the currency, the index tenor and the role, and the page links to it | The model mints the series at config creation and never leaves it unset, and a value that follows from other fields is not asked for (RS-WRITE-07) |
+| Currency and Index combos that gate which series the pickers offer | A currency field and an index tenor field, with nothing to gate | Nothing else on the form is browsed from the series catalogue |
+| Pillars entered in a table, then sorted by the end tenor on save | The maturity order is shown as the sequence, and the person cannot enter another | The Qt table lost the row order the person typed without saying so; the web screen says the order is derived |
+| Columns: Output Series, Role, Discount Curve Config, Interpolation, Day Count, Split Tenor, Version, Modified By, Recorded At | The output series' URI, currency, role, index tenor, interpolation, day count, pillar count and version, with the audit columns behind the column menu | The Qt list draws two UUIDs as text and no currency, so a person cannot tell two currencies' curves apart |
+| Delete confirms with the record's UUID, printed twice | Delete names the output series and says what is lost | RS-FEEDBACK-04 |
+| Bootstrap is drawn and disabled until the recipe is saved with one pillar | The Check tab states what the recipe still lacks | An action a person may not take is not drawn (RS-FEEDBACK-01); a disabled button asks a question a missing one does not |
+| A new recipe from an existing one is a button inside the create form, and the clone keeps the source's discount curve | Copy is the kind's own action on the record header, and it asks for the currency, the index and the role | The copy drops the fields that name the curve, and it is a record action, as /Derive a calendar/ is |
+| As-of, a results table, two charts and a health list on the third tab | The Check tab, in the journey of its own | Testing a recipe is a goal a person arrives at, not the last third of authoring one |
+| Modal boxes for a failed load, save, bootstrap or publish | A notice in place, with Retry | RS-FEEDBACK-07 |
+| A history dialog per record | The History tab merges the blueprint's versions and its pillars' | RS-HIST-01 |
+| No currency column and no role filter | A currency filter and a role filter beside the search | RS-LIST-05 |
+
+Two defects in the prior art are worth naming, because the screens must not
+inherit them. The delete confirmation sets its display code from the record's
+id, so it names a UUID rather than the curve, and it prints it twice in one
+sentence. The discount curve picker's first column is headed "Output Series Id"
+while it draws the series' qualifier, so its heading and its values disagree.
+
+* What this journey leaves undecided
+
+1. *The record has no name.* The title is the output series' URI, which is long,
+   and two blueprints of one currency differ in it only by index tenor. Whether
+   the config gains a name or a description column is open; the model's own note
+   records the same gap.
+2. *The key in the address.* The record's key at the wire is a UUID, and
+   RS-LIST-13 hides a UUID. The page address carries either the id or the output
+   series' URI. This journey leaves the choice open.
+3. *Retire.* The model carries no status and no end date, so a blueprint is in
+   use until it is deleted. Whether the record gains a status, so a retired
+   blueprint stays readable and its published sets keep a live parent, is open.
+4. *The output series is minted, and cannot be chosen.* The model mints it at
+   creation and makes it the natural key, so the desk cannot point a blueprint
+   at a series it already holds. Whether that door is ever needed is open.
+5. *The pillar order is derived.* Two pillars that mature on one date, and a
+   curve that needs a pillar out of maturity order, have no answer. Whether the
+   person may override the sequence is open.
+6. *Deleting a blueprint that has published sets.* The sets keep their history
+   and name a blueprint that no longer exists. Whether the delete is refused
+   while sets exist, as it is refused while a projection names the blueprint, is
+   open.
+7. *The copy's reasons.* The copy writes new pillar rows. Whether it carries the
+   source's change commentary, or writes the one creation reason as any new
+   record does, is open.
+8. *The split tenor when the method changes.* The server sets the split tenor
+   for a single-segment method. Whether it is rewritten when a person changes
+   the method from two segments to one, and what the old value means if they
+   change it back, is open.
+
+* Related journeys
+
+- [[id:62728AF9-01AD-4FBF-B022-83DCD64204A9][Check that a curve blueprint builds]] — whether this recipe builds, and why not.
+- [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] — build a candidate from this blueprint and the day's market.
+- [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] — the sets the *Published sets* tab lists.
+- [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]] — what a set's state becomes afterwards.
+- [[id:BD160BFC-C112-4F6A-94D4-A11E5FFF7EAD][See who changed a curve, and when]] — the trail across blueprints, builds and publishes.
+
+* Related knowledge
+
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:AB04B01E-7EAA-4C98-97A9-681194AB0395][Manage a curve's blueprint]] — the design question behind the pillar editor

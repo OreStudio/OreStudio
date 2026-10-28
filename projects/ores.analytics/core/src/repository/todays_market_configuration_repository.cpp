@@ -28,11 +28,8 @@
 #include "ores.analytics.api/messaging/todays_market_configuration_protocol.hpp"
 #include "ores.analytics.core/repository/todays_market_configuration_entity.hpp"
 #include "ores.analytics.core/repository/todays_market_configuration_mapper.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/log/sources/severity_feature.hpp>
@@ -42,16 +39,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -60,13 +47,13 @@
 
 namespace ores::analytics::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string todays_market_configuration_repository::sql() {
-    return generate_create_table_sql<todays_market_configuration_entity>(lg());
+    return query_builder::insert_statement_sql<todays_market_configuration_entity>(lg());
 }
 
 bool todays_market_configuration_repository::is_sortable(std::string_view field) {
@@ -81,44 +68,46 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
+query_builder::order
 todays_market_configuration_list_order(const ores::utility::domain::order& order,
                                        std::initializer_list<std::string> default_columns,
                                        bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!todays_market_configuration_repository::is_sortable(order.field))
         throw std::invalid_argument(
             "A list of today's market configuration blocks cannot be ordered by " + order.field +
             ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 /*
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition> todays_market_configuration_filter_condition(
+std::optional<query_builder::condition> todays_market_configuration_filter_condition(
     const std::optional<messaging::todays_market_configurations_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->todays_market_config_id)
         r.push_back(
-            equals("todays_market_config_id", filter_value(*filter->todays_market_config_id)));
+            query_builder::equals("todays_market_config_id",
+                                  query_builder::filter_value(*filter->todays_market_config_id)));
     if (filter->id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
     }
     if (filter->todays_market_config_id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->todays_market_config_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("todays_market_config_id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("todays_market_config_id", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -180,10 +169,10 @@ void todays_market_configuration_repository::write(
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing today's market configuration block. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx,
-                        todays_market_configuration_mapper::map(t),
-                        lg(),
-                        "Writing today's market configuration block to database.");
+    query_builder::execute_write_query(ctx,
+                                       todays_market_configuration_mapper::map(t),
+                                       lg(),
+                                       "Writing today's market configuration block to database.");
 }
 
 void todays_market_configuration_repository::write(
@@ -196,22 +185,22 @@ void todays_market_configuration_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        todays_market_configuration_mapper::map(batch),
-                        lg(),
-                        "Writing today's market configuration blocks to database.");
+    query_builder::execute_write_query(ctx,
+                                       todays_market_configuration_mapper::map(batch),
+                                       lg(),
+                                       "Writing today's market configuration blocks to database.");
 }
 
 std::vector<domain::todays_market_configuration>
 todays_market_configuration_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<todays_market_configuration_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+    const auto query = query_builder::read<std::vector<todays_market_configuration_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
-    return execute_read_query<todays_market_configuration_entity,
-                              domain::todays_market_configuration>(
+    return query_builder::execute_read_query<todays_market_configuration_entity,
+                                             domain::todays_market_configuration>(
         ctx,
         query,
         [](const auto& entities) { return todays_market_configuration_mapper::map(entities); },
@@ -225,11 +214,12 @@ todays_market_configuration_repository::read_latest(context ctx, const std::stri
                                << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<todays_market_configuration_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<todays_market_configuration_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
-    return execute_read_query<todays_market_configuration_entity,
-                              domain::todays_market_configuration>(
+    return query_builder::execute_read_query<todays_market_configuration_entity,
+                                             domain::todays_market_configuration>(
         ctx,
         query,
         [](const auto& entities) { return todays_market_configuration_mapper::map(entities); },
@@ -245,20 +235,21 @@ todays_market_configuration_repository::read_latest_by_configuration_id(
         << configuration_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<todays_market_configuration_entity>> |
-                       where("tenant_id"_c == tid && "configuration_id"_c == configuration_id &&
+    const auto query =
+        query_builder::read<std::vector<todays_market_configuration_entity>> |
+        query_builder::where("tenant_id"_c == tid && "configuration_id"_c == configuration_id &&
                              "valid_to"_c == max.value());
 
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
     // finder with a parent column is pinned to its parent's party already.
-    auto found =
-        execute_read_query<todays_market_configuration_entity, domain::todays_market_configuration>(
-            ctx,
-            query,
-            [](const auto& entities) { return todays_market_configuration_mapper::map(entities); },
-            lg(),
-            "Reading latest today's market configuration block by configuration_id.");
+    auto found = query_builder::execute_read_query<todays_market_configuration_entity,
+                                                   domain::todays_market_configuration>(
+        ctx,
+        query,
+        [](const auto& entities) { return todays_market_configuration_mapper::map(entities); },
+        lg(),
+        "Reading latest today's market configuration block by configuration_id.");
     if (const auto party = ctx.party_id(); party.has_value())
         std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
     return found;
@@ -271,17 +262,18 @@ todays_market_configuration_repository::read_any_by_configuration_id(
         << "Reading any today's market configuration block by configuration_id: "
         << configuration_id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<todays_market_configuration_entity>> |
-                       where("tenant_id"_c == tid && "configuration_id"_c == configuration_id) |
-                       order_by("valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<todays_market_configuration_entity>> |
+        query_builder::where("tenant_id"_c == tid && "configuration_id"_c == configuration_id) |
+        query_builder::order_by("valid_from"_c.desc());
 
-    auto found =
-        execute_read_query<todays_market_configuration_entity, domain::todays_market_configuration>(
-            ctx,
-            query,
-            [](const auto& entities) { return todays_market_configuration_mapper::map(entities); },
-            lg(),
-            "Reading any today's market configuration block by configuration_id.");
+    auto found = query_builder::execute_read_query<todays_market_configuration_entity,
+                                                   domain::todays_market_configuration>(
+        ctx,
+        query,
+        [](const auto& entities) { return todays_market_configuration_mapper::map(entities); },
+        lg(),
+        "Reading any today's market configuration block by configuration_id.");
     // A key names a row of one party, and another party of the tenant may hold
     // the same key, so the read keeps the session's party's rows. The filter
     // runs before the newest row is taken because the party column may be
@@ -300,12 +292,12 @@ todays_market_configuration_repository::read_all(context ctx, const std::string&
     BOOST_LOG_SEV(lg(), debug) << "Reading all today's market configuration block versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<todays_market_configuration_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query = query_builder::read<std::vector<todays_market_configuration_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<todays_market_configuration_entity,
-                              domain::todays_market_configuration>(
+    return query_builder::execute_read_query<todays_market_configuration_entity,
+                                             domain::todays_market_configuration>(
         ctx,
         query,
         [](const auto& entities) { return todays_market_configuration_mapper::map(entities); },
@@ -320,17 +312,18 @@ todays_market_configuration_repository::read_at_version(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading today's market configuration block at version. "
                                << "id: " << id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<todays_market_configuration_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
-                       sqlgen::limit(1);
+    const auto query =
+        query_builder::read<std::vector<todays_market_configuration_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+        query_builder::limit(1);
 
-    const auto entities =
-        execute_read_query<todays_market_configuration_entity, domain::todays_market_configuration>(
-            ctx,
-            query,
-            [](const auto& entities) { return todays_market_configuration_mapper::map(entities); },
-            lg(),
-            "Reading today's market configuration block at version.");
+    const auto entities = query_builder::execute_read_query<todays_market_configuration_entity,
+                                                            domain::todays_market_configuration>(
+        ctx,
+        query,
+        [](const auto& entities) { return todays_market_configuration_mapper::map(entities); },
+        lg(),
+        "Reading today's market configuration block at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -351,13 +344,14 @@ todays_market_configuration_repository::read_latest_by_todays_market_config_id(
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<todays_market_configuration_entity>> |
-        where("tenant_id"_c == tid && "todays_market_config_id"_c == todays_market_config_id &&
-              "valid_to"_c == max.value()) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+        query_builder::read<std::vector<todays_market_configuration_entity>> |
+        query_builder::where("tenant_id"_c == tid &&
+                             "todays_market_config_id"_c == todays_market_config_id &&
+                             "valid_to"_c == max.value()) |
+        query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<todays_market_configuration_entity,
-                                      domain::todays_market_configuration>(
+    return query_builder::execute_ordered_read_query<todays_market_configuration_entity,
+                                                     domain::todays_market_configuration>(
         ctx,
         query,
         todays_market_configuration_list_order(order, {"id"}, false),
@@ -379,11 +373,12 @@ todays_market_configuration_repository::get_total_configuration_count_by_todays_
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<todays_market_configuration_entity>> |
-        where("tenant_id"_c == tid && "todays_market_config_id"_c == todays_market_config_id &&
-              "valid_to"_c == max.value());
+        query_builder::read<std::vector<todays_market_configuration_entity>> |
+        query_builder::where("tenant_id"_c == tid &&
+                             "todays_market_config_id"_c == todays_market_config_id &&
+                             "valid_to"_c == max.value());
 
-    return execute_count_query<todays_market_configuration_entity>(
+    return query_builder::execute_count_query<todays_market_configuration_entity>(
         ctx,
         query,
         todays_market_configuration_filter_condition(filter),
@@ -410,11 +405,11 @@ todays_market_configuration_repository::remove(context ctx,
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<todays_market_configuration_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+    const auto query = query_builder::delete_from<todays_market_configuration_entity> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(
+    query_builder::execute_delete_query(
         ctx, query, lg(), "Removing today's market configuration block from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
@@ -439,15 +434,17 @@ todays_market_configuration_repository::read_latest(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest today's market configuration blocks with offset: "
                                << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<todays_market_configuration_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<todays_market_configuration_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
-    return execute_ordered_read_query<todays_market_configuration_entity,
-                                      domain::todays_market_configuration>(
+    return query_builder::execute_ordered_read_query<todays_market_configuration_entity,
+                                                     domain::todays_market_configuration>(
         ctx,
         query,
         todays_market_configuration_list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), todays_market_configuration_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                todays_market_configuration_filter_condition(filter)),
         [](const auto& entities) { return todays_market_configuration_mapper::map(entities); },
         lg(),
         "Reading latest today's market configuration blocks with pagination.");
@@ -461,13 +458,14 @@ std::uint32_t todays_market_configuration_repository::get_total_configuration_co
         << "Retrieving total active today's market configuration block count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<todays_market_configuration_entity>> | where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<todays_market_configuration_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
-    return execute_count_query<todays_market_configuration_entity>(
+    return query_builder::execute_count_query<todays_market_configuration_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), todays_market_configuration_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                todays_market_configuration_filter_condition(filter)),
         lg(),
         "Counting today's market configuration blocks");
 }
@@ -479,15 +477,16 @@ todays_market_configuration_repository::read_latest(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<todays_market_configuration_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    auto result =
-        execute_read_query<todays_market_configuration_entity, domain::todays_market_configuration>(
-            ctx,
-            query,
-            [](const auto& entities) { return todays_market_configuration_mapper::map(entities); },
-            lg(),
-            "Reading latest today's market configuration blocks by ids.");
+    const auto query =
+        query_builder::read<std::vector<todays_market_configuration_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result = query_builder::execute_read_query<todays_market_configuration_entity,
+                                                    domain::todays_market_configuration>(
+        ctx,
+        query,
+        [](const auto& entities) { return todays_market_configuration_mapper::map(entities); },
+        lg(),
+        "Reading latest today's market configuration blocks by ids.");
     return result;
 }
 
@@ -503,9 +502,11 @@ void todays_market_configuration_repository::remove(context ctx,
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<todays_market_configuration_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing today's market configuration blocks.");
+    const auto query =
+        query_builder::delete_from<todays_market_configuration_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Batch removing today's market configuration blocks.");
 }
 
 

@@ -25,8 +25,8 @@
 #ifndef ORES_IAM_CORE_REPOSITORY_LOGIN_INFO_ENTITY_HPP
 #define ORES_IAM_CORE_REPOSITORY_LOGIN_INFO_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,15 +42,32 @@ struct login_info_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_iam_login_info_tbl";
 
-    sqlgen::PrimaryKey<std::string> account_id;
+    std::string account_id;
     std::string tenant_id;
     std::string last_ip;
     std::string last_attempt_ip;
     int failed_logins = 0;
     bool locked = false;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> last_login;
+    std::optional<db_timestamp> last_login;
     bool online = false;
     bool password_reset_required = false;
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = login_info_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("account_id", &e::account_id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("last_ip", &e::last_ip) |
+               query_builder::bind("last_attempt_ip", &e::last_attempt_ip) |
+               query_builder::bind("failed_logins", &e::failed_logins) |
+               query_builder::bind("locked", &e::locked) |
+               query_builder::bind("last_login", &e::last_login) |
+               query_builder::bind("online", &e::online) |
+               query_builder::bind("password_reset_required", &e::password_reset_required);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const login_info_entity& v);

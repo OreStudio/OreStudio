@@ -181,11 +181,11 @@ market_fixing_repository::read_latest_for_series(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
     const auto query =
-        sqlgen::read<std::vector<market_fixing_entity>> |
-        where("tenant_id"_c == tid && "series_id"_c == sid && "valid_to"_c == max.value()) |
-        order_by("fixing_date"_c);
+        query_builder::read<std::vector<market_fixing_entity>> |
+        query_builder::where("tenant_id"_c == tid && "series_id"_c == sid && "valid_to"_c == max.value()) |
+        query_builder::order_by("fixing_date"_c);
 
-    return execute_read_query<market_fixing_entity, domain::market_fixing>(
+    return query_builder::execute_read_query<market_fixing_entity, domain::market_fixing>(
         ctx,
         query,
         [](const auto& entities) { return market_fixing_mapper::map(entities); },

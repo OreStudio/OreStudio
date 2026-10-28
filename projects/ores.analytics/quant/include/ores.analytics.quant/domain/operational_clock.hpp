@@ -50,7 +50,22 @@ struct market_config final {
     /// number for the run, so every feed's prices live in one simulated world. The
     /// default keeps a curve at one tick a minute stepping a calendar day a tick.
     double speed = 1440.0;
+    /// How far the market's activity tilts a price's shape toward its tails: a tick
+    /// at pace A tilts by this times ln A. Zero leaves every shape as configured.
+    double tail_loading = 0.0;
 };
+
+/// The largest tail loading the market takes. At a pace of two it tilts a mixture by
+/// about seven, which already leaves the widest component carrying the variance; beyond
+/// it a mixture degenerates to one component and the loading says nothing more.
+constexpr double max_tail_loading = 10.0;
+
+/**
+ * @brief Refuse numbers the clock cannot run on.
+ *
+ * @throws std::invalid_argument naming the number, as the clock's constructor does.
+ */
+ORES_ANALYTICS_QUANT_EXPORT void validate(const market_config& config);
 
 /**
  * @brief The market's one clock: the regime chain, the heat, and tau.
@@ -91,6 +106,16 @@ public:
         return tau_;
     }
 
+    /// The simulated seconds since the start of the run: each stretch of tau
+    /// times the speed in force while it passed.
+    [[nodiscard]] double simulated() const {
+        return simulated_;
+    }
+
+    [[nodiscard]] const market_config& config() const {
+        return config_;
+    }
+
     /// The state in force: the pin if there is one, else the chain's.
     [[nodiscard]] market_state state() const {
         return pin_.value_or(chain_state_);
@@ -123,6 +148,9 @@ public:
         return config_.decay;
     }
 
+    /// The tilt a price's shape takes at the pace now: the tail loading times ln pace.
+    [[nodiscard]] double tail_tilt() const;
+
     /// The heat's loop gain, jump over decay. Below one, so the heat settles.
     [[nodiscard]] double loop_gain() const {
         return config_.jump / config_.decay;
@@ -151,6 +179,17 @@ public:
 
     void pin(market_state s);
     void unpin();
+
+    /**
+     * @brief Change the numbers from now on. What has passed stays as it was.
+     *
+     * The heat keeps its level and fades at the new decay. The dwell in progress
+     * keeps its unit draw, so it ends at the new rate's share of it.
+     *
+     * @throws std::invalid_argument as the constructor does, and then nothing
+     *         changes.
+     */
+    void reconfigure(const market_config& config);
 
     /// One event anywhere in the market: the heat rises by the jump.
     void record_event();
@@ -181,6 +220,7 @@ private:
 
     double now_ = 0.0;
     double tau_ = 0.0;
+    double simulated_ = 0.0;
     market_state chain_state_ = market_state::calm;
     double remaining_ = 0.0;
     std::optional<market_state> pin_;

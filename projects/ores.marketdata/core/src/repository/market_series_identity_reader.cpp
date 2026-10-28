@@ -18,8 +18,7 @@
  *
  */
 #include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/ore_types.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
@@ -82,9 +81,8 @@ std::vector<domain::market_series>
 market_series_identity_reader::read(ores::database::context ctx,
                                     const messaging::resolve_series_identity_request& identity) {
     using namespace ores::marketdata::datum;
-    using namespace ores::database::repository;
-    using namespace sqlgen;
-    using namespace sqlgen::literals;
+    namespace query_builder = ores::database::query_builder;
+    using namespace ores::database::query_builder::literals;
 
     const auto type = instrument_type_named(upper_text(identity.instrument_type));
     if (!type)
@@ -112,33 +110,38 @@ market_series_identity_reader::read(ores::database::context ctx,
      * so the identity is a filter rather than a parse. The scope is the value
      * the URI writes in its path, which is the subject field's column.
      */
-    std::vector<sqlgen::dynamic::Condition> conditions{
-        equals("tenant_id", filter_value(ctx.tenant_id().to_string())),
-        equals("asset_class", filter_value(identity.asset)),
-        equals("instrument_type", filter_value(identity.instrument_type)),
-        equals("quote_type", filter_value(identity.quote_type)),
-        equals(std::string(name_of(row.subject)), filter_value(identity.scope))};
+    std::vector<query_builder::condition> conditions{
+        query_builder::equals("tenant_id",
+                              query_builder::filter_value(ctx.tenant_id().to_string())),
+        query_builder::equals("asset_class", query_builder::filter_value(identity.asset)),
+        query_builder::equals("instrument_type",
+                              query_builder::filter_value(identity.instrument_type)),
+        query_builder::equals("quote_type", query_builder::filter_value(identity.quote_type)),
+        query_builder::equals(std::string(name_of(row.subject)),
+                              query_builder::filter_value(identity.scope))};
 
     for (const auto& f : identity.fields) {
         check_field(f.name, row);
-        conditions.push_back(equals(f.name, filter_value(f.text)));
+        conditions.push_back(query_builder::equals(f.name, query_builder::filter_value(f.text)));
     }
     if (!identity.party_id.empty())
-        conditions.push_back(equals("party_id", filter_value(identity.party_id)));
+        conditions.push_back(
+            query_builder::equals("party_id", query_builder::filter_value(identity.party_id)));
 
     /*
      * A condition built at run time reaches a read as its filter, not through
      * the query's own where clause, so the query states the one condition that
      * holds of every series identity and the rest travel beside it.
      */
-    const auto query = sqlgen::read<std::vector<market_series_identity_entity>> |
-                       where("identity_kind"_c == std::string("series"));
+    const auto query = query_builder::read<std::vector<market_series_identity_entity>> |
+                       query_builder::where("identity_kind"_c == std::string("series"));
     const auto identities =
-        execute_ordered_read_query<market_series_identity_entity, domain::market_series_identity>(
+        query_builder::execute_ordered_read_query<market_series_identity_entity,
+                                                  domain::market_series_identity>(
             ctx,
             query,
-            make_order({}, false, {"series_id"}),
-            all_of(std::move(conditions)),
+            query_builder::make_order({}, false, {"series_id"}),
+            query_builder::all_of(std::move(conditions)),
             [](const auto& entities) { return market_series_identity_mapper::map(entities); },
             reader_lg(),
             "Reading the series identity projection by typed identity");

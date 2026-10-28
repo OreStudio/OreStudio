@@ -23,8 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/repository/role_grant_request_role_repository.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.iam.api/domain/role_grant_request_role.hpp"
@@ -39,16 +38,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
-#include <sqlgen/aggregations.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/select_from.hpp>
-#include <sqlgen/to.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -56,13 +45,13 @@
 
 namespace ores::iam::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string role_grant_request_role_repository::sql() {
-    return generate_create_table_sql<role_grant_request_role_entity>(lg());
+    return query_builder::insert_statement_sql<role_grant_request_role_entity>(lg());
 }
 
 role_grant_request_role_repository::role_grant_request_role_repository(context ctx)
@@ -125,10 +114,10 @@ void role_grant_request_role_repository::write(
                                << role_grant_request_role.request_id << "/"
                                << role_grant_request_role.role_id;
     const auto t = apply_claim(role_grant_request_role, claim);
-    execute_write_query(ctx_,
-                        role_grant_request_role_mapper::map(t),
-                        lg(),
-                        "writing role grant request role to database");
+    query_builder::execute_write_query(ctx_,
+                                       role_grant_request_role_mapper::map(t),
+                                       lg(),
+                                       "writing role grant request role to database");
 }
 
 void role_grant_request_role_repository::write(
@@ -140,20 +129,21 @@ void role_grant_request_role_repository::write(
     batch.reserve(role_grant_request_roles.size());
     for (std::size_t i = 0; i < role_grant_request_roles.size(); ++i)
         batch.push_back(apply_claim(role_grant_request_roles[i], claims[i]));
-    execute_write_query(ctx_,
-                        role_grant_request_role_mapper::map(batch),
-                        lg(),
-                        "writing role grant request roles to database");
+    query_builder::execute_write_query(ctx_,
+                                       role_grant_request_role_mapper::map(batch),
+                                       lg(),
+                                       "writing role grant request roles to database");
 }
 
 std::vector<domain::role_grant_request_role> role_grant_request_role_repository::read_latest() {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<role_grant_request_role_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("request_id"_c, "role_id"_c);
+    const auto query = query_builder::read<std::vector<role_grant_request_role_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("request_id"_c, "role_id"_c);
 
-    return execute_read_query<role_grant_request_role_entity, domain::role_grant_request_role>(
+    return query_builder::execute_read_query<role_grant_request_role_entity,
+                                             domain::role_grant_request_role>(
         ctx_,
         query,
         [](const auto& entities) { return role_grant_request_role_mapper::map(entities); },
@@ -167,12 +157,13 @@ role_grant_request_role_repository::read_latest(std::uint32_t offset, std::uint3
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<role_grant_request_role_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("request_id"_c, "role_id"_c) | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<role_grant_request_role_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("request_id"_c, "role_id"_c) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_read_query<role_grant_request_role_entity, domain::role_grant_request_role>(
+    return query_builder::execute_read_query<role_grant_request_role_entity,
+                                             domain::role_grant_request_role>(
         ctx_,
         query,
         [](const auto& entities) { return role_grant_request_role_mapper::map(entities); },
@@ -190,11 +181,13 @@ role_grant_request_role_repository::read_latest(const boost::uuids::uuid& reques
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto role_id_str = boost::uuids::to_string(role_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<role_grant_request_role_entity>> |
-                       where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
+    const auto query =
+        query_builder::read<std::vector<role_grant_request_role_entity>> |
+        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
                              "role_id"_c == role_id_str && "valid_to"_c == max.value());
 
-    return execute_read_query<role_grant_request_role_entity, domain::role_grant_request_role>(
+    return query_builder::execute_read_query<role_grant_request_role_entity,
+                                             domain::role_grant_request_role>(
         ctx_,
         query,
         [](const auto& entities) { return role_grant_request_role_mapper::map(entities); },
@@ -206,19 +199,12 @@ std::uint32_t role_grant_request_role_repository::get_total_role_grant_request_r
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active role grant request roles count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<role_grant_request_role_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<role_grant_request_role_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<role_grant_request_role_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting role grant request roles");
     BOOST_LOG_SEV(lg(), debug) << "Total active role grant request roles count: " << count;
     return count;
 }
@@ -231,12 +217,14 @@ role_grant_request_role_repository::read_latest_by_request(const boost::uuids::u
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<role_grant_request_role_entity>> |
-                       where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
+    const auto query =
+        query_builder::read<std::vector<role_grant_request_role_entity>> |
+        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
                              "valid_to"_c == max.value()) |
-                       order_by("role_id"_c);
+        query_builder::order_by("role_id"_c);
 
-    auto rows = execute_read_query<role_grant_request_role_entity, domain::role_grant_request_role>(
+    auto rows = query_builder::execute_read_query<role_grant_request_role_entity,
+                                                  domain::role_grant_request_role>(
         ctx_,
         query,
         [](const auto& entities) { return role_grant_request_role_mapper::map(entities); },
@@ -253,12 +241,13 @@ role_grant_request_role_repository::read_latest_by_role(const boost::uuids::uuid
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto role_id_str = boost::uuids::to_string(role_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<role_grant_request_role_entity>> |
-        where("tenant_id"_c == tid && "role_id"_c == role_id_str && "valid_to"_c == max.value()) |
-        order_by("request_id"_c);
+    const auto query = query_builder::read<std::vector<role_grant_request_role_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "role_id"_c == role_id_str &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("request_id"_c);
 
-    auto rows = execute_read_query<role_grant_request_role_entity, domain::role_grant_request_role>(
+    auto rows = query_builder::execute_read_query<role_grant_request_role_entity,
+                                                  domain::role_grant_request_role>(
         ctx_,
         query,
         [](const auto& entities) { return role_grant_request_role_mapper::map(entities); },
@@ -278,12 +267,15 @@ role_grant_request_role_repository::read_latest_by_request(const boost::uuids::u
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<role_grant_request_role_entity>> |
-                       where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
+    const auto query =
+        query_builder::read<std::vector<role_grant_request_role_entity>> |
+        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
                              "valid_to"_c == max.value()) |
-                       order_by("role_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        query_builder::order_by("role_id"_c) | query_builder::offset(offset) |
+        query_builder::limit(limit);
 
-    auto rows = execute_read_query<role_grant_request_role_entity, domain::role_grant_request_role>(
+    auto rows = query_builder::execute_read_query<role_grant_request_role_entity,
+                                                  domain::role_grant_request_role>(
         ctx_,
         query,
         [](const auto& entities) { return role_grant_request_role_mapper::map(entities); },
@@ -301,21 +293,14 @@ role_grant_request_role_repository::get_total_role_grant_request_role_count_by_r
         << "Retrieving total active role grant request roles count. Request: " << request_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
-        sqlgen::select_from<role_grant_request_role_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
-              "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+        query_builder::read<std::vector<role_grant_request_role_entity>> |
+        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<role_grant_request_role_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting role grant request roles");
     BOOST_LOG_SEV(lg(), debug) << "Total active role grant request roles count by request: "
                                << count;
     return count;
@@ -328,20 +313,13 @@ std::uint32_t role_grant_request_role_repository::get_total_role_grant_request_r
                                << role_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<role_grant_request_role_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "role_id"_c == role_id_str && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<role_grant_request_role_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "role_id"_c == role_id_str &&
+                                            "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<role_grant_request_role_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting role grant request roles");
     BOOST_LOG_SEV(lg(), debug) << "Total active role grant request roles count by role: " << count;
     return count;
 }
@@ -353,11 +331,13 @@ role_grant_request_role_repository::read_all_by_request(const boost::uuids::uuid
 
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<role_grant_request_role_entity>> |
-                       where("tenant_id"_c == tid && "request_id"_c == request_id_str) |
-                       order_by("role_id"_c, "valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<role_grant_request_role_entity>> |
+        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str) |
+        query_builder::order_by("role_id"_c, "valid_from"_c.desc());
 
-    return execute_read_query<role_grant_request_role_entity, role_grant_request_role_history_row>(
+    return query_builder::execute_read_query<role_grant_request_role_entity,
+                                             role_grant_request_role_history_row>(
         ctx_,
         query,
         [](const auto& entities) {
@@ -419,11 +399,13 @@ role_grant_request_role_repository::remove(const boost::uuids::uuid& request_id,
     const auto role_id_str = boost::uuids::to_string(role_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
-        sqlgen::delete_from<role_grant_request_role_entity> |
-        where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
-              "role_id"_c == role_id_str && "valid_to"_c == max.value() && "version"_c == expected);
+        query_builder::delete_from<role_grant_request_role_entity> |
+        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
+                             "role_id"_c == role_id_str && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
-    execute_delete_query(ctx_, query, lg(), "removing role grant request role from database");
+    query_builder::execute_delete_query(
+        ctx_, query, lg(), "removing role grant request role from database");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -450,10 +432,12 @@ void role_grant_request_role_repository::remove_by_request(const boost::uuids::u
 
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<role_grant_request_role_entity> |
-                       where("tenant_id"_c == tid && "request_id"_c == request_id_str);
+    const auto query =
+        query_builder::delete_from<role_grant_request_role_entity> |
+        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str);
 
-    execute_delete_query(ctx_, query, lg(), "removing all role grant request roles from database");
+    query_builder::execute_delete_query(
+        ctx_, query, lg(), "removing all role grant request roles from database");
 }
 
 

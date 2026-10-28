@@ -23,8 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -39,16 +38,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
-#include <sqlgen/aggregations.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/select_from.hpp>
-#include <sqlgen/to.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -56,13 +45,13 @@
 
 namespace ores::marketdata::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string market_series_asset_class_repository::sql() {
-    return generate_create_table_sql<market_series_asset_class_entity>(lg());
+    return query_builder::insert_statement_sql<market_series_asset_class_entity>(lg());
 }
 
 market_series_asset_class_repository::market_series_asset_class_repository(context ctx)
@@ -124,7 +113,7 @@ void market_series_asset_class_repository::write(
                                << asset_class.market_series_id << "/"
                                << asset_class.asset_class_code;
     const auto t = apply_claim(asset_class, claim);
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx_, market_series_asset_class_mapper::map(t), lg(), "writing asset class to database");
 }
 
@@ -137,20 +126,21 @@ void market_series_asset_class_repository::write(
     batch.reserve(asset_classes.size());
     for (std::size_t i = 0; i < asset_classes.size(); ++i)
         batch.push_back(apply_claim(asset_classes[i], claims[i]));
-    execute_write_query(ctx_,
-                        market_series_asset_class_mapper::map(batch),
-                        lg(),
-                        "writing asset classes to database");
+    query_builder::execute_write_query(ctx_,
+                                       market_series_asset_class_mapper::map(batch),
+                                       lg(),
+                                       "writing asset classes to database");
 }
 
 std::vector<domain::market_series_asset_class> market_series_asset_class_repository::read_latest() {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_series_asset_class_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("market_series_id"_c, "asset_class_code"_c);
+    const auto query = query_builder::read<std::vector<market_series_asset_class_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("market_series_id"_c, "asset_class_code"_c);
 
-    return execute_read_query<market_series_asset_class_entity, domain::market_series_asset_class>(
+    return query_builder::execute_read_query<market_series_asset_class_entity,
+                                             domain::market_series_asset_class>(
         ctx_,
         query,
         [](const auto& entities) { return market_series_asset_class_mapper::map(entities); },
@@ -164,12 +154,13 @@ market_series_asset_class_repository::read_latest(std::uint32_t offset, std::uin
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_series_asset_class_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("market_series_id"_c, "asset_class_code"_c) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<market_series_asset_class_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("market_series_id"_c, "asset_class_code"_c) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_read_query<market_series_asset_class_entity, domain::market_series_asset_class>(
+    return query_builder::execute_read_query<market_series_asset_class_entity,
+                                             domain::market_series_asset_class>(
         ctx_,
         query,
         [](const auto& entities) { return market_series_asset_class_mapper::map(entities); },
@@ -187,12 +178,13 @@ market_series_asset_class_repository::read_latest(const boost::uuids::uuid& mark
     const auto market_series_id_str = boost::uuids::to_string(market_series_id);
     const auto asset_class_code_str = asset_class_code;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<market_series_asset_class_entity>> |
-        where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&
-              "asset_class_code"_c == asset_class_code && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<market_series_asset_class_entity>> |
+                       query_builder::where(
+                           "tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&
+                           "asset_class_code"_c == asset_class_code && "valid_to"_c == max.value());
 
-    return execute_read_query<market_series_asset_class_entity, domain::market_series_asset_class>(
+    return query_builder::execute_read_query<market_series_asset_class_entity,
+                                             domain::market_series_asset_class>(
         ctx_,
         query,
         [](const auto& entities) { return market_series_asset_class_mapper::map(entities); },
@@ -204,19 +196,12 @@ std::uint32_t market_series_asset_class_repository::get_total_asset_class_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active asset classes count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<market_series_asset_class_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<market_series_asset_class_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<market_series_asset_class_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting asset classes");
     BOOST_LOG_SEV(lg(), debug) << "Total active asset classes count: " << count;
     return count;
 }
@@ -229,18 +214,19 @@ market_series_asset_class_repository::read_latest_by_series(
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto market_series_id_str = boost::uuids::to_string(market_series_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_series_asset_class_entity>> |
-                       where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&
+    const auto query =
+        query_builder::read<std::vector<market_series_asset_class_entity>> |
+        query_builder::where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&
                              "valid_to"_c == max.value()) |
-                       order_by("asset_class_code"_c);
+        query_builder::order_by("asset_class_code"_c);
 
-    auto rows =
-        execute_read_query<market_series_asset_class_entity, domain::market_series_asset_class>(
-            ctx_,
-            query,
-            [](const auto& entities) { return market_series_asset_class_mapper::map(entities); },
-            lg(),
-            "Reading latest asset classes by series.");
+    auto rows = query_builder::execute_read_query<market_series_asset_class_entity,
+                                                  domain::market_series_asset_class>(
+        ctx_,
+        query,
+        [](const auto& entities) { return market_series_asset_class_mapper::map(entities); },
+        lg(),
+        "Reading latest asset classes by series.");
 
     return rows;
 }
@@ -252,18 +238,19 @@ market_series_asset_class_repository::read_latest_by_asset_class(
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_series_asset_class_entity>> |
-                       where("tenant_id"_c == tid && "asset_class_code"_c == asset_class_code &&
+    const auto query =
+        query_builder::read<std::vector<market_series_asset_class_entity>> |
+        query_builder::where("tenant_id"_c == tid && "asset_class_code"_c == asset_class_code &&
                              "valid_to"_c == max.value()) |
-                       order_by("market_series_id"_c);
+        query_builder::order_by("market_series_id"_c);
 
-    auto rows =
-        execute_read_query<market_series_asset_class_entity, domain::market_series_asset_class>(
-            ctx_,
-            query,
-            [](const auto& entities) { return market_series_asset_class_mapper::map(entities); },
-            lg(),
-            "Reading latest asset classes by asset_class.");
+    auto rows = query_builder::execute_read_query<market_series_asset_class_entity,
+                                                  domain::market_series_asset_class>(
+        ctx_,
+        query,
+        [](const auto& entities) { return market_series_asset_class_mapper::map(entities); },
+        lg(),
+        "Reading latest asset classes by asset_class.");
 
     return rows;
 }
@@ -277,19 +264,20 @@ market_series_asset_class_repository::read_latest_by_series(
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_series_asset_class_entity>> |
-                       where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&
+    const auto query =
+        query_builder::read<std::vector<market_series_asset_class_entity>> |
+        query_builder::where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&
                              "valid_to"_c == max.value()) |
-                       order_by("asset_class_code"_c) | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+        query_builder::order_by("asset_class_code"_c) | query_builder::offset(offset) |
+        query_builder::limit(limit);
 
-    auto rows =
-        execute_read_query<market_series_asset_class_entity, domain::market_series_asset_class>(
-            ctx_,
-            query,
-            [](const auto& entities) { return market_series_asset_class_mapper::map(entities); },
-            lg(),
-            "Reading latest asset classes by series (paginated).");
+    auto rows = query_builder::execute_read_query<market_series_asset_class_entity,
+                                                  domain::market_series_asset_class>(
+        ctx_,
+        query,
+        [](const auto& entities) { return market_series_asset_class_mapper::map(entities); },
+        lg(),
+        "Reading latest asset classes by series (paginated).");
 
     return rows;
 }
@@ -301,21 +289,14 @@ std::uint32_t market_series_asset_class_repository::get_total_asset_class_count_
                                << market_series_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
-        sqlgen::select_from<market_series_asset_class_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&
-              "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+        query_builder::read<std::vector<market_series_asset_class_entity>> |
+        query_builder::where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<market_series_asset_class_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting asset classes");
     BOOST_LOG_SEV(lg(), debug) << "Total active asset classes count by series: " << count;
     return count;
 }
@@ -326,21 +307,14 @@ std::uint32_t market_series_asset_class_repository::get_total_asset_class_count_
                                << asset_class_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
-        sqlgen::select_from<market_series_asset_class_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "asset_class_code"_c == asset_class_code &&
-              "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+        query_builder::read<std::vector<market_series_asset_class_entity>> |
+        query_builder::where("tenant_id"_c == tid && "asset_class_code"_c == asset_class_code &&
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<market_series_asset_class_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting asset classes");
     BOOST_LOG_SEV(lg(), debug) << "Total active asset classes count by asset_class: " << count;
     return count;
 }
@@ -353,12 +327,13 @@ market_series_asset_class_repository::read_all_by_series(
 
     const auto market_series_id_str = boost::uuids::to_string(market_series_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_series_asset_class_entity>> |
-                       where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str) |
-                       order_by("asset_class_code"_c, "valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<market_series_asset_class_entity>> |
+        query_builder::where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str) |
+        query_builder::order_by("asset_class_code"_c, "valid_from"_c.desc());
 
-    return execute_read_query<market_series_asset_class_entity,
-                              market_series_asset_class_history_row>(
+    return query_builder::execute_read_query<market_series_asset_class_entity,
+                                             market_series_asset_class_history_row>(
         ctx_,
         query,
         [](const auto& entities) {
@@ -420,12 +395,13 @@ market_series_asset_class_repository::remove(const boost::uuids::uuid& market_se
     const auto market_series_id_str = boost::uuids::to_string(market_series_id);
     const auto asset_class_code_str = asset_class_code;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<market_series_asset_class_entity> |
-                       where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&
+    const auto query =
+        query_builder::delete_from<market_series_asset_class_entity> |
+        query_builder::where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&
                              "asset_class_code"_c == asset_class_code &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx_, query, lg(), "removing asset class from database");
+    query_builder::execute_delete_query(ctx_, query, lg(), "removing asset class from database");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -453,10 +429,12 @@ void market_series_asset_class_repository::remove_by_series(
 
     const auto market_series_id_str = boost::uuids::to_string(market_series_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<market_series_asset_class_entity> |
-                       where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str);
+    const auto query =
+        query_builder::delete_from<market_series_asset_class_entity> |
+        query_builder::where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str);
 
-    execute_delete_query(ctx_, query, lg(), "removing all asset classes from database");
+    query_builder::execute_delete_query(
+        ctx_, query, lg(), "removing all asset classes from database");
 }
 
 

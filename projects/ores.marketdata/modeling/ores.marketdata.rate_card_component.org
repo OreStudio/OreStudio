@@ -195,7 +195,6 @@ When the component stops to apply, or null while it applies.
 #include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

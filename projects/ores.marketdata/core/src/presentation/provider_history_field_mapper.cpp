@@ -41,6 +41,16 @@ std::vector<ores::diff::domain::field_value> render_provider_fields(const domain
     fields.push_back({.name = "Kind", .value = v.kind});
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Display Order", .value = std::to_string(v.display_order)});
+    fields.push_back({.name = "Terms Url", .value = v.terms_url});
+    fields.push_back({.name = "Terms Credit", .value = v.terms_credit});
+    fields.push_back({.name = "Allows Storage", .value = v.allows_storage ? "true" : "false"});
+    fields.push_back({.name = "Credential Ref", .value = v.credential_ref});
+    fields.push_back({.name = "Terms Accepted Digest", .value = v.terms_accepted_digest});
+    fields.push_back({.name = "Terms Accepted By", .value = v.terms_accepted_by});
+    fields.push_back({.name = "Terms Accepted At",
+                      .value = v.terms_accepted_at ? ores::platform::time::datetime::to_iso8601_utc(
+                                                         *v.terms_accepted_at) :
+                                                     std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

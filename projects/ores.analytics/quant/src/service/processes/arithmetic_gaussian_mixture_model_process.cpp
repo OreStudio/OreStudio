@@ -46,6 +46,7 @@ arithmetic_gaussian_mixture_model_process::arithmetic_gaussian_mixture_model_pro
     if (initial_price <= 0.0)
         throw std::invalid_argument(
             "arithmetic_gaussian_mixture_model_process: initial_price must be positive");
+    base_ = {.means = means_, .stdevs = stdevs_, .weights = weights_};
 }
 
 double arithmetic_gaussian_mixture_model_process::next() {
@@ -90,6 +91,13 @@ void arithmetic_gaussian_mixture_model_process::step_partial_tick(double part) {
 
 bool arithmetic_gaussian_mixture_model_process::supports_variable_step() const {
     return true;
+}
+
+void arithmetic_gaussian_mixture_model_process::set_tail_tilt(double tilt) {
+    if (tilt == tilt_)
+        return;
+    tilt_ = tilt;
+    stdevs_ = math::tilt(base_, tilt).stdevs;
 }
 
 double arithmetic_gaussian_mixture_model_process::current() const {

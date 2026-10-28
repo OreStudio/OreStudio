@@ -17,12 +17,12 @@ This document analyzes the C++ files created manually for `dataset_bundle` and `
 | 7 | Table I/O impl | `src/domain/{entity}_table_io.cpp` | Uses convert_to_table |
 | 8 | Generator header | `include/.../generators/{entity}_generator.hpp` | Synthetic data generators |
 | 9 | Generator impl | `src/generators/{entity}_generator.cpp` | faker-based implementation |
-| 10 | Entity header | `include/.../repository/{entity}_entity.hpp` | sqlgen struct |
+| 10 | Entity header | `include/.../repository/{entity}_entity.hpp` | Row struct and its column list |
 | 11 | Entity impl | `src/repository/{entity}_entity.cpp` | ostream for entity |
 | 12 | Mapper header | `include/.../repository/{entity}_mapper.hpp` | Domain <-> Entity mapping |
 | 13 | Mapper impl | `src/repository/{entity}_mapper.cpp` | Mapping implementation |
 | 14 | Repository header | `include/.../repository/{entity}_repository.hpp` | CRUD operations |
-| 15 | Repository impl | `src/repository/{entity}_repository.cpp` | sqlgen-based CRUD |
+| 15 | Repository impl | `src/repository/{entity}_repository.cpp` | CRUD on libpq |
 
 **Total: 15 files per domain entity**
 
@@ -39,16 +39,18 @@ This document analyzes the C++ files created manually for `dataset_bundle` and `
 | `integer` | `int` | - |
 | `timestamp` | `std::chrono::system_clock::time_point` | `<chrono>` |
 
-### SQL to C++ Entity Type Mapping (sqlgen)
+### SQL to C++ Entity Type Mapping
+
+The entity holds each column's own type, read and bound in the binary format.
+The column list marks the primary key; the field itself is a plain member.
 
 | SQL Type | C++ Entity Type | Notes |
 |----------|-----------------|-------|
-| `uuid` (PK) | `sqlgen::PrimaryKey<std::string>` | UUID stored as string |
-| `uuid` | `std::string` | Non-PK UUIDs |
-| `text` (PK) | `sqlgen::PrimaryKey<std::string>` | For junction tables |
+| `uuid` | `boost::uuids::uuid` | |
 | `text` | `std::string` | |
 | `integer` | `int` | |
-| `timestamp` | `sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">` | With format string |
+| `timestamp` | `std::chrono::system_clock::time_point` | Microsecond precision |
+| nullable column | `std::optional<T>` | SQL NULL is `std::nullopt` |
 
 ---
 
@@ -71,8 +73,8 @@ int version = 0;
 std::string modified_by;                            // Maps to recorded_by
 std::string change_reason_code;
 std::string change_commentary;
-sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from;  // Maps to recorded_at
-sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to;
+std::chrono::system_clock::time_point valid_from;   // Maps to recorded_at
+std::chrono::system_clock::time_point valid_to;
 ```
 
 ---
@@ -211,7 +213,7 @@ Need field information for iterations:
 - `{entity}.hpp` - Domain class with all fields + doxygen
 - `{entity}_table.hpp` - Declaration with entity name
 - `{entity}_table.cpp` - Table columns from model
-- `{entity}_entity.hpp` - Entity struct with sqlgen types
+- `{entity}_entity.hpp` - Entity struct with its column list
 - `{entity}_mapper.hpp` - Declaration with entity name
 
 ### 3. Complex Templates
@@ -222,7 +224,7 @@ Need detailed field mappings and logic:
 - `{entity}_generator.cpp` - faker expressions per field
 - `{entity}_mapper.cpp` - Field-by-field mapping with type conversions
 - `{entity}_repository.hpp` - CRUD operations, query methods
-- `{entity}_repository.cpp` - sqlgen queries, custom lookups
+- `{entity}_repository.cpp` - Statements on libpq, custom lookups
 
 ---
 

@@ -23,13 +23,10 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
 #include "ores.database/repository/range_bound.hpp"
-#include "ores.database/repository/stated_order.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_observation_json_io.hpp" // IWYU pragma: keep.
@@ -52,16 +49,6 @@
 #include <initializer_list>
 #include <map>
 #include <optional>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -70,13 +57,13 @@
 
 namespace ores::marketdata::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string market_observation_repository::sql() {
-    return generate_create_table_sql<market_observation_entity>(lg());
+    return query_builder::insert_statement_sql<market_observation_entity>(lg());
 }
 
 bool market_observation_repository::is_sortable(std::string_view field) {
@@ -91,48 +78,51 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
+query_builder::order
 market_observation_list_order(const ores::utility::domain::order& order,
                               std::initializer_list<std::string> default_columns,
                               bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!market_observation_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of market observations cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 /*
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition> market_observation_filter_condition(
+std::optional<query_builder::condition> market_observation_filter_condition(
     const std::optional<messaging::market_observations_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->series_id)
-        r.push_back(equals("series_id", filter_value(*filter->series_id)));
+        r.push_back(
+            query_builder::equals("series_id", query_builder::filter_value(*filter->series_id)));
     if (filter->observation_datetime)
-        r.push_back(equals("observation_datetime", filter_value(*filter->observation_datetime)));
+        r.push_back(query_builder::equals(
+            "observation_datetime", query_builder::filter_value(*filter->observation_datetime)));
     if (filter->id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
     }
     if (filter->series_id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->series_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("series_id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("series_id", std::move(values)));
     }
     if (filter->observation_datetime_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->observation_datetime_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("observation_datetime", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("observation_datetime", std::move(values)));
     }
     if (filter->observation_datetime_from) {
         const auto bound = range_bound(*filter->observation_datetime_from, range_end::from, true);
@@ -140,16 +130,18 @@ std::optional<sqlgen::dynamic::Condition> market_observation_filter_condition(
             throw std::invalid_argument(
                 "The bound " + *filter->observation_datetime_from +
                 " of observation_datetime_from is not a valid date or time.");
-        r.push_back(at_least("observation_datetime", filter_value(*bound)));
+        r.push_back(
+            query_builder::at_least("observation_datetime", query_builder::filter_value(*bound)));
     }
     if (filter->observation_datetime_to) {
         const auto bound = range_bound(*filter->observation_datetime_to, range_end::to, true);
         if (!bound)
             throw std::invalid_argument("The bound " + *filter->observation_datetime_to +
                                         " of observation_datetime_to is not a valid date or time.");
-        r.push_back(at_most("observation_datetime", filter_value(*bound)));
+        r.push_back(
+            query_builder::at_most("observation_datetime", query_builder::filter_value(*bound)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -191,10 +183,10 @@ void market_observation_repository::insert(context ctx, const domain::market_obs
     series_shape_check::check(ctx, std::vector<domain::market_observation>{v});
     if (manual_point_guard::unshadowed(ctx, std::vector<domain::market_observation>{v}).empty())
         return;
-    execute_write_query(ctx,
-                        market_observation_mapper::map(v),
-                        lg(),
-                        "Inserting market observation into database.");
+    query_builder::execute_write_query(ctx,
+                                       market_observation_mapper::map(v),
+                                       lg(),
+                                       "Inserting market observation into database.");
 }
 
 void market_observation_repository::insert(context ctx,
@@ -203,16 +195,16 @@ void market_observation_repository::insert(context ctx,
     series_shape_check::check(ctx, v);
     if (const auto kept = manual_point_guard::unshadowed(ctx, v); kept.size() != v.size()) {
         if (!kept.empty())
-            execute_write_query(ctx,
-                                market_observation_mapper::map(kept),
-                                lg(),
-                                "Inserting market observations into database.");
+            query_builder::execute_write_query(ctx,
+                                               market_observation_mapper::map(kept),
+                                               lg(),
+                                               "Inserting market observations into database.");
         return;
     }
-    execute_write_query(ctx,
-                        market_observation_mapper::map(v),
-                        lg(),
-                        "Inserting market observations into database.");
+    query_builder::execute_write_query(ctx,
+                                       market_observation_mapper::map(v),
+                                       lg(),
+                                       "Inserting market observations into database.");
 }
 
 void market_observation_repository::write(context ctx,
@@ -229,7 +221,7 @@ void market_observation_repository::write(context ctx,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market observation. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, market_observation_mapper::map(t), lg(), "Writing market observation to database.");
 }
 
@@ -242,20 +234,20 @@ void market_observation_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        market_observation_mapper::map(batch),
-                        lg(),
-                        "Writing market observations to database.");
+    query_builder::execute_write_query(ctx,
+                                       market_observation_mapper::map(batch),
+                                       lg(),
+                                       "Writing market observations to database.");
 }
 
 std::vector<domain::market_observation> market_observation_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_observation_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+    const auto query = query_builder::read<std::vector<market_observation_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
-    return execute_read_query<market_observation_entity, domain::market_observation>(
+    return query_builder::execute_read_query<market_observation_entity, domain::market_observation>(
         ctx,
         query,
         [](const auto& entities) { return market_observation_mapper::map(entities); },
@@ -268,10 +260,11 @@ market_observation_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market observation. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_observation_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<market_observation_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
-    return execute_read_query<market_observation_entity, domain::market_observation>(
+    return query_builder::execute_read_query<market_observation_entity, domain::market_observation>(
         ctx,
         query,
         [](const auto& entities) { return market_observation_mapper::map(entities); },
@@ -284,11 +277,11 @@ std::vector<domain::market_observation>
 market_observation_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all market observation versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_observation_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) |
-                       order_by("valid_from"_c.desc());
+    const auto query = query_builder::read<std::vector<market_observation_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id) |
+                       query_builder::order_by("valid_from"_c.desc());
 
-    return execute_read_query<market_observation_entity, domain::market_observation>(
+    return query_builder::execute_read_query<market_observation_entity, domain::market_observation>(
         ctx,
         query,
         [](const auto& entities) { return market_observation_mapper::map(entities); },
@@ -308,12 +301,13 @@ std::vector<domain::market_observation> market_observation_repository::read_late
                                << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<market_observation_entity>> |
-        where("tenant_id"_c == tid && "series_id"_c == series_id && "valid_to"_c == max.value()) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<market_observation_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "series_id"_c == series_id &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<market_observation_entity, domain::market_observation>(
+    return query_builder::execute_ordered_read_query<market_observation_entity,
+                                                     domain::market_observation>(
         ctx,
         query,
         market_observation_list_order(order, {"observation_datetime"}, true),
@@ -332,11 +326,11 @@ std::uint32_t market_observation_repository::get_total_market_observation_count_
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<market_observation_entity>> |
-        where("tenant_id"_c == tid && "series_id"_c == series_id && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<market_observation_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "series_id"_c == series_id &&
+                                            "valid_to"_c == max.value());
 
-    return execute_count_query<market_observation_entity>(
+    return query_builder::execute_count_query<market_observation_entity>(
         ctx,
         query,
         market_observation_filter_condition(filter),
@@ -357,10 +351,12 @@ market_observation_repository::remove_status market_observation_repository::remo
         return remove_status::missing;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<market_observation_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::delete_from<market_observation_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
-    execute_delete_query(ctx, query, lg(), "Removing market observation from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing market observation from database.");
     return remove_status::removed;
 }
 
@@ -378,14 +374,17 @@ std::vector<domain::market_observation> market_observation_repository::read_late
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market observations with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_observation_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<market_observation_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
-    return execute_ordered_read_query<market_observation_entity, domain::market_observation>(
+    return query_builder::execute_ordered_read_query<market_observation_entity,
+                                                     domain::market_observation>(
         ctx,
         query,
         market_observation_list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), market_observation_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                market_observation_filter_condition(filter)),
         [](const auto& entities) { return market_observation_mapper::map(entities); },
         lg(),
         "Reading latest market observations with pagination.");
@@ -398,13 +397,14 @@ std::uint32_t market_observation_repository::get_total_market_observation_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market observation count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<market_observation_entity>> | where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<market_observation_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
-    return execute_count_query<market_observation_entity>(
+    return query_builder::execute_count_query<market_observation_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), market_observation_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                market_observation_filter_condition(filter)),
         lg(),
         "Counting market observations");
 }
@@ -415,14 +415,16 @@ market_observation_repository::read_latest(context ctx, const std::vector<std::s
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_observation_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    auto result = execute_read_query<market_observation_entity, domain::market_observation>(
-        ctx,
-        query,
-        [](const auto& entities) { return market_observation_mapper::map(entities); },
-        lg(),
-        "Reading latest market observations by ids.");
+    const auto query =
+        query_builder::read<std::vector<market_observation_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result =
+        query_builder::execute_read_query<market_observation_entity, domain::market_observation>(
+            ctx,
+            query,
+            [](const auto& entities) { return market_observation_mapper::map(entities); },
+            lg(),
+            "Reading latest market observations by ids.");
     return result;
 }
 
@@ -437,9 +439,10 @@ void market_observation_repository::remove(context ctx, const std::vector<std::s
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<market_observation_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing market observations.");
+    const auto query =
+        query_builder::delete_from<market_observation_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing market observations.");
 }
 
 
@@ -450,12 +453,12 @@ market_observation_repository::read_latest_for_series(context ctx,
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
-    const auto query =
-        sqlgen::read<std::vector<market_observation_entity>> |
-        where("tenant_id"_c == tid && "series_id"_c == sid && "valid_to"_c == max.value()) |
-        order_by("observation_datetime"_c);
+    const auto query = query_builder::read<std::vector<market_observation_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "series_id"_c == sid &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("observation_datetime"_c);
 
-    return execute_read_query<market_observation_entity, domain::market_observation>(
+    return query_builder::execute_read_query<market_observation_entity, domain::market_observation>(
         ctx,
         query,
         [](const auto& entities) { return market_observation_mapper::map(entities); },
@@ -468,11 +471,11 @@ market_observation_repository::read_latest_all(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the latest observations of every series";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_observation_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("series_id"_c, "observation_datetime"_c);
+    const auto query = query_builder::read<std::vector<market_observation_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("series_id"_c, "observation_datetime"_c);
 
-    return execute_read_query<market_observation_entity, domain::market_observation>(
+    return query_builder::execute_read_query<market_observation_entity, domain::market_observation>(
         ctx,
         query,
         [](const auto& entities) { return market_observation_mapper::map(entities); },
@@ -540,7 +543,7 @@ std::vector<observation_record> read_manual_points(market_observation_repository
             AND l.valid_to = $3
     )";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {tid, sid, MAX_TIMESTAMP}, log, "reading manual curve points");
 
     std::vector<observation_record> result;
@@ -570,7 +573,7 @@ std::vector<observation_record> read_manual_points_all(market_observation_reposi
             AND l.valid_to = $2
     )";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {tid, MAX_TIMESTAMP}, log, "reading manual curve points of every series");
 
     std::vector<observation_record> result;
@@ -621,7 +624,7 @@ std::vector<observation_record> market_observation_repository::read_as_of_record
         ORDER BY oresmd_uri, observation_datetime DESC, src_rank
     )";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {tid, sid, as_of_str, MAX_TIMESTAMP}, lg(), "reading as-of curve snapshot");
 
     std::vector<observation_record> result;
@@ -702,7 +705,7 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
         ORDER BY series_id, oresmd_uri, observation_datetime DESC, src_rank
     )";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {tid, as_of_str, MAX_TIMESTAMP}, lg(), "reading as-of snapshot of every series");
 
     std::vector<observation_record> result;
@@ -796,7 +799,7 @@ market_observation_repository::read_as_of_buckets(
         ORDER BY b.bucket_ordinal, o.oresmd_uri
     )";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
         {tid, sid, latest_str, bucket_seconds, count_str, MAX_TIMESTAMP},
@@ -919,7 +922,7 @@ std::vector<series_instant> market_observation_repository::read_instants(
         ORDER BY instant, oresmd_uri, src_rank
     )";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
         {tid, sid, from_str, to_str, cap_str, MAX_TIMESTAMP, stated_str},
@@ -987,7 +990,7 @@ void market_observation_repository::write_manual_point(
     // A manual point is written past the insert's guard, which drops an automatic
     // write to a coordinate an operator owns, and this write is the operator's.
     series_shape_check::check(txn_ctx, std::vector<domain::market_observation>{obs});
-    execute_write_query(
+    query_builder::execute_write_query(
         txn_ctx, market_observation_mapper::map(obs), lg(), "Inserting manual market observation.");
 
     domain::observation_lineage lineage;

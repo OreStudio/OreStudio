@@ -42,7 +42,7 @@ domain::currency_country currency_country_mapper::map(const currency_country_ent
     domain::currency_country r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.currency_iso_code = v.currency_iso_code.value();
+    r.currency_iso_code = v.currency_iso_code;
     r.country_alpha2_code = v.country_alpha2_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

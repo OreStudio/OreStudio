@@ -22,6 +22,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as feedOverviewSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_overview_protocol';
+import { invalidRequest } from './errors.js';
 import { input } from './refdata-calls.js';
 import { operationReplySchema, runningSourceNames, upstreamFailure } from './synthetic.js';
 import type { LiveSession } from './sessions.js';
@@ -39,6 +40,8 @@ import type { FeedTickBuffers } from './feed-ticks.js';
 const getSubject = 'synthetic.v1.ops.get_market_regime';
 const pinSubject = 'synthetic.v1.ops.pin_market_regime';
 const traceSubject = 'synthetic.v1.ops.get_market_trace';
+const historySubject = 'synthetic.v1.ops.get_market_history';
+const configureSubject = 'synthetic.v1.ops.configure_market';
 
 /** What a switch may force: a state, or control handed back to the chain. */
 export const REGIME_MODES = ['auto', 'calm', 'active'] as const;
@@ -51,6 +54,7 @@ const stateSchema = z.enum(['calm', 'active']);
 const heatSample = z.object({
     at: z.string(),
     heat: z.number(),
+    intensity: z.number().default(0),
 });
 
 /** The factor the service reports: all of it, because the request was answered. */
@@ -70,6 +74,10 @@ const answeredRegime = z.object({
     loop_gain: z.number().default(0),
     run_seed: z.coerce.number().default(0),
     speed: z.number().default(0),
+    wake_rate: z.number().default(0),
+    calm_rate: z.number().default(0),
+    tail_loading: z.number().default(0),
+    active_multiplier: z.number().default(0),
 });
 
 /** A request the service would not carry out. It says why, and nothing else. */
@@ -90,6 +98,9 @@ export const RASTER_LANES = 120;
 
 /** The facts a raster row draws from the service's own feed list. */
 const feedRow = z.object({
+    id: z.string().default(''),
+    kind: z.string().default(''),
+    engine: z.string().default(''),
     label: z.string(),
     source_name: z.string(),
     asset_class_code: z.string().default(''),
@@ -110,6 +121,11 @@ const everyFeed = {
 
 /** One row of the raster: a feed, whether it runs, and when its ticks arrived. */
 interface RasterRow {
+    /** The feed's id and kind, so a screen can open the feed's own page. */
+    readonly id: string;
+    readonly kind: string;
+    /** The process the feed's prices come from, by its code. */
+    readonly engine: string;
     readonly sourceName: string;
     readonly label: string;
     readonly assetClass: string;
@@ -140,6 +156,13 @@ interface Regime {
     readonly runSeed: number;
     /** The simulated seconds one unit of market time spans. */
     readonly speed: number;
+    /** How often a calm market turns active, and an active one calm, a second. */
+    readonly wakeRate: number;
+    readonly calmRate: number;
+    /** How far activity tilts a price's shape toward its tails; zero is off. */
+    readonly tailLoading: number;
+    /** The pace of an active market; the calm pace follows from it. */
+    readonly activeMultiplier: number;
 }
 
 /**
@@ -165,12 +188,16 @@ function answered(reply: z.infer<typeof regimeReply>): Regime {
         loopGain: reply.loop_gain,
         runSeed: reply.run_seed,
         speed: reply.speed,
+        wakeRate: reply.wake_rate,
+        calmRate: reply.calm_rate,
+        tailLoading: reply.tail_loading,
+        activeMultiplier: reply.active_multiplier,
     };
 }
 
 /** One decision of the scheduler's loop, as the service reports it. */
 const traceEvent = z.object({
-    kind: z.enum(['tick', 'transition', 'pin', 'unpin', 'add', 'remove']),
+    kind: z.enum(['tick', 'transition', 'pin', 'unpin', 'add', 'remove', 'configure']),
     source_name: z.string().default(''),
     at: z.string(),
     tau: z.number(),
@@ -192,6 +219,8 @@ const seriesState = z.object({
     effective_rate: z.number(),
     phase: z.number().default(0),
     excess: z.number().default(0),
+    branching_ratio: z.number().default(0),
+    decay: z.number().default(0),
 });
 
 const answeredTrace = z.object({
@@ -208,6 +237,29 @@ const answeredTrace = z.object({
 });
 
 const traceReply = z.union([answeredTrace, refusedRegime]);
+
+/** The ticks of the last stretch of the run, slot by slot and asset class by asset class. */
+const answeredHistory = z.object({
+    success: z.literal(true),
+    message: z.string().default(''),
+    slot_seconds: z.number(),
+    groups: z.array(z.string()).default([]),
+    bins: z
+        .array(
+            z.object({
+                at: z.string(),
+                counts: z.array(z.number()).default([]),
+                pace: z.number().default(0),
+                active_share: z.number().default(0),
+            }),
+        )
+        .default([]),
+});
+
+const historyReply = z.union([answeredHistory, refusedRegime]);
+
+/** What each resolution reads: an hour by the second, ten minutes by the tenth. */
+export const HISTORY_SPANS = { second: 3600, tenth: 600 } as const;
 
 /** The most events one read returns; the newest are kept. */
 export const TRACE_LIMIT = 20000;
@@ -276,6 +328,52 @@ export function registerMarketRegimeRoutes(
                 effectiveRate: f.effective_rate,
                 phase: f.phase,
                 excess: f.excess,
+                branchingRatio: f.branching_ratio,
+                decay: f.decay,
+            })),
+        };
+    });
+
+    /**
+     * The ticks of the last hour by the second, or of the last ten minutes by the tenth, by
+     * asset class, with the pace and the active share of each slot: what a temporal raster
+     * folds. Counts rather than ticks, so the read costs the same at any tick rate.
+     */
+    server.get('/api/synthetic/market-history', async (request) => {
+        const session = requireSession(request);
+        const query = input(
+            z
+                .object({
+                    resolution: z.enum(['second', 'tenth']).default('second'),
+                    seconds: z.coerce.number().min(1).max(3600).optional(),
+                })
+                .strict(),
+            request.query,
+        );
+        const reply = await session.client.callAuthenticated(
+            historySubject,
+            {
+                resolution: query.resolution,
+                seconds: Math.min(
+                    query.seconds ?? HISTORY_SPANS[query.resolution],
+                    HISTORY_SPANS[query.resolution],
+                ),
+            },
+            historyReply,
+        );
+        if (!reply.success) {
+            throw upstreamFailure(
+                reply.message || 'The synthetic service refused the history read.',
+            );
+        }
+        return {
+            slotSeconds: reply.slot_seconds,
+            groups: reply.groups,
+            bins: reply.bins.map((bin) => ({
+                at: bin.at,
+                counts: bin.counts,
+                pace: bin.pace,
+                activeShare: bin.active_share,
             })),
         };
     });
@@ -294,6 +392,45 @@ export function registerMarketRegimeRoutes(
         return answered(
             await session.client.callAuthenticated(pinSubject, { mode: body.mode }, regimeReply),
         );
+    });
+
+    /**
+     * Sets how the market moves from now on: the chain's two rates, the heat's jump and
+     * decay, the speed and the tail loading. Numbers the market cannot run on are a bad request,
+     * and the service's message names the number.
+     */
+    server.put('/api/synthetic/market-regime/settings', async (request) => {
+        const session = requireSession(request);
+        const positive = z.number().positive().finite();
+        const body = input(
+            z
+                .object({
+                    wakeRate: positive,
+                    calmRate: positive,
+                    jump: z.number().min(0).finite(),
+                    decay: positive,
+                    speed: positive,
+                    tailLoading: z.number().min(0).max(10).finite(),
+                })
+                .strict(),
+            request.body,
+        );
+        const reply = await session.client.callAuthenticated(
+            configureSubject,
+            {
+                wake_rate: body.wakeRate,
+                calm_rate: body.calmRate,
+                jump: body.jump,
+                decay: body.decay,
+                speed: body.speed,
+                tail_loading: body.tailLoading,
+            },
+            regimeReply,
+        );
+        if (!reply.success) {
+            throw invalidRequest(reply.message || 'The synthetic service refused the settings.');
+        }
+        return answered(reply);
     });
 
     /**
@@ -344,6 +481,9 @@ export function registerMarketRegimeRoutes(
                 ticks.watch(row.source_name);
             }
             return {
+                id: row.id,
+                kind: row.kind,
+                engine: row.engine,
                 sourceName: row.source_name,
                 label: row.label,
                 assetClass: row.asset_class_code,

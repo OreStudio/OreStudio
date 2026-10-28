@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 4466B476-9462-48E9-84A6-E282F6FA843E
+:END:
+#+title: Task: Add a volatility loading to the shared factor
+#+description: Carry the shared factor into the price law: a setter on the stochastic process mirroring the arrival process's, a volatility sensitivity on the link and on both generation-config kinds, and one line in each feed — centred so the heat's long-run mean does not drift a run's calibration, with tests for long-run sigma and for a pinned market's response.
+#+type: task
+#+level: s1
+#+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+
+Deferred on 2026-10-27. The market speed on tau (#3894) already moves a busy
+market's prices further per wall second, in proportion to its pace, because a
+tick steps its price by the simulated time it covers. What this task would add
+is a larger move per unit of market time, a rougher tick as well as a sooner
+one, and that needs a volatility sensitivity column on both generation-config
+kinds and a centring rule; it waits until that is wanted.
+The shared factor moves price variance, not only the tick clock: a feed's returns
+widen with the market and quieten with it, by a loading the feed carries, while a
+run's long-run sigma stays the one its configuration states.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+- =i_stochastic_process= gains =set_volatility_multiplier(double)=, the sibling of
+  the arrival process's =set_baseline_multiplier=, and a process that cannot honour
+  it refuses rather than ignoring it.
+- =market_link= gains =volatility_sensitivity=, and both generation-config kinds
+  gain the column: schema, migration and codegen, as one change.
+- The multiplier is =(sensitivity_vol * A_centred)^gamma= with =gamma = 1/2= by
+  default, so variance is proportional to activity; the exponent is a stated
+  default, not a hidden one.
+- =A_centred= subtracts the heat's stationary mean, keeps the long-run mean at one,
+  and is floored above zero so a calm market cannot freeze a price.
+- Over a long run with the heat on, the realized sigma equals the configured
+  sigma; a pinned active market raises it by the loading, and calm lowers it.
+- A feed with =sensitivity_vol = 0= behaves exactly as it does today.
+- The Arrivals tab edits the loading beside the sensitivity, with the same audit.
+
+* Plan
+
+1. Schema column on both config kinds, migration and codegen, and the link's
+   loading with its docstring.
+2. The setter and its override in every process that can scale its own law.
+3. The centring, with the floor, as a function beside =rate_multiplier()=.
+4. The three tests: calibration, response to a pinned state, and the zero-loading
+   no-op.
+5. The UI field, and the BFF read that backs it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

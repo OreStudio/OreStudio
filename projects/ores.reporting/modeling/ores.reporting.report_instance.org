@@ -578,7 +578,6 @@ The number of definitions at one health word.
 #include <cstdint>
 #include <optional>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #include <boost/uuid/uuid.hpp>
 #+end_src
 
@@ -696,7 +695,7 @@ report_instance_repository::read_latest_by_definition_ids(
     // between those, and NULLS LAST keeps a started run ahead of one that
     // never started. The tenant and the policy on the table narrow the scan
     // exactly as they do for the generated reads; no party is stated here.
-    const auto rows = ores::database::repository::execute_parameterized_string_query(
+    const auto rows = query_builder::execute_parameterized_string_query(
         ctx,
         "SELECT DISTINCT ON (definition_id) id::text"
         " FROM ores_reporting_report_instances_tbl"
@@ -781,7 +780,7 @@ report_instance_repository::read_health_facts_by_instance_ids(
     // The runs and their errors are the caller's, so they are read under the
     // caller's tenant and the policy on each table decides what the session
     // may see. No party is stated here.
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx,
         "SELECT ri.id::text, coalesce(ri.fsm_state_id::text, ''), count(e.id)::text"
         " FROM ores_reporting_report_instances_tbl ri"
@@ -823,7 +822,7 @@ report_instance_repository::read_health_facts_by_instance_ids(
     // The states are the system tenant's reference data, so they are read under
     // that tenant. The caller's tenant cannot see them at all, which is why
     // this read exists rather than the screen resolving a state id itself.
-    const auto state_names = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto state_names = query_builder::execute_parameterized_multi_column_query(
         ctx.with_tenant(ores::utility::uuid::tenant_id::system(), ctx.actor()),
         "SELECT id::text, name"
         " FROM ores_dq_fsm_states_tbl"

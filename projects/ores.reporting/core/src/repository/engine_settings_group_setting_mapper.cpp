@@ -43,7 +43,7 @@ engine_settings_group_setting_mapper::map(const engine_settings_group_setting_en
     domain::engine_settings_group_setting r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.group_code = v.group_code;
     r.column_name = v.column_name;
     r.ore_name = v.ore_name;

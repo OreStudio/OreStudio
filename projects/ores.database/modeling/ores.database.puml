@@ -24,13 +24,35 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace database #F2F2F2 {
         class database_configuration {
+            +make_options_description() : boost::program_options::options_description
+            +read_options(const boost::program_options::variables_map& vm) : database_options
         }
         class context {
-            -connection_pool_ : connection_pool_type
-            -credentials_ : sqlgen::postgres::Credentials
-            -policy_ : pool_acquire_policy
+            -options_ : pq::connection_options
+            -policy_ : pq::open_policy
+            -tenant_id_ : utility::uuid::tenant_id
+            -party_id_ : optional<boost::uuids::uuid>
+            -visible_party_ids_ : vector<boost::uuids::uuid>
+            -actor_ : string
             -service_account_ : string
-            -roles_ : vector<string>
+            -roles_ : optional<vector<string>>
+            -active_transaction_ : pq::transaction*
+            -pq_ : shared_ptr<pq_slot>
+            +active_transaction() : [[nodiscard]] pq::transaction*
+            +with_transaction(pq::transaction& transaction) : [[nodiscard]] context
+            +connection_options() : [[nodiscard]] const pq::connection_options&
+            +tenant_id() : [[nodiscard]] const utility::uuid::tenant_id&
+            +party_id() : [[nodiscard]] optional<boost::uuids::uuid>
+            +visible_party_ids() : [[nodiscard]] const vector<boost::uuids::uuid>&
+            +actor() : [[nodiscard]] const string&
+            +service_account() : [[nodiscard]] const string&
+            +roles() : [[nodiscard]] const optional<vector<string>>&
+            +with_roles(vector<string> roles) : [[nodiscard]] context
+            +with_tenant(utility::uuid::tenant_id tenant_id, string actor) : [[nodiscard]] context
+            +with_party(utility::uuid::tenant_id tenant_id, boost::uuids::uuid party_id, vector<boost::uuids::uuid> visible_party_ids, string actor) : [[nodiscard]] context
+            +pq_pool() : ORES_DATABASE_EXPORT pq::pool&
+            +set_pq_pool_size(size_t size) : void
+            +pq_session() : ORES_DATABASE_EXPORT pq::session_context
         }
         class database_options <<struct>> {
             +user : string
@@ -44,39 +66,304 @@ namespace ores #F2F2F2 {
         }
         class db_connection_exception {
         }
-        enum pool_backoff_strategy {
+        class schema_mismatch_exception {
         }
         class context_factory {
+            -lg() : auto&
+            +make_context(const configuration& cfg) : context
+            +verify_schema_fingerprint(const context& ctx, const string& database) : void
         }
         class health_monitor {
             -options_ : database_options
             -poll_interval_ : chrono::seconds
+            -available_ : atomic<bool>
+            -running_ : atomic<bool>
             -mutex_ : mutable mutex
             -last_error_ : string
             -status_callback_ : status_change_callback
             -stop_signal_ : boost::asio::cancellation_signal
+            -lg() : [[nodiscard]] static auto&
+            +health_monitor(database_options options, chrono::seconds poll_interval)
+            +set_status_change_callback(status_change_callback callback) : void
+            +is_available() : [[nodiscard]] bool
+            +last_error() : [[nodiscard]] string
+            +run() : boost::asio::awaitable<void>
+            +stop() : void
+            +check_health() : bool
+        }
+        namespace domain #F2F2F2 {
+            class outcome_args <<struct>> {
+                +entity : string
+                +field : string
+                +value : string
+                +expected : string
+                +current : string
+                +reason : string
+                +limit : string
+            }
+            enum outcome_code {
+                already_exists
+                version_conflict
+                missing_field
+                level_violation
+                status_transition_not_allowed
+                unit_outside_ancestry
+                not_found
+                order_not_supported
+                filter_not_supported
+                filter_too_large
+                as_of_invalid
+                filter_range_invalid
+                scope_not_supported
+                relation_required
+                precondition_not_supported
+                precondition_incomplete
+                batch_removal_is_unconditional
+                approval_required
+                party_required
+                range_inverted
+                range_too_large
+                series_ambiguous
+                internal_error
+            }
+        }
+        namespace pq #F2F2F2 {
+            class param <<struct>> {
+                +bytes : string
+                +null : bool
+                +oid : Oid
+                +text : bool
+            }
+            class connection_options <<struct>> {
+                +host : string
+                +port : uint16_t
+                +dbname : string
+                +user : string
+                +password : string
+                +application_name : string
+                +connect_timeout : chrono::seconds
+                +conninfo() : [[nodiscard]] ORES_DATABASE_EXPORT string
+            }
+            class result {
+                -handle_ : unique_ptr<PGresult, deleter>
+                +native() : [[nodiscard]] PGresult*
+                +bool() : [[nodiscard]] explicit operator
+                +status() : [[nodiscard]] ExecStatusType
+                +rows() : [[nodiscard]] int
+                +columns() : [[nodiscard]] int
+                +is_null(int row, int column) : [[nodiscard]] bool
+                +value(int row, int column) : [[nodiscard]] span<const byte>
+                +text(int row, int column) : [[nodiscard]] string_view
+                +affected() : [[nodiscard]] uint64_t
+            }
+            class connection_closer <<struct>> {
+            }
+            class connection {
+                -handle_ : unique_ptr<PGconn, connection_closer>
+                -prepared_ : unordered_set<string>
+                +connection(const connection_options& options)
+                +native() : [[nodiscard]] PGconn*
+                +healthy() : [[nodiscard]] bool
+                +idle() : [[nodiscard]] bool
+                +reset() : void
+                +is_prepared(string_view name) : [[nodiscard]] bool
+                +mark_prepared(string_view name) : void
+            }
+            enum backoff {
+                linear
+                exponential
+            }
+            class open_policy <<struct>> {
+                +attempts : size_t
+                +wait : chrono::seconds
+                +shape : backoff
+            }
+            class pool {
+                -options_ : connection_options
+                -size_ : size_t
+                -acquire_timeout_ : chrono::milliseconds
+                -mutex_ : mutable mutex
+                -available_ : condition_variable
+                -idle_ : vector<unique_ptr<connection>>
+                +get() : [[nodiscard]] connection&
+                +acquire() : [[nodiscard]] lease
+                +size() : [[nodiscard]] size_t
+                +idle() : [[nodiscard]] size_t
+                -open_all() : void
+                -give_back(unique_ptr<connection> c) : void
+            }
+            class statement_counters <<struct>> {
+                +prepares : mutable atomic<uint64_t>
+                +executions : mutable atomic<uint64_t>
+            }
+            class text_statement {
+                -name_ : string_view
+                -sql_ : string_view
+                -counters_ : statement_counters
+                +name() : [[nodiscard]] string_view
+                +sql() : [[nodiscard]] string_view
+                +counters() : [[nodiscard]] const statement_counters&
+            }
+            class dynamic_statement {
+                -sql_ : string
+                -params_ : vector<param>
+                -oids_ : vector<Oid>
+                +append(string_view text) : dynamic_statement&
+                +bind(const T& v) : string
+                +add(param p) : void
+                +sql() : [[nodiscard]] const string&
+                +params() : [[nodiscard]] const vector<param>&
+                +oids() : [[nodiscard]] const vector<Oid>&
+            }
+            enum error_kind {
+                retryable
+                refused
+            }
+            class store_error {
+                -sqlstate_ : string
+                -kind_ : error_kind
+                +store_error(string message, string sqlstate, error_kind kind)
+                +sqlstate() : [[nodiscard]] const string&
+                +kind() : [[nodiscard]] error_kind
+                +retryable() : [[nodiscard]] bool
+            }
+            class session_context <<struct>> {
+                +tenant : utility::uuid::tenant_id
+                +party : optional<boost::uuids::uuid>
+                +visible_parties : vector<boost::uuids::uuid>
+                +actor : string
+                +service : string
+            }
+            class sent_statement <<struct>> {
+                +name : string_view
+                +sql : string_view
+                +oids : span<const Oid>
+                +params : span<const param>
+                +counters : const statement_counters*
+                +out : result*
+                +result_format : int
+            }
+            class transaction {
+                -connection_ : connection&
+                -context_ : session_context
+                -begun_ : bool
+                -done_ : bool
+                +transaction(connection& c, session_context context)
+                +execute(const statement<tuple<Columns...>, Params...>& s, const Args&... args) : uint64_t
+                +execute(const dynamic_statement& s) : uint64_t
+                +run(const text_statement& s, span<const param> params) : result
+                +run_text(const dynamic_statement& s) : result
+                +add(const statement<tuple<Columns...>, Params...>& s, const Args&... args) : batch&
+                +add(const text_statement& s, vector<param> params) : batch&
+                +size() : [[nodiscard]] size_t
+                +run(const batch& b) : vector<uint64_t>
+                +copy_in(string_view table, string_view columns, const vector<tuple<Columns...>>& rows) : uint64_t
+                +commit() : void
+                +ended() : [[nodiscard]] bool
+                +rollback() : void
+                -run_one(const S& s, const array<param, N>& params, result& out) : void
+                -run_dynamic(const dynamic_statement& s, result& out) : void
+                -append_field(string& data, const T& v) : void
+                -copy_header() : string
+                -copy_data(string_view table, string_view columns, const string& data) : uint64_t
+                -round_trip(span<const sent_statement> statements) : void
+            }
+        }
+        namespace query_builder #F2F2F2 {
+            class condition <<struct>> {
+                +sql : string
+                +params : vector<pq::param>
+                +variadic : bool
+            }
+            class order_item <<struct>> {
+                +column : string
+                +desc : bool
+            }
+            class column_ref <<struct>> {
+                +name : string
+                +desc() : [[nodiscard]] order_item
+                +order_item() : operator
+                +in(const vector<T>& values) : [[nodiscard]] condition
+            }
+            class where_clause <<struct>> {
+                +c : condition
+            }
+            class order_clause <<struct>> {
+                +items : order
+            }
+            class limit_clause <<struct>> {
+                +n : uint32_t
+            }
+            class offset_clause <<struct>> {
+                +n : uint32_t
+            }
         }
         namespace repository #F2F2F2 {
+            enum range_end {
+                from
+                to
+            }
             class repository_exception {
                 -message_ : string
+                +what() : [[nodiscard]] const char*
+            }
+            class unit_of_work {
+                -base_ : context
+                -lease_ : pq::pool::lease
+                -transaction_ : unique_ptr<pq::transaction>
+                -ctx_ : context
+                -committed_ : bool
+                +unit_of_work(context ctx)
+                +~unit_of_work()
+                +ctx() : [[nodiscard]] const context&
+                +commit() : void
             }
         }
         namespace service #F2F2F2 {
             class party_context {
-                +actor : const string&
+                +with_party(const context& ctx, const utility::uuid::tenant_id& tenant, const boost::uuids::uuid& party, const string& actor) : [[nodiscard]] static context
+            }
+            class pg_notification <<struct>> {
+                +channel : string
+                +payload : string
+                +backend_pid : int
             }
             class postgres_listener_service {
                 -ctx_ : context
                 -notification_callback_ : notification_callback_t
                 -application_name_ : string
+                -instance_counter_ : inline static atomic<uint64_t>
                 -mutex_ : mutable mutex
-                -connection_ : optional<rfl::Ref<sqlgen::postgres::Connection>>
+                -connection_ : unique_ptr<pq::connection>
                 -subscribed_channels_ : vector<string>
                 -listener_thread_ : thread
                 -running_ : atomic<bool>
+                -connection_loss_count_ : atomic<uint64_t>
+                -loss_start_ : chrono::steady_clock::time_point
                 -ready_cv_ : condition_variable
+                -ready_ : bool
+                -lg() : [[nodiscard]] static auto&
+                +postgres_listener_service(context ctx, notification_callback_t callback)
+                +~postgres_listener_service()
+                +start() : void
+                +stop() : void
+                +subscribe(const string& channel_name) : void
+                +notify(const string& channel_name, const string& payload) : void
+                +wait_until_ready(chrono::milliseconds timeout) : bool
+                +connection_loss_count() : [[nodiscard]] uint64_t
+                +application_name() : [[nodiscard]] const string&
+                -open_connection() : bool
+                -issue_pending_listens() : void
+                -listen_loop() : void
+                -handle_notification(const pg_notification& notification) : void
             }
             class tenant_context {
+                +with_tenant(const context& ctx, const string& tenant) : [[nodiscard]] static context
+                +with_system_tenant(const context& ctx) : [[nodiscard]] static context
+                +lookup_by_code(const context& ctx, const string& code) : utility::uuid::tenant_id
+                +lookup_by_hostname(const context& ctx, const string& hostname) : utility::uuid::tenant_id
+                +lookup_name(const context& ctx, const utility::uuid::tenant_id& tenant_id) : string
+                +is_uuid(const string& str) : bool
             }
         }
     }
@@ -88,6 +375,12 @@ namespace ores #F2F2F2 {
                 -expected_version_ : optional<int>
                 -actual_version_ : optional<int>
                 -message_ : string
+                +message_(format( "Version conflict for {} '{}': expected version {}, but current version is {}", entity_type, entity_id, expected_version, actual_version)) : ,
+                +what() : [[nodiscard]] const char*
+                +entity_type() : [[nodiscard]] const optional<string>&
+                +entity_id() : [[nodiscard]] const optional<string>&
+                +expected_version() : [[nodiscard]] optional<int>
+                +actual_version() : [[nodiscard]] optional<int>
             }
         }
     }

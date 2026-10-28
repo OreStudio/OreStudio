@@ -446,7 +446,6 @@ column, so the split needs no vocabulary read.
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions
@@ -551,7 +550,7 @@ report_error_event_repository::read_counts_by_report_instance_ids(
 
     // The tenant and the policy on the table narrow the rows exactly as they do
     // for the generated reads; no party is stated here.
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx,
         "SELECT report_instance_id::text,"
         "       count(*) FILTER (WHERE severity = 'error')::text,"

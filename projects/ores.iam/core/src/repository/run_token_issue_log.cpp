@@ -18,7 +18,7 @@
  *
  */
 #include "ores.iam.core/repository/run_token_issue_log.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.iam.core/repository/audit_scope.hpp"
@@ -93,7 +93,7 @@ void run_token_issue_log::record(const std::chrono::system_clock::time_point& is
 std::size_t run_token_issue_log::distinct_runs(const std::string& grant_id) const {
     // Only issued rows count: a refusal served no run, so counting it would
     // let a refused request consume one of the grant's runs.
-    const auto rows = execute_parameterized_string_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_string_query(
         ctx_,
         "select count(distinct run_id)::text from ores_iam_run_token_issues_tbl "
         "where grant_id = $1 and outcome = $2",
@@ -113,7 +113,7 @@ std::size_t run_token_issue_log::distinct_runs(const std::string& grant_id) cons
 }
 
 bool run_token_issue_log::exists(const std::string& grant_id, const std::string& run_id) const {
-    const auto rows = execute_parameterized_string_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_string_query(
         ctx_,
         "select 1::text from ores_iam_run_token_issues_tbl "
         "where grant_id = $1 and run_id = $2 and outcome = $3 limit 1",

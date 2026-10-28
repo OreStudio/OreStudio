@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/demand_calculator.hpp"
+#include "ores.marketdata.core/terms/provider_terms.hpp"
 #include <algorithm>
 #include <set>
 #include <tuple>
@@ -80,11 +81,20 @@ std::vector<party_demand> compute_party_demand(const demand_catalogue& catalogue
         demand.provider_code = route.provider_code;
         demand.source_id = route.source_id;
         demand.adapter_id = source->name;
-        demand.entitled =
+        const auto provider =
+            std::ranges::find(catalogue.providers, route.provider_code, &domain::provider::code);
+        const bool subscribed =
             std::ranges::any_of(catalogue.subscriptions, [&](const domain::subscription& s) {
                 return s.tenant_id == route.tenant_id && s.party_id == route.party_id &&
                        s.provider_code == route.provider_code && has_a_right(s);
             });
+        // A provider the catalogue does not hold states no terms to meet; its routes still
+        // need a subscription.
+        if (provider != catalogue.providers.end() && !terms::may_fetch(*provider))
+            demand.refusal = "terms_not_accepted";
+        else if (!subscribed)
+            demand.refusal = "not_entitled";
+        demand.entitled = demand.refusal.empty();
         if (demand.entitled) {
             const auto items = by_item.find(route.provider_code);
             if (items != by_item.end()) {
@@ -118,7 +128,7 @@ demand_result compute_demand(const demand_catalogue& catalogue,
     for (const auto& demand : compute_party_demand(catalogue, now, policy)) {
         auto& demanded = result.by_adapter[demand.adapter_id];
         if (!demand.entitled) {
-            result.refused.push_back({demand.adapter_id, demand.party_id, "not_entitled"});
+            result.refused.push_back({demand.adapter_id, demand.party_id, demand.refusal});
             continue;
         }
         for (const auto& [uri, ids] : demand.items)

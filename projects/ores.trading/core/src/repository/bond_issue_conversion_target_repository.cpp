@@ -23,10 +23,8 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/repository/bond_issue_conversion_target_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/bond_issue_conversion_target.hpp"
 #include "ores.trading.api/domain/bond_issue_conversion_target_json_io.hpp" // IWYU pragma: keep.
@@ -41,14 +39,6 @@
 #include <initializer_list>
 #include <optional>
 #include <set>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -58,13 +48,13 @@
 
 namespace ores::trading::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string bond_issue_conversion_target_repository::sql() {
-    return generate_create_table_sql<bond_issue_conversion_target_entity>(lg());
+    return query_builder::insert_statement_sql<bond_issue_conversion_target_entity>(lg());
 }
 
 bool bond_issue_conversion_target_repository::is_sortable(std::string_view field) {
@@ -79,18 +69,19 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
+query_builder::order
 bond_issue_conversion_target_list_order(const ores::utility::domain::order& order,
                                         std::initializer_list<std::string> default_columns,
                                         bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns,
-                          default_descending != order.descending,
-                          {"issue_id", "sequence_number"});
+        return query_builder::make_order(default_columns,
+                                         default_descending != order.descending,
+                                         {"issue_id", "sequence_number"});
     if (!bond_issue_conversion_target_repository::is_sortable(order.field))
         throw std::invalid_argument(
             "A list of bond issue conversion targets cannot be ordered by " + order.field + ".");
-    return make_order({order.field}, order.descending, {"issue_id", "sequence_number"});
+    return query_builder::make_order(
+        {order.field}, order.descending, {"issue_id", "sequence_number"});
 }
 
 }
@@ -156,10 +147,10 @@ void bond_issue_conversion_target_repository::write(
                                << "issue_id: " << v.issue_id
                                << " sequence_number: " << v.sequence_number;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx,
-                        bond_issue_conversion_target_mapper::map(t),
-                        lg(),
-                        "Writing bond issue conversion target to database.");
+    query_builder::execute_write_query(ctx,
+                                       bond_issue_conversion_target_mapper::map(t),
+                                       lg(),
+                                       "Writing bond issue conversion target to database.");
 }
 
 void bond_issue_conversion_target_repository::write(
@@ -171,22 +162,22 @@ void bond_issue_conversion_target_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        bond_issue_conversion_target_mapper::map(batch),
-                        lg(),
-                        "Writing bond issue conversion targets to database.");
+    query_builder::execute_write_query(ctx,
+                                       bond_issue_conversion_target_mapper::map(batch),
+                                       lg(),
+                                       "Writing bond issue conversion targets to database.");
 }
 
 std::vector<domain::bond_issue_conversion_target>
 bond_issue_conversion_target_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_issue_conversion_target_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("issue_id"_c, "sequence_number"_c);
+    const auto query = query_builder::read<std::vector<bond_issue_conversion_target_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("issue_id"_c, "sequence_number"_c);
 
-    return execute_read_query<bond_issue_conversion_target_entity,
-                              domain::bond_issue_conversion_target>(
+    return query_builder::execute_read_query<bond_issue_conversion_target_entity,
+                                             domain::bond_issue_conversion_target>(
         ctx,
         query,
         [](const auto& entities) { return bond_issue_conversion_target_mapper::map(entities); },
@@ -203,12 +194,13 @@ bond_issue_conversion_target_repository::read_latest(context ctx,
                                << " sequence_number: " << sequence_number;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_issue_conversion_target_entity>> |
-                       where("tenant_id"_c == tid && "issue_id"_c == issue_id &&
+    const auto query =
+        query_builder::read<std::vector<bond_issue_conversion_target_entity>> |
+        query_builder::where("tenant_id"_c == tid && "issue_id"_c == issue_id &&
                              "sequence_number"_c == sequence_number && "valid_to"_c == max.value());
 
-    return execute_read_query<bond_issue_conversion_target_entity,
-                              domain::bond_issue_conversion_target>(
+    return query_builder::execute_read_query<bond_issue_conversion_target_entity,
+                                             domain::bond_issue_conversion_target>(
         ctx,
         query,
         [](const auto& entities) { return bond_issue_conversion_target_mapper::map(entities); },
@@ -223,13 +215,13 @@ std::vector<domain::bond_issue_conversion_target> bond_issue_conversion_target_r
                                << "issue_id: " << issue_id
                                << " sequence_number: " << sequence_number;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_issue_conversion_target_entity>> |
-                       where("tenant_id"_c == tid && "issue_id"_c == issue_id &&
-                             "sequence_number"_c == sequence_number) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query = query_builder::read<std::vector<bond_issue_conversion_target_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "issue_id"_c == issue_id &&
+                                            "sequence_number"_c == sequence_number) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<bond_issue_conversion_target_entity,
-                              domain::bond_issue_conversion_target>(
+    return query_builder::execute_read_query<bond_issue_conversion_target_entity,
+                                             domain::bond_issue_conversion_target>(
         ctx,
         query,
         [](const auto& entities) { return bond_issue_conversion_target_mapper::map(entities); },
@@ -247,13 +239,14 @@ bond_issue_conversion_target_repository::read_at_version(context ctx,
                                << " sequence_number: " << sequence_number
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_issue_conversion_target_entity>> |
-                       where("tenant_id"_c == tid && "issue_id"_c == issue_id &&
+    const auto query =
+        query_builder::read<std::vector<bond_issue_conversion_target_entity>> |
+        query_builder::where("tenant_id"_c == tid && "issue_id"_c == issue_id &&
                              "sequence_number"_c == sequence_number && "version"_c == version) |
-                       sqlgen::limit(1);
+        query_builder::limit(1);
 
-    const auto entities = execute_read_query<bond_issue_conversion_target_entity,
-                                             domain::bond_issue_conversion_target>(
+    const auto entities = query_builder::execute_read_query<bond_issue_conversion_target_entity,
+                                                            domain::bond_issue_conversion_target>(
         ctx,
         query,
         [](const auto& entities) { return bond_issue_conversion_target_mapper::map(entities); },
@@ -286,12 +279,13 @@ bond_issue_conversion_target_repository::remove(context ctx,
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<bond_issue_conversion_target_entity> |
-                       where("tenant_id"_c == tid && "issue_id"_c == issue_id &&
-                             "sequence_number"_c == sequence_number &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+    const auto query = query_builder::delete_from<bond_issue_conversion_target_entity> |
+                       query_builder::where("tenant_id"_c == tid && "issue_id"_c == issue_id &&
+                                            "sequence_number"_c == sequence_number &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing bond issue conversion target from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing bond issue conversion target from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -315,15 +309,16 @@ bond_issue_conversion_target_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest bond issue conversion targets with offset: "
                                << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_issue_conversion_target_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<bond_issue_conversion_target_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
-    return execute_ordered_read_query<bond_issue_conversion_target_entity,
-                                      domain::bond_issue_conversion_target>(
+    return query_builder::execute_ordered_read_query<bond_issue_conversion_target_entity,
+                                                     domain::bond_issue_conversion_target>(
         ctx,
         query,
         bond_issue_conversion_target_list_order(order, {"issue_id", "sequence_number"}, false),
-        narrowed(valid_at(as_of), std::nullopt),
+        query_builder::narrowed(query_builder::valid_at(as_of), std::nullopt),
         [](const auto& entities) { return bond_issue_conversion_target_mapper::map(entities); },
         lg(),
         "Reading latest bond issue conversion targets with pagination.");
@@ -334,13 +329,13 @@ std::uint32_t bond_issue_conversion_target_repository::get_total_conversion_targ
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond issue conversion target count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_issue_conversion_target_entity>> |
-                       where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<bond_issue_conversion_target_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
-    return execute_count_query<bond_issue_conversion_target_entity>(
+    return query_builder::execute_count_query<bond_issue_conversion_target_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), std::nullopt),
+        query_builder::narrowed(query_builder::valid_at(as_of), std::nullopt),
         lg(),
         "Counting bond issue conversion targets");
 }
@@ -354,19 +349,19 @@ bond_issue_conversion_target_repository::read_latest(
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<bond_issue_conversion_target_entity>> |
-        where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) &&
-              "sequence_number"_c.in(sequence_numbers) && "valid_to"_c == max.value());
-    auto result = execute_read_query<bond_issue_conversion_target_entity,
-                                     domain::bond_issue_conversion_target>(
+    const auto query = query_builder::read<std::vector<bond_issue_conversion_target_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) &&
+                                            "sequence_number"_c.in(sequence_numbers) &&
+                                            "valid_to"_c == max.value());
+    auto result = query_builder::execute_read_query<bond_issue_conversion_target_entity,
+                                                    domain::bond_issue_conversion_target>(
         ctx,
         query,
         [](const auto& entities) { return bond_issue_conversion_target_mapper::map(entities); },
         lg(),
         "Reading latest bond issue conversion targets by ids.");
     // Compound key: the query above is a per-column .in() cross-product
-    // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
+    // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
     if (sequence_numbers.size() != issue_ids.size())
         throw std::invalid_argument("bond_issue_conversion_target_repository::read_latest: key "

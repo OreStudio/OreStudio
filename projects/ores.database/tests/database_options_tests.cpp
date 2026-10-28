@@ -26,7 +26,7 @@
 using namespace ores::database;
 using namespace ores::logging;
 
-TEST_CASE("database_options_to_credentials", "[database]") {
+TEST_CASE("database_options_to_connection_options", "[database]") {
     auto lg(make_logger(test_suite));
 
     database_options opts;
@@ -36,15 +36,15 @@ TEST_CASE("database_options_to_credentials", "[database]") {
     opts.user = "test_user";
     opts.password = "test_pass";
 
-    auto creds = to_credentials(opts);
+    auto options = to_connection_options(opts);
 
-    REQUIRE(creds.host == "localhost");
-    REQUIRE(creds.port == 5432);
-    REQUIRE(creds.dbname == "test_db");
-    REQUIRE(creds.user == "test_user");
-    REQUIRE(creds.password == "test_pass");
+    REQUIRE(options.host == "localhost");
+    REQUIRE(options.port == 5432);
+    REQUIRE(options.dbname == "test_db");
+    REQUIRE(options.user == "test_user");
+    REQUIRE(options.password == "test_pass");
 
-    BOOST_LOG_SEV(lg, info) << "Database options to credentials test passed";
+    BOOST_LOG_SEV(lg, info) << "Database options to connection options test passed";
 }
 
 TEST_CASE("database_options_default_values", "[database]") {
@@ -110,27 +110,27 @@ TEST_CASE("database_options_streaming", "[database]") {
     CHECK(output.find("testuser") != std::string::npos);
 }
 
-TEST_CASE("database_options_to_credentials_with_defaults", "[database]") {
+TEST_CASE("database_options_to_connection_options_with_defaults", "[database]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing to_credentials with default host/port";
+    BOOST_LOG_SEV(lg, info) << "Testing to_connection_options with default host/port";
 
     database_options opts;
     opts.database = "mydb";
     opts.user = "myuser";
     opts.password = "mypass";
 
-    auto creds = to_credentials(opts);
+    auto options = to_connection_options(opts);
 
-    CHECK(creds.host == "localhost");
-    CHECK(creds.port == 5432);
-    CHECK(creds.dbname == "mydb");
-    CHECK(creds.user == "myuser");
-    CHECK(creds.password == "mypass");
+    CHECK(options.host == "localhost");
+    CHECK(options.port == 5432);
+    CHECK(options.dbname == "mydb");
+    CHECK(options.user == "myuser");
+    CHECK(options.password == "mypass");
 }
 
-TEST_CASE("database_options_to_credentials_different_port", "[database]") {
+TEST_CASE("database_options_to_connection_options_different_port", "[database]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing to_credentials with non-standard port";
+    BOOST_LOG_SEV(lg, info) << "Testing to_connection_options with non-standard port";
 
     database_options opts;
     opts.host = "remote-db.example.com";
@@ -139,9 +139,9 @@ TEST_CASE("database_options_to_credentials_different_port", "[database]") {
     opts.user = "remoteuser";
     opts.password = "remotepass";
 
-    auto creds = to_credentials(opts);
+    auto options = to_connection_options(opts);
 
-    CHECK(creds.host == "remote-db.example.com");
-    CHECK(creds.port == 5433);
-    CHECK(creds.dbname == "remotedb");
+    CHECK(options.host == "remote-db.example.com");
+    CHECK(options.port == 5433);
+    CHECK(options.dbname == "remotedb");
 }

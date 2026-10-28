@@ -239,10 +239,10 @@ std::vector<domain::job_definition>
 job_definition_repository::read_all_active(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all active job definitions.";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<job_definition_entity>> |
-                       where("is_active"_c == true && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<job_definition_entity>> |
+                       query_builder::where("is_active"_c == true && "valid_to"_c == max.value());
 
-    return execute_read_query<job_definition_entity, domain::job_definition>(
+    return query_builder::execute_read_query<job_definition_entity, domain::job_definition>(
         ctx,
         query,
         [](const auto& entities) { return job_definition_mapper::map(entities); },

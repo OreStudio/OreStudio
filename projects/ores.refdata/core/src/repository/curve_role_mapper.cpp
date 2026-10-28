@@ -42,7 +42,7 @@ domain::curve_role curve_role_mapper::map(const curve_role_entity& v) {
     domain::curve_role r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

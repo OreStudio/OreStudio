@@ -43,7 +43,7 @@ domain::structure_template structure_template_mapper::map(const structure_templa
     domain::structure_template r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.description = v.description.value_or("");
     r.kind = v.kind;
     r.modified_by = v.modified_by;

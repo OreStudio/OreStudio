@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 3E2D48D5-71CF-42E8-A72D-189D9AFB3F7D
+:END:
+#+title: Let one feed's ticks excite another's
+#+description: A multivariate Hawkes over the feeds, with a kernel matrix that says how much a tick in one feed raises another's intensity, so a burst in EUR/USD lifts GBP/USD more than it lifts SOFR. Today every feed shares one heat, a rank-one kernel.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:synthetic:arrival:hawkes:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A multivariate Hawkes over the feeds: a kernel matrix whose entry (i, j) says
+how much a tick in feed j raises feed i's intensity, and how fast that fades.
+A burst in EUR/USD then lifts GBP/USD more than it lifts SOFR. Stability is a
+spectral radius: the largest eigenvalue of the mean kernel must be below one.
+The matrix is too large to write by hand for a hundred feeds, so it is built
+from groups (asset class, currency, provider) with a within-group and a
+between-group weight.
+
+* Why
+
+Gemini's review drew a cross-asset excitation matrix. Today every feed shares
+one heat, which is the rank-one special case: a tick anywhere lifts every feed
+by the same share. That makes the market move together but cannot make a
+currency's pairs move together more than the rest.
+
+Option 3 of the regime capture named this and left it for later; options 1 and
+2 are now built. It is distinct from the bivariate activity and volatility
+capture, which couples two coordinates of one market, and from cross-rate
+correlation, which couples prices rather than arrival times.
+
+* References
+
+- [[file:../../../prototypes/market_data/control-how-a-market-ticks/review/][Gemini's review of the Market regime tab]]
+- [[id:5789D6D0-1967-4064-B349-F97B896A1C67][A market-wide arrival regime, so the desk can panic together]]
+- [[id:4A00CBE5-E42B-46A8-A09B-FD698A09E4BB][Make activity and volatility excite each other]]
+- [[id:62E7C0B3-02C8-4DFE-9C56-6FB36CB5121B][Custom jump distributions and cross-rate correlation matrices]]
+- [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]]
+
+* See also
+
+- [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] — the story that built the market these extend.

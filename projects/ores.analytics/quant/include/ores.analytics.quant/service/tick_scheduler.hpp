@@ -24,6 +24,7 @@
 #include "ores.analytics.quant/domain/operational_clock.hpp"
 #include "ores.analytics.quant/export.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
+#include "ores.analytics.quant/service/arrival_history.hpp"
 #include "ores.analytics.quant/service/run_clock.hpp"
 #include "ores.analytics.quant/service/scheduler_trace.hpp"
 #include <queue>
@@ -53,6 +54,9 @@ struct tick_context final {
     /// The simulated seconds since this series last ticked: the market's speed times
     /// the market time that passed. What a price step covers.
     double simulated_seconds = 0.0;
+    /// How far the market tilts a price's shape toward its tails now; zero leaves it as
+    /// configured.
+    double tail_tilt = 0.0;
 };
 
 /// What a scheduler needs to know about a series to schedule it.
@@ -64,6 +68,8 @@ struct series_spec final {
     double sensitivity = 1.0;
     /// What a reader of the trace calls the series: its source name.
     std::string name;
+    /// The group the history counts the series' ticks under, such as its asset class.
+    std::string group;
 };
 
 /// One tick the scheduler took.
@@ -89,6 +95,11 @@ struct market_snapshot final {
     double population_rate;
     /// The simulated seconds one unit of market time spans.
     double speed;
+    /// How often a calm market turns active, and an active one calm, per second.
+    double wake_rate;
+    double calm_rate;
+    double active_multiplier;
+    double tail_loading;
 };
 
 /**
@@ -126,6 +137,10 @@ struct series_state final {
     double phase;
     /// For a Hawkes law: the excess intensity now, above the baseline.
     double excess;
+    /// For a Hawkes law: how many ticks a tick begets on average, and how fast that
+    /// fades in the series' own operational time. Zero for the other laws.
+    double branching_ratio;
+    double decay;
 };
 
 /// A slice of the trace, with the name of every series it mentions.
@@ -138,6 +153,31 @@ struct trace_page final {
 struct heat_reading final {
     std::chrono::system_clock::time_point at;
     double heat;
+    /// The ticks a second every series' law asks for at that instant: each law's intensity,
+    /// times its sensitivity and the pace. The market's lambda(t).
+    double intensity = 0.0;
+};
+
+/// How finely the history is cut.
+enum class history_resolution { second, tenth };
+
+/// One slot of the history as a reader sees it.
+struct history_bin final {
+    /// When the slot starts.
+    std::chrono::system_clock::time_point at;
+    /// The ticks of each group in the slot, by the group's index in the history.
+    std::vector<std::uint32_t> counts;
+    /// The mean pace over the slot, and the share of it the market was active; both zero
+    /// when the loop took no reading in it.
+    double pace;
+    double active_share;
+};
+
+/// The ticks of the last stretch of the run, slot by slot and group by group.
+struct market_history final {
+    double slot_seconds;
+    std::vector<std::string> groups;
+    std::vector<history_bin> bins;
 };
 
 /**
@@ -198,8 +238,28 @@ public:
     /// return the pin is in force.
     void pin(std::optional<domain::market_state> state);
 
+    /**
+     * @brief Change how the market's pace moves, from the loop's now on. On return
+     * the change is in force and in the trace.
+     *
+     * A speed change reaches every simulated second from now. A feed that fixed
+     * its step from the speed when it started keeps that step until it starts again.
+     *
+     * @throws std::invalid_argument for numbers the clock refuses, in the caller's
+     *         thread, and then nothing changes.
+     */
+    void configure(const domain::market_config& market);
+
     /// The market as the loop last left it, which is at most one sample period old.
     [[nodiscard]] market_snapshot snapshot() const;
+
+    /**
+     * @brief The ticks of the last @p seconds, by slot and by group.
+     *
+     * By the second, the history spans an hour; by the tenth, ten minutes. A slot with no
+     * tick and no reading is left out.
+     */
+    [[nodiscard]] market_history history(history_resolution resolution, double seconds) const;
 
     /// The heat readings taken since @p from, oldest first.
     [[nodiscard]] std::vector<heat_reading>
@@ -231,10 +291,8 @@ public:
         return run_seed_;
     }
 
-    /// The simulated seconds one unit of market time spans; fixed for the run.
-    [[nodiscard]] double market_speed() const {
-        return speed_;
-    }
+    /// The simulated seconds one unit of market time spans now.
+    [[nodiscard]] double market_speed() const;
 
     /**
      * @brief Take the next tick now, without waiting for its time.
@@ -266,8 +324,12 @@ private:
         double last_fired;
         /// The market's tau at the series' last event, or when it was added.
         double last_tau;
+        /// The market's simulated seconds at the same instant.
+        double last_simulated;
         /// The phase a periodic law drew when the series was added.
         double phase;
+        /// The index of the series' group in the history.
+        std::size_t group;
     };
 
     struct pending final {
@@ -290,6 +352,8 @@ private:
     void schedule(std::size_t id, series& s);
     void sample(i_run_clock::time_point t);
     void rebuild_heap();
+    /// The ticks a second @p s's law asks for now: its intensity, sensitivity and the pace.
+    [[nodiscard]] double intensity_of(const series& s) const;
     void record(trace_kind kind,
                 std::uint64_t series,
                 double operational_gap = 0.0,
@@ -305,13 +369,15 @@ private:
     i_run_clock& clock_;
     i_run_clock::time_point origin_;
     std::uint64_t run_seed_;
-    double speed_;
 
     mutable std::mutex mutex_;
     domain::operational_clock market_;
     std::map<std::size_t, series> series_;
     std::priority_queue<pending, std::vector<pending>, std::greater<>> heap_;
     std::deque<heat_reading> history_;
+    std::vector<std::string> groups_;
+    arrival_history by_second_{1.0, 3600};
+    arrival_history by_tenth_{0.1, 6000};
     trace_ring trace_{trace_capacity};
     std::map<std::uint64_t, std::string> names_;
     std::uint64_t fired_since_sample_ = 0;

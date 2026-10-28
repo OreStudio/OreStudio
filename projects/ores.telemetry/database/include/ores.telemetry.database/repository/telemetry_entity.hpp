@@ -20,10 +20,11 @@
 #ifndef ORES_TELEMETRY_REPOSITORY_TELEMETRY_ENTITY_HPP
 #define ORES_TELEMETRY_REPOSITORY_TELEMETRY_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <cstdint>
 #include <iosfwd>
+#include <optional>
 #include <string>
 
 namespace ores::telemetry::database::repository {
@@ -43,7 +44,7 @@ struct telemetry_entity {
     /**
      * @brief Log entry UUID - part of composite primary key.
      */
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
 
     /**
      * @brief Tenant ID for multi-tenancy isolation.
@@ -55,7 +56,7 @@ struct telemetry_entity {
      *
      * Required in primary key for TimescaleDB hypertable partitioning.
      */
-    sqlgen::PrimaryKey<db_timestamp> timestamp;
+    db_timestamp timestamp;
 
     /**
      * @brief Source type ('client' or 'server').
@@ -101,6 +102,24 @@ struct telemetry_entity {
      * @brief Server receipt timestamp.
      */
     db_timestamp recorded_at;
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = telemetry_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::key("timestamp", &e::timestamp) |
+               query_builder::bind("source", &e::source) |
+               query_builder::bind("source_name", &e::source_name) |
+               query_builder::bind("session_id", &e::session_id) |
+               query_builder::bind("account_id", &e::account_id) |
+               query_builder::bind("level", &e::level) |
+               query_builder::bind("component", &e::component) |
+               query_builder::bind("message", &e::message) | query_builder::bind("tag", &e::tag) |
+               query_builder::bind("recorded_at", &e::recorded_at);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const telemetry_entity& v);
@@ -119,6 +138,20 @@ struct telemetry_stats_hourly_entity {
     std::int64_t log_count = 0;
     std::int64_t unique_sessions = 0;
     std::int64_t unique_accounts = 0;
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = telemetry_stats_hourly_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::bind("hour", &e::hour) |
+               query_builder::bind("source", &e::source) |
+               query_builder::bind("source_name", &e::source_name) |
+               query_builder::bind("level", &e::level) |
+               query_builder::bind("log_count", &e::log_count) |
+               query_builder::bind("unique_sessions", &e::unique_sessions) |
+               query_builder::bind("unique_accounts", &e::unique_accounts);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const telemetry_stats_hourly_entity& v);
@@ -138,6 +171,21 @@ struct telemetry_stats_daily_entity {
     std::int64_t log_count = 0;
     std::int64_t unique_sessions = 0;
     std::int64_t unique_accounts = 0;
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = telemetry_stats_daily_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::bind("day", &e::day) |
+               query_builder::bind("source", &e::source) |
+               query_builder::bind("source_name", &e::source_name) |
+               query_builder::bind("component", &e::component) |
+               query_builder::bind("level", &e::level) |
+               query_builder::bind("log_count", &e::log_count) |
+               query_builder::bind("unique_sessions", &e::unique_sessions) |
+               query_builder::bind("unique_accounts", &e::unique_accounts);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const telemetry_stats_daily_entity& v);
@@ -151,8 +199,8 @@ struct nats_server_sample_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_telemetry_nats_server_samples_tbl";
 
-    sqlgen::PrimaryKey<db_timestamp> sampled_at;
-    sqlgen::PrimaryKey<std::string> tenant_id;
+    db_timestamp sampled_at;
+    std::string tenant_id;
     std::int64_t in_msgs{0};
     std::int64_t out_msgs{0};
     std::int64_t in_bytes{0};
@@ -160,6 +208,22 @@ struct nats_server_sample_entity {
     int connections{0};
     std::int64_t mem_bytes{0};
     int slow_consumers{0};
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = nats_server_sample_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("sampled_at", &e::sampled_at) |
+               query_builder::key("tenant_id", &e::tenant_id) |
+               query_builder::bind("in_msgs", &e::in_msgs) |
+               query_builder::bind("out_msgs", &e::out_msgs) |
+               query_builder::bind("in_bytes", &e::in_bytes) |
+               query_builder::bind("out_bytes", &e::out_bytes) |
+               query_builder::bind("connections", &e::connections) |
+               query_builder::bind("mem_bytes", &e::mem_bytes) |
+               query_builder::bind("slow_consumers", &e::slow_consumers);
+    }
 };
 
 /**
@@ -171,11 +235,23 @@ struct service_sample_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_telemetry_service_samples_tbl";
 
-    sqlgen::PrimaryKey<db_timestamp> sampled_at;
-    sqlgen::PrimaryKey<std::string> service_name;
-    sqlgen::PrimaryKey<std::string> instance_id;
+    db_timestamp sampled_at;
+    std::string service_name;
+    std::string instance_id;
     std::string host_id;
     std::string version;
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = service_sample_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("sampled_at", &e::sampled_at) |
+               query_builder::key("service_name", &e::service_name) |
+               query_builder::key("instance_id", &e::instance_id) |
+               query_builder::bind("host_id", &e::host_id) |
+               query_builder::bind("version", &e::version);
+    }
 };
 
 /**
@@ -187,12 +263,25 @@ struct nats_stream_sample_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_telemetry_nats_stream_samples_tbl";
 
-    sqlgen::PrimaryKey<db_timestamp> sampled_at;
-    sqlgen::PrimaryKey<std::string> tenant_id;
-    sqlgen::PrimaryKey<std::string> stream_name;
+    db_timestamp sampled_at;
+    std::string tenant_id;
+    std::string stream_name;
     std::int64_t messages{0};
     std::int64_t bytes{0};
     int consumer_count{0};
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = nats_stream_sample_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("sampled_at", &e::sampled_at) |
+               query_builder::key("tenant_id", &e::tenant_id) |
+               query_builder::key("stream_name", &e::stream_name) |
+               query_builder::bind("messages", &e::messages) |
+               query_builder::bind("bytes", &e::bytes) |
+               query_builder::bind("consumer_count", &e::consumer_count);
+    }
 };
 
 }

@@ -42,7 +42,7 @@ domain::account_type account_type_mapper::map(const account_type_entity& v) {
     domain::account_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.type = v.type.value();
+    r.type = v.type;
 
     r.name = v.name;
 

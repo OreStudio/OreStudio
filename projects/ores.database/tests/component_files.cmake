@@ -22,14 +22,13 @@
 set(files
     "context_factory_tests.cpp"
     "database_options_tests.cpp"
-    "list_filter_tests.cpp"
     "main.cpp"
     "mapper_helpers_tests.cpp"
     "outcome_code_tests.cpp"
     "postgres_listener_service_tests.cpp"
     "pq_layer_benchmark_tests.cpp"
     "pq_layer_tests.cpp"
+    "query_builder_tests.cpp"
     "session_settings_tests.cpp"
-    "stated_order_tests.cpp"
     "unit_of_work_tests.cpp"
 )

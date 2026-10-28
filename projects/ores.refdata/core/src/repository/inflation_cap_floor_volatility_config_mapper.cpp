@@ -46,7 +46,7 @@ domain::inflation_cap_floor_volatility_config inflation_cap_floor_volatility_con
     domain::inflation_cap_floor_volatility_config r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.curve_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.curve_definition_id);
     r.inflation_type = v.inflation_type;

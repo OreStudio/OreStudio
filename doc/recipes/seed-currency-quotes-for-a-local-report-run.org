@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 1FC883F6-7EF7-46F8-A967-F2647E5F09EB
+:END:
+#+title: How do I seed currency quotes for a local report run?
+#+description: Hand-seed the interest-rate swap quotes a report's yield curves need, so an NPV run produces results on a freshly provisioned environment.
+#+type: recipe
+#+level: cross
+#+filetags: 
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+(One- or two-sentence pointer to the component model and any knowledge
+doc this recipe relies on.)
+
+* Question
+
+(Restate the NLP question this recipe answers.)
+
+* Answer
+
+#+begin_src sh :results verbatim
+# Replace with the command(s) that answer the question.
+#+end_src
+
+* Script
+
+(Pointer to the script or wrapper that does the work, if applicable.)
+
+* Tested by
+
+(How this recipe is exercised — CI workflow, manual smoke test, etc.)
+
+* See also
+
+-
+
+* The problem
+
+A freshly provisioned environment carries series for the currencies a report's
+yield curves build, and carries no observations for their interest-rate swaps.
+The run reaches the grid and the engine refuses every curve with a message like
+=Could not find quote for Mandatory ID IR_SWAP/RATE/NZD/0D/1D/1M=. Without the
+quotes there is no NAV, so no result rows, so nothing to read on the reporting
+screens.
+
+* Why a hand seed, and what shape it takes
+
+Two facts make the seed small. A *series* names an instrument and a quote family,
+not a term: =oresmd://ir/NZD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D=.
+An *observation* carries the term, in its own URI:
+=oresmd://ir/NZD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=1M=.
+The market data export gives an observation its ORE key from that quote URI, so a
+seed that writes a series URI onto an observation fails the export with
+=has no ORE key: a series has no ORE key=.
+
+The terms are ORE's own spellings, and =12M= is the one a reader usually gets
+wrong: a year is =12M=, not =1Y=.
+
+* The seed
+
+Run this as the database superuser; it derives the tenant, the party and the
+series from what the environment already holds, and states a flat three per cent
+for every point:
+
+#+begin_src sql
+set row_security = off;
+
+create temp table terms as
+select unnest(array['1M','3M','6M','1Y','12M','2Y','3Y','4Y','5Y','6Y','7Y',
+                    '8Y','9Y','10Y','15Y','20Y','25Y','30Y']) as term;
+
+create temp table currency_series as
+select distinct on (split_part(split_part(oresmd_uri, '/', 4), '?', 1))
+       split_part(split_part(oresmd_uri, '/', 4), '?', 1) as ccy, id, tenant_id, party_id
+from ores_marketdata_market_series_tbl
+where oresmd_uri like 'oresmd://ir/%fwd_start=0D&tenor=1D%'
+  and oresmd_uri not like '%type=quote%'
+  and valid_to = ores_utility_infinity_timestamp_fn()
+order by 1, 2;
+
+insert into ores_marketdata_market_observations_tbl
+    (id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value,
+     source, source_id, valid_from, valid_to)
+select gen_random_uuid(), s.tenant_id, s.party_id, s.id,
+       timestamptz '2026-05-05 00:00:00+00',
+       'oresmd://ir/' || s.ccy ||
+       '?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=' || t.term,
+       0.03, 'seeded',
+       (select source_id from ores_marketdata_market_observations_tbl
+        where source_id is not null limit 1),
+       current_timestamp, ores_utility_infinity_timestamp_fn()
+from currency_series s, terms t;
+#+end_src
+
+Adjust the observation's date to the date the report prices at, which is the
+date the environment's market data ends at.
+
+* Run it
+
+#+begin_src sh
+./compass.sh sql -- -f /path/to/the/seed.sql
+#+end_src
+
+Then trigger the report from its page and watch the run reach =completed= with
+rows in =ores_reporting_report_result_rows_tbl=.

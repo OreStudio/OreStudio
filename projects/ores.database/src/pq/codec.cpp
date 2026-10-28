@@ -18,6 +18,8 @@
  */
 #include "ores.database/pq/codec.hpp"
 #include "ores.database/pq/store_error.hpp"
+#include "ores.database/pq/text.hpp"
+#include <charconv>
 #include <limits>
 
 namespace ores::database::pq {
@@ -46,6 +48,16 @@ constexpr std::int64_t unix_to_2000_micros = 946'684'800'000'000;
     throw store_error(std::move(message), "22000", error_kind::refused);
 }
 
+}
+
+void unreadable_text(std::string_view text, std::string_view type) {
+    refuse("Not a " + std::string(type) + ": " + std::string(text));
+}
+
+param to_text(double v) {
+    char buffer[32];
+    const auto [end, ec] = std::to_chars(buffer, buffer + sizeof buffer, v);
+    return text_param(std::string(buffer, end));
 }
 
 void wire::expect_size(std::span<const std::byte> in, std::size_t size, std::string_view type) {

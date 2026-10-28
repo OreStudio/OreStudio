@@ -42,7 +42,7 @@ domain::approval_kind approval_kind_mapper::map(const approval_kind_entity& v) {
     domain::approval_kind r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

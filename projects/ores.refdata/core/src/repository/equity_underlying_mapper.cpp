@@ -43,7 +43,7 @@ domain::equity_underlying equity_underlying_mapper::map(const equity_underlying_
     domain::equity_underlying r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

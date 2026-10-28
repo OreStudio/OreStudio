@@ -185,7 +185,6 @@ The import carries the FpML codelist: the code, its source and description, and 
 #+begin_src cpp :name includes
 #include <optional>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

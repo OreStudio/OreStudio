@@ -53,6 +53,8 @@ struct sent_statement final {
     std::span<const param> params;
     const statement_counters* counters = nullptr;
     result* out = nullptr;
+    /// 1 for binary results, 0 for text.
+    int result_format = 1;
 };
 
 /**
@@ -99,6 +101,47 @@ public:
     }
 
     /**
+     * @brief Runs a statement built at run time and reads its rows into the
+     * given column types.
+     */
+    template <typename... Columns>
+    std::vector<std::tuple<Columns...>> query(const dynamic_statement& s) {
+        result r;
+        run_dynamic(s, r);
+        return read_rows<Columns...>(r);
+    }
+
+    /**
+     * @brief Runs a statement built at run time and returns the rows it
+     * touched.
+     */
+    std::uint64_t execute(const dynamic_statement& s) {
+        result r;
+        run_dynamic(s, r);
+        return r.affected();
+    }
+
+    /**
+     * @brief Runs a text statement and returns its result, in text.
+     */
+    result run(const text_statement& s, std::span<const param> params) {
+        result r;
+        const sent_statement one{s.name(), s.sql(), {}, params, &s.counters(), &r, 0};
+        round_trip(std::span(&one, 1));
+        return r;
+    }
+
+    /**
+     * @brief Runs a statement built at run time and returns its result, in text.
+     */
+    result run_text(const dynamic_statement& s) {
+        result r;
+        const sent_statement one{{}, s.sql(), s.oids(), s.params(), nullptr, &r, 0};
+        round_trip(std::span(&one, 1));
+        return r;
+    }
+
+    /**
      * @brief Statements sent together in one pipeline, with one sync.
      */
     class batch final {
@@ -109,6 +152,11 @@ public:
             entry e{
                 s.name(), s.sql(), s.param_oids, {encoded.begin(), encoded.end()}, &s.counters()};
             entries_.push_back(std::move(e));
+            return *this;
+        }
+
+        batch& add(const text_statement& s, std::vector<param> params) {
+            entries_.push_back(entry{s.name(), s.sql(), {}, std::move(params), &s.counters()});
             return *this;
         }
 
@@ -155,8 +203,19 @@ public:
 
     /**
      * @brief Commits. A transaction that ran nothing has nothing to commit.
+     *
+     * A transaction a failed statement aborted cannot commit: Postgres would
+     * answer the commit with a rollback, and the caller would believe its
+     * writes were kept. It is rolled back and refused instead.
      */
     void commit();
+
+    /**
+     * @brief Whether the transaction has committed or rolled back.
+     */
+    [[nodiscard]] bool ended() const noexcept {
+        return done_;
+    }
 
     /**
      * @brief Rolls back, and never throws: it runs on the error path.
@@ -167,6 +226,11 @@ private:
     template <typename S, std::size_t N>
     void run_one(const S& s, const std::array<param, N>& params, result& out) {
         const sent_statement one{s.name(), s.sql(), s.param_oids, params, &s.counters(), &out};
+        round_trip(std::span(&one, 1));
+    }
+
+    void run_dynamic(const dynamic_statement& s, result& out) {
+        const sent_statement one{{}, s.sql(), s.oids(), s.params(), nullptr, &out};
         round_trip(std::span(&one, 1));
     }
 

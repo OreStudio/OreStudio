@@ -104,6 +104,18 @@ bool auto_login(ores::nats::service::nats_client& session,
         auto selected = commands::complete_login(out, session, *result);
         if (!selected)
             return false;
+        /*
+         * The shell holds one token and cannot ask for a password in the middle
+         * of a command, so the credentials that opened the session are kept for
+         * the one case that needs them: the server refusing an expired token
+         * while a long command is still waiting for its answer.
+         */
+        session.set_session_renewer(
+            [&session,
+             username = login_config.username,
+             password = login_config.password] {
+                return commands::sign_in_again(session, username, password);
+            });
         out << "✓ Logged in as: " << result->username << std::endl;
         out << "  Tenant: " << result->tenant_name << " (" << result->tenant_id << ")" << std::endl;
         if (!selected->empty())

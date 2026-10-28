@@ -42,7 +42,7 @@ domain::artefact_type artefact_type_mapper::map(const artefact_type_entity& v) {
     domain::artefact_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.name = v.name;
     r.description = v.description;
     r.artefact_table = v.artefact_table;

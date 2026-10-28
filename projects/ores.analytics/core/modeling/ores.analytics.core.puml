@@ -51,7 +51,7 @@ namespace ores #F2F2F2 {
             class pricing_engine_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +description : optional<string>
@@ -70,7 +70,7 @@ namespace ores #F2F2F2 {
             class pricing_model_config_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -90,7 +90,7 @@ namespace ores #F2F2F2 {
             class pricing_model_product_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +pricing_model_config_id : string
@@ -109,7 +109,7 @@ namespace ores #F2F2F2 {
             class pricing_model_product_parameter_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +pricing_model_config_id : string

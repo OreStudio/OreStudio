@@ -385,7 +385,7 @@ namespace ores #F2F2F2 {
             class artefact_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -432,7 +432,7 @@ namespace ores #F2F2F2 {
             class badge_definition_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -480,7 +480,7 @@ namespace ores #F2F2F2 {
             class badge_mapping_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code_domain_code : sqlgen::PrimaryKey<string>
+                +code_domain_code : string
                 +tenant_id : string
                 +entity_code : string
                 +version : int
@@ -528,7 +528,7 @@ namespace ores #F2F2F2 {
             class badge_severity_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -572,7 +572,7 @@ namespace ores #F2F2F2 {
             class catalog_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +name : sqlgen::PrimaryKey<string>
+                +name : string
                 +tenant_id : string
                 +version : int
                 +description : string
@@ -615,7 +615,7 @@ namespace ores #F2F2F2 {
             class change_reason_category_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +description : string
@@ -657,7 +657,7 @@ namespace ores #F2F2F2 {
             class change_reason_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +description : string
@@ -705,7 +705,7 @@ namespace ores #F2F2F2 {
             class code_domain_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -749,7 +749,7 @@ namespace ores #F2F2F2 {
             class coding_scheme_authority_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -792,7 +792,7 @@ namespace ores #F2F2F2 {
             class coding_scheme_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -839,7 +839,7 @@ namespace ores #F2F2F2 {
             class data_domain_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +name : sqlgen::PrimaryKey<string>
+                +name : string
                 +tenant_id : string
                 +version : int
                 +description : string
@@ -881,7 +881,7 @@ namespace ores #F2F2F2 {
             class dataset_bundle_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +code : string
@@ -904,7 +904,7 @@ namespace ores #F2F2F2 {
             class dataset_bundle_member_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +bundle_code : sqlgen::PrimaryKey<string>
+                +bundle_code : string
                 +tenant_id : string
                 +dataset_code : string
                 +version : int
@@ -976,7 +976,7 @@ namespace ores #F2F2F2 {
             class dataset_dependency_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +dataset_code : sqlgen::PrimaryKey<string>
+                +dataset_code : string
                 +tenant_id : string
                 +dependency_code : string
                 +role : string
@@ -1000,7 +1000,7 @@ namespace ores #F2F2F2 {
             class dataset_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +code : string
@@ -1062,7 +1062,7 @@ namespace ores #F2F2F2 {
             class fsm_state_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +machine_id : string
@@ -1110,7 +1110,7 @@ namespace ores #F2F2F2 {
             class fsm_transition_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +machine_id : string
@@ -1158,7 +1158,7 @@ namespace ores #F2F2F2 {
             class lei_entity_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +lei : sqlgen::PrimaryKey<string>
+                +lei : string
                 +tenant_id : string
                 +entity_legal_name : string
                 +entity_entity_category : string
@@ -1211,7 +1211,7 @@ namespace ores #F2F2F2 {
             class lei_relationship_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +relationship_start_node_node_id : sqlgen::PrimaryKey<string>
+                +relationship_start_node_node_id : string
                 +tenant_id : string
                 +relationship_start_node_node_id_type : string
                 +relationship_end_node_node_id : string
@@ -1251,7 +1251,7 @@ namespace ores #F2F2F2 {
             class methodology_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1298,7 +1298,7 @@ namespace ores #F2F2F2 {
             class nature_dimension_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1341,7 +1341,7 @@ namespace ores #F2F2F2 {
             class origin_dimension_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1384,7 +1384,7 @@ namespace ores #F2F2F2 {
             class publication_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +dataset_id : string
                 +dataset_code : string
@@ -1427,8 +1427,8 @@ namespace ores #F2F2F2 {
             class subject_area_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +name : sqlgen::PrimaryKey<string>
-                +domain_name : sqlgen::PrimaryKey<string>
+                +name : string
+                +domain_name : string
                 +tenant_id : string
                 +version : int
                 +description : string
@@ -1470,7 +1470,7 @@ namespace ores #F2F2F2 {
             class synthetic_fx_spot_config_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +name : string
                 +description : optional<string>
@@ -1515,7 +1515,7 @@ namespace ores #F2F2F2 {
             class treatment_dimension_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string

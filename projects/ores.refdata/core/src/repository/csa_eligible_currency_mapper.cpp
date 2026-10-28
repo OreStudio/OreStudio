@@ -46,7 +46,7 @@ csa_eligible_currency_mapper::map(const csa_eligible_currency_entity& v) {
     domain::csa_eligible_currency r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.csa_id = boost::lexical_cast<boost::uuids::uuid>(v.csa_id);
 
 

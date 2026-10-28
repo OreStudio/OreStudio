@@ -23,14 +23,29 @@
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <optional>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <utility>
 
 namespace ores::shell::app::commands {
+
+namespace detail {
+
+inline std::string_view login_logger_name = "ores.shell.app.login_helpers";
+
+inline auto& login_lg() {
+    using namespace ores::logging;
+    static auto instance = make_logger(login_logger_name);
+    return instance;
+}
+
+}
 
 /**
  * @brief Persist a successful login in @p session.
@@ -100,6 +115,56 @@ inline std::optional<std::string> complete_login(std::ostream& out,
     info.jwt = selected->token;
     session.set_auth(std::move(info));
     return selected->party_name;
+}
+
+/**
+ * @brief Signs @p session in again with the credentials that opened it.
+ *
+ * The shell's answer to a refused token. A person's command is refused only
+ * once the server has rejected the token, so nothing was done and the command
+ * can be sent again; but a shell built for interactive use has no way to ask
+ * for a password mid-command, so it holds the credentials that signed it in and
+ * opens a fresh session with them. The party is chosen again by the same rule
+ * as the first time, because a fresh login starts without one.
+ *
+ * @return true when the session holds a usable token. A failure is silent
+ * here: it is reported by the refusal the caller was already handling.
+ */
+inline bool sign_in_again(ores::nats::service::nats_client& session,
+                          const std::string& principal,
+                          const std::string& password) {
+    std::ostringstream discarded;
+    try {
+        iam::messaging::login_request req;
+        req.principal = principal;
+        req.password = password;
+        auto result = ores::nats::service::request_and_decode<iam::messaging::login_response>(
+            session, iam::messaging::login_request::nats_subject, req);
+        if (!result) {
+            BOOST_LOG_SEV(detail::login_lg(), ores::logging::error)
+                << "Re-signing in as " << principal << " failed: the login answer could not be read";
+            return false;
+        }
+        if (!result->success) {
+            BOOST_LOG_SEV(detail::login_lg(), ores::logging::error)
+                << "Re-signing in as " << principal << " was refused: " << result->message;
+            return false;
+        }
+        const auto party = complete_login(discarded, session, *result);
+        if (!party) {
+            BOOST_LOG_SEV(detail::login_lg(), ores::logging::error)
+                << "Re-signing in as " << principal
+                << " signed in but selected no party, so the session has no party scope";
+            return false;
+        }
+        BOOST_LOG_SEV(detail::login_lg(), ores::logging::info)
+            << "Signed in again as " << principal << " after the session's token was refused";
+        return true;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(detail::login_lg(), ores::logging::error)
+            << "Re-signing in as " << principal << " failed: " << e.what();
+        return false;
+    }
 }
 
 }

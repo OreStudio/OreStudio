@@ -115,7 +115,6 @@ The set that states the setting's allowed values. Soft foreign key to
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

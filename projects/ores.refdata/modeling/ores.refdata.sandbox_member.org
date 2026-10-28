@@ -201,8 +201,6 @@ The seed is a service account, which leaves the test tenant in bootstrap.
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #+end_src
 
 ** Conventions

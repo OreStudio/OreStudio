@@ -30,7 +30,6 @@
 #include <format>
 #include <map>
 #include <optional>
-#include <sqlgen/postgres.hpp>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -38,8 +37,6 @@
 
 namespace ores::compute::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 using ores::platform::time::datetime;

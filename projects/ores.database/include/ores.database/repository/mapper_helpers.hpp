@@ -27,7 +27,6 @@
 #include "ores.platform/time/time_utils.hpp"
 #include <chrono>
 #include <optional>
-#include <sqlgen/postgres.hpp>
 #include <string>
 #include <string_view>
 #include <vector>

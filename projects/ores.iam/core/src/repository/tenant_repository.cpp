@@ -23,11 +23,8 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/repository/tenant_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/domain/tenant.hpp"
 #include "ores.iam.api/domain/tenant_json_io.hpp" // IWYU pragma: keep.
@@ -43,16 +40,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -61,13 +48,13 @@
 
 namespace ores::iam::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string tenant_repository::sql() {
-    return generate_create_table_sql<tenant_entity>(lg());
+    return query_builder::insert_statement_sql<tenant_entity>(lg());
 }
 
 bool tenant_repository::is_sortable(std::string_view field) {
@@ -85,50 +72,51 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy tenant_list_order(const ores::utility::domain::order& order,
-                                           std::initializer_list<std::string> default_columns,
-                                           bool default_descending) {
+query_builder::order tenant_list_order(const ores::utility::domain::order& order,
+                                       std::initializer_list<std::string> default_columns,
+                                       bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!tenant_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of tenants cannot be ordered by " + order.field + ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 /*
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
+std::optional<query_builder::condition>
 tenant_filter_condition(const std::optional<messaging::tenants_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->type)
-        r.push_back(equals("type", filter_value(*filter->type)));
+        r.push_back(query_builder::equals("type", query_builder::filter_value(*filter->type)));
     if (filter->status)
-        r.push_back(equals("status", filter_value(*filter->status)));
+        r.push_back(query_builder::equals("status", query_builder::filter_value(*filter->status)));
     if (filter->id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
     }
     if (filter->type_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->type_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("type", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("type", std::move(values)));
     }
     if (filter->status_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->status_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("status", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("status", std::move(values)));
     }
     if (filter->search && !filter->search->empty())
-        r.push_back(contains_any({"code", "name", "hostname"}, *filter->search));
-    return all_of(std::move(r));
+        r.push_back(query_builder::contains_any({"code", "name", "hostname"}, *filter->search));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -186,7 +174,8 @@ void tenant_repository::write(context ctx,
                               const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing tenant. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx, tenant_mapper::map(t), lg(), "Writing tenant to database.");
+    query_builder::execute_write_query(
+        ctx, tenant_mapper::map(t), lg(), "Writing tenant to database.");
 }
 
 void tenant_repository::write(context ctx,
@@ -197,19 +186,20 @@ void tenant_repository::write(context ctx,
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx, tenant_mapper::map(batch), lg(), "Writing tenants to database.");
+    query_builder::execute_write_query(
+        ctx, tenant_mapper::map(batch), lg(), "Writing tenants to database.");
 }
 
 std::vector<domain::tenant> tenant_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query =
-        sqlgen::read<std::vector<tenant_entity>> |
-        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+    const auto query = query_builder::read<std::vector<tenant_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
-    return execute_read_query<tenant_entity, domain::tenant>(
+    return query_builder::execute_read_query<tenant_entity, domain::tenant>(
         ctx,
         query,
         [](const auto& entities) { return tenant_mapper::map(entities); },
@@ -222,11 +212,11 @@ std::vector<domain::tenant> tenant_repository::read_latest(context ctx, const st
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = sqlgen::read<std::vector<tenant_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
-                             "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<tenant_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "id"_c == id && "valid_to"_c == max.value());
 
-    return execute_read_query<tenant_entity, domain::tenant>(
+    return query_builder::execute_read_query<tenant_entity, domain::tenant>(
         ctx,
         query,
         [](const auto& entities) { return tenant_mapper::map(entities); },
@@ -240,11 +230,11 @@ std::vector<domain::tenant> tenant_repository::read_latest_by_code(context ctx,
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = sqlgen::read<std::vector<tenant_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
-                             "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<tenant_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c == code && "valid_to"_c == max.value());
 
-    return execute_read_query<tenant_entity, domain::tenant>(
+    return query_builder::execute_read_query<tenant_entity, domain::tenant>(
         ctx,
         query,
         [](const auto& entities) { return tenant_mapper::map(entities); },
@@ -257,11 +247,12 @@ std::vector<domain::tenant> tenant_repository::read_any_by_code(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading any tenant by code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = sqlgen::read<std::vector<tenant_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+    const auto query =
+        query_builder::read<std::vector<tenant_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code) |
+        query_builder::order_by("valid_from"_c.desc()) | query_builder::limit(1);
 
-    return execute_read_query<tenant_entity, domain::tenant>(
+    return query_builder::execute_read_query<tenant_entity, domain::tenant>(
         ctx,
         query,
         [](const auto& entities) { return tenant_mapper::map(entities); },
@@ -274,11 +265,12 @@ std::vector<domain::tenant> tenant_repository::read_all(context ctx, const std::
     BOOST_LOG_SEV(lg(), debug) << "Reading all tenant versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = sqlgen::read<std::vector<tenant_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<tenant_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<tenant_entity, domain::tenant>(
+    return query_builder::execute_read_query<tenant_entity, domain::tenant>(
         ctx,
         query,
         [](const auto& entities) { return tenant_mapper::map(entities); },
@@ -292,12 +284,12 @@ tenant_repository::read_at_version(context ctx, const std::string& id, std::uint
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = sqlgen::read<std::vector<tenant_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
-                             "version"_c == version) |
-                       sqlgen::limit(1);
+    const auto query = query_builder::read<std::vector<tenant_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "id"_c == id && "version"_c == version) |
+                       query_builder::limit(1);
 
-    const auto entities = execute_read_query<tenant_entity, domain::tenant>(
+    const auto entities = query_builder::execute_read_query<tenant_entity, domain::tenant>(
         ctx,
         query,
         [](const auto& entities) { return tenant_mapper::map(entities); },
@@ -326,11 +318,11 @@ tenant_repository::remove_status tenant_repository::remove(context ctx,
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<tenant_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+    const auto query = query_builder::delete_from<tenant_entity> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing tenant from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing tenant from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -354,15 +346,15 @@ tenant_repository::read_latest(context ctx,
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = sqlgen::read<std::vector<tenant_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<tenant_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<tenant_entity, domain::tenant>(
+    return query_builder::execute_ordered_read_query<tenant_entity, domain::tenant>(
         ctx,
         query,
         tenant_list_order(order, {"name"}, false),
-        narrowed(valid_at(as_of), tenant_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of), tenant_filter_condition(filter)),
         [](const auto& entities) { return tenant_mapper::map(entities); },
         lg(),
         "Reading latest tenants with pagination.");
@@ -376,13 +368,13 @@ tenant_repository::get_total_tenant_count(context ctx,
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = sqlgen::read<std::vector<tenant_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys));
+    const auto query = query_builder::read<std::vector<tenant_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
-    return execute_count_query<tenant_entity>(
+    return query_builder::execute_count_query<tenant_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), tenant_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of), tenant_filter_condition(filter)),
         lg(),
         "Counting tenants");
 }
@@ -394,10 +386,10 @@ std::vector<domain::tenant> tenant_repository::read_latest(context ctx,
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = sqlgen::read<std::vector<tenant_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
-    auto result = execute_read_query<tenant_entity, domain::tenant>(
+    const auto query = query_builder::read<std::vector<tenant_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result = query_builder::execute_read_query<tenant_entity, domain::tenant>(
         ctx,
         query,
         [](const auto& entities) { return tenant_mapper::map(entities); },
@@ -417,9 +409,10 @@ void tenant_repository::remove(context ctx, const std::vector<std::string>& ids)
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<tenant_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing tenants.");
+    const auto query =
+        query_builder::delete_from<tenant_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing tenants.");
 }
 
 

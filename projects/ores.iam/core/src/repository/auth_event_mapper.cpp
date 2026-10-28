@@ -43,8 +43,8 @@ domain::auth_event auth_event_mapper::map(const auth_event_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::auth_event r;
-    r.id = v.id.value();
-    r.event_time = timestamp_to_timepoint(std::string_view{v.event_time.value()});
+    r.id = v.id;
+    r.event_time = timestamp_to_timepoint(std::string_view{v.event_time});
     r.tenant_id = v.tenant_id;
     r.account_id = v.account_id;
     r.event_type = v.event_type;

@@ -25,8 +25,8 @@
 #ifndef ORES_IAM_CORE_REPOSITORY_SEED_PROFILE_ENTITY_HPP
 #define ORES_IAM_CORE_REPOSITORY_SEED_PROFILE_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct seed_profile_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_iam_seed_profiles_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
 
@@ -67,6 +67,35 @@ struct seed_profile_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = seed_profile_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) | query_builder::bind("code", &e::code) |
+               query_builder::bind("name", &e::name) | query_builder::bind("summary", &e::summary) |
+               query_builder::bind("audience", &e::audience) |
+               query_builder::bind("bullets_json", &e::bullets_json) |
+               query_builder::bind("tenant_type", &e::tenant_type) |
+               query_builder::bind("tenant_name", &e::tenant_name) |
+               query_builder::bind("tenant_code", &e::tenant_code) |
+               query_builder::bind("tenant_hostname", &e::tenant_hostname) |
+               query_builder::bind("admin_username", &e::admin_username) |
+               query_builder::bind("admin_email", &e::admin_email) |
+               query_builder::bind("inherits_admin_password", &e::inherits_admin_password) |
+               query_builder::bind("force_password_change", &e::force_password_change) |
+               query_builder::bind("display_order", &e::display_order) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const seed_profile_entity& v);

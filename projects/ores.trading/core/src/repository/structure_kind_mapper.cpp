@@ -43,7 +43,7 @@ domain::structure_kind structure_kind_mapper::map(const structure_kind_entity& v
     domain::structure_kind r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.description = v.description.value_or("");
     r.confirms_as_whole = v.confirms_as_whole;
     r.modified_by = v.modified_by;

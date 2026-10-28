@@ -43,7 +43,7 @@ report_type_configuration_type_mapper::map(const report_type_configuration_type_
     domain::report_type_configuration_type r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.report_type_code = v.report_type_code.value();
+    r.report_type_code = v.report_type_code;
     r.configuration_type_code = v.configuration_type_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

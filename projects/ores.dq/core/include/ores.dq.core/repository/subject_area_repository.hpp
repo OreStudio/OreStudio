@@ -33,7 +33,6 @@
 #include <chrono>
 #include <cstdint>
 #include <optional>
-#include <sqlgen/postgres.hpp>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -57,7 +56,7 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Returns the SQL created by sqlgen to construct the table.
+     * @brief Returns the insert statement the repository writes.
      */
     std::string sql();
 

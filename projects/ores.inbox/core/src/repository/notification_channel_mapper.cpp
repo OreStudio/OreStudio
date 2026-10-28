@@ -43,7 +43,7 @@ notification_channel_mapper::map(const notification_channel_entity& v) {
     domain::notification_channel r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

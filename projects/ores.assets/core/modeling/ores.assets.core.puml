@@ -142,7 +142,7 @@ namespace ores #F2F2F2 {
             Database persistence layer for asset domain types.
             end note
             class image_entity <<orm>> #99CB99 {
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +code : string
@@ -192,7 +192,7 @@ namespace ores #F2F2F2 {
             image_mapper -[hidden]down- image_repository
 
             class image_tag_entity <<orm>> #99CB99 {
-                +image_id : sqlgen::PrimaryKey<string>
+                +image_id : string
                 +tenant_id : string
                 +tag_id : string
                 +version : int
@@ -240,7 +240,7 @@ namespace ores #F2F2F2 {
             image_tag_mapper -[hidden]down- image_tag_repository
 
             class tag_entity <<orm>> #99CB99 {
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +name : string

@@ -23,11 +23,8 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/repository/trade_link_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/trade_link.hpp"
 #include "ores.trading.api/domain/trade_link_json_io.hpp" // IWYU pragma: keep.
@@ -43,16 +40,6 @@
 #include <initializer_list>
 #include <optional>
 #include <set>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -62,13 +49,13 @@
 
 namespace ores::trading::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string trade_link_repository::sql() {
-    return generate_create_table_sql<trade_link_entity>(lg());
+    return query_builder::insert_statement_sql<trade_link_entity>(lg());
 }
 
 bool trade_link_repository::is_sortable(std::string_view field) {
@@ -83,17 +70,17 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy trade_link_list_order(const ores::utility::domain::order& order,
-                                               std::initializer_list<std::string> default_columns,
-                                               bool default_descending) {
+query_builder::order trade_link_list_order(const ores::utility::domain::order& order,
+                                           std::initializer_list<std::string> default_columns,
+                                           bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns,
-                          default_descending != order.descending,
-                          {"from_trade_id", "to_trade_id", "link_type"});
+        return query_builder::make_order(default_columns,
+                                         default_descending != order.descending,
+                                         {"from_trade_id", "to_trade_id", "link_type"});
     if (!trade_link_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of trade links cannot be ordered by " + order.field +
                                     ".");
-    return make_order(
+    return query_builder::make_order(
         {order.field}, order.descending, {"from_trade_id", "to_trade_id", "link_type"});
 }
 
@@ -101,28 +88,30 @@ sqlgen::dynamic::OrderBy trade_link_list_order(const ores::utility::domain::orde
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
+std::optional<query_builder::condition>
 trade_link_filter_condition(const std::optional<messaging::trade_links_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->from_trade_id)
-        r.push_back(equals("from_trade_id", filter_value(*filter->from_trade_id)));
+        r.push_back(query_builder::equals("from_trade_id",
+                                          query_builder::filter_value(*filter->from_trade_id)));
     if (filter->to_trade_id)
-        r.push_back(equals("to_trade_id", filter_value(*filter->to_trade_id)));
+        r.push_back(query_builder::equals("to_trade_id",
+                                          query_builder::filter_value(*filter->to_trade_id)));
     if (filter->from_trade_id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->from_trade_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("from_trade_id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("from_trade_id", std::move(values)));
     }
     if (filter->to_trade_id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->to_trade_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("to_trade_id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("to_trade_id", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -187,7 +176,8 @@ void trade_link_repository::write(context ctx,
                                << " to_trade_id: " << v.to_trade_id
                                << " link_type: " << v.link_type;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx, trade_link_mapper::map(t), lg(), "Writing trade link to database.");
+    query_builder::execute_write_query(
+        ctx, trade_link_mapper::map(t), lg(), "Writing trade link to database.");
 }
 
 void trade_link_repository::write(context ctx,
@@ -198,18 +188,18 @@ void trade_link_repository::write(context ctx,
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, trade_link_mapper::map(batch), lg(), "Writing trade links to database.");
 }
 
 std::vector<domain::trade_link> trade_link_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_link_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("from_trade_id"_c, "to_trade_id"_c, "link_type"_c);
+    const auto query = query_builder::read<std::vector<trade_link_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("from_trade_id"_c, "to_trade_id"_c, "link_type"_c);
 
-    return execute_read_query<trade_link_entity, domain::trade_link>(
+    return query_builder::execute_read_query<trade_link_entity, domain::trade_link>(
         ctx,
         query,
         [](const auto& entities) { return trade_link_mapper::map(entities); },
@@ -226,12 +216,13 @@ std::vector<domain::trade_link> trade_link_repository::read_latest(context ctx,
                                << " to_trade_id: " << to_trade_id << " link_type: " << link_type;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_link_entity>> |
-                       where("tenant_id"_c == tid && "from_trade_id"_c == from_trade_id &&
+    const auto query =
+        query_builder::read<std::vector<trade_link_entity>> |
+        query_builder::where("tenant_id"_c == tid && "from_trade_id"_c == from_trade_id &&
                              "to_trade_id"_c == to_trade_id && "link_type"_c == link_type &&
                              "valid_to"_c == max.value());
 
-    return execute_read_query<trade_link_entity, domain::trade_link>(
+    return query_builder::execute_read_query<trade_link_entity, domain::trade_link>(
         ctx,
         query,
         [](const auto& entities) { return trade_link_mapper::map(entities); },
@@ -248,12 +239,13 @@ std::vector<domain::trade_link> trade_link_repository::read_all(context ctx,
                                << "from_trade_id: " << from_trade_id
                                << " to_trade_id: " << to_trade_id << " link_type: " << link_type;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_link_entity>> |
-                       where("tenant_id"_c == tid && "from_trade_id"_c == from_trade_id &&
+    const auto query =
+        query_builder::read<std::vector<trade_link_entity>> |
+        query_builder::where("tenant_id"_c == tid && "from_trade_id"_c == from_trade_id &&
                              "to_trade_id"_c == to_trade_id && "link_type"_c == link_type) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<trade_link_entity, domain::trade_link>(
+    return query_builder::execute_read_query<trade_link_entity, domain::trade_link>(
         ctx,
         query,
         [](const auto& entities) { return trade_link_mapper::map(entities); },
@@ -272,13 +264,14 @@ trade_link_repository::read_at_version(context ctx,
                                << " to_trade_id: " << to_trade_id << " link_type: " << link_type
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_link_entity>> |
-                       where("tenant_id"_c == tid && "from_trade_id"_c == from_trade_id &&
+    const auto query =
+        query_builder::read<std::vector<trade_link_entity>> |
+        query_builder::where("tenant_id"_c == tid && "from_trade_id"_c == from_trade_id &&
                              "to_trade_id"_c == to_trade_id && "link_type"_c == link_type &&
                              "version"_c == version) |
-                       sqlgen::limit(1);
+        query_builder::limit(1);
 
-    const auto entities = execute_read_query<trade_link_entity, domain::trade_link>(
+    const auto entities = query_builder::execute_read_query<trade_link_entity, domain::trade_link>(
         ctx,
         query,
         [](const auto& entities) { return trade_link_mapper::map(entities); },
@@ -312,12 +305,13 @@ trade_link_repository::remove(context ctx,
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<trade_link_entity> |
-                       where("tenant_id"_c == tid && "from_trade_id"_c == from_trade_id &&
+    const auto query =
+        query_builder::delete_from<trade_link_entity> |
+        query_builder::where("tenant_id"_c == tid && "from_trade_id"_c == from_trade_id &&
                              "to_trade_id"_c == to_trade_id && "link_type"_c == link_type &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing trade link from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing trade link from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -343,14 +337,16 @@ trade_link_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade links with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_link_entity>> | where("tenant_id"_c == tid) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<trade_link_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
-    return execute_ordered_read_query<trade_link_entity, domain::trade_link>(
+    return query_builder::execute_ordered_read_query<trade_link_entity, domain::trade_link>(
         ctx,
         query,
         trade_link_list_order(order, {"from_trade_id", "to_trade_id", "link_type"}, false),
-        narrowed(valid_at(as_of), trade_link_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                trade_link_filter_condition(filter)),
         [](const auto& entities) { return trade_link_mapper::map(entities); },
         lg(),
         "Reading latest trade links with pagination.");
@@ -363,12 +359,14 @@ std::uint32_t trade_link_repository::get_total_link_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade link count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_link_entity>> | where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<trade_link_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
-    return execute_count_query<trade_link_entity>(
+    return query_builder::execute_count_query<trade_link_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), trade_link_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                trade_link_filter_condition(filter)),
         lg(),
         "Counting trade links");
 }
@@ -382,18 +380,19 @@ trade_link_repository::read_latest(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_link_entity>> |
-                       where("tenant_id"_c == tid && "from_trade_id"_c.in(from_trade_ids) &&
+    const auto query =
+        query_builder::read<std::vector<trade_link_entity>> |
+        query_builder::where("tenant_id"_c == tid && "from_trade_id"_c.in(from_trade_ids) &&
                              "to_trade_id"_c.in(to_trade_ids) && "link_type"_c.in(link_types) &&
                              "valid_to"_c == max.value());
-    auto result = execute_read_query<trade_link_entity, domain::trade_link>(
+    auto result = query_builder::execute_read_query<trade_link_entity, domain::trade_link>(
         ctx,
         query,
         [](const auto& entities) { return trade_link_mapper::map(entities); },
         lg(),
         "Reading latest trade links by ids.");
     // Compound key: the query above is a per-column .in() cross-product
-    // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
+    // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
     if (to_trade_ids.size() != from_trade_ids.size() || link_types.size() != from_trade_ids.size())
         throw std::invalid_argument(

@@ -43,7 +43,7 @@ regulatory_book_type_mapper::map(const regulatory_book_type_entity& v) {
     domain::regulatory_book_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

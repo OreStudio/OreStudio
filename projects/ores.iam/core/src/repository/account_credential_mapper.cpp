@@ -46,7 +46,7 @@ domain::account_credential account_credential_mapper::map(const account_credenti
     domain::account_credential r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id);
 
     r.password_hash = v.password_hash.value_or("");

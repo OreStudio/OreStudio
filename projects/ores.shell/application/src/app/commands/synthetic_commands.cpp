@@ -827,11 +827,14 @@ void synthetic_commands::process_regime_get(std::ostream& out,
         << "jump: " << response->jump << "\n"
         << "decay: " << response->decay << "\n"
         << "loop gain: " << response->loop_gain << "\n"
+        << "wake rate: " << response->wake_rate << " a second\n"
+        << "calm rate: " << response->calm_rate << " a second\n"
         << "pace: " << response->pace << "\n"
         << "tau: " << response->tau << "\n"
         << "enrolled rate: " << response->population_rate << " a second\n"
         << "run seed: " << response->run_seed << "\n"
-        << "market speed: " << response->speed << " simulated seconds a unit of tau" << std::endl;
+        << "market speed: " << response->speed << " simulated seconds a unit of tau\n"
+        << "tail loading: " << response->tail_loading << std::endl;
 }
 
 void synthetic_commands::process_regime_trace(std::ostream& out,
@@ -930,6 +933,86 @@ void synthetic_commands::process_regime_pin(std::ostream& out,
         << "pinned: " << (response->pinned ? "yes" : "no") << std::endl;
 }
 
+void synthetic_commands::process_regime_set(std::ostream& out,
+                                            nats_client& session,
+                                            const std::vector<std::string>& args) {
+    if (args.empty()) {
+        fail(out) << "synthetic regime set takes one or more of wake_rate=, calm_rate=, jump=, "
+                     "decay=, speed= and tail_loading=; see help."
+                  << std::endl;
+        return;
+    }
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    // A number left out keeps the value in force, so the market is read first.
+    const auto current = ores::nats::service::authenticated_request_and_decode<
+        ores::synthetic::messaging::get_market_regime_response>(
+        session,
+        ores::synthetic::messaging::get_market_regime_request::nats_subject,
+        ores::synthetic::messaging::get_market_regime_request{});
+    if (!current)
+        return;
+    if (!current->success) {
+        fail(out) << current->message << std::endl;
+        return;
+    }
+    ores::synthetic::messaging::configure_market_request request{.wake_rate = current->wake_rate,
+                                                                 .calm_rate = current->calm_rate,
+                                                                 .jump = current->jump,
+                                                                 .decay = current->decay,
+                                                                 .speed = current->speed,
+                                                                 .tail_loading =
+                                                                     current->tail_loading};
+    const std::map<std::string, double*> fields{{"wake_rate", &request.wake_rate},
+                                                {"calm_rate", &request.calm_rate},
+                                                {"jump", &request.jump},
+                                                {"decay", &request.decay},
+                                                {"speed", &request.speed},
+                                                {"tail_loading", &request.tail_loading}};
+    for (const auto& arg : args) {
+        const auto eq = arg.find('=');
+        const auto field = fields.find(arg.substr(0, eq));
+        if (eq == std::string::npos || field == fields.end()) {
+            fail(out) << "Unknown setting '" << arg
+                      << "'. Use wake_rate=, calm_rate=, jump=, decay=, speed= or tail_loading="
+                      << std::endl;
+            return;
+        }
+        const auto text = arg.substr(eq + 1);
+        std::size_t used = 0;
+        try {
+            *field->second = std::stod(text, &used);
+        } catch (const std::exception&) {
+            used = 0;
+        }
+        if (used == 0 || used != text.size()) {
+            fail(out) << "The value of " << field->first << " must be a number, not '" << text
+                      << "'." << std::endl;
+            return;
+        }
+    }
+
+    const auto response = ores::nats::service::authenticated_request_and_decode<
+        ores::synthetic::messaging::pin_market_regime_response>(
+        session, ores::synthetic::messaging::configure_market_request::nats_subject, request);
+    if (!response)
+        return;
+    if (!response->success) {
+        fail(out) << response->message << std::endl;
+        return;
+    }
+    out << "wake rate: " << response->wake_rate << " a second\n"
+        << "calm rate: " << response->calm_rate << " a second\n"
+        << "jump: " << response->jump << "\n"
+        << "decay: " << response->decay << "\n"
+        << "loop gain: " << response->loop_gain << "\n"
+        << "market speed: " << response->speed << " simulated seconds a unit of tau\n"
+        << "tail loading: " << response->tail_loading << std::endl;
+}
+
 void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto synthetic_menu = std::make_unique<cli::Menu>("synthetic");
 
@@ -950,7 +1033,7 @@ void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& se
                       {});
     synthetic_menu->Insert(std::move(list_menu));
 
-    // The market-wide arrival factor: one read and one pin for the whole run.
+    // The market-wide arrival factor: a read, a pin, its settings and its trace, for the whole run.
     auto regime_menu = std::make_unique<cli::Menu>("regime");
     regime_menu->Insert("get",
                         [&session](std::ostream& out, std::vector<std::string> args) {
@@ -965,6 +1048,18 @@ void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& se
                         },
                         "Pin the market regime, or hand it back to the chain",
                         {"<auto|calm|active>"});
+    regime_menu->Insert("set",
+                        [&session](std::ostream& out, std::vector<std::string> args) {
+                            process_regime_set(std::ref(out), std::ref(session), args);
+                        },
+                        "Set the chain's rates, the heat's jump and decay, the market speed or "
+                        "the tail loading; a number left out keeps its value",
+                        {"[wake_rate=<n>]",
+                         "[calm_rate=<n>]",
+                         "[jump=<n>]",
+                         "[decay=<n>]",
+                         "[speed=<n>]",
+                         "[tail_loading=<n>]"});
     regime_menu->Insert("trace",
                         [&session](std::ostream& out, std::vector<std::string> args) {
                             process_regime_trace(std::ref(out), std::ref(session), args);

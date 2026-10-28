@@ -60,7 +60,6 @@ find_package(PostgreSQL REQUIRED)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        sqlgen::sqlgen
         PostgreSQL::PostgreSQL
         ores.logging.lib
         ores.platform.lib

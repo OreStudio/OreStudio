@@ -46,7 +46,7 @@ domain::workunit workunit_mapper::map(const workunit_entity& v) {
     domain::workunit r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.party_id = v.party_id.has_value() ?
                      std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.party_id)) :
                      std::nullopt;

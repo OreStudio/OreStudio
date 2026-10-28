@@ -112,7 +112,6 @@ Where the group sits in the screen, counting from zero.
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

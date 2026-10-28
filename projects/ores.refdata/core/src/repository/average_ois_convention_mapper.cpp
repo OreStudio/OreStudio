@@ -46,7 +46,7 @@ average_ois_convention_mapper::map(const average_ois_convention_entity& v) {
     domain::average_ois_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = v.id.value();
+    r.id = v.id;
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.spot_lag = v.spot_lag;
     r.fixed_tenor = v.fixed_tenor;

@@ -43,7 +43,7 @@ domain::tenor_convention tenor_convention_mapper::map(const tenor_convention_ent
     domain::tenor_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.description = v.description.value_or("");
     r.measured_from = v.measured_from;
     r.resolution_algorithm = v.resolution_algorithm;

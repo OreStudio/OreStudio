@@ -46,7 +46,7 @@ domain::platform platform_mapper::map(const platform_entity& v) {
     domain::platform r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
 
     r.code = v.code;
 

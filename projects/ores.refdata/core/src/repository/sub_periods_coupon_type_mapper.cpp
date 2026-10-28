@@ -43,7 +43,7 @@ sub_periods_coupon_type_mapper::map(const sub_periods_coupon_type_entity& v) {
     domain::sub_periods_coupon_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

@@ -47,7 +47,7 @@ counterparty_identifier_mapper::map(const counterparty_identifier_entity& v) {
     domain::counterparty_identifier r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.counterparty_id = boost::lexical_cast<boost::uuids::uuid>(v.counterparty_id);
 
 

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -9,8 +9,7 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
@@ -20,13 +19,17 @@
 #ifndef ORES_DATABASE_CONTEXT_HPP
 #define ORES_DATABASE_CONTEXT_HPP
 
-#include "ores.database/domain/tenant_aware_pool.hpp"
+#include "ores.database/export.hpp"
+#include "ores.database/pq/connection.hpp"
+#include "ores.database/pq/pool.hpp"
+#include "ores.database/pq/transaction.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
+#include <memory>
+#include <mutex>
 #include <optional>
-#include <sqlgen/Session.hpp>
-#include <sqlgen/Transaction.hpp>
-#include <sqlgen/postgres.hpp>
+#include <string>
 #include <vector>
 
 namespace ores::database {
@@ -34,173 +37,104 @@ namespace ores::database {
 /**
  * @brief Context for the operations on a postgres database.
  *
- * The context wraps a tenant-aware connection pool that automatically sets
- * the tenant context (and optionally party context) via PostgreSQL session
- * variables whenever a connection is acquired. This ensures RLS policies
- * work correctly with connection pooling.
+ * The context names who a statement acts for: the tenant and, optionally, the
+ * party and the parties it sees, which the row-level security policies read;
+ * the actor, the end user behind the request, which modified_by records; and
+ * the service account, the service performing the write, which performed_by
+ * records. Every transaction it opens sets them as transaction-local settings,
+ * so one pool serves every tenant and party.
  *
- * Two actors are tracked separately:
- * - actor: the end-user who initiated the request (from JWT); used for
- *   modified_by on domain objects.
- * - service_account: the system service performing the write (e.g.
- *   "ores_refdata_service"); used for performed_by on domain objects. Set
- *   once at service startup and preserved across per-request contexts.
+ * Copies share one libpq pool, opened on first use. A context bound to a unit
+ * of work runs every call on that unit of work's transaction.
  */
 class context {
 public:
-    using connection_type = sqlgen::postgres::Connection;
-    using connection_pool_type = tenant_aware_pool<connection_type>;
-    using session_type = sqlgen::Session<connection_type>;
-    using transaction_type = sqlgen::Transaction<session_type>;
-
     /**
      * @brief Constructs a tenant-only context.
      */
-    explicit context(sqlgen::ConnectionPool<connection_type> connection_pool,
-                     sqlgen::postgres::Credentials credentials,
+    explicit context(pq::connection_options options,
                      utility::uuid::tenant_id tenant_id,
                      std::string actor = "",
                      std::string service_account = "",
-                     pool_acquire_policy policy = {})
-        : connection_pool_(std::move(connection_pool),
-                           credentials,
-                           std::move(tenant_id),
-                           std::move(actor),
-                           service_account,
-                           std::move(policy))
-        , credentials_(std::move(credentials))
+                     pq::open_policy policy = {})
+        : options_(std::move(options))
         , policy_(std::move(policy))
+        , tenant_id_(std::move(tenant_id))
+        , actor_(std::move(actor))
         , service_account_(std::move(service_account)) {}
 
     /**
      * @brief Constructs a tenant-and-party-aware context.
      */
-    explicit context(sqlgen::ConnectionPool<connection_type> connection_pool,
-                     sqlgen::postgres::Credentials credentials,
+    explicit context(pq::connection_options options,
                      utility::uuid::tenant_id tenant_id,
                      boost::uuids::uuid party_id,
                      std::vector<boost::uuids::uuid> visible_party_ids,
                      std::string actor = "",
                      std::string service_account = "",
-                     pool_acquire_policy policy = {})
-        : connection_pool_(std::move(connection_pool),
-                           credentials,
-                           std::move(tenant_id),
-                           party_id,
-                           std::move(visible_party_ids),
-                           std::move(actor),
-                           service_account,
-                           std::move(policy))
-        , credentials_(std::move(credentials))
+                     pq::open_policy policy = {})
+        : options_(std::move(options))
         , policy_(std::move(policy))
+        , tenant_id_(std::move(tenant_id))
+        , party_id_(party_id)
+        , visible_party_ids_(std::move(visible_party_ids))
+        , actor_(std::move(actor))
         , service_account_(std::move(service_account)) {}
 
     /**
-     * @brief Gets the tenant-aware connection pool.
+     * @brief The transaction of the unit of work this context is bound to, if
+     * any.
      */
-    connection_pool_type& connection_pool() {
-        return connection_pool_;
-    }
-
-    /**
-     * @brief Gets the transaction this context is bound to, if any.
-     *
-     * A context made by a unit of work carries one. Every repository read
-     * and write made through such a context joins that transaction, and no
-     * write commits until the unit of work commits. A context without one
-     * runs each write in a transaction of its own.
-     */
-    const std::optional<sqlgen::Ref<transaction_type>>& active_transaction() const {
+    [[nodiscard]] pq::transaction* active_transaction() const {
         return active_transaction_;
     }
 
     /**
-     * @brief Returns a copy of this context bound to the given transaction.
+     * @brief A copy of this context bound to @p transaction.
      *
-     * The reference is an owning, copyable handle, so every copy of the
-     * returned context carries the same transaction.
+     * Every call made with the copy runs on that transaction, which must
+     * outlive it: a unit of work hands out such a context for its own lifetime.
      */
-    [[nodiscard]] context with_transaction(sqlgen::Ref<transaction_type> transaction) const {
+    [[nodiscard]] context with_transaction(pq::transaction& transaction) const {
         auto copy = *this;
-        copy.active_transaction_ = std::move(transaction);
+        copy.active_transaction_ = &transaction;
         return copy;
     }
 
     /**
-     * @brief Gets the credentials for this context.
+     * @brief The options a connection of this context opens with.
      */
-    const sqlgen::postgres::Credentials& credentials() const {
-        return credentials_;
+    [[nodiscard]] const pq::connection_options& connection_options() const {
+        return options_;
     }
 
-    /**
-     * @brief Gets the tenant ID for this context.
-     */
-    const utility::uuid::tenant_id& tenant_id() const {
-        return connection_pool_.tenant_id();
+    [[nodiscard]] const utility::uuid::tenant_id& tenant_id() const {
+        return tenant_id_;
     }
 
-    /**
-     * @brief Gets the party ID for this context, if set.
-     */
-    std::optional<boost::uuids::uuid> party_id() const {
-        return connection_pool_.party_id();
+    [[nodiscard]] std::optional<boost::uuids::uuid> party_id() const {
+        return party_id_;
     }
 
-    /**
-     * @brief Gets the visible party IDs for this context.
-     */
-    const std::vector<boost::uuids::uuid>& visible_party_ids() const {
-        return connection_pool_.visible_party_ids();
+    [[nodiscard]] const std::vector<boost::uuids::uuid>& visible_party_ids() const {
+        return visible_party_ids_;
     }
 
-    /**
-     * @brief Gets the current actor (end-user) for this context.
-     *
-     * This is the username extracted from the JWT of the inbound request.
-     * Used to stamp modified_by on domain objects.
-     */
-    const std::string& actor() const {
-        return connection_pool_.actor();
+    [[nodiscard]] const std::string& actor() const {
+        return actor_;
     }
 
-    /**
-     * @brief Gets the service account for this context.
-     *
-     * This is the system service identity (e.g. "ores_refdata_service")
-     * set once at startup and preserved across per-request contexts.
-     * Used to stamp performed_by on domain objects.
-     */
-    const std::string& service_account() const {
+    [[nodiscard]] const std::string& service_account() const {
         return service_account_;
     }
 
     /**
-     * @brief Gets the underlying raw connection pool.
+     * @brief The roles the caller holds, when the request named them.
      */
-    const sqlgen::ConnectionPool<connection_type>& underlying_pool() const {
-        return connection_pool_.underlying_pool();
-    }
-
-    /**
-     * @brief Gets the permission codes carried in this context, if any.
-     *
-     * A context built from a token carries the token's list, which may be
-     * empty; an empty list grants nothing. A context that carries no list at
-     * all is trusted: only the services' base contexts, built by
-     * =context_factory::make_context=, and contexts derived from them carry
-     * none, for work that runs on the service's own authority.
-     */
-    const std::optional<std::vector<std::string>>& roles() const {
+    [[nodiscard]] const std::optional<std::vector<std::string>>& roles() const {
         return roles_;
     }
 
-    /**
-     * @brief Returns a copy of this context carrying the given permission codes.
-     *
-     * Used by make_request_context to attach a token's permissions to the
-     * per-request database context.
-     */
     [[nodiscard]] context with_roles(std::vector<std::string> roles) const {
         auto copy = *this;
         copy.roles_ = std::move(roles);
@@ -208,55 +142,73 @@ public:
     }
 
     /**
-     * @brief Creates a new context with a different tenant ID (no party).
+     * @brief A context for another tenant, with no party.
      *
-     * The service_account, the pool acquisition policy and the permissions are
-     * preserved from the base context, so narrowing a request's context never
-     * widens what it may do.
+     * The service account, the pool, the open policy, the roles and any
+     * bound transaction are kept, so narrowing a request's context never widens
+     * what it may do.
      */
     [[nodiscard]] context with_tenant(utility::uuid::tenant_id tenant_id, std::string actor) const {
-        auto scoped = context(connection_pool_.underlying_pool(),
-                              credentials_,
-                              std::move(tenant_id),
-                              std::move(actor),
-                              service_account_,
-                              policy_);
-        scoped.roles_ = roles_;
-        scoped.active_transaction_ = active_transaction_;
+        auto scoped = *this;
+        scoped.tenant_id_ = std::move(tenant_id);
+        scoped.party_id_.reset();
+        scoped.visible_party_ids_.clear();
+        scoped.actor_ = std::move(actor);
         return scoped;
     }
 
     /**
-     * @brief Creates a new context with tenant and party isolation.
+     * @brief A context for a tenant and a party, with the parties it sees.
      *
-     * The service_account, the pool acquisition policy and the permissions are
-     * preserved from the base context, so narrowing a request's context never
-     * widens what it may do.
+     * Keeps what with_tenant() keeps.
      */
     [[nodiscard]] context with_party(utility::uuid::tenant_id tenant_id,
                                      boost::uuids::uuid party_id,
                                      std::vector<boost::uuids::uuid> visible_party_ids,
                                      std::string actor) const {
-        auto scoped = context(connection_pool_.underlying_pool(),
-                              credentials_,
-                              std::move(tenant_id),
-                              party_id,
-                              std::move(visible_party_ids),
-                              std::move(actor),
-                              service_account_,
-                              policy_);
-        scoped.roles_ = roles_;
-        scoped.active_transaction_ = active_transaction_;
+        auto scoped = *this;
+        scoped.tenant_id_ = std::move(tenant_id);
+        scoped.party_id_ = party_id;
+        scoped.visible_party_ids_ = std::move(visible_party_ids);
+        scoped.actor_ = std::move(actor);
         return scoped;
     }
 
+    /**
+     * @brief The libpq pool every copy of this context shares, opened on its
+     * first use under the context's open policy.
+     */
+    ORES_DATABASE_EXPORT pq::pool& pq_pool() const;
+
+    /**
+     * @brief The number of connections the pool opens, when it opens.
+     */
+    void set_pq_pool_size(std::size_t size) {
+        pq_->size = size;
+    }
+
+    /**
+     * @brief The session a transaction of this context sets.
+     */
+    ORES_DATABASE_EXPORT pq::session_context pq_session() const;
+
 private:
-    connection_pool_type connection_pool_;
-    sqlgen::postgres::Credentials credentials_;
-    pool_acquire_policy policy_;
+    pq::connection_options options_;
+    pq::open_policy policy_;
+    utility::uuid::tenant_id tenant_id_;
+    std::optional<boost::uuids::uuid> party_id_;
+    std::vector<boost::uuids::uuid> visible_party_ids_;
+    std::string actor_;
     std::string service_account_;
     std::optional<std::vector<std::string>> roles_;
-    std::optional<sqlgen::Ref<transaction_type>> active_transaction_;
+    pq::transaction* active_transaction_ = nullptr;
+
+    struct pq_slot {
+        std::mutex mutex;
+        std::unique_ptr<pq::pool> pool;
+        std::size_t size = 2;
+    };
+    std::shared_ptr<pq_slot> pq_ = std::make_shared<pq_slot>();
 };
 
 }

@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758
+:END:
+#+title: Story: Publish public fixings through an adapter
+#+description: Each public publisher is a provider, one adapter publishes their daily rates as durable fixing ticks, and a synthetic feed starts from the latest one.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A synthetic feed that starts takes the most recent rate that a central bank or public body published, and every publisher it can draw on is a market data provider like any other, with its terms accepted, its vendor ids mapped, and its fixings stored for good.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Designed; no task started.             |
+| Waiting on    | Nothing.                               |
+| Next          | Start [[id:7627343E-CA50-4103-852F-B6AC73150353][Store fixings in a durable tick class]]: every other task needs a fixing to reach the store. |
+| Last touched  | 2026-10-28                               |
+
+* Acceptance
+
+- A durable tick class keeps the FX fixings with no age gate and no expiry, in a table of its own, and a backfill in order is stored.
+- Every provider carries its terms, and no public provider is fetched until the system administrator accepts them.
+- The public sources adapter speaks the adapter contract, fetches through Frankfurter one provider at a time, backfills the window on start and polls daily.
+- The catalogue holds every daily Frankfurter provider whose terms are read and allow storage, so the main pairs are covered by several providers.
+- A reader returns the latest fixing of an item on or before a date, and a window, each with its provider and time.
+- A synthetic feed starts from the latest fixing of its best-ranked item, and the screen shows the provider and the time of the value.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7627343E-CA50-4103-852F-B6AC73150353][Store fixings in a durable tick class]] | BACKLOG | | | A tick class keyed by instrument type sets durability, and the FX fixings are durable: no age gate, a table of their own, kept for good. |
+| [[id:13EF1C37-CC1A-472C-B14C-EE80A1450294][Give every provider its terms]] | DONE | 2026-10-28 | 2026-10-28 | The provider carries its terms page, credit, storage permission and who accepted which version, and a fetch needs an accepted version. |
+| [[id:C10674F6-19EC-4810-95E2-B2DEDAA6B3AF][Add the ores.http.client library]] | DONE | 2026-10-28 | 2026-10-28 | A client library beside ores.http, with a GET over TLS first, behind an interface a test can replace. |
+| [[id:BB825EA1-594C-4E96-A528-F186DB4A21A8][Build the public sources adapter]] | BACKLOG | | | One adapter service for every public source: announce, demand, heartbeat and ticks, with Frankfurter as its first fetcher. |
+| [[id:D70A2111-A473-4001-B998-2DF55D303861][Catalogue the public providers and their vendor ids]] | BACKLOG | | | Every daily Frankfurter provider whose terms are read and allow storage, with its vendor ids mapped to FX fixing items. |
+| [[id:BB5DC80B-EC57-4029-8A8B-6A98E0EE7D6D][Read the latest fixing and a window]] | BACKLOG | | | A reader that returns an item's latest fixing on or before a date, and a window, with the provider and the time. |
+| [[id:4DFF1284-F24A-4815-B723-B7A22B4815E8][Show the public sources' terms in the first run]] | BACKLOG | | | The first-run journey shows each public publisher's terms and credit, and a publisher is enabled only when the system administrator accepts them. |
+| [[id:A4165C70-0EAB-483D-8055-C1D8BF543113][Calibrate the synthetic ticks from free public sources]] | BACKLOG | | | Each generator config names a free public source that sets its initial value and its volatility, and the feed screen shows when the value was retrieved. |
+| [[id:C10FE647-3B5D-4365-B92D-689E0C567BA5][Build the public sources control surface]] | BACKLOG | | | A screen where a person sees each public provider, its terms state, its adapter's health and its stored fixings, and can start a backfill or pause a provider. |
+
+* Decisions
+
+- A public source is an adapter that publishes ticks, not a DQ dataset (2026-10-28). DQ is for canned data, a snapshot that stays fixed. A public source publishes every day, and a feed that starts again should take the newest value. DQ keeps the canned vintages.
+- Each publisher is a provider of kind =reference=, with a source of kind =live=. Frankfurter is an access route, a fetcher, and not a provider (2026-10-28).
+- The item is an FX fixing, =FX-SOURCE-CCY1-CCY2=, so the publisher is part of the identity and the durable rule, keyed by instrument type, leaves live spot alone (2026-10-28).
+- One adapter serves every public source, with Frankfurter as its first fetcher (2026-10-28).
+- The durable fixings are kept for good, in a table of their own (2026-10-28).
+- The catalogue starts wide: every daily Frankfurter provider whose terms allow storage, so each main pair has several providers from the first day (2026-10-28).
+- It supersedes the task [[id:74F33C8C-AF28-4A6E-812A-A2D443A77E40][Load published quotes from the public sources]], whose five new tables are not built. The design and its history are in [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]].
+
+* Out of scope
+
+- The curve sources: the US Treasury par curve, SOFR, SONIA and €STR. They are later fetchers of the same adapter.
+- The monthly, weekly and quarterly providers (the BIS, Japan Customs, the US Treasury reporting rate), until the class policy says how stale such a fixing may be.
+- A Frankfurter provider with no terms page of its own, until its own site is read.

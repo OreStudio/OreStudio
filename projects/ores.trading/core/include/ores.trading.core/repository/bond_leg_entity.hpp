@@ -25,8 +25,8 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_BOND_LEG_ENTITY_HPP
 #define ORES_TRADING_CORE_REPOSITORY_BOND_LEG_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,9 +42,9 @@ struct bond_leg_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_bond_legs_tbl";
 
-    sqlgen::PrimaryKey<std::string> trade_id;
-    sqlgen::PrimaryKey<std::string> leg_role;
-    sqlgen::PrimaryKey<std::string> leg_number;
+    std::string trade_id;
+    std::string leg_role;
+    std::string leg_number;
     std::string tenant_id;
     int version = 0;
     std::string trade_activity_id;
@@ -67,6 +67,39 @@ struct bond_leg_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = bond_leg_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("trade_id", &e::trade_id) |
+               query_builder::key("leg_role", &e::leg_role) |
+               query_builder::key("leg_number", &e::leg_number) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("trade_activity_id", &e::trade_activity_id) |
+               query_builder::bind("payer", &e::payer) |
+               query_builder::bind("leg_type", &e::leg_type) |
+               query_builder::bind("currency", &e::currency) |
+               query_builder::bind("payment_convention", &e::payment_convention) |
+               query_builder::bind("payment_lag", &e::payment_lag) |
+               query_builder::bind("payment_calendar", &e::payment_calendar) |
+               query_builder::bind("day_counter", &e::day_counter) |
+               query_builder::bind("last_period_day_counter", &e::last_period_day_counter) |
+               query_builder::bind("notional_payment_lag", &e::notional_payment_lag) |
+               query_builder::bind("strict_notional_dates", &e::strict_notional_dates) |
+               query_builder::bind("indexings_from_asset_leg", &e::indexings_from_asset_leg) |
+               query_builder::bind("settlement_fx_index", &e::settlement_fx_index) |
+               query_builder::bind("settlement_fixing_date", &e::settlement_fixing_date) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const bond_leg_entity& v);

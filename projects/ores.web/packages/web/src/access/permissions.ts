@@ -50,6 +50,13 @@ export const PERMISSION = {
     deploymentRead: 'installation::deployment:read',
     reportDefinitionsRead: 'reporting::report_definitions:read',
     reportDefinitionsWrite: 'reporting::report_definitions:write',
+    /**
+     * Whether a person may start a run of a report.
+     *
+     * Starting one is a write of a run, not of the definition it runs: a desk
+     * that may run a report need not be allowed to change how it is configured.
+     */
+    reportInstancesWrite: 'reporting::report_instances:write',
     pricingEnginesRead: 'analytics::pricing_model_configs:read',
     pricingEnginesWrite: 'analytics::pricing_model_configs:write',
     pricingEnginesDelete: 'analytics::pricing_model_configs:delete',

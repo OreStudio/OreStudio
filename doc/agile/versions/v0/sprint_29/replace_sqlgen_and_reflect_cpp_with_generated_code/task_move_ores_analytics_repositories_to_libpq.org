@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/move-analytics-repositories-to-libpq
+#+pr: 3956
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Step 3 of 7, one component. ores.analytics reads and writes through the libpq la
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -42,9 +42,15 @@ Step 3 of 7, one component. ores.analytics reads and writes through the libpq la
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. State =#+repository_backend: libpq= in the analytics component overview
+   and regenerate its repositories, entities and mappers.
+2. Find the hand-written sqlgen code in analytics. There is none: every
+   analytics repository is generated.
+3. Make the repository header's doc comment and the compound-key comment
+   name the backend they describe, so a libpq repository does not say
+   sqlgen.
+4. Build the tree and run the suites that read the analytics, dq and refdata
+   repositories.
 
 * Measurements
 
@@ -58,9 +64,28 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| analytics repositories generated on libpq | 27 | =compass codegen regenerate --component analytics-cpp --address ores= | this PR |
+| Hand-written sqlgen code in analytics | 0 files | =grep -rl sqlgen projects/ores.analytics/core= on =.hpp= and =.cpp= | this PR |
+| Suites that read the analytics, dq and refdata repositories | ores.analytics, ores.dq, ores.refdata.core, ores.shell.refdata and ores.database: 10 of 10 pass | =ctest -R 'ores\.analytics\.\|ores\.dq\.\|ores\.refdata\.core\|ores\.shell\.refdata\|ores\.database\.tests'= | this PR |
+| Unity build of the whole tree | Green | =cmake --build build/output/linux-clang-release-ninja -- -k 0= | this PR |
 
 * Notes
+
+** What stays for the removal of sqlgen
+
+These name sqlgen but compile nothing against it. They go with the
+removal task, as they do for dq:
+- the =sqlgen::sqlgen= link in the core and quant =CMakeLists.txt=;
+- the sqlgen headers in the models' "Entity includes" blocks, which the
+  loader already drops;
+- the =sqlgen::PrimaryKey= labels in the core class diagram.
+
+** Main did not build
+
+The equity underlying entity in refdata was generated before #3923. Its
+eventing and shell tests kept an anonymous =test_suite= that clashes with
+the shared =test_suite.hpp=, and two refdata unity batches failed. A
+separate commit regenerates the entity on the current templates.
 
 * Test Scenarios
 
@@ -77,12 +102,18 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3956][#3956]] | [analytics] Move the analytics repositories to libpq |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Drop the =sqlgen::sqlgen= link from analytics core | =core/src/CMakeLists.txt= | Decline | =ores.database= links sqlgen PUBLIC, so the line changes nothing. dq keeps the same link. Both go with the removal of sqlgen. |
+| 2 | Model =.org= and =.puml= files still name sqlgen | =modeling/= | Decline | The loader drops the model includes. The diagram labels go with the removal of sqlgen, as for dq. |
+| 3 | Run =compass check= before the arc closes | PR body | Accept | No change here. The full gate runs once at the end of the arc, as planned. |
 
 * Result
+
+=ores.analytics= runs on the libpq layer. Its 27 repositories are generated
+through the query builder, and its entities and mappers carry no sqlgen
+spelling. No hand-written code changed, because analytics had none.

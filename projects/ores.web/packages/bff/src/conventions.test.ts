@@ -129,6 +129,38 @@ const PR_PART_ID = '88888888-8888-4888-8888-888888888888';
 const LS_PART_ID = '99999999-9999-4999-8999-999999999999';
 const INTENT = { reason_code: 'common.correction', commentary: '' };
 
+/**
+ * A central convention row as the service sends it: grouped onto field groups.
+ *
+ * The fixtures used to write this row flat, which passed while every real reply
+ * was nested, and so hid the page failing to read the row it was given.
+ */
+function centralRowOf(fields: {
+    id: string;
+    version: number;
+    name: string;
+    kind_code?: string;
+    oresmd_uri?: string | null;
+}): Record<string, unknown> {
+    return {
+        identity: {
+            version: fields.version,
+            tenant_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+            id: fields.id,
+            party_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+            kind_code: fields.kind_code ?? 'TENOR_BASIS_SWAP',
+        },
+        payload: { name: fields.name, oresmd_uri: fields.oresmd_uri ?? null },
+        audit: {
+            modified_by: 'seed',
+            performed_by: 'seed',
+            change_reason_code: 'system.new_record',
+            change_commentary: '',
+            recorded_at: '2026-01-01T00:00:00Z',
+        },
+    };
+}
+
 describe('the family list', () => {
     it('lists every registry family the screen does not absorb, so a new family needs no edit', () => {
         const listed = new Set(CONVENTION_FAMILIES.map((family) => family.entity));
@@ -407,11 +439,11 @@ describe('convention routes', () => {
             'refdata.v1.conventions.list': {
                 result: ok,
                 conventions: [
-                    {
+                    centralRowOf({
                         id: '33333333-3333-4333-8333-333333333333',
                         version: 2,
                         name: 'GBP-6M-12M-BASIS',
-                    },
+                    }),
                 ],
             },
             'refdata.v1.tenor_basis_swap_conventions.get_many': {
@@ -573,20 +605,20 @@ describe('convention routes', () => {
                 result: ok,
                 total: 2,
                 conventions: [
-                    {
+                    centralRowOf({
                         id: PR_ID,
                         version: 4,
                         kind_code: 'TENOR_BASIS_SWAP',
                         name: 'EUR-3M-6M-BASIS',
                         oresmd_uri: null,
-                    },
-                    {
+                    }),
+                    centralRowOf({
                         id: LS_ID,
                         version: 7,
                         kind_code: 'TENOR_BASIS_SWAP',
                         name: 'EUR-6M-12M-BASIS',
                         oresmd_uri: null,
-                    },
+                    }),
                 ],
             },
             'refdata.v1.tenor_basis_swap_conventions.get_many': {

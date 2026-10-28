@@ -47,7 +47,7 @@ domain::swaption_instrument swaption_instrument_mapper::map(const swaption_instr
     domain::swaption_instrument r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
     r.exercise_type = v.exercise_type;

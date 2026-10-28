@@ -20,11 +20,16 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
+#include "ores.marketdata.api/generators/market_data_mapping_generator.hpp"
 #include "ores.marketdata.api/generators/market_data_source_generator.hpp"
+#include "ores.marketdata.api/generators/market_data_vendor_instrument_generator.hpp"
 #include "ores.marketdata.api/generators/route_generator.hpp"
 #include "ores.marketdata.api/generators/subscription_generator.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_source_repository.hpp"
+#include "ores.marketdata.core/repository/market_data_vendor_instrument_repository.hpp"
+#include "ores.marketdata.core/repository/market_fixing_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/route_repository.hpp"
@@ -189,6 +194,40 @@ struct app_feed_ingest_loop_fixture {
         r.change_reason_code = "system.test";
         r.change_commentary = "Route fixture";
         repository::route_repository{}.write(h.context(), r);
+    }
+
+    /// Maps the vendor id @p external_id of the provider ore to @p oresmd_uri, as the
+    /// catalogue does for a vendor's instrument.
+    void map(const std::string& external_id, const std::string& oresmd_uri) {
+        using namespace ores::marketdata;
+        const auto system_ctx =
+            ores::database::service::tenant_context::with_system_tenant(h.context());
+        const auto system_tenant = ores::utility::uuid::tenant_id::from_string(
+                                       ores::database::service::tenant_context::system_tenant_id)
+                                       .value();
+        auto instrument = generators::generate_synthetic_market_data_vendor_instrument(gen);
+        instrument.tenant_id = system_tenant;
+        instrument.provider_code = "ore";
+        instrument.id_scheme = "test";
+        instrument.external_id = external_id;
+        instrument.field = "rate";
+        instrument.modified_by = h.db_user();
+        instrument.performed_by = h.db_user();
+        instrument.change_reason_code = "system.test";
+        instrument.change_commentary = "Fixing fixture instrument";
+        repository::market_data_vendor_instrument_repository{}.write(system_ctx, instrument);
+
+        auto mapping = generators::generate_synthetic_market_data_mapping(gen);
+        mapping.tenant_id = system_tenant;
+        mapping.vendor_instrument_id = instrument.id;
+        mapping.oresmd_uri = oresmd_uri;
+        mapping.effective_from = std::chrono::system_clock::now() - std::chrono::hours(24 * 365);
+        mapping.effective_to.reset();
+        mapping.modified_by = h.db_user();
+        mapping.performed_by = h.db_user();
+        mapping.change_reason_code = "system.test";
+        mapping.change_commentary = "Fixing fixture mapping";
+        repository::market_data_mapping_repository{}.write(system_ctx, mapping);
     }
 
     std::vector<ores::marketdata::domain::market_series> series_for(const std::string& quote_uri) {
@@ -1252,4 +1291,58 @@ TEST_CASE("a_small_batch_does_not_pass_the_batches_that_are_in_the_stages",
     const auto values = tap.values();
     CHECK(values.size() == sent);
     CHECK(std::adjacent_find(values.begin(), values.end(), std::greater_equal<>{}) == values.end());
+}
+
+TEST_CASE("a_fixing_of_yesterday_and_a_backfill_reach_the_fixings_and_not_the_ticks",
+          "[app][feed_ingest_loop]") {
+    app_feed_ingest_loop_fixture f;
+    const auto source = bound_prefix + run_tag();
+    const auto external_id = "EUR" + run_tag();
+    const auto index_uri = "oresmd://fx/EUR?type=fixing&index=fx&source=T" + [] {
+        auto tag = run_tag();
+        std::ranges::transform(tag, tag.begin(), [](char c) {
+            return c >= 'a' ? static_cast<char>(c - 'a' + 'A') : c;
+        });
+        return tag;
+    }() + "&ccy=USD";
+    f.route(source);
+    f.map(external_id, index_uri);
+    f.connect();
+
+    feed_ingest_loop loop(f.nats, f.h.context(), nullptr, nullptr);
+    loop.refresh();
+
+    const auto today = std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now());
+    for (int days_ago = 10; days_ago >= 1; --days_ago) {
+        ores::marketdata::messaging::adapter_tick t;
+        t.id_scheme = "test";
+        t.external_id = external_id;
+        t.field = "rate";
+        t.value = "1.08" + std::to_string(50 + days_ago);
+        t.vendor_time = today - std::chrono::days(days_ago) + std::chrono::hours(14);
+        t.sequence = static_cast<std::uint64_t>(11 - days_ago);
+        REQUIRE_FALSE(loop.accept_adapter_tick(source, t).has_value());
+    }
+
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(30);
+    std::vector<ores::marketdata::domain::market_fixing> fixings;
+    while (std::chrono::steady_clock::now() < deadline) {
+        const auto series = market_series_repository{}.read_latest_by_key(
+            f.h.context(), index_uri, "ore", boost::uuids::to_string(f.party_id));
+        if (!series.empty()) {
+            fixings =
+                ores::marketdata::repository::market_fixing_repository{}.read_latest_for_series(
+                    f.h.context(), series.front().id);
+            if (fixings.size() == 10)
+                break;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
+    REQUIRE(fixings.size() == 10);
+    CHECK(fixings.back().fixing_date == std::chrono::year_month_day{today - std::chrono::days(1)});
+    CHECK(fixings.back().value == "1.0851");
+    CHECK(fixings.front().value == "1.0860");
+    CHECK(fixings.back().source == source);
+    CHECK(loop.translator()->drops(source,
+                                   ores::marketdata::service::app::adapter_tick_drop::stale) == 0);
 }

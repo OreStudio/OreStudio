@@ -20,6 +20,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.telemetry.core/messaging/logs_protocol.hpp"
+#include "ores.telemetry.core/messaging/nats_samples_protocol.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "test_suite.hpp"
@@ -375,4 +376,120 @@ TEST_CASE("list_service_roster_states_every_expected_instance", "[repository]") 
         {reporting, silent},
         lg,
         "Removing the test's expected services");
+}
+
+TEST_CASE("read_by_account_reads_the_account_inside_the_window", "[repository]") {
+    scoped_database_helper h;
+    telemetry_repository repo;
+
+    boost::uuids::random_generator gen;
+    const auto account_id = gen();
+    const auto now = std::chrono::system_clock::now();
+    for (int i = 0; i < 2; ++i) {
+        auto entry = make_test_entry();
+        entry.tag = "read-by-account";
+        entry.account_id = account_id;
+        entry.timestamp = now - std::chrono::minutes(i);
+        repo.create(h.context(), entry);
+    }
+    auto outside = make_test_entry();
+    outside.tag = "read-by-account";
+    outside.account_id = account_id;
+    outside.timestamp = now - std::chrono::hours(5);
+    repo.create(h.context(), outside);
+
+    const auto results = repo.read_by_account(
+        h.context(), account_id, now - std::chrono::hours(1), now + std::chrono::minutes(1), 10);
+
+    REQUIRE(results.size() == 2);
+    CHECK(results.front().timestamp >= results.back().timestamp);
+}
+
+TEST_CASE("count_errors_counts_only_the_source_errors", "[repository]") {
+    scoped_database_helper h;
+    telemetry_repository repo;
+
+    const auto source =
+        "count-errors-" + boost::uuids::to_string(boost::uuids::random_generator()());
+    for (const auto* level : {"error", "error", "info"}) {
+        auto entry = make_test_entry();
+        entry.tag = "count-errors";
+        entry.source_name = source;
+        entry.level = level;
+        repo.create(h.context(), entry);
+    }
+
+    CHECK(repo.count_errors(h.context(), source, 1) == 2);
+}
+
+TEST_CASE("delete_old_logs_removes_only_older_entries", "[repository]") {
+    scoped_database_helper h;
+    telemetry_repository repo;
+
+    const auto tag = "delete-old-" + boost::uuids::to_string(boost::uuids::random_generator()());
+    const auto now = std::chrono::system_clock::now();
+    auto old_entry = make_test_entry();
+    old_entry.tag = tag;
+    old_entry.timestamp = now - std::chrono::hours(48);
+    repo.create(h.context(), old_entry);
+    auto new_entry = make_test_entry();
+    new_entry.tag = tag;
+    repo.create(h.context(), new_entry);
+
+    repo.delete_old_logs(h.context(), now - std::chrono::hours(24));
+
+    ores::telemetry::messaging::telemetry_query q;
+    q.start_time = now - std::chrono::hours(72);
+    q.end_time = now + std::chrono::minutes(1);
+    q.tag = tag;
+    const auto left = repo.query(h.context(), q);
+    REQUIRE(left.size() == 1);
+    CHECK(left.front().id == new_entry.id);
+}
+
+TEST_CASE("nats_server_samples_round_trip", "[repository]") {
+    scoped_database_helper h;
+    telemetry_repository repo;
+
+    const auto now = std::chrono::system_clock::now();
+    ores::telemetry::messaging::nats_server_sample sample;
+    sample.sampled_at = now;
+    sample.in_msgs = static_cast<std::uint64_t>(now.time_since_epoch().count() % 1000000007);
+    sample.out_msgs = 7;
+    repo.insert_server_sample(h.context(), sample);
+
+    ores::telemetry::messaging::nats_server_samples_query q;
+    q.start_time = now - std::chrono::minutes(1);
+    q.end_time = now + std::chrono::minutes(1);
+    const auto results = repo.query_server_samples(h.context(), q);
+
+    const auto found =
+        std::ranges::find_if(results, [&](const auto& s) { return s.in_msgs == sample.in_msgs; });
+    REQUIRE(found != results.end());
+    CHECK(found->out_msgs == 7);
+}
+
+TEST_CASE("nats_stream_samples_round_trip", "[repository]") {
+    scoped_database_helper h;
+    telemetry_repository repo;
+
+    const auto now = std::chrono::system_clock::now();
+    const auto stream = "stream_" + boost::uuids::to_string(boost::uuids::random_generator()());
+    std::vector<ores::telemetry::messaging::nats_stream_sample> samples(2);
+    for (std::size_t i = 0; i < samples.size(); ++i) {
+        samples[i].sampled_at = now - std::chrono::seconds(i);
+        samples[i].stream_name = stream;
+        samples[i].messages = 10 + i;
+    }
+    repo.insert_stream_samples(h.context(), samples);
+
+    ores::telemetry::messaging::nats_stream_samples_query q;
+    q.stream_name = stream;
+    q.start_time = now - std::chrono::minutes(1);
+    q.end_time = now + std::chrono::minutes(1);
+    const auto results = repo.query_stream_samples(h.context(), q);
+
+    REQUIRE(results.size() == 2);
+    CHECK(results.front().messages == 10);
+    CHECK(results.back().messages == 11);
 }

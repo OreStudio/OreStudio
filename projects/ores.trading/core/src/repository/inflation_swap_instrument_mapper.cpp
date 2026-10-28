@@ -47,7 +47,7 @@ inflation_swap_instrument_mapper::map(const inflation_swap_instrument_entity& v)
     domain::inflation_swap_instrument r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.inflation_index_code = v.inflation_index_code;
     r.base_cpi = v.base_cpi;

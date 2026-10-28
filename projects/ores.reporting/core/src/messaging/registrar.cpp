@@ -55,6 +55,7 @@
 #include "ores.reporting.core/messaging/report_execution_handler.hpp"
 #include "ores.reporting.core/messaging/report_instance_handler.hpp"
 #include "ores.reporting.core/messaging/report_instance_trigger_handler.hpp"
+#include "ores.reporting.core/messaging/report_result_row_registrar.hpp"
 #include "ores.reporting.core/messaging/report_run_health_handler.hpp"
 #include "ores.reporting.core/messaging/report_run_pricing_handler.hpp"
 #include "ores.reporting.core/messaging/report_scheduling_handler.hpp"
@@ -469,6 +470,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
     for (auto& sub : register_ore_parameter_value_set_catalogue_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
     for (auto& sub : register_ore_parameter_setting_value_set_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+
+    // ----------------------------------------------------------------
+    // A run's result rows (generated CRUD handlers). The rows are a time
+    // series the post-processor writes, and a screen asks for one run through
+    // the filter. The handler checks the read permission and the service
+    // honours the page and every filter member, so this path bounds the read.
+    // ----------------------------------------------------------------
+    for (auto& sub : register_report_result_row_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
 
     return subs;

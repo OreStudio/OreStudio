@@ -25,8 +25,8 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_TENOR_BASIS_TWO_SWAP_CONVENTION_ENTITY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_TENOR_BASIS_TWO_SWAP_CONVENTION_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct tenor_basis_two_swap_convention_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_refdata_tenor_basis_two_swap_conventions_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
     std::string party_id;
@@ -63,6 +63,37 @@ struct tenor_basis_two_swap_convention_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = tenor_basis_two_swap_convention_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("calendar", &e::calendar) |
+               query_builder::bind("long_fixed_frequency", &e::long_fixed_frequency) |
+               query_builder::bind("long_fixed_convention", &e::long_fixed_convention) |
+               query_builder::bind("long_fixed_day_count_fraction",
+                                   &e::long_fixed_day_count_fraction) |
+               query_builder::bind("long_index", &e::long_index) |
+               query_builder::bind("short_fixed_frequency", &e::short_fixed_frequency) |
+               query_builder::bind("short_fixed_convention", &e::short_fixed_convention) |
+               query_builder::bind("short_fixed_day_count_fraction",
+                                   &e::short_fixed_day_count_fraction) |
+               query_builder::bind("short_index", &e::short_index) |
+               query_builder::bind("long_minus_short", &e::long_minus_short) |
+               query_builder::bind("oresmd_uri", &e::oresmd_uri) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const tenor_basis_two_swap_convention_entity& v);

@@ -9,10 +9,7 @@
             "name": "reflectcpp",
             "features": [ "xml", "msgpack" ]
         },
-        {
-            "name": "sqlgen",
-            "features": [ "postgres" ]
-        },
+        "libpq",
         "pugixml",
         "magic-enum",
         "boost-system",

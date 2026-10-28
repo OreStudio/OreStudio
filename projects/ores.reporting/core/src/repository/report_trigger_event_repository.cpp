@@ -23,10 +23,8 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.reporting.core/repository/report_trigger_event_repository.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/stated_order.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/report_trigger_event.hpp"
 #include "ores.reporting.api/domain/report_trigger_event_json_io.hpp" // IWYU pragma: keep.
@@ -40,17 +38,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/begin_transaction.hpp>
-#include <sqlgen/commit.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/insert.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -58,13 +45,13 @@
 
 namespace ores::reporting::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string report_trigger_event_repository::sql() {
-    return generate_create_table_sql<report_trigger_event_entity>(lg());
+    return query_builder::insert_statement_sql<report_trigger_event_entity>(lg());
 }
 
 bool report_trigger_event_repository::is_sortable(std::string_view field) {
@@ -79,16 +66,17 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
+query_builder::order
 report_trigger_event_list_order(const ores::utility::domain::order& order,
                                 std::initializer_list<std::string> default_columns,
                                 bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!report_trigger_event_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of report trigger events cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 }
@@ -139,10 +127,10 @@ void report_trigger_event_repository::write(context ctx,
                                             const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report trigger event. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_op(ctx,
-                     sqlgen::insert(report_trigger_event_mapper::map(t)),
-                     lg(),
-                     "Writing report trigger event to database.");
+    query_builder::execute_write_op(ctx,
+                                    query_builder::insert(report_trigger_event_mapper::map(t)),
+                                    lg(),
+                                    "Writing report trigger event to database.");
 }
 
 void report_trigger_event_repository::write(
@@ -154,19 +142,20 @@ void report_trigger_event_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_op(ctx,
-                     sqlgen::insert(report_trigger_event_mapper::map(batch)),
-                     lg(),
-                     "Writing report trigger events to database.");
+    query_builder::execute_write_op(ctx,
+                                    query_builder::insert(report_trigger_event_mapper::map(batch)),
+                                    lg(),
+                                    "Writing report trigger events to database.");
 }
 
 std::vector<domain::report_trigger_event>
 report_trigger_event_repository::read_latest(context ctx) {
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<report_trigger_event_entity>> |
-                       where("tenant_id"_c == tid) | order_by("id"_c);
+    const auto query = query_builder::read<std::vector<report_trigger_event_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::order_by("id"_c);
 
-    return execute_read_query<report_trigger_event_entity, domain::report_trigger_event>(
+    return query_builder::execute_read_query<report_trigger_event_entity,
+                                             domain::report_trigger_event>(
         ctx,
         query,
         [](const auto& entities) { return report_trigger_event_mapper::map(entities); },
@@ -178,10 +167,11 @@ std::vector<domain::report_trigger_event>
 report_trigger_event_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report trigger event. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<report_trigger_event_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id);
+    const auto query = query_builder::read<std::vector<report_trigger_event_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id);
 
-    return execute_read_query<report_trigger_event_entity, domain::report_trigger_event>(
+    return query_builder::execute_read_query<report_trigger_event_entity,
+                                             domain::report_trigger_event>(
         ctx,
         query,
         [](const auto& entities) { return report_trigger_event_mapper::map(entities); },
@@ -194,10 +184,12 @@ std::vector<domain::report_trigger_event>
 report_trigger_event_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all report trigger event versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<report_trigger_event_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) | order_by("id"_c);
+    const auto query = query_builder::read<std::vector<report_trigger_event_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id) |
+                       query_builder::order_by("id"_c);
 
-    return execute_read_query<report_trigger_event_entity, domain::report_trigger_event>(
+    return query_builder::execute_read_query<report_trigger_event_entity,
+                                             domain::report_trigger_event>(
         ctx,
         query,
         [](const auto& entities) { return report_trigger_event_mapper::map(entities); },
@@ -217,10 +209,11 @@ report_trigger_event_repository::remove_status report_trigger_event_repository::
     if (current.empty())
         return remove_status::missing;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<report_trigger_event_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id);
+    const auto query = query_builder::delete_from<report_trigger_event_entity> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id);
 
-    execute_delete_query(ctx, query, lg(), "Removing report trigger event from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing report trigger event from database.");
     return remove_status::removed;
 }
 
@@ -236,10 +229,12 @@ report_trigger_event_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report trigger events with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<report_trigger_event_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<report_trigger_event_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
-    return execute_ordered_read_query<report_trigger_event_entity, domain::report_trigger_event>(
+    return query_builder::execute_ordered_read_query<report_trigger_event_entity,
+                                                     domain::report_trigger_event>(
         ctx,
         query,
         report_trigger_event_list_order(order, {"id"}, false),
@@ -253,10 +248,10 @@ std::uint32_t report_trigger_event_repository::get_total_trigger_count(context c
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report trigger event count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<report_trigger_event_entity>> | where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<report_trigger_event_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
-    return execute_count_query<report_trigger_event_entity>(
+    return query_builder::execute_count_query<report_trigger_event_entity>(
         ctx, query, std::nullopt, lg(), "Counting report trigger events");
 }
 
@@ -265,9 +260,10 @@ report_trigger_event_repository::read_latest(context ctx, const std::vector<std:
     if (ids.empty())
         return {};
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<report_trigger_event_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids));
-    auto result = execute_read_query<report_trigger_event_entity, domain::report_trigger_event>(
+    const auto query = query_builder::read<std::vector<report_trigger_event_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c.in(ids));
+    auto result = query_builder::execute_read_query<report_trigger_event_entity,
+                                                    domain::report_trigger_event>(
         ctx,
         query,
         [](const auto& entities) { return report_trigger_event_mapper::map(entities); },
@@ -286,9 +282,9 @@ void report_trigger_event_repository::remove(context ctx, const std::vector<std:
     if (ids.empty())
         return;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<report_trigger_event_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids));
-    execute_delete_query(ctx, query, lg(), "Batch removing report trigger events.");
+    const auto query = query_builder::delete_from<report_trigger_event_entity> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c.in(ids));
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing report trigger events.");
 }
 
 

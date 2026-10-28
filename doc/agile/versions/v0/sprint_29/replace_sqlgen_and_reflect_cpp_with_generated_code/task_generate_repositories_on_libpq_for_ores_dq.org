@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/generate-dq-repositories-on-libpq
+#+pr: 3947
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Step 3 of 7, first component. The repository templates target the libpq layer, a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -42,9 +42,26 @@ Step 3 of 7, first component. The repository templates target the libpq layer, a
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Match sqlgen first: the move changes the library, not the behaviour.
+
+1. A light query builder in =ores.database=, =ores::database::query_builder=, with the
+   names the repository templates used with sqlgen: =read=, =where=,
+   =order_by=, =limit=, =offset=, =delete_from=, =insert=,
+   =insert_or_replace=, the list-filter conditions and the =execute_*=
+   helpers. It writes the SQL sqlgen wrote, binds every value as an untyped
+   text parameter the server types from its use as it typed sqlgen's
+   literals, prepares a fixed statement once per connection and runs a
+   varying one unnamed, and raises the same =repository_exception=.
+2. A text mode on the layer, so a repository reads text into the entity
+   sqlgen filled and the mapper is unchanged.
+3. The bridge: one libpq pool shared by every copy of a context.
+4. A component chooses its backend with =#+repository_backend: libpq=. Its
+   repository source comes from a new archetype, the sqlgen one with its
+   namespace swapped; its entity drops the sqlgen key and timestamp
+   spellings and states its columns; its mapper reads the key without
+   =.value()=.
+5. Move =ores.dq=, port its hand-written sqlgen code, and run its suites and
+   those of every component that reads its repositories.
 
 * Measurements
 
@@ -58,9 +75,32 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| dq repositories generated on libpq | 25 entities and 2 junctions | =compass codegen regenerate --component dq --address ores= | 27ccd5dc12 |
+| sqlgen in the generated dq repository, entity and mapper sources | 0 lines | =grep sqlgen= | 27ccd5dc12 |
+| Suites that read dq's repositories | ores.dq.api, core and service, ores.database, ores.trading and ores.workflow: all pass | =ctest -R 'ores\.(dq\|trading\|workflow)\.\|ores.database.tests'= | 27ccd5dc12 |
+| Unity build of the whole tree | Green | =cmake --build build/output/linux-clang-release-ninja -- -k 0= | 27ccd5dc12 |
 
 * Notes
+
+** Why a query builder and not generated statements
+
+The analysis story chose generated statements. Matching sqlgen first is
+cheaper and safer with a builder that keeps sqlgen's names: the 1,800-line
+repository template moves by a namespace swap, and its Python-built query
+fragments are unchanged. The builder is runtime SQL from fixed shapes, light
+to compile, and a fixed shape is still prepared once per connection. Typed
+binary rows and generated statements follow once sqlgen is gone, in
+[[id:551DA90D-4457-4CA2-9617-B18C5FDAEDBF][Read and write typed binary rows in the generated repositories]].
+
+** What else moved
+
+- The one hand-written dq repository, dataset dependencies, and the fsm state
+  read by machine name, pasted from its model, now use the builder.
+- An entity with a write observer cannot move yet: the builder refuses it at
+  compile time. Only ores.trading has observers.
+- The service template emitted an unprefixed =refuse_direct_write= in every
+  gated entity's service. #3923 renamed it in two generated services, which a
+  regenerate would undo; the template now names it for its entity.
 
 * Test Scenarios
 
@@ -77,7 +117,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3947][#3947]] | [dq] Move the dq repositories to libpq |
 
 * Review
 
@@ -86,3 +126,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=ores.dq= runs on the libpq layer. Its repositories are generated by a new
+archetype through the =ores::database::query_builder= query builder, which writes the SQL
+sqlgen wrote and runs it on the layer; its entities and mappers carry no
+sqlgen spelling, and its repositories kept their interface, so no caller
+changed. Any component moves by stating =#+repository_backend: libpq=.

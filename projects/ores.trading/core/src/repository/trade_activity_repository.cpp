@@ -23,11 +23,8 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/repository/trade_activity_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/trade_activity.hpp"
 #include "ores.trading.api/domain/trade_activity_json_io.hpp" // IWYU pragma: keep.
@@ -42,16 +39,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -60,13 +47,13 @@
 
 namespace ores::trading::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string trade_activity_repository::sql() {
-    return generate_create_table_sql<trade_activity_entity>(lg());
+    return query_builder::insert_statement_sql<trade_activity_entity>(lg());
 }
 
 bool trade_activity_repository::is_sortable(std::string_view field) {
@@ -81,34 +68,34 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
-trade_activity_list_order(const ores::utility::domain::order& order,
-                          std::initializer_list<std::string> default_columns,
-                          bool default_descending) {
+query_builder::order trade_activity_list_order(const ores::utility::domain::order& order,
+                                               std::initializer_list<std::string> default_columns,
+                                               bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!trade_activity_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of trade activities cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 /*
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
+std::optional<query_builder::condition>
 trade_activity_filter_condition(const std::optional<messaging::trade_activities_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -167,7 +154,7 @@ void trade_activity_repository::write(context ctx,
                                       const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade activity. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, trade_activity_mapper::map(t), lg(), "Writing trade activity to database.");
 }
 
@@ -180,18 +167,18 @@ void trade_activity_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, trade_activity_mapper::map(batch), lg(), "Writing trade activities to database.");
 }
 
 std::vector<domain::trade_activity> trade_activity_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_activity_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+    const auto query = query_builder::read<std::vector<trade_activity_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
-    return execute_read_query<trade_activity_entity, domain::trade_activity>(
+    return query_builder::execute_read_query<trade_activity_entity, domain::trade_activity>(
         ctx,
         query,
         [](const auto& entities) { return trade_activity_mapper::map(entities); },
@@ -204,10 +191,11 @@ std::vector<domain::trade_activity> trade_activity_repository::read_latest(conte
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade activity. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_activity_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<trade_activity_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
-    return execute_read_query<trade_activity_entity, domain::trade_activity>(
+    return query_builder::execute_read_query<trade_activity_entity, domain::trade_activity>(
         ctx,
         query,
         [](const auto& entities) { return trade_activity_mapper::map(entities); },
@@ -220,11 +208,11 @@ std::vector<domain::trade_activity> trade_activity_repository::read_all(context 
                                                                         const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all trade activity versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_activity_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query = query_builder::read<std::vector<trade_activity_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<trade_activity_entity, domain::trade_activity>(
+    return query_builder::execute_read_query<trade_activity_entity, domain::trade_activity>(
         ctx,
         query,
         [](const auto& entities) { return trade_activity_mapper::map(entities); },
@@ -237,16 +225,18 @@ std::optional<domain::trade_activity> trade_activity_repository::read_at_version
     BOOST_LOG_SEV(lg(), debug) << "Reading trade activity at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_activity_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
-                       sqlgen::limit(1);
+    const auto query =
+        query_builder::read<std::vector<trade_activity_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+        query_builder::limit(1);
 
-    const auto entities = execute_read_query<trade_activity_entity, domain::trade_activity>(
-        ctx,
-        query,
-        [](const auto& entities) { return trade_activity_mapper::map(entities); },
-        lg(),
-        "Reading trade activity at version.");
+    const auto entities =
+        query_builder::execute_read_query<trade_activity_entity, domain::trade_activity>(
+            ctx,
+            query,
+            [](const auto& entities) { return trade_activity_mapper::map(entities); },
+            lg(),
+            "Reading trade activity at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -270,11 +260,11 @@ trade_activity_repository::remove_status trade_activity_repository::remove(
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<trade_activity_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+    const auto query = query_builder::delete_from<trade_activity_entity> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing trade activity from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing trade activity from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -297,14 +287,16 @@ std::vector<domain::trade_activity> trade_activity_repository::read_latest(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade activities with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_activity_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<trade_activity_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
-    return execute_ordered_read_query<trade_activity_entity, domain::trade_activity>(
+    return query_builder::execute_ordered_read_query<trade_activity_entity, domain::trade_activity>(
         ctx,
         query,
         trade_activity_list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), trade_activity_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                trade_activity_filter_condition(filter)),
         [](const auto& entities) { return trade_activity_mapper::map(entities); },
         lg(),
         "Reading latest trade activities with pagination.");
@@ -317,13 +309,14 @@ std::uint32_t trade_activity_repository::get_total_activity_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade activity count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<trade_activity_entity>> | where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<trade_activity_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
-    return execute_count_query<trade_activity_entity>(
+    return query_builder::execute_count_query<trade_activity_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), trade_activity_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                trade_activity_filter_condition(filter)),
         lg(),
         "Counting trade activities");
 }
@@ -334,9 +327,10 @@ trade_activity_repository::read_latest(context ctx, const std::vector<std::strin
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_activity_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    auto result = execute_read_query<trade_activity_entity, domain::trade_activity>(
+    const auto query =
+        query_builder::read<std::vector<trade_activity_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result = query_builder::execute_read_query<trade_activity_entity, domain::trade_activity>(
         ctx,
         query,
         [](const auto& entities) { return trade_activity_mapper::map(entities); },
@@ -356,9 +350,10 @@ void trade_activity_repository::remove(context ctx, const std::vector<std::strin
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<trade_activity_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing trade activities.");
+    const auto query =
+        query_builder::delete_from<trade_activity_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing trade activities.");
 }
 
 

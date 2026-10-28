@@ -46,7 +46,7 @@ domain::activity_type activity_type_mapper::map(const activity_type_entity& v) {
     domain::activity_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.category = v.category;
     r.requires_confirmation = v.requires_confirmation;
     r.is_economic = v.is_economic;

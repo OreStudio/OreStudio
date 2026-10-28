@@ -25,8 +25,8 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_BOND_ISSUE_LEG_SCHEDULE_ENTITY_HPP
 #define ORES_TRADING_CORE_REPOSITORY_BOND_ISSUE_LEG_SCHEDULE_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,10 +42,10 @@ struct bond_issue_leg_schedule_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_bond_issue_leg_schedules_tbl";
 
-    sqlgen::PrimaryKey<std::string> issue_id;
-    sqlgen::PrimaryKey<std::string> leg_number;
-    sqlgen::PrimaryKey<std::string> schedule_role;
-    sqlgen::PrimaryKey<std::string> sequence_number;
+    std::string issue_id;
+    std::string leg_number;
+    std::string schedule_role;
+    std::string sequence_number;
     std::string tenant_id;
     int version = 0;
     std::string schedule_kind;
@@ -70,6 +70,43 @@ struct bond_issue_leg_schedule_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = bond_issue_leg_schedule_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("issue_id", &e::issue_id) |
+               query_builder::key("leg_number", &e::leg_number) |
+               query_builder::key("schedule_role", &e::schedule_role) |
+               query_builder::key("sequence_number", &e::sequence_number) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("schedule_kind", &e::schedule_kind) |
+               query_builder::bind("start_date", &e::start_date) |
+               query_builder::bind("end_date", &e::end_date) |
+               query_builder::bind("adjust_end_date_to_previous_month_end",
+                                   &e::adjust_end_date_to_previous_month_end) |
+               query_builder::bind("tenor", &e::tenor) |
+               query_builder::bind("calendar", &e::calendar) |
+               query_builder::bind("convention", &e::convention) |
+               query_builder::bind("term_convention", &e::term_convention) |
+               query_builder::bind("rule", &e::rule) |
+               query_builder::bind("end_of_month", &e::end_of_month) |
+               query_builder::bind("end_of_month_convention", &e::end_of_month_convention) |
+               query_builder::bind("first_date", &e::first_date) |
+               query_builder::bind("last_date", &e::last_date) |
+               query_builder::bind("remove_first_date", &e::remove_first_date) |
+               query_builder::bind("remove_last_date", &e::remove_last_date) |
+               query_builder::bind("include_duplicate_dates", &e::include_duplicate_dates) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const bond_issue_leg_schedule_entity& v);

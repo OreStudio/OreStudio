@@ -30,6 +30,7 @@ set(files
     "app_demand_calculator_tests.cpp"
     "app_feed_ingest_loop_tests.cpp"
     "app_feed_series_tests.cpp"
+    "app_fixing_ingest_tests.cpp"
     "app_live_tenants_tests.cpp"
     "app_published_curves_tests.cpp"
     "app_tick_batch_tests.cpp"

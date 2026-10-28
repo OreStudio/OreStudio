@@ -25,8 +25,8 @@
 #ifndef ORES_REPORTING_CORE_REPOSITORY_ORE_PARAMETER_ENTITY_HPP
 #define ORES_REPORTING_CORE_REPOSITORY_ORE_PARAMETER_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct ore_parameter_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_reporting_ore_parameters_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
     std::string scope;
@@ -66,6 +66,37 @@ struct ore_parameter_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = ore_parameter_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("scope", &e::scope) |
+               query_builder::bind("subtype", &e::subtype) | query_builder::bind("name", &e::name) |
+               query_builder::bind("schema_name", &e::schema_name) |
+               query_builder::bind("xpath", &e::xpath) |
+               query_builder::bind("position", &e::position) |
+               query_builder::bind("ore_parameter_value_domain_code",
+                                   &e::ore_parameter_value_domain_code) |
+               query_builder::bind("is_required", &e::is_required) |
+               query_builder::bind("label", &e::label) | query_builder::bind("help", &e::help) |
+               query_builder::bind("description", &e::description) |
+               query_builder::bind("default_text", &e::default_text) |
+               query_builder::bind("format", &e::format) |
+               query_builder::bind("introduced_in", &e::introduced_in) |
+               query_builder::bind("removed_in", &e::removed_in) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const ore_parameter_entity& v);

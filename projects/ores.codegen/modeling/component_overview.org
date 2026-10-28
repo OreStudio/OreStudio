@@ -64,7 +64,7 @@ facets are in [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]§"Ty
 |---|---|---|
 | =--address ores.cpp.domain= | Domain class, JSON I/O, table I/O | =reflectcpp=, =libfort= |
 | =--address ores.cpp.generator= | Test data generator | =faker-cxx= |
-| =--address ores.cpp.repository= | Entity, mapper, repository | =sqlgen= |
+| =--address ores.cpp.repository= | Entity, mapper, repository | =ores.database= query builder (libpq) |
 | =--address ores.cpp.service= | Service layer | — |
 | =--address ores.cpp.protocol= | NATS messaging protocol header | — |
 | =--address ores.sql.schema= | SQL schema, notify triggers, drop scripts | — |
@@ -98,15 +98,16 @@ Uses =faker-cxx= for realistic fake field values and
 
 Generates three file pairs: entity, mapper, and repository.
 
-- *Entity*: a flat struct with =sqlgen= annotations that maps to the
-  database table.  One domain class does not always map to one entity
-  — consult the model when they diverge.
+- *Entity*: a flat struct that maps to the database table, with a
+  =columns()= list naming each column, its member and whether it is part of
+  the key; the query builder binds and reads it as text.  One domain class
+  does not always map to one entity — consult the model when they diverge.
 - *Mapper*: converts entity↔domain via =to_domain()= and =from_domain()=.
   Handles type conversions: UUID strings ↔ =boost::uuids::uuid=,
   database timestamps ↔ =std::chrono::system_clock::time_point=.
-- *Repository*: uses =sqlgen= for database operations and
-  =ores.database/repository/bitemporal_operations.hpp= for all read/write
-  helpers.  Write operations use upsert semantics — there is no separate
+- *Repository*: states its queries with =ores::database::query_builder= and
+  runs them through its =execute_*= helpers, each call one transaction on the
+  context's libpq pool or on the unit of work the context is bound to.  Write operations use upsert semantics — there is no separate
   create vs update at the repository layer.  Read methods: =read_latest()=,
   =read_all()=, =read_latest_since(time_point)= (incremental loading),
   =read_at_timepoint(timestamp)=.

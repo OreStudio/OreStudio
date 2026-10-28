@@ -61,15 +61,22 @@ fails when the committed tables differ from what the schemas produce.
 - =include/ores.ore.core/planner/= — the import plan and its choices.
 - =include/ores.ore.core/hierarchy/= — the portfolio and book node builder.
 - =include/ores.ore.core/log/= — the ORE engine log line parser.
+- =include/ores.ore.core/xml/run_package.hpp= — where an ORE input directory's
+  files sit in the directory the engine reads.
 
 * Dependencies
 
 - =ores.ore.api= — the shared contract, linked publicly.
-- =ores.database= — the database context, linked publicly.
-- =ores.refdata.api= and =ores.trading.api= — the domain types the mappers
-  target, linked publicly.
-- =ores.dq.api=, =ores.history.core=, =ores.logging=, =ores.platform=,
-  =ores.utility= and Boost — linked privately.
+- =ores.refdata.api=, =ores.trading.api=, =ores.analytics.api= and
+  =ores.reporting.api= — the domain types the mappers and projections target,
+  linked publicly.
+- =ores.refdata.core=, =ores.dq.api=, =ores.history.core=, =ores.logging=,
+  =ores.platform=, =ores.utility= and Boost — linked privately.
+
+The component holds no database session. It converts documents and returns
+types; the store that once wrote reporting, refdata and analytics rows lived
+here and was removed, because a format codec that opens a session is a codec
+that writes another component's tables.
 
 XML parsing is the generated binding code. The component links =pugixml=
 for the documents it writes and does not link =nats.c=.
@@ -113,14 +120,11 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.analytics.api.lib
         ores.ore.api.lib
-        ores.database.lib
         ores.refdata.api.lib
         ores.refdata.core.lib
         ores.reporting.api.lib
         ores.trading.api.lib
     PRIVATE
-        ores.analytics.core.lib
-        ores.reporting.core.lib
         ores.dq.api.lib
         ores.history.core.lib
         ores.logging.lib

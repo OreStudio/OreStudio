@@ -102,9 +102,20 @@ public:
      * @brief The owner of the claim on a step, when one holds it.
      *
      * Reads only, for diagnostics: a step whose deliveries keep coming back
-     * busy names the process that is keeping them out.
+     * busy names the process that is keeping them out. The engine also reads
+     * it to tell a step a worker has taken from one still waiting in a queue.
      */
     std::optional<std::string> holder(context ctx, const boost::uuids::uuid& step_id);
+
+    /**
+     * @brief When the current claim on a step was taken, when one holds it.
+     *
+     * The moment a worker took the step, which is when the work could first go
+     * silent. A command that waited in a queue before that was waiting on the
+     * service, not on the step.
+     */
+    std::optional<std::chrono::system_clock::time_point>
+    claimed_at(context ctx, const boost::uuids::uuid& step_id);
 };
 
 }

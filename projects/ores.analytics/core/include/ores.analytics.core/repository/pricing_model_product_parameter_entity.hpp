@@ -25,8 +25,8 @@
 #ifndef ORES_ANALYTICS_CORE_REPOSITORY_PRICING_MODEL_PRODUCT_PARAMETER_ENTITY_HPP
 #define ORES_ANALYTICS_CORE_REPOSITORY_PRICING_MODEL_PRODUCT_PARAMETER_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct pricing_model_product_parameter_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_analytics_pricing_model_product_parameters_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
     std::string party_id;
@@ -58,6 +58,30 @@ struct pricing_model_product_parameter_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = pricing_model_product_parameter_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("pricing_model_config_id", &e::pricing_model_config_id) |
+               query_builder::bind("pricing_model_product_id", &e::pricing_model_product_id) |
+               query_builder::bind("parameter_scope", &e::parameter_scope) |
+               query_builder::bind("parameter_name", &e::parameter_name) |
+               query_builder::bind("parameter_value", &e::parameter_value) |
+               query_builder::bind("position", &e::position) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const pricing_model_product_parameter_entity& v);

@@ -48,7 +48,7 @@ domain::report_error_event report_error_event_mapper::map(const report_error_eve
 
     domain::report_error_event r;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.report_instance_id = boost::lexical_cast<boost::uuids::uuid>(v.report_instance_id);
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.scope_code = v.scope_code;

@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: B46F663A-361B-478C-9124-8220698FC897
+:END:
+#+title: Task: Remove the database store from the ORE codec
+#+description: The ORE codec's run store writes reporting, refdata and analytics tables through their repositories and services, and only its own tests call it. Remove the import and export, keep the package helpers, and drop the core libraries the codec no longer needs.
+#+type: task
+#+level: s1
+#+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
+#+owner: marco
+#+branch: feature/remove-the-database-store-from-the-ore-codec
+#+pr: 3990
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The ORE codec holds no database session and calls no other component's repository. Its only remaining knowledge of a run is where each file sits inside an ORE input directory.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-27                               |
+
+* Acceptance
+
+- store::import_run and store::export_run are gone, and nothing calls them.
+- The package helpers — the run document's name, where each file sits in the archive, and the paths the run document declares — stay and are covered by tests.
+- ores.ore.core links no ores.database, ores.analytics.core or ores.reporting.core library, and none of its public headers includes their headers.
+- The codec suite passes with the run store's database tests deleted.
+
+* Plan
+
+The store held two things that do not belong together: the database import and
+export, and the layout of an ORE input directory. The layout stays and moves to
+=xml/run_package.hpp=, because an ORE package is an ORE artefact; the import and
+export go, because the live import is the service's, over NATS, and nothing but
+the store's own tests called them.
+
+=report_package_handler= is the one caller, and it used only the layout. Its
+three call sites move to the new namespace. The component's dependency block
+drops =ores.database=, =ores.analytics.core= and =ores.reporting.core=, and the
+drift check and the ore suites prove the result.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| ORES libraries the codec declares | 22 | =readelf -d build/output/linux-clang-release-ninja/publish/lib/libores.ore.core.so | grep NEEDED | grep -c libores= | b8eac6b354 |
+| Callers of =store::import_run= and =store::export_run= outside the codec's own database tests | 0 | =grep -rn 'store::import_run\|store::export_run' projects --include=*.cpp --include=*.hpp | grep -vc run_store_database_tests= | b8eac6b354 |
+| The compute wrapper links the codec | yes, =ores.ore.core.lib= at line 60 | =grep -n 'ores.ore.core.lib' projects/ores.compute/wrapper/src/CMakeLists.txt= | b8eac6b354 |
+| Core or service libraries =ores.reporting.api= links, which is what makes it a leaf | 0 | =grep -c 'ores\.[a-z]*\.core\.lib\|ores\.[a-z]*\.service\.lib' projects/ores.reporting/api/src/CMakeLists.txt= | b8eac6b354 |
+| ORES libraries the codec declares, after | 19 | the same command | HEAD |
+| Of those, what the removal took | =reporting.core=, =analytics.core= and =scheduler.api= | =diff= of the two lists | HEAD |
+| =ores.database= as a direct link | gone; it still arrives through =refdata.core= and the profile's =nats= and =service= | =grep -n 'ores.database' projects/ores.ore/core/src/CMakeLists.txt= | HEAD |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3990][#3990]] | [ore] Hold the input layout without a database |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Merged as #3990. The codec holds no database session: the database import and
+export are gone, and the layout of an ORE input directory lives in
+=xml/run_package.hpp=, where the rest of the ORE package knowledge is.
+
+The declared libraries fall from 22 to 19: =reporting.core=, =analytics.core=
+and =scheduler.api= are no longer loaded. =ores.database= is no longer a direct
+link; it still arrives through =ores.refdata.core=, until the conventions bundle
+moves, and through the profile's =nats= and =service=, which the story's Notes
+count as a finding of their own.
+
+Proven: the ore suites pass, no header or source includes the three removed
+libraries, and the component regenerates to exactly what is committed.

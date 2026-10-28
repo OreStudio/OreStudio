@@ -23,10 +23,8 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/stated_order.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/market_series_identity.hpp"
 #include "ores.marketdata.api/domain/market_series_identity_json_io.hpp" // IWYU pragma: keep.
@@ -40,17 +38,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/begin_transaction.hpp>
-#include <sqlgen/commit.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/insert.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -58,13 +45,13 @@
 
 namespace ores::marketdata::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string market_series_identity_repository::sql() {
-    return generate_create_table_sql<market_series_identity_entity>(lg());
+    return query_builder::insert_statement_sql<market_series_identity_entity>(lg());
 }
 
 bool market_series_identity_repository::is_sortable(std::string_view field) {
@@ -79,16 +66,17 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
+query_builder::order
 market_series_identity_list_order(const ores::utility::domain::order& order,
                                   std::initializer_list<std::string> default_columns,
                                   bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"series_id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"series_id"});
     if (!market_series_identity_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of market series identities cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"series_id"});
+    return query_builder::make_order({order.field}, order.descending, {"series_id"});
 }
 
 }
@@ -142,10 +130,11 @@ void market_series_identity_repository::write(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Writing market series identity. "
                                << "series_id: " << v.series_id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_op(ctx,
-                     sqlgen::insert_or_replace(market_series_identity_mapper::map(t)),
-                     lg(),
-                     "Writing market series identity to database.");
+    query_builder::execute_write_op(
+        ctx,
+        query_builder::insert_or_replace(market_series_identity_mapper::map(t)),
+        lg(),
+        "Writing market series identity to database.");
 }
 
 void market_series_identity_repository::write(
@@ -157,19 +146,22 @@ void market_series_identity_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_op(ctx,
-                     sqlgen::insert_or_replace(market_series_identity_mapper::map(batch)),
-                     lg(),
-                     "Writing market series identities to database.");
+    query_builder::execute_write_op(
+        ctx,
+        query_builder::insert_or_replace(market_series_identity_mapper::map(batch)),
+        lg(),
+        "Writing market series identities to database.");
 }
 
 std::vector<domain::market_series_identity>
 market_series_identity_repository::read_latest(context ctx) {
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_series_identity_entity>> |
-                       where("tenant_id"_c == tid) | order_by("series_id"_c);
+    const auto query = query_builder::read<std::vector<market_series_identity_entity>> |
+                       query_builder::where("tenant_id"_c == tid) |
+                       query_builder::order_by("series_id"_c);
 
-    return execute_read_query<market_series_identity_entity, domain::market_series_identity>(
+    return query_builder::execute_read_query<market_series_identity_entity,
+                                             domain::market_series_identity>(
         ctx,
         query,
         [](const auto& entities) { return market_series_identity_mapper::map(entities); },
@@ -182,10 +174,11 @@ market_series_identity_repository::read_latest(context ctx, const std::string& s
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market series identity. "
                                << "series_id: " << series_id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_series_identity_entity>> |
-                       where("tenant_id"_c == tid && "series_id"_c == series_id);
+    const auto query = query_builder::read<std::vector<market_series_identity_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "series_id"_c == series_id);
 
-    return execute_read_query<market_series_identity_entity, domain::market_series_identity>(
+    return query_builder::execute_read_query<market_series_identity_entity,
+                                             domain::market_series_identity>(
         ctx,
         query,
         [](const auto& entities) { return market_series_identity_mapper::map(entities); },
@@ -199,11 +192,12 @@ market_series_identity_repository::read_all(context ctx, const std::string& seri
     BOOST_LOG_SEV(lg(), debug) << "Reading all market series identity versions. "
                                << "series_id: " << series_id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_series_identity_entity>> |
-                       where("tenant_id"_c == tid && "series_id"_c == series_id) |
-                       order_by("series_id"_c);
+    const auto query = query_builder::read<std::vector<market_series_identity_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "series_id"_c == series_id) |
+                       query_builder::order_by("series_id"_c);
 
-    return execute_read_query<market_series_identity_entity, domain::market_series_identity>(
+    return query_builder::execute_read_query<market_series_identity_entity,
+                                             domain::market_series_identity>(
         ctx,
         query,
         [](const auto& entities) { return market_series_identity_mapper::map(entities); },
@@ -223,10 +217,11 @@ market_series_identity_repository::remove_status market_series_identity_reposito
     if (current.empty())
         return remove_status::missing;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<market_series_identity_entity> |
-                       where("tenant_id"_c == tid && "series_id"_c == series_id);
+    const auto query = query_builder::delete_from<market_series_identity_entity> |
+                       query_builder::where("tenant_id"_c == tid && "series_id"_c == series_id);
 
-    execute_delete_query(ctx, query, lg(), "Removing market series identity from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing market series identity from database.");
     return remove_status::removed;
 }
 
@@ -242,11 +237,12 @@ market_series_identity_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market series identities with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_series_identity_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<market_series_identity_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
-    return execute_ordered_read_query<market_series_identity_entity,
-                                      domain::market_series_identity>(
+    return query_builder::execute_ordered_read_query<market_series_identity_entity,
+                                                     domain::market_series_identity>(
         ctx,
         query,
         market_series_identity_list_order(order, {"series_id"}, false),
@@ -261,10 +257,10 @@ market_series_identity_repository::get_total_market_series_identity_count(contex
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market series identity count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<market_series_identity_entity>> | where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<market_series_identity_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
-    return execute_count_query<market_series_identity_entity>(
+    return query_builder::execute_count_query<market_series_identity_entity>(
         ctx, query, std::nullopt, lg(), "Counting market series identities");
 }
 
@@ -274,9 +270,10 @@ market_series_identity_repository::read_latest(context ctx,
     if (series_ids.empty())
         return {};
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_series_identity_entity>> |
-                       where("tenant_id"_c == tid && "series_id"_c.in(series_ids));
-    auto result = execute_read_query<market_series_identity_entity, domain::market_series_identity>(
+    const auto query = query_builder::read<std::vector<market_series_identity_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "series_id"_c.in(series_ids));
+    auto result = query_builder::execute_read_query<market_series_identity_entity,
+                                                    domain::market_series_identity>(
         ctx,
         query,
         [](const auto& entities) { return market_series_identity_mapper::map(entities); },
@@ -296,9 +293,10 @@ void market_series_identity_repository::remove(context ctx,
     if (series_ids.empty())
         return;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<market_series_identity_entity> |
-                       where("tenant_id"_c == tid && "series_id"_c.in(series_ids));
-    execute_delete_query(ctx, query, lg(), "Batch removing market series identities.");
+    const auto query = query_builder::delete_from<market_series_identity_entity> |
+                       query_builder::where("tenant_id"_c == tid && "series_id"_c.in(series_ids));
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Batch removing market series identities.");
 }
 
 

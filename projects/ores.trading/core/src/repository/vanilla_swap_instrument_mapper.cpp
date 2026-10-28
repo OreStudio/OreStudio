@@ -46,7 +46,7 @@ vanilla_swap_instrument_mapper::map(const vanilla_swap_instrument_entity& v) {
     domain::vanilla_swap_instrument r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.settlement_lag = v.settlement_lag;
     r.modified_by = v.modified_by;

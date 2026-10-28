@@ -25,8 +25,8 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_MARKET_FIXING_ENTITY_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_MARKET_FIXING_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct market_fixing_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_marketdata_market_fixings_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     std::string party_id;
 
@@ -54,6 +54,22 @@ struct market_fixing_entity {
     std::optional<std::string> source;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = market_fixing_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("series_id", &e::series_id) |
+               query_builder::bind("fixing_date", &e::fixing_date) |
+               query_builder::bind("value", &e::value) | query_builder::bind("source", &e::source) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const market_fixing_entity& v);

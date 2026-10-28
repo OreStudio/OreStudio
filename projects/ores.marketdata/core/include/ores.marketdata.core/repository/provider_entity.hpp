@@ -25,8 +25,8 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_PROVIDER_ENTITY_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_PROVIDER_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct provider_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_marketdata_providers_tbl";
 
-    sqlgen::PrimaryKey<std::string> code;
+    std::string code;
     std::string tenant_id;
     int version = 0;
 
@@ -51,12 +51,46 @@ struct provider_entity {
     std::string kind;
     std::string description;
     int display_order = 0;
+    std::string terms_url = "";
+    std::string terms_credit = "";
+    bool allows_storage = false;
+    std::string credential_ref = "";
+    std::string terms_accepted_digest = "";
+    std::string terms_accepted_by = "";
+    std::optional<db_timestamp> terms_accepted_at;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = provider_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("code", &e::code) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) | query_builder::bind("name", &e::name) |
+               query_builder::bind("kind", &e::kind) |
+               query_builder::bind("description", &e::description) |
+               query_builder::bind("display_order", &e::display_order) |
+               query_builder::bind("terms_url", &e::terms_url) |
+               query_builder::bind("terms_credit", &e::terms_credit) |
+               query_builder::bind("allows_storage", &e::allows_storage) |
+               query_builder::bind("credential_ref", &e::credential_ref) |
+               query_builder::bind("terms_accepted_digest", &e::terms_accepted_digest) |
+               query_builder::bind("terms_accepted_by", &e::terms_accepted_by) |
+               query_builder::bind("terms_accepted_at", &e::terms_accepted_at) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const provider_entity& v);

@@ -1,0 +1,238 @@
+:PROPERTIES:
+:ID: 62728AF9-01AD-4FBF-B022-83DCD64204A9
+:END:
+#+title: User Journey: Check that a curve blueprint builds
+#+description: A trader or quant tests a curve blueprint before the desk relies on it: what the recipe itself must satisfy, which pillars the market cannot fill at an as-of, and whether the build returns a curve whose forwards are sane.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader or quant tests a curve blueprint before the desk relies on it: what the recipe itself must satisfy, which pillars the market cannot fill at an as-of, and whether the build returns a curve whose forwards are sane.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to know that this recipe builds, before the desk prices off it, and if
+it does not, which part of it fails." The journey is done when the person has
+read every check the recipe has to pass, seen which pillars the market cannot
+fill at the as-of, and either read a built curve or the reason none came back.
+Nothing is written and nothing is published.
+
+* Actor and trigger
+
+The actor is the trader who owns the blueprint, or the quant who owns the
+method. The same person may hold both rights. Reading the blueprint and its
+pillars needs =refdata::ir_curve_bootstrap_configs:read=. Reading the market
+series a pillar resolves to needs =marketdata::market_series:read=. Running the
+test needs =marketdata::curve_bootstrap:compute=.
+
+The trigger is one of four events. A blueprint was just saved and nobody has
+built a curve from it. A bootstrap failed and the person needs to know which
+part of the recipe caused it. A pillar's rate stopped arriving from the market.
+The desk is about to publish from a recipe nobody has tested since it changed.
+The journey starts on a blueprint's record page and ends there, still a recipe.
+
+This journey is not the candidate read and not the fit of a built curve. See
+[[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] and
+[[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][Check a curve's fit]]: those ask what
+today's curve is and whether it stands on its quotes. This one asks whether the
+recipe is usable at all.
+
+* Steps
+
+The screen is the *Check* tab of the blueprint's record page, a tab of the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]'s record
+page. The tab is the kind's own and not a fifth idea; the standard's tab table
+names field groups and related plurals, and a check is neither, so the note at
+=doc/prototypes/market_data/curve-blueprints.org= records the gap.
+
+1. *Arrive at the blueprint.* The person opens the blueprint from the list, or
+   from the failure a bootstrap reported. The record page opens on its Details
+   tab.
+2. *Open the Check tab.* The person chooses *Check*. The system shows the last
+   result the tab holds for this page, or "Not checked yet." and the as-of it
+   would use. The as-of is now, and the person may name an earlier instant.
+3. *Read the recipe's own checks.* The system runs the checks that need no
+   market, and lists each one with its answer:
+   - the recipe holds at least one pillar;
+   - each pillar's end tenor matures after the pillar before it;
+   - a =DEPOSIT= pillar starts at =SPOT=;
+   - the split tenor is the last pillar's end tenor for a single-segment
+     method, and a tenor between the first and the last for the two-segment
+     method;
+   - a =PROJECTION= blueprint names a =FUNDING= blueprint of the same currency,
+     and not itself;
+   - the blueprint a projection names is not itself a projection.
+   A check the screen can answer from what it read is answered at once. A check
+   the server decides is shown as answerable only after the test runs, and the
+   tab never shows an unrun check as passed.
+4. *Read what the market must supply.* The person chooses *Run the test*. The
+   system calls =marketdata.v1.ops.compute_curve= for this blueprint and as-of.
+   For each pillar it names whether the pillar's series held a rate at that
+   as-of. A pillar with no rate is listed under the check, with the series it
+   looked in, so the person knows whether to wait for the market, choose another
+   pillar or fix the recipe.
+5. *Read the built curve.* When the build returns, the system shows the points:
+   the pillar, its date, the discount factor it implies and the instantaneous
+   forward rate, in maturity order. It draws the discount factors as one line
+   over the pillar tenors, and the forwards as a second line, because a step or
+   a negative forward is what says the recipe is wrong rather than the market.
+6. *Read the finding.* The system adds one line for each finding it can state
+   in words, such as a forward rate below zero or one pillar far from its
+   neighbours. The server returns no diagnostics, so the screen states what it
+   derived and says so; see /What is missing/.
+7. *Fix the recipe.* A failed check names the act that fixes it. A pillar that
+   breaks the order opens the pillar dialog; a missing discount curve opens the
+   record dialog; a series with no rate opens the series' own read. The person
+   takes one of those and comes back.
+8. *Run it again.* The person chooses *Run the test* again. The test writes
+   nothing, so a re-run replaces the result on the tab and the ledger is
+   unchanged. A saved change to the recipe clears the result, because the result
+   answered a recipe that no longer exists.
+9. *Leave.* The person goes back to the record page, or to the list. Nothing was
+   written and nothing was published; a publish is the
+   [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] journey's act.
+
+* Screens and wireframes
+
+One tab on the blueprint's record page. The checks stand above the result, so
+the person reads what is judged before what came back, and the points and the
+two lines stand below. The wireframe is not drawn; the prototype is the design
+record:
+
+- Screen :: the *Check* tab of the curve blueprints record page
+- States :: not checked yet, the recipe's own checks passing, a check failing,
+  a pillar the market cannot fill, a built curve, and a build that returned
+  nothing
+- Source :: =doc/prototypes/market_data/curve-blueprints/index.html=, the
+  =?tab=check= states
+
+* Prototype
+
+The prototype of the screen this journey answers is
+=doc/prototypes/market_data/curve-blueprints/index.html=: mock data only, no
+backend, no build step and no session. Its design note is
+=doc/prototypes/market_data/curve-blueprints.org=, and its coverage table names
+the steps this journey contributes.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =ir_curve_bootstrap_config= | The recipe under test: currency, index tenor, role, discount curve, interpolation, day count, tenor convention, split tenor | [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][ores.refdata.ir_curve_bootstrap_config]] |
+| =ir_curve_bootstrap_pillar= | The pillars the checks judge and the build answers | [[id:5DC8A225-A2FD-4ECC-8284-C1D333F0EB3A][ores.refdata.ir_curve_bootstrap_pillar]] |
+| =market_series= | The series each pillar's rate is looked for in | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
+| =market_observation= | The rate at the as-of, or its absence | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
+| =tenor= | The tenor ladder the order and the split tenor are judged against | [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][ores.refdata.tenor]] |
+
+The computed curve is not an entity here. The test's reply is a screen and
+nothing else.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Arrive | Read the blueprint and its pillars | =refdata.v1.ir_curve_bootstrap_configs.get=, =refdata.v1.ir_curve_bootstrap_pillars.list= | exists |
+| Read the tenor ladder | Read the tenors the order is judged against | =refdata.v1.tenors.list= | exists |
+| Read what the market holds | Read the observations of a pillar's series at the as-of | =marketdata.v1.market_observations.list_by_series_id= | exists |
+| Run the test | Build the curve and echo its points | =marketdata.v1.ops.compute_curve= | exists |
+| Run the test | Read whether the test is allowed and what it needs | =marketdata.v1.ops.compute_curve= | exists |
+| Read the finding | Read per-check diagnostics | none | missing |
+
+The compute exists server-side, with its handler and its subject, and the Qt
+workbench is its only caller. No web route reaches it.
+
+* What is missing
+
+1. *The test returns points and nothing about them.* =compute_curve= replies
+   with success, a message and the points. It does not say which check failed,
+   which pillar's series held no rate, or where it interpolated across a gap.
+   The candidate is a diagnostic for each check and each pillar in the reply.
+   Until then the screen judges the recipe from what it read, and it shows the
+   forward rate it computed from the points as a finding of its own rather than
+   the server's verdict.
+2. *Nothing resolves a pillar to its series in one read.* A pillar names a start
+   tenor, an end tenor and a role, and the reader has to be told the currency
+   and the index tenor before the series can be found. The candidate is a read
+   that answers a whole recipe's input list. Until then the screen shows the
+   series it could resolve and says where it could not.
+3. *The checks are the screen's, so two screens can disagree.* Nothing runs the
+   recipe's own checks on the server, and nothing refuses a save that fails
+   them. The candidate is a validate operation that a save and a screen both
+   call. Until then a screen states each check it ran and from what it read.
+4. *A recipe has no tested stamp.* Nothing records that a person tested version
+   n of a blueprint at instant t, so the *Check* tab of one person and another
+   disagree by their own reading. The candidate is a test result held against
+   the version, or a check that runs on save.
+5. *The read has no as-of.* =compute_curve= takes an as-of, and no read returns
+   what the market held at that instant for the pillars the test names. The
+   candidate is the as-of on the observation read the test's answer is built
+   from.
+6. *No web route reaches the compute.* The subject and the handler exist and no
+   caller in the browser, so the journey runs only from the shell.
+
+* Where this journey departs from the Qt screen
+
+The Qt prior art puts this work on the third tab of the =CurveBuilderWorkbench=,
+named /Build & Diagnostics/, with an as-of, three buttons, a results table, two
+charts and a health list. The job is the same. The apparatus is the desktop's,
+so it differs in these places, on purpose.
+
+#+ATTR_HTML: :class hug-leading
+| Qt | Here | Why |
+|----+------+-----|
+| The test sits beside Save and Publish in one row of three unnamed buttons | The test is one act in its own tab, and Save and Publish are the record dialog's and the publish journey's | Three acts with three different consequences on one row invites the wrong one. Publishing is not this record's act at all |
+| Publish is drawn on the same tab and is disabled until a bootstrap has run | No publish anywhere near this screen | A publish is a named act with its own journey and, where the desk configures it, an approval |
+| The as-of is a date-time edit box on the third tab | The as-of is a value at the top of the Check tab, now by default and named in the address | The result a person reads depends on the instant, so a link must carry it |
+| Every check is implicit: the build either returned points or it threw | The recipe's own checks are listed and answered one by one | A person who is told "bootstrap failed" learns nothing; a person who is told which check failed knows what to fix |
+| Validation of the recipe is not done before the build, so a wrong pillar reaches the server | The checks that need no market run first, and a failure names the act that fixes it | A test that costs a round trip and a throw for a fault the screen can see is a worse teacher |
+| The results table and the two charts are the whole answer | The same points and the same two lines, with the finding stated in words above them | A line is a shape a person reads faster than a table, and the finding is what the person acts on |
+| A failed build is a modal box with the raw text | A notice in the tab, the server's words, and the check that failed | RS-FEEDBACK-07 |
+| The health findings are the Qt client's own, computed in the workbench | The screen states which findings it derived and which the server answered | The server returns none today, so a finding must not read as a verdict |
+
+* What this journey leaves undecided
+
+1. *Whether a check runs on save.* A recipe that fails its own checks can be
+   saved today. Whether the server refuses it, or warns and saves, is open; the
+   journey draws a warning.
+2. *Whether the test result survives the page.* Nothing holds a result. Whether
+   the tab keeps the last result for the version it answered, so two people read
+   the same finding, is open.
+3. *What the screen may compute itself.* The forward rate and the shape are the
+   screen's own arithmetic today. How much of a diagnostic a screen may derive,
+   and how much must be the server's, is open.
+4. *The as-of a test may name.* The compute takes any instant and the
+   observations it reads may not reach back that far. Whether the test offers
+   only instants the market holds, or any instant, is open.
+5. *A missing rate.* A pillar the market never filled is listed. Whether the
+   test stops at the first missing pillar, or builds what it can and names the
+   gaps, is open; the journey draws what it can, and names the gaps.
+
+* Related journeys
+
+- [[id:FBD32402-C71F-4730-A3D2-70BA1D5F3868][Maintain the curve blueprints]] — author and change the recipe this journey tests.
+- [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] — build today's candidate from a recipe that passes.
+- [[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][Check a curve's fit]] — the built curve against the quotes it came from.
+- [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] — the quotes a pillar cannot find.
+- [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] — the act this journey never takes.
+
+* Related knowledge
+
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

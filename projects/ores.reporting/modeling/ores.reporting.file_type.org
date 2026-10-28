@@ -301,7 +301,6 @@ parameters each have an index of their own. A third index gives each configurati
 #+begin_src cpp :name includes
 #include <string>
 #include <optional>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

@@ -47,7 +47,7 @@ domain::workflow_batch_link workflow_batch_link_mapper::map(const workflow_batch
 
     domain::workflow_batch_link r;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.batch_id = boost::lexical_cast<boost::uuids::uuid>(v.batch_id.value());
+    r.batch_id = boost::lexical_cast<boost::uuids::uuid>(v.batch_id);
     r.workflow_step_id = v.workflow_step_id;
     r.workflow_instance_id = v.workflow_instance_id;
     r.created_at = timestamp_to_timepoint(std::string_view{v.created_at});

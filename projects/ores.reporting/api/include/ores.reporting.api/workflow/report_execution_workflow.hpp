@@ -511,10 +511,11 @@ template <typename Command>
  * message, because the engine rebuilds it on every dispatch and on recovery.
  * A run that executes every phase is: gather_trades, gather_market_data,
  * assemble_bundle, prepare_ore_package, submit_compute, collect_compute_results,
- * finalise. A package instance runs the first four and finalise, and never reaches
- * the grid. A run that substitutes pre-processing replaces the first four with
- * resolve_prepared_input; one that ignores results replaces
- * collect_compute_results with ignore_compute_results.
+ * post_process_results, finalise. A package instance runs the first four and
+ * finalise, and never reaches the grid. A run that substitutes pre-processing
+ * replaces the first four with resolve_prepared_input; one that ignores results
+ * replaces collect_compute_results and post_process_results with
+ * ignore_compute_results.
  *
  * Compensation: fail_report marks the instance as failed on any step failure.
  */

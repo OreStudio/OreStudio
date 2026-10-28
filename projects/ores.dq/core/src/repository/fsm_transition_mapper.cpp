@@ -45,7 +45,7 @@ domain::fsm_transition fsm_transition_mapper::map(const fsm_transition_entity& v
     domain::fsm_transition r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.machine_id = boost::lexical_cast<boost::uuids::uuid>(v.machine_id);
 
     r.from_state_id = boost::lexical_cast<boost::uuids::uuid>(v.from_state_id);

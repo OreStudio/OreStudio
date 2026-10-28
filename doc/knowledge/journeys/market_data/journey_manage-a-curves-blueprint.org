@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:marketdata:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-28
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader or quant defines a curve's blueprint for a currency: its identity and family role, its output series, its pillar list and order, and its bootstrap and tenor conventions.
@@ -190,6 +190,8 @@ the generated resource verbs, and no operation writes both together.
 
 * Related journeys
 
+- [[id:FBD32402-C71F-4730-A3D2-70BA1D5F3868][Maintain the curve blueprints]] — the record screen this blueprint is kept on, and the acts around it.
+- [[id:62728AF9-01AD-4FBF-B022-83DCD64204A9][Check that a curve blueprint builds]] — test the recipe this journey authors.
 - [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] — build a candidate curve from this blueprint and the day's market.
 - [[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][Calibrate or refresh a surface]] — the surface equivalent of this blueprint, once a surface model exists.
 - [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]] — correct a built curve when a pillar's market input is wrong or thin.

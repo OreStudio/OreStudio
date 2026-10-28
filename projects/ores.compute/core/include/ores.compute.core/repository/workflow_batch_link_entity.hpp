@@ -25,8 +25,8 @@
 #ifndef ORES_COMPUTE_CORE_REPOSITORY_WORKFLOW_BATCH_LINK_ENTITY_HPP
 #define ORES_COMPUTE_CORE_REPOSITORY_WORKFLOW_BATCH_LINK_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,11 +42,24 @@ struct workflow_batch_link_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_compute_workflow_batch_links_tbl";
 
-    sqlgen::PrimaryKey<std::string> batch_id;
+    std::string batch_id;
     std::string tenant_id;
     std::string workflow_step_id;
     std::string workflow_instance_id;
     std::string created_at;
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = workflow_batch_link_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("batch_id", &e::batch_id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("workflow_step_id", &e::workflow_step_id) |
+               query_builder::bind("workflow_instance_id", &e::workflow_instance_id) |
+               query_builder::bind("created_at", &e::created_at);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const workflow_batch_link_entity& v);

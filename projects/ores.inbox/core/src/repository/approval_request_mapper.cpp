@@ -49,7 +49,7 @@ domain::approval_request approval_request_mapper::map(const approval_request_ent
     domain::approval_request r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.kind_code = v.kind_code;
     r.state_code = v.state_code;
     r.requested_by = boost::lexical_cast<boost::uuids::uuid>(v.requested_by);

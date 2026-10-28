@@ -43,7 +43,7 @@ ore_parameter_setting_value_set_mapper::map(const ore_parameter_setting_value_se
     domain::ore_parameter_setting_value_set r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.scope = v.scope;
     r.name = v.name;
     r.value_set_code = v.value_set_code;

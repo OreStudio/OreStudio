@@ -23,8 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/repository/calendar_date_repository.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -39,16 +38,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
-#include <sqlgen/aggregations.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/select_from.hpp>
-#include <sqlgen/to.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -56,13 +45,13 @@
 
 namespace ores::refdata::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string calendar_date_repository::sql() {
-    return generate_create_table_sql<calendar_date_entity>(lg());
+    return query_builder::insert_statement_sql<calendar_date_entity>(lg());
 }
 
 calendar_date_repository::calendar_date_repository(context ctx)
@@ -121,7 +110,7 @@ void calendar_date_repository::write(const domain::calendar_date& calendar_date,
     BOOST_LOG_SEV(lg(), debug) << "Writing calendar date to database: "
                                << calendar_date.calendar_code << "/" << calendar_date.date;
     const auto t = apply_claim(calendar_date, claim);
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx_, calendar_date_mapper::map(t), lg(), "writing calendar date to database");
 }
 
@@ -134,18 +123,18 @@ void calendar_date_repository::write(
     batch.reserve(calendar_dates.size());
     for (std::size_t i = 0; i < calendar_dates.size(); ++i)
         batch.push_back(apply_claim(calendar_dates[i], claims[i]));
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx_, calendar_date_mapper::map(batch), lg(), "writing calendar dates to database");
 }
 
 std::vector<domain::calendar_date> calendar_date_repository::read_latest() {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<calendar_date_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("calendar_code"_c, "date"_c);
+    const auto query = query_builder::read<std::vector<calendar_date_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("calendar_code"_c, "date"_c);
 
-    return execute_read_query<calendar_date_entity, domain::calendar_date>(
+    return query_builder::execute_read_query<calendar_date_entity, domain::calendar_date>(
         ctx_,
         query,
         [](const auto& entities) { return calendar_date_mapper::map(entities); },
@@ -159,12 +148,12 @@ std::vector<domain::calendar_date> calendar_date_repository::read_latest(std::ui
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<calendar_date_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("calendar_code"_c, "date"_c) | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<calendar_date_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("calendar_code"_c, "date"_c) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_read_query<calendar_date_entity, domain::calendar_date>(
+    return query_builder::execute_read_query<calendar_date_entity, domain::calendar_date>(
         ctx_,
         query,
         [](const auto& entities) { return calendar_date_mapper::map(entities); },
@@ -181,11 +170,12 @@ calendar_date_repository::read_latest(const std::string& calendar_code,
     const auto calendar_code_str = calendar_code;
     const auto date_str = ores::platform::time::datetime::to_iso8601_date(date);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<calendar_date_entity>> |
-                       where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
+    const auto query =
+        query_builder::read<std::vector<calendar_date_entity>> |
+        query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
                              "date"_c == date_str && "valid_to"_c == max.value());
 
-    return execute_read_query<calendar_date_entity, domain::calendar_date>(
+    return query_builder::execute_read_query<calendar_date_entity, domain::calendar_date>(
         ctx_,
         query,
         [](const auto& entities) { return calendar_date_mapper::map(entities); },
@@ -197,19 +187,12 @@ std::uint32_t calendar_date_repository::get_total_calendar_date_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar dates count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::select_from<calendar_date_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<calendar_date_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<calendar_date_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting calendar dates");
     BOOST_LOG_SEV(lg(), debug) << "Total active calendar dates count: " << count;
     return count;
 }
@@ -220,12 +203,13 @@ calendar_date_repository::read_latest_by_calendar(const std::string& calendar_co
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<calendar_date_entity>> |
-                       where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
+    const auto query =
+        query_builder::read<std::vector<calendar_date_entity>> |
+        query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
                              "valid_to"_c == max.value()) |
-                       order_by("date"_c);
+        query_builder::order_by("date"_c);
 
-    auto rows = execute_read_query<calendar_date_entity, domain::calendar_date>(
+    auto rows = query_builder::execute_read_query<calendar_date_entity, domain::calendar_date>(
         ctx_,
         query,
         [](const auto& entities) { return calendar_date_mapper::map(entities); },
@@ -242,12 +226,12 @@ calendar_date_repository::read_latest_by_date(const std::chrono::year_month_day&
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto date_str = ores::platform::time::datetime::to_iso8601_date(date);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<calendar_date_entity>> |
-        where("tenant_id"_c == tid && "date"_c == date_str && "valid_to"_c == max.value()) |
-        order_by("calendar_code"_c);
+    const auto query = query_builder::read<std::vector<calendar_date_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "date"_c == date_str &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("calendar_code"_c);
 
-    auto rows = execute_read_query<calendar_date_entity, domain::calendar_date>(
+    auto rows = query_builder::execute_read_query<calendar_date_entity, domain::calendar_date>(
         ctx_,
         query,
         [](const auto& entities) { return calendar_date_mapper::map(entities); },
@@ -264,12 +248,14 @@ std::vector<domain::calendar_date> calendar_date_repository::read_latest_by_cale
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<calendar_date_entity>> |
-                       where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
+    const auto query =
+        query_builder::read<std::vector<calendar_date_entity>> |
+        query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
                              "valid_to"_c == max.value()) |
-                       order_by("date"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        query_builder::order_by("date"_c) | query_builder::offset(offset) |
+        query_builder::limit(limit);
 
-    auto rows = execute_read_query<calendar_date_entity, domain::calendar_date>(
+    auto rows = query_builder::execute_read_query<calendar_date_entity, domain::calendar_date>(
         ctx_,
         query,
         [](const auto& entities) { return calendar_date_mapper::map(entities); },
@@ -285,20 +271,14 @@ std::uint32_t calendar_date_repository::get_total_calendar_date_count_by_calenda
                                << calendar_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::select_from<calendar_date_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
-                             "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+    const auto query =
+        query_builder::read<std::vector<calendar_date_entity>> |
+        query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<calendar_date_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting calendar dates");
     BOOST_LOG_SEV(lg(), debug) << "Total active calendar dates count by calendar: " << count;
     return count;
 }
@@ -309,20 +289,13 @@ std::uint32_t calendar_date_repository::get_total_calendar_date_count_by_date(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar dates count. Date: " << date;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<calendar_date_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "date"_c == date_str && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<calendar_date_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "date"_c == date_str &&
+                                            "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<calendar_date_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting calendar dates");
     BOOST_LOG_SEV(lg(), debug) << "Total active calendar dates count by date: " << count;
     return count;
 }
@@ -333,11 +306,12 @@ calendar_date_repository::read_all_by_calendar(const std::string& calendar_code)
                                << calendar_code;
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<calendar_date_entity>> |
-                       where("tenant_id"_c == tid && "calendar_code"_c == calendar_code) |
-                       order_by("date"_c, "valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<calendar_date_entity>> |
+        query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code) |
+        query_builder::order_by("date"_c, "valid_from"_c.desc());
 
-    return execute_read_query<calendar_date_entity, calendar_date_history_row>(
+    return query_builder::execute_read_query<calendar_date_entity, calendar_date_history_row>(
         ctx_,
         query,
         [](const auto& entities) {
@@ -398,11 +372,12 @@ calendar_date_repository::remove(const std::string& calendar_code,
     const auto date_str = ores::platform::time::datetime::to_iso8601_date(date);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
-        sqlgen::delete_from<calendar_date_entity> |
-        where("tenant_id"_c == tid && "calendar_code"_c == calendar_code && "date"_c == date_str &&
-              "valid_to"_c == max.value() && "version"_c == expected);
+        query_builder::delete_from<calendar_date_entity> |
+        query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
+                             "date"_c == date_str && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
-    execute_delete_query(ctx_, query, lg(), "removing calendar date from database");
+    query_builder::execute_delete_query(ctx_, query, lg(), "removing calendar date from database");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -427,10 +402,12 @@ void calendar_date_repository::remove_by_calendar(const std::string& calendar_co
     BOOST_LOG_SEV(lg(), debug) << "Removing all calendar dates from database: " << calendar_code;
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<calendar_date_entity> |
-                       where("tenant_id"_c == tid && "calendar_code"_c == calendar_code);
+    const auto query =
+        query_builder::delete_from<calendar_date_entity> |
+        query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code);
 
-    execute_delete_query(ctx_, query, lg(), "removing all calendar dates from database");
+    query_builder::execute_delete_query(
+        ctx_, query, lg(), "removing all calendar dates from database");
 }
 
 

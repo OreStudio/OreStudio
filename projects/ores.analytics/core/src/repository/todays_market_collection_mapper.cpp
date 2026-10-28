@@ -46,7 +46,7 @@ todays_market_collection_mapper::map(const todays_market_collection_entity& v) {
     domain::todays_market_collection r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.todays_market_config_id = boost::lexical_cast<boost::uuids::uuid>(v.todays_market_config_id);
     r.collection = v.collection;

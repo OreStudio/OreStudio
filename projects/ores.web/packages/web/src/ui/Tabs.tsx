@@ -27,8 +27,13 @@ import { useSearchParams } from 'react-router';
  * own address, and only `tab` for the others. Every other parameter belongs
  * to the tab left, so it is dropped.
  */
-export function tabAddress(tabs: readonly string[], tab: string): Readonly<Record<string, string>> {
-    return tab === tabs[0] ? {} : { tab };
+export function tabAddress(
+    tabs: readonly string[],
+    tab: string,
+    param = 'tab',
+    keep: Readonly<Record<string, string>> = {},
+): Readonly<Record<string, string>> {
+    return tab === tabs[0] ? { ...keep } : { ...keep, [param]: tab };
 }
 
 /**
@@ -43,13 +48,22 @@ export function useTabs({
     label,
     tabs,
     titleOf,
+    param = 'tab',
+    keep = {},
+    renderTitle,
 }: {
     readonly label: string;
     readonly tabs: readonly string[];
     readonly titleOf: (tab: string) => string;
+    /** The address parameter the tab is held in: `tab`, or another for tabs inside a tab. */
+    readonly param?: string;
+    /** The parameters a tab change keeps, such as the outer tab of tabs inside a tab. */
+    readonly keep?: Readonly<Record<string, string>>;
+    /** What a tab shows beside its title, such as the question it answers. */
+    readonly renderTitle?: (tab: string, selected: boolean) => ReactNode;
 }): { readonly tab: string; readonly bar: ReactNode } {
     const [search, setSearch] = useSearchParams();
-    const requested = search.get('tab');
+    const requested = search.get(param);
     const tab = tabs.find((candidate) => candidate === requested) ?? tabs[0] ?? '';
     const bar = (
         <div role="tablist" aria-label={label} className="flex gap-1 border-b border-line">
@@ -64,9 +78,13 @@ export function useTabs({
                             ? 'border-b-2 border-accent px-3 py-2 text-sm text-ink'
                             : 'border-b-2 border-transparent px-3 py-2 text-sm text-ink-muted hover:text-ink'
                     }
-                    onClick={() => setSearch(tabAddress(tabs, candidate), { replace: true })}
+                    onClick={() =>
+                        setSearch(tabAddress(tabs, candidate, param, keep), { replace: true })
+                    }
                 >
-                    {titleOf(candidate)}
+                    {renderTitle === undefined
+                        ? titleOf(candidate)
+                        : renderTitle(candidate, tab === candidate)}
                 </button>
             ))}
         </div>

@@ -44,8 +44,8 @@ structure_template_role_mapper::map(const structure_template_role_entity& v) {
     domain::structure_template_role r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.template_code = v.template_code.value();
-    r.role = v.role.value();
+    r.template_code = v.template_code;
+    r.role = v.role;
     r.min_legs = v.min_legs;
     r.max_legs = v.max_legs;
     r.description = v.description.value_or("");

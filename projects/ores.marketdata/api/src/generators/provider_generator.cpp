@@ -50,6 +50,11 @@ domain::provider generate_synthetic_provider(utility::generation::generation_con
     r.kind = std::string("data_vendor");
     r.description = std::string(faker::lorem::sentence());
     r.display_order = faker::number::integer(1, 100);
+    r.terms_url = std::string();
+    r.terms_credit = std::string();
+    r.credential_ref = std::string();
+    r.terms_accepted_digest = std::string();
+    r.terms_accepted_by = std::string();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

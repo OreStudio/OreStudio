@@ -398,8 +398,6 @@ refused rather than quietly leaving two rows that both say they are primary.
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #+end_src
 
 ** Conventions

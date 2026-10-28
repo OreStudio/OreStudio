@@ -297,6 +297,19 @@ export interface CollectComputeResultsResult {
     message: string;
 }
 
+export interface PostProcessResultsRequest {
+    report_instance_id: string;
+    tenant_id: string;
+    correlation_id: string;
+    batch_id: string;
+}
+
+export interface PostProcessResultsResult {
+    success: boolean;
+    message: string;
+    rows_loaded: number;
+}
+
 export interface FinaliseReportRequest {
     report_instance_id: string;
     tenant_id: string;
@@ -381,6 +394,7 @@ export const subjects = {
     prepare_ore_package_request: 'ore.v1.ops.prepare_ore_package',
     submit_compute_request: 'compute.v1.ops.submit_compute',
     collect_compute_results_request: 'reporting.v1.ops.collect_compute_results',
+    post_process_results_request: 'reporting.v1.ops.post_process_results',
     finalise_report_request: 'reporting.v1.ops.finalise_report',
     fail_report_request: 'reporting.v1.ops.fail_report',
     resolve_prepared_input_request: 'reporting.v1.ops.resolve_prepared_input',
@@ -409,6 +423,7 @@ export const requiresSession = {
     prepare_ore_package_request: true,
     submit_compute_request: true,
     collect_compute_results_request: true,
+    post_process_results_request: true,
     finalise_report_request: true,
     fail_report_request: true,
     resolve_prepared_input_request: true,

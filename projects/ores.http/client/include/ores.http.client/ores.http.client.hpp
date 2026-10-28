@@ -30,8 +30,6 @@
  *
  * An HTTP client on Boost.Beast: a GET over TLS, behind an interface a test can replace.
  */
-#include "ores.http.client/net/transport.hpp" // IWYU pragma: export
-
 namespace ores::http::client {}
 
 #endif

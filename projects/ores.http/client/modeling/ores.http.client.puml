@@ -1,0 +1,77 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.http.client Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace http #F2F2F2 {
+        namespace client #F2F2F2 {
+            namespace net #F2F2F2 {
+                class request_limits <<struct>> {
+                    +timeout : chrono::milliseconds
+                    +max_body_bytes : size_t
+                }
+
+                class response <<struct>> {
+                    +status : unsigned
+                    +content_type : string
+                    +body : string
+                }
+
+                enum failure_kind {
+                    bad_url
+                    network
+                    tls
+                    timeout
+                    too_large
+                }
+
+                class failure <<struct>> {
+                    +kind : failure_kind
+                    +message : string
+                }
+
+                interface transport {
+                    +get(string_view url, const request_limits& limits) : expected<response, failure>
+                }
+
+                class beast_transport {
+                    -options_ : options
+                    +beast_transport(options o)
+                    +get(string_view url, const request_limits& limits) : expected<response, failure>
+                }
+
+                transport <|.. beast_transport
+                transport ..> response
+                transport ..> failure
+                failure --> failure_kind
+            }
+        }
+    }
+}
+
+note bottom of beast_transport
+  Boost.Beast and Asio, with OpenSSL for TLS.
+  Checks the certificate and the host name;
+  one deadline bounds the whole request.
+end note
+
+@enduml

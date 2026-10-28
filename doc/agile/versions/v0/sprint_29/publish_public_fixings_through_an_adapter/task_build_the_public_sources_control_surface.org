@@ -8,7 +8,7 @@
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-public-sources-control-surface
-#+pr:
+#+pr: 4000
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -115,7 +115,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4000][#4000]] | [web] Show the official rates and accept their terms |
 
 * Review
 

@@ -25,7 +25,6 @@
 #include "ores.logging/make_logger.hpp"
 #include <boost/exception/diagnostic_information.hpp>
 #include <format>
-#include <sqlgen/postgres.hpp>
 #include <string>
 
 namespace ores::database::repository {
@@ -86,10 +85,10 @@ void ensure_success(const T& result, logging::logger_t& lg) {
 }
 
 /**
- * @brief Converts a string to a sqlgen Timestamp, throwing an exception if conversion fails.
+ * @brief Converts a string to a db_timestamp, throwing an exception if conversion fails.
  *
  * This helper parses a timestamp string in the db_timestamp format
- * and returns a sqlgen::Timestamp object. If parsing fails, it logs the error
+ * and returns a db_timestamp. If parsing fails, it logs the error
  * and throws a repository_exception.
  *
  * @param s The timestamp string to convert (format: "YYYY-MM-DD HH:MM:SS")
@@ -112,32 +111,6 @@ inline auto make_timestamp(const std::string& s, logging::logger_t& lg) {
     return r;
 }
 
-/**
- * @brief Generates the CREATE TABLE SQL statement for a given entity type.
- *
- * This helper creates a sqlgen CREATE TABLE IF NOT EXISTS query for the specified
- * entity type and converts it to SQL. The SQL is logged at debug level and returned.
- *
- * @tparam EntityType The database entity type for which to generate the CREATE TABLE SQL
- * @param logger_name The name to use for logging
- * @return The SQL string for creating the table
- *
- * @example
- * std::string sql = generate_create_table_sql<account_entity>(
- *     "ores.iam.repository.account_repository");
- */
-template <typename EntityType>
-std::string generate_create_table_sql(logging::logger_t& lg) {
-    using namespace ores::logging;
-    using namespace sqlgen;
-
-    const auto query = create_table<EntityType> | if_not_exists;
-    const auto sql = postgres::to_sql(query);
-
-    BOOST_LOG_SEV(lg, debug) << sql;
-
-    return sql;
-}
 
 }
 

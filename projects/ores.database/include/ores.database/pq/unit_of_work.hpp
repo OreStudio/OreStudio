@@ -36,9 +36,8 @@ namespace ores::database::pq {
  * the connection on every path.
  */
 template <typename Work>
-auto transact(pool& p,
-              const session_context& context,
-              Work&& work) -> std::invoke_result_t<Work, transaction&> {
+auto transact(pool& p, const session_context& context, Work&& work)
+    -> std::invoke_result_t<Work, transaction&> {
     auto lease = p.acquire();
     transaction tx(lease.get(), context);
     try {

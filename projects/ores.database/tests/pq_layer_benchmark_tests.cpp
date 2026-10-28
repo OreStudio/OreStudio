@@ -96,14 +96,9 @@ void report(std::string_view what, std::vector<double> samples) {
 
 TEST_CASE("the repository benchmark runs on the layer", "[.benchmark][pq]") {
     ores::testing::scoped_database_helper h;
-    const auto& c = h.context().credentials();
-    pool p({.host = c.host,
-            .port = static_cast<std::uint16_t>(c.port),
-            .dbname = c.dbname,
-            .user = c.user,
-            .password = c.password,
-            .application_name = "ores.database.tests.pq.benchmark"},
-           1);
+    auto options = h.context().connection_options();
+    options.application_name = "ores.database.tests.pq.benchmark";
+    pool p(options, 1);
     const session_context ctx{
         .tenant = h.tenant_id(), .actor = h.db_user(), .service = h.db_user()};
     transact(p, ctx, [&](transaction& tx) {

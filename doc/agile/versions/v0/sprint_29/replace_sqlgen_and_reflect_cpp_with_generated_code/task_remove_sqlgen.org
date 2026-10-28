@@ -65,6 +65,19 @@ Three PRs, each ending in a green build of the whole tree and every suite.
 3. *Build: drop the dependency.* vcpkg.json, the overlay port and its
    patches, =find_package= and every =sqlgen::sqlgen= link go, with the
    sqlgen text in models, diagrams and docs.
+4. *Docs: describe the Postgres architecture as it now is.* Every document
+   that describes how the services reach Postgres (the =ores.database=
+   overview, the knowledge documents, recipes, component models and
+   diagrams) names the libpq layer, the query builder, the unit of work and
+   the per-transaction session settings, and nothing describes sqlgen as
+   current.
+
+The user asked for one PR, checked by the full build, every suite and the
+services starting, with a full analysis of main after it merges. The core
+change is tested beyond that: the pool's open policy, the unit of work's
+commit, rollback and abort, a re-scoped context on a unit of work, the raw
+helpers beside a unit of work, and an end-to-end run that provisions a
+tenant on the running services.
 
 * Measurements
 
@@ -81,6 +94,24 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** Semantics that differ from sqlgen, signed off
+
+The move keeps sqlgen's semantics unless they did not make sense; each
+difference below was put to the user with its reason and signed off.
+
+- *A call on a committed unit of work is refused.* Under sqlgen, the
+  context of a unit of work that had committed still held its connection,
+  outside any transaction, so a later call ran and committed on its own. A
+  context taken from a unit of work promises one unit, and running outside it
+  silently hides a caller bug. #3961 already refused it for every repository
+  on libpq, with every suite green; =pq::transaction::ended()= now makes the
+  refusal hold even for work that runs no statement.
+- *A commit after a failed statement throws.* Under sqlgen, COMMIT on an
+  aborted transaction was answered by Postgres with a rollback and no error,
+  so the caller believed its writes were kept. The transaction now rolls back
+  and throws, and the unit of work reports =Cannot commit the transaction=.
+  The work is discarded either way; only the failure becomes visible.
 
 * Test Scenarios
 

@@ -32,17 +32,17 @@ namespace ores::database::query_builder {
 template <typename Entity, typename Member>
 struct column_binding {
     std::string_view name;
-    Member Entity::*member;
+    Member Entity::* member;
     bool key = false;
 };
 
 template <typename Entity, typename Member>
-constexpr column_binding<Entity, Member> bind(std::string_view name, Member Entity::*member) {
+constexpr column_binding<Entity, Member> bind(std::string_view name, Member Entity::* member) {
     return {name, member, false};
 }
 
 template <typename Entity, typename Member>
-constexpr column_binding<Entity, Member> key(std::string_view name, Member Entity::*member) {
+constexpr column_binding<Entity, Member> key(std::string_view name, Member Entity::* member) {
     return {name, member, true};
 }
 

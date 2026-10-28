@@ -22,13 +22,14 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/export.hpp"
+#include "ores.database/pq/connection.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <atomic>
 #include <condition_variable>
 #include <functional>
+#include <memory>
 #include <mutex>
 #include <optional>
-#include <sqlgen/postgres.hpp>
 #include <string>
 #include <thread>
 #include <vector>
@@ -49,11 +50,10 @@ namespace ores::database::service {
 /**
  * @brief Connects with a UTC-forced session.
  *
- * sqlgen::Credentials::to_str() carries no session options, so a raw
- * connect inherits the server default TimeZone. Every session must be
+ * A raw connect inherits the server default TimeZone. Every session must be
  * UTC -- the bitemporal sentinel folds per session TimeZone (task
- * 3828BF82); the pool forces it at acquisition, this dedicated
- * connection must do the same.
+ * 3828BF82); a transaction sets it, and this dedicated connection, which
+ * runs no transaction, sets it for its session.
  *
  * Also stamps the session's application_name so pg_stat_activity can
  * identify this backend. The caller supplies the name: each listener
@@ -62,8 +62,17 @@ namespace ores::database::service {
  *
  * Exposed as a free function so tests can assert the session is UTC.
  */
-[[nodiscard]] ORES_DATABASE_EXPORT sqlgen::Result<sqlgen::Ref<sqlgen::postgres::Connection>>
-connect_utc(const sqlgen::postgres::Credentials& credentials, const std::string& application_name);
+[[nodiscard]] ORES_DATABASE_EXPORT std::unique_ptr<pq::connection>
+connect_utc(const pq::connection_options& options, const std::string& application_name);
+
+/**
+ * @brief One notification a listener connection received.
+ */
+struct pg_notification final {
+    std::string channel;
+    std::string payload;
+    int backend_pid = 0;
+};
 
 class ORES_DATABASE_EXPORT postgres_listener_service final {
 private:
@@ -203,13 +212,11 @@ private:
     void listen_loop();
 
     /**
-     * @brief Handles a received sqlgen notification.
+     * @brief Handles a received notification.
      *
      * Invokes the notification callback with the raw channel and payload.
-     *
-     * @param notification The sqlgen Notification object.
      */
-    void handle_notification(const sqlgen::postgres::Notification& notification);
+    void handle_notification(const pg_notification& notification);
 
 private:
     context ctx_;
@@ -221,7 +228,7 @@ private:
     inline static std::atomic<std::uint64_t> instance_counter_{0};
 
     mutable std::mutex mutex_; ///< Protects connection and channels
-    std::optional<rfl::Ref<sqlgen::postgres::Connection>> connection_;
+    std::unique_ptr<pq::connection> connection_;
     std::vector<std::string> subscribed_channels_;
 
     std::thread listener_thread_;

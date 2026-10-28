@@ -18,6 +18,8 @@
  *
  */
 #include "ores.refdata.core/service/bundle_import_operations_service.hpp"
+#include "ores.database/domain/context_transact.hpp"
+#include "ores.database/pq/store_error.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/bundle_import.hpp"
@@ -56,15 +58,18 @@ constexpr auto import_lifetime = std::chrono::hours(24);
  * statement text.
  */
 void lock_import_row(const ores::database::context& ctx, const boost::uuids::uuid& id) {
-    const auto& transaction = ctx.active_transaction();
-    if (!transaction)
+    if (!ctx.active_transaction())
         throw std::logic_error("A commit must run inside its own transaction.");
     const auto sql = "select id from ores_refdata_bundle_imports_tbl where id = '" +
                      boost::uuids::to_string(id) +
                      "'::uuid and valid_to = ores_utility_infinity_timestamp_fn() for update";
-    const auto result = (*transaction)->execute(sql);
-    if (!result)
-        throw std::runtime_error(result.error().what());
+    try {
+        const ores::database::pq::text_statement statement({}, sql);
+        ores::database::transact(
+            ctx, [&](ores::database::pq::transaction& tx) { tx.run(statement, {}); });
+    } catch (const ores::database::pq::store_error& e) {
+        throw std::runtime_error(e.what());
+    }
 }
 
 /**

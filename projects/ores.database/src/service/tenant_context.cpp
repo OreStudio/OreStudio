@@ -20,7 +20,6 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.logging/make_logger.hpp"
-#include <sqlgen/postgres.hpp>
 #include <stdexcept>
 
 namespace ores::database::service {
@@ -159,14 +158,15 @@ utility::uuid::tenant_id resolve_tenant_id(const context& ctx, const std::string
 }
 
 /**
- * @brief Verifies that a tenant context works by acquiring a connection.
+ * @brief Verifies that a tenant context works by leasing a connection.
  */
 void verify_tenant_context(context& ctx, const utility::uuid::tenant_id& tenant_id) {
-    const auto r = sqlgen::session(ctx.connection_pool());
-    if (!r) {
+    try {
+        (void)ctx.pq_pool().acquire();
+    } catch (const std::exception& e) {
         BOOST_LOG_SEV(tenant_context_lg(), error)
-            << "Failed to verify tenant context: " << r.error().what();
-        throw std::runtime_error("Failed to set tenant context: " + std::string(r.error().what()));
+            << "Failed to verify tenant context: " << e.what();
+        throw std::runtime_error("Failed to set tenant context: " + std::string(e.what()));
     }
     BOOST_LOG_SEV(tenant_context_lg(), info) << "Tenant context set to: " << tenant_id.to_string();
 }

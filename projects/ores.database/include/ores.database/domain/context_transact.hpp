@@ -26,43 +26,21 @@
 
 namespace ores::database {
 
-namespace detail {
-
-/**
- * @brief The connection of an open sqlgen transaction.
- *
- * A unit of work that has committed still holds its connection, outside any
- * transaction, so a call joined to it would run unguarded: it is refused.
- */
-inline PGconn* open_connection_of(const context::transaction_type& open) {
-    PGconn* c = open.conn()->conn()->native_handle();
-    const auto status = c ? PQtransactionStatus(c) : PQTRANS_UNKNOWN;
-    if (status != PQTRANS_INTRANS && status != PQTRANS_INERROR)
-        throw pq::store_error("The sqlgen unit of work has no open transaction to join",
-                              "25000",
-                              pq::error_kind::refused);
-    return c;
-}
-
-}
-
 /**
  * @brief Runs @p work in one libpq transaction for the tenant, party, actor
  * and service that @p ctx names.
  *
- * A repository that has moved to the libpq layer calls this, so its callers
- * keep passing a context. A context bound to a sqlgen unit of work joins that
- * transaction on its connection, so the work commits or rolls back with the
- * unit of work, and sees the tenant and party set on that connection, as a
- * sqlgen repository does. This lets components move one at a time, and goes
- * with sqlgen.
+ * A context bound to a unit of work runs the work on that unit of work's
+ * transaction, which commits or rolls back with the unit of work; any other
+ * runs it in a transaction of its own.
  */
 template <typename Work>
 auto transact(const context& ctx, Work&& work) {
-    if (const auto& open = ctx.active_transaction()) {
-        auto c = pq::connection::borrow(detail::open_connection_of(**open));
-        auto tx = pq::transaction::join(c);
-        return std::forward<Work>(work)(tx);
+    if (auto* open = ctx.active_transaction()) {
+        if (open->ended())
+            throw pq::store_error(
+                "The unit of work's transaction has ended", "25000", pq::error_kind::refused);
+        return std::forward<Work>(work)(*open);
     }
     return pq::transact(ctx.pq_pool(), ctx.pq_session(), std::forward<Work>(work));
 }

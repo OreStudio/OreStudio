@@ -23,6 +23,7 @@
 #include "ores.iam.api/domain/permission_codes.hpp"
 #include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.utility/crypto/sha256.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <charconv>
 #include <iomanip>

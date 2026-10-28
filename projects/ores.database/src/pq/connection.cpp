@@ -18,7 +18,7 @@
  */
 #include "ores.database/pq/connection.hpp"
 #include "ores.database/pq/store_error.hpp"
-#include <cassert>
+#include "ores.logging/make_logger.hpp"
 #include <charconv>
 
 namespace ores::database::pq {
@@ -96,20 +96,32 @@ std::uint64_t result::affected() const {
     return n;
 }
 
+namespace {
+
+/**
+ * @brief Logs a server notice at debug level; libpq's default prints it to
+ * stderr.
+ */
+void log_notice(void*, const char* message) {
+    using namespace ores::logging;
+    static auto lg = make_logger("ores.database.pq.connection");
+    std::string_view text(message);
+    if (!text.empty() && text.back() == '\n')
+        text.remove_suffix(1);
+    BOOST_LOG_SEV(lg, debug) << text;
+}
+
+}
+
 connection::connection(const connection_options& options)
     : handle_(PQconnectdb(options.conninfo().c_str())) {
     if (!handle_)
         throw store_error("Could not allocate a connection", "", error_kind::retryable);
     if (PQstatus(handle_.get()) != CONNECTION_OK)
         throw store_error(message_of(*this, "Could not connect"), "08001", error_kind::retryable);
+    PQsetNoticeProcessor(handle_.get(), log_notice, nullptr);
 }
 
-connection connection::borrow(PGconn* c) noexcept {
-    assert(c != nullptr);
-    connection out;
-    out.handle_ = std::unique_ptr<PGconn, connection_closer>(c, connection_closer{.owned = false});
-    return out;
-}
 
 bool connection::healthy() const noexcept {
     return PQstatus(handle_.get()) == CONNECTION_OK;

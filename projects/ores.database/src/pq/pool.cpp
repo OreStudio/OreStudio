@@ -18,8 +18,20 @@
  */
 #include "ores.database/pq/pool.hpp"
 #include "ores.database/pq/store_error.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <algorithm>
+#include <thread>
 
 namespace ores::database::pq {
+
+namespace {
+
+auto& pool_lg() {
+    static auto instance = logging::make_logger("ores.database.pq.pool");
+    return instance;
+}
+
+}
 
 pool::lease::lease(pool& owner, std::unique_ptr<connection> c) noexcept
     : owner_(&owner)
@@ -34,10 +46,35 @@ pool::lease::~lease() {
         owner_->give_back(std::move(connection_));
 }
 
-pool::pool(connection_options options, std::size_t size, std::chrono::milliseconds acquire_timeout)
+pool::pool(connection_options options,
+           std::size_t size,
+           open_policy policy,
+           std::chrono::milliseconds acquire_timeout)
     : options_(std::move(options))
     , size_(size)
     , acquire_timeout_(acquire_timeout) {
+    using namespace ores::logging;
+    const auto attempts = std::max<std::size_t>(policy.attempts, 1);
+    for (std::size_t attempt = 1;; ++attempt) {
+        try {
+            open_all();
+            return;
+        } catch (const store_error& e) {
+            idle_.clear();
+            if (!e.retryable() || attempt >= attempts)
+                throw;
+            const auto wait = policy.shape == backoff::linear ?
+                                  policy.wait * attempt :
+                                  policy.wait * (std::size_t{1} << (attempt - 1));
+            BOOST_LOG_SEV(pool_lg(), warn)
+                << "Opening the database pool failed (attempt " << attempt << " of " << attempts
+                << "), retrying in " << wait.count() << "s: " << e.what();
+            std::this_thread::sleep_for(wait);
+        }
+    }
+}
+
+void pool::open_all() {
     idle_.reserve(size_);
     for (std::size_t i = 0; i < size_; ++i) {
         try {

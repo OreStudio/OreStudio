@@ -43,7 +43,7 @@ approval_request_state_mapper::map(const approval_request_state_entity& v) {
     domain::approval_request_state r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

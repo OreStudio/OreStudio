@@ -19,15 +19,12 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.inbox.core/repository/approval_request_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.inbox.api/domain/approval_request_json_io.hpp" // IWYU pragma: keep.
 #include "ores.inbox.api/messaging/approval_request_protocol.hpp"
@@ -42,16 +39,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -60,13 +47,14 @@
 
 namespace ores::inbox::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string approval_request_repository::sql() {
-    return generate_create_table_sql<approval_request_entity>(lg());
+    return query_builder::generate_create_table_sql<approval_request_entity>(lg());
 }
 
 bool approval_request_repository::is_sortable(std::string_view field) {
@@ -83,10 +71,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
-approval_request_list_order(const ores::utility::domain::order& order,
-                            std::initializer_list<std::string> default_columns,
-                            bool default_descending) {
+query_builder::order approval_request_list_order(const ores::utility::domain::order& order,
+                                                 std::initializer_list<std::string> default_columns,
+                                                 bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!approval_request_repository::is_sortable(order.field))
@@ -99,11 +86,11 @@ approval_request_list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition> approval_request_filter_condition(
+std::optional<query_builder::condition> approval_request_filter_condition(
     const std::optional<messaging::approval_requests_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->kind_code)
         r.push_back(equals("kind_code", filter_value(*filter->kind_code)));
     if (filter->state_code)
@@ -111,25 +98,25 @@ std::optional<sqlgen::dynamic::Condition> approval_request_filter_condition(
     if (filter->requested_by)
         r.push_back(equals("requested_by", filter_value(*filter->requested_by)));
     if (filter->id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
     }
     if (filter->kind_code_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->kind_code_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("kind_code", std::move(values)));
     }
     if (filter->state_code_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->state_code_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("state_code", std::move(values)));
     }
     if (filter->requested_by_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->requested_by_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("requested_by", std::move(values)));
@@ -214,7 +201,7 @@ void approval_request_repository::write(
 std::vector<domain::approval_request> approval_request_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<approval_request_entity>> |
+    const auto query = query_builder::read<std::vector<approval_request_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("id"_c);
 
@@ -231,7 +218,7 @@ approval_request_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval request. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<approval_request_entity>> |
+    const auto query = query_builder::read<std::vector<approval_request_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<approval_request_entity, domain::approval_request>(
@@ -247,7 +234,7 @@ std::vector<domain::approval_request> approval_request_repository::read_all(cont
                                                                             const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all approval request versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<approval_request_entity>> |
+    const auto query = query_builder::read<std::vector<approval_request_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
@@ -264,9 +251,9 @@ std::optional<domain::approval_request> approval_request_repository::read_at_ver
     BOOST_LOG_SEV(lg(), debug) << "Reading approval request at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<approval_request_entity>> |
+    const auto query = query_builder::read<std::vector<approval_request_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
-                       sqlgen::limit(1);
+                       query_builder::limit(1);
 
     const auto entities = execute_read_query<approval_request_entity, domain::approval_request>(
         ctx,
@@ -292,9 +279,9 @@ std::vector<domain::approval_request> approval_request_repository::read_latest_b
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<approval_request_entity>> |
+        query_builder::read<std::vector<approval_request_entity>> |
         where("tenant_id"_c == tid && "kind_code"_c == kind_code && "valid_to"_c == max.value()) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+        query_builder::offset(offset) | query_builder::limit(limit);
 
     return execute_ordered_read_query<approval_request_entity, domain::approval_request>(
         ctx,
@@ -316,7 +303,7 @@ std::uint32_t approval_request_repository::get_total_request_count_by_kind_code(
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<approval_request_entity>> |
+        query_builder::read<std::vector<approval_request_entity>> |
         where("tenant_id"_c == tid && "kind_code"_c == kind_code && "valid_to"_c == max.value());
 
     return execute_count_query<approval_request_entity>(ctx,
@@ -343,7 +330,7 @@ approval_request_repository::remove_status approval_request_repository::remove(
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<approval_request_entity> |
+    const auto query = query_builder::delete_from<approval_request_entity> |
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
@@ -370,8 +357,9 @@ std::vector<domain::approval_request> approval_request_repository::read_latest(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval requests with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<approval_request_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<approval_request_entity>> |
+                       where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
     return execute_ordered_read_query<approval_request_entity, domain::approval_request>(
         ctx,
@@ -391,7 +379,7 @@ std::uint32_t approval_request_repository::get_total_request_count(
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<approval_request_entity>> | where("tenant_id"_c == tid);
+        query_builder::read<std::vector<approval_request_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<approval_request_entity>(
         ctx,
@@ -407,7 +395,7 @@ approval_request_repository::read_latest(context ctx, const std::vector<std::str
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<approval_request_entity>> |
+    const auto query = query_builder::read<std::vector<approval_request_entity>> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<approval_request_entity, domain::approval_request>(
         ctx,
@@ -429,7 +417,7 @@ void approval_request_repository::remove(context ctx, const std::vector<std::str
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<approval_request_entity> |
+    const auto query = query_builder::delete_from<approval_request_entity> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing approval requests.");
 }

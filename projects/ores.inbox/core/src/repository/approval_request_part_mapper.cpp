@@ -46,7 +46,7 @@ approval_request_part_mapper::map(const approval_request_part_entity& v) {
     domain::approval_request_part r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.request_id = boost::lexical_cast<boost::uuids::uuid>(v.request_id.value());
+    r.request_id = boost::lexical_cast<boost::uuids::uuid>(v.request_id);
     r.part_code = v.part_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

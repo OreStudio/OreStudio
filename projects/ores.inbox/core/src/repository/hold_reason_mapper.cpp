@@ -42,7 +42,7 @@ domain::hold_reason hold_reason_mapper::map(const hold_reason_entity& v) {
     domain::hold_reason r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

@@ -19,12 +19,11 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.inbox.core/repository/approval_request_part_repository.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.inbox.api/domain/approval_request_part.hpp"
@@ -39,16 +38,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
-#include <sqlgen/aggregations.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/select_from.hpp>
-#include <sqlgen/to.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -56,13 +45,14 @@
 
 namespace ores::inbox::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string approval_request_part_repository::sql() {
-    return generate_create_table_sql<approval_request_part_entity>(lg());
+    return query_builder::generate_create_table_sql<approval_request_part_entity>(lg());
 }
 
 approval_request_part_repository::approval_request_part_repository(context ctx)
@@ -149,7 +139,7 @@ void approval_request_part_repository::write(
 std::vector<domain::approval_request_part> approval_request_part_repository::read_latest() {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<approval_request_part_entity>> |
+    const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("request_id"_c, "part_code"_c);
 
@@ -167,10 +157,10 @@ approval_request_part_repository::read_latest(std::uint32_t offset, std::uint32_
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<approval_request_part_entity>> |
+    const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("request_id"_c, "part_code"_c) | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+                       order_by("request_id"_c, "part_code"_c) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
     return execute_read_query<approval_request_part_entity, domain::approval_request_part>(
         ctx_,
@@ -190,7 +180,7 @@ approval_request_part_repository::read_latest(const boost::uuids::uuid& request_
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto part_code_str = part_code;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<approval_request_part_entity>> |
+    const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
                        where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
                              "part_code"_c == part_code && "valid_to"_c == max.value());
 
@@ -206,19 +196,12 @@ std::uint32_t approval_request_part_repository::get_total_approval_request_part_
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval request parts count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<approval_request_part_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = execute_count_query<approval_request_part_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting approval request parts");
     BOOST_LOG_SEV(lg(), debug) << "Total active approval request parts count: " << count;
     return count;
 }
@@ -230,7 +213,7 @@ approval_request_part_repository::read_latest_by_request(const boost::uuids::uui
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<approval_request_part_entity>> |
+    const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
                        where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
                              "valid_to"_c == max.value()) |
                        order_by("part_code"_c);
@@ -252,7 +235,7 @@ approval_request_part_repository::read_latest_by_part(const std::string& part_co
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<approval_request_part_entity>> |
+        query_builder::read<std::vector<approval_request_part_entity>> |
         where("tenant_id"_c == tid && "part_code"_c == part_code && "valid_to"_c == max.value()) |
         order_by("request_id"_c);
 
@@ -274,10 +257,11 @@ std::vector<domain::approval_request_part> approval_request_part_repository::rea
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<approval_request_part_entity>> |
+    const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
                        where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
                              "valid_to"_c == max.value()) |
-                       order_by("part_code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       order_by("part_code"_c) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
     auto rows = execute_read_query<approval_request_part_entity, domain::approval_request_part>(
         ctx_,
@@ -296,21 +280,13 @@ std::uint32_t approval_request_part_repository::get_total_approval_request_part_
                                << request_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<approval_request_part_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
-              "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
+                       where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = execute_count_query<approval_request_part_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting approval request parts");
     BOOST_LOG_SEV(lg(), debug) << "Total active approval request parts count by request: " << count;
     return count;
 }
@@ -321,20 +297,13 @@ std::uint32_t approval_request_part_repository::get_total_approval_request_part_
                                << part_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
-        sqlgen::select_from<approval_request_part_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "part_code"_c == part_code && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+        query_builder::read<std::vector<approval_request_part_entity>> |
+        where("tenant_id"_c == tid && "part_code"_c == part_code && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = execute_count_query<approval_request_part_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting approval request parts");
     BOOST_LOG_SEV(lg(), debug) << "Total active approval request parts count by part: " << count;
     return count;
 }
@@ -346,7 +315,7 @@ approval_request_part_repository::read_all_by_request(const boost::uuids::uuid& 
 
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<approval_request_part_entity>> |
+    const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
                        where("tenant_id"_c == tid && "request_id"_c == request_id_str) |
                        order_by("part_code"_c, "valid_from"_c.desc());
 
@@ -412,7 +381,7 @@ approval_request_part_repository::remove(const boost::uuids::uuid& request_id,
     const auto part_code_str = part_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
-        sqlgen::delete_from<approval_request_part_entity> |
+        query_builder::delete_from<approval_request_part_entity> |
         where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
               "part_code"_c == part_code && "valid_to"_c == max.value() && "version"_c == expected);
 
@@ -443,7 +412,7 @@ void approval_request_part_repository::remove_by_request(const boost::uuids::uui
 
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<approval_request_part_entity> |
+    const auto query = query_builder::delete_from<approval_request_part_entity> |
                        where("tenant_id"_c == tid && "request_id"_c == request_id_str);
 
     execute_delete_query(ctx_, query, lg(), "removing all approval request parts from database");

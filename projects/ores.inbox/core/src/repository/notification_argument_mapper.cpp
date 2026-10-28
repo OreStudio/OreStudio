@@ -46,7 +46,7 @@ notification_argument_mapper::map(const notification_argument_entity& v) {
     domain::notification_argument r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.notification_id = boost::lexical_cast<boost::uuids::uuid>(v.notification_id.value());
+    r.notification_id = boost::lexical_cast<boost::uuids::uuid>(v.notification_id);
     r.name = v.name;
     r.value = v.value;
     r.modified_by = v.modified_by;

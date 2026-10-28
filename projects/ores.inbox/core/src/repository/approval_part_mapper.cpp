@@ -42,7 +42,7 @@ domain::approval_part approval_part_mapper::map(const approval_part_entity& v) {
     domain::approval_part r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

@@ -19,15 +19,12 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.inbox.core/repository/delivery_outcome_type_repository.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
 #include "ores.inbox.api/domain/delivery_outcome_type.hpp"
 #include "ores.inbox.api/domain/delivery_outcome_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.inbox.api/messaging/delivery_outcome_type_protocol.hpp"
@@ -41,19 +38,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/begin_transaction.hpp>
-#include <sqlgen/commit.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/insert.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -62,13 +46,14 @@
 
 namespace ores::inbox::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string delivery_outcome_type_repository::sql() {
-    return generate_create_table_sql<delivery_outcome_type_entity>(lg());
+    return query_builder::generate_create_table_sql<delivery_outcome_type_entity>(lg());
 }
 
 bool delivery_outcome_type_repository::is_sortable(std::string_view field) {
@@ -83,7 +68,7 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
+query_builder::order
 delivery_outcome_type_list_order(const ores::utility::domain::order& order,
                                  std::initializer_list<std::string> default_columns,
                                  bool default_descending) {
@@ -99,13 +84,13 @@ delivery_outcome_type_list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition> delivery_outcome_type_filter_condition(
+std::optional<query_builder::condition> delivery_outcome_type_filter_condition(
     const std::optional<messaging::delivery_outcome_types_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->code_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->code_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("code", std::move(values)));
@@ -162,7 +147,7 @@ void delivery_outcome_type_repository::write(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Writing delivery outcome type. " << "code: " << v.code;
     const auto t = apply_claim(ctx, v, claim);
     execute_write_op(ctx,
-                     sqlgen::insert(delivery_outcome_type_mapper::map(t)),
+                     query_builder::insert(delivery_outcome_type_mapper::map(t)),
                      lg(),
                      "Writing delivery outcome type to database.");
 }
@@ -177,14 +162,15 @@ void delivery_outcome_type_repository::write(
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
     execute_write_op(ctx,
-                     sqlgen::insert(delivery_outcome_type_mapper::map(batch)),
+                     query_builder::insert(delivery_outcome_type_mapper::map(batch)),
                      lg(),
                      "Writing delivery outcome types to database.");
 }
 
 std::vector<domain::delivery_outcome_type>
 delivery_outcome_type_repository::read_latest(context ctx) {
-    const auto query = sqlgen::read<std::vector<delivery_outcome_type_entity>> | order_by("code"_c);
+    const auto query =
+        query_builder::read<std::vector<delivery_outcome_type_entity>> | order_by("code"_c);
 
     return execute_read_query<delivery_outcome_type_entity, domain::delivery_outcome_type>(
         ctx,
@@ -198,7 +184,7 @@ std::vector<domain::delivery_outcome_type>
 delivery_outcome_type_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest delivery outcome type. " << "code: " << code;
     const auto query =
-        sqlgen::read<std::vector<delivery_outcome_type_entity>> | where("code"_c == code);
+        query_builder::read<std::vector<delivery_outcome_type_entity>> | where("code"_c == code);
 
     return execute_read_query<delivery_outcome_type_entity, domain::delivery_outcome_type>(
         ctx,
@@ -213,7 +199,7 @@ std::vector<domain::delivery_outcome_type>
 delivery_outcome_type_repository::read_all(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all delivery outcome type versions. "
                                << "code: " << code;
-    const auto query = sqlgen::read<std::vector<delivery_outcome_type_entity>> |
+    const auto query = query_builder::read<std::vector<delivery_outcome_type_entity>> |
                        where("code"_c == code) | order_by("code"_c);
 
     return execute_read_query<delivery_outcome_type_entity, domain::delivery_outcome_type>(
@@ -235,7 +221,8 @@ delivery_outcome_type_repository::remove_status delivery_outcome_type_repository
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
-    const auto query = sqlgen::delete_from<delivery_outcome_type_entity> | where("code"_c == code);
+    const auto query =
+        query_builder::delete_from<delivery_outcome_type_entity> | where("code"_c == code);
 
     execute_delete_query(ctx, query, lg(), "Removing delivery outcome type from database.");
     return remove_status::removed;
@@ -253,8 +240,8 @@ std::vector<domain::delivery_outcome_type> delivery_outcome_type_repository::rea
     const std::optional<messaging::delivery_outcome_types_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest delivery outcome types with offset: " << offset
                                << " and limit: " << limit;
-    const auto query = sqlgen::read<std::vector<delivery_outcome_type_entity>> |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<delivery_outcome_type_entity>> |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return execute_ordered_read_query<delivery_outcome_type_entity, domain::delivery_outcome_type>(
         ctx,
@@ -270,7 +257,7 @@ std::uint32_t delivery_outcome_type_repository::get_total_delivery_outcome_type_
     context ctx, const std::optional<messaging::delivery_outcome_types_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active delivery outcome type count";
 
-    const auto query = sqlgen::read<std::vector<delivery_outcome_type_entity>>;
+    const auto query = query_builder::read<std::vector<delivery_outcome_type_entity>>;
 
     return execute_count_query<delivery_outcome_type_entity>(
         ctx,
@@ -285,7 +272,7 @@ delivery_outcome_type_repository::read_latest(context ctx, const std::vector<std
     if (codes.empty())
         return {};
     const auto query =
-        sqlgen::read<std::vector<delivery_outcome_type_entity>> | where("code"_c.in(codes));
+        query_builder::read<std::vector<delivery_outcome_type_entity>> | where("code"_c.in(codes));
     auto result = execute_read_query<delivery_outcome_type_entity, domain::delivery_outcome_type>(
         ctx,
         query,
@@ -305,7 +292,7 @@ void delivery_outcome_type_repository::remove(context ctx, const std::vector<std
     if (codes.empty())
         return;
     const auto query =
-        sqlgen::delete_from<delivery_outcome_type_entity> | where("code"_c.in(codes));
+        query_builder::delete_from<delivery_outcome_type_entity> | where("code"_c.in(codes));
     execute_delete_query(ctx, query, lg(), "Batch removing delivery outcome types.");
 }
 

@@ -8,7 +8,7 @@
 #+filetags: :run_the_public_sources_from_the_official_rates_screen:sprint_29:v0:
 #+owner: marco
 #+branch: feature/run-the-public-sources-from-the-official-rates-screen
-#+pr:
+#+pr: 4038
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4038][#4038]] | [doc] Keep Gemini's review and split the screen into five surfaces |
 
 * Review
 

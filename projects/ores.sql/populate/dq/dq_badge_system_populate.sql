@@ -581,6 +581,69 @@ BEGIN
         'tenant_type_automation', 'Automation', 'Automated test infrastructure, not a real tenant.',
         '#9ca3af', '#ffffff', 'secondary', 'badge bg-secondary', 114);
 
+    -- The curve blueprint screens: the role a blueprint plays in its family,
+    -- the method that joins its pillars, the day count it applies, the
+    -- convention its pillars resolve their dates under, the instrument role of
+    -- one pillar, and the state of a set published from it. The colours are the
+    -- palette's own, and the role carries two of them because the value says
+    -- which curve a curve depends on.
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'curve_family_role_funding', 'Funding curve', 'The discounting anchor curve of its family. A badge name is unique per tenant, so this one says which kind of funding it is.',
+        '#22c55e', '#ffffff', 'success', 'badge bg-success', 115);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'curve_family_role_projection', 'Projection curve', 'A dependent curve, discounted off a funding curve.',
+        '#3b82f6', '#ffffff', 'info', 'badge bg-info', 116);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'interpolation_method_log_linear', 'Log-linear discount',
+        'Interpolates the log of the discount factor between pillars.',
+        '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 117);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'interpolation_method_flat_forward', 'Flat forward then log-linear',
+        'A flat-forward short end to a split tenor, then log-linear beyond it.',
+        '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 118);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'interpolation_method_cubic_spline', 'Cubic spline',
+        'Interpolates with a cubic spline through the pillars.',
+        '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 119);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'day_count_a360', 'A360', 'Actual/360, the convention of a USD overnight index.',
+        '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 120);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'day_count_a365', 'A365', 'Actual/365.',
+        '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 121);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'day_count_a365f', 'A365F', 'Actual/365 (fixed).',
+        '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 122);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'day_count_thirty_360', '30/360', 'Thirty days per month over three hundred and sixty.',
+        '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 123);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_convention_spot_forward', 'Rates, spot forward',
+        'Pillars step by anchor offsets from the spot date.',
+        '#0ea5e9', '#ffffff', 'info', 'badge bg-info', 124);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_convention_spot_fomc', 'Rates, spot FOMC',
+        'Pillars step through a central-bank meeting schedule.',
+        '#0ea5e9', '#ffffff', 'info', 'badge bg-info', 125);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'bootstrap_curve_role_deposit', 'Deposit', 'Bootstraps as a deposit: today, or spot, to its end tenor.',
+        '#14b8a6', '#ffffff', 'info', 'badge bg-info', 126);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'bootstrap_curve_role_fra', 'FRA', 'Bootstraps as a forward rate agreement over its own period.',
+        '#14b8a6', '#ffffff', 'info', 'badge bg-info', 127);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'bootstrap_curve_role_swap', 'Swap', 'Bootstraps as a swap from spot to its end tenor.',
+        '#14b8a6', '#ffffff', 'info', 'badge bg-info', 128);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'curve_publish_state_published', 'Published', 'The set a desk prices from.',
+        '#22c55e', '#ffffff', 'success', 'badge bg-success', 129);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'curve_publish_state_withdrawn', 'Withdrawn', 'The set was taken out of use.',
+        '#ef4444', '#ffffff', 'danger', 'badge bg-danger', 130);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'curve_publish_state_superseded', 'Superseded', 'A later set replaced this one.',
+        '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 131);
+
     -- =============================================================================
     -- Code Domains (workspace)
     -- =============================================================================
@@ -665,6 +728,30 @@ BEGIN
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'tenor_anchor', 'Tenor Anchor',
         'Anchor classification codes for tenors (IMM roll, near leg, none, spot, today, tomorrow).', 68);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'curve_family_role', 'Curve Family Role',
+        'Whether a curve blueprint anchors its family (FUNDING) or discounts off one (PROJECTION).', 69);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'interpolation_method', 'Interpolation Method',
+        'The method that joins a curve blueprint''s pillars (log-linear discount, flat forward then log-linear, cubic spline).', 70);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'day_count_convention', 'Day Count Convention',
+        'The day count a curve bootstrap applies per pillar (actual/360, actual/365, actual/365 fixed, 30/360).', 71);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_convention', 'Tenor Convention',
+        'The convention a curve''s pillars resolve their dates under (spot forward, spot FOMC).', 72);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'bootstrap_curve_role', 'Bootstrap Curve Role',
+        'The instrument role one curve pillar bootstraps as (deposit, FRA, swap).', 73);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'curve_publish_state', 'Curve Publish State',
+        'The state of a curve set published from a blueprint (published, withdrawn, superseded).', 74);
 
     -- =============================================================================
     -- Badge Mappings
@@ -1081,6 +1168,50 @@ BEGIN
         'tenor_anchor', 'TODAY', 'tenor_anchor_today');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'tenor_anchor', 'TOMORROW', 'tenor_anchor_tomorrow');
+
+    -- The curve blueprint screens. The curve family role is the one domain of
+    -- the six whose codes are painted apart, because the value says which curve
+    -- a curve depends on; the other five carry one colour each.
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'curve_family_role', 'FUNDING', 'curve_family_role_funding');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'curve_family_role', 'PROJECTION', 'curve_family_role_projection');
+
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'interpolation_method', 'LOG_LINEAR_DISCOUNT', 'interpolation_method_log_linear');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'interpolation_method', 'FLAT_FORWARD_THEN_LOG_LINEAR',
+        'interpolation_method_flat_forward');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'interpolation_method', 'CUBIC_SPLINE', 'interpolation_method_cubic_spline');
+
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'day_count_convention', 'A360', 'day_count_a360');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'day_count_convention', 'A365', 'day_count_a365');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'day_count_convention', 'A365F', 'day_count_a365f');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'day_count_convention', '30/360', 'day_count_thirty_360');
+
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_convention', 'RATES_SPOT_FORWARD', 'tenor_convention_spot_forward');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_convention', 'RATES_SPOT_FOMC', 'tenor_convention_spot_fomc');
+
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'bootstrap_curve_role', 'DEPOSIT', 'bootstrap_curve_role_deposit');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'bootstrap_curve_role', 'FRA', 'bootstrap_curve_role_fra');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'bootstrap_curve_role', 'SWAP', 'bootstrap_curve_role_swap');
+
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'curve_publish_state', 'published', 'curve_publish_state_published');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'curve_publish_state', 'withdrawn', 'curve_publish_state_withdrawn');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'curve_publish_state', 'superseded', 'curve_publish_state_superseded');
 
     -- =============================================================================
     -- Summary

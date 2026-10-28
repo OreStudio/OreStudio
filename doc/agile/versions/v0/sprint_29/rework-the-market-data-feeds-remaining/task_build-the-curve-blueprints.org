@@ -40,9 +40,31 @@ The curve blueprint list and record work against the service, using the history 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Four units, each ending in something to check.
+
+1. *The reads and the BFF exposure.* The list contract of
+   =ir_curve_bootstrap_config= gains the columns the screen searches, filters
+   and sorts on (RS-LIST-04, RS-LIST-05, RS-LIST-07), and the pillar's
+   =bootstrap_config_id= is filterable so one blueprint's pillars are a filtered
+   read rather than a page the screen narrows. Both kinds join =REFDATA_RECORDS=,
+   and the generic record route forwards the filters an address states as
+   =f.<member>=. Two reads the generic path cannot serve are added to the curve
+   routes: the oresmd URI of a set of series ids, and the build itself
+   (=marketdata.v1.ops.compute_curve=), which had a handler and no route.
+2. *The web screens.* =CurveBlueprintsPage= and =CurveBlueprintPage= over the
+   shared parts: =RecordList=, =RecordGate=, =RecordHeader=, =useRecordTabs=,
+   =RecordDetails=, =PartsPanel=, =RecordTimeline=, =RecordDialog=,
+   =RemoveRecordDialog=, =RecordPicker=. The five tabs are Details, Pillars,
+   Check, Published sets and History. The card, =AREA_CARDS= and the menu entry
+   follow the prototype's table.
+3. *The check flow.* The six checks are the screen's own reading of the recipe
+   and are answered from what it read; the points come from =compute_curve=; the
+   forwards and the findings are the screen's arithmetic on those points, said as
+   such. A recipe that fails a check stops before the market is read. The pure
+   readings live in =curveBlueprintCheck.ts= so they are asserted without a
+   browser.
+4. *The badges.* Six code domains join the badge seed with one badge definition
+   per code and a mapping from each code, following =tenor_kind='s shape.
 
 * Measurements
 

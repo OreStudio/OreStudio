@@ -233,6 +233,11 @@ values
     -- The publish function dispatches by an explicit kind list, so the
     -- artefact_table and target_table lists are documentation; the graph only
     -- needs target_subject.
+    (ores_utility_system_tenant_id_fn(), 'commodities', 0, 'Commodities',
+     'The commodities a trade may name, as the engine spells them',
+     'dq_commodities_artefact_tbl', 'refdata_commodities_tbl',
+     'refdata.v1.ops.publish_commodities_from_dq', 38,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'equity_underlyings', 0, 'Equity Underlyings',
      'The equity underlyings a trade may name, as the engine spells them',
      'dq_equity_underlyings_artefact_tbl', 'refdata_equity_underlyings_tbl',

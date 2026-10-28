@@ -91,6 +91,9 @@ BEGIN
     -- The equity underlyings a population draws. A trade that named one no
     -- catalogue holds is refused when it is written, so the catalogue has to
     -- publish before the population runs.
+    -- The commodity vocabulary the same population draws on, with the same
+    -- reason for publishing it before a population runs.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.commodities', 12);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.equity_underlyings', 12);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.currency_pairs', 12);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.currency_pair_conventions', 13);

@@ -78,9 +78,73 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| BFF suite | 1105 tests pass | =npm run test --workspace @ores/bff= | f8f75d8c2a |
+| Web suite | 2273 tests pass | =npm run test --workspace @ores/web= | df4c37fb3a |
+| Wire protocol suite | 225 tests pass | =npm run test --workspace @ores/wire-protocol= | f98fa38218 |
+| Web typecheck | clean, every workspace | =npm run typecheck= | df4c37fb3a |
+| Refdata C++ suites | build, and pass under ctest | =compass build ores.refdata.core.tests ores.refdata.api.tests= | 27e7896c82 |
+| Docs checks | 39 components pass | =./projects/ores.codegen/validate_docs.sh= | 0e2f638e1b |
+| Lint | filetags and generator markers valid | =compass lint= | 0e2f638e1b |
+| Live walk-through | =evidence/curve_blueprint_live_walkthrough.txt= | =evidence/curve_blueprint_walkthrough_seed.sql= | f8f75d8c2a |
 
 * Notes
+
+** What the units delivered
+
+1. *The reads and the BFF exposure.* =ir_curve_bootstrap_config= declares the
+   list contract its screen needs: =currency_code= and =index_tenor= are
+   searchable, =currency_code= and =curve_family_role= are filterable,
+   =discount_curve_config_id= is filterable, and five columns are sortable. The
+   pillar's =bootstrap_config_id= is filterable, so the Pillars tab is one
+   filtered read. Both kinds are in =REFDATA_RECORDS= with their generated
+   subjects, write schemas and the permissions the handlers check, and the
+   generic record route forwards filters as =f.<member>=. Two reads join the
+   curve routes: the oresmd URI of a set of series ids, and the build itself
+   (=marketdata.v1.ops.compute_curve=, which had a handler and no route).
+2. *The web screens.* =CurveBlueprintsPage= and =CurveBlueprintPage= on the
+   shared parts, at =/market-data/curve-blueprints=, with Details, Pillars,
+   Check, Published sets and History. The pillar's sequence is completed from
+   its end tenor rather than typed. Two field kinds were added to the shared
+   table instead of built in the screen: a picker over a list the screen
+   supplies (the tenor ladder, a currency's funding blueprints), and the parts
+   panel's =.complete=, for a part whose parent decides a field.
+3. *The check flow.* The six checks, the forwards and the findings are one pure
+   module (=curveBlueprintCheck.ts=) with 18 assertions; the points come from
+   the build route; the tab never shows an unrun check as passed and a recipe
+   that fails a check stops before the market is read.
+4. *The badges.* Six domains, 17 badge definitions and 17 mappings in the
+   system seed, and the same rows in the three artefact seeds the catalogue
+   publishes to a tenant from.
+
+** What is missing, and why the screen says so
+
+- *Nothing mints the output series.* A blueprint is created with an
+  =output_series_id= and the model says the owning service mints it at
+  creation, but no operation does. The identity cannot be derived from the
+  config either: a curve's oresmd URI carries the index name
+  (=DISCOUNT/RATE/USD/USD-SOFR-FOMC=) and the config holds only the currency
+  and the index tenor; =curve_republish_service= says the same in its own
+  words. So Add and Copy are drawn and disabled by a note above the list, and
+  the task's rule that the server mints the series is the operation this task
+  could not build without inventing the curve's name. The candidate is one
+  operation that mints the series for a currency, an index tenor and a role, or
+  an index column on the config.
+- *The curve code is not searchable on the server.* The first column and the
+  display handle are the output series' URI, which lives in another component's
+  table; the list contract can search the currency and the index tenor, and
+  that is what the search covers.
+- *The published sets are filtered on the page.* =list_published_curves= has no
+  =bootstrap_config_id= filter, so the tab reads the party's sets and picks this
+  blueprint's. The journey records the same gap.
+- *The check is the screen's.* No operation validates a recipe, so a recipe that
+  fails its checks can still be saved, and the result is held by the person who
+  ran it and not against the version.
+- *A schedule-resolved pillar does not build.* The live build refuses a =1F=
+  pillar ('1F is not a period, a date, ON, TN, SN or a continuation'), so the
+  Check tab draws the server's words for the seeded FOMC recipe; the FOMC key
+  derivation in =compute_curve= is a separate gap.
+- *Retire.* The record has no status, so the page draws the state it can infer
+  ("no set in use since ...") and offers no action.
 
 * Test Scenarios
 
@@ -106,3 +170,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The list, the record page with its five tabs, the four dialogs, the record
+picker, the check and the badge catalogue are built on the standard
+infrastructure and verified against the provisioned Acme database. A blueprint
+cannot be created from the screen yet, because nothing mints the output series
+it is created with; the page states that in the list's note and the gap is
+recorded above.
+

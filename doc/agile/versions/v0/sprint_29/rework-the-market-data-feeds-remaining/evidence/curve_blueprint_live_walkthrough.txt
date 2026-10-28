@@ -1,0 +1,103 @@
+Curve blueprint screens: live walk-through against the Acme database
+====================================================================
+
+Environment: eager_maxwell, database rebuilt 2026-10-28 14:58 from
+9d848943a8-dirty, Acme Corporation provisioned 2026-10-28 15:22.
+Session: tenant_admin@acme_corporation, acting party
+acme_corporation_system (d82fc8f0-b37a-491e-9acf-4ac69b82303e).
+The party holds one blueprint, seeded by
+evidence/curve_blueprint_walkthrough_seed.sql from the system tenant's
+seeded FOMC recipe, because the Acme provisioning seeds neither a curve
+blueprint nor an interest-rate series.
+
+1. The list, searched, filtered and ordered on the server
+--------------------------------------------------------
+GET /api/refdata/ir-curve-bootstrap-configs?offset=0&limit=15
+  200, total 1, row: USD / 1D / FUNDING / FLAT_FORWARD_THEN_LOG_LINEAR /
+  A360 / RATES_SPOT_FOMC / 1Y, version 1.
+
+GET ...?f.curve_family_role=FUNDING  200, the same row.
+GET ...?f.nope=1
+  400 {"code":"invalid-request","message":"ir-curve-bootstrap-configs
+  cannot be filtered by nope."}
+
+2. The record and the series it publishes into
+----------------------------------------------
+GET /api/refdata/ir-curve-bootstrap-configs/key/b1b1b1b1-0000-4000-8000-000000000001
+  200, the row.
+POST /api/curves/series-by-id {"ids":["a1a1a1a1-0000-4000-8000-000000000001"]}
+  200 {"series":[{"id":"a1a1a1a1-...","uri":
+  "oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-FOMC"}]}
+
+3. The pillars, narrowed by the parent on the server
+----------------------------------------------------
+GET /api/refdata/ir-curve-bootstrap-pillars?f.bootstrap_config_id=b1b1b1b1-...
+  200, total 9: SPOT-1F, 1F-2F, 2F-3F, 3F-4F, 4F-5F, 5F-6F, 6F-7F, 7F-8F,
+  8F-1Y (sequence 0..8).
+
+4. A pillar edit
+----------------
+PUT /api/refdata/ir-curve-bootstrap-pillars  (end 1Y -> 2Y, version 1,
+  reason common.rectification, commentary "Extend the last pillar to two years")
+  204
+GET .../key/c1c1c1c1-0000-4000-8000-000000000008
+  200, end 2Y, version 2, modified_by tenant_admin, the commentary kept.
+
+5. The history the timeline reads
+---------------------------------
+GET /api/history?entityType=ores.refdata.ir_curve_bootstrap_pillar&entityId=c1c1c1c1-...008
+  200, 2 versions.
+GET /api/history?entityType=ores.refdata.ir_curve_bootstrap_config&entityId=b1b1b1b1-...
+  200, 2 versions (the amend that changed the interpolation method to
+  LOG_LINEAR_DISCOUNT kept the party and the row).
+
+6. The check
+------------
+POST /api/curves/compute {"bootstrap_config_id":"b1b1b1b1-...","as_of":"2026-10-07 17:00:00Z"}
+  422 {"code":"invalid-request","message":"pillar key:
+  'IR_SWAP/RATE/USD/0D/1D/1F': '1F' is not a period, a date, ON, TN, SN or
+  a continuation"}
+
+  The Check tab draws this as the server's own words in a notice: the
+  build refuses a schedule-resolved (FOMC) pillar, which the screen does
+  not hide. A recipe whose own checks fail stops before the market is
+  read and draws no points.
+
+7. The published sets
+---------------------
+POST /api/curves/published {"include_ended":true,"limit":10}
+  200 {"sets":[],"total":0}  -> the tab draws "None yet."
+
+POST /api/refdata/ir-curve-bootstrap-configs?f.discount_curve_config_id=b1b1b1b1-...
+  200, total 0  (Used by: no projection discounts off this recipe)
+
+8. The badges the screen reads
+------------------------------
+GET /api/labels, the six domains, painted:
+  curve_family_role: FUNDING -> Funding curve #22c55e, PROJECTION ->
+    Projection curve #3b82f6
+  interpolation_method: LOG_LINEAR_DISCOUNT / FLAT_FORWARD_THEN_LOG_LINEAR /
+    CUBIC_SPLINE -> #7c3aed
+  day_count_convention: A360, A365, A365F, 30/360 -> #6b7280
+  tenor_convention: RATES_SPOT_FORWARD, RATES_SPOT_FOMC -> #0ea5e9
+  bootstrap_curve_role: DEPOSIT, FRA, SWAP -> #14b8a6
+  curve_publish_state: published #22c55e, withdrawn #ef4444,
+    superseded #6b7280
+
+9. What does not hold yet
+-------------------------
+PUT /api/refdata/ir-curve-bootstrap-configs (a new blueprint with a fresh
+  output_series_id)  204, and the row is visible to the party.
+
+  But no operation mints the output series the write names:
+  POST /api/curves/series-by-id with that series id answers {"series":[]},
+  so the created blueprint names a series that does not exist and the
+  build refuses it ("output market_series not found"). A blueprint's own
+  fields cannot yield that series' identity: the oresmd URI of a curve is
+  DISCOUNT/RATE/USD/USD-SOFR-FOMC, and the config carries no index name,
+  only its currency and index tenor (curve_republish_service says the same:
+  "this service has none of series_type/metric/qualifier to invent one
+  from"). The screen therefore draws no Add, and says why above the list.
+
+  The page's route serves the bundle: GET /market-data/curve-blueprints and
+  GET /market-data/curve-blueprints/<id>?tab=check both answer 200.

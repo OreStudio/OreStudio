@@ -8,7 +8,7 @@
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-public-sources-adapter
-#+pr:
+#+pr: 3995
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -86,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3995][#3995]] | [marketdata] Add ores.marketdata.official, the official rates adapter |
 
 * Review
 

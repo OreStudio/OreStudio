@@ -4734,7 +4734,7 @@ export const en: SourceCatalogue = {
         },
         arrivals: {
             title: 'Tick arrivals',
-            lead: 'How this feed’s ticks arrive, and how hard it follows the market. The market itself is set on the Market regime tab.',
+            lead: 'How this feed’s ticks arrive, and how hard it follows the market. The market itself is set on the Synthetic screen’s Market tab.',
             model: 'Tick arrival model',
             'model.periodic': 'Periodic — equal gaps',
             'model.poisson': 'Poisson — exponential gaps',
@@ -4749,10 +4749,11 @@ export const en: SourceCatalogue = {
             runningLaw: 'Running now: {law}',
             decayHelp:
                 'Hawkes only: how fast a burst fades, per second of market time. A burst fades faster in a busy market.',
-            market: 'Market now: {state}. It is read here and set on the Market regime tab.',
+            market: 'Market now: {state}. It is read here and set on the Synthetic screen’s Market tab.',
             marketUnknown: 'the market state is not readable right now',
             unsaved: 'Unsaved changes',
             runningNote: 'The feed is running on its old law.',
+            openMarket: 'Open the market →',
             restart: 'Restart it to apply',
             restartFailed:
                 'Saved, but the restart failed: {message}. The feed runs on its old law until it starts again.',

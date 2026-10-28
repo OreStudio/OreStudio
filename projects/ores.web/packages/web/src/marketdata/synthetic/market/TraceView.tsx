@@ -23,6 +23,7 @@ import type { MarketTrace, TraceEvent } from '../../../api/client.js';
 import { useTranslation } from '../../../i18n/Provider.js';
 import { stateName } from '../useMarketRegime.js';
 import { MarketCard, MicroLabel, Segmented } from './MarketCard.js';
+import { FeedLink, type FeedPages } from './FeedLink.js';
 import { clean, duration } from './numbers.js';
 import { KindChip } from './NowView.js';
 
@@ -45,7 +46,13 @@ export function traceRows(
 }
 
 /** The Trace tab: every decision the loop took over the window, filtered, newest first. */
-export function TraceView({ trace }: { readonly trace: MarketTrace | undefined }): ReactNode {
+export function TraceView({
+    trace,
+    pages,
+}: {
+    readonly trace: MarketTrace | undefined;
+    readonly pages: FeedPages;
+}): ReactNode {
     const { t } = useTranslation();
     const [kinds, setKinds] = useState<ReadonlySet<TraceEvent['kind']>>(new Set(KINDS));
     const [feed, setFeed] = useState('');
@@ -127,7 +134,11 @@ export function TraceView({ trace }: { readonly trace: MarketTrace | undefined }
                                     <KindChip kind={event.kind} />
                                 </td>
                                 <td className="px-2 py-1">
-                                    {event.sourceName === '' ? '—' : event.sourceName}
+                                    {event.sourceName === '' ? (
+                                        '—'
+                                    ) : (
+                                        <FeedLink sourceName={event.sourceName} pages={pages} />
+                                    )}
                                 </td>
                                 <td className="px-2 py-1">{stateName(event.state, t)}</td>
                                 <td className="px-2 py-1 text-right tabular-nums">{`×${event.pace.toFixed(2)}`}</td>

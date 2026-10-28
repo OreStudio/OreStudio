@@ -20,6 +20,8 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
+import { Link } from 'react-router';
+import { PATHS } from '../../shell/paths.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { api, type MarketRegime, type RecordRow, type TraceFeed } from '../../api/client.js';
 import { show } from '../../refdata/records.js';
@@ -200,13 +202,16 @@ export function ArrivalsPanel({
             </div>
 
             {/* Read only, and the only global fact on this tab. */}
-            <p className="text-sm text-ink-muted">
+            <p className="flex flex-wrap items-baseline gap-x-3 text-sm text-ink-muted">
                 {t('marketdata.arrivals.market', {
                     state:
                         market === undefined
                             ? t('marketdata.arrivals.marketUnknown')
                             : regimeLabel(market, t),
                 })}
+                <Link to={`${PATHS.synthetic}?tab=regime`} className="text-accent hover:underline">
+                    {t('marketdata.arrivals.openMarket')}
+                </Link>
             </p>
 
             <p data-running-law className="font-mono text-xs text-ink-muted">

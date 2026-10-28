@@ -28,6 +28,7 @@ import { feedPageOf } from '../feedTree.js';
 import { markGroups } from '../marketRaster.js';
 import { providerOf } from './ArrivalsView.js';
 import { FactRows, MarketCard, MicroLabel, Segmented } from './MarketCard.js';
+import { FeedLink, type FeedPages } from './FeedLink.js';
 import { clean } from './numbers.js';
 
 export const LAWS = ['periodic', 'poisson', 'hawkes'] as const;
@@ -64,10 +65,12 @@ export function LawsView({
     trace,
     raster,
     now,
+    pages,
 }: {
     readonly trace: MarketTrace | undefined;
     readonly raster: FeedRaster | undefined;
     readonly now: number;
+    readonly pages: FeedPages;
 }): ReactNode {
     const { t } = useTranslation();
     const [shown, setShown] = useState<ReadonlySet<Law>>(new Set(LAWS));
@@ -195,7 +198,12 @@ export function LawsView({
                                                                 ).dot,
                                                             )}
                                                         />
-                                                        {feed?.label ?? law.sourceName}
+                                                        <FeedLink
+                                                            sourceName={law.sourceName}
+                                                            pages={pages}
+                                                        >
+                                                            {feed?.label ?? law.sourceName}
+                                                        </FeedLink>
                                                         <span className="text-[10px] text-ink-faint">
                                                             {providerOf(law.sourceName)}
                                                         </span>

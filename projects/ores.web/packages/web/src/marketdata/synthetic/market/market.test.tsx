@@ -41,6 +41,7 @@ import {
     providerOf,
     slotCounts,
 } from './ArrivalsView.js';
+import { feedPages } from './FeedLink.js';
 import { FitView, ratioPosition } from './FitView.js';
 import { FoldCard } from './FoldCard.js';
 import { foldHistory, ticksBySecond } from './fold.js';
@@ -264,6 +265,7 @@ describe('the Now tab', () => {
                 error={null}
                 onPin={() => undefined}
                 onOpenTrace={() => undefined}
+                pages={feedPages(raster())}
             />,
         );
 
@@ -381,6 +383,7 @@ describe('the Arrivals tab', () => {
                 now={NOW}
                 window={120}
                 onWindow={() => undefined}
+                pages={feedPages(raster(ticks))}
             />,
         );
 
@@ -450,7 +453,9 @@ describe('the Laws tab', () => {
     it('joins each running law to its feed and links to the feed’s Arrivals tab', () => {
         const rows = lawRows(trace(), raster());
         expect(rows.map((row) => row.feed?.label)).toEqual(['EUR/USD', 'USD SOFR']);
-        const html = render(<LawsView trace={trace()} raster={raster()} now={NOW} />);
+        const html = render(
+            <LawsView trace={trace()} raster={raster()} now={NOW} pages={feedPages(raster())} />,
+        );
         expect(html).toContain('href="/market-data/synthetic/fx/feed-1?tab=arrivals"');
         expect(html).toContain('href="/market-data/synthetic/ir/feed-2?tab=arrivals"');
         expect(html).toContain('stable');
@@ -472,7 +477,9 @@ describe('the Fit tab', () => {
     });
 
     it('lists each feed against its law and the loop’s health', () => {
-        const html = render(<FitView regime={regime()} trace={trace()} />);
+        const html = render(
+            <FitView regime={regime()} trace={trace()} pages={feedPages(raster())} />,
+        );
         expect(html).toContain('live.eurusd');
         expect(html).toContain('Run seed');
         expect(html).toContain('42');
@@ -491,7 +498,7 @@ describe('the Trace tab', () => {
     });
 
     it('draws the decisions with their kinds', () => {
-        const html = render(<TraceView trace={trace()} />);
+        const html = render(<TraceView trace={trace()} pages={feedPages(raster())} />);
         expect(html).toContain('4 decisions match');
         expect(html).toContain('turn');
     });
@@ -585,9 +592,42 @@ describe('the intensity on Now', () => {
                 error={null}
                 onPin={() => undefined}
                 onOpenTrace={() => undefined}
+                pages={feedPages(raster())}
             />,
         );
         expect(html).toContain('data-lambda');
         expect(html.match(/data-seen/g)).toHaveLength(11);
+    });
+});
+
+describe('the market’s links to its feeds', () => {
+    it('opens a feed’s page from its name on Arrivals, Laws, Fit and Trace', () => {
+        const pages = feedPages(raster());
+        const arrivals = render(
+            <ArrivalsView
+                raster={raster()}
+                trace={trace()}
+                now={NOW}
+                window={120}
+                onWindow={() => undefined}
+                pages={pages}
+            />,
+        );
+        expect(arrivals).toContain('href="/market-data/synthetic/fx/feed-1"');
+        expect(
+            render(<LawsView trace={trace()} raster={raster()} now={NOW} pages={pages} />),
+        ).toContain('href="/market-data/synthetic/fx/feed-1"');
+        expect(render(<FitView regime={regime()} trace={trace()} pages={pages} />)).toContain(
+            'href="/market-data/synthetic/fx/feed-1?tab=arrivals"',
+        );
+        expect(render(<TraceView trace={trace()} pages={pages} />)).toContain(
+            'href="/market-data/synthetic/fx/feed-1"',
+        );
+    });
+
+    it('names a feed the list does not know yet without a link', () => {
+        const html = render(<TraceView trace={trace()} pages={new Map()} />);
+        expect(html).toContain('live.eurusd');
+        expect(html).not.toContain('href=');
     });
 });

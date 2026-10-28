@@ -20,6 +20,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router';
 import type { MarketRegime, RecordRow } from '../../api/client.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
 import { ArrivalsPanel, saveArrivals } from './ArrivalsPanel.js';
@@ -41,13 +42,15 @@ function feed(over: Record<string, unknown> = {}): RecordRow {
 function render(row: RecordRow, mayWrite = true, market?: MarketRegime, running = false): string {
     return renderToStaticMarkup(
         <TranslationProvider>
-            <ArrivalsPanel
-                feed={row}
-                market={market}
-                mayWriteFeed={mayWrite}
-                running={running}
-                save={noSave}
-            />
+            <MemoryRouter>
+                <ArrivalsPanel
+                    feed={row}
+                    market={market}
+                    mayWriteFeed={mayWrite}
+                    running={running}
+                    save={noSave}
+                />
+            </MemoryRouter>
         </TranslationProvider>,
     );
 }
@@ -101,6 +104,10 @@ describe('a feed’s arrivals tab', () => {
         const html = render(feed());
         expect(html).toMatch(/<button[^>]*disabled=""[^>]*>[^<]*Save/);
         expect(html).not.toContain('btn primary');
+    });
+
+    it('links to the market, which is set on the Synthetic screen’s Market tab', () => {
+        expect(render(feed())).toContain('href="/market-data/synthetic?tab=regime"');
     });
 
     it('refuses to edit when the caller may not write', () => {

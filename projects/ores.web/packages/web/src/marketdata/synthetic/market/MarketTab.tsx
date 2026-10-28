@@ -34,6 +34,7 @@ import { Notice } from '../../../ui/Primitives.js';
 import { tabAddress, useTabs } from '../../../ui/Tabs.js';
 import { REGIME_KEY, useMarketRegimeQuery, useMarketTrace } from '../useMarketRegime.js';
 import { ArrivalsView, type ArrivalWindow } from './ArrivalsView.js';
+import { feedPages } from './FeedLink.js';
 import { FitView } from './FitView.js';
 import { FoldCard } from './FoldCard.js';
 import { Glyph, type GlyphName } from './MarketCard.js';
@@ -141,6 +142,7 @@ export function MarketTab(): ReactNode {
         );
     }
     const now = Date.now();
+    const pages = feedPages(raster.data);
     return (
         <section className="grid gap-4" aria-label={t('marketdata.market.title')}>
             <MarketStrip regime={regime.data} trace={trace.data} />
@@ -155,6 +157,7 @@ export function MarketTab(): ReactNode {
                     pending={pin.isPending ? pin.variables : undefined}
                     error={pin.error === null ? null : pin.error.message}
                     onPin={(mode) => pin.mutate(mode)}
+                    pages={pages}
                     onOpenTrace={() =>
                         setSearch(tabAddress(VIEWS, 'trace', 'view', OUTER), { replace: true })
                     }
@@ -184,13 +187,16 @@ export function MarketTab(): ReactNode {
                     now={now}
                     window={arrivalWindow}
                     onWindow={setArrivalWindow}
+                    pages={pages}
                 />
             ) : null}
             {view === 'laws' ? (
-                <LawsView trace={trace.data} raster={raster.data} now={now} />
+                <LawsView trace={trace.data} raster={raster.data} now={now} pages={pages} />
             ) : null}
-            {view === 'fit' ? <FitView regime={regime.data} trace={trace.data} /> : null}
-            {view === 'trace' ? <TraceView trace={trace.data} /> : null}
+            {view === 'fit' ? (
+                <FitView regime={regime.data} trace={trace.data} pages={pages} />
+            ) : null}
+            {view === 'trace' ? <TraceView trace={trace.data} pages={pages} /> : null}
         </section>
     );
 }

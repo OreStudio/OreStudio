@@ -42,7 +42,7 @@ domain::diary_entry_type diary_entry_type_mapper::map(const diary_entry_type_ent
     domain::diary_entry_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

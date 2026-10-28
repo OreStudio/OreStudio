@@ -45,7 +45,7 @@ domain::deposit_convention deposit_convention_mapper::map(const deposit_conventi
     domain::deposit_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = v.id.value();
+    r.id = v.id;
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.index_based = v.index_based;
     r.index = v.index;

@@ -25,8 +25,8 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CSA_ENTITY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CSA_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct csa_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_refdata_csas_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
     std::string netting_set_id;
@@ -73,6 +73,48 @@ struct csa_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = csa_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("netting_set_id", &e::netting_set_id) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("is_active", &e::is_active) |
+               query_builder::bind("bilateral", &e::bilateral) |
+               query_builder::bind("csa_currency", &e::csa_currency) |
+               query_builder::bind("index_name", &e::index_name) |
+               query_builder::bind("threshold_pay", &e::threshold_pay) |
+               query_builder::bind("threshold_receive", &e::threshold_receive) |
+               query_builder::bind("minimum_transfer_amount_pay", &e::minimum_transfer_amount_pay) |
+               query_builder::bind("minimum_transfer_amount_receive",
+                                   &e::minimum_transfer_amount_receive) |
+               query_builder::bind("independent_amount_held", &e::independent_amount_held) |
+               query_builder::bind("independent_amount_type", &e::independent_amount_type) |
+               query_builder::bind("call_frequency", &e::call_frequency) |
+               query_builder::bind("post_frequency", &e::post_frequency) |
+               query_builder::bind("margin_period_of_risk", &e::margin_period_of_risk) |
+               query_builder::bind("collateral_compounding_spread_receive",
+                                   &e::collateral_compounding_spread_receive) |
+               query_builder::bind("collateral_compounding_spread_pay",
+                                   &e::collateral_compounding_spread_pay) |
+               query_builder::bind("apply_initial_margin", &e::apply_initial_margin) |
+               query_builder::bind("initial_margin_type", &e::initial_margin_type) |
+               query_builder::bind("calculate_im_amount", &e::calculate_im_amount) |
+               query_builder::bind("calculate_vm_amount", &e::calculate_vm_amount) |
+               query_builder::bind("non_exempt_im_regulations", &e::non_exempt_im_regulations) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const csa_entity& v);

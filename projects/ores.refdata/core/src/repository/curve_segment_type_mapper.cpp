@@ -43,7 +43,7 @@ domain::curve_segment_type curve_segment_type_mapper::map(const curve_segment_ty
     domain::curve_segment_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.segment_kind = v.segment_kind;
     r.description = v.description.value_or("");
     r.modified_by = v.modified_by;

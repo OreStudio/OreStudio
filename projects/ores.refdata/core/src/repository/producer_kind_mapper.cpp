@@ -42,7 +42,7 @@ domain::producer_kind producer_kind_mapper::map(const producer_kind_entity& v) {
     domain::producer_kind r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

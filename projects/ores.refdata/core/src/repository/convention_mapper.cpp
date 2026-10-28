@@ -45,7 +45,7 @@ domain::convention convention_mapper::map(const convention_entity& v) {
     domain::convention r;
     r.identity.version = v.version;
     r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.identity.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.identity.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
 
 

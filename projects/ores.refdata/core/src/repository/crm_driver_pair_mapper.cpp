@@ -45,7 +45,7 @@ domain::crm_driver_pair crm_driver_pair_mapper::map(const crm_driver_pair_entity
     domain::crm_driver_pair r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
 
     r.config_id = boost::lexical_cast<boost::uuids::uuid>(v.config_id);

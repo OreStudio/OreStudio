@@ -45,7 +45,7 @@ domain::swap_convention swap_convention_mapper::map(const swap_convention_entity
     domain::swap_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = v.id.value();
+    r.id = v.id;
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.fixed_calendar = v.fixed_calendar;
     r.fixed_frequency = v.fixed_frequency;

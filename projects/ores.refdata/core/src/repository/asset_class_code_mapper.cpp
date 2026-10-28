@@ -42,7 +42,7 @@ domain::asset_class_code asset_class_code_mapper::map(const asset_class_code_ent
     domain::asset_class_code r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

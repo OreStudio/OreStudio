@@ -46,7 +46,7 @@ party_counterparty_change_mapper::map(const party_counterparty_change_entity& v)
     domain::party_counterparty_change r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.request_id = boost::lexical_cast<boost::uuids::uuid>(v.request_id);
 
 

@@ -45,7 +45,7 @@ domain::fra_convention fra_convention_mapper::map(const fra_convention_entity& v
     domain::fra_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = v.id.value();
+    r.id = v.id;
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.index = v.index;
     r.oresmd_uri = v.oresmd_uri;

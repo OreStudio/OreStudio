@@ -25,8 +25,8 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PARTY_CONTACT_INFORMATION_ENTITY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PARTY_CONTACT_INFORMATION_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct party_contact_information_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_refdata_party_contact_informations_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
     std::string party_id;
@@ -66,6 +66,33 @@ struct party_contact_information_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = party_contact_information_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("contact_type", &e::contact_type) |
+               query_builder::bind("street_line_1", &e::street_line_1) |
+               query_builder::bind("street_line_2", &e::street_line_2) |
+               query_builder::bind("city", &e::city) | query_builder::bind("state", &e::state) |
+               query_builder::bind("country_code", &e::country_code) |
+               query_builder::bind("postal_code", &e::postal_code) |
+               query_builder::bind("phone", &e::phone) | query_builder::bind("email", &e::email) |
+               query_builder::bind("web_page", &e::web_page) |
+               query_builder::bind("is_primary", &e::is_primary) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const party_contact_information_entity& v);

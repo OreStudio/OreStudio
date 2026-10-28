@@ -204,11 +204,11 @@ std::vector<domain::crm_topology_config> read_latest_all_tenants(context ctx);
 std::vector<domain::crm_topology_config>
 crm_topology_config_repository::read_latest_all_tenants(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<crm_topology_config_entity>> |
-                       where("valid_to"_c == max.value()) |
-                       order_by("id"_c);
+    const auto query = query_builder::read<std::vector<crm_topology_config_entity>> |
+                       query_builder::where("valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
-    return execute_read_query<crm_topology_config_entity, domain::crm_topology_config>(
+    return query_builder::execute_read_query<crm_topology_config_entity, domain::crm_topology_config>(
         ctx,
         query,
         [](const auto& entities) { return crm_topology_config_mapper::map(entities); },

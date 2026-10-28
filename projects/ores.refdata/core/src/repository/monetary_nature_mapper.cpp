@@ -42,7 +42,7 @@ domain::monetary_nature monetary_nature_mapper::map(const monetary_nature_entity
     domain::monetary_nature r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

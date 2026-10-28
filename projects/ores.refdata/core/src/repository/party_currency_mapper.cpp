@@ -45,7 +45,7 @@ domain::party_currency party_currency_mapper::map(const party_currency_entity& v
     domain::party_currency r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id.value());
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.currency_iso_code = v.currency_iso_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

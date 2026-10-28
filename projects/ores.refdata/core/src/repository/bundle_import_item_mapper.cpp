@@ -45,7 +45,7 @@ domain::bundle_import_item bundle_import_item_mapper::map(const bundle_import_it
     domain::bundle_import_item r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.import_id = boost::lexical_cast<boost::uuids::uuid>(v.import_id);
 
 

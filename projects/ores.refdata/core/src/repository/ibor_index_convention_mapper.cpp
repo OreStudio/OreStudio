@@ -43,7 +43,7 @@ ibor_index_convention_mapper::map(const ibor_index_convention_entity& v) {
     domain::ibor_index_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = v.id.value();
+    r.id = v.id;
     r.fixing_calendar = v.fixing_calendar;
     r.day_count_fraction = v.day_count_fraction;
     r.settlement_days = v.settlement_days;

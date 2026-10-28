@@ -46,7 +46,7 @@ tenor_basis_swap_pay_receive_mapper::map(const tenor_basis_swap_pay_receive_enti
     domain::tenor_basis_swap_pay_receive r;
     r.identity.version = v.version;
     r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.identity.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.identity.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.identity.convention_id = boost::lexical_cast<boost::uuids::uuid>(v.convention_id);
 
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);

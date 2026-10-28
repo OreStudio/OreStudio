@@ -43,7 +43,7 @@ series_subclass_code_mapper::map(const series_subclass_code_entity& v) {
     domain::series_subclass_code r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

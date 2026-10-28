@@ -48,7 +48,7 @@ domain::calendar_exception calendar_exception_mapper::map(const calendar_excepti
     domain::calendar_exception r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
 
     r.calendar_code = v.calendar_code;
 

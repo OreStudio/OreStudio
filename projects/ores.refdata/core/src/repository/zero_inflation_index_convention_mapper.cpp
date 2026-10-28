@@ -46,7 +46,7 @@ zero_inflation_index_convention_mapper::map(const zero_inflation_index_conventio
     domain::zero_inflation_index_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = v.id.value();
+    r.id = v.id;
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.region_name = v.region_name;
     r.region_code = v.region_code;

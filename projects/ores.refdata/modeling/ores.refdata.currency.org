@@ -1140,8 +1140,8 @@ generate_fictional_currencies(std::size_t n, utility::generation::generation_con
 
 *** Repository impl includes
 
-No extra includes needed — =<sqlgen/postgres.hpp>=, =bitemporal_operations.hpp=,
-and =helpers.hpp= are already in the standard template output.
+No extra includes needed — the query builder and =helpers.hpp= are already
+in the standard template output.
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
 #+end_src
@@ -1157,10 +1157,10 @@ equivalent and remains a custom paste.
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::currency> currency_repository::read_all(context ctx) {
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<currency_entity>> |
-                       where("tenant_id"_c == tid) | order_by("valid_from"_c.desc());
+    const auto query = query_builder::read<std::vector<currency_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::order_by("valid_from"_c.desc());
 
-    return execute_read_query<currency_entity, domain::currency>(
+    return query_builder::execute_read_query<currency_entity, domain::currency>(
         ctx,
         query,
         [](const auto& entities) { return currency_mapper::map(entities); },

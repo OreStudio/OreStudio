@@ -46,7 +46,7 @@ domain::country country_mapper::map(const country_entity& v) {
     domain::country r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.alpha2_code = v.alpha2_code.value();
+    r.alpha2_code = v.alpha2_code;
 
     r.alpha3_code = v.alpha3_code;
 

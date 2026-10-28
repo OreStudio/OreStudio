@@ -19,15 +19,12 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/repository/party_identifier_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/party_identifier.hpp"
@@ -44,16 +41,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -62,13 +49,13 @@
 
 namespace ores::refdata::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string party_identifier_repository::sql() {
-    return generate_create_table_sql<party_identifier_entity>(lg());
+    return query_builder::insert_statement_sql<party_identifier_entity>(lg());
 }
 
 bool party_identifier_repository::is_sortable(std::string_view field) {
@@ -83,42 +70,43 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
-party_identifier_list_order(const ores::utility::domain::order& order,
-                            std::initializer_list<std::string> default_columns,
-                            bool default_descending) {
+query_builder::order party_identifier_list_order(const ores::utility::domain::order& order,
+                                                 std::initializer_list<std::string> default_columns,
+                                                 bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!party_identifier_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of party identifiers cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 /*
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition> party_identifier_filter_condition(
+std::optional<query_builder::condition> party_identifier_filter_condition(
     const std::optional<messaging::party_identifiers_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->party_id)
-        r.push_back(equals("party_id", filter_value(*filter->party_id)));
+        r.push_back(
+            query_builder::equals("party_id", query_builder::filter_value(*filter->party_id)));
     if (filter->id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
     }
     if (filter->party_id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->party_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("party_id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("party_id", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -178,7 +166,7 @@ void party_identifier_repository::write(context ctx,
                                         const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party identifier. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, party_identifier_mapper::map(t), lg(), "Writing party identifier to database.");
 }
 
@@ -191,18 +179,18 @@ void party_identifier_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, party_identifier_mapper::map(batch), lg(), "Writing party identifiers to database.");
 }
 
 std::vector<domain::party_identifier> party_identifier_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+    const auto query = query_builder::read<std::vector<party_identifier_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
-    return execute_read_query<party_identifier_entity, domain::party_identifier>(
+    return query_builder::execute_read_query<party_identifier_entity, domain::party_identifier>(
         ctx,
         query,
         [](const auto& entities) { return party_identifier_mapper::map(entities); },
@@ -215,10 +203,11 @@ party_identifier_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party identifier. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<party_identifier_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
-    return execute_read_query<party_identifier_entity, domain::party_identifier>(
+    return query_builder::execute_read_query<party_identifier_entity, domain::party_identifier>(
         ctx,
         query,
         [](const auto& entities) { return party_identifier_mapper::map(entities); },
@@ -232,11 +221,12 @@ std::vector<domain::party_identifier> party_identifier_repository::read_latest_b
                                << party_id << "/" << id_scheme;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
-                       where("tenant_id"_c == tid && "party_id"_c == party_id &&
+    const auto query =
+        query_builder::read<std::vector<party_identifier_entity>> |
+        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id &&
                              "id_scheme"_c == id_scheme && "valid_to"_c == max.value());
 
-    return execute_read_query<party_identifier_entity, domain::party_identifier>(
+    return query_builder::execute_read_query<party_identifier_entity, domain::party_identifier>(
         ctx,
         query,
         [](const auto& entities) { return party_identifier_mapper::map(entities); },
@@ -248,19 +238,20 @@ party_identifier_repository::read_latest_by_id_value(context ctx, const std::str
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party identifier by id_value: " << id_value;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<party_identifier_entity>> |
-        where("tenant_id"_c == tid && "id_value"_c == id_value && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<party_identifier_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id_value"_c == id_value &&
+                                            "valid_to"_c == max.value());
 
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
     // finder with a parent column is pinned to its parent's party already.
-    auto found = execute_read_query<party_identifier_entity, domain::party_identifier>(
-        ctx,
-        query,
-        [](const auto& entities) { return party_identifier_mapper::map(entities); },
-        lg(),
-        "Reading latest party identifier by id_value.");
+    auto found =
+        query_builder::execute_read_query<party_identifier_entity, domain::party_identifier>(
+            ctx,
+            query,
+            [](const auto& entities) { return party_identifier_mapper::map(entities); },
+            lg(),
+            "Reading latest party identifier by id_value.");
     if (const auto party = ctx.party_id(); party.has_value())
         std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
     return found;
@@ -270,16 +261,17 @@ std::vector<domain::party_identifier>
 party_identifier_repository::read_any_by_id_value(context ctx, const std::string& id_value) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any party identifier by id_value: " << id_value;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
-                       where("tenant_id"_c == tid && "id_value"_c == id_value) |
-                       order_by("valid_from"_c.desc());
+    const auto query = query_builder::read<std::vector<party_identifier_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id_value"_c == id_value) |
+                       query_builder::order_by("valid_from"_c.desc());
 
-    auto found = execute_read_query<party_identifier_entity, domain::party_identifier>(
-        ctx,
-        query,
-        [](const auto& entities) { return party_identifier_mapper::map(entities); },
-        lg(),
-        "Reading any party identifier by id_value.");
+    auto found =
+        query_builder::execute_read_query<party_identifier_entity, domain::party_identifier>(
+            ctx,
+            query,
+            [](const auto& entities) { return party_identifier_mapper::map(entities); },
+            lg(),
+            "Reading any party identifier by id_value.");
     // A key names a row of one party, and another party of the tenant may hold
     // the same key, so the read keeps the session's party's rows. The filter
     // runs before the newest row is taken because the party column may be
@@ -297,11 +289,11 @@ std::vector<domain::party_identifier> party_identifier_repository::read_all(cont
                                                                             const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all party identifier versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query = query_builder::read<std::vector<party_identifier_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<party_identifier_entity, domain::party_identifier>(
+    return query_builder::execute_read_query<party_identifier_entity, domain::party_identifier>(
         ctx,
         query,
         [](const auto& entities) { return party_identifier_mapper::map(entities); },
@@ -314,16 +306,18 @@ std::optional<domain::party_identifier> party_identifier_repository::read_at_ver
     BOOST_LOG_SEV(lg(), debug) << "Reading party identifier at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
-                       sqlgen::limit(1);
+    const auto query =
+        query_builder::read<std::vector<party_identifier_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+        query_builder::limit(1);
 
-    const auto entities = execute_read_query<party_identifier_entity, domain::party_identifier>(
-        ctx,
-        query,
-        [](const auto& entities) { return party_identifier_mapper::map(entities); },
-        lg(),
-        "Reading party identifier at version.");
+    const auto entities =
+        query_builder::execute_read_query<party_identifier_entity, domain::party_identifier>(
+            ctx,
+            query,
+            [](const auto& entities) { return party_identifier_mapper::map(entities); },
+            lg(),
+            "Reading party identifier at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -341,12 +335,13 @@ std::vector<domain::party_identifier> party_identifier_repository::read_latest_b
                                << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<party_identifier_entity>> |
-        where("tenant_id"_c == tid && "party_id"_c == party_id && "valid_to"_c == max.value()) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<party_identifier_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<party_identifier_entity, domain::party_identifier>(
+    return query_builder::execute_ordered_read_query<party_identifier_entity,
+                                                     domain::party_identifier>(
         ctx,
         query,
         party_identifier_list_order(order, {"id"}, false),
@@ -365,15 +360,16 @@ std::uint32_t party_identifier_repository::get_total_party_identifier_count_by_p
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<party_identifier_entity>> |
-        where("tenant_id"_c == tid && "party_id"_c == party_id && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<party_identifier_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id &&
+                                            "valid_to"_c == max.value());
 
-    return execute_count_query<party_identifier_entity>(ctx,
-                                                        query,
-                                                        party_identifier_filter_condition(filter),
-                                                        lg(),
-                                                        "Counting party identifiers by party_id");
+    return query_builder::execute_count_query<party_identifier_entity>(
+        ctx,
+        query,
+        party_identifier_filter_condition(filter),
+        lg(),
+        "Counting party identifiers by party_id");
 }
 
 
@@ -389,12 +385,13 @@ std::vector<domain::party_identifier> party_identifier_repository::read_by_party
     const auto vt(
         make_timestamp(ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
-                       where("tenant_id"_c == tid && "party_id"_c == party_id &&
+    const auto query =
+        query_builder::read<std::vector<party_identifier_entity>> |
+        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id &&
                              "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
-                       order_by("id"_c);
+        query_builder::order_by("id"_c);
 
-    return execute_read_query<party_identifier_entity, domain::party_identifier>(
+    return query_builder::execute_read_query<party_identifier_entity, domain::party_identifier>(
         ctx,
         query,
         [](const auto& entities) { return party_identifier_mapper::map(entities); },
@@ -418,11 +415,12 @@ party_identifier_repository::remove_status party_identifier_repository::remove(
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<party_identifier_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+    const auto query = query_builder::delete_from<party_identifier_entity> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing party identifier from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing party identifier from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -445,14 +443,17 @@ std::vector<domain::party_identifier> party_identifier_repository::read_latest(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party identifiers with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<party_identifier_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
-    return execute_ordered_read_query<party_identifier_entity, domain::party_identifier>(
+    return query_builder::execute_ordered_read_query<party_identifier_entity,
+                                                     domain::party_identifier>(
         ctx,
         query,
         party_identifier_list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), party_identifier_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                party_identifier_filter_condition(filter)),
         [](const auto& entities) { return party_identifier_mapper::map(entities); },
         lg(),
         "Reading latest party identifiers with pagination.");
@@ -465,13 +466,14 @@ std::uint32_t party_identifier_repository::get_total_party_identifier_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party identifier count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<party_identifier_entity>> | where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<party_identifier_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
-    return execute_count_query<party_identifier_entity>(
+    return query_builder::execute_count_query<party_identifier_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), party_identifier_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                party_identifier_filter_condition(filter)),
         lg(),
         "Counting party identifiers");
 }
@@ -482,14 +484,16 @@ party_identifier_repository::read_latest(context ctx, const std::vector<std::str
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    auto result = execute_read_query<party_identifier_entity, domain::party_identifier>(
-        ctx,
-        query,
-        [](const auto& entities) { return party_identifier_mapper::map(entities); },
-        lg(),
-        "Reading latest party identifiers by ids.");
+    const auto query =
+        query_builder::read<std::vector<party_identifier_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result =
+        query_builder::execute_read_query<party_identifier_entity, domain::party_identifier>(
+            ctx,
+            query,
+            [](const auto& entities) { return party_identifier_mapper::map(entities); },
+            lg(),
+            "Reading latest party identifiers by ids.");
     return result;
 }
 
@@ -504,9 +508,10 @@ void party_identifier_repository::remove(context ctx, const std::vector<std::str
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<party_identifier_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing party identifiers.");
+    const auto query =
+        query_builder::delete_from<party_identifier_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing party identifiers.");
 }
 
 

@@ -42,7 +42,7 @@ domain::book_purpose_type book_purpose_type_mapper::map(const book_purpose_type_
     domain::book_purpose_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

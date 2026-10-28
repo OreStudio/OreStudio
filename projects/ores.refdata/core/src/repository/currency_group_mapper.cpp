@@ -42,7 +42,7 @@ domain::currency_group currency_group_mapper::map(const currency_group_entity& v
     domain::currency_group r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

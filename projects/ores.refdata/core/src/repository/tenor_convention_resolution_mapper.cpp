@@ -43,7 +43,7 @@ tenor_convention_resolution_mapper::map(const tenor_convention_resolution_entity
     domain::tenor_convention_resolution r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.convention_code = v.convention_code.value();
+    r.convention_code = v.convention_code;
     r.tenor_code = v.tenor_code;
     r.anchor_override = v.anchor_override;
     r.offset_unit = v.offset_unit;

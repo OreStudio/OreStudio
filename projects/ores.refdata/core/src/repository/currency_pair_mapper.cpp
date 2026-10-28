@@ -42,7 +42,7 @@ domain::currency_pair currency_pair_mapper::map(const currency_pair_entity& v) {
     domain::currency_pair r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.pair_code = v.pair_code.value();
+    r.pair_code = v.pair_code;
     r.base_currency = v.base_currency;
     r.quote_currency = v.quote_currency;
     r.classification = v.classification;

@@ -42,7 +42,7 @@ domain::instrument_code instrument_code_mapper::map(const instrument_code_entity
     domain::instrument_code r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

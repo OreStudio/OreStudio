@@ -15,6 +15,7 @@
 #+brief: Reference-data domain component
 #+component_kind: composite
 #+parts: api client core service
+#+repository_backend: libpq
 
 * Summary
 

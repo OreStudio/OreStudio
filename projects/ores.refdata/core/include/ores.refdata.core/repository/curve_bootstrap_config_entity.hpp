@@ -25,8 +25,8 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CURVE_BOOTSTRAP_CONFIG_ENTITY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CURVE_BOOTSTRAP_CONFIG_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct curve_bootstrap_config_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_refdata_curve_bootstrap_configs_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
     std::string party_id;
@@ -63,6 +63,36 @@ struct curve_bootstrap_config_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = curve_bootstrap_config_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("curve_definition_id", &e::curve_definition_id) |
+               query_builder::bind("default_curve_configuration_id",
+                                   &e::default_curve_configuration_id) |
+               query_builder::bind("accuracy", &e::accuracy) |
+               query_builder::bind("global_accuracy", &e::global_accuracy) |
+               query_builder::bind("dont_throw", &e::dont_throw) |
+               query_builder::bind("max_attempts", &e::max_attempts) |
+               query_builder::bind("max_factor", &e::max_factor) |
+               query_builder::bind("min_factor", &e::min_factor) |
+               query_builder::bind("dont_throw_steps", &e::dont_throw_steps) |
+               query_builder::bind("global", &e::global) |
+               query_builder::bind("smoothness_lambda", &e::smoothness_lambda) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const curve_bootstrap_config_entity& v);

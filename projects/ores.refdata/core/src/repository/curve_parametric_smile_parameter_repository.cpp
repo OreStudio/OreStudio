@@ -19,15 +19,12 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/repository/curve_parametric_smile_parameter_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/curve_parametric_smile_parameter.hpp"
 #include "ores.refdata.api/domain/curve_parametric_smile_parameter_json_io.hpp" // IWYU pragma: keep.
@@ -42,16 +39,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -60,13 +47,13 @@
 
 namespace ores::refdata::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string curve_parametric_smile_parameter_repository::sql() {
-    return generate_create_table_sql<curve_parametric_smile_parameter_entity>(lg());
+    return query_builder::insert_statement_sql<curve_parametric_smile_parameter_entity>(lg());
 }
 
 bool curve_parametric_smile_parameter_repository::is_sortable(std::string_view field) {
@@ -81,35 +68,36 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
+query_builder::order
 curve_parametric_smile_parameter_list_order(const ores::utility::domain::order& order,
                                             std::initializer_list<std::string> default_columns,
                                             bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!curve_parametric_smile_parameter_repository::is_sortable(order.field))
         throw std::invalid_argument(
             "A list of curve parametric smile parameters cannot be ordered by " + order.field +
             ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 /*
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition> curve_parametric_smile_parameter_filter_condition(
+std::optional<query_builder::condition> curve_parametric_smile_parameter_filter_condition(
     const std::optional<messaging::curve_parametric_smile_parameters_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -171,10 +159,10 @@ void curve_parametric_smile_parameter_repository::write(
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing curve parametric smile parameter. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx,
-                        curve_parametric_smile_parameter_mapper::map(t),
-                        lg(),
-                        "Writing curve parametric smile parameter to database.");
+    query_builder::execute_write_query(ctx,
+                                       curve_parametric_smile_parameter_mapper::map(t),
+                                       lg(),
+                                       "Writing curve parametric smile parameter to database.");
 }
 
 void curve_parametric_smile_parameter_repository::write(
@@ -186,22 +174,22 @@ void curve_parametric_smile_parameter_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        curve_parametric_smile_parameter_mapper::map(batch),
-                        lg(),
-                        "Writing curve parametric smile parameters to database.");
+    query_builder::execute_write_query(ctx,
+                                       curve_parametric_smile_parameter_mapper::map(batch),
+                                       lg(),
+                                       "Writing curve parametric smile parameters to database.");
 }
 
 std::vector<domain::curve_parametric_smile_parameter>
 curve_parametric_smile_parameter_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<curve_parametric_smile_parameter_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+    const auto query = query_builder::read<std::vector<curve_parametric_smile_parameter_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
-    return execute_read_query<curve_parametric_smile_parameter_entity,
-                              domain::curve_parametric_smile_parameter>(
+    return query_builder::execute_read_query<curve_parametric_smile_parameter_entity,
+                                             domain::curve_parametric_smile_parameter>(
         ctx,
         query,
         [](const auto& entities) { return curve_parametric_smile_parameter_mapper::map(entities); },
@@ -215,11 +203,12 @@ curve_parametric_smile_parameter_repository::read_latest(context ctx, const std:
                                << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<curve_parametric_smile_parameter_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<curve_parametric_smile_parameter_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
-    return execute_read_query<curve_parametric_smile_parameter_entity,
-                              domain::curve_parametric_smile_parameter>(
+    return query_builder::execute_read_query<curve_parametric_smile_parameter_entity,
+                                             domain::curve_parametric_smile_parameter>(
         ctx,
         query,
         [](const auto& entities) { return curve_parametric_smile_parameter_mapper::map(entities); },
@@ -233,12 +222,12 @@ curve_parametric_smile_parameter_repository::read_all(context ctx, const std::st
     BOOST_LOG_SEV(lg(), debug) << "Reading all curve parametric smile parameter versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<curve_parametric_smile_parameter_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query = query_builder::read<std::vector<curve_parametric_smile_parameter_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<curve_parametric_smile_parameter_entity,
-                              domain::curve_parametric_smile_parameter>(
+    return query_builder::execute_read_query<curve_parametric_smile_parameter_entity,
+                                             domain::curve_parametric_smile_parameter>(
         ctx,
         query,
         [](const auto& entities) { return curve_parametric_smile_parameter_mapper::map(entities); },
@@ -253,17 +242,21 @@ curve_parametric_smile_parameter_repository::read_at_version(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading curve parametric smile parameter at version. "
                                << "id: " << id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<curve_parametric_smile_parameter_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
-                       sqlgen::limit(1);
+    const auto query =
+        query_builder::read<std::vector<curve_parametric_smile_parameter_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+        query_builder::limit(1);
 
-    const auto entities = execute_read_query<curve_parametric_smile_parameter_entity,
-                                             domain::curve_parametric_smile_parameter>(
-        ctx,
-        query,
-        [](const auto& entities) { return curve_parametric_smile_parameter_mapper::map(entities); },
-        lg(),
-        "Reading curve parametric smile parameter at version.");
+    const auto entities =
+        query_builder::execute_read_query<curve_parametric_smile_parameter_entity,
+                                          domain::curve_parametric_smile_parameter>(
+            ctx,
+            query,
+            [](const auto& entities) {
+                return curve_parametric_smile_parameter_mapper::map(entities);
+            },
+            lg(),
+            "Reading curve parametric smile parameter at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -289,11 +282,11 @@ curve_parametric_smile_parameter_repository::remove(context ctx,
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<curve_parametric_smile_parameter_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+    const auto query = query_builder::delete_from<curve_parametric_smile_parameter_entity> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(
+    query_builder::execute_delete_query(
         ctx, query, lg(), "Removing curve parametric smile parameter from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
@@ -318,15 +311,17 @@ curve_parametric_smile_parameter_repository::read_latest(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest curve parametric smile parameters with offset: "
                                << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<curve_parametric_smile_parameter_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<curve_parametric_smile_parameter_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
-    return execute_ordered_read_query<curve_parametric_smile_parameter_entity,
-                                      domain::curve_parametric_smile_parameter>(
+    return query_builder::execute_ordered_read_query<curve_parametric_smile_parameter_entity,
+                                                     domain::curve_parametric_smile_parameter>(
         ctx,
         query,
         curve_parametric_smile_parameter_list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), curve_parametric_smile_parameter_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                curve_parametric_smile_parameter_filter_condition(filter)),
         [](const auto& entities) { return curve_parametric_smile_parameter_mapper::map(entities); },
         lg(),
         "Reading latest curve parametric smile parameters with pagination.");
@@ -339,13 +334,14 @@ std::uint32_t curve_parametric_smile_parameter_repository::get_total_smile_param
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active curve parametric smile parameter count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<curve_parametric_smile_parameter_entity>> |
-                       where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<curve_parametric_smile_parameter_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
-    return execute_count_query<curve_parametric_smile_parameter_entity>(
+    return query_builder::execute_count_query<curve_parametric_smile_parameter_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), curve_parametric_smile_parameter_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                curve_parametric_smile_parameter_filter_condition(filter)),
         lg(),
         "Counting curve parametric smile parameters");
 }
@@ -357,10 +353,11 @@ curve_parametric_smile_parameter_repository::read_latest(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<curve_parametric_smile_parameter_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    auto result = execute_read_query<curve_parametric_smile_parameter_entity,
-                                     domain::curve_parametric_smile_parameter>(
+    const auto query =
+        query_builder::read<std::vector<curve_parametric_smile_parameter_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result = query_builder::execute_read_query<curve_parametric_smile_parameter_entity,
+                                                    domain::curve_parametric_smile_parameter>(
         ctx,
         query,
         [](const auto& entities) { return curve_parametric_smile_parameter_mapper::map(entities); },
@@ -381,9 +378,11 @@ void curve_parametric_smile_parameter_repository::remove(context ctx,
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<curve_parametric_smile_parameter_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing curve parametric smile parameters.");
+    const auto query =
+        query_builder::delete_from<curve_parametric_smile_parameter_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Batch removing curve parametric smile parameters.");
 }
 
 

@@ -46,7 +46,7 @@ domain::currency currency_mapper::map(const currency_entity& v) {
     domain::currency r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.iso_code = v.iso_code.value();
+    r.iso_code = v.iso_code;
 
     r.name = v.name;
 

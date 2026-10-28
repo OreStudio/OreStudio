@@ -132,15 +132,15 @@ auto credit_instrument_projection_to_ore_date(const std::optional<std::chrono::y
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
-auto credit_instrument_projection_text_of(const record_reader& r, std::string_view name)
-    -> std::string {
+auto credit_instrument_projection_text_of(const record_reader& r,
+                                          std::string_view name) -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto credit_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
-    -> std::string {
+auto credit_instrument_projection_spelling_of(const record_reader& r,
+                                              std::string_view name) -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};

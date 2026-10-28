@@ -17,14 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "curve_publish_fixture.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
-#include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/service/series_snapshot_reader.hpp"
 #include "ores.marketdata.service/app/curve_publish_gate.hpp"
@@ -37,12 +38,10 @@
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "curve_publish_fixture.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
-#include <algorithm>
 #include <chrono>
 #include <optional>
 #include <stdexcept>
@@ -83,15 +82,16 @@ TEST_CASE("a_raise_without_a_subject_is_refused", tags) {
     // No curve named.
     CHECK_THROWS_AS(resolve_publish_subject(maker.ctx, "", as_of), std::invalid_argument);
     // No as-of named.
-    CHECK_THROWS_AS(resolve_publish_subject(
-                        maker.ctx,
-                        boost::uuids::to_string(boost::uuids::random_generator{}()),
-                        std::chrono::system_clock::time_point{}),
-                    std::invalid_argument);
+    CHECK_THROWS_AS(
+        resolve_publish_subject(maker.ctx,
+                                boost::uuids::to_string(boost::uuids::random_generator{}()),
+                                std::chrono::system_clock::time_point{}),
+        std::invalid_argument);
     // A curve the store does not hold.
-    CHECK_THROWS_AS(resolve_publish_subject(
-                        maker.ctx, boost::uuids::to_string(boost::uuids::random_generator{}()), as_of),
-                    std::invalid_argument);
+    CHECK_THROWS_AS(
+        resolve_publish_subject(
+            maker.ctx, boost::uuids::to_string(boost::uuids::random_generator{}()), as_of),
+        std::invalid_argument);
 }
 
 TEST_CASE("asking_for_a_publish_raises_the_kind_and_records_the_subject", tags) {
@@ -136,10 +136,8 @@ TEST_CASE("the_market_risk_decider_sees_the_request_and_approving_it_permits_the
     const auto id = boost::uuids::to_string(raised.id);
 
     approval_lifecycle deciders_view(decider.ctx);
-    const auto queue = deciders_view.queue({.kind_codes = {std::string(curve_publish_kind_code)}},
-                                           decider.account.id,
-                                           0,
-                                           500);
+    const auto queue = deciders_view.queue(
+        {.kind_codes = {std::string(curve_publish_kind_code)}}, decider.account.id, 0, 500);
     const auto listed =
         std::ranges::any_of(queue.requests, [&](const auto& r) { return r.id == raised.id; });
     CHECK(listed);
@@ -165,7 +163,8 @@ TEST_CASE("an_approved_subject_publishes_exactly_that_and_records_the_publisher"
 
     const auto raised = raise_publish_request(maker.ctx, subject, "Today's bootstrapped curve");
     const auto id = boost::uuids::to_string(raised.id);
-    REQUIRE(approval_lifecycle(maker.ctx).decide(id, raised.version, "approve", decider.account.id, "")
+    REQUIRE(approval_lifecycle(maker.ctx)
+                .decide(id, raised.version, "approve", decider.account.id, "")
                 .state_code == "approved");
 
     const auto verdict = verdict_on_publish(maker.ctx, id, subject);
@@ -200,12 +199,14 @@ TEST_CASE("a_publish_of_another_curve_is_refused_and_names_both_subjects", tags)
 
     const auto raised = raise_publish_request(maker.ctx, subject, "Today's bootstrapped curve");
     const auto id = boost::uuids::to_string(raised.id);
-    REQUIRE(approval_lifecycle(maker.ctx).decide(id, raised.version, "approve", decider.account.id, "")
+    REQUIRE(approval_lifecycle(maker.ctx)
+                .decide(id, raised.version, "approve", decider.account.id, "")
                 .state_code == "approved");
 
     // The same person, approved for one curve, tries to publish another.
     const auto other_config = f.seed_second_curve();
-    const auto other = resolve_publish_subject(*f.party, boost::uuids::to_string(other_config), as_of);
+    const auto other =
+        resolve_publish_subject(*f.party, boost::uuids::to_string(other_config), as_of);
     const auto verdict = verdict_on_publish(maker.ctx, id, other);
 
     CHECK_FALSE(verdict.approved);
@@ -223,7 +224,8 @@ TEST_CASE("a_publish_of_another_as_of_is_refused_and_names_both_instants", tags)
 
     const auto raised = raise_publish_request(maker.ctx, subject, "Today's bootstrapped curve");
     const auto id = boost::uuids::to_string(raised.id);
-    REQUIRE(approval_lifecycle(maker.ctx).decide(id, raised.version, "approve", decider.account.id, "")
+    REQUIRE(approval_lifecycle(maker.ctx)
+                .decide(id, raised.version, "approve", decider.account.id, "")
                 .state_code == "approved");
 
     auto other_as_of = subject;
@@ -243,7 +245,8 @@ TEST_CASE("a_publish_of_another_party_is_refused", tags) {
 
     const auto raised = raise_publish_request(maker.ctx, subject, "Today's bootstrapped curve");
     const auto id = boost::uuids::to_string(raised.id);
-    REQUIRE(approval_lifecycle(maker.ctx).decide(id, raised.version, "approve", decider.account.id, "")
+    REQUIRE(approval_lifecycle(maker.ctx)
+                .decide(id, raised.version, "approve", decider.account.id, "")
                 .state_code == "approved");
 
     // The party is the configuration's to say, so a call cannot state another
@@ -265,7 +268,8 @@ TEST_CASE("a_request_that_already_published_is_refused_and_names_who_applied_it"
 
     const auto raised = raise_publish_request(maker.ctx, subject, "Today's bootstrapped curve");
     const auto id = boost::uuids::to_string(raised.id);
-    REQUIRE(approval_lifecycle(maker.ctx).decide(id, raised.version, "approve", decider.account.id, "")
+    REQUIRE(approval_lifecycle(maker.ctx)
+                .decide(id, raised.version, "approve", decider.account.id, "")
                 .state_code == "approved");
 
     const auto first = verdict_on_publish(maker.ctx, id, subject);

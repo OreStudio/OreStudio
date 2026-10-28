@@ -20,8 +20,8 @@
 #ifndef ORES_REPORTING_REPOSITORY_REPORT_INPUT_BUNDLE_ENTITY_HPP
 #define ORES_REPORTING_REPOSITORY_REPORT_INPUT_BUNDLE_ENTITY_HPP
 
-#include "ores.database/repository/db_types.hpp"
 #include "ores.database/query_builder/columns.hpp"
+#include "ores.database/repository/db_types.hpp"
 #include <optional>
 #include <string>
 

@@ -84,7 +84,7 @@ TEST_CASE("the canonical csv states its header and a field is quoted when it mus
     const auto outcome = marshal_npv_csv(csv, "npv.csv");
     const auto text = canonical_csv(outcome.rows);
 
-    CHECK(text.rfind("subject_type,subject_id,measure,currency,counterparty_id,figure,source\n", 0) ==
-          0);
+    CHECK(text.rfind("subject_type,subject_id,measure,currency,counterparty_id,figure,source\n",
+                     0) == 0);
     CHECK(text.find("trade,T1,npv,GBP,,1.5,npv.csv\n") != std::string::npos);
 }

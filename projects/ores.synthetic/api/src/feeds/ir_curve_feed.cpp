@@ -335,8 +335,7 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     // Read once, so the step the process is built with and the step the feed counts in agree
     // even when the speed changes while the feed is built.
     const double step_speed = scheduler.market_speed();
-    const double step_years =
-        curve_step_years(step_speed, static_cast<double>(cfg.ticks_per_hour));
+    const double step_years = curve_step_years(step_speed, static_cast<double>(cfg.ticks_per_hour));
 
     auto process = ores::synthetic::domain::map_parameters_to_yield_curve_process(
         cfg.process_type,

@@ -266,6 +266,5 @@ TEST_CASE("simulated time counts each stretch of tau at the speed then in force"
     clock.reconfigure(faster);
     clock.advance(1.0);
     const double second = clock.tau() - first;
-    CHECK(clock.simulated() ==
-          Catch::Approx(busy.speed * first + faster.speed * second));
+    CHECK(clock.simulated() == Catch::Approx(busy.speed * first + faster.speed * second));
 }

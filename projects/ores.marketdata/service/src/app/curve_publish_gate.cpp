@@ -23,9 +23,9 @@
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include "ores.utility/domain/protocol.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <stdexcept>
@@ -63,8 +63,8 @@ subject_names names_of(const ores::database::context& ctx,
     } else {
         repository::market_series_repository repo;
         const auto series = repo.read_latest(ctx, boost::uuids::to_string(series_id));
-        out.curve = series.empty() ? "series " + boost::uuids::to_string(series_id)
-                                   : series.front().oresmd_uri;
+        out.curve = series.empty() ? "series " + boost::uuids::to_string(series_id) :
+                                     series.front().oresmd_uri;
     }
 
     if (party_id.is_nil()) {
@@ -72,8 +72,8 @@ subject_names names_of(const ores::database::context& ctx,
     } else {
         ores::refdata::repository::party_repository repo;
         const auto parties = repo.read_latest(ctx, boost::uuids::to_string(party_id));
-        out.party = parties.empty() ? "party " + boost::uuids::to_string(party_id)
-                                    : "party " + parties.front().short_code;
+        out.party = parties.empty() ? "party " + boost::uuids::to_string(party_id) :
+                                      "party " + parties.front().short_code;
     }
     return out;
 }
@@ -90,8 +90,8 @@ std::string describe(const subject_names& n) {
  * and the column keeps microseconds, so two statements of one instant are equal
  * only after both are read at the column's precision.
  */
-std::chrono::system_clock::time_point at_store_precision(
-    const std::chrono::system_clock::time_point& t) {
+std::chrono::system_clock::time_point
+at_store_precision(const std::chrono::system_clock::time_point& t) {
     return std::chrono::floor<std::chrono::microseconds>(t);
 }
 
@@ -104,8 +104,7 @@ std::chrono::system_clock::time_point at_store_precision(
  * is given is one live set -- a series that carries two is a set that never
  * ended, and the next publish is where that is put right.
  */
-void end_previous_sets(const ores::database::context& ctx,
-                       const domain::curve_publish& successor) {
+void end_previous_sets(const ores::database::context& ctx, const domain::curve_publish& successor) {
     if (successor.output_series_id.is_nil() || !successor.published_at)
         return;
 
@@ -119,10 +118,9 @@ void end_previous_sets(const ores::database::context& ctx,
         previous.modified_by = successor.published_by;
         previous.performed_by = ctx.service_account();
         previous.change_reason_code = "system.curve_superseded";
-        previous.change_commentary =
-            "Superseded by the set published under request " +
-            boost::uuids::to_string(successor.request_id) + " as of " +
-            datetime::to_iso8601_utc(successor.as_of);
+        previous.change_commentary = "Superseded by the set published under request " +
+                                     boost::uuids::to_string(successor.request_id) + " as of " +
+                                     datetime::to_iso8601_utc(successor.as_of);
         repo.write(ctx,
                    previous,
                    {ores::utility::domain::precondition_kind::must_match_version,
@@ -169,8 +167,8 @@ ores::inbox::domain::approval_request raise_publish_request(const ores::database
     ores::inbox::service::approval_lifecycle lifecycle(ctx);
     const auto kind = lifecycle.kind(std::string(curve_publish_kind_code));
     if (!kind)
-        throw std::runtime_error("No such kind of request: " +
-                                 std::string(curve_publish_kind_code) + ".");
+        throw std::runtime_error(
+            "No such kind of request: " + std::string(curve_publish_kind_code) + ".");
     const auto me = lifecycle.actor_account_id();
     if (!me)
         throw std::runtime_error("The signed-in account was not found.");
@@ -240,12 +238,10 @@ publish_verdict verdict_on_publish(const ores::database::context& ctx,
     if (record->bootstrap_config_id != attempted.bootstrap_config_id ||
         at_store_precision(record->as_of) != at_store_precision(attempted.as_of) ||
         record->party_id != attempted.party_id) {
-        const auto authorised = describe(names_of(ctx,
-                                                  record->party_id,
-                                                  record->output_series_id,
-                                                  record->as_of));
-        const auto tried =
-            describe(names_of(ctx, attempted.party_id, attempted.output_series_id, attempted.as_of));
+        const auto authorised =
+            describe(names_of(ctx, record->party_id, record->output_series_id, record->as_of));
+        const auto tried = describe(
+            names_of(ctx, attempted.party_id, attempted.output_series_id, attempted.as_of));
         return {.approved = false,
                 .state_code = request->state_code,
                 .message = "The request authorises " + authorised + ", and this publish is " +
@@ -262,13 +258,10 @@ publish_verdict verdict_on_publish(const ores::database::context& ctx,
         return {.approved = false,
                 .state_code = request->state_code,
                 .message = "The request already published " +
-                           describe(names_of(ctx,
-                                             record->party_id,
-                                             record->output_series_id,
-                                             record->as_of)) +
-                           ", at " + datetime::to_iso8601_utc(*record->published_at) +
-                           ", by " + record->published_by +
-                           ". Raise a request for the next publish."};
+                           describe(names_of(
+                               ctx, record->party_id, record->output_series_id, record->as_of)) +
+                           ", at " + datetime::to_iso8601_utc(*record->published_at) + ", by " +
+                           record->published_by + ". Raise a request for the next publish."};
 
     return {.approved = true, .state_code = request->state_code, .record = std::move(record)};
 }
@@ -283,8 +276,8 @@ domain::curve_publish record_publication(const ores::database::context& ctx,
     // every nullable timestamp in this schema keeps -- so the instant this
     // returns is the instant a reader holds rather than a finer one the store
     // truncated.
-    record.published_at = std::chrono::floor<std::chrono::seconds>(
-        std::chrono::system_clock::now());
+    record.published_at =
+        std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
     record.published_by = publisher;
     record.modified_by = publisher;
     record.performed_by = ctx.service_account();

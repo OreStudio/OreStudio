@@ -81,7 +81,8 @@ public:
             return;
         auto req = decode<list_published_curves_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(published_curves_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(published_curves_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -105,7 +106,8 @@ public:
             return;
         auto req = decode<get_published_curve_sets_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(published_curves_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(published_curves_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -129,7 +131,8 @@ public:
             return;
         auto req = decode<withdraw_curve_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(published_curves_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(published_curves_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }

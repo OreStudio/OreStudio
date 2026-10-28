@@ -48,7 +48,6 @@
 #include "ores.reporting.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.reporting.core/messaging/report_configuration_registrar.hpp"
 #include "ores.reporting.core/messaging/report_definition_handler.hpp"
-#include "ores.reporting.core/messaging/run_result_rows_handler.hpp"
 #include "ores.reporting.core/messaging/report_definition_template_handler.hpp"
 #include "ores.reporting.core/messaging/report_error_event_handler.hpp"
 #include "ores.reporting.core/messaging/report_error_event_registrar.hpp"
@@ -61,6 +60,7 @@
 #include "ores.reporting.core/messaging/report_scheduling_handler.hpp"
 #include "ores.reporting.core/messaging/report_type_handler.hpp"
 #include "ores.reporting.core/messaging/run_document_handler.hpp"
+#include "ores.reporting.core/messaging/run_result_rows_handler.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include <iterator>

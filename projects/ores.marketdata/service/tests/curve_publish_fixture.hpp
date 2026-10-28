@@ -211,7 +211,9 @@ private:
         repo.write(h.context(), s);
     }
 
-    void write_config() { write_config(config_id, output_series_id); }
+    void write_config() {
+        write_config(config_id, output_series_id);
+    }
 
     void write_config(const boost::uuids::uuid& id, const boost::uuids::uuid& series) {
         ores::refdata::domain::ir_curve_bootstrap_config c;
@@ -264,17 +266,15 @@ private:
         ores::marketdata::repository::market_observation_repository obs_repo;
         for (const auto& [start, end, value] :
              {std::tuple{"SPOT", "12M", "0.0432"}, std::tuple{"12M", "2Y", "0.0395"}}) {
-            const auto key = ores::marketdata::core::make_pillar_quote_key("USD",
-                                                                          "1D",
-                                                                          start,
-                                                                          std::chrono::year{2026} /
-                                                                              1 / 1,
-                                                                          std::chrono::year{2026} /
-                                                                              3 / 2,
-                                                                          end);
+            const auto key =
+                ores::marketdata::core::make_pillar_quote_key("USD",
+                                                              "1D",
+                                                              start,
+                                                              std::chrono::year{2026} / 1 / 1,
+                                                              std::chrono::year{2026} / 3 / 2,
+                                                              end);
             const auto series_id = uuid_gen();
-            write_series(series_id,
-                         ores::marketdata::core::pillar_series_uri(key));
+            write_series(series_id, ores::marketdata::core::pillar_series_uri(key));
 
             ores::marketdata::domain::market_observation o;
             o.id = uuid_gen();

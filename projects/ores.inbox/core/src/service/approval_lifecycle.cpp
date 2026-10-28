@@ -78,18 +78,18 @@ constexpr std::string_view request_parts_query =
  * the rule ores_inbox_decide_approval_request_fn refuses an early answer with,
  * so the two change together.
  */
-const std::string open_parts_query =
-    std::string("with waiting as (") + std::string(request_parts_query) +
-    " and not exists ("
-    "   select 1 from ores_inbox_approval_decisions_tbl d"
-    "   where d.request_id = rp.request_id"
-    "     and d.part_code = rp.part_code"
-    "     and d.decision_code = 'approve'"
-    "     and d.valid_to = ores_utility_infinity_timestamp_fn()))"
-    " select part_code, request_id, display_order from waiting "
-    "where answer_order = ("
-    "  select min(earlier.answer_order) from waiting earlier"
-    "  where earlier.request_id = waiting.request_id)";
+const std::string open_parts_query = std::string("with waiting as (") +
+                                     std::string(request_parts_query) +
+                                     " and not exists ("
+                                     "   select 1 from ores_inbox_approval_decisions_tbl d"
+                                     "   where d.request_id = rp.request_id"
+                                     "     and d.part_code = rp.part_code"
+                                     "     and d.decision_code = 'approve'"
+                                     "     and d.valid_to = ores_utility_infinity_timestamp_fn()))"
+                                     " select part_code, request_id, display_order from waiting "
+                                     "where answer_order = ("
+                                     "  select min(earlier.answer_order) from waiting earlier"
+                                     "  where earlier.request_id = waiting.request_id)";
 
 /**
  * @brief The open requests a caller may decide and did not raise.
@@ -344,9 +344,8 @@ std::vector<domain::approval_part>
 approval_lifecycle::open_parts_of(const std::string& request_id) {
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
         ctx_,
-        open_parts_query +
-            " and request_id = $1::uuid"
-            " order by display_order, part_code",
+        open_parts_query + " and request_id = $1::uuid"
+                           " order by display_order, part_code",
         {request_id},
         lg(),
         "Reading the parts a request waits on");
@@ -424,11 +423,10 @@ request_page approval_lifecycle::queue(const decidable_scope& scope,
     if (scope.kind_codes.empty() && scope.part_codes.empty())
         return page;
 
-    const std::vector<std::optional<std::string>> scope_params{
-        std::string(open_state_codes),
-        boost::uuids::to_string(excluding),
-        joined(scope.kind_codes),
-        joined(scope.part_codes)};
+    const std::vector<std::optional<std::string>> scope_params{std::string(open_state_codes),
+                                                               boost::uuids::to_string(excluding),
+                                                               joined(scope.kind_codes),
+                                                               joined(scope.part_codes)};
 
     const auto counted = ores::database::repository::execute_parameterized_multi_column_query(
         ctx_,
@@ -449,9 +447,8 @@ request_page approval_lifecycle::queue(const decidable_scope& scope,
     params.push_back(std::to_string(clamp_limit(limit)));
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
         ctx_,
-        decidable_requests_query +
-            " order by r.requested_at, r.id"
-            " offset $5::int limit $6::int",
+        decidable_requests_query + " order by r.requested_at, r.id"
+                                   " offset $5::int limit $6::int",
         params,
         lg(),
         "Reading a page of the approval requests a person may decide");

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.reporting.core/messaging/run_result_rows_handler.hpp"
-
 #include "ores.reporting.core/repository/report_result_row_repository.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp"

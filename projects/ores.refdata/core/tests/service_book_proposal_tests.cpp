@@ -66,7 +66,8 @@ TEST_CASE("a_preview_accepts_a_valid_new_book_and_names_every_part_that_decides_
     CHECK(preview.part_codes == expected);
 }
 
-TEST_CASE("an_opening_book_asks_the_controller_and_a_change_to_a_live_book_does_not", "[book_proposal]") {
+TEST_CASE("an_opening_book_asks_the_controller_and_a_change_to_a_live_book_does_not",
+          "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);

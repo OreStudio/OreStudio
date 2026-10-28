@@ -90,22 +90,22 @@ auto commodity_instrument_projection_to_ore_date(
     return ores::platform::time::datetime::to_iso8601_date(*d);
 }
 
-auto commodity_instrument_projection_text_of(const record_reader& r, std::string_view name)
-    -> std::string {
+auto commodity_instrument_projection_text_of(const record_reader& r,
+                                             std::string_view name) -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto commodity_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
-    -> std::string {
+auto commodity_instrument_projection_spelling_of(const record_reader& r,
+                                                 std::string_view name) -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
 }
 
-auto optional_date_of(const record_reader& r, std::string_view name)
-    -> std::optional<std::chrono::year_month_day> {
+auto optional_date_of(const record_reader& r,
+                      std::string_view name) -> std::optional<std::chrono::year_month_day> {
     return commodity_instrument_projection_to_domain_date(
         commodity_instrument_projection_text_of(r, name));
 }
@@ -114,8 +114,8 @@ auto optional_decimal_of(const record_reader& r, std::string_view name) -> std::
     return r.decimal(name);
 }
 
-auto commodity_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
-    -> decimal {
+auto commodity_instrument_projection_decimal_of(const record_reader& r,
+                                                std::string_view name) -> decimal {
     if (const auto value = r.decimal(name))
         return *value;
     return decimal{};

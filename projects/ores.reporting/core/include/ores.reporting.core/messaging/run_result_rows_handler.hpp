@@ -20,12 +20,12 @@
 #ifndef ORES_REPORTING_CORE_MESSAGING_RUN_RESULT_ROWS_HANDLER_HPP
 #define ORES_REPORTING_CORE_MESSAGING_RUN_RESULT_ROWS_HANDLER_HPP
 
-#include "ores.reporting.api/messaging/report_result_row_protocol.hpp"
-#include "ores.reporting.api/export.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.reporting.api/export.hpp"
+#include "ores.reporting.api/messaging/report_result_row_protocol.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <optional>
 
@@ -42,8 +42,7 @@ namespace ores::reporting::messaging {
  */
 class ORES_REPORTING_API_EXPORT run_result_rows_handler {
 private:
-    inline static std::string_view logger_name =
-        "ores.reporting.messaging.run_result_rows_handler";
+    inline static std::string_view logger_name = "ores.reporting.messaging.run_result_rows_handler";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

@@ -180,8 +180,8 @@ auto own_text(const xml::record_reader& record, std::string_view name) -> std::s
     return child->own_text().value_or("");
 }
 
-auto vector_values(const xml::record_reader& record, std::string_view name)
-    -> std::vector<std::string> {
+auto vector_values(const xml::record_reader& record,
+                   std::string_view name) -> std::vector<std::string> {
     const auto child = record.child(name);
     if (!child)
         return {};

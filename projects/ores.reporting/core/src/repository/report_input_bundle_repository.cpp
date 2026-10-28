@@ -48,11 +48,11 @@ report_input_bundle_repository::find_by_instance_id(context ctx, const std::stri
 
     auto results =
         query_builder::execute_read_query<report_input_bundle_entity, report_input_bundle_entity>(
-        ctx,
-        query,
-        [](const auto& entities) { return entities; },
-        lg(),
-        "Finding report_input_bundle by instance_id");
+            ctx,
+            query,
+            [](const auto& entities) { return entities; },
+            lg(),
+            "Finding report_input_bundle by instance_id");
 
     if (results.empty())
         return std::nullopt;

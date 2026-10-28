@@ -483,8 +483,9 @@ TEST_CASE("the runner rejects an id whose generator cannot be built",
 
 TEST_CASE("the runner survives a generator whose start throws", "[simulator_adapter][runner]") {
     generator_runner runner([] {
-        return std::vector{generator_offer{
-            .id = bbg_id("EUR/USD"), .make = [] { return std::make_shared<failing_generator>(); }}};
+        return std::vector{generator_offer{.id = bbg_id("EUR/USD"), .make = [] {
+                                               return std::make_shared<failing_generator>();
+                                           }}};
     });
 
     const auto out = runner.apply({bbg_id("EUR/USD")});
@@ -715,7 +716,10 @@ TEST_CASE("the offers are the startable system configs of the provider that have
             [](const auto&, const auto&) {
                 return std::optional<ores::synthetic::domain::market_data_generation_config>{};
             },
-        .containers = [containers](const auto&) { return containers(); }});
+        .containers =
+            [containers](const auto&) {
+                return containers();
+            }});
 
     svc::feed_kind kind;
     kind.kind = std::string(ores::synthetic::feed::fx_spot_feed_kind);

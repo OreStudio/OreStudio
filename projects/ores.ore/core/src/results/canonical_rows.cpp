@@ -18,7 +18,6 @@
  *
  */
 #include "ores.ore.core/results/canonical_rows.hpp"
-
 #include <charconv>
 #include <cstddef>
 #include <sstream>
@@ -147,10 +146,10 @@ marshal_outcome marshal_npv_csv(std::string_view csv, std::string_view source_fi
             const auto figure_text = field_at(figure_index);
             double figure = 0.0;
             if (!figure_of(figure_text, figure)) {
-                outcome.refusals.push_back(
-                    std::string(source_file) + " line " + std::to_string(line_number) + " states " +
-                    std::string(measure) + " as '" + std::string(figure_text) +
-                    "', which is not a figure.");
+                outcome.refusals.push_back(std::string(source_file) + " line " +
+                                           std::to_string(line_number) + " states " +
+                                           std::string(measure) + " as '" +
+                                           std::string(figure_text) + "', which is not a figure.");
                 return;
             }
             const auto currency = field_at(currency_index);

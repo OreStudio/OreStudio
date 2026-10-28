@@ -28,13 +28,13 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.ore.core/log/engine_run_verdict.hpp"
 #include "ores.ore.core/results/canonical_rows.hpp"
-#include "ores.utility/compression/gzip.hpp"
 #include "ores.platform/net/network_info.hpp"
 #include "ores.platform/system/system_info.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.storage.core/filesystem/archiver.hpp"
 #include "ores.storage.core/net/http_client.hpp"
+#include "ores.utility/compression/gzip.hpp"
 #include "ores.utility/crypto/sha256.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
@@ -482,8 +482,8 @@ void upload_canonical_rows(auto& lg,
     const auto outcome = ores::ore::results::marshal_npv_csv(csv, "npv.csv");
     if (!outcome.refusals.empty()) {
         for (const auto& refusal : outcome.refusals) {
-            BOOST_LOG_SEV(lg, warn) << "Canonical rows refused for " << evt.result_id << ": "
-                                    << refusal;
+            BOOST_LOG_SEV(lg, warn)
+                << "Canonical rows refused for " << evt.result_id << ": " << refusal;
         }
         return;
     }

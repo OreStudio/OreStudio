@@ -116,23 +116,23 @@ auto equity_instrument_projection_to_ore_date(const std::chrono::year_month_day&
     return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
 }
 
-auto equity_instrument_projection_text_of(const record_reader& r, std::string_view name)
-    -> std::string {
+auto equity_instrument_projection_text_of(const record_reader& r,
+                                          std::string_view name) -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto equity_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
-    -> std::string {
+auto equity_instrument_projection_spelling_of(const record_reader& r,
+                                              std::string_view name) -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
 }
 
 /// A schema decimal element as the domain's exact decimal, zero when absent.
-auto equity_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
-    -> decimal {
+auto equity_instrument_projection_decimal_of(const record_reader& r,
+                                             std::string_view name) -> decimal {
     if (const auto value = r.decimal(name))
         return *value;
     return decimal{};
@@ -212,8 +212,6 @@ auto barrier_levels_of(const record_reader& barrier) -> std::vector<decimal> {
 }
 
 
-
-
 // ---------------------------------------------------------------------------
 // Reading: the accumulator's range bounds, which the table keeps as JSON text
 // ---------------------------------------------------------------------------
@@ -234,13 +232,12 @@ struct range_bound_text final {
 };
 
 
-
 // ---------------------------------------------------------------------------
 // Reading: one function per product
 // ---------------------------------------------------------------------------
 
-auto read_equity_option(const record_reader& trade, std::string_view trade_type)
-    -> equity_option_instrument {
+auto read_equity_option(const record_reader& trade,
+                        std::string_view trade_type) -> equity_option_instrument {
     auto r = equity_instrument_projection_make_row<equity_option_instrument>(trade_type);
     const auto data = trade.child("EquityOptionData");
     if (!data)
@@ -597,10 +594,8 @@ auto read_equity_worst_of_basket_swap(const record_reader& trade) -> equity_inst
         periods.push_back(std::move(row));
     }
 
-    return equity_instrument_data{equity_instrument_variant{r},
-                                  {},
-                                  std::move(constituents),
-                                  std::move(periods)};
+    return equity_instrument_data{
+        equity_instrument_variant{r}, {}, std::move(constituents), std::move(periods)};
 }
 
 auto read_equity_position(const record_reader& trade) -> equity_instrument_data {
@@ -701,7 +696,6 @@ void write_levels(record_writer& data,
     for (const auto& value : values)
         list.append_decimal(leaf, value);
 }
-
 
 
 // ---------------------------------------------------------------------------
@@ -938,11 +932,10 @@ void write_equity_cliquet_option(record_writer& trade, const equity_option_instr
         write_schedule_rule(schedule, "", v.cliquet_frequency);
 }
 
-void write_equity_worst_of_basket_swap(
-    record_writer& trade,
-    const equity_swap_instrument& v,
-    const std::vector<equity_basket_constituent>& rows,
-    const std::vector<equity_swap_period>& periods) {
+void write_equity_worst_of_basket_swap(record_writer& trade,
+                                       const equity_swap_instrument& v,
+                                       const std::vector<equity_basket_constituent>& rows,
+                                       const std::vector<equity_swap_period>& periods) {
     auto data = trade.child("EquityWorstOfBasketSwapData");
     data.set_spelling("LongShort", "Long", "long short");
     data.set_spelling("Currency", v.currency, "currency");

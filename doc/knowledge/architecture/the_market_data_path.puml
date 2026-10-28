@@ -1,0 +1,27 @@
+@startuml
+title The market data path: a public fixing, a curve, a report
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName sans-serif
+skinparam componentStyle rectangle
+
+actor "Public source\n(ECB, H.10, Treasury,\nNY Fed, BoE via Frankfurter)" as src
+component "Official adapter" as official
+component "Synthetic generator\n(initial value, volatility)" as gen
+component "Subscription, route,\ndemand" as sub
+component "Curve blueprint\n(pillars name their series)" as bp
+component "Approval\n(maker, checker)" as appr
+component "Published set" as pub
+component "Report run" as rep
+component "Curve configuration\ndocument" as cfg
+component "ORE XML" as ore
+
+src --> official : fixing, oresmd
+official --> gen : durable fixing, oresmd
+gen --> sub : synthetic ticks, oresmd
+sub --> bp : quotes, oresmd
+bp --> appr : candidate
+appr --> pub : published set, oresmd
+cfg --> ore : projection
+ore --> rep : ORE XML (ORE keys)
+pub ..> rep : not built
+@enduml

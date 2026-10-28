@@ -102,6 +102,7 @@ How the codebase is put together.
 | [[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]] | The cron expression, the loop that evaluates it, the firing and its record, and the actions a firing performs |
 | [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] | The pattern language of service interaction: the established patterns the platform uses, by group, with their sources, failure handling and pitfalls |
 | [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] | Producers, the marketdata authority, feed configs, source-independent consumers |
+| [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][The market data path: a public fixing, a curve, a report]] | The six hops from a public source's fixing to a report, the oresmd identity at every runtime hop, the ORE key boundary, and the one link not built |
 | [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] | The system of record, object storage, the durable stream and the caches, and what each one owns |
 | [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] | Connections, the transaction API, bounded handlers, the tick store and its writers, and the numbers each reports |
 | [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL Architecture]] | Schema layout, roles, session settings, bitemporal design |

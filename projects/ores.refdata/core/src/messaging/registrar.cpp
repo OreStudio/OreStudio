@@ -239,6 +239,7 @@
 #include "ores.refdata.core/messaging/diary_entry_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/entity_classification_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/equity_curve_config_registrar.hpp"
+#include "ores.refdata.core/messaging/equity_underlying_registrar.hpp"
 #include "ores.refdata.core/messaging/equity_volatility_config_registrar.hpp"
 #include "ores.refdata.core/messaging/floating_index_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/fra_convention_history_provider_registrar.hpp"
@@ -497,6 +498,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_default_curve_configuration_handlers(nats, ctx, verifier));
     append(register_equity_curve_config_handlers(nats, ctx, verifier));
     append(register_equity_volatility_config_handlers(nats, ctx, verifier));
+    append(register_equity_underlying_handlers(nats, ctx, verifier));
     append(register_future_convention_handlers(nats, ctx, verifier));
     append(register_fx_option_convention_handlers(nats, ctx, verifier));
     append(register_fx_volatility_config_handlers(nats, ctx, verifier));

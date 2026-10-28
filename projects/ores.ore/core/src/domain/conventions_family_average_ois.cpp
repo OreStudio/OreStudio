@@ -67,7 +67,7 @@ void conventions_mapper::reverse_average_ois(const refdata::domain::average_ois_
 
 namespace conventions_family {
 
-void pack_average_ois(const record_reader& root, refdata::service::conventions_bundle& bundle) {
+void pack_average_ois(const record_reader& root, refdata::messaging::conventions_bundle& bundle) {
     pack_family(
         bundle, "average_ois", root.children("AverageOIS"), &conventions_mapper::map_average_ois);
 }

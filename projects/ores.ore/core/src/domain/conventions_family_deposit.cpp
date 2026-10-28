@@ -57,7 +57,7 @@ void conventions_mapper::reverse_deposit(const refdata::domain::deposit_conventi
 
 namespace conventions_family {
 
-void pack_deposit(const record_reader& root, refdata::service::conventions_bundle& bundle) {
+void pack_deposit(const record_reader& root, refdata::messaging::conventions_bundle& bundle) {
     pack_family(bundle, "deposit", root.children("Deposit"), &conventions_mapper::map_deposit);
 }
 

@@ -60,7 +60,7 @@ void conventions_mapper::reverse_zero(const refdata::domain::zero_convention& v,
 
 namespace conventions_family {
 
-void pack_zero(const record_reader& root, refdata::service::conventions_bundle& bundle) {
+void pack_zero(const record_reader& root, refdata::messaging::conventions_bundle& bundle) {
     pack_family(bundle, "zero", root.children("Zero"), &conventions_mapper::map_zero);
 }
 

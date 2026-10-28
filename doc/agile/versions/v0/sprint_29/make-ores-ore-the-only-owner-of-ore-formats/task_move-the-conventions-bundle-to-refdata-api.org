@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/move-the-conventions-bundle-to-refdata-api
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ ores.ore.core depends on refdata's contract alone, and the bundle types sit besi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,19 @@ ores.ore.core depends on refdata's contract alone, and the bundle types sit besi
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The header held three payload structs and a service that needs a session. The
+structs are the contract between a caller that reads an ORE document and the
+service that applies the rows, so they move to
+=ores.refdata.api/messaging/conventions_bundle.hpp=; the service stays where the
+database is, and re-exports the names it works with.
+
+The codec then includes the api header alone, and its family units name
+=refdata::messaging::conventions_bundle= rather than the service namespace. The
+dependency block drops =ores.refdata.core= and the story's Notes lose one of the
+six.
+
+The removal also exposed a test helper that read its stream through a
+transitive include, which is now stated.
 
 * Measurements
 
@@ -57,7 +67,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ORES libraries =libores.ore.core.so= declares, before | 19 | =readelf -d …/libores.ore.core.so | grep NEEDED | grep -c libores= | 012bb09361 |
+| The same, after | 18 | the same command | HEAD |
+| Of those, what the move took | =refdata.core=; =refdata.api= stays, because the codec names the bundle | =diff= of the two lists | HEAD |
+| Codec sources naming =refdata::service::= | 0 | =grep -rn 'refdata::service::conventions_bundle' projects/ores.ore= | HEAD |
 
 * Notes
 

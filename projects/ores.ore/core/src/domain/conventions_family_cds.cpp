@@ -63,7 +63,7 @@ void conventions_mapper::reverse_cds(const refdata::domain::cds_convention& v, r
 
 namespace conventions_family {
 
-void pack_cds(const record_reader& root, refdata::service::conventions_bundle& bundle) {
+void pack_cds(const record_reader& root, refdata::messaging::conventions_bundle& bundle) {
     pack_family(bundle, "cds", root.children("CDS"), &conventions_mapper::map_cds);
 }
 

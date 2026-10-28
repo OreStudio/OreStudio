@@ -44,7 +44,7 @@ void conventions_mapper::reverse_fra(const refdata::domain::fra_convention& v, r
 
 namespace conventions_family {
 
-void pack_fra(const record_reader& root, refdata::service::conventions_bundle& bundle) {
+void pack_fra(const record_reader& root, refdata::messaging::conventions_bundle& bundle) {
     pack_family(bundle, "fra", root.children("FRA"), &conventions_mapper::map_fra);
 }
 

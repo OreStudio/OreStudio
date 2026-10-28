@@ -9,58 +9,34 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
  * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
- * Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
 #ifndef ORES_REFDATA_CORE_SERVICE_CONVENTIONS_BUNDLE_HPP
 #define ORES_REFDATA_CORE_SERVICE_CONVENTIONS_BUNDLE_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.refdata.api/messaging/conventions_bundle.hpp"
 #include "ores.refdata.core/export.hpp"
 #include <string>
-#include <vector>
 
 namespace ores::refdata::service {
 
 /**
- * @brief One row of one family, as that family's wire payload carries it.
+ * @brief The bundle's rows and result are the contract's types.
  *
- * The bundle does not know the row's type. It knows the family the row belongs
- * to, the order the caller gave it, and the row serialised as its own generated
- * type.
+ * A caller that reads an ORE conventions document and the service that writes
+ * the families both name them, so they live in the api and this service only
+ * reads and applies them.
  */
-struct conventions_bundle_row {
-    std::string family;
-    int sequence = 0;
-    std::string payload;
-};
-
-/**
- * @brief The related families of one import, applied as one unit.
- *
- * A bundle is the largest atomic unit. The shared convention family and its
- * two part families are written first, because a part names its central row.
- * Every other family is applied in the order the bundle carries it, inside one
- * unit of work the caller owns.
- */
-struct conventions_bundle {
-    std::vector<conventions_bundle_row> rows;
-};
-
-/**
- * @brief What applying a bundle did not store, and why.
- */
-struct conventions_apply_result {
-    /**
-     * World conventions the tenant already held. A bundle never changes world
-     * data, so the tenant's row stands.
-     */
-    std::vector<std::string> world_kept;
-};
+using messaging::conventions_apply_result;
+using messaging::conventions_bundle;
+using messaging::conventions_bundle_row;
 
 /**
  * @brief Applies one family's payload, in the way that family writes.

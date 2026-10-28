@@ -66,7 +66,7 @@ void conventions_mapper::reverse_ois(const refdata::domain::ois_convention& v, r
 
 namespace conventions_family {
 
-void pack_ois(const record_reader& root, refdata::service::conventions_bundle& bundle) {
+void pack_ois(const record_reader& root, refdata::messaging::conventions_bundle& bundle) {
     pack_family(bundle, "ois", root.children("OIS"), &conventions_mapper::map_ois);
 }
 

@@ -66,7 +66,7 @@ void conventions_mapper::reverse_bma_basis_swap(const refdata::domain::bma_basis
 
 namespace conventions_family {
 
-void pack_bma_basis_swap(const record_reader& root, refdata::service::conventions_bundle& bundle) {
+void pack_bma_basis_swap(const record_reader& root, refdata::messaging::conventions_bundle& bundle) {
     pack_family(bundle,
                 "bma_basis_swap",
                 root.children("BMABasisSwap"),

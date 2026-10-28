@@ -59,7 +59,7 @@ void conventions_mapper::reverse_fx_option(const refdata::domain::fx_option_conv
 
 namespace conventions_family {
 
-void pack_fx_option(const record_reader& root, refdata::service::conventions_bundle& bundle) {
+void pack_fx_option(const record_reader& root, refdata::messaging::conventions_bundle& bundle) {
     pack_family(bundle, "fx_option", root.children("FxOption"), &conventions_mapper::map_fx_option);
 }
 

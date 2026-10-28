@@ -53,7 +53,7 @@ void conventions_mapper::reverse_ibor_index(const refdata::domain::ibor_index_co
 
 namespace conventions_family {
 
-void pack_ibor_index(const record_reader& root, refdata::service::conventions_bundle& bundle) {
+void pack_ibor_index(const record_reader& root, refdata::messaging::conventions_bundle& bundle) {
     pack_family(
         bundle, "ibor_index", root.children("IborIndex"), &conventions_mapper::map_ibor_index);
 }

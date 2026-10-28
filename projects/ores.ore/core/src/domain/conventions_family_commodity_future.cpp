@@ -257,7 +257,7 @@ void conventions_mapper::reverse_commodity_future(
 namespace conventions_family {
 
 void pack_commodity_future(const record_reader& root,
-                           refdata::service::conventions_bundle& bundle) {
+                           refdata::messaging::conventions_bundle& bundle) {
     pack_family(bundle,
                 "commodity_future",
                 root.children("CommodityFuture"),

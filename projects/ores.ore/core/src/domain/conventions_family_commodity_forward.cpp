@@ -70,7 +70,7 @@ void conventions_mapper::reverse_commodity_forward(
 namespace conventions_family {
 
 void pack_commodity_forward(const record_reader& root,
-                            refdata::service::conventions_bundle& bundle) {
+                            refdata::messaging::conventions_bundle& bundle) {
     pack_family(bundle,
                 "commodity_forward",
                 root.children("CommodityForward"),

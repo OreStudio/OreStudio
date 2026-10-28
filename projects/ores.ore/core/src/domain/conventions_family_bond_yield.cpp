@@ -64,7 +64,7 @@ void conventions_mapper::reverse_bond_yield(const refdata::domain::bond_yield_co
 
 namespace conventions_family {
 
-void pack_bond_yield(const record_reader& root, refdata::service::conventions_bundle& bundle) {
+void pack_bond_yield(const record_reader& root, refdata::messaging::conventions_bundle& bundle) {
     pack_family(
         bundle, "bond_yield", root.children("BondYield"), &conventions_mapper::map_bond_yield);
 }

@@ -61,7 +61,7 @@ Every component reads and writes the database through generated statements on a 
 | [[id:47FA8846-A3DB-4129-9F99-102D9020F271][Move ores.compute repositories to libpq]] | BACKLOG | | | Regenerate ores.compute's repositories on the libpq layer and move its hand-written queries. |
 | [[id:C10E57B4-F522-42CA-9EFA-E0853CA59A11][Move ores.assets repositories to libpq]] | BACKLOG | | | Regenerate ores.assets's repositories on the libpq layer and move its hand-written queries. |
 | [[id:34626734-3A88-469F-B450-726A98AEC015][Move ores.workflow repositories to libpq]] | DONE | 2026-10-28 | 2026-10-28 | Regenerate ores.workflow's repositories on the libpq layer and move its hand-written queries. |
-| [[id:1718103E-B240-4208-ACCF-855BAA4BB74E][Move ores.scheduler repositories to libpq]] | BACKLOG | | | Regenerate ores.scheduler's repositories on the libpq layer and move its hand-written queries. |
+| [[id:1718103E-B240-4208-ACCF-855BAA4BB74E][Move ores.scheduler repositories to libpq]] | DONE | 2026-10-28 | 2026-10-28 | Regenerate ores.scheduler's repositories on the libpq layer and move its hand-written queries. |
 | [[id:71C5FBA3-B3A2-498F-91C4-0582B784A7E7][Move ores.telemetry repositories to libpq]] | BACKLOG | | | Regenerate ores.telemetry's repositories on the libpq layer and move its hand-written queries. |
 | [[id:82D7C498-FF20-4B04-8FFC-3AD28243B821][Move ores.variability repositories to libpq]] | BACKLOG | | | Regenerate ores.variability's repositories on the libpq layer and move its hand-written queries. |
 | [[id:C6FEBC6C-A575-40FA-B0A3-BCB5E638B82C][Remove sqlgen]] | BACKLOG | | | Move the remaining hand-written sqlgen use in ores.database and ores.testing, delete the sqlgen facets and drop the dependency. |

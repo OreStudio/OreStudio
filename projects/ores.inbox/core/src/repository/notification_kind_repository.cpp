@@ -47,7 +47,6 @@
 namespace ores::inbox::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -177,8 +176,8 @@ std::vector<domain::notification_kind> notification_kind_repository::read_latest
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_kind_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("code"_c);
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<notification_kind_entity, domain::notification_kind>(
         ctx,
@@ -193,9 +192,9 @@ notification_kind_repository::read_latest(context ctx, const std::string& code) 
     BOOST_LOG_SEV(lg(), debug) << "Reading latest notification kind. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<notification_kind_entity>> |
-        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<notification_kind_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
+                                            "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<notification_kind_entity, domain::notification_kind>(
         ctx,
@@ -211,8 +210,8 @@ notification_kind_repository::read_all(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all notification kind versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_kind_entity>> |
-                       where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+                       query_builder::where("tenant_id"_c == tid && "code"_c == code) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<notification_kind_entity, domain::notification_kind>(
         ctx,
@@ -227,9 +226,10 @@ std::optional<domain::notification_kind> notification_kind_repository::read_at_v
     BOOST_LOG_SEV(lg(), debug) << "Reading notification kind at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<notification_kind_entity>> |
-                       where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
-                       query_builder::limit(1);
+    const auto query =
+        query_builder::read<std::vector<notification_kind_entity>> |
+        query_builder::where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
+        query_builder::limit(1);
 
     const auto entities =
         query_builder::execute_read_query<notification_kind_entity, domain::notification_kind>(
@@ -261,8 +261,8 @@ notification_kind_repository::remove_status notification_kind_repository::remove
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<notification_kind_entity> |
-                       where("tenant_id"_c == tid && "code"_c == code &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing notification kind from database.");
@@ -289,7 +289,7 @@ std::vector<domain::notification_kind> notification_kind_repository::read_latest
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_kind_entity>> |
-                       where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<notification_kind_entity,
@@ -311,8 +311,8 @@ std::uint32_t notification_kind_repository::get_total_notification_kind_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active notification kind count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<notification_kind_entity>> | where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<notification_kind_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
     return query_builder::execute_count_query<notification_kind_entity>(
         ctx,
@@ -329,9 +329,9 @@ notification_kind_repository::read_latest(context ctx, const std::vector<std::st
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<notification_kind_entity>> |
-        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<notification_kind_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) &&
+                                            "valid_to"_c == max.value());
     auto result =
         query_builder::execute_read_query<notification_kind_entity, domain::notification_kind>(
             ctx,
@@ -353,9 +353,9 @@ void notification_kind_repository::remove(context ctx, const std::vector<std::st
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::delete_from<notification_kind_entity> |
-        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    const auto query = query_builder::delete_from<notification_kind_entity> |
+                       query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) &&
+                                            "valid_to"_c == max.value());
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing notification kinds.");
 }
 

@@ -47,7 +47,7 @@ domain::job_definition job_definition_mapper::map(const job_definition_entity& v
     r.version = v.version;
     if (v.tenant_id)
         r.tenant_id = utility::uuid::tenant_id::from_string(*v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
 
     r.job_name = v.job_name;
 

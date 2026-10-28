@@ -48,7 +48,6 @@
 namespace ores::analytics::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -185,8 +184,8 @@ credit_simulation_matrix_config_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<credit_simulation_matrix_config_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<credit_simulation_matrix_config_entity,
                                              domain::credit_simulation_matrix_config>(
@@ -202,8 +201,9 @@ credit_simulation_matrix_config_repository::read_latest(context ctx, const std::
     BOOST_LOG_SEV(lg(), debug) << "Reading latest transition matrix. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<credit_simulation_matrix_config_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<credit_simulation_matrix_config_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<credit_simulation_matrix_config_entity,
                                              domain::credit_simulation_matrix_config>(
@@ -220,9 +220,9 @@ credit_simulation_matrix_config_repository::read_latest_by_name(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest transition matrix by name: " << name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<credit_simulation_matrix_config_entity>> |
-        where("tenant_id"_c == tid && "name"_c == name && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<credit_simulation_matrix_config_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "name"_c == name &&
+                                            "valid_to"_c == max.value());
 
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
@@ -244,8 +244,8 @@ credit_simulation_matrix_config_repository::read_any_by_name(context ctx, const 
     BOOST_LOG_SEV(lg(), debug) << "Reading any transition matrix by name: " << name;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<credit_simulation_matrix_config_entity>> |
-                       where("tenant_id"_c == tid && "name"_c == name) |
-                       order_by("valid_from"_c.desc());
+                       query_builder::where("tenant_id"_c == tid && "name"_c == name) |
+                       query_builder::order_by("valid_from"_c.desc());
 
     auto found = query_builder::execute_read_query<credit_simulation_matrix_config_entity,
                                                    domain::credit_simulation_matrix_config>(
@@ -272,8 +272,8 @@ credit_simulation_matrix_config_repository::read_all(context ctx, const std::str
     BOOST_LOG_SEV(lg(), debug) << "Reading all transition matrix versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<credit_simulation_matrix_config_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<credit_simulation_matrix_config_entity,
                                              domain::credit_simulation_matrix_config>(
@@ -291,9 +291,10 @@ credit_simulation_matrix_config_repository::read_at_version(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading transition matrix at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<credit_simulation_matrix_config_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
-                       query_builder::limit(1);
+    const auto query =
+        query_builder::read<std::vector<credit_simulation_matrix_config_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+        query_builder::limit(1);
 
     const auto entities =
         query_builder::execute_read_query<credit_simulation_matrix_config_entity,
@@ -330,8 +331,8 @@ credit_simulation_matrix_config_repository::remove(context ctx,
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<credit_simulation_matrix_config_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing transition matrix from database.");
@@ -359,7 +360,7 @@ credit_simulation_matrix_config_repository::read_latest(
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<credit_simulation_matrix_config_entity>> |
-                       where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<credit_simulation_matrix_config_entity,
@@ -382,7 +383,7 @@ std::uint32_t credit_simulation_matrix_config_repository::get_total_matrix_count
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<credit_simulation_matrix_config_entity>> |
-                       where("tenant_id"_c == tid);
+                       query_builder::where("tenant_id"_c == tid);
 
     return query_builder::execute_count_query<credit_simulation_matrix_config_entity>(
         ctx,
@@ -400,8 +401,9 @@ credit_simulation_matrix_config_repository::read_latest(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<credit_simulation_matrix_config_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<credit_simulation_matrix_config_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = query_builder::execute_read_query<credit_simulation_matrix_config_entity,
                                                     domain::credit_simulation_matrix_config>(
         ctx,
@@ -424,8 +426,9 @@ void credit_simulation_matrix_config_repository::remove(context ctx,
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::delete_from<credit_simulation_matrix_config_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::delete_from<credit_simulation_matrix_config_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing transition matrices.");
 }
 

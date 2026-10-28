@@ -46,7 +46,6 @@
 namespace ores::inbox::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -140,8 +139,8 @@ std::vector<domain::approval_request_part> approval_request_part_repository::rea
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("request_id"_c, "part_code"_c);
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("request_id"_c, "part_code"_c);
 
     return query_builder::execute_read_query<approval_request_part_entity,
                                              domain::approval_request_part>(
@@ -159,9 +158,9 @@ approval_request_part_repository::read_latest(std::uint32_t offset, std::uint32_
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("request_id"_c, "part_code"_c) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("request_id"_c, "part_code"_c) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_read_query<approval_request_part_entity,
                                              domain::approval_request_part>(
@@ -182,8 +181,9 @@ approval_request_part_repository::read_latest(const boost::uuids::uuid& request_
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto part_code_str = part_code;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
-                       where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
+    const auto query =
+        query_builder::read<std::vector<approval_request_part_entity>> |
+        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
                              "part_code"_c == part_code && "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<approval_request_part_entity,
@@ -201,7 +201,7 @@ std::uint32_t approval_request_part_repository::get_total_approval_request_part_
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
     const auto count = query_builder::execute_count_query<approval_request_part_entity>(
         ctx_, query, std::nullopt, lg(), "Counting approval request parts");
@@ -216,10 +216,11 @@ approval_request_part_repository::read_latest_by_request(const boost::uuids::uui
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
-                       where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
+    const auto query =
+        query_builder::read<std::vector<approval_request_part_entity>> |
+        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
                              "valid_to"_c == max.value()) |
-                       order_by("part_code"_c);
+        query_builder::order_by("part_code"_c);
 
     auto rows = query_builder::execute_read_query<approval_request_part_entity,
                                                   domain::approval_request_part>(
@@ -238,10 +239,10 @@ approval_request_part_repository::read_latest_by_part(const std::string& part_co
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<approval_request_part_entity>> |
-        where("tenant_id"_c == tid && "part_code"_c == part_code && "valid_to"_c == max.value()) |
-        order_by("request_id"_c);
+    const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "part_code"_c == part_code &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("request_id"_c);
 
     auto rows = query_builder::execute_read_query<approval_request_part_entity,
                                                   domain::approval_request_part>(
@@ -262,11 +263,12 @@ std::vector<domain::approval_request_part> approval_request_part_repository::rea
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
-                       where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
+    const auto query =
+        query_builder::read<std::vector<approval_request_part_entity>> |
+        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
                              "valid_to"_c == max.value()) |
-                       order_by("part_code"_c) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+        query_builder::order_by("part_code"_c) | query_builder::offset(offset) |
+        query_builder::limit(limit);
 
     auto rows = query_builder::execute_read_query<approval_request_part_entity,
                                                   domain::approval_request_part>(
@@ -287,8 +289,9 @@ std::uint32_t approval_request_part_repository::get_total_approval_request_part_
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
-                       where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
+    const auto query =
+        query_builder::read<std::vector<approval_request_part_entity>> |
+        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
                              "valid_to"_c == max.value());
 
     const auto count = query_builder::execute_count_query<approval_request_part_entity>(
@@ -304,9 +307,9 @@ std::uint32_t approval_request_part_repository::get_total_approval_request_part_
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<approval_request_part_entity>> |
-        where("tenant_id"_c == tid && "part_code"_c == part_code && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "part_code"_c == part_code &&
+                                            "valid_to"_c == max.value());
 
     const auto count = query_builder::execute_count_query<approval_request_part_entity>(
         ctx_, query, std::nullopt, lg(), "Counting approval request parts");
@@ -321,9 +324,10 @@ approval_request_part_repository::read_all_by_request(const boost::uuids::uuid& 
 
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
-                       where("tenant_id"_c == tid && "request_id"_c == request_id_str) |
-                       order_by("part_code"_c, "valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<approval_request_part_entity>> |
+        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str) |
+        query_builder::order_by("part_code"_c, "valid_from"_c.desc());
 
     return query_builder::execute_read_query<approval_request_part_entity,
                                              approval_request_part_history_row>(
@@ -389,8 +393,9 @@ approval_request_part_repository::remove(const boost::uuids::uuid& request_id,
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<approval_request_part_entity> |
-        where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
-              "part_code"_c == part_code && "valid_to"_c == max.value() && "version"_c == expected);
+        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
+                             "part_code"_c == part_code && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx_, query, lg(), "removing approval request part from database");
@@ -420,8 +425,9 @@ void approval_request_part_repository::remove_by_request(const boost::uuids::uui
 
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::delete_from<approval_request_part_entity> |
-                       where("tenant_id"_c == tid && "request_id"_c == request_id_str);
+    const auto query =
+        query_builder::delete_from<approval_request_part_entity> |
+        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str);
 
     query_builder::execute_delete_query(
         ctx_, query, lg(), "removing all approval request parts from database");

@@ -44,7 +44,6 @@
 namespace ores::dq::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -135,8 +134,8 @@ std::vector<domain::dataset_bundle_member> dataset_bundle_member_repository::rea
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<dataset_bundle_member_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("bundle_code"_c, "display_order"_c);
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("bundle_code"_c, "display_order"_c);
 
     return query_builder::execute_read_query<dataset_bundle_member_entity,
                                              domain::dataset_bundle_member>(
@@ -154,8 +153,8 @@ dataset_bundle_member_repository::read_latest(std::uint32_t offset, std::uint32_
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<dataset_bundle_member_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("bundle_code"_c, "display_order"_c) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("bundle_code"_c, "display_order"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_read_query<dataset_bundle_member_entity,
@@ -177,8 +176,9 @@ dataset_bundle_member_repository::read_latest(const std::string& bundle_code,
     const auto bundle_code_str = bundle_code;
     const auto dataset_code_str = dataset_code;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<dataset_bundle_member_entity>> |
-                       where("tenant_id"_c == tid && "bundle_code"_c == bundle_code &&
+    const auto query =
+        query_builder::read<std::vector<dataset_bundle_member_entity>> |
+        query_builder::where("tenant_id"_c == tid && "bundle_code"_c == bundle_code &&
                              "dataset_code"_c == dataset_code && "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<dataset_bundle_member_entity,
@@ -196,7 +196,7 @@ std::uint32_t dataset_bundle_member_repository::get_total_member_count() {
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<dataset_bundle_member_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
     const auto count = query_builder::execute_count_query<dataset_bundle_member_entity>(
         ctx_, query, std::nullopt, lg(), "Counting dataset bundle members");
@@ -210,10 +210,11 @@ dataset_bundle_member_repository::read_latest_by_bundle(const std::string& bundl
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<dataset_bundle_member_entity>> |
-                       where("tenant_id"_c == tid && "bundle_code"_c == bundle_code &&
+    const auto query =
+        query_builder::read<std::vector<dataset_bundle_member_entity>> |
+        query_builder::where("tenant_id"_c == tid && "bundle_code"_c == bundle_code &&
                              "valid_to"_c == max.value()) |
-                       order_by("display_order"_c);
+        query_builder::order_by("display_order"_c);
 
     auto rows = query_builder::execute_read_query<dataset_bundle_member_entity,
                                                   domain::dataset_bundle_member>(
@@ -233,10 +234,11 @@ dataset_bundle_member_repository::read_latest_by_dataset(const std::string& data
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<dataset_bundle_member_entity>> |
-                       where("tenant_id"_c == tid && "dataset_code"_c == dataset_code &&
+    const auto query =
+        query_builder::read<std::vector<dataset_bundle_member_entity>> |
+        query_builder::where("tenant_id"_c == tid && "dataset_code"_c == dataset_code &&
                              "valid_to"_c == max.value()) |
-                       order_by("bundle_code"_c);
+        query_builder::order_by("bundle_code"_c);
 
     auto rows = query_builder::execute_read_query<dataset_bundle_member_entity,
                                                   domain::dataset_bundle_member>(
@@ -256,11 +258,12 @@ std::vector<domain::dataset_bundle_member> dataset_bundle_member_repository::rea
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<dataset_bundle_member_entity>> |
-                       where("tenant_id"_c == tid && "bundle_code"_c == bundle_code &&
+    const auto query =
+        query_builder::read<std::vector<dataset_bundle_member_entity>> |
+        query_builder::where("tenant_id"_c == tid && "bundle_code"_c == bundle_code &&
                              "valid_to"_c == max.value()) |
-                       order_by("display_order"_c) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+        query_builder::order_by("display_order"_c) | query_builder::offset(offset) |
+        query_builder::limit(limit);
 
     auto rows = query_builder::execute_read_query<dataset_bundle_member_entity,
                                                   domain::dataset_bundle_member>(
@@ -280,8 +283,9 @@ dataset_bundle_member_repository::get_total_member_count_by_bundle(const std::st
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<dataset_bundle_member_entity>> |
-                       where("tenant_id"_c == tid && "bundle_code"_c == bundle_code &&
+    const auto query =
+        query_builder::read<std::vector<dataset_bundle_member_entity>> |
+        query_builder::where("tenant_id"_c == tid && "bundle_code"_c == bundle_code &&
                              "valid_to"_c == max.value());
 
     const auto count = query_builder::execute_count_query<dataset_bundle_member_entity>(
@@ -297,8 +301,9 @@ std::uint32_t dataset_bundle_member_repository::get_total_member_count_by_datase
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<dataset_bundle_member_entity>> |
-                       where("tenant_id"_c == tid && "dataset_code"_c == dataset_code &&
+    const auto query =
+        query_builder::read<std::vector<dataset_bundle_member_entity>> |
+        query_builder::where("tenant_id"_c == tid && "dataset_code"_c == dataset_code &&
                              "valid_to"_c == max.value());
 
     const auto count = query_builder::execute_count_query<dataset_bundle_member_entity>(
@@ -313,9 +318,10 @@ dataset_bundle_member_repository::read_all_by_bundle(const std::string& bundle_c
                                << bundle_code;
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<dataset_bundle_member_entity>> |
-                       where("tenant_id"_c == tid && "bundle_code"_c == bundle_code) |
-                       order_by("dataset_code"_c, "valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<dataset_bundle_member_entity>> |
+        query_builder::where("tenant_id"_c == tid && "bundle_code"_c == bundle_code) |
+        query_builder::order_by("dataset_code"_c, "valid_from"_c.desc());
 
     return query_builder::execute_read_query<dataset_bundle_member_entity,
                                              dataset_bundle_member_history_row>(
@@ -379,8 +385,9 @@ dataset_bundle_member_repository::remove(const std::string& bundle_code,
     const auto bundle_code_str = bundle_code;
     const auto dataset_code_str = dataset_code;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::delete_from<dataset_bundle_member_entity> |
-                       where("tenant_id"_c == tid && "bundle_code"_c == bundle_code &&
+    const auto query =
+        query_builder::delete_from<dataset_bundle_member_entity> |
+        query_builder::where("tenant_id"_c == tid && "bundle_code"_c == bundle_code &&
                              "dataset_code"_c == dataset_code && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
@@ -412,7 +419,7 @@ void dataset_bundle_member_repository::remove_by_bundle(const std::string& bundl
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::delete_from<dataset_bundle_member_entity> |
-                       where("tenant_id"_c == tid && "bundle_code"_c == bundle_code);
+                       query_builder::where("tenant_id"_c == tid && "bundle_code"_c == bundle_code);
 
     query_builder::execute_delete_query(
         ctx_, query, lg(), "removing all dataset bundle members from database");

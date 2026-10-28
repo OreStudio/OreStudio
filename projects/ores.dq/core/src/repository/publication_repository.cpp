@@ -48,7 +48,6 @@
 namespace ores::dq::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -165,7 +164,8 @@ void publication_repository::write(context ctx,
 }
 
 std::vector<domain::publication> publication_repository::read_latest(context ctx) {
-    const auto query = query_builder::read<std::vector<publication_entity>> | order_by("id"_c);
+    const auto query =
+        query_builder::read<std::vector<publication_entity>> | query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<publication_entity, domain::publication>(
         ctx,
@@ -178,7 +178,8 @@ std::vector<domain::publication> publication_repository::read_latest(context ctx
 std::vector<domain::publication> publication_repository::read_latest(context ctx,
                                                                      const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest publication. " << "id: " << id;
-    const auto query = query_builder::read<std::vector<publication_entity>> | where("id"_c == id);
+    const auto query =
+        query_builder::read<std::vector<publication_entity>> | query_builder::where("id"_c == id);
 
     return query_builder::execute_read_query<publication_entity, domain::publication>(
         ctx,
@@ -192,8 +193,8 @@ std::vector<domain::publication> publication_repository::read_latest(context ctx
 std::vector<domain::publication> publication_repository::read_all(context ctx,
                                                                   const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all publication versions. " << "id: " << id;
-    const auto query = query_builder::read<std::vector<publication_entity>> | where("id"_c == id) |
-                       order_by("id"_c);
+    const auto query = query_builder::read<std::vector<publication_entity>> |
+                       query_builder::where("id"_c == id) | query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<publication_entity, domain::publication>(
         ctx,
@@ -216,7 +217,7 @@ publication_repository::remove_status publication_repository::remove(
         return remove_status::missing;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<publication_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id);
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing publication from database.");
     return remove_status::removed;
@@ -261,7 +262,8 @@ std::vector<domain::publication>
 publication_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    const auto query = query_builder::read<std::vector<publication_entity>> | where("id"_c.in(ids));
+    const auto query =
+        query_builder::read<std::vector<publication_entity>> | query_builder::where("id"_c.in(ids));
     auto result = query_builder::execute_read_query<publication_entity, domain::publication>(
         ctx,
         query,
@@ -282,7 +284,7 @@ void publication_repository::remove(context ctx, const std::vector<std::string>&
         return;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<publication_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids));
+                       query_builder::where("tenant_id"_c == tid && "id"_c.in(ids));
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing publications.");
 }
 

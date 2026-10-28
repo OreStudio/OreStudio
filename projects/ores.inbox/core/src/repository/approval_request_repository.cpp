@@ -48,7 +48,6 @@
 namespace ores::inbox::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -206,8 +205,8 @@ std::vector<domain::approval_request> approval_request_repository::read_latest(c
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_request_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<approval_request_entity, domain::approval_request>(
         ctx,
@@ -222,8 +221,9 @@ approval_request_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval request. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<approval_request_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<approval_request_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<approval_request_entity, domain::approval_request>(
         ctx,
@@ -239,8 +239,8 @@ std::vector<domain::approval_request> approval_request_repository::read_all(cont
     BOOST_LOG_SEV(lg(), debug) << "Reading all approval request versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_request_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<approval_request_entity, domain::approval_request>(
         ctx,
@@ -255,9 +255,10 @@ std::optional<domain::approval_request> approval_request_repository::read_at_ver
     BOOST_LOG_SEV(lg(), debug) << "Reading approval request at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<approval_request_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
-                       query_builder::limit(1);
+    const auto query =
+        query_builder::read<std::vector<approval_request_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+        query_builder::limit(1);
 
     const auto entities =
         query_builder::execute_read_query<approval_request_entity, domain::approval_request>(
@@ -283,10 +284,10 @@ std::vector<domain::approval_request> approval_request_repository::read_latest_b
                                << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<approval_request_entity>> |
-        where("tenant_id"_c == tid && "kind_code"_c == kind_code && "valid_to"_c == max.value()) |
-        query_builder::offset(offset) | query_builder::limit(limit);
+    const auto query = query_builder::read<std::vector<approval_request_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "kind_code"_c == kind_code &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<approval_request_entity,
                                                      domain::approval_request>(
@@ -308,9 +309,9 @@ std::uint32_t approval_request_repository::get_total_request_count_by_kind_code(
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<approval_request_entity>> |
-        where("tenant_id"_c == tid && "kind_code"_c == kind_code && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<approval_request_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "kind_code"_c == kind_code &&
+                                            "valid_to"_c == max.value());
 
     return query_builder::execute_count_query<approval_request_entity>(
         ctx,
@@ -338,8 +339,8 @@ approval_request_repository::remove_status approval_request_repository::remove(
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<approval_request_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing approval request from database.");
@@ -366,7 +367,7 @@ std::vector<domain::approval_request> approval_request_repository::read_latest(
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_request_entity>> |
-                       where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<approval_request_entity,
@@ -388,8 +389,8 @@ std::uint32_t approval_request_repository::get_total_request_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval request count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<approval_request_entity>> | where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<approval_request_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
     return query_builder::execute_count_query<approval_request_entity>(
         ctx,
@@ -406,8 +407,9 @@ approval_request_repository::read_latest(context ctx, const std::vector<std::str
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<approval_request_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<approval_request_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     auto result =
         query_builder::execute_read_query<approval_request_entity, domain::approval_request>(
             ctx,
@@ -429,8 +431,9 @@ void approval_request_repository::remove(context ctx, const std::vector<std::str
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::delete_from<approval_request_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::delete_from<approval_request_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing approval requests.");
 }
 

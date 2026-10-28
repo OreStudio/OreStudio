@@ -27,7 +27,6 @@
 namespace ores::dq::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -38,8 +37,8 @@ dataset_dependency_repository::dataset_dependency_repository(context ctx)
 std::vector<domain::dataset_dependency> dataset_dependency_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = query_builder::read<std::vector<dataset_dependency_entity>> |
-                       where("valid_to"_c == max.value()) |
-                       order_by("dataset_code"_c, "dependency_code"_c);
+                       query_builder::where("valid_to"_c == max.value()) |
+                       query_builder::order_by("dataset_code"_c, "dependency_code"_c);
 
     return execute_read_query<dataset_dependency_entity, domain::dataset_dependency>(
         ctx_,

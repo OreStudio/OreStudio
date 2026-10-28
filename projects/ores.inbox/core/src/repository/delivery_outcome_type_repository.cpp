@@ -47,7 +47,6 @@
 namespace ores::inbox::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -170,8 +169,8 @@ void delivery_outcome_type_repository::write(
 
 std::vector<domain::delivery_outcome_type>
 delivery_outcome_type_repository::read_latest(context ctx) {
-    const auto query =
-        query_builder::read<std::vector<delivery_outcome_type_entity>> | order_by("code"_c);
+    const auto query = query_builder::read<std::vector<delivery_outcome_type_entity>> |
+                       query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<delivery_outcome_type_entity,
                                              domain::delivery_outcome_type>(
@@ -185,8 +184,8 @@ delivery_outcome_type_repository::read_latest(context ctx) {
 std::vector<domain::delivery_outcome_type>
 delivery_outcome_type_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest delivery outcome type. " << "code: " << code;
-    const auto query =
-        query_builder::read<std::vector<delivery_outcome_type_entity>> | where("code"_c == code);
+    const auto query = query_builder::read<std::vector<delivery_outcome_type_entity>> |
+                       query_builder::where("code"_c == code);
 
     return query_builder::execute_read_query<delivery_outcome_type_entity,
                                              domain::delivery_outcome_type>(
@@ -203,7 +202,7 @@ delivery_outcome_type_repository::read_all(context ctx, const std::string& code)
     BOOST_LOG_SEV(lg(), debug) << "Reading all delivery outcome type versions. "
                                << "code: " << code;
     const auto query = query_builder::read<std::vector<delivery_outcome_type_entity>> |
-                       where("code"_c == code) | order_by("code"_c);
+                       query_builder::where("code"_c == code) | query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<delivery_outcome_type_entity,
                                              domain::delivery_outcome_type>(
@@ -225,8 +224,8 @@ delivery_outcome_type_repository::remove_status delivery_outcome_type_repository
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
-    const auto query =
-        query_builder::delete_from<delivery_outcome_type_entity> | where("code"_c == code);
+    const auto query = query_builder::delete_from<delivery_outcome_type_entity> |
+                       query_builder::where("code"_c == code);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing delivery outcome type from database.");
@@ -277,8 +276,8 @@ std::vector<domain::delivery_outcome_type>
 delivery_outcome_type_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
-    const auto query =
-        query_builder::read<std::vector<delivery_outcome_type_entity>> | where("code"_c.in(codes));
+    const auto query = query_builder::read<std::vector<delivery_outcome_type_entity>> |
+                       query_builder::where("code"_c.in(codes));
     auto result = query_builder::execute_read_query<delivery_outcome_type_entity,
                                                     domain::delivery_outcome_type>(
         ctx,
@@ -298,8 +297,8 @@ void delivery_outcome_type_repository::remove(context ctx, const std::vector<std
     // asymmetric pair.
     if (codes.empty())
         return;
-    const auto query =
-        query_builder::delete_from<delivery_outcome_type_entity> | where("code"_c.in(codes));
+    const auto query = query_builder::delete_from<delivery_outcome_type_entity> |
+                       query_builder::where("code"_c.in(codes));
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing delivery outcome types.");
 }
 

@@ -49,7 +49,6 @@
 namespace ores::synthetic::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -195,10 +194,10 @@ ir_curve_template_entry_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query =
-        query_builder::read<std::vector<ir_curve_template_entry_entity>> |
-        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+    const auto query = query_builder::read<std::vector<ir_curve_template_entry_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<ir_curve_template_entry_entity,
                                              domain::ir_curve_template_entry>(
@@ -216,8 +215,8 @@ ir_curve_template_entry_repository::read_latest(context ctx, const std::string& 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<ir_curve_template_entry_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
-                             "valid_to"_c == max.value());
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "id"_c == id && "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<ir_curve_template_entry_entity,
                                              domain::ir_curve_template_entry>(
@@ -234,9 +233,10 @@ ir_curve_template_entry_repository::read_all(context ctx, const std::string& id)
     BOOST_LOG_SEV(lg(), debug) << "Reading all IR curve template entry versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = query_builder::read<std::vector<ir_curve_template_entry_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<ir_curve_template_entry_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<ir_curve_template_entry_entity,
                                              domain::ir_curve_template_entry>(
@@ -254,8 +254,8 @@ std::optional<domain::ir_curve_template_entry> ir_curve_template_entry_repositor
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<ir_curve_template_entry_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
-                             "version"_c == version) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "id"_c == id && "version"_c == version) |
                        query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<ir_curve_template_entry_entity,
@@ -289,8 +289,8 @@ ir_curve_template_entry_repository::remove_status ir_curve_template_entry_reposi
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<ir_curve_template_entry_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing IR curve template entry from database.");
@@ -318,7 +318,7 @@ std::vector<domain::ir_curve_template_entry> ir_curve_template_entry_repository:
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<ir_curve_template_entry_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<ir_curve_template_entry_entity,
@@ -342,7 +342,7 @@ std::uint32_t ir_curve_template_entry_repository::get_total_ir_curve_template_en
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<ir_curve_template_entry_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys));
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<ir_curve_template_entry_entity>(
         ctx,
@@ -361,8 +361,8 @@ ir_curve_template_entry_repository::read_latest(context ctx, const std::vector<s
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<ir_curve_template_entry_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = query_builder::execute_read_query<ir_curve_template_entry_entity,
                                                     domain::ir_curve_template_entry>(
         ctx,
@@ -384,8 +384,9 @@ void ir_curve_template_entry_repository::remove(context ctx, const std::vector<s
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::delete_from<ir_curve_template_entry_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::delete_from<ir_curve_template_entry_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     query_builder::execute_delete_query(
         ctx, query, lg(), "Batch removing IR curve template entries.");
 }

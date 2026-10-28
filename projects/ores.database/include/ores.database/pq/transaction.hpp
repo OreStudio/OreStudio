@@ -73,6 +73,18 @@ class ORES_DATABASE_EXPORT transaction final {
 public:
     transaction(connection& c, session_context context);
 
+    /**
+     * @brief Joins the transaction that sqlgen holds open on @p c.
+     *
+     * Nothing begins and nothing is set: the connection is already in the
+     * transaction, with the context sqlgen set on it. Commit and rollback are
+     * left to sqlgen. A borrowed connection keeps no record of what is
+     * prepared on it, so every statement runs unnamed. A failed statement
+     * aborts the sqlgen transaction, as a failed sqlgen statement does, and
+     * the unit of work rolls it back.
+     */
+    [[nodiscard]] static transaction join(connection& c);
+
     transaction(const transaction&) = delete;
     transaction& operator=(const transaction&) = delete;
 
@@ -239,10 +251,14 @@ private:
     copy_data(std::string_view table, std::string_view columns, const std::string& data);
     void round_trip(std::span<const sent_statement> statements);
 
+    struct joined_tag {};
+    transaction(connection& c, joined_tag);
+
     connection& connection_;
     session_context context_;
     bool begun_ = false;
     bool done_ = false;
+    bool joined_ = false;
 };
 
 }

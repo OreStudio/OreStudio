@@ -15,6 +15,12 @@ vcpkg_from_github(
         # inside a transaction committed it. The patch leaves an enclosing
         # transaction alone. Raised upstream as munich-data-engineering/sqlgen#140.
         fix-iterator-transaction.patch
+        # Session and Connection keep the libpq connection private. ORE Studio
+        # moves its repositories to its own libpq layer one component at a
+        # time, and a moved repository called inside a sqlgen transaction must
+        # run on that transaction's connection. Local only: it goes when
+        # sqlgen does.
+        expose-native-connection.patch
 )
 
 if(VCPKG_TARGET_IS_WINDOWS)

@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/domain/context_transact.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -50,6 +51,33 @@ std::string probe_range() {
     const auto hex = boost::uuids::to_string(boost::uuids::random_generator()()).substr(0, 12);
     const auto low = std::stoll(hex, nullptr, 16);
     return "[" + std::to_string(low) + "," + std::to_string(low + 1) + ")";
+}
+
+std::string probe_code() {
+    return "UOW" + boost::uuids::to_string(boost::uuids::random_generator()()).substr(0, 8);
+}
+
+std::string probe_insert(const ores::database::context& ctx, const std::string& code) {
+    return "insert into ores_geo_ip2country_tbl (ip_range, tenant_id, country_code) "
+           "values ('" +
+           probe_range() + "', '" + ctx.tenant_id().to_string() + "', '" + code + "')";
+}
+
+std::string probe_count(const std::string& code) {
+    return "select count(*) from ores_geo_ip2country_tbl where country_code = '" + code + "'";
+}
+
+std::string committed_count(const std::string& code) {
+    auto lg(ores::logging::make_logger(test_suite));
+    auto fresh = ores::testing::test_database_manager::make_context();
+    const auto rows = ores::database::repository::execute_raw_multi_column_query(
+        fresh, probe_count(code), lg, "probe");
+    return rows.at(0).at(0).value_or("?");
+}
+
+void pq_execute(const ores::database::context& ctx, const std::string& sql) {
+    const ores::database::pq::text_statement s({}, sql);
+    ores::database::transact(ctx, [&](ores::database::pq::transaction& tx) { tx.run(s, {}); });
 }
 
 }
@@ -230,4 +258,64 @@ TEST_CASE("a read inside a unit of work does not commit it", "[unit_of_work]") {
         "probe");
     REQUIRE(rows.size() == 1);
     CHECK(rows[0][0].value_or("?") == "0");
+}
+
+TEST_CASE("a libpq write inside a unit of work is rolled back with it", "[unit_of_work]") {
+    ores::testing::scoped_database_helper h;
+    const auto code = probe_code();
+
+    {
+        unit_of_work uow(h.context());
+        pq_execute(uow.ctx(), probe_insert(uow.ctx(), code));
+    }
+
+    CHECK(committed_count(code) == "0");
+}
+
+TEST_CASE("a libpq write inside a unit of work is kept when it commits", "[unit_of_work]") {
+    ores::testing::scoped_database_helper h;
+    const auto code = probe_code();
+
+    {
+        unit_of_work uow(h.context());
+        pq_execute(uow.ctx(), probe_insert(uow.ctx(), code));
+        uow.commit();
+    }
+
+    CHECK(committed_count(code) == "1");
+}
+
+TEST_CASE("a libpq read inside a unit of work sees its uncommitted sqlgen write",
+          "[unit_of_work]") {
+    ores::testing::scoped_database_helper h;
+    const auto code = probe_code();
+
+    unit_of_work uow(h.context());
+    const auto& ctx = uow.ctx();
+    REQUIRE((*ctx.active_transaction())->execute(probe_insert(ctx, code)).has_value());
+
+    const auto sql = probe_count(code);
+    const ores::database::pq::text_statement count({}, sql);
+    const auto seen = ores::database::transact(ctx, [&](ores::database::pq::transaction& tx) {
+        return std::string(tx.run(count, {}).text(0, 0));
+    });
+
+    CHECK(seen == "1");
+    CHECK(committed_count(code) == "0");
+}
+
+TEST_CASE("a named libpq statement runs in every call that joins a unit of work",
+          "[unit_of_work]") {
+    ores::testing::scoped_database_helper h;
+    const ores::database::pq::text_statement probe("ores_uow_join_probe", "select 1");
+
+    unit_of_work uow(h.context());
+    for (int i = 0; i < 2; ++i) {
+        const auto one =
+            ores::database::transact(uow.ctx(), [&](ores::database::pq::transaction& tx) {
+                return std::string(tx.run(probe, {}).text(0, 0));
+            });
+        CHECK(one == "1");
+    }
+    uow.commit();
 }

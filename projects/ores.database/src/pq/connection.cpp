@@ -18,6 +18,7 @@
  */
 #include "ores.database/pq/connection.hpp"
 #include "ores.database/pq/store_error.hpp"
+#include <cassert>
 #include <charconv>
 
 namespace ores::database::pq {
@@ -101,6 +102,13 @@ connection::connection(const connection_options& options)
         throw store_error("Could not allocate a connection", "", error_kind::retryable);
     if (PQstatus(handle_.get()) != CONNECTION_OK)
         throw store_error(message_of(*this, "Could not connect"), "08001", error_kind::retryable);
+}
+
+connection connection::borrow(PGconn* c) noexcept {
+    assert(c != nullptr);
+    connection out;
+    out.handle_ = std::unique_ptr<PGconn, connection_closer>(c, connection_closer{.owned = false});
+    return out;
 }
 
 bool connection::healthy() const noexcept {

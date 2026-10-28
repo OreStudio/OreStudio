@@ -21,6 +21,7 @@
 
 #include "ores.database/domain/context_transact.hpp"
 #include "ores.database/export.hpp"
+#include "ores.database/pq/store_error.hpp"
 #include "ores.database/query_builder/query.hpp"
 #include "ores.database/repository/entity_write_observer.hpp"
 #include "ores.database/repository/repository_exception.hpp"

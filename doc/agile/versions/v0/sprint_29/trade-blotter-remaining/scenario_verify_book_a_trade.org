@@ -113,8 +113,7 @@ credentials are the provisioned Trading persona: =diane.kay@acme_corporation= /
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | books shown do not belong to current party:; ; Repository error: Executing INSERT failed: ERROR: Invalid book_id: 04624bc9-027b-4015-843c-f74baad07112. The book must belong to the trade's party. CONTEXT: PL/pgSQL function ores_trading_trade_bookings_insert_fn() line 100 at RAISE; ; also cannot choose instrument |
+| Status | PASS |
 
 ** State the terms of the trade
 
@@ -141,8 +140,7 @@ credentials are the provisioned Trading persona: =diane.kay@acme_corporation= /
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | A request did not finish; ; Dismiss all; Repository error: Executing INSERT failed: ERROR: Invalid book_id: 1c2248c6-6396-48eb-a0e8-050ecb7ad0da. The book must belong to the trade's party. CONTEXT: PL/pgSQL function ores_trading_trade_bookings_insert_fn() line 100 at RAISE (POST /api/trades, request 33d1fafc); ; Dismiss; Repository error: Executing INSERT failed: ERROR: Invalid book_id: d8d2dde9-d286-48f6-a20f-01225b0ef47e. The book must belong to the trade's party. CONTEXT: PL/pgSQL function ores_trading_trade_bookings_insert_fn() line 100 at RAISE (POST /api/trades, request 809b8f75) |
+| Status | PASS |
 
 ** Book the trade and read its page
 
@@ -156,7 +154,8 @@ credentials are the provisioned Trading persona: =diane.kay@acme_corporation= /
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | on book i get A request did not finish; ; The server refused the request (bad_request). (POST /api/trades, request 67fdebcd); ; ; [[file:scenario_verify_book_a_trade_step4_20261028_122619.png]] |
 
 ** Follow the approval to the trade
 
@@ -166,6 +165,12 @@ credentials are the provisioned Trading persona: =diane.kay@acme_corporation= /
   identifier is a link, and following it opens the trade you booked.
 - This is the join the request itself does not carry: the trading component
   keeps the request and the trade together, and the page reads it from there.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** Read the terms on the Instrument tab
 

@@ -65,6 +65,11 @@ function emptyBatch(): Record<string, readonly unknown[]> {
         balance_guaranteed_swap_instruments: [],
         balance_guaranteed_swap_tranche_notionals: [],
         balance_guaranteed_swap_tranches: [],
+        // Every array the batch declares must be named, even empty: the service
+        // refuses a request that omits one, and a family added to the batch
+        // without a line here breaks every booking with a decode error.
+        equity_basket_constituents: [],
+        equity_swap_periods: [],
         bond_instruments: [],
         callable_swap_call_dates: [],
         callable_swap_instruments: [],

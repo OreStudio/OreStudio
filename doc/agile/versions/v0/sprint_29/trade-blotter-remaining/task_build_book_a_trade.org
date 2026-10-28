@@ -148,6 +148,7 @@ via its "Verifies task" field.
 | Scenario | State | Notes |
 |----------+-------+-------|
 | [[id:E45DD02C-CB73-4D63-8EAF-692A4C0F8CD3][Verify Book a trade]] | PENDING | The form, its two visible rules, and the page a booking opens. |
+| [[id:9969BCF5-6C44-4768-90FB-30FBC8A3E32A][Verify the structure screens]] | FAILED | The structures list, a deal's page and its parts, unlinking a leg, and grouping trades. Walked once: four findings, since answered. |
 
 * PRs
 

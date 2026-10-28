@@ -116,19 +116,24 @@ task and name that file in the Command column.
    system seed, and the same rows in the three artefact seeds the catalogue
    publishes to a tenant from.
 
+** The decision reversed mid-task
+
+The task opened with the rule that the server mints the output series. It does
+not, and it cannot: a curve's oresmd URI carries the index name
+(=DISCOUNT/RATE/USD/USD-SOFR-FOMC=) and the config holds the currency and the
+index tenor and not the index, so no operation can compose the identity the
+record is keyed by. On 2026-10-28 the owner decided the other way: the output
+series is *chosen* when the blueprint is created, with the standard record
+picker over the series the party holds. Add and Copy now create the record
+through the store like every other kind, the journeys and the design note carry
+the reversal, and the minting rule is struck where it appeared -- in
+=journey_maintain-the-curve-blueprints.org=, in
+=doc/prototypes/market_data/curve-blueprints.org= and in the model's own note.
+The candidate for later is a series created from the same dialog, which is what
+the Qt window did inline.
+
 ** What is missing, and why the screen says so
 
-- *Nothing mints the output series.* A blueprint is created with an
-  =output_series_id= and the model says the owning service mints it at
-  creation, but no operation does. The identity cannot be derived from the
-  config either: a curve's oresmd URI carries the index name
-  (=DISCOUNT/RATE/USD/USD-SOFR-FOMC=) and the config holds only the currency
-  and the index tenor; =curve_republish_service= says the same in its own
-  words. So Add and Copy are drawn and disabled by a note above the list, and
-  the task's rule that the server mints the series is the operation this task
-  could not build without inventing the curve's name. The candidate is one
-  operation that mints the series for a currency, an index tenor and a role, or
-  an index column on the config.
 - *The curve code is not searchable on the server.* The first column and the
   display handle are the output series' URI, which lives in another component's
   table; the list contract can search the currency and the index tenor, and

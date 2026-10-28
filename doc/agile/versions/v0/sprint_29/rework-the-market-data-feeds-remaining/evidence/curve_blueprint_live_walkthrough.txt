@@ -84,20 +84,37 @@ GET /api/labels, the six domains, painted:
   curve_publish_state: published #22c55e, withdrawn #ef4444,
     superseded #6b7280
 
-9. What does not hold yet
--------------------------
-PUT /api/refdata/ir-curve-bootstrap-configs (a new blueprint with a fresh
-  output_series_id)  204, and the row is visible to the party.
+9. Adding a blueprint, with the output series chosen
+----------------------------------------------------
+POST /api/curves/series-by-id {"ids":[]}
+  200, the 328 series the party holds, each with its oresmd URI: the list the
+  Add dialog's picker offers.
 
-  But no operation mints the output series the write names:
-  POST /api/curves/series-by-id with that series id answers {"series":[]},
-  so the created blueprint names a series that does not exist and the
-  build refuses it ("output market_series not found"). A blueprint's own
-  fields cannot yield that series' identity: the oresmd URI of a curve is
-  DISCOUNT/RATE/USD/USD-SOFR-FOMC, and the config carries no index name,
-  only its currency and index tenor (curve_republish_service says the same:
-  "this service has none of series_type/metric/qualifier to invent one
-  from"). The screen therefore draws no Add, and says why above the list.
+POST /api/curves/series-by-id {"ids":["a1a1a1a1-0000-4000-8000-000000000001"]}
+  200. The id is a uuid whose version bits are not RFC's
+  (a1eec62d-a758-f647-de09-d7f2c25d9196 is another), because the store's random
+  generator does not set them; the route accepts the shape, not the version.
 
-  The page's route serves the bundle: GET /market-data/curve-blueprints and
-  GET /market-data/curve-blueprints/<id>?tab=check both answer 200.
+PUT /api/refdata/ir-curve-bootstrap-configs with a series the party does not
+  claim yet (the EUR curve series)  204.
+GET .../key/f1f1f1f1-0000-4000-8000-000000000001
+  200, version 1, currency EUR, output series a2a2a2a2-...
+
+PUT with the same write and the series the USD recipe already claims
+  502, "duplicate key value violates unique constraint
+  ir_curve_bootstrap_configs_output_series_id_uniq_idx": one series names one
+  blueprint, which is what makes the column the record's natural key.
+
+POST .../ir-curve-bootstrap-pillars (SPOT to 6M, DEPOSIT, sequence 0)  204
+PUT  .../ir-curve-bootstrap-pillars (same row, 6M to 1Y, version 1,
+  reason common.rectification)  204
+GET  ...?f.bootstrap_config_id=f1f1f1f1-...  200, one row: 1Y, version 2.
+
+GET /api/refdata/ir-curve-bootstrap-configs  200, total 2: USD 1D FUNDING and
+  EUR 6M FUNDING.
+
+GET /api/history  for the new blueprint: 1 version; for its pillar: versions
+  2 and 1, the edit among them.
+
+The page's route serves the bundle: GET /market-data/curve-blueprints and
+GET /market-data/curve-blueprints/<id>?tab=check both answer 200.

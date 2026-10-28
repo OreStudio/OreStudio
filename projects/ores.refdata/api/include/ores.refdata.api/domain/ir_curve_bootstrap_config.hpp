@@ -51,9 +51,17 @@ namespace ores::refdata::domain {
  * this config publishes into -- deliberately not a hard FK constraint,
  * matching the same soft-reference principle already used for
  * market_series.derivation_config_id: the referenced table lives in a different
- * component/schema. The column is minted (the market_series catalog row
- * created) at config-creation time by the owning service, never left
- * null/deferred -- there is no "not yet published" state to guard against.
+ * component/schema. The caller names an existing market_series row when it
+ * creates the config, and the column is never null -- there is no "not yet
+ * published" state to guard against.
+ *
+ * It is chosen and not minted, decided 2026-10-28 when the blueprint screens were
+ * built. The draft had the owning service mint the series from the config's own
+ * fields, which it cannot: a curve's oresmd URI carries the index name
+ * (DISCOUNT/RATE/USD/USD-SOFR-FOMC) and the config holds the currency and the
+ * index tenor and not the index, so no operation can compose the identity the
+ * record is keyed by. A desk therefore points a new recipe at a series it already
+ * holds, which is also what makes the column usable as the sole natural key.
  *
  * The config names no *input* series. Its pillars are the input: each pillar
  * carries the start and end tenor codes of the quote that fills it, and
@@ -108,10 +116,10 @@ struct ir_curve_bootstrap_config final {
 
     /**
      * @brief Soft reference to the official, bootstrapped-curve market_series (in ores.marketdata)
-     * this config publishes into -- minted at config-creation time, never deferred. The sole
-     * natural key: exactly one active bootstrap config, tenant-wide, may produce any given output
-     * series -- not merely one per party, since two different parties must not each be able to
-     * claim the same output series.
+     * this config publishes into, named by the caller from the series its desk already holds. The
+     * sole natural key: exactly one active bootstrap config, tenant-wide, may produce any given
+     * output series -- not merely one per party, since two different parties must not each be able
+     * to claim the same output series.
      */
     boost::uuids::uuid output_series_id;
 

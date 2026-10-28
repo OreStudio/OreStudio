@@ -82,12 +82,12 @@ Home, Market data, Curve blueprints.
    parts in maturity order: sequence, start tenor, end tenor, curve role, the
    version, and who changed the row and when. A blueprint with no pillar is
    drawn with "None yet." and its Add.
-5. *Add a blueprint.* The person chooses *Add*. The dialog asks for the
-   currency, the index tenor, the role, the discount curve when the role is
-   =PROJECTION=, the interpolation method, the day count and the tenor
-   convention. It does not ask for the output series: the server mints the
-   series from the currency, the index tenor and the role, and the new record
-   links to it. It asks for the split tenor only for the two-segment method,
+5. *Add a blueprint.* The person chooses *Add*. The dialog asks for the output
+   series, the currency, the index tenor, the role, the discount curve when the
+   role is =PROJECTION=, the interpolation method, the day count and the tenor
+   convention. The output series is chosen from the series the desk holds,
+   because it is what names the blueprint; nothing mints it, and the next
+   section says why. It asks for the split tenor only for the two-segment method,
    =FLAT_FORWARD_THEN_LOG_LINEAR=, whose knot is a choice of its own; for a
    single-segment method the split tenor is the last pillar's end tenor, and the
    server sets it. The write carries the reason =system.new_record=, stated in a
@@ -209,7 +209,8 @@ blueprint never hard-links them.
 | List | List the currencies the list filters on | =refdata.v1.currencies.list= | exists |
 | Open | Read one blueprint | =refdata.v1.ir_curve_bootstrap_configs.get= | exists |
 | Read the pillars | List the blueprint's pillars | =refdata.v1.ir_curve_bootstrap_pillars.list= | exists |
-| Add | Write the blueprint, which mints the output series | =refdata.v1.ir_curve_bootstrap_configs.put= | exists |
+| Add | Write the blueprint, which names the output series the person chose | =refdata.v1.ir_curve_bootstrap_configs.put= | exists |
+| Add | Offer the series the party holds, to choose the output series from | =marketdata.v1.market_series.list= | exists |
 | Add | Fill the pickers: tenors, curve roles, day counts, tenor conventions | =refdata.v1.tenors.list=, =refdata.v1.curve_roles.list=, =refdata.v1.day_count_fraction_types.list=, =refdata.v1.tenor_conventions.list= | exists |
 | Add | Read the discount curve candidates: the currency's =FUNDING= blueprints | =refdata.v1.ir_curve_bootstrap_configs.list= | exists |
 | Define the pillars | Write, change or remove a pillar | =refdata.v1.ir_curve_bootstrap_pillars.put=, =.delete= | exists |
@@ -268,7 +269,7 @@ places, on purpose.
 | One non-modal workbench with three tabs: Conventions, Pillars, Build & Diagnostics | A record page with five tabs: Details, Pillars, Check, Published sets, History | The tabs are the record standard's, and each answers one question: what the recipe is, what it is built from, whether it builds, what stands on it, and what changed |
 | Save writes the config and then every pillar in one press | The blueprint is saved first, and then each pillar is a part with its own write and its own reason | The parts rule of the record standard says the parent is saved before its panel offers Add, and the server has no operation that writes both |
 | A Source Series field, browsed from a market series picker | Not asked at all | The config names no input series: each pillar reads the series its own tenor and role resolve to. The field survives in the Qt workbench and nowhere in the model |
-| An Output Series field, browsed from a market series picker, which can create a series inline | Not asked: the server mints the output series from the currency, the index tenor and the role, and the page links to it | The model mints the series at config creation and never leaves it unset, and a value that follows from other fields is not asked for (RS-WRITE-07) |
+| An Output Series field, browsed from a market series picker, which can create a series inline | Asked, as the standard record picker over the series the party holds; a series is not created from this dialog | The series is the record's natural key and one series names one blueprint, so a desk points a new recipe at a series it already holds. The curve's URI carries the index name, which the config does not hold, so the server cannot compose it from the config's own fields |
 | Currency and Index combos that gate which series the pickers offer | A currency field and an index tenor field, with nothing to gate | Nothing else on the form is browsed from the series catalogue |
 | Pillars entered in a table, then sorted by the end tenor on save | The maturity order is shown as the sequence, and the person cannot enter another | The Qt table lost the row order the person typed without saying so; the web screen says the order is derived |
 | Columns: Output Series, Role, Discount Curve Config, Interpolation, Day Count, Split Tenor, Version, Modified By, Recorded At | The output series' URI, currency, role, index tenor, interpolation, day count, pillar count and version, with the audit columns behind the column menu | The Qt list draws two UUIDs as text and no currency, so a person cannot tell two currencies' curves apart |
@@ -298,9 +299,16 @@ while it draws the series' qualifier, so its heading and its values disagree.
 3. *Retire.* The model carries no status and no end date, so a blueprint is in
    use until it is deleted. Whether the record gains a status, so a retired
    blueprint stays readable and its published sets keep a live parent, is open.
-4. *The output series is minted, and cannot be chosen.* The model mints it at
-   creation and makes it the natural key, so the desk cannot point a blueprint
-   at a series it already holds. Whether that door is ever needed is open.
+4. *The output series is chosen.* It is the record's natural key, so a desk
+   points a blueprint at a series it already holds and no two blueprints claim
+   one series. The alternative -- the server minting it from the currency, the
+   index tenor and the role -- was withdrawn on 2026-10-28: the oresmd URI of a
+   curve carries the index name (=DISCOUNT/RATE/USD/USD-SOFR-FOMC=), and the
+   config holds the currency and the index tenor and not the index, so no
+   operation can compose the identity the record is keyed by.
+
+   What is left open is whether a blueprint may create the series it needs from
+   the same dialog, and what that series would be called.
 5. *The pillar order is derived.* Two pillars that mature on one date, and a
    curve that needs a pillar out of maturity order, have no answer. Whether the
    person may override the sequence is open.

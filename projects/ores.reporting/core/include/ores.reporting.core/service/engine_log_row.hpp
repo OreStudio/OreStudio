@@ -26,24 +26,28 @@
 namespace ores::reporting::service {
 
 /**
- * @brief One line of a run's log that says something went wrong.
+ * @brief One line of a run's log, as the node marshalled it.
  *
- * This is the row the service stores against a run. It is filled from the
- * canonical rows the node marshalled, never from the engine's own files: the
- * engine's format belongs to ores.ore and the node alone reads it. A field the
- * node did not state stays empty here.
+ * The row is filled from the canonical rows the node writes, never from the
+ * engine's own files: the engine's format belongs to ores.ore and the node alone
+ * reads it. A field the node did not state stays empty here.
+ *
+ * The rows cover every line the engine wrote, whatever its severity. The service
+ * keeps the ones that say something went wrong, which is what it stores against
+ * the run, and drops the rest.
  */
-struct engine_log_error {
-    /// The severity the node stated: =error= or =warning=.
+struct engine_log_row {
+    /// The severity the node stated: @c error, @c warning, @c notice, @c info
+    /// or @c debug.
     std::string severity;
 
-    /// The group the engine put the message in, such as =Curve= or =Trade=.
+    /// The group the engine put the message in, such as @c Curve or @c Trade.
     std::string scope;
 
     /// What the engine said.
     std::string message;
 
-    /// The kind of record the message is about, when it names one: =trade=.
+    /// The kind of record the message is about, when it names one: @c trade.
     std::string subject;
 
     /// The record the message is about, when it names one.
@@ -53,7 +57,8 @@ struct engine_log_error {
     /// not build, or the curve the failed trade needed.
     std::string cause;
 
-    /// The sub-fields other than the identifying one, as the node passed them on.
+    /// The sub-fields that describe the failure itself, such as the exception
+    /// the engine raised, as the node passed them on.
     std::string detail;
 
     /// The time the engine stated, as the node passed it on.

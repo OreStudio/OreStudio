@@ -55,7 +55,7 @@ namespace ores::reporting::domain {
  *
  * event_time is the moment the errors were collected from the run's output. The
  * canonical rows do state the engine's own time, as the text the engine wrote, and
- * engine_log_error keeps it; this column does not hold it. The recorder writes
+ * the service's log row keeps it; this column does not hold it. The recorder writes
  * the collection instant because it is an instant the service can state about its
  * own act, and storing the engine's text as a timestamp here would put two
  * different facts in one column. A story that needs the engine's instant adds a
@@ -176,8 +176,8 @@ struct report_error_event final {
     std::optional<std::string> cause;
 
     /**
-     * @brief The engine's remaining sub-fields for the message, as a JSON object, when it emitted
-     * any: the exceptionType that says which failure this is, and the warningType on a warning. The
+     * @brief The failure's own fields for the message, as a JSON object, when the node stated any:
+     * the exception that says which failure this is, and the kind of warning when it was one. The
      * message alone does not carry them, and they are what tells two errors of one scope apart, so
      * they are kept rather than dropped.
      */

@@ -515,7 +515,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/configuration_parameter_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/configuration_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/configuration_type_service.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/engine_log_error.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/engine_log_row.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/engine_settings_building_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/engine_settings_change_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/engine_settings_execution_service.hpp"

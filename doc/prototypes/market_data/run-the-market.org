@@ -81,8 +81,28 @@ busy spell is a band of bright columns, and the strip above the columns says
 which minutes were active. The scale tops out at the 98th percentile, so one
 burst does not wash every other cell out.
 
-The feed-by-feed lanes stay, as the zoom. They answer a different question:
-whether the rows densify together, which is what a market-wide factor means.
+It folds two ways. An hour by the second shows the spells. Ten minutes by the
+tenth of a second, sixty columns of ten-second blocks, shows the bursts inside
+them, which is what a fast market needs once a second holds too many ticks to
+tell a burst from a busy spell.
+
+** It has to hold at any tick rate
+
+A mark a tick does not scale. A mark is about two pixels wide, so a two-minute
+row saturates at a few hundred ticks, and at fifty times today's rates every
+row is a solid bar. Every figure on the Arrivals tab is therefore a count at
+heart:
+
+- The folded raster is a count a cell already, so it reads the same at any rate.
+- The feed-by-feed lanes draw every tick while the busiest row holds fewer than
+  250, and otherwise draw each of 120 slots coloured by its count against what
+  the feed's law asks for at the window's pace. A row brightens when it runs
+  ahead of its law, so rows brightening together is still what a market-wide
+  factor looks like. *Auto* chooses, and a person can force either.
+
+The prototype's *Load* control multiplies every feed's rate by ten or fifty, to
+show the marks saturate and the counts hold. It is the prototype's own, not a
+control the screen would carry.
 
 ** What was taken from the review
 
@@ -124,12 +144,14 @@ capture in the product backlog inbox:
 
 - =pause_and_resume_the_market=: freeze the market's clock and resume where it
   was.
-- =inject_a_shock_into_the_market=: add heat at once and watch it spread and fade.
+- =inject_an_exogenous_tick_burst=: a burst of real ticks, or the heat alone, at once.
 - =let_one_feeds_ticks_excite_anothers=: a multivariate Hawkes over the feeds,
   the review's cross-asset matrix.
 - =add_an_acd_arrival_law=: the review's ACD model, as a fourth law.
-- =let_the_heat_turn_the_regime=: what the review's heat thresholds and third
-  state were reaching for, without a threshold that flaps.
+- =let_the_heat_turn_the_regime=: what the review's heat thresholds were
+  reaching for, without a threshold that flaps.
+- =add_a_panic_state_to_the_regime=: a third state above active, rare, short and
+  much faster, which the review drew as *volatile burst*.
 - =calibrate_a_feeds_arrival_law_from_its_ticks=: the "calibrate" in the
   review's selector.
 

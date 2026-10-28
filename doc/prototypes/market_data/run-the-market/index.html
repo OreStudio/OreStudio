@@ -12,6 +12,12 @@
   <span><b>Prototype</b> · throwaway · mock data, simulated in the page with a fixed seed</span>
   <a href="../run-the-market.org">the design note</a>
   <a href="../control-how-a-market-ticks/review/">Gemini's review</a>
+  <span class="label">Load</span>
+  <span class="seg" role="radiogroup" aria-label="Load" id="load" style="margin-left:0">
+    <button role="radio" aria-checked="true" data-load="1">×1</button>
+    <button role="radio" aria-checked="false" data-load="10">×10</button>
+    <button role="radio" aria-checked="false" data-load="50">×50</button>
+  </span>
   <span class="seg" role="radiogroup" aria-label="Signed in as">
     <button role="radio" aria-checked="true" data-persona="system">System administrator</button>
     <button role="radio" aria-checked="false" data-persona="tenant">Tenant</button>
@@ -177,7 +183,7 @@
     <div class="card">
       <div class="card-head">
         <span class="ico"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="4" height="4" opacity=".3"/><rect x="6" y="1" width="4" height="4" opacity=".8"/><rect x="11" y="1" width="4" height="4" opacity=".5"/><rect x="1" y="6" width="4" height="4" opacity=".6"/><rect x="6" y="6" width="4" height="4"/><rect x="11" y="6" width="4" height="4" opacity=".3"/><rect x="1" y="11" width="4" height="4" opacity=".4"/><rect x="6" y="11" width="4" height="4" opacity=".9"/><rect x="11" y="11" width="4" height="4" opacity=".2"/></svg></span>
-        <div><h2>The last hour, folded</h2><p>A temporal raster: each column is a minute, each cell one second of it, and the colour is how many ticks arrived. A spell lasts minutes, so a busy market shows as a band of columns; the strip above them says which minutes were active.</p></div>
+        <div><h2 id="fold-title">The last hour, folded</h2><p>A temporal raster: time is folded, so each column is a stretch of time and each cell a slot of it, and the colour is how many ticks arrived. A cell is a count, so the picture holds at any tick rate. A spell lasts minutes, so a busy market shows as a band of columns; the strip above them says which were active.</p></div>
       </div>
       <div class="toolbar">
         <span class="label">Colour by</span>
@@ -188,14 +194,14 @@
           <option value="pace">Pace</option>
         </select>
         <select class="pick" id="fold-feed" aria-label="One feed"><option value="">or one feed…</option></select>
-        <span class="label">Span</span>
-        <span class="seg" role="radiogroup" aria-label="Span" id="fold-span">
-          <button role="radio" aria-checked="false" data-span="30">30 min</button>
-          <button role="radio" aria-checked="true" data-span="60">60 min</button>
+        <span class="label">Fold</span>
+        <span class="seg" role="radiogroup" aria-label="Fold" id="fold-res">
+          <button role="radio" aria-checked="true" data-fold="hour">An hour, by the second</button>
+          <button role="radio" aria-checked="false" data-fold="tenmin">Ten minutes, by the tenth</button>
         </span>
       </div>
       <div class="fold">
-        <div class="yaxis"><span>:00</span><span>:15</span><span>:30</span><span>:45</span><span>:59</span></div>
+        <div class="yaxis" id="fold-y"></div>
         <div>
           <svg id="fold-state" viewBox="0 0 600 10" preserveAspectRatio="none" style="height:10px;margin-bottom:4px" aria-hidden="true"></svg>
           <svg id="fold" viewBox="0 0 600 300" preserveAspectRatio="none" style="height:300px;border:1px solid var(--line);border-radius:4px;background:var(--sunk)" role="img" aria-label="Ticks a second over the last hour, folded by minute"></svg>
@@ -208,7 +214,7 @@
     <div class="card">
       <div class="card-head">
         <span class="ico"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="3" width="1.4" height="2.5"/><rect x="5" y="3" width="1.4" height="2.5"/><rect x="7" y="3" width="1.4" height="2.5"/><rect x="13" y="3" width="1.4" height="2.5"/><rect x="2" y="10" width="1.4" height="2.5"/><rect x="9" y="10" width="1.4" height="2.5"/><rect x="10.6" y="10" width="1.4" height="2.5"/><rect x="12.2" y="10" width="1.4" height="2.5"/></svg></span>
-        <div><h2>The last two minutes, feed by feed</h2><p>The zoom: one row a feed, every tick a mark, on one time axis with the heat and the regime above it. Rows densify together when the market turns.</p></div>
+        <div><h2>The last two minutes, feed by feed</h2><p>The zoom: one row a feed on one time axis, with the heat and the regime above it. A row draws every tick while the ticks fit; once there are more ticks than pixels it draws each slot's count against what the feed's law asks for, so a busy row stays readable. Rows brighten together when the market turns.</p></div>
       </div>
       <div class="toolbar">
         <span class="label">Window</span>
@@ -227,7 +233,14 @@
           <button aria-pressed="true" data-class="fx">FX</button>
           <button aria-pressed="true" data-class="ir">Interest rate</button>
         </span>
+        <span class="label">Draw</span>
+        <span class="seg" role="radiogroup" aria-label="Draw" id="lane-mode">
+          <button role="radio" aria-checked="true" data-lanes="auto">Auto</button>
+          <button role="radio" aria-checked="false" data-lanes="marks">Every tick</button>
+          <button role="radio" aria-checked="false" data-lanes="density">Density</button>
+        </span>
         <span class="grow"></span>
+        <span class="faint" id="lane-said" style="font:.72rem var(--mono)"></span>
         <button class="btn" id="freeze" aria-pressed="false">Freeze</button>
       </div>
       <div id="raster" class="raster" aria-label="Tick arrivals of every feed"></div>

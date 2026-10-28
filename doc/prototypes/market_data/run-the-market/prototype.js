@@ -23,6 +23,10 @@ function clean(x, sig = 6) {
   if (!Number.isFinite(x)) return '—';
   return String(Number(x.toPrecision(sig)));
 }
+/* A count as a column can hold it: 11500 is 11.5k. */
+function compact(n) {
+  return n >= 1000 ? `${clean(n / 1000, 3)}k` : clean(n, 3);
+}
 function seconds(s) {
   if (!Number.isFinite(s)) return '—';
   if (s >= 3600) return `${clean(s / 3600, 3)} h`;
@@ -69,7 +73,7 @@ const FEEDS = [
   ['synthetic.demo.chfsaron', 'ir', 'periodic', 1 / 60, 1.0],
   ['synthetic.demo.twdtaibor', 'ir', 'poisson', 1 / 40, 1.0],
 ].map(([name, cls, mode, rate, sens], i) => ({
-  i, name, cls, mode, rate, sens,
+  i, name, cls, mode, rate, sens, base: rate,
   // A Hawkes feed's branching ratio and decay, as its own row sets them.
   n: 0.6, beta: 2,
   excess: 0, acc: 0, mark: 0, lastT: null, lastTau: 0,
@@ -84,9 +88,11 @@ const sim = {
   // One bin a second: each feed's ticks, the mean pace and whether it was active,
   // which the folded hour is drawn from.
   bins: [], bin: null,
+  // And one a tenth of a second for the last ten minutes, for the finer fold.
+  fine: [], finebin: null,
   late: 0.6, lateMax: 3.1,
 };
-const R = FEEDS.reduce((s, f) => s + f.rate, 0);
+let R = FEEDS.reduce((s, f) => s + f.rate, 0);
 const mult = () => ((sim.pinned || sim.state) === 'active' ? cfg.activeMult : calmMult(cfg));
 const pace = () => mult() + sim.heat / R;
 
@@ -95,7 +101,7 @@ function record(kind, feed = null, extra = {}) {
     kind, feed, t: sim.t, tau: sim.tau, state: sim.pinned || sim.state,
     pace: pace(), heat: sim.heat, ...extra,
   });
-  if (sim.events.length > 65536) sim.events.splice(0, sim.events.length - 65536);
+  if (sim.events.length > 200000) sim.events.splice(0, sim.events.length - 200000);
 }
 
 /* The market's intensity λ(t): the ticks a second every feed's law asks for now,
@@ -124,9 +130,17 @@ function step(dt) {
     if (sim.bin) sim.bins.push(sim.bin);
     sim.bin = { sec, counts: new Array(FEEDS.length).fill(0), pace: 0, n: 0, active: 0 };
   }
-  sim.bin.pace += pace();
-  sim.bin.n += 1;
-  if ((sim.pinned || sim.state) === 'active') sim.bin.active += 1;
+  const tenth = Math.floor(sim.t * 10);
+  if (!sim.finebin || sim.finebin.key !== tenth) {
+    if (sim.finebin) sim.fine.push(sim.finebin);
+    sim.finebin = { key: tenth, counts: new Array(FEEDS.length).fill(0), pace: 0, n: 0, active: 0 };
+  }
+  const active = (sim.pinned || sim.state) === 'active';
+  for (const b of [sim.bin, sim.finebin]) {
+    b.pace += pace();
+    b.n += 1;
+    if (active) b.active += 1;
+  }
   const dTau = pace() * dt;
   sim.tau += dTau;
   sim.simulated += cfg.speed * dTau;
@@ -160,6 +174,7 @@ function step(dt) {
       sim.heat += cfg.jump;
       sim.recentTicks += 1;
       sim.bin.counts[f.i] += 1;
+      sim.finebin.counts[f.i] += 1;
       const wall = f.lastT == null ? null : sim.t - f.lastT;
       record('tick', f, { gap: sim.tau - f.lastTau, wall, comp: f.acc });
       f.lastT = sim.t; f.lastTau = sim.tau; f.acc = 0;
@@ -189,6 +204,7 @@ function advance(wall) {
   sim.paceSamples = sim.paceSamples.filter((s) => s.t >= keep);
   sim.tpsSamples = sim.tpsSamples.filter((s) => s.t >= keep);
   if (sim.bins.length > 3700) sim.bins.splice(0, sim.bins.length - 3700);
+  if (sim.fine.length > 6100) sim.fine.splice(0, sim.fine.length - 6100);
 }
 advance(3600);
 
@@ -199,7 +215,8 @@ const ui = {
   classes: new Set(['fx', 'ir']), frozen: null, picked: FEEDS[0].name,
   kinds: new Set(['transition', 'pin', 'unpin', 'configure', 'add', 'remove']),
   draft: {},
-  foldSeries: 'all', foldFeed: '', foldSpan: 60, foldBins: [], foldValues: [],
+  foldSeries: 'all', foldFeed: '', fold: 'hour', foldBins: [], foldValues: [],
+  lanes: 'auto', load: 1,
 };
 const mayChange = () => ui.persona === 'system';
 
@@ -445,15 +462,32 @@ function renderRaster() {
       <polyline points="${heatLine}" fill="none" stroke="#d29922" stroke-width="1.4" vector-effect="non-scaling-stroke"/></svg></div>
     <div class="strip-end">${clean(heatMax / 1.15, 2)} peak</div>`;
 
+  // A mark is about two pixels wide, so past a few hundred in a row they merge into
+  // a bar; a row then draws a count a slot instead, which holds at any rate.
+  const most = Math.max(0, ...feeds.map((f) => ticks.reduce((n, e) => n + (e.feed === f), 0)));
+  const dense = ui.lanes === 'density' || (ui.lanes === 'auto' && most > 250);
+  $('#lane-said').textContent = ui.lanes === 'auto' ? (dense ? `density: up to ${most} ticks a row` : 'every tick') : '';
+  const SLOTS = 120;
+  const meanPace = elapsedTau / ui.win;
   feeds.forEach((f, k) => {
     const mine = ticks.filter((e) => e.feed === f);
     const asked = f.rate * f.sens * elapsedTau;
     const low = mine.length < asked * 0.6;
-    const marks = mine.map((e) => `<rect x="${x(e).toFixed(1)}" y="5" width="2.2" height="12" fill="var(--class-${f.cls})"/>`).join('');
+    let marks;
+    if (dense) {
+      const counts = new Array(SLOTS).fill(0);
+      for (const e of mine) counts[Math.min(SLOTS - 1, Math.floor((x(e) / 1000) * SLOTS))] += 1;
+      // Against what the law asks for a slot at the window's mean pace: twice as
+      // many is the top of the ramp, so a row brightens when it runs ahead of its law.
+      const expected = Math.max(1e-9, f.rate * f.sens * meanPace * (ui.win / SLOTS));
+      marks = counts.map((c, j) => (c ? `<rect x="${(j * 1000) / SLOTS}" y="3" width="${1000 / SLOTS + 0.5}" height="16" fill="${ramp(c / (2 * expected))}"/>` : '')).join('');
+    } else {
+      marks = mine.map((e) => `<rect x="${x(e).toFixed(1)}" y="5" width="2.2" height="12" fill="var(--class-${f.cls})"/>`).join('');
+    }
     const odd = k % 2 ? ' row-odd' : '';
     html += `<div class="name${odd}" data-feed="${f.name}"><i style="background:var(--class-${f.cls})"></i>${f.name.replace('synthetic.', '')}<span class="law">${f.mode}</span></div>
       <div class="lane${odd}" data-feed="${f.name}"><svg viewBox="0 0 1000 22" preserveAspectRatio="none">${bands.replaceAll('height="100"', 'height="22"')}${marks}</svg></div>
-      <div class="count${odd}" data-feed="${f.name}"><span class="${low ? 'low' : ''}">${mine.length}</span><span class="faint">/ ${clean(asked, 3)}</span></div>`;
+      <div class="count${odd}" data-feed="${f.name}"><span class="${low ? 'low' : ''}">${compact(mine.length)}</span><span class="faint">/ ${compact(asked)}</span></div>`;
   });
 
   const ticksX = ui.axis === 'clock'
@@ -483,39 +517,57 @@ function foldValue(b) {
   return FEEDS.reduce((sum, f) => sum + (ui.foldSeries === 'all' || f.cls === ui.foldSeries ? b.counts[f.i] : 0), 0);
 }
 
+/* Two folds of one picture. A column is a stretch of time and a row a slot of it:
+   an hour of minutes by the second, or ten minutes of ten-second blocks by the
+   tenth. The finer fold is what a fast market needs, when a second holds too many
+   ticks to tell a burst from a busy spell. */
+const FOLDS = {
+  hour: { slot: 1, rows: 60, cols: 60, src: () => sim.bins, key: (b) => b.sec, title: 'The last hour, folded by the minute',
+    y: [':00', ':15', ':30', ':45', ':59'], x: (c) => clock(c * 60).slice(0, 5), cell: 'a second' },
+  tenmin: { slot: 0.1, rows: 100, cols: 60, src: () => sim.fine, key: (b) => b.key, title: 'The last ten minutes, folded by ten seconds',
+    y: ['0.0 s', '2.5 s', '5.0 s', '7.5 s', '9.9 s'], x: (c) => clock(c * 10).slice(0, 8), cell: 'a tenth of a second' },
+};
+
 function renderFold() {
-  const nowMin = Math.floor(sim.t / 60);
-  const cols = ui.foldSpan;
-  const firstMin = nowMin - cols + 1;
-  const bins = sim.bins.filter((b) => Math.floor(b.sec / 60) >= firstMin);
-  const values = bins.map(foldValue);
+  const F = FOLDS[ui.fold];
+  const nowKey = Math.floor(sim.t / F.slot);
+  const nowCol = Math.floor(nowKey / F.rows);
+  const firstCol = nowCol - F.cols + 1;
+  const bins = F.src().filter((b) => Math.floor(F.key(b) / F.rows) >= firstCol);
+  const perSecond = ui.foldSeries === 'pace' && ui.foldFeed === '' ? 1 : 1 / F.slot;
+  const values = bins.map((b) => foldValue(b) * perSecond);
   // The top of the scale is a high percentile rather than the maximum, so one
   // burst does not wash every other cell out to the bottom of the ramp.
   const sorted = values.slice().sort((a, b) => a - b);
   const top = Math.max(ui.foldSeries === 'pace' && ui.foldFeed === '' ? 0.1 : 1, sorted[Math.floor(sorted.length * 0.98)] ?? 1);
-  const W = 600 / cols;
-  const H = 300 / 60;
+  const W = 600 / F.cols;
+  const H = 300 / F.rows;
   let cells = '';
   bins.forEach((b, k) => {
-    const col = Math.floor(b.sec / 60) - firstMin;
-    const row = ((b.sec % 60) + 60) % 60;
+    const key = F.key(b);
+    const col = Math.floor(key / F.rows) - firstCol;
+    const row = ((key % F.rows) + F.rows) % F.rows;
     cells += `<rect x="${(col * W).toFixed(2)}" y="${(row * H).toFixed(2)}" width="${(W + 0.3).toFixed(2)}" height="${(H + 0.3).toFixed(2)}" fill="${ramp(values[k] / top)}" data-k="${k}"/>`;
   });
   $('#fold').innerHTML = cells;
   ui.foldBins = bins; ui.foldValues = values;
 
-  let states = '';
-  for (let c = 0; c < cols; c++) {
-    const inCol = bins.filter((b) => Math.floor(b.sec / 60) - firstMin === c);
-    const share = inCol.length ? inCol.reduce((s2, b) => s2 + b.active / Math.max(1, b.n), 0) / inCol.length : 0;
-    if (share > 0) states += `<rect x="${c * W}" y="0" width="${W + 0.3}" height="10" fill="rgba(210,153,34,${(0.15 + 0.7 * share).toFixed(2)})"/>`;
+  const share = new Array(F.cols).fill(0);
+  const seen = new Array(F.cols).fill(0);
+  for (const b of bins) {
+    const c = Math.floor(F.key(b) / F.rows) - firstCol;
+    share[c] += b.active / Math.max(1, b.n);
+    seen[c] += 1;
   }
-  $('#fold-state').innerHTML = states;
+  $('#fold-state').innerHTML = share.map((v, c) => (v > 0
+    ? `<rect x="${c * W}" y="0" width="${W + 0.3}" height="10" fill="rgba(210,153,34,${(0.15 + 0.7 * v / seen[c]).toFixed(2)})"/>` : '')).join('');
 
-  const label = (m) => clock(m * 60).slice(0, 5);
-  const marks = [0, 0.25, 0.5, 0.75, 1].map((r) => label(firstMin + Math.round(r * (cols - 1))));
+  const marks = [0, 0.25, 0.5, 0.75, 1].map((r) => F.x(firstCol + Math.round(r * (F.cols - 1))));
   marks[4] = 'now';
   $('#fold-x').innerHTML = marks.map((m) => `<span>${m}</span>`).join('');
+  $('#fold-y').innerHTML = F.y.map((m) => `<span>${m}</span>`).join('');
+  $('#fold-title').textContent = F.title;
+  $('#fold').setAttribute('aria-label', `${F.title}: each cell ${F.cell}`);
   $('#fold-ramp').style.background = `linear-gradient(to top, ${RAMP.join(',')})`;
   $('#fold-max').textContent = ui.foldSeries === 'pace' && ui.foldFeed === '' ? `×${clean(top, 3)}` : `${clean(top, 3)}/s`;
 }
@@ -691,13 +743,27 @@ $('#raster').addEventListener('mousemove', (ev) => {
   tip.style.top = `${ev.clientY + 14}px`;
 });
 $('#fold-feed').innerHTML += FEEDS.map((f) => `<option value="${f.i}">${f.name.replace('synthetic.', '')}</option>`).join('');
-$('#fold-series').addEventListener('change', (ev) => { ui.foldSeries = ev.target.value; ui.foldFeed = ''; $('#fold-feed').value = ''; renderFold(); });
-$('#fold-feed').addEventListener('change', (ev) => { ui.foldFeed = ev.target.value; renderFold(); });
-$$('#fold-span button').forEach((b) => b.addEventListener('click', () => {
-  ui.foldSpan = Number(b.dataset.span);
-  $$('#fold-span button').forEach((c) => c.setAttribute('aria-checked', String(c === b)));
+$$('#fold-res button').forEach((b) => b.addEventListener('click', () => {
+  ui.fold = b.dataset.fold;
+  $$('#fold-res button').forEach((c) => c.setAttribute('aria-checked', String(c === b)));
   renderFold();
 }));
+$$('#lane-mode button').forEach((b) => b.addEventListener('click', () => {
+  ui.lanes = b.dataset.lanes;
+  $$('#lane-mode button').forEach((c) => c.setAttribute('aria-checked', String(c === b)));
+  renderRaster();
+}));
+$$('#load button').forEach((b) => b.addEventListener('click', () => {
+  ui.load = Number(b.dataset.load);
+  $$('#load button').forEach((c) => c.setAttribute('aria-checked', String(c === b)));
+  // The prototype's own control: every feed's rate times the load, from now on.
+  FEEDS.forEach((f) => { f.rate = f.base * ui.load; });
+  R = FEEDS.reduce((s2, f) => s2 + f.rate, 0);
+  toast(`Every feed now ticks ×${ui.load} its configured rate.`);
+  render();
+}));
+$('#fold-series').addEventListener('change', (ev) => { ui.foldSeries = ev.target.value; ui.foldFeed = ''; $('#fold-feed').value = ''; renderFold(); });
+$('#fold-feed').addEventListener('change', (ev) => { ui.foldFeed = ev.target.value; renderFold(); });
 $('#fold').addEventListener('mousemove', (ev) => {
   const k = ev.target.dataset?.k;
   const tip = $('#tip');

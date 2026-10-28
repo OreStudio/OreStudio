@@ -324,6 +324,13 @@ export const CARDS = {
         permission: 'analytics::sensitivity_templates:read',
         screenTitleKey: 'sensitivityTemplates.title',
     },
+    /*
+     * The card asks for the code its own screen is opened by; the list behind it
+     * also reads the curve definitions to count the curves of each row. Member
+     * holds both, so the door and the screen agree today. A custom role that
+     * holds one and not the other sees the card and then the route's refusal,
+     * which is the route's answer to give.
+     */
     curveConfigurations: {
         titleKey: 'reporting.area.screens.curveConfigurations',
         bodyKey: 'reporting.area.screens.curveConfigurationsBody',

@@ -177,9 +177,10 @@ via its "Verifies task" field.
 | 2 | The curve count filters the definitions once per configuration, which is quadratic. | curve-configuration.ts | Accept | The sections and the curves are counted in one pass, and the per-row filter is gone. |
 | 3 | =partyId= is returned and never drawn. | curve-configuration.ts | Accept | The summary no longer carries it; the detail response keeps the party the page reads. |
 | 4 | The list page's doc comment sits between the imports and the exported key. | CurveConfigurationsPage.tsx | Accept | It moved above the component it documents. |
-| 5 | A change to the populate script may reach fresh installs only; check the upgrade path. | iam_roles_populate.sql | No change | The seed runs when a tenant is provisioned, and an existing environment takes the grant by hand or from a recreate. Both were done here, and the task records it. |
+| 5 | A change to the populate script may reach fresh installs only; check the upgrade path. | iam_roles_populate.sql | No change | The seed runs when a tenant is provisioned. An existing tenant takes the grant by re-provisioning it with =compass db reset-tenant -t <tenant>= and then the provisioning script, or by applying the =ores_iam_role_permissions_assign_fn= calls by hand. This environment took both, and the task records it. |
 | 6 | The card gates on =curve_configurations:read= while the route also needs =curve_definitions:read=. | cards.ts | No change | Both codes go to Member, so there is no gap today. A card carries one permission; a custom role that holds one and not the other is the role's to decide, and the route answers the refusal. |
 | 7 | The panel's =choices= is optional and guarded, and the three catalogues carry the key. | OreParameter.tsx | No change | The i18n catalogue test passes, which is the check the reviewer asked for. |
+| 8 | The card gates on =curve_configurations:read= only, while the route also reads the definitions; record it. | cards.ts | Accept | The card carries a comment saying what it asks for and what the route reads, and that the route answers a role that holds one and not the other. |
 |   |                 |      |          |       |
 
 * Result

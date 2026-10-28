@@ -31,7 +31,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-10-27                               |
+| Last touched | 2026-10-28                               |
 
 * Acceptance
 
@@ -55,7 +55,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| History-provider registrars generated in ores.refdata | 167 | =ls projects/ores.refdata/core/src/messaging/*_history_provider_registrar.cpp= | 7ddece7ffd |
+| Of those, composed in the refdata registrar before and after | 107, then 167 | =python3 projects/ores.codegen/scripts/check_history_registrar_composition.py= | 7ddece7ffd |
+| Composed of generated, per component | refdata 167/167; trading 72/96; analytics 11/27; reporting 0/28; iam 17/18; dq 20/21; synthetic 10/13; inbox 16/16; marketdata 17/17; assets 0/2; compute 0/7; scheduler 1/1; variability 0/1; workflow 2/4 | the same check, run over each component's directory | 7ddece7ffd |
+| Tests of the new check | 6 | =python3 -m pytest projects/ores.codegen/tests/test_check_history_registrar_composition.py -q= | 7ddece7ffd |
 
 * Notes
 
@@ -113,6 +116,36 @@ task and name that file in the Command column.
   the filter, and name the party on a row when the reader is in more than one.
   It is filed here and not fixed in this change.
 
+- *The history of a refdata entity was never served.* The refdata service
+  builds its history registry in =core/src/messaging/registrar.cpp=, and 60 of
+  the 167 generated =register_<entity>_history_provider= calls were missing from
+  it. So =/api/history= answered =No history provider registered for
+  entity_type: ores.refdata.curve_configuration=, and the same for every
+  convention kind, every curve section and every curve segment. All 167 calls
+  are now present. Nothing caught the gap, because the generated registrar
+  compiles into the library and the service starts and serves every other
+  subject.
+- *The composition is now checked.* =check_history_registrar_composition.py=
+  fails when a generated registrar of a checked component is not called from
+  that component's registrar, and =--fix= wires the missing ones. It joins
+  =compass check= as =history-registrars= and runs in its own workflow, as the
+  event-registrar check already does. ores.refdata is the only component in the
+  checked list.
+- *The same gap is in twelve other components.* ores.trading composes 72 of 96,
+  ores.analytics 11 of 27, ores.reporting 0 of 28, ores.reference data's siblings
+  and the rest less. Each needs its own story; the check's docstring states the
+  census so the next person does not measure it again.
+- *A convention's record page had no History tab.* The page now draws *Details*
+  and *History*, and the tab reads =ores.refdata.convention=, the central entity
+  the page edits. The BFF serves that entity type. The tab keeps =?party=,
+  because the convention is read under a party and a tab change must not lose
+  it; =useRecordTabs= gained the =keep= parameter for it.
+- *The equity underlying permission codes were not seeded at all.*
+  =refdata::equity_underlyings:read/write/delete= were checked by the entity's
+  handler and absent from =iam_permissions_populate.sql=, so the history
+  provider wired here could never have answered. The three rows are added and
+  =handler-permissions= is green.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -161,5 +194,11 @@ route and its list, and the browser suite with the ten tests of the curve page
 among them. The two dead French and Portuguese translations that failed the i18n
 catalogue for every branch are removed.
 
+A refdata record's history now answers. The refdata registrar composes every
+one of its 167 generated history providers, a check keeps it that way, and the
+conventions record page draws the History tab it never had.
+
 Still open in this round: the party scope of the reports list, which is filed
-above and is the reports list's change rather than this page's.
+above and is the reports list's change rather than this page's. The other twelve
+components whose generated history providers are not composed are their own
+story.

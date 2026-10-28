@@ -440,7 +440,7 @@ domain::telemetry_summary telemetry_repository::get_summary(context ctx, std::ui
                     ctx, sql, params, lg(), "Counting telemetry logs for the summary");
                 if (!rows.empty())
                     target = std::stoull(rows.front());
-            } catch (const ores::database::repository::repository_exception& e) {
+            } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), warn) << "Summary count failed: " << e.what();
             }
         };

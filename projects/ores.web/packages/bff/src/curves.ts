@@ -27,7 +27,7 @@ import { subjects as publishedCurves } from '@ores/wire-protocol/generated/marke
 import { subjects as marketSeriesSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/market_series_protocol';
 import { HttpFailure } from './errors.js';
 import { NO_ORDER, input, resultSchema } from './refdata-calls.js';
-import { anyUuid } from './records.js';
+import { storeUuidSchema } from '@ores/contracts';
 import type { LiveSession } from './sessions.js';
 
 /**
@@ -162,7 +162,9 @@ const publishedListBody = z.strictObject({
  * market at the caller's clock and a set built at an earlier as-of is not that.
  */
 const publishedSetsBody = z.strictObject({
-    series_id: z.uuid(),
+    // A series id is whatever the store wrote, and the store does not set the
+    // RFC version nibbles.
+    series_id: storeUuidSchema,
     limit: z.int().min(1).max(20).default(5),
     include_candidates: z.boolean().default(true),
 });
@@ -192,7 +194,7 @@ const SERIES_PAGES = 50;
  * blueprint's output series from.
  */
 const seriesByBody = z.strictObject({
-    ids: z.array(anyUuid).max(SERIES_PAGE).default([]),
+    ids: z.array(storeUuidSchema).max(SERIES_PAGE).default([]),
 });
 
 /**
@@ -279,7 +281,7 @@ export function registerCurveRoutes(
                 z.looseObject({
                     result: resultSchema,
                     market_series: z
-                        .array(z.looseObject({ id: anyUuid, oresmd_uri: z.string() }))
+                        .array(z.looseObject({ id: storeUuidSchema, oresmd_uri: z.string() }))
                         .default([]),
                 }),
             );

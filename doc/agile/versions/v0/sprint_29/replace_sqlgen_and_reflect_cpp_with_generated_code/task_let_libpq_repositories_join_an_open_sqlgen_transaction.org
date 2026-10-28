@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/let-libpq-repositories-join-sqlgen-transactions
-#+pr:
+#+pr: 3961
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -99,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3961][#3961]] | [database] Let libpq repositories join an open sqlgen transaction |
 
 * Review
 

@@ -69,7 +69,6 @@ target_link_libraries(${lib_target_name}
         ores.service.lib
         ores.utility.lib
         ores.security.lib
-        sqlgen::sqlgen
         libfort::fort
         Boost::graph
         Boost::boost)

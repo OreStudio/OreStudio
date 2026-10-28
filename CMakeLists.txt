@@ -426,8 +426,8 @@ find_package(pugixml CONFIG REQUIRED)
 find_package(reflectcpp CONFIG REQUIRED)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
 
-# SQLGen
-find_package(sqlgen REQUIRED)
+# libpq, through the PostgreSQL::PostgreSQL imported target
+find_package(PostgreSQL REQUIRED)
 
 # libpq on Windows is distributed as a static archive whose symbols depend on
 # the PostgreSQL portability libraries (libpgport, libpgcommon), OpenSSL for
@@ -436,11 +436,10 @@ find_package(sqlgen REQUIRED)
 # "static"; the x64-windows dynamic triplet skips them, leaving undefined
 # references to pg_tolower / pg_vsnprintf / pg_strong_random / RAND_bytes /
 # BIO_new / OPENSSL_sk_num / ... in every DLL that pulls libpq in
-# transitively (via sqlgen). Attach them directly onto the
+# transitively (via ores.database). Attach them directly onto the
 # PostgreSQL::PostgreSQL imported target so that every consumer — not just
 # ores.database — inherits the fix through normal CMake transitivity.
 if(WIN32)
-    find_package(PostgreSQL REQUIRED)
     find_library(ORES_PGPORT_LIBRARY
         NAMES pgport libpgport
         PATHS "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib"

@@ -66,7 +66,6 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.dq.api.lib
         ores.history.core.lib
-        sqlgen::sqlgen
         Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

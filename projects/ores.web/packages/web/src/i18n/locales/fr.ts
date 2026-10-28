@@ -3767,6 +3767,8 @@ const fr: SourceCatalogue = {
             kindHint: 'Le type décide si les jambes confirment seules ou comme un seul document.',
             kindAsOne: '{kind} — confirmée comme un seul document',
             kindLegByLeg: '{kind} — chaque jambe confirme seule',
+            counterparty: 'Contrepartie',
+            allCounterparties: 'Toutes les contreparties',
             chosen: 'Choisies',
             noneChosen: 'Aucune transaction choisie. Au moins deux, et elles partagent une contrepartie.',
             chosenCount: '{count} transactions choisies',

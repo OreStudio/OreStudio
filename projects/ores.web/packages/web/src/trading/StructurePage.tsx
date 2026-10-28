@@ -28,6 +28,7 @@ import {
     type StructureTreeNode,
 } from '../api/structures.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { HistoryPanel } from '../refdata/HistoryPanel.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { PATHS } from '../shell/paths.js';
@@ -102,7 +103,9 @@ function TreeNodeRow({
                 <Tag tone={kindTone(node.kind)}>{node.kind === '' ? 'trade' : node.kind}</Tag>
                 <div className="min-w-0 flex-1">
                     {node.product === '' ? null : (
-                        <div className="text-sm text-ink">{node.product}</div>
+                        <div className="truncate text-sm text-ink" title={node.product}>
+                            {node.product}
+                        </div>
                     )}
                     <div className="font-mono text-xs">
                         {isStructure ? (
@@ -149,7 +152,7 @@ function TreePanel({ record }: { readonly record: StructurePageRecord }): ReactN
         (child) => child.role === 'structure' || child.children.length > 0,
     ).length;
     return (
-        <aside className="h-fit rounded-md border border-line bg-surface-raised">
+        <aside className="h-fit min-w-0 rounded-md border border-line bg-surface-raised">
             <header className="flex items-baseline gap-2 border-b border-line px-3 py-2">
                 <h2 className="text-xs uppercase tracking-wide text-ink-faint">
                     {t('trading.structure.tree')}
@@ -582,7 +585,7 @@ export function StructurePage(): ReactNode {
                     <span className="font-mono text-sm text-ink-muted">{subheading}</span>
                     <Tag tone={kindTone(record.kind)}>{record.kind}</Tag>
                 </div>
-                <div className="grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
+                <div className="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
                     <TreePanel record={record} />
                     <div className="space-y-4">
                         {tabs.bar}

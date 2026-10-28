@@ -46,6 +46,7 @@ export function GroupStructuresPage(): ReactNode {
     const navigate = useNavigate();
     const [kind, setKind] = useState('');
     const [chosen, setChosen] = useState<readonly string[]>([]);
+    const [counterparty, setCounterparty] = useState('');
 
     const kinds = useQuery({ queryKey: ['structure-kinds'], queryFn: () => structures.kinds() });
     const candidates = useQuery({
@@ -63,7 +64,24 @@ export function GroupStructuresPage(): ReactNode {
         },
     });
 
-    const rows = candidates.data ?? [];
+    /*
+     * A structure's legs share one counterparty, and the screen refuses a mixed
+     * pair, so the trades are ordered by counterparty and the picker filters to
+     * one: a pair that may be grouped sits together instead of somewhere in a
+     * list of eighty.
+     */
+    const all = candidates.data ?? [];
+    const counterpartyNames = [...new Set(all.map((row) => row.counterparty_name))].sort(
+        (left, right) => left.localeCompare(right),
+    );
+    const rows = all
+        .filter((row) => counterparty === '' || row.counterparty_name === counterparty)
+        .slice()
+        .sort(
+            (left, right) =>
+                left.counterparty_name.localeCompare(right.counterparty_name) ||
+                left.reference.localeCompare(right.reference),
+        );
     const counterparties = useMemo(
         () => new Set(rows.filter((row) => chosen.includes(row.id)).map((row) => row.counterparty_id)),
         [rows, chosen],
@@ -102,6 +120,19 @@ export function GroupStructuresPage(): ReactNode {
                                     {row.confirms_as_whole
                                         ? t('trading.group.kindAsOne', { kind: row.code })
                                         : t('trading.group.kindLegByLeg', { kind: row.code })}
+                                </option>
+                            ))}
+                        </Select>
+                    </Field>
+                    <Field label={t('trading.group.counterparty')}>
+                        <Select
+                            value={counterparty}
+                            onChange={(event) => setCounterparty(event.target.value)}
+                        >
+                            <option value="">{t('trading.group.allCounterparties')}</option>
+                            {counterpartyNames.map((name) => (
+                                <option key={name} value={name}>
+                                    {name}
                                 </option>
                             ))}
                         </Select>

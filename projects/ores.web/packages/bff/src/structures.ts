@@ -249,6 +249,10 @@ function assembleTree(
     trades: ReadonlyMap<string, Record<string, unknown>>,
     products: ReadonlyMap<string, string>,
 ): TreeNode | null {
+    const nameOf = (type: string): string => {
+        const named = products.get(type) ?? '';
+        return named !== '' && named !== type ? named : humanise(type);
+    };
     const byId = new Map(structures.map((entry) => [text(entry['id']), entry]));
     if (!byId.has(structureId)) {
         return null;
@@ -295,7 +299,7 @@ function assembleTree(
                         template_code: '',
                         role: text(member['role']),
                         sequence_number: Number(member['sequence_number'] ?? 0),
-                        product: products.get(type) ?? type,
+                        product: nameOf(type),
                         external_version:
                             trade === undefined ? null : Number(trade['external_version'] ?? 0),
                         children: [],
@@ -438,6 +442,27 @@ async function optional<T>(read: () => Promise<T>, fallback: T): Promise<T> {
     } catch {
         return fallback;
     }
+}
+
+
+/**
+ * The words a type code reads as when the catalogue has no name for it.
+ *
+ * A catalogue entry states its own name, and the ones that do are used as they
+ * stand. The rest are codes: a desk reads "FX Barrier Option", not
+ * "FxBarrierOption", and a code drawn as itself is a screen that looks unfinished.
+ */
+function humanise(code: string): string {
+    const spaced = code
+        .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+        .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2');
+    return spaced
+        .replace(/^Fx /, 'FX ')
+        .replace(/^Cds /, 'CDS ')
+        .replace(/^Cms /, 'CMS ')
+        .replace(/^Irs /, 'IRS ')
+        .replace(/^Ois /, 'OIS ')
+        .replace(/^Var /, 'VaR ');
 }
 
 export function registerStructureRoutes(
@@ -774,6 +799,10 @@ export function registerStructureRoutes(
         ]);
         void allIds;
 
+        const nameOf = (type: string): string => {
+            const named = products.get(type) ?? '';
+            return named !== '' && named !== type ? named : humanise(type);
+        };
         const legs = mine
             .map((member) => {
                 const tradeId = text(member['trade_id']);

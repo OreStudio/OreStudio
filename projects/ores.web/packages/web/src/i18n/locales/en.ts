@@ -3723,6 +3723,8 @@ export const en: SourceCatalogue = {
             kindHint: 'The kind decides whether the legs confirm on their own or as one document.',
             kindAsOne: '{kind} — confirmed as one document',
             kindLegByLeg: '{kind} — each leg confirms on its own',
+            counterparty: 'Counterparty',
+            allCounterparties: 'All counterparties',
             chosen: 'Chosen',
             noneChosen: 'No trade chosen yet. Two at least, and they share one counterparty.',
             chosenCount: '{count} trades chosen',

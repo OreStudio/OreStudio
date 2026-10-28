@@ -52,7 +52,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string yield_curve_process_type_repository::sql() {
-    return query_builder::generate_create_table_sql<yield_curve_process_type_entity>(lg());
+    return query_builder::insert_statement_sql<yield_curve_process_type_entity>(lg());
 }
 
 bool yield_curve_process_type_repository::is_sortable(std::string_view field) {

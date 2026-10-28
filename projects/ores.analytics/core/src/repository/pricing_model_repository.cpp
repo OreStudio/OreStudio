@@ -52,7 +52,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string pricing_model_repository::sql() {
-    return query_builder::generate_create_table_sql<pricing_model_entity>(lg());
+    return query_builder::insert_statement_sql<pricing_model_entity>(lg());
 }
 
 bool pricing_model_repository::is_sortable(std::string_view field) {

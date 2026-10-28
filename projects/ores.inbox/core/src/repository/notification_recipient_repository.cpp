@@ -51,7 +51,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string notification_recipient_repository::sql() {
-    return query_builder::generate_create_table_sql<notification_recipient_entity>(lg());
+    return query_builder::insert_statement_sql<notification_recipient_entity>(lg());
 }
 
 notification_recipient_repository::notification_recipient_repository(context ctx)

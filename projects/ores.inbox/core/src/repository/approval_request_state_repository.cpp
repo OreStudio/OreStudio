@@ -52,7 +52,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string approval_request_state_repository::sql() {
-    return query_builder::generate_create_table_sql<approval_request_state_entity>(lg());
+    return query_builder::insert_statement_sql<approval_request_state_entity>(lg());
 }
 
 bool approval_request_state_repository::is_sortable(std::string_view field) {

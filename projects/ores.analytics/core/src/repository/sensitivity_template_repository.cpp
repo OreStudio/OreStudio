@@ -52,7 +52,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string sensitivity_template_repository::sql() {
-    return query_builder::generate_create_table_sql<sensitivity_template_entity>(lg());
+    return query_builder::insert_statement_sql<sensitivity_template_entity>(lg());
 }
 
 bool sensitivity_template_repository::is_sortable(std::string_view field) {

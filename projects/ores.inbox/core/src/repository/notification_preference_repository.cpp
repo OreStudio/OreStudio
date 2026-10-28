@@ -55,7 +55,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string notification_preference_repository::sql() {
-    return query_builder::generate_create_table_sql<notification_preference_entity>(lg());
+    return query_builder::insert_statement_sql<notification_preference_entity>(lg());
 }
 
 bool notification_preference_repository::is_sortable(std::string_view field) {

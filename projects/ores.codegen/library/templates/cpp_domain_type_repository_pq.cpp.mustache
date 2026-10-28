@@ -77,7 +77,7 @@ using namespace ores::database::repository;
 {{/component_is_database}}
 
 std::string {{entity_singular}}_repository::sql() {
-    return query_builder::generate_create_table_sql<{{entity_singular}}_entity>(lg());
+    return query_builder::insert_statement_sql<{{entity_singular}}_entity>(lg());
 }
 
 bool {{entity_singular}}_repository::is_sortable(std::string_view field) {
@@ -1001,7 +1001,7 @@ using namespace ores::database::repository;
 {{/component_is_database}}
 
 std::string {{name_singular}}_repository::sql() {
-    return query_builder::generate_create_table_sql<{{name_singular}}_entity>(lg());
+    return query_builder::insert_statement_sql<{{name_singular}}_entity>(lg());
 }
 
 {{name_singular}}_repository::{{name_singular}}_repository(context ctx)

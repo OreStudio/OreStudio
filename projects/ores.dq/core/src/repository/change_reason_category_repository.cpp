@@ -52,7 +52,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string change_reason_category_repository::sql() {
-    return query_builder::generate_create_table_sql<change_reason_category_entity>(lg());
+    return query_builder::insert_statement_sql<change_reason_category_entity>(lg());
 }
 
 bool change_reason_category_repository::is_sortable(std::string_view field) {

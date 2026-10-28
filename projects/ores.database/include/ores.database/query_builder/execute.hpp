@@ -226,7 +226,7 @@ execute_raw_multi_column_query(context ctx,
  * @brief The text of the insert a repository writes, for its sql().
  */
 template <typename Entity>
-std::string generate_create_table_sql(logging::logger_t&) {
+std::string insert_statement_sql(logging::logger_t&) {
     return detail::insert_sql<Entity>(false);
 }
 

@@ -52,7 +52,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string artefact_type_repository::sql() {
-    return query_builder::generate_create_table_sql<artefact_type_entity>(lg());
+    return query_builder::insert_statement_sql<artefact_type_entity>(lg());
 }
 
 bool artefact_type_repository::is_sortable(std::string_view field) {

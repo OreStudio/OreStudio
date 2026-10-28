@@ -52,7 +52,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string treatment_dimension_repository::sql() {
-    return query_builder::generate_create_table_sql<treatment_dimension_entity>(lg());
+    return query_builder::insert_statement_sql<treatment_dimension_entity>(lg());
 }
 
 bool treatment_dimension_repository::is_sortable(std::string_view field) {

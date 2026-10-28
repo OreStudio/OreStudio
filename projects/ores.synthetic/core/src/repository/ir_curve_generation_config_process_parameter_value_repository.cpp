@@ -54,7 +54,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string ir_curve_generation_config_process_parameter_value_repository::sql() {
-    return query_builder::generate_create_table_sql<
+    return query_builder::insert_statement_sql<
         ir_curve_generation_config_process_parameter_value_entity>(lg());
 }
 

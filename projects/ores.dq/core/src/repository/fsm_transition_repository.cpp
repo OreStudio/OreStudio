@@ -53,7 +53,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string fsm_transition_repository::sql() {
-    return query_builder::generate_create_table_sql<fsm_transition_entity>(lg());
+    return query_builder::insert_statement_sql<fsm_transition_entity>(lg());
 }
 
 bool fsm_transition_repository::is_sortable(std::string_view field) {

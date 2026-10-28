@@ -52,7 +52,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string stress_shift_family_repository::sql() {
-    return query_builder::generate_create_table_sql<stress_shift_family_entity>(lg());
+    return query_builder::insert_statement_sql<stress_shift_family_entity>(lg());
 }
 
 bool stress_shift_family_repository::is_sortable(std::string_view field) {

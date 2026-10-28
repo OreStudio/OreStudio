@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every routed commodity code is constructed by a function that names it, and its 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -62,8 +62,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| =ores.trading.api.tests= | 473 assertions in 125 test cases | the suite binary | =wip= |
-| =ores.synthetic.core.tests= | 1733 assertions in 78 test cases | the suite binary | =wip= |
+| =ores.trading.api.tests= | 462 assertions in 124 test cases | the suite binary | =8322b1eb19= |
+| =ores.synthetic.core.tests= | 1733 assertions in 78 test cases | the suite binary | =8322b1eb19= |
 | Commodity rows before the change | 0 | =compass db sql= on =ores_trading_commodity_instruments_tbl= | =c81da34a1e= |
 | Commodity generation configs | 0 | =compass db sql= on =ores_synthetic_trade_generation_configs_tbl= | =c81da34a1e= |
 |      |       |         |        |
@@ -113,7 +113,10 @@ profile seeds no commodity generation config and the tenant has no commodity
 book, so the commodity arm is never reached. Measured at =c81da34a1e=: zero
 commodity rows and zero commodity configs.
 
-So the evidence for this change is the suites -- twenty-five constructors each
+So the evidence for this change is the suites, measured on this branch at
+=8322b1eb19=: =ores.trading.api.tests= at 462 assertions in 124 test cases
+and =ores.synthetic.core.tests= at 1733 assertions in 78 -- twenty-five
+constructors each
 asserting the trade type it stamps, the vocabulary refusals, and a zero
 quantity refused on every shape -- plus the writer's dispatch, which the
 compiler proves total over the type strings it handles. A provisioning run

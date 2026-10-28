@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/load-published-quotes-from-the-public-sources
 #+pr: 3685
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
 #+updated: 2026-10-24
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The system holds what the ECB, the Federal Reserve, the Treasury and other publi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -63,6 +63,9 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The acceptance of a publisher's terms by the system administrator moves to [[id:4DFF1284-F24A-4815-B723-B7A22B4815E8][Show the public sources' terms in the first run]] (2026-10-28). This task keeps =terms_read_at= on the publisher and the rule that a publisher with none is not fetched.
+- First slice, agreed on 2026-10-28: the ECB through Frankfurter only. The table, the provenance tables, the Frankfurter fetcher tested on stored payloads, =quotes seed= and the reader. The other publishers, the daily job and the calibration follow.
 
 * Test Scenarios
 

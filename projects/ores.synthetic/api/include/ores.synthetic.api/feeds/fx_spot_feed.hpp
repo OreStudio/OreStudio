@@ -28,11 +28,13 @@
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.synthetic.api/domain/fx_spot_fixing_item.hpp"
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.synthetic.api/feeds/adapter_faults.hpp"
 #include "ores.synthetic.api/feeds/adapter_target.hpp"
+#include "ores.synthetic.api/feeds/fixing_calibration.hpp"
 #include <atomic>
 #include <memory>
 #include <optional>
@@ -112,6 +114,13 @@ public:
     std::uint64_t publish_count() const override {
         return published_.load(std::memory_order_relaxed);
     }
+    /// Where the feed's starting value came from, or that it kept its fixed level.
+    const fixing_start& start_source() const {
+        return start_source_;
+    }
+    void record_start_source(fixing_start s) {
+        start_source_ = std::move(s);
+    }
 
 private:
     const std::string& published_subject() const {
@@ -139,6 +148,7 @@ private:
     std::string display_subject_;
     std::optional<adapter_target> adapter_;
     std::optional<ores::marketdata::messaging::adapter_tick> previous_tick_;
+    fixing_start start_source_;
 };
 
 /**
@@ -149,16 +159,16 @@ private:
  * name, so a run's prices reproduce; the publish subject is derived
  * from the config's source_name via producer_subject().
  *
- * A config with price_source "vintage" resolves its initial price from a real market_observation
- * -- (source=vintage_source, point_id="SPOT", date=vintage_date) on the config's own series --
- * through @p auth_nats as the service itself, on the date the config names or, when it names none,
- * on the date of @p clock (the system clock when null), overriding the stored gmm_initial_price
- * (0 for vintage configs, per the gmm_initial_price check constraint). "fixed" uses the stored
- * value as-is. This mirrors resolve_vintage_initial_rate() for IR curves: the vintage lookup is
- * the builder's, so a feed reads it once, when it is built.
+ * A config with price_source "fixed" starts from gmm_initial_price. One with "fixing" reads @p fixing_items in rank order through @p auth_nats and
+ * starts from the first that has a fixing: the latest on or before the date of @p clock, or on
+ * the date its policy names. An item that quotes the pair the other way round is read as one over
+ * its value. The spread of that item's fixings over its window, in hourly terms, sets the size of
+ * the mixture: every component's deviation is scaled by one factor, so its shape is kept. When no
+ * item has a fixing, the feed keeps gmm_initial_price and its configured mixture. The feed
+ * records where it started, which start_source() reports. The fixings are read once, when the
+ * feed is built, so a feed that starts again takes the newest.
  *
- * @throws vintage_data_missing_error if price_source is "vintage" and no matching observation
- * is found, and std::invalid_argument if @p components is empty or cfg.ticks_per_hour is
+ * @throws std::invalid_argument if @p components is empty or cfg.ticks_per_hour is
  * non-positive. cfg.process_type is not validated here: it is forwarded to
  * process_factory::make_process(), which falls back to the geometric engine for unrecognised
  * values.
@@ -168,6 +178,7 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   ores::nats::service::nats_client& auth_nats,
                   const ores::synthetic::domain::fx_spot_generation_config& cfg,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
+                  const std::vector<ores::synthetic::domain::fx_spot_fixing_item>& fixing_items,
                   ores::analytics::quant::service::tick_scheduler& scheduler,
                   std::optional<adapter_target> adapter = std::nullopt,
                   const ores::marketdata::domain::market_clock* clock = nullptr);

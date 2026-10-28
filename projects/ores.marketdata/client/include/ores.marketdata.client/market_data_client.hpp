@@ -23,6 +23,7 @@
 #include "ores.marketdata.api/domain/market_data_source.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.marketdata.api/messaging/fixing_read_operations_protocol.hpp"
 #include "ores.marketdata.client/export.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include <expected>
@@ -94,13 +95,32 @@ public:
      *
      * When @p party_id is non-empty the scan is restricted to that party's
      * series. One identity can hold several series, one for each provider and
-     * party (a vintage of one provider and the ticks of another), so every match
+     * party (the imported data of one provider and the ticks of another), so every match
      * is returned.
      *
      * @return The matching series, empty if none found, or an error.
      */
     [[nodiscard]] std::expected<std::vector<domain::market_series>, std::string>
     find_series_by_uri(const std::string& oresmd_uri, const std::string& party_id = {});
+
+    /**
+     * @brief The latest durable fixing of an item on or before a date.
+     *
+     * Sends marketdata.v1.ops.get_fixing. A refusal of the service, such as an
+     * item no series carries, is an error; an item with no fixing on or before the
+     * date is a reply with no fixing date.
+     */
+    [[nodiscard]] std::expected<messaging::get_fixing_response, std::string>
+    get_fixing(const messaging::get_fixing_request& request);
+
+    /**
+     * @brief Every durable fixing of an item in a window of days.
+     *
+     * Sends marketdata.v1.ops.get_fixing_window. A refusal of the service is an
+     * error.
+     */
+    [[nodiscard]] std::expected<messaging::get_fixing_window_response, std::string>
+    get_fixing_window(const messaging::get_fixing_window_request& request);
 
     /**
      * @brief List observations for a series (limit 10000, first page).
@@ -121,7 +141,7 @@ public:
      * @brief List one bounded page of observations for a series, newest
      * first (matches the repository's own observation_datetime desc
      * ordering) -- for callers scanning for a specific observation (e.g.
-     * a vintage date) who only need a handful of rows, not the whole
+     * an observation date) who only need a handful of rows, not the whole
      * history.
      *
      * Sends marketdata.v1.market_observations.list_by_series_id.

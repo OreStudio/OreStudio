@@ -85,8 +85,6 @@ const feed: RecordRow = {
     process_type: 'geometric',
     enabled: false,
     auto_start: false,
-    vintage_source: '',
-    vintage_date: '',
     folder_id: null,
 };
 
@@ -123,7 +121,7 @@ function render(path: string, seed: (client: QueryClient) => void): string {
 }
 
 describe('the fields a feed derives', () => {
-    it('derives the ORE key and a source name from the pair, and empties the vintage of a fixed price', () => {
+    it('derives the ORE key and a source name from the pair', () => {
         expect(
             completeFeed({
                 base_currency_code: 'GBP',
@@ -131,34 +129,26 @@ describe('the fields a feed derives', () => {
                 source_name: '',
                 price_source: 'fixed',
                 gmm_initial_price: 190,
-                vintage_source: null,
-                vintage_date: null,
             }),
         ).toMatchObject({
             oresmd_uri: 'oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=JPY',
             source_name: 'synthetic.gbpjpy',
             gmm_initial_price: 190,
-            vintage_source: '',
-            vintage_date: '',
         });
     });
 
-    it('keeps a source name that is given, and zeroes the price of a vintage feed', () => {
+    it('keeps a source name that is given, and the fallback level of a fixing feed', () => {
         expect(
             completeFeed({
                 base_currency_code: 'EUR',
                 quote_currency_code: 'USD',
                 source_name: 'synthetic.feeds.eurusd',
-                price_source: 'vintage',
-                gmm_initial_price: null,
-                vintage_source: 'ore.reference',
-                vintage_date: '2016-02-05',
+                price_source: 'fixing',
+                gmm_initial_price: 1.17,
             }),
         ).toMatchObject({
             source_name: 'synthetic.feeds.eurusd',
-            gmm_initial_price: 0,
-            vintage_source: 'ore.reference',
-            vintage_date: '2016-02-05',
+            gmm_initial_price: 1.17,
         });
     });
 });
@@ -180,7 +170,7 @@ describe('the feed an engine change writes', () => {
         expect(write['ticks_per_hour']).toBe(3600);
         expect(write).not.toHaveProperty('version');
         expect(write).not.toHaveProperty('modified_by');
-        expect(Object.keys(write)).toHaveLength(15);
+        expect(Object.keys(write)).toHaveLength(13);
     });
 });
 

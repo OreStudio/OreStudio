@@ -1023,19 +1023,6 @@ namespace ores #F2F2F2 {
                 +stopped : int
                 +stopped_by_kind : map<string, int>
             }
-            class vintage_validity_entry <<struct>> {
-                +config_id : string
-                +kind : string
-                +applicable : bool
-                +valid : bool
-            }
-            class get_vintage_validity_request <<struct>> {
-            }
-            class get_vintage_validity_response <<struct>> {
-                +success : bool
-                +message : string
-                +entries : vector<vintage_validity_entry>
-            }
             class export_market_data_to_storage_request <<struct>> {
                 +storage_bucket : string
                 +storage_key : string
@@ -1257,7 +1244,6 @@ ores::marketdata::messaging::get_series_classification_rule_request *-- ores::ma
 ores::marketdata::messaging::get_series_classification_rule_response *-- ores::marketdata::domain::series_classification_rule
 ores::marketdata::messaging::get_series_classification_rule_version_request *-- ores::marketdata::messaging::series_classification_rule_version_key
 ores::marketdata::messaging::get_series_classification_rule_version_response *-- ores::marketdata::domain::series_classification_rule
-ores::marketdata::messaging::get_vintage_validity_response *-- ores::marketdata::messaging::vintage_validity_entry
 ores::marketdata::messaging::list_by_market_series_id_market_series_asset_classes_request *-- ores::marketdata::messaging::market_series_asset_classes_filter
 ores::marketdata::messaging::list_by_market_series_id_market_series_asset_classes_response *-- ores::marketdata::domain::market_series_asset_class
 ores::marketdata::messaging::list_by_series_id_market_observations_request *-- ores::marketdata::messaging::market_observations_filter

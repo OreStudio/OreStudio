@@ -137,8 +137,6 @@ namespace ores #F2F2F2 {
                 +process_type : string
                 +enabled : bool
                 +auto_start : bool
-                +vintage_source : string
-                +vintage_date : string
                 +folder_id : optional<string>
                 +modified_by : string
                 +performed_by : string
@@ -194,8 +192,6 @@ namespace ores #F2F2F2 {
                 +enabled : bool
                 +auto_start : bool
                 +price_source : string
-                +vintage_source : string
-                +vintage_date : string
                 +description : optional<string>
                 +fixed_leg_payment_frequency_code : string
                 +source_name : string

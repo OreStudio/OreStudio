@@ -25,7 +25,6 @@ set(files
     "feed_kind_registry_tests.cpp"
     "folder_feed_control_handler_tests.cpp"
     "generator_fleet_tests.cpp"
-    "ir_curve_feed_vintage_tests.cpp"
     "ir_curve_template_resolver_tests.cpp"
     "main.cpp"
     "simulator_adapter_tests.cpp"

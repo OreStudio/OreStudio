@@ -249,8 +249,6 @@ seeded_cascade seed_cascade(ores::testing::scoped_database_helper& h,
     // An enabled config under an enabled container is auto-start eligible,
     // like every published FX row.
     fx_enabled.auto_start = true;
-    fx_enabled.vintage_source = "";
-    fx_enabled.vintage_date = "";
     fx_enabled.modified_by = db_user;
     fx_enabled.performed_by = db_user;
     fx_enabled.change_reason_code = "system.test";
@@ -301,8 +299,6 @@ seeded_cascade seed_cascade(ores::testing::scoped_database_helper& h,
     ir.enabled = true;
     ir.auto_start = false;
     ir.price_source = "fixed";
-    ir.vintage_source = "";
-    ir.vintage_date = "";
     ir.description = "cascade test IR config";
     ir.fixed_leg_payment_frequency_code = "Annual";
     ir.source_name = "synthetic.cascade.test.ir.usd_sofr";

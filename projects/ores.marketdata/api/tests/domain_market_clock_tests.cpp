@@ -24,7 +24,6 @@ namespace {
 
 using namespace std::chrono_literals;
 using ores::marketdata::domain::fixed_market_clock;
-using ores::marketdata::domain::start_date;
 using ores::marketdata::domain::system_market_clock;
 
 }
@@ -49,16 +48,3 @@ TEST_CASE("the system clock gives the date of the host in UTC", "[market_clock]"
     CHECK(clock.today_text().size() == 10);
 }
 
-TEST_CASE("a config that names a date keeps it and one that names none takes the clock's",
-          "[market_clock]") {
-    const fixed_market_clock clock(std::chrono::sys_days{2026y / 10 / 23});
-
-    CHECK(start_date("2026-05-05", clock) == "2026-05-05");
-    CHECK(start_date("", clock) == "2026-10-23");
-}
-
-TEST_CASE("two feeds that share a clock start from the same date", "[market_clock]") {
-    const fixed_market_clock clock(std::chrono::sys_days{2026y / 1 / 2});
-
-    CHECK(start_date("", clock) == start_date("", clock));
-}

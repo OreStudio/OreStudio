@@ -45,8 +45,6 @@ export interface FxSpotGenerationConfigWrite {
     process_type: string;
     enabled: boolean;
     auto_start: boolean;
-    vintage_source: string;
-    vintage_date: string;
     folder_id: string | null;
     asset_class_code: string;
     arrival_mode: string;

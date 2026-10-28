@@ -1,0 +1,319 @@
+:PROPERTIES:
+:ID: A319B2CE-F6D5-4798-99BD-C5993A126E4E
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.synthetic.fx_spot_fixing_item
+#+description: Codegen entity model for the synthetic fx_spot_fixing_item table; one FX fixing an FX spot feed may start from, with its rank, policy and window.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: fx_spot_fixing_item
+#+entity_plural: fx_spot_fixing_items
+#+entity_title: FX Spot Fixing Item
+#+brief: One FX fixing an FX spot feed may start from.
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+One FX fixing that an =fx_spot_generation_config= whose =price_source= is
+=fixing= may start from. A feed reads its items in rank order and starts from the
+first that has a fixing: the latest on or before the date of the market clock, or
+on a stated date. The window sets how many days of fixings measure the
+volatility. An item may quote the pair the other way round, and the feed then reads
+it as one over the value. Party- and tenant-scoped.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this fixing item.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:server_owned: true
+:END:
+
+Owning party (legal entity) this item's configuration belongs to.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** fx_spot_config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:filterable: true
+:END:
+
+Parent =fx_spot_generation_config= this item may start.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** rank
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:default_value: 0
+:natural_key: true
+:END:
+
+Order in which the feed tries its items, lowest first.
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 4)
+#+end_src
+
+** item
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The fixing's oresmd URI, the ORE index, such as
+=oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD=.
+
+#+begin_src cpp :name generator
+std::string("oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD")
+#+end_src
+
+** provider_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default_value: ""
+:END:
+
+The provider to read the item from, or empty when one provider carries it.
+
+#+begin_src cpp :name generator
+std::string("ecb")
+#+end_src
+
+** policy
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "latest_on_or_before_clock"
+:END:
+
+Which fixing to start from: =latest_on_or_before_clock=, the latest on or before
+the date of the market clock, so a feed that starts again takes the newest value;
+or =exact:<YYYY-MM-DD>=, the fixing of that date.
+
+#+begin_src cpp :name generator
+std::string("latest_on_or_before_clock")
+#+end_src
+
+** window_days
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:default_value: 90
+:END:
+
+How many calendar days of fixings, ending on the starting fixing, measure the
+volatility.
+
+#+begin_src cpp :name generator
+faker::number::integer(30, 365)
+#+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: base_currency_code
+:END:
+
+The import names the currency pair an item belongs to, where the store holds the FX spot config id and the party. Publishing resolves the config in the target party.
+
+** base_currency_code
+:PROPERTIES:
+:type: text
+:END:
+
+** quote_currency_code
+:PROPERTIES:
+:type: text
+:END:
+
+** rank
+:PROPERTIES:
+:type: integer
+:END:
+
+** item
+:PROPERTIES:
+:type: text
+:END:
+
+** provider_code
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
+** policy
+:PROPERTIES:
+:type: text
+:END:
+
+** window_days
+:PROPERTIES:
+:type: integer
+:END:
+
+* Artefact indexes
+
+** pair
+:PROPERTIES:
+:columns: dataset_id, base_currency_code, quote_currency_code
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_fx_spot_fixing_items_tbl
+:END:
+
+** Checks
+
+| expression                                                                |
+|---------------------------------------------------------------------------|
+| "rank" >= 0                                                               |
+| "item" <> ''                                                              |
+| "window_days" between 2 and 3660                                          |
+| "policy" = 'latest_on_or_before_clock' or "policy" ~ '^exact:\d{4}-\d{2}-\d{2}$' |
+
+* Foreign keys
+
+** fx_spot_config_id
+:PROPERTIES:
+:table:         ores_synthetic_fx_spot_generation_configs_tbl
+:error_message: Invalid fx_spot_config_id: %. No active fx_spot_generation_config found with this id.
+:nullable:      false
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: fx_spot_fixing_item
+:entity_plural_short:   fx_spot_fixing_items
+:entity_singular_words: FX spot fixing item
+:entity_plural_words:   FX spot fixing items
+:system_tenant_visible: true
+:END:
+
+The installation's FX feeds ship under the system tenant, and every tenant reads
+them, as it reads their GMM components.
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: i
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| rank          | Rank        |
+| item          | Item        |
+| provider_code | Provider    |
+| policy        | Policy      |
+| window_days   | Window      |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.synthetic.api/domain/fx_spot_fixing_item.hpp
+:domain_class:            synthetic::domain::fx_spot_fixing_item
+:protocol_include:        ores.synthetic.api/messaging/fx_spot_fixing_item_protocol.hpp
+:collection_name:         fx_spot_fixing_items
+:key_field:               id
+:get_request_class:       synthetic::messaging::get_fx_spot_fixing_items_request
+:get_response_class:      synthetic::messaging::get_fx_spot_fixing_items_response
+:get_message_type:        get_fx_spot_fixing_items_request
+:save_request_class:      synthetic::messaging::save_fx_spot_fixing_item_request
+:save_response_class:     synthetic::messaging::save_fx_spot_fixing_item_response
+:save_message_type:       save_fx_spot_fixing_item_request
+:save_request_item_field: data
+:delete_request_class:    synthetic::messaging::delete_fx_spot_fixing_item_request
+:delete_response_class:   synthetic::messaging::delete_fx_spot_fixing_item_response
+:delete_message_type:     delete_fx_spot_fixing_item_request
+:END:
+
+*** Detail fields
+
+| field         | label    | widget           | type      | is_key | is_required | placeholder                |
+|---------------+----------+------------------+-----------+--------+-------------+----------------------------|
+| rank          | Rank     | rankEdit         | spin_box  |        | true        | Enter rank                 |
+| item          | Item     | itemEdit         | line_edit |        | true        | Enter the fixing's URI     |
+| provider_code | Provider | providerCodeEdit | line_edit |        |             | Enter provider, or leave   |
+| policy        | Policy   | policyEdit       | line_edit |        | true        | latest_on_or_before_clock  |
+| window_days   | Window   | windowDaysEdit   | spin_box  |        | true        | Enter window in days       |
+
+*** Columns
+
+| enum_name    | field         | header      | type      | width |
+|--------------+---------------+-------------+-----------+-------|
+| Rank         | rank          | Rank        | int       | 60    |
+| Item         | item          | Item        | string    | 320   |
+| ProviderCode | provider_code | Provider    | string    | 100   |
+| Policy       | policy        | Policy      | string    | 180   |
+| WindowDays   | window_days   | Window      | int       | 80    |
+| Version      | version       | Version     | int       | 80    |
+| ModifiedBy   | modified_by   | Modified By | string    | 120   |
+| RecordedAt   | recorded_at   | Recorded At | timestamp | 150   |
+
+* See also
+
+- [[id:0F0FB279-A707-4BA5-A1A2-40F46E591EB6][ores.synthetic.gmm_component]] — the sibling child of an FX spot config.
+- [[id:BB5DC80B-EC57-4029-8A8B-6A98E0EE7D6D][Read the latest fixing and a window]] — the read a feed starts through.

@@ -266,8 +266,6 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             branching_ratio: z.number().min(0).lt(1).default(0),
             decay: z.number().positive().default(1),
             sensitivity: z.number().positive().default(1),
-            vintage_source: z.string().max(200),
-            vintage_date: z.string().max(40),
             folder_id: idSchema.nullable(),
             asset_class_code: code.default('fx'),
         }) satisfies z.ZodType<FxSpotGenerationConfigWrite>,
@@ -329,9 +327,6 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             decay: z.number().positive().default(1),
             sensitivity: z.number().positive().default(1),
             price_source: code,
-            vintage_source: z.string().max(200),
-            vintage_date: z.string().max(40),
-            vintage_series_uri: z.string().max(2000),
             description: text,
             fixed_leg_payment_frequency_code: z.string().max(100),
             source_name: label,
@@ -1056,18 +1051,6 @@ export function registerSyntheticRoutes(
         const sourceName = z.string().parse(feed['source_name']);
         ticks.watch(sourceName);
         return { sourceName, ticks: ticks.ticks(sourceName, limit) };
-    });
-
-    /** Whether each vintage a feed draws from is still valid. */
-    server.get('/api/synthetic/vintages', async (request) => {
-        const session = requireSession(request);
-        const reply = await session.client.callAuthenticated(
-            marketdataOperationSubjects.get_vintage_validity_request,
-            {},
-            operationReplySchema.extend({ entries: z.array(row).default([]) }),
-        );
-        refuseUnless(reply, upstreamFailure);
-        return { entries: reply.entries };
     });
 
     /**

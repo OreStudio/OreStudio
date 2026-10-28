@@ -841,40 +841,6 @@ export interface StopFeedsUnderFolderResponse {
 }
 
 /**
- * @brief Vintage-availability status for one feed config of any asset class,
- * computed live (not stored) against market_observation.
- */
-export interface VintageValidityEntry {
-    /** The feed config row's own id: fx_spot_generation_config::id for an FX
-     * feed, ir_curve_generation_config::id for an IR curve feed.
-     */
-    config_id: string;
-    /** The registered feed kind the row belongs to, so a caller can tell the
-     * asset classes apart without probing.
-     */
-    kind: string;
-    /** False for price_source = "fixed" feeds -- the vintage check does not
-     * apply to them, so `valid` is meaningless and should not be shown.
-     */
-    applicable: boolean;
-    valid: boolean;
-}
-
-/**
- * @brief Request the vintage-availability status of every feed visible to
- * the caller, computed at read time (no persisted/cached column) so it is
- * always accurate -- including immediately after a data import that added
- * no new feed rows, only new market_observation ones.
- */
-export interface GetVintageValidityRequest {}
-
-export interface GetVintageValidityResponse {
-    success: boolean;
-    message: string;
-    entries: VintageValidityEntry[];
-}
-
-/**
  * @brief Exports the tenant's market data to object storage as ORE text.
  *
  * The engine reads a market data file its run document names, and nothing else
@@ -1146,7 +1112,6 @@ export const subjects = {
     import_market_data_request: 'marketdata.v1.ops.import_market_data',
     start_feeds_under_folder_request: 'marketdata.v1.ops.start_feeds_under_folder',
     stop_feeds_under_folder_request: 'marketdata.v1.ops.stop_feeds_under_folder',
-    get_vintage_validity_request: 'marketdata.v1.ops.get_vintage_validity',
     export_market_data_to_storage_request: 'marketdata.v1.ops.export_market_data_to_storage',
     backfill_series_identity_request: 'marketdata.v1.ops.backfill_series_identity',
     key_manual_point_request: 'marketdata.v1.ops.key_manual_point',
@@ -1176,7 +1141,6 @@ export const requiresSession = {
     import_market_data_request: true,
     start_feeds_under_folder_request: true,
     stop_feeds_under_folder_request: true,
-    get_vintage_validity_request: true,
     export_market_data_to_storage_request: true,
     backfill_series_identity_request: true,
     key_manual_point_request: true,

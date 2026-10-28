@@ -4382,8 +4382,6 @@ const pt: SourceCatalogue = {
             ticks_per_hour: 'Ticks por hora',
             price_source: 'Preço inicial a partir de',
             gmm_initial_price: 'Preço inicial',
-            vintage_source: 'Fonte da vintage',
-            vintage_date: 'Data da vintage',
             enabled: 'Ativo',
             auto_start: 'Arranca com o serviço',
             mean: 'Média (μ)',
@@ -4393,7 +4391,6 @@ const pt: SourceCatalogue = {
             index_family: 'Nome do índice',
             tenor: 'Prazo',
             role: 'Papel',
-            vintage_series_uri: 'Série da versão',
             sequence_index: 'Ordem',
             fixed_leg_payment_frequency_code: 'Frequência da perna fixa',
             start_tenor_code: 'Prazo de início',
@@ -4466,7 +4463,7 @@ const pt: SourceCatalogue = {
             },
             price_source: {
                 fixed: 'Um preço fixo',
-                vintage: 'Uma vintage de dados de mercado',
+                fixing: 'O fixing público mais recente',
             },
             kind: {
                 fixed_date: 'Data fixa',
@@ -5552,8 +5549,7 @@ const pt: SourceCatalogue = {
                     'Quão fortemente um regime de mercado global move este par, onde um é a média. Não faz nada até o regime de mercado chegar.',
                 price_source: {
                     fixed: 'O fluxo parte do preço inicial que indicar.',
-                    vintage:
-                        'O fluxo parte do preço que uma versão importada de dados de mercado tem para o par.',
+                    fixing: 'O fluxo parte do fixing público mais recente do par e tira a volatilidade dos fixings; sem fixing, mantém o preço inicial.',
                 },
                 enabled: 'Um fluxo que não está ativo não pode arrancar.',
                 auto_start: 'O fluxo arranca quando o serviço sintético arranca.',
@@ -5664,8 +5660,6 @@ const pt: SourceCatalogue = {
                     'Quão fortemente um regime de mercado global move este par, onde um é a média. Não faz nada até o regime de mercado chegar.',
                 price_source: {
                     fixed: 'A curva parte da taxa dada no separador Processo.',
-                    vintage:
-                        'A curva parte da taxa que uma versão importada de dados de mercado tem para a moeda e o índice.',
                 },
                 enabled: 'Um fluxo que não está ativado não pode iniciar.',
                 auto_start: 'O fluxo inicia quando o serviço sintético inicia.',

@@ -95,17 +95,16 @@ struct fx_spot_generation_config final {
 
     /**
      * @brief Where this feed's initial spot price comes from: "fixed" (use gmm_initial_price as
-     * entered) or "vintage" (derive it from the vintage_source/vintage_date market-data
-     * observation, guarded by availability). Exactly one of gmm_initial_price or
-     * vintage_source/vintage_date is populated, matching this discriminator — see the SQL check.
+     * entered) or "fixing" (start from the first of the config's fx_spot_fixing_item rows that has
+     * a fixing, and size the mixture to the spread of its fixings, keeping gmm_initial_price when
+     * none has one). A fixing item is a pointer to observed data: a feed pinned to a past day names
+     * that day in the item's policy.
      */
-    std::string price_source = "vintage";
+    std::string price_source = "fixed";
 
     /**
-     * @brief Initial spot price the generated process starts from. Only used (and required, > 0)
-     * when price_source is "fixed"; 0 when "vintage" — the codegen used here has no true-nullable
-     * numeric support, so this is a sentinel enforced by the SQL check alongside price_source, not
-     * real SQL NULL.
+     * @brief Initial spot price the generated process starts from, > 0: the price a "fixed" feed
+     * starts from, and the level a "fixing" feed keeps when no item has a fixing.
      */
     double gmm_initial_price = 0.0;
 
@@ -135,23 +134,6 @@ struct fx_spot_generation_config final {
      * auto-disables the running one, so switching requires an explicit Stop then Start.
      */
     bool auto_start = false;
-
-    /**
-     * @brief Source tag of the market-data vintage this feed's initial spot and availability guard
-     * are validated against (e.g. "ore.reference"), matching market_observation.source. Only
-     * populated (and required) when price_source is "vintage"; empty when "fixed" — see
-     * price_source. (Empty string, not SQL NULL: the codegen used here has no true-nullable text
-     * support.)
-     */
-    std::string vintage_source;
-
-    /**
-     * @brief Observation date of the market-data vintage this feed's initial spot and availability
-     * guard are validated against, ISO format (e.g. "2016-02-05"), matching
-     * market_observation.observation_datetime. Only populated (and required) when price_source is
-     * "vintage"; empty when "fixed" — see price_source.
-     */
-    std::string vintage_date;
 
     /**
      * @brief The folder this feed lives under (the instrument-type folder, e.g. "FX Rates", nested

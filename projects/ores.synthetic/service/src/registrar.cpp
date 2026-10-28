@@ -33,7 +33,6 @@
 #include "ores.synthetic.api/messaging/feed_selection_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
 #include "simulate_handler.hpp"
-#include "vintage_validity_handler.hpp"
 
 namespace ores::synthetic::service {
 
@@ -173,14 +172,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
             folder_feed_control_handler h(
                 nats, generators, auth_nats, ctx, verifier, registry, scheduler);
             h.stop(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        std::string(get_vintage_validity_request::nats_subject),
-        queue,
-        [&nats, &auth_nats, ctx, verifier, &registry](ores::nats::message msg) {
-            vintage_validity_handler h(nats, auth_nats, ctx, verifier, registry);
-            h.list(std::move(msg));
         }));
 
     // preview_shape is IR-only: there is no FX analogue, and the verb takes

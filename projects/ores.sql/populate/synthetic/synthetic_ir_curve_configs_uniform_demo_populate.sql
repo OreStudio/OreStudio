@@ -31,20 +31,18 @@
  * (Deposit/FRA/Swap) per curve, so every curve_role pricing
  * derivation gets exercised.
  *
- * These are not vintage feeds -- they don't pin to any point in market
- * history -- it's a deliberately simple demo/exercise archetype: one
+ * These feeds pin to no point in market history: it's a deliberately
+ * simple demo/exercise archetype: one
  * uniform kappa/sigma across all 20 curves (only theta/initial_rate vary,
  * by currency) using Vasicek, so every curve's dynamics are easy to
  * reason about while exercising the tick-batch/pricing pipeline. Contrast
- * with the vintage feeds (2016 ORE Samples, Bloomberg), each of
- * which per-curve-calibrates and (for 2016 ORE Samples) is grounded in a
- * real historical curve.
+ * with the Bloomberg feeds, which calibrate each curve.
  *
  * auto_start = false: this dataset shares (currency_code, index_family)
  * pairs with synthetic.feeds.bloomberg (e.g. USD/sofr),
  * so starting both at once for the same currency would trip
  * curve_feed_controller's qualifier-collision check. Still enabled = true
- * (available, manually startable) for direct comparison against a vintage
+ * (available, manually startable) for direct comparison against another
  * dataset's own calibration; start this collection explicitly to run it.
  *
  * This script is idempotent.
@@ -103,7 +101,7 @@ begin
         currency_code, index_family, tenor, process_type,
         kappa, theta, sigma, initial_rate,
         ticks_per_hour, fixed_leg_payment_frequency_code,
-        price_source, vintage_source, vintage_date, vintage_series_uri, provider_code
+        price_source, provider_code
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
@@ -118,11 +116,11 @@ begin
         || 'per-currency calibration (see synthetic.feeds.bloomberg for that). '
         || 'Not auto-started by default -- both this and synthetic.feeds.bloomberg seed the same '
         || '(currency, index) pairs, so only one may run at a time per currency; enable '
-        || 'and start this one explicitly to compare against a vintage dataset''s calibration.',
+        || 'and start this one explicitly to compare against another dataset''s calibration.',
         true, false, c.currency_code, c.index_family, '', 'VASICEK',
         v_kappa, c.theta, v_sigma, c.theta,
         60, 'Quarterly',
-        'fixed', '', '', '', 'demo'
+        'fixed', 'demo'
     from (values
         -- currency, index_family, theta (mean/initial level) -- same 20 currencies and levels
         -- as the matching Bloomberg curves, but uniform kappa/sigma (v_kappa/v_sigma

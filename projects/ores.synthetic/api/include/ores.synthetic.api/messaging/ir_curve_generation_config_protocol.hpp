@@ -51,9 +51,6 @@ struct ir_curve_generation_config_write {
     bool enabled;
     bool auto_start;
     std::string price_source;
-    std::string vintage_source;
-    std::string vintage_date;
-    std::string vintage_series_uri;
     std::string description;
     std::string fixed_leg_payment_frequency_code;
     std::string source_name;

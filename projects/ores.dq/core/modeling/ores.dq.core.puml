@@ -1482,8 +1482,6 @@ namespace ores #F2F2F2 {
                 +ticks_per_hour : int
                 +process_type : string
                 +price_source : string
-                +vintage_source : optional<string>
-                +vintage_date : optional<string>
             }
             class synthetic_fx_spot_config_mapper {
                 -lg() : [[nodiscard]] static auto&

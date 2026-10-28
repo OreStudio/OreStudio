@@ -22,6 +22,7 @@
 // Per-entity generated event-mapping registrars.
 #include "ores.synthetic.service/messaging/folder_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/fx_spot_generation_config_event_registrar.hpp"
+#include "ores.synthetic.service/messaging/fx_spot_fixing_item_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/gmm_component_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/ir_curve_generation_config_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/ir_curve_generation_config_process_parameter_value_event_registrar.hpp"
@@ -51,6 +52,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_folder_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_fx_spot_generation_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_gmm_component_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_fx_spot_fixing_item_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_ir_curve_generation_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_ir_curve_generation_config_process_parameter_value_event_mapping(

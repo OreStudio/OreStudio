@@ -115,8 +115,6 @@ fx_spot_generation_config_to_domain(const messaging::fx_spot_generation_config_w
     v.process_type = write.process_type;
     v.enabled = write.enabled;
     v.auto_start = write.auto_start;
-    v.vintage_source = write.vintage_source;
-    v.vintage_date = write.vintage_date;
     v.folder_id = write.folder_id;
     v.asset_class_code = write.asset_class_code;
     v.arrival_mode = write.arrival_mode;

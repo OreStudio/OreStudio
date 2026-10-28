@@ -105,9 +105,8 @@ fx_spot_generation_config make_fx_config() {
     cfg.oresmd_uri = "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD";
     cfg.source_name = "eur_usd_test";
     cfg.process_type = "geometric";
-    // "fixed" so the factory takes gmm_initial_price as-is -- the vintage
-    // lookup path needs a live authenticated market-data round trip and is
-    // covered by the service tests instead.
+    // "fixed" so the factory takes gmm_initial_price as-is -- the fixing
+    // path needs a live authenticated market-data round trip.
     cfg.price_source = "fixed";
     cfg.gmm_initial_price = 1.1;
     cfg.ticks_per_hour = 60;
@@ -160,8 +159,7 @@ ores::synthetic::feed::ir_curve_refdata_context make_refdata_context() {
 }
 
 // A VASICEK config with the full {definition, value} pair set the mapping layer
-// requires (kappa/theta/sigma/initial_rate), price_source "fixed" so no vintage
-// lookup runs.
+// requires (kappa/theta/sigma/initial_rate), price_source "fixed".
 struct ir_fixture {
     ir_curve_generation_config config;
     std::vector<ir_curve_template_entry> entries;

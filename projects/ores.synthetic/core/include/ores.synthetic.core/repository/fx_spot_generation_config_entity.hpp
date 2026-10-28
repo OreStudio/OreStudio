@@ -57,14 +57,12 @@ struct fx_spot_generation_config_entity {
 
     std::string source_name;
     std::string oresmd_uri;
-    std::string price_source = "vintage";
+    std::string price_source = "fixed";
     double gmm_initial_price = 0.0;
     int ticks_per_hour = 0;
     std::string process_type = "geometric";
     bool enabled = false;
     bool auto_start = false;
-    std::string vintage_source;
-    std::string vintage_date;
     std::optional<std::string> folder_id;
     std::string asset_class_code = "fx";
     std::string arrival_mode = "periodic";
@@ -99,8 +97,6 @@ struct fx_spot_generation_config_entity {
                query_builder::bind("process_type", &e::process_type) |
                query_builder::bind("enabled", &e::enabled) |
                query_builder::bind("auto_start", &e::auto_start) |
-               query_builder::bind("vintage_source", &e::vintage_source) |
-               query_builder::bind("vintage_date", &e::vintage_date) |
                query_builder::bind("folder_id", &e::folder_id) |
                query_builder::bind("asset_class_code", &e::asset_class_code) |
                query_builder::bind("arrival_mode", &e::arrival_mode) |

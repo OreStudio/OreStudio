@@ -50,9 +50,6 @@ render_ir_curve_generation_config_fields(const domain::ir_curve_generation_confi
     fields.push_back({.name = "Enabled", .value = v.enabled ? "true" : "false"});
     fields.push_back({.name = "Auto Start", .value = v.auto_start ? "true" : "false"});
     fields.push_back({.name = "Price Source", .value = v.price_source});
-    fields.push_back({.name = "Vintage Source", .value = v.vintage_source});
-    fields.push_back({.name = "Vintage Date", .value = v.vintage_date});
-    fields.push_back({.name = "Vintage Series Uri", .value = v.vintage_series_uri});
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back(
         {.name = "Fixed Leg Payment Frequency Code", .value = v.fixed_leg_payment_frequency_code});

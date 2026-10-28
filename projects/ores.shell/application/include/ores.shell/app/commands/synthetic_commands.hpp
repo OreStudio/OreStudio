@@ -119,8 +119,8 @@ public:
  *
  * Exposes market simulator operations scriptably: authoring a whole feed in
  * one pass, listing every configured feed with its state, starting and
- * stopping individual feeds or whole folder subtrees, validating vintage data
- * availability, and previewing what a feed would produce -- the operations the
+ * stopping individual feeds or whole folder subtrees, and previewing what a
+ * feed would produce -- the operations the
  * Qt Market Simulator window performs that no entity model states. Every feed
  * verb works for any asset class: an asset class supplies only which child
  * rows its feeds need, and the flow, its validation and its reporting are one.
@@ -157,8 +157,8 @@ public:
      * @brief Register synthetic-data commands.
      *
      * Creates the synthetic submenu: list folders/feeds, setup, the preview
-     * group (fx-spot, ir-shape, ir-paths), start/stop folder/feed, and
-     * validate-vintage. The organisation generator that used to sit beside it
+     * group (fx-spot, ir-shape, ir-paths) and start/stop folder/feed. The
+     * organisation generator that used to sit beside it
      * is gone; see the component overview for why.
      */
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
@@ -370,17 +370,6 @@ public:
                              const std::vector<std::string>& args);
 
     /**
-     * @brief Validate vintage data: synthetic validate-vintage
-     * <feed-token>.
-     *
-     * Reports whether the vintage market data the feed's initial spot
-     * depends on is available (pass/fail + reason).
-     */
-    static void process_validate_vintage(std::ostream& out,
-                                         ores::nats::service::nats_client& session,
-                                         const std::vector<std::string>& args);
-
-    /**
      * @brief Generate a trade generation config's population: synthetic
      * generate-trades --config <id> [--config <id>...].
      *
@@ -438,17 +427,6 @@ public:
     static bool stop_feed(std::ostream& out,
                           ores::nats::service::nats_client& session,
                           const std::string& token);
-
-    /**
-     * @brief Report vintage-availability status for one feed, computed
-     * live server-side via get_vintage_validity_request. @p token is a
-     * feed id, ore key or source_name of any asset class.
-     *
-     * @return true on success.
-     */
-    static bool validate_vintage(std::ostream& out,
-                                 ores::nats::service::nats_client& session,
-                                 const std::string& token);
 };
 
 }

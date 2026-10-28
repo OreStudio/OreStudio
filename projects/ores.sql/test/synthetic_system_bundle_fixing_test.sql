@@ -19,15 +19,16 @@
  */
 
 /**
- * The system bundle installs the feeds that start from a vintage price.
+ * The system bundle installs the feeds that start from the public fixings.
  *
- * synthetic.feeds.bloomberg starts 13 of its pairs from the 2026-05-05 Fed H.10 vintage, so
- * the system bundle publishes the vintage observations with it. A publish into the system
- * tenant names no party: the observations belong to the system party, where the simulator,
- * which reads as the system tenant, finds them. The catalogue also holds the pair of
- * provider and source that the Acme profile routes its parties to.
+ * synthetic.feeds.bloomberg starts every pair from the newest public fixing of
+ * the pair, so each config is fixing-priced and carries the items it may start
+ * from, ranked by provider. A publish into the system tenant names no party: the
+ * feeds belong to the system party, where the simulator, which reads as the
+ * system tenant, finds them. The catalogue also holds the pair of provider and
+ * source that the Acme profile routes its parties to.
  *
- * Run as ORES_TEST_DB_USER: pg_prove -d <database> test/synthetic_system_bundle_vintage_test.sql
+ * Run as ORES_TEST_DB_USER: pg_prove -d <database> test/synthetic_system_bundle_fixing_test.sql
  */
 
 begin;
@@ -36,8 +37,7 @@ select plan(5);
 
 create temporary table t_dataset on commit drop as
 select id, code from ores_dq_datasets_tbl
-where code in ('marketdata.fx_driver_rates_2026', 'synthetic.feeds.bloomberg',
-               'synthetic.market_data_providers')
+where code in ('synthetic.feeds.bloomberg', 'synthetic.market_data_providers')
   and valid_to = ores_utility_infinity_timestamp_fn();
 
 create temporary table t_party on commit drop as
@@ -52,33 +52,44 @@ select * from ores_synthetic_publish_market_data_providers_from_dq_fn(
     ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb);
 
 select lives_ok(
-    format($$select * from ores_marketdata_publish_market_data_observations_from_dq_fn(%L::uuid, ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb)$$,
-        (select id from t_dataset where code = 'marketdata.fx_driver_rates_2026')),
-    'the vintage observations publish into the system tenant with no party named'
-);
-
-select ok(
-    exists(select 1 from ores_marketdata_market_observations_tbl o
-           where o.tenant_id = ores_utility_system_tenant_id_fn()
-             and o.party_id = (select id from t_party)),
-    'the observations belong to the system party'
-);
-
-select lives_ok(
     format($$select * from ores_synthetic_publish_feeds_from_dq_fn(%L::uuid, ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb)$$,
         (select id from t_dataset where code = 'synthetic.feeds.bloomberg')),
-    'the Bloomberg feeds publish into the system tenant after their vintage data'
+    'the Bloomberg feeds publish into the system tenant'
 );
 
 select is(
     (select count(*)::int from ores_synthetic_fx_spot_generation_configs_tbl f
      join ores_synthetic_market_data_generation_configs_tbl c on c.id = f.config_id
      where c.provider_code = 'bloomberg'
-       and f.price_source = 'vintage'
+       and f.price_source = 'fixing'
+       and f.gmm_initial_price > 0
        and f.valid_to = ores_utility_infinity_timestamp_fn()
        and c.valid_to = ores_utility_infinity_timestamp_fn()),
-    13,
-    'the 13 vintage-priced pairs are installed in the system tenant'
+    26,
+    'every Bloomberg pair is fixing-priced and keeps a level to fall back to'
+);
+
+select is(
+    (select i.item from ores_synthetic_fx_spot_fixing_items_tbl i
+     join ores_synthetic_fx_spot_generation_configs_tbl f on f.id = i.fx_spot_config_id
+     join ores_synthetic_market_data_generation_configs_tbl c on c.id = f.config_id
+     where c.provider_code = 'bloomberg'
+       and f.base_currency_code = 'EUR' and f.quote_currency_code = 'USD'
+       and i.rank = 0
+       and i.valid_to = ores_utility_infinity_timestamp_fn()
+       and f.valid_to = ores_utility_infinity_timestamp_fn()
+       and c.valid_to = ores_utility_infinity_timestamp_fn()),
+    'oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD',
+    'EUR/USD starts from the ECB fixing first'
+);
+
+select ok(
+    exists(select 1 from ores_synthetic_fx_spot_fixing_items_tbl i
+           join ores_synthetic_fx_spot_generation_configs_tbl f on f.id = i.fx_spot_config_id
+           where f.base_currency_code = 'EUR' and f.quote_currency_code = 'USD'
+             and i.item = 'oresmd://fx/USD?type=fixing&index=fx&source=IMF&ccy=EUR'
+             and i.valid_to = ores_utility_infinity_timestamp_fn()),
+    'EUR/USD may also start from the IMF fixing of USD/EUR, read the other way round'
 );
 
 select ok(

@@ -23,15 +23,19 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
-#include "ores.synthetic.api/feeds/vintage_lookup.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <charconv>
 #include <chrono>
+#include <cmath>
+#include <expected>
 #include <format>
 #include <stdexcept>
 
@@ -46,40 +50,136 @@ auto& lg() {
     return instance;
 }
 
-// Resolves the initial price from a real market_observation when cfg.price_source is "vintage":
-// the config's own series (from its oresmd_uri), keyed on (source=vintage_source, its own datum
-// URI, date=vintage_date).
-//
-// @throws vintage_data_missing_error if no matching observation is found.
-double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats,
-                                     const ores::synthetic::domain::fx_spot_generation_config& cfg,
-                                     const std::string& start_date) {
-    const auto missing_message = "No vintage data found for source=" + cfg.vintage_source +
-                                 ", date=" + start_date + ", datum=" + cfg.oresmd_uri + ".";
+std::optional<double> number_of(const std::string& text) {
+    double out = 0.0;
+    const auto [end, ec] = std::from_chars(text.data(), text.data() + text.size(), out);
+    if (ec != std::errc{} || end != text.data() + text.size() || !std::isfinite(out) || out <= 0.0)
+        return std::nullopt;
+    return out;
+}
 
-    // The series and the row are found by the URIs the config's datum writes as: the
-    // same codec the marketdata service's ingest loop applies to a tick's URI, so
-    // the vintage read and the tick that follows it name one series.
-    const auto datum = ores::marketdata::datum::oresmd_uri_codec::read(cfg.oresmd_uri);
-    if (!datum)
-        throw vintage_data_missing_error("oresmd URI '" + cfg.oresmd_uri + "': " + datum.error());
-    const auto datum_uri = ores::marketdata::datum::oresmd_uri_codec::write(*datum).value();
-    const auto series_uri =
-        ores::marketdata::datum::oresmd_uri_codec::write(ores::marketdata::datum::series_of(*datum))
-            .value();
+/// The date a fixing item's policy reads on or before, or why the policy cannot be read.
+std::expected<std::chrono::year_month_day, std::string>
+policy_date(const std::string& policy, const ores::marketdata::domain::market_clock* clock) {
+    using namespace std::chrono;
+    if (policy == "latest_on_or_before_clock")
+        return year_month_day(clock ? clock->today() :
+                                      ores::marketdata::domain::system_market_clock{}.today());
+    constexpr std::string_view exact = "exact:";
+    if (policy.starts_with(exact)) {
+        const auto text = policy.substr(exact.size());
+        int y = 0;
+        unsigned m = 0, d = 0;
+        if (text.size() == 10 &&
+            std::from_chars(text.data(), text.data() + 4, y).ec == std::errc{} &&
+            std::from_chars(text.data() + 5, text.data() + 7, m).ec == std::errc{} &&
+            std::from_chars(text.data() + 8, text.data() + 10, d).ec == std::errc{}) {
+            const year_month_day date{year{y}, month{m}, day{d}};
+            if (date.ok())
+                return date;
+        }
+    }
+    return std::unexpected("policy '" + policy +
+                           "' is not latest_on_or_before_clock or exact:<date>");
+}
 
-    const auto found = find_vintage_observation(auth_nats,
-                                                {},
-                                                series_uri,
-                                                datum_uri,
-                                                cfg.vintage_source,
-                                                start_date,
-                                                missing_message,
-                                                cfg.oresmd_uri,
-                                                boost::uuids::to_string(cfg.party_id));
-    if (!found)
-        throw vintage_data_missing_error(found.error());
-    return *found;
+/// The level and the measured spread a fixing feed starts from, and the mixture's deviations
+/// scaled to it; or, when no item has a fixing, the record that the feed kept its fixed level.
+struct resolved_start final {
+    fixing_start source;
+    std::optional<std::vector<double>> stdevs;
+};
+
+resolved_start
+resolve_fixing_start(ores::nats::service::nats_client& auth_nats,
+                     const ores::synthetic::domain::fx_spot_generation_config& cfg,
+                     const std::vector<ores::synthetic::domain::gmm_component>& components,
+                     std::vector<ores::synthetic::domain::fx_spot_fixing_item> items,
+                     const ores::marketdata::domain::market_clock* clock) {
+    resolved_start out;
+    out.source.level = cfg.gmm_initial_price;
+    std::ranges::sort(items, {}, &ores::synthetic::domain::fx_spot_fixing_item::rank);
+
+    auto delegated = auth_nats.with_delegation({});
+    ores::marketdata::client::market_data_client md(delegated);
+    std::vector<std::string> skipped;
+    for (const auto& item : items) {
+        const auto orientation =
+            orientation_of(item.item, cfg.base_currency_code, cfg.quote_currency_code);
+        if (!orientation) {
+            skipped.push_back(orientation.error());
+            continue;
+        }
+        const auto date = policy_date(item.policy, clock);
+        if (!date) {
+            skipped.push_back(item.item + ": " + date.error());
+            continue;
+        }
+        const auto latest = md.get_fixing(
+            {.item = item.item, .provider_code = item.provider_code, .on_or_before = *date});
+        if (!latest) {
+            skipped.push_back(item.item + ": " + latest.error());
+            continue;
+        }
+        // An exact policy names one date; the latest fixing on or before it is that date's or
+        // none.
+        const bool exact = item.policy != "latest_on_or_before_clock";
+        if (!latest->fixing_date || (exact && *latest->fixing_date != *date)) {
+            skipped.push_back(item.item + ": no fixing on or before " +
+                              std::format("{:%F}", std::chrono::sys_days(*date)));
+            continue;
+        }
+        const auto value = number_of(latest->value);
+        if (!value) {
+            skipped.push_back(item.item + ": the fixing '" + latest->value + "' is not a price");
+            continue;
+        }
+
+        auto& s = out.source;
+        s.from_fixing = true;
+        s.item = item.item;
+        s.provider_code = latest->provider_code;
+        s.vendor_id = latest->vendor_id;
+        s.inverted = *orientation == item_orientation::inverted;
+        s.fixing_date = latest->fixing_date;
+        s.received_at = latest->received_at;
+        s.level = s.inverted ? 1.0 / *value : *value;
+        s.window_days = item.window_days;
+
+        const auto window = md.get_fixing_window({.item = item.item,
+                                                  .provider_code = item.provider_code,
+                                                  .to = *latest->fixing_date,
+                                                  .days = item.window_days});
+        if (!window) {
+            s.note = "The volatility was not measured: " + window.error();
+            return out;
+        }
+        std::vector<double> values;
+        for (const auto& v : window->values)
+            if (const auto n = number_of(v))
+                values.push_back(*n);
+        s.used = window->used;
+        const auto spread = business_day_log_return_spread(values);
+        if (!spread) {
+            s.note = "The window holds too few fixings to measure a volatility.";
+            return out;
+        }
+        s.hourly_spread = hourly_spread_of(*spread);
+        std::vector<mixture_component> mixture;
+        for (const auto& c : components)
+            mixture.push_back({.mean = c.mean, .stdev = c.stdev, .weight = c.weight});
+        const auto scaled = scaled_stdevs(mixture, *s.hourly_spread, cfg.ticks_per_hour);
+        if (!scaled) {
+            s.note = "The configured mixture was kept: " + scaled.error();
+            return out;
+        }
+        out.stdevs = *scaled;
+        return out;
+    }
+    out.source.note = items.empty() ? "The config names no fixing item." : "No item has a fixing";
+    for (const auto& reason : skipped)
+        out.source.note += "; " + reason;
+    return out;
 }
 
 } // namespace
@@ -89,6 +189,7 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   ores::nats::service::nats_client& auth_nats,
                   const ores::synthetic::domain::fx_spot_generation_config& cfg,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
+                  const std::vector<ores::synthetic::domain::fx_spot_fixing_item>& fixing_items,
                   ores::analytics::quant::service::tick_scheduler& scheduler,
                   std::optional<adapter_target> adapter,
                   const ores::marketdata::domain::market_clock* clock) {
@@ -115,14 +216,23 @@ make_fx_spot_feed(ores::nats::service::client& nats,
         weights.push_back(c.weight);
     }
 
-    // "vintage" resolves the initial price from a real market_observation, overriding the stored
-    // gmm_initial_price (0 for vintage configs, per the check constraint); "fixed" uses the
-    // stored value as-is. See make_fx_spot_feed's doc comment for the vintage semantics.
-    const double initial_price =
-        cfg.price_source == "vintage" ?
-            resolve_vintage_initial_price(
-                auth_nats, cfg, ores::marketdata::domain::start_date(cfg.vintage_date, clock)) :
-            cfg.gmm_initial_price;
+    // "fixing" starts from the first ranked item with a fixing and sizes the mixture to its
+    // spread; "fixed" uses the stored value as-is. See make_fx_spot_feed's doc comment.
+    fixing_start start;
+    double initial_price = cfg.gmm_initial_price;
+    if (cfg.price_source == "fixing") {
+        auto resolved = resolve_fixing_start(auth_nats, cfg, components, fixing_items, clock);
+        start = std::move(resolved.source);
+        initial_price = start.level;
+        if (resolved.stdevs)
+            stdevs = std::move(*resolved.stdevs);
+        BOOST_LOG_SEV(lg(), info) << "Feed " << cfg.source_name << " starts at " << initial_price
+                                  << (start.from_fixing ?
+                                          " from " + start.item + " (" + start.provider_code + ")" +
+                                              (start.inverted ? ", inverted" : "") :
+                                          std::string(", its fixed level"))
+                                  << (start.note.empty() ? "" : ". " + start.note);
+    }
 
     auto process = ores::analytics::quant::service::process_factory::make_process(
         cfg.process_type,
@@ -138,15 +248,17 @@ make_fx_spot_feed(ores::nats::service::client& nats,
     if (!compatibility.valid)
         throw std::invalid_argument("make_fx_spot_feed: " + compatibility.message);
 
-    return std::make_shared<fx_spot_feed>(nats,
-                                          cfg.oresmd_uri,
-                                          cfg.source_name,
-                                          producer_subject(cfg.source_name),
-                                          std::move(process),
-                                          arrival,
-                                          scheduler,
-                                          cfg.sensitivity,
-                                          std::move(adapter));
+    auto feed = std::make_shared<fx_spot_feed>(nats,
+                                               cfg.oresmd_uri,
+                                               cfg.source_name,
+                                               producer_subject(cfg.source_name),
+                                               std::move(process),
+                                               arrival,
+                                               scheduler,
+                                               cfg.sensitivity,
+                                               std::move(adapter));
+    feed->record_start_source(std::move(start));
+    return feed;
 }
 
 fx_spot_feed::fx_spot_feed(

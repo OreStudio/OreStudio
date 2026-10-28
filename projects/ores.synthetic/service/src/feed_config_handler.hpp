@@ -62,7 +62,7 @@ using namespace ores::logging;
  * the client sends only a config_id and the feed kind registry resolves the config — whichever
  * kind it is, its children, and the refdata context — checks the resolved kind's permission, and
  * builds the producer. The runner then runs it as a manual run, which no demand set reconciles
- * away. Missing, disabled, and vintage-data-missing outcomes use one message shape regardless of
+ * away. Missing and disabled outcomes use one message shape regardless of
  * kind, and a start of a feed that already runs answers the same success its kind does.
  */
 class feed_config_handler {
@@ -140,12 +140,6 @@ public:
                 return;
             }
             reply_start_outcome(msg, resp, req->config_id, std::move(attempt.feed));
-        } catch (const ores::synthetic::feed::vintage_data_missing_error& e) {
-            resp.success = false;
-            resp.message = e.what();
-            BOOST_LOG_SEV(feed_config_handler_lg(), warn)
-                << msg.subject << " — feed rejected: " << resp.message;
-            reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             resp.success = false;
             resp.message = client_message(e);

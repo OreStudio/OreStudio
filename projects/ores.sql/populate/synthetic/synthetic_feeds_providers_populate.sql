@@ -151,15 +151,15 @@ begin
             name, description, enabled, auto_start,
             base_currency_code, quote_currency_code,
             gmm_initial_price, ticks_per_hour, process_type,
-            price_source, vintage_source, vintage_date, provider_code
+            price_source, provider_code
         )
         select
             v_dataset.id, v_tenant_id, gen_random_uuid(), 1,
             p.provider_name || ' FX Spot: ' || p.base || '/' || p.quote,
             'Simulated ' || p.provider_name || ' cross rate: a two-component geometric Gaussian mixture at about '
-            || p.vol_pct || '% annualised vol, starting at an illustrative 2026 level, not a sourced quote.',
+            || p.vol_pct || '% annualised vol, starting at the newest public fixing of the pair, or at an illustrative 2026 level when no source fixes it.',
             true, true, p.base, p.quote, p.start_level, 1800, 'geometric',
-            'fixed', '', '', p.provider_code
+            'fixing', p.provider_code
         from t_provider_fx p
         where p.dataset_code = v_dataset.code;
 
@@ -183,7 +183,7 @@ begin
             currency_code, index_family, tenor, process_type,
             kappa, theta, sigma, initial_rate,
             ticks_per_hour, fixed_leg_payment_frequency_code,
-            price_source, vintage_source, vintage_date, vintage_series_uri, provider_code
+            price_source, provider_code
         )
         select
             v_dataset.id, v_tenant_id, gen_random_uuid(), 1,
@@ -193,7 +193,7 @@ begin
             true, true, c.currency_code, c.index_family, c.tenor, 'COX_INGERSOLL_ROSS',
             c.annual_kappa, c.theta, c.annual_sigma, c.theta,
             60, 'Quarterly',
-            'fixed', '', '', '', c.provider_code
+            'fixed', c.provider_code
         from t_provider_ir c
         where c.dataset_code = v_dataset.code;
 

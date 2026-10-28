@@ -106,12 +106,11 @@ struct ir_curve_generation_config final {
      * meeting-dated pillars 1F..8F via tenor_resolution), so the config has its own natural key and
      * does not collide with the standard curve's empty-tenor row. Other overnight families must
      * leave tenor empty: no tenor_resolution meeting-dated pillar machinery exists for them. Empty
-     * string, not SQL NULL: the codegen used here has no true-nullable text support, same pattern
-     * as vintage_source/vintage_date. Not DB-FK-validated against tenor, matching the precedent set
-     * by ir_curve_template_entry's own start_tenor_code/end_tenor_code (also soft FKs to
-     * tenor.code, resolved only at the application layer via
-     * ores.refdata.api/domain/tenor_resolution.hpp, not a DB trigger -- tenor.org itself emits no
-     * single-argument validator function to reuse).
+     * string, not SQL NULL: the codegen used here has no true-nullable text support. Not
+     * DB-FK-validated against tenor, matching the precedent set by ir_curve_template_entry's own
+     * start_tenor_code/end_tenor_code (also soft FKs to tenor.code, resolved only at the
+     * application layer via ores.refdata.api/domain/tenor_resolution.hpp, not a DB trigger --
+     * tenor.org itself emits no single-argument validator function to reuse).
      */
     std::string tenor;
 
@@ -168,57 +167,19 @@ struct ir_curve_generation_config final {
     bool auto_start = false;
 
     /**
-     * @brief Where this curve's starting short rate comes from: "fixed" (use the initial_rate
-     * parameter value as entered in the parameter rows) or "vintage" (derive it from the
-     * vintage_source/vintage_date market-data observation on this config's shortest-tenor DEPO
-     * entry, guarded by availability). The vintage_source/vintage_date pair is populated only when
-     * this is "vintage" -- see the SQL check. Unlike fx_spot_generation_config.price_source, this
-     * check does not sentinel initial_rate to a fixed value when "vintage": real short rates can
-     * legitimately be zero or negative (unlike an FX spot price), so initial_rate is simply left at
-     * whatever was last stored/computed and overwritten by the resolved vintage value at feed-start
-     * time. Defaults to "fixed" (unlike fx_spot_generation_config.price_source, which defaults to
-     * "vintage"): existing IR curve configs migrated from the flat-column era all predate
-     * vintage-awareness, so "fixed" is the non-breaking default for this column's introduction.
+     * @brief Where this curve's starting short rate comes from. The one source is "fixed": the
+     * initial_rate parameter value as entered in the parameter rows. No public source fixes rates
+     * curves yet; when one does, the curve reads it as an FX feed reads its fixings, and this
+     * column names it.
      */
     std::string price_source = "fixed";
 
     /**
-     * @brief Source tag of the market-data vintage this curve's starting short rate and
-     * availability guard are validated against (e.g. "ore.reference"), matching
-     * market_observation.source. Only populated (and required) when price_source is "vintage";
-     * empty when "fixed" -- see price_source. (Empty string, not SQL NULL: the codegen used here
-     * has no true-nullable text support.)
-     */
-    std::string vintage_source;
-
-    /**
-     * @brief Observation date of the market-data vintage this curve's starting short rate and
-     * availability guard are validated against, ISO format (e.g. "2016-02-05"), matching
-     * market_observation.observation_datetime. Only populated (and required) when price_source is
-     * "vintage"; empty when "fixed" -- see price_source.
-     */
-    std::string vintage_date;
-
-    /**
-     * @brief Identity of the market-data series this curve's vintage observation is read from, as
-     * an oresmd URI (e.g. "oresmd://ir/USD?type=series&instrument=mm&quote=rate&fwd_start=2D").
-     * Only populated (and required) when price_source is "vintage"; empty when "fixed" -- see
-     * price_source.
-     *
-     * The series is named by the config rather than looked up by the registry's decomposition of
-     * its key: the dataset that publishes the vintage -- the IR deposit grid or the FX driver rates
-     * -- names its rows' own ORE keys, and a series' identity is what the catalog is keyed by, so
-     * the config is where the coupling belongs. vintage_source and vintage_date say which
-     * observation, this says which series.
-     */
-    std::string vintage_series_uri;
-
-    /**
-     * @brief Free-text description of what this configuration represents -- what
-     * regime/vintage/index it targets, and, for a legacy index (e.g. USD LIBOR-3M, EONIA), that it
-     * is historical/discontinued and why it is still offered (testing pre-cessation scenarios).
-     * Shown in the Detail dialog and list views rather than left to a bare currency/index code to
-     * explain itself.
+     * @brief Free-text description of what this configuration represents -- what regime/index it
+     * targets, and, for a legacy index (e.g. USD LIBOR-3M, EONIA), that it is
+     * historical/discontinued and why it is still offered (testing pre-cessation scenarios). Shown
+     * in the Detail dialog and list views rather than left to a bare currency/index code to explain
+     * itself.
      */
     std::string description;
 

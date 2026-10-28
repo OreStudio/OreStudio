@@ -879,18 +879,6 @@ describe('synthetic operations', () => {
         expect(response.json()).toMatchObject({ stopped: 4, byKind: { fx: 4 } });
     });
 
-    it('reads the vintage validity', async () => {
-        const { server, sessionId } = buildTestServer({
-            'marketdata.v1.ops.get_vintage_validity': {
-                success: true,
-                message: '',
-                entries: [{ vintage_source: 'ecb' }],
-            },
-        });
-        const response = await send(server, sessionId, 'GET', '/api/synthetic/vintages');
-        expect(response.json().entries).toHaveLength(1);
-    });
-
     it('simulates FX paths from the mixture on the screen', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'synthetic.v1.ops.simulate_fx_spot_paths': {

@@ -169,7 +169,7 @@ function MixtureEditor({
     const savedEngine = processTypeOf(feed['process_type']);
     const [engine, setEngine] = useState<ProcessType>(savedEngine);
     const savedPrice = Number(feed['gmm_initial_price']);
-    const fixedPrice = feed['price_source'] === 'fixed' && savedPrice > 0;
+    const fixedPrice = savedPrice > 0;
     const [previewPrice, setPreviewPrice] = useState(savedPrice > 0 ? String(savedPrice) : '1');
     const conversion = useMutation({
         mutationFn: async (to: ProcessType) => {

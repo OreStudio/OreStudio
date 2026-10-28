@@ -366,8 +366,8 @@ TEST_CASE("setup_plans_the_ir_rows_a_curve_needs", "[commands][synthetic]") {
     // config_id names the owning container, not the sub-config's own id.
     CHECK(boost::uuids::to_string(config->change.write.config_id) == config_two);
     CHECK(boost::uuids::to_string(config->change.write.id) == ir_config);
-    // The SQL check admits only 'fixed' or 'vintage'; the store copies the
-    // request verbatim, so the flow must state the fixed source itself.
+    // The store copies the request verbatim, so the flow must state the fixed
+    // source itself.
     CHECK(config->change.write.price_source == "fixed");
     // Required, validated, and consumed by the Swap entries the resolver builds.
     CHECK(config->change.write.fixed_leg_payment_frequency_code == "Annual");

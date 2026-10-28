@@ -87,11 +87,10 @@ export function curveOf(feed: Readonly<Record<string, unknown>>): string {
 
 /**
  * The fields that follow from the others: a source name from the collection's
- * currency and index when none is given, a tenor only for an index that has
- * one, and the vintage fields the price source does not use emptied.
+ * currency and index when none is given, and a tenor only for an index that
+ * has one.
  */
 export function completeIrFeed(write: Readonly<Record<string, unknown>>): Record<string, unknown> {
-    const fixed = write['price_source'] === 'fixed';
     const family = show(write['index_family']);
     const tenor = show(write['tenor']);
     const keepsTenor = TERM_FAMILIES.includes(family) || (family === 'sofr' && tenor === FOMC);
@@ -102,9 +101,6 @@ export function completeIrFeed(write: Readonly<Record<string, unknown>>): Record
             show(write['source_name']) === ''
                 ? `synthetic.${show(write['currency_code'])}${family}${keepsTenor ? tenor : ''}`.toLowerCase()
                 : write['source_name'],
-        vintage_source: fixed ? '' : write['vintage_source'],
-        vintage_date: fixed ? '' : write['vintage_date'],
-        vintage_series_uri: fixed ? '' : write['vintage_series_uri'],
     };
 }
 

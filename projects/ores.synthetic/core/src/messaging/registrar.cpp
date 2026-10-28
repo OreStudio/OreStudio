@@ -30,6 +30,8 @@
 #include "ores.synthetic.core/messaging/fx_spot_generation_config_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/fx_spot_generation_config_registrar.hpp"
 #include "ores.synthetic.core/messaging/gmm_component_history_provider_registrar.hpp"
+#include "ores.synthetic.core/messaging/fx_spot_fixing_item_history_provider_registrar.hpp"
+#include "ores.synthetic.core/messaging/fx_spot_fixing_item_registrar.hpp"
 #include "ores.synthetic.core/messaging/gmm_component_registrar.hpp"
 #include "ores.synthetic.core/messaging/ir_curve_generation_config_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/ir_curve_generation_config_process_parameter_value_history_provider_registrar.hpp"
@@ -90,6 +92,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
     }
     {
         auto s = register_gmm_component_handlers(nats, ctx, verifier);
+        subs.insert(
+            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
+    }
+    {
+        auto s = register_fx_spot_fixing_item_handlers(nats, ctx, verifier);
         subs.insert(
             subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
     }
@@ -193,6 +200,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_folder_history_provider(hist_registry);
         register_fx_spot_generation_config_history_provider(hist_registry);
         register_gmm_component_history_provider(hist_registry);
+        register_fx_spot_fixing_item_history_provider(hist_registry);
         register_ir_curve_generation_config_history_provider(hist_registry);
         register_ir_curve_generation_config_process_parameter_value_history_provider(hist_registry);
         register_ir_curve_template_entry_history_provider(hist_registry);

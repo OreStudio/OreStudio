@@ -56,19 +56,6 @@ namespace ores::synthetic::feed {
 inline constexpr std::string_view ir_curve_feed_kind = "ir_curve";
 
 /**
- * @brief Thrown by make_ir_curve_feed() and make_fx_spot_feed() when cfg.price_source is
- * "vintage" and no matching market_observation is found for (vintage_source, vintage_date) --
- * on the config's anchor entry for curves, on its SPOT point for FX -- as an exception rather
- * than a result enum since the make functions already throw std::invalid_argument for other
- * construction failures (process_type/curve_role/tenor data).
- */
-class ORES_SYNTHETIC_API_EXPORT vintage_data_missing_error final : public std::runtime_error {
-public:
-    explicit vintage_data_missing_error(const std::string& detail)
-        : std::runtime_error(detail) {}
-};
-
-/**
  * @brief Concrete IR curve family feed: one short-rate process step fans out to N tenor ticks.
  *
  * Implements i_feed. Mirrors fx_spot_feed's fixed-mode tick clock, but where fx_spot_feed
@@ -188,8 +175,7 @@ constexpr double curve_step_years(double market_speed, double ticks_per_hour) {
 /**
  * @brief Resolves a config's Curve Template entries and constructs its ir_curve_feed, ready to
  * start() on its own thread. Shared by auto-start and the on-demand start control-plane so the
- * two paths can never drift (e.g. one lowercasing process_type and the other not) -- including
- * vintage resolution below, which both paths now go through identically.
+ * two paths can never drift (e.g. one lowercasing process_type and the other not).
  *
  * The process is built from the config's row-based parameters: @p values carries the config's
  * {parameter_definition_id, value} rows (all rows for this config, grouped by the caller) and
@@ -197,25 +183,17 @@ constexpr double curve_step_years(double market_speed, double ticks_per_hour) {
  * validated by map_parameters_to_yield_curve_process(), which throws a clear message on
  * missing/unexpected/out-of-bounds parameters.
  *
- * When cfg.price_source is "vintage", the process's initial_rate is resolved from a real
- * market_observation instead of the initial_rate parameter value: the resolved entries'
- * shortest-tenor DEPOSIT entry is looked up in market_observation by (cfg.vintage_source,
- * cfg.vintage_date, that entry's point_id), through @p auth_nats as the service itself. The
- * service's own identity belongs to the system tenant, so the lookup sees the system tenant's
- * observations and no tenant's. When cfg.price_source is "fixed" (the default), @p auth_nats is
- * unused and the initial_rate parameter value is used as-is.
+ * The curve starts from the initial_rate parameter value as entered: "fixed" is its one price
+ * source.
  *
  * The publish subject is derived from cfg.source_name via producer_subject() and is
  * "synthetic.v1.ops.tick.<source>".
  *
  * @throws std::invalid_argument if process_type/curve_role/tenor data is invalid (see resolve()
  * and map_parameters_to_yield_curve_process()).
- * @throws vintage_data_missing_error if cfg.price_source is "vintage" and no matching observation
- * is found (or the config has no DEPOSIT entry to anchor on).
  */
 ORES_SYNTHETIC_API_EXPORT std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     ores::nats::service::client& nats,
-    ores::nats::service::nats_client& auth_nats,
     const ores::synthetic::domain::ir_curve_generation_config& cfg,
     const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
     const std::vector<ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>&
@@ -224,18 +202,7 @@ ORES_SYNTHETIC_API_EXPORT std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
         definitions,
     const ir_curve_refdata_context& refctx,
     ores::analytics::quant::service::tick_scheduler& scheduler,
-    const ores::marketdata::domain::market_clock* clock = nullptr,
     std::vector<ir_pillar_quote_target> adapter_targets = {});
-
-/**
- * @brief Picks the vintage-lookup anchor entry from a resolved Curve Template: the DEPOSIT entry
- * with the smallest ticks_ahead_end (the point instrument closest to an overnight/short rate —
- * the natural real-world analog to a short-rate model's initial_rate). Returns nullptr if @p
- * resolved has no DEPOSIT entry. Exposed separately from make_ir_curve_feed's vintage resolution
- * so the pure selection logic is unit-testable without a live market_data_client.
- */
-ORES_SYNTHETIC_API_EXPORT const ir_curve_resolved_entry*
-select_vintage_anchor_entry(const std::vector<ir_curve_resolved_entry>& resolved);
 
 }
 #endif

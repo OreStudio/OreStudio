@@ -233,8 +233,6 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
         fx.process_type = "geometric";
         fx.enabled = enabled;
         fx.auto_start = false;
-        fx.vintage_source = "";
-        fx.vintage_date = "";
         fx.modified_by = db_user;
         fx.performed_by = db_user;
         fx.change_reason_code = "system.test";
@@ -289,8 +287,6 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
         ir.enabled = enabled;
         ir.auto_start = false;
         ir.price_source = "fixed";
-        ir.vintage_source = "";
-        ir.vintage_date = "";
         ir.description = "feed config test IR config";
         ir.fixed_leg_payment_frequency_code = "Annual";
         ir.source_name = source_name;

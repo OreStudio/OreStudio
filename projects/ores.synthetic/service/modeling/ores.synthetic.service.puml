@@ -155,9 +155,7 @@ class ores::synthetic::service::feed_kind_registry {
     +folder_subtree(ctx : database::context&, root_id : uuid&) : set<uuid>
     +make_feed(target : feed_start_target&, bctx : feed_build_context&) : feed_start_attempt
     +reply_unknown_kind(nats : nats::client&, msg : nats::message&, kind : string&)
-    +vintage_validity(ctx : database::context&, auth_nats : nats_client&, caller_bearer_token : string&) : vector<vintage_validity_entry>
     -make_target(k : feed_kind&, c : feed_kind_candidate, containers_by_id : map<uuid,market_data_generation_config>*) : optional<feed_start_target>
-    -check_vintage(row : feed_kind_row&, auth_nats : nats_client&, caller_bearer_token : string&) : vintage_validity_entry
 }
 note right of "ores::synthetic::service::feed_kind_registry"
 The one per-kind registry: the config-plane's dispatch table.
@@ -169,7 +167,7 @@ market_data_generation_config container lookup and the folder
 subtree walk -- and the bodies of every verb that used to be
 written once per asset class: the startability gate and the
 producer construction (make_feed), the permission gate
-(permits_all_configs), the vintage check and the kind-neutral
+(permits_all_configs) and the kind-neutral
 simulate envelope (run_simulate_paths). Injecting the three
 non-per-kind reads is what keeps every handler free of an
 ores.synthetic.core repository, and what lets a stub kind be
@@ -234,7 +232,7 @@ handlers that came before it. The client sends a config_id
 and nothing else: the registry resolves it against every
 registered kind and reports which kind claimed it, so the
 handler names no config table and no permission string.
-Missing, disabled and vintage-missing all answer with one
+Missing and disabled both answer with one
 message shape regardless of kind. start() asks the registry
 for the producer (make_feed applies the gate, loads the
 children and builds through the factory) and hands it to the
@@ -264,22 +262,6 @@ RLS, so a valid JWT is required and the queries run in the
 caller's own context.
 end note
 
-class ores::synthetic::service::vintage_validity_handler {
-    +vintage_validity_handler(nats : nats::client&, auth_nats : nats_client&, ctx : database::context, verifier : optional<jwt_authenticator>, registry : feed_kind_registry&)
-    +list(msg : nats::message)
-}
-note right of "ores::synthetic::service::vintage_validity_handler"
-Serves marketdata.v1.ops.get_vintage_validity.
-It asks the registry for one validity entry per config row of
-every registered kind, and the registry's one check reads the
-anchor coordinate the kind itself supplies -- the ORE key's
-own spot datum for FX, the shortest-tenor DEPOSIT pillar of
-the config's own Curve Template for IR. There is no stored
-column and no trigger, so the answer is correct even straight
-after an import that added observation rows and no feed rows.
-A feed whose price_source is not "vintage" comes back
-applicable=false and is not checked.
-end note
 
 class ores::synthetic::service::simulate_handler {
     +simulate_handler(nats : nats::client&, ctx : database::context, verifier : optional<jwt_authenticator>, registry : feed_kind_registry&)
@@ -326,8 +308,7 @@ registration names the subject and the kind string),
 synthetic.v1.ops.preview_ir_curve_shape -- IR only, and the
 one explicit subscription the registrar keeps, because that
 verb has no second registration to iterate --
-marketdata.v1.ops.start_feeds_under_folder/.stop_folder and
-marketdata.v1.ops.get_vintage_validity. All on the
+marketdata.v1.ops.start_feeds_under_folder/.stop_folder. All on the
 ores.synthetic.service queue, and each lambda constructs its
 handler per message.
 end note
@@ -352,13 +333,11 @@ ores::synthetic::service::messaging::register_folder_event_mapping ..> ores::nat
 
 ores::synthetic::service::registrar ..> ores::synthetic::service::feed_config_handler : subscribes
 ores::synthetic::service::registrar ..> ores::synthetic::service::folder_feed_control_handler : subscribes
-ores::synthetic::service::registrar ..> ores::synthetic::service::vintage_validity_handler : subscribes
 ores::synthetic::service::registrar ..> ores::synthetic::service::simulate_handler : subscribes
 ores::synthetic::service::registrar ..> ores::synthetic::service::ir_curve_preview_handler : subscribes
 
 ores::synthetic::service::feed_config_handler ..> ores::synthetic::service::feed_controller : starts and stops feeds through
 ores::synthetic::service::folder_feed_control_handler ..> ores::synthetic::service::feed_controller : adds every feed beneath the folder
-ores::synthetic::service::vintage_validity_handler ..> ores::synthetic::service::feed_kind_registry : asks the registry for every kind's entry
 ores::synthetic::service::feed_config_handler ..> ores::synthetic::service::feed_kind_registry : resolves and builds every feed through
 ores::synthetic::service::folder_feed_control_handler ..> ores::synthetic::service::feed_kind_registry : walks every kind's rows through
 ores::synthetic::service::simulate_handler ..> ores::synthetic::service::feed_kind_registry : dispatches by kind through

@@ -30,6 +30,7 @@ drop policy if exists ir_curve_template_entries_tenant_isolation_policy on "ores
 drop policy if exists ir_curve_generation_configs_tenant_isolation_policy on "ores_synthetic_ir_curve_generation_configs_tbl";
 
 drop policy if exists gmm_components_tenant_isolation_policy on "ores_synthetic_gmm_components_tbl";
+drop policy if exists fx_spot_fixing_items_tenant_isolation_policy on "ores_synthetic_fx_spot_fixing_items_tbl";
 
 drop policy if exists fx_spot_generation_configs_tenant_isolation_policy on "ores_synthetic_fx_spot_generation_configs_tbl";
 

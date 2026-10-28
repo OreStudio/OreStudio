@@ -65,8 +65,6 @@ namespace ores #F2F2F2 {
                 +process_type : string
                 +enabled : bool
                 +auto_start : bool
-                +vintage_source : string
-                +vintage_date : string
                 +folder_id : optional<boost::uuids::uuid>
                 +asset_class_code : string
                 +arrival_mode : string
@@ -124,9 +122,6 @@ namespace ores #F2F2F2 {
                 +enabled : bool
                 +auto_start : bool
                 +price_source : string
-                +vintage_source : string
-                +vintage_date : string
-                +vintage_series_uri : string
                 +description : string
                 +fixed_leg_payment_frequency_code : string
                 +source_name : string
@@ -438,8 +433,6 @@ namespace ores #F2F2F2 {
                 +stop() : void
                 +publish_count() : uint64_t
                 -published_subject() : const string&
-            }
-            class vintage_data_missing_error {
             }
             class ir_curve_feed {
                 -nats_ : ores::nats::service::client&
@@ -822,8 +815,6 @@ namespace ores #F2F2F2 {
                 +process_type : string
                 +enabled : bool
                 +auto_start : bool
-                +vintage_source : string
-                +vintage_date : string
                 +folder_id : optional<boost::uuids::uuid>
                 +asset_class_code : string
                 +arrival_mode : string
@@ -1190,9 +1181,6 @@ namespace ores #F2F2F2 {
                 +enabled : bool
                 +auto_start : bool
                 +price_source : string
-                +vintage_source : string
-                +vintage_date : string
-                +vintage_series_uri : string
                 +description : string
                 +fixed_leg_payment_frequency_code : string
                 +source_name : string
@@ -2489,9 +2477,6 @@ member. A new asset class is a config table, a producer behind i_feed, and one
 registration in make_default_feed_factory().
 end note
 
-class ores::synthetic::feed::vintage_data_missing_error {
-    +vintage_data_missing_error(detail : string)
-}
 
 class ores::synthetic::feed::fx_spot_feed_build_input <<struct>> {
     +binding_mode : ores::synthetic::domain::binding_mode
@@ -2541,9 +2526,9 @@ class ores::synthetic::feed::make_fx_spot_feed {
 note top of "ores::synthetic::feed::make_fx_spot_feed"
 Free function. It builds an fx_spot_feed from a persisted config and its
 gmm_component rows, ready to start() on its own thread. A config with
-price_source "vintage" resolves its initial price from a real
-market_observation instead of the stored gmm_initial_price; "fixed" uses the
-stored value as-is. The process draws from a stream keyed by the run seed and
+price_source "fixing" starts from the first of its fixing items that has a
+public fixing and sizes its mixture to their spread; "fixed" uses the stored
+gmm_initial_price as-is. The process draws from a stream keyed by the run seed and
 the source name, so two runs with one seed publish the same prices.
 end note
 
@@ -2560,15 +2545,6 @@ is tenant-scoped under RLS). An empty token falls back to the service
 account's own identity, as auto-start requires.
 end note
 
-class ores::synthetic::feed::select_vintage_anchor_entry {
-    {static} +select_vintage_anchor_entry(resolved : vector<ir_curve_resolved_entry>) : const ir_curve_resolved_entry*
-}
-note top of "ores::synthetic::feed::select_vintage_anchor_entry"
-Free function. It picks the DEPOSIT entry with the smallest ticks_ahead_end,
-the closest thing to an overnight rate, and returns nullptr when the template
-has none. It is split out of make_ir_curve_feed so the selection is testable
-without a live market-data client.
-end note
 
 class ores::synthetic::feed::make_default_feed_factory {
     {static} +make_default_feed_factory() : feed_factory
@@ -2738,11 +2714,8 @@ ores::synthetic::domain::generated_organisation ..> ores::synthetic::domain::org
 
 ' feeds
 ores::synthetic::feed::make_fx_spot_feed ..> ores::synthetic::feed::fx_spot_feed : builds
-ores::synthetic::feed::make_fx_spot_feed ..> ores::synthetic::feed::vintage_data_missing_error : throws
 ores::synthetic::feed::make_ir_curve_feed ..> ores::synthetic::feed::ir_curve_feed : builds
 ores::synthetic::feed::make_ir_curve_feed ..> ores::synthetic::feed::ir_curve_template_resolver : resolves entries through
-ores::synthetic::feed::make_ir_curve_feed ..> ores::synthetic::feed::vintage_data_missing_error : throws
-ores::synthetic::feed::make_ir_curve_feed ..> ores::synthetic::feed::select_vintage_anchor_entry : anchors the vintage lookup with
 ores::synthetic::feed::make_default_feed_factory ..> ores::synthetic::feed::feed_factory : returns
 ores::synthetic::feed::feed_factory ..> ores::synthetic::feed::fx_spot_feed : builds
 ores::synthetic::feed::feed_factory ..> ores::synthetic::feed::ir_curve_feed : builds
@@ -2753,7 +2726,6 @@ ores::synthetic::feed::ir_curve_resolved_entry o-- ores::synthetic::feed::ir_cur
 ores::synthetic::feed::ir_curve_template_resolver ..> ores::synthetic::feed::ir_curve_refdata_context : reads
 ores::synthetic::feed::ir_curve_template_resolver ..> ores::synthetic::feed::ir_curve_resolved_entry : produces
 ores::synthetic::feed::ir_curve_template_resolver ..> ores::synthetic::domain::ir_curve_template_entry : consumes
-ores::synthetic::feed::select_vintage_anchor_entry ..> ores::synthetic::feed::ir_curve_resolved_entry : picks the deposit anchor from
 
 ' messaging
 ores::synthetic::messaging::start_feed_request ..> ores::synthetic::feed::feed_factory : starts a feed through

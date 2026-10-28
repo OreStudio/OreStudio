@@ -78,14 +78,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| BFF suite | 1105 tests pass, 81 files | =npm run test --workspace @ores/bff= | f98fa38218 |
-| Web suite | 2273 tests pass, 180 files | =npm run test --workspace @ores/web= | f98fa38218 |
-| Wire protocol suite | 225 tests pass | =npm run test --workspace @ores/wire-protocol= | f98fa38218 |
+| BFF suite | 1107 tests pass, 81 files | =npm run test --workspace @ores/bff= | 8630e8b097 |
+| Web suite | 2281 tests pass, 181 files | =npm run test --workspace @ores/web= | 8630e8b097 |
+| Wire protocol suite | 225 tests pass, 23 files | =npm run test --workspace @ores/wire-protocol= | 8630e8b097 |
 | Web typecheck | clean, every workspace | =npm run typecheck= | df4c37fb3a |
 | Refdata C++ suites | core: 5637 assertions in 474 cases; api: 598 in 83 | =publish/bin/ores.refdata.core.tests=, =.api.tests= | f98fa38218 |
 | Docs checks | 39 components pass | =./projects/ores.codegen/validate_docs.sh= | 0e2f638e1b |
 | Lint | filetags and generator markers valid | =compass lint= | 0e2f638e1b |
-| Live walk-through | =evidence/curve_blueprint_live_walkthrough.txt= | =evidence/curve_blueprint_walkthrough_seed.sql= | f8f75d8c2a |
+| Live walk-through | =evidence/curve_blueprint_live_walkthrough.txt= | =evidence/curve_blueprint_walkthrough_seed.sql= | 21b4ad0e92 |
 
 * Notes
 
@@ -103,7 +103,9 @@ task and name that file in the Command column.
    (=marketdata.v1.ops.compute_curve=, which had a handler and no route).
 2. *The web screens.* =CurveBlueprintsPage= and =CurveBlueprintPage= on the
    shared parts, at =/market-data/curve-blueprints=, with Details, Pillars,
-   Check, Published sets and History. The pillar's sequence is completed from
+   Check, Published sets and History. Add, Edit and Copy are the standard record
+   dialog, and the output series is chosen there with the record picker over the
+   series the party holds. The pillar's sequence is completed from
    its end tenor rather than typed. Two field kinds were added to the shared
    table instead of built in the screen: a picker over a list the screen
    supplies (the tenor ladder, a currency's funding blueprints), and the parts

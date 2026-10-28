@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Every equity product is constructed by name. The barrier table's three codes, th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,20 @@ Every equity product is constructed by name. The barrier table's three codes, th
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+One header for the family, =equity_instruments.hpp=, holding a terms struct
+per product and a constructor per routed code. The cliquet's own header is
+folded into it so the family has one home, not one home per product.
+
+The constructors that share a table are separate named functions, not one
+function with a type argument, so the trade type code is never a parameter.
+Where two products differ by a column, their terms differ by a column: the
+digital's terms have a strike and no barrier, the touch's have a barrier and
+no strike, the double barrier's second barrier is required while the single
+barrier's is absent, and only the target redemption forward has a target.
+
+The writer loses its per-product assembly. Its default drawing values --
+=Price=, =Quarterly=, =Daily=, =Accumulator= -- stay in the writer, because
+they are the generator's fallback and not facts of the product.
 
 * Measurements
 
@@ -58,6 +69,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Equity rows after provisioning | 17 | =compass db sql= over the nine =ores_trading_equity_*_instruments_tbl= tables | =0ebf037334= |
+| Routed equity codes booked | 16 of 16 (outperformance is not routed) | the same query, grouped by trade type | =0ebf037334= |
+| =ores.trading.api.tests= | 436 assertions in 115 test cases | the suite binary | =0ebf037334= |
+| =ores.synthetic.core.tests= | 1733 assertions in 78 test cases | the suite binary | =0ebf037334= |
 |      |       |         |        |
 
 * Notes
@@ -86,3 +101,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every routed equity code is now constructed by name. The writer holds no
+per-product assembly for the family: it fills a terms struct from the plan,
+calls the constructor, and pushes the row the constructor returned.
+
+Proved by a provisioning run on a recreated database: =generate_trades=
+completed, the family holds the same 17 rows as before, and the rows are
+spread over 16 trade types -- every routed code, including the ones no
+earlier run had exercised through a constructor: the double barrier, the
+touch, the target redemption forward and the worst-of basket swap.
+
+The two suites that cover the change are green: =ores.trading.api.tests= at
+436 assertions in 115 test cases, =ores.synthetic.core.tests= at 1733
+assertions in 78.
+
+Still with the caller, and named rather than hidden: child rows. A swap's
+constituents and periods and an accumulator's range bounds are appended by
+the writer from the plan, not by the constructor. They are the next task's
+subject -- the plan carrying a trade envelope and an instrument batch -- and
+the same treatment applies to them.

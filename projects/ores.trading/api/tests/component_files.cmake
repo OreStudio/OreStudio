@@ -22,7 +22,7 @@
 set(files
     "domain_activity_type_tests.cpp"
     "domain_economic_digest_tests.cpp"
-    "domain_equity_cliquet_option_tests.cpp"
+    "domain_equity_instruments_tests.cpp"
     "domain_fpml_event_type_tests.cpp"
     "domain_instrument_tests.cpp"
     "domain_lifecycle_event_tests.cpp"

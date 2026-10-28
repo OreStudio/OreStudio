@@ -712,6 +712,46 @@ describe('the curve blueprint read routes', () => {
         expect(calls[0]?.body).toMatchObject({ filter: { id_one_of: [SERIES] } });
     });
 
+    it("accepts a series id whose version bits are not RFC's, as the store writes them", async () => {
+        const odd = 'a1eec62d-a758-f647-de09-d7f2c25d9196';
+        const { server, sessionId } = buildTestServer({
+            'marketdata.v1.market_series.list': {
+                result: ok,
+                total: 1,
+                market_series: [
+                    { version: 1, id: odd, oresmd_uri: 'DISCOUNT/RATE/USD/USD-SOFR-1D' },
+                ],
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/series-by-id', {
+            ids: [odd],
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            series: [{ id: odd, uri: 'DISCOUNT/RATE/USD/USD-SOFR-1D' }],
+        });
+    });
+
+    it('answers every series the party holds when no id is stated, for the picker', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.market_series.list': {
+                result: ok,
+                total: 2,
+                market_series: [
+                    { version: 1, id: SERIES, oresmd_uri: 'DISCOUNT/RATE/USD/USD-SOFR-1D' },
+                    { version: 1, id: CONFIG, oresmd_uri: 'IR_SWAP/RATE/USD/1D' },
+                ],
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/series-by-id', {
+            ids: [],
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.json().series).toHaveLength(2);
+        // No id means the party's catalogue: the filter names none.
+        expect(calls[0]?.body).toMatchObject({ filter: { id_one_of: null } });
+    });
+
     it('builds a recipe at an instant and answers the points, without publishing', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'marketdata.v1.ops.compute_curve': {

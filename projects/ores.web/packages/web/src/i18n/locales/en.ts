@@ -4200,6 +4200,7 @@ export const en: SourceCatalogue = {
             end_tenor_code: 'End tenor',
             instrument_code: 'Instrument',
             component_index: 'Index',
+            output_series_id: 'Output series',
             index_tenor: 'Index tenor',
             curve_family_role: 'Role',
             discount_curve_config_id: 'Discount curve',
@@ -4526,8 +4527,9 @@ export const en: SourceCatalogue = {
             copy: 'Copy blueprint',
             copyTitle: 'Copy {code}',
             copyNote:
-                "The copy carries {count} pillars and this recipe's conventions. It is a new recipe with its own pillars, and the server mints the series it publishes into.",
-            noAdd: 'A blueprint cannot be added here yet: nothing mints the output series a blueprint is created with, and a value that follows from the currency and the index is not a question (RS-WRITE-07).',
+                "The copy carries {count} pillars and this recipe's conventions. It is a new recipe with its own pillars, and it names a series of its own: the series is what tells one blueprint from another.",
+            add: 'Add blueprint',
+            addTitle: 'Add a curve blueprint',
             noPillarsNotice:
                 'This recipe holds no pillars, so there is nothing to build a curve from.',
             openPillars: 'Open the pillars.',
@@ -4572,7 +4574,6 @@ export const en: SourceCatalogue = {
                 "The recipe's versions and every pillar's versions, newest first, each named by its part. A pillar deleted from the recipe is not in this stream.",
             usedByNone: 'No projection discounts off this recipe.',
             usedByUnread: 'The projections could not be read.',
-            seriesUnknown: 'The series could not be read.',
             filterCurrency: 'Currency',
             filterAllCurrencies: 'All currencies',
             filterRole: 'Role',
@@ -4640,9 +4641,8 @@ export const en: SourceCatalogue = {
                     SWAP: 'Bootstraps as a swap from spot to its end tenor.',
                     other: 'A role this screen does not know.',
                 },
-                outputSeries: 'Output series',
                 outputSeriesMeans:
-                    'The market series the curve is published into. The server mints it; nobody chooses it.',
+                    'The market series the curve is published into. It is what names the blueprint, so a desk chooses one it holds and no two blueprints claim the same series.',
                 usedBy: 'Used by',
                 fed: 'Sets it fed',
                 fedCount: '{count} published',

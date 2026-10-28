@@ -62,6 +62,20 @@ import { pageQuerySchema } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
 const code = z.string().trim().min(1).max(100);
+
+/**
+ * A uuid as the store writes one.
+ *
+ * The store's random generator does not set the RFC version bits, so a series
+ * id can be a uuid whose version nibble is anything; a pattern that insists on
+ * 1 to 8 refuses rows the catalogue really holds. A blueprint names its output
+ * series by such an id, so the write accepts the shape and not the version.
+ */
+export const anyUuid = z
+    .string()
+    .trim()
+    .regex(/^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/);
+
 const isoCode = z.string().trim().length(3);
 const pairCode = z.string().trim().min(7).max(15);
 const text = z.string().max(2000);
@@ -304,12 +318,12 @@ const WRITES: Readonly<Record<string, z.ZodType<Record<string, unknown>>>> = {
         status: code,
     }) satisfies z.ZodType<BusinessUnitWrite>,
     'ir-curve-bootstrap-configs': z.object({
-        id: z.uuid(),
-        output_series_id: z.uuid(),
+        id: anyUuid,
+        output_series_id: anyUuid,
         currency_code: isoCode,
         index_tenor: code,
         curve_family_role: z.enum(['FUNDING', 'PROJECTION']),
-        discount_curve_config_id: z.uuid(),
+        discount_curve_config_id: anyUuid,
         interpolation_method: z.enum([
             'LOG_LINEAR_DISCOUNT',
             'FLAT_FORWARD_THEN_LOG_LINEAR',
@@ -320,9 +334,9 @@ const WRITES: Readonly<Record<string, z.ZodType<Record<string, unknown>>>> = {
         split_tenor_code: code,
     }) satisfies z.ZodType<IrCurveBootstrapConfigWrite>,
     'ir-curve-bootstrap-pillars': z.object({
-        id: z.uuid(),
-        party_id: z.uuid(),
-        bootstrap_config_id: z.uuid(),
+        id: anyUuid,
+        party_id: anyUuid,
+        bootstrap_config_id: anyUuid,
         sequence_index: z.int().min(0).max(10_000),
         start_tenor_code: code,
         end_tenor_code: code,

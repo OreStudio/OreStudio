@@ -103,10 +103,16 @@ export const curves = {
      * holds the series by reference.
      */
     async seriesUris(ids: readonly string[]): Promise<ReadonlyMap<string, string>> {
-        if (ids.length === 0) {
-            return new Map();
-        }
         const reply = seriesUriSchema.parse(await post('/api/curves/series-by-id', { ids }));
+        return new Map(reply.series.map((row) => [row.id, row.uri]));
+    },
+
+    /**
+     * Every series the session's party holds, by id, which is the list a person
+     * chooses a blueprint's output series from.
+     */
+    async heldSeries(): Promise<ReadonlyMap<string, string>> {
+        const reply = seriesUriSchema.parse(await post('/api/curves/series-by-id', { ids: [] }));
         return new Map(reply.series.map((row) => [row.id, row.uri]));
     },
 

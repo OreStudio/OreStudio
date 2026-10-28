@@ -4257,6 +4257,7 @@ const fr: SourceCatalogue = {
             end_tenor_code: 'Durée de fin',
             instrument_code: 'Instrument',
             component_index: 'Indice',
+            output_series_id: 'Série de sortie',
             index_tenor: "Tenor de l'indice",
             curve_family_role: 'Rôle',
             discount_curve_config_id: "Courbe d'actualisation",
@@ -4589,8 +4590,9 @@ const fr: SourceCatalogue = {
             copy: 'Copier le plan',
             copyTitle: 'Copier {code}',
             copyNote:
-                "La copie reprend {count} piliers et les conventions de cette recette. C'est une nouvelle recette avec ses propres piliers, et le serveur frappe la série dans laquelle elle publie.",
-            noAdd: "Un plan ne peut pas encore être ajouté ici : rien ne frappe la série de sortie avec laquelle un plan est créé, et une valeur qui découle de la devise et de l'indice n'est pas une question (RS-WRITE-07).",
+                "La copie reprend {count} piliers et les conventions de cette recette. C'est une nouvelle recette avec ses propres piliers, et elle nomme une série à elle : c'est la série qui distingue un plan d'un autre.",
+            add: 'Ajouter un plan',
+            addTitle: 'Ajouter un plan de courbe',
             noPillarsNotice:
                 "Cette recette ne tient aucun pilier : il n'y a rien à partir de quoi construire une courbe.",
             openPillars: 'Ouvrir les piliers.',
@@ -4635,7 +4637,6 @@ const fr: SourceCatalogue = {
                 "Les versions de la recette et celles de chaque pilier, de la plus récente à la plus ancienne, chacune nommée par sa partie. Un pilier supprimé de la recette n'est pas dans ce flux.",
             usedByNone: "Aucune projection ne s'actualise sur cette recette.",
             usedByUnread: "Les projections n'ont pas pu être lues.",
-            seriesUnknown: "La série n'a pas pu être lue.",
             filterCurrency: 'Devise',
             filterAllCurrencies: 'Toutes les devises',
             filterRole: 'Rôle',
@@ -4704,9 +4705,8 @@ const fr: SourceCatalogue = {
                     SWAP: 'Se construit comme un swap du spot à son tenor de fin.',
                     other: 'Un rôle que cet écran ne connaît pas.',
                 },
-                outputSeries: 'Série de sortie',
                 outputSeriesMeans:
-                    'La série de marché dans laquelle la courbe est publiée. Le serveur la frappe ; personne ne la choisit.',
+                    "La série de marché dans laquelle la courbe est publiée. C'est elle qui nomme le plan : le desk en choisit une qu'il détient et deux plans ne revendiquent pas la même série.",
                 usedBy: 'Utilisée par',
                 fed: 'Ensembles alimentés',
                 fedCount: '{count} publiés',

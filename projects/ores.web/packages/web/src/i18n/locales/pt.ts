@@ -4229,6 +4229,7 @@ const pt: SourceCatalogue = {
             end_tenor_code: 'Prazo de fim',
             instrument_code: 'Instrumento',
             component_index: 'Índice',
+            output_series_id: 'Série de saída',
             index_tenor: 'Tenor do índice',
             curve_family_role: 'Papel',
             discount_curve_config_id: 'Curva de desconto',
@@ -4558,8 +4559,9 @@ const pt: SourceCatalogue = {
             copy: 'Copiar a planta',
             copyTitle: 'Copiar {code}',
             copyNote:
-                'A copia leva {count} pilares e as convencoes desta receita. E uma receita nova com os seus proprios pilares, e o servidor cunha a serie em que publica.',
-            noAdd: 'Ainda nao e possivel adicionar uma planta aqui: nada cunha a serie de saida com que uma planta e criada, e um valor que decorre da moeda e do indice nao e uma pergunta (RS-WRITE-07).',
+                'A copia leva {count} pilares e as convencoes desta receita. E uma receita nova com os seus proprios pilares, e nomeia uma serie propria: e a serie que distingue uma planta da outra.',
+            add: 'Adicionar planta',
+            addTitle: 'Adicionar uma planta de curva',
             noPillarsNotice:
                 'Esta receita nao tem pilares, por isso nao ha nada a partir do qual construir uma curva.',
             openPillars: 'Abrir os pilares.',
@@ -4604,7 +4606,6 @@ const pt: SourceCatalogue = {
                 'As versoes da receita e as versoes de cada pilar, da mais recente para a mais antiga, cada uma nomeada pela sua parte. Um pilar eliminado da receita nao esta neste fluxo.',
             usedByNone: 'Nenhuma projecao se desconta nesta receita.',
             usedByUnread: 'Nao foi possivel ler as projecoes.',
-            seriesUnknown: 'Nao foi possivel ler a serie.',
             filterCurrency: 'Moeda',
             filterAllCurrencies: 'Todas as moedas',
             filterRole: 'Papel',
@@ -4673,9 +4674,8 @@ const pt: SourceCatalogue = {
                     SWAP: 'Constroi-se como um swap do spot ao seu tenor de fim.',
                     other: 'Um papel que este ecra nao conhece.',
                 },
-                outputSeries: 'Serie de saida',
                 outputSeriesMeans:
-                    'A serie de mercado em que a curva e publicada. O servidor cunha-a; ninguem a escolhe.',
+                    'A serie de mercado em que a curva e publicada. E ela que nomeia a planta, por isso a mesa escolhe uma que detem e duas plantas nao reivindicam a mesma serie.',
                 usedBy: 'Usada por',
                 fed: 'Conjuntos alimentados',
                 fedCount: '{count} publicados',

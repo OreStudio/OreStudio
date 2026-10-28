@@ -110,12 +110,21 @@ const PILLAR_FIELDS: readonly FieldSpec[] = [
 ];
 
 /** The fields of a blueprint, in the order the field table reads them. */
-function blueprintFields(inputs: {
+export function blueprintFields(inputs: {
     readonly tenors: readonly { readonly value: string; readonly label: string }[];
     readonly conventions: readonly { readonly value: string; readonly label: string }[];
     readonly fundings: readonly { readonly value: string; readonly label: string }[];
+    readonly series: readonly { readonly value: string; readonly label: string }[];
 }): readonly FieldSpec[] {
     return [
+        {
+            field: 'output_series_id',
+            history: 'Output Series Id',
+            kind: { kind: 'pick', choices: inputs.series },
+            fixed: true,
+            pathOf: (value) => `/market-data/series?series=${encodeURIComponent(value)}`,
+            means: { key: 'marketdata.curveBlueprints.fields.outputSeriesMeans' },
+        },
         {
             field: 'currency_code',
             history: 'Currency Code',
@@ -179,6 +188,22 @@ function blueprintFields(inputs: {
     ];
 }
 
+/**
+ * Every market series the session's party holds, as the choices of the output
+ * series picker.
+ *
+ * A blueprint is named by the series it publishes into, and the series is the
+ * record's natural key: a desk points a new recipe at a series it already
+ * holds, and the server refuses a second blueprint that claims one.
+ */
+function useSeriesChoices(): readonly { readonly value: string; readonly label: string }[] {
+    const held = useQuery({ queryKey: ['held-market-series'], queryFn: curves.heldSeries });
+    return [...(held.data ?? new Map<string, string>())].map(([id, uri]) => ({
+        value: id,
+        label: uri,
+    }));
+}
+
 /** Every tenor and convention the pickers draw from, ready for use as a choice. */
 function useLadderChoices(): {
     readonly tenors: readonly { readonly value: string; readonly label: string }[];
@@ -198,11 +223,15 @@ function useLadderChoices(): {
 }
 
 /**
- * The funding blueprints of one currency, which are the discount curve
- * candidates a projection may name: the server narrows the list by the two
- * members the model made filterable.
+ * The funding blueprints a projection may name: the server narrows the list by
+ * the members the model made filterable.
+ *
+ * A record page knows its currency and narrows to it. A dialog that is creating
+ * one does not, because the currency is what the person is choosing in the same
+ * form, so it offers every funding blueprint of the party and the check that
+ * names one of the same currency answers afterwards.
  */
-function useFundingChoices(currency: string): readonly {
+function useFundingChoices(currency = ''): readonly {
     readonly value: string;
     readonly label: string;
 }[] {
@@ -216,9 +245,11 @@ function useFundingChoices(currency: string): readonly {
                 search: '',
                 sort: '',
                 descending: false,
-                filters: { currency_code: currency, curve_family_role: 'FUNDING' },
+                filters: {
+                    curve_family_role: 'FUNDING',
+                    ...(currency === '' ? {} : { currency_code: currency }),
+                },
             }),
-        enabled: currency !== '',
     });
     const ids = (configs.data?.rows ?? []).map((row) => show(row['id']));
     const uris = useQuery({
@@ -289,14 +320,6 @@ function usePillars(configId: string) {
     });
 }
 
-/** Where a record names the series a curve is published into, in words. */
-function seriesWords(
-    t: (key: string, values?: Readonly<Record<string, string>>) => string,
-    uri: string | undefined,
-): string {
-    return uri === undefined || uri === '' ? t('marketdata.curveBlueprints.seriesUnknown') : uri;
-}
-
 /**
  * The curve blueprints: the recipes each curve is built from, one page at a
  * time from the server, searched and filtered there.
@@ -310,6 +333,11 @@ function seriesWords(
 export function CurveBlueprintsPage(): ReactNode {
     const { t } = useTranslation();
     const base = useRecordSource(CONFIGS);
+    const navigate = useNavigate();
+    const ladder = useLadderChoices();
+    const series = useSeriesChoices();
+    const fundings = useFundingChoices();
+    const [adding, setAdding] = useState(false);
     const labels = useLabelCatalogue();
     const sets = usePublishedSets();
     const store = useRecordStore();
@@ -355,100 +383,119 @@ export function CurveBlueprintsPage(): ReactNode {
         },
     };
     return (
-        <RecordList
-            source={source}
-            title={t('marketdata.curveBlueprints.title')}
-            lead={t('marketdata.curveBlueprints.lead')}
-            crumbs={[
-                ...useAreaRoot('marketdata'),
-                { label: t('marketdata.curveBlueprints.title') },
-            ]}
-            notes={[{ tone: 'info', text: t('marketdata.curveBlueprints.noAdd') }]}
-            pathOf={(row) => curveBlueprintPath(show(row['id']))}
-            keyOf={(row) => show(row['id'])}
-            columns={[
-                {
-                    id: 'curve',
-                    header: t('marketdata.curveBlueprints.columns.curve'),
-                    cell: (row) => (
-                        <div>
-                            <span className="font-mono text-xs">{show(row['series_uri'])}</span>
-                            <p className="text-xs text-ink-faint">
-                                {stateLine(t, row, countOf(show(row['id'])), sets)}
-                            </p>
-                        </div>
-                    ),
-                },
-                {
-                    id: 'currency_code',
-                    header: t('marketdata.curveBlueprints.columns.currency'),
-                    cell: (row) => show(row['currency_code']),
-                    mono: true,
-                    sort: 'currency_code',
-                },
-                {
-                    id: 'curve_family_role',
-                    header: t('marketdata.curveBlueprints.columns.role'),
-                    cell: (row) => (
-                        <CodedValue
-                            domain="curve_family_role"
-                            code={show(row['curve_family_role'])}
-                            catalogue={labels}
-                        />
-                    ),
-                    sort: 'curve_family_role',
-                },
-                {
-                    id: 'index_tenor',
-                    header: t('marketdata.curveBlueprints.columns.indexTenor'),
-                    cell: (row) => show(row['index_tenor']),
-                    mono: true,
-                    sort: 'index_tenor',
-                },
-                {
-                    id: 'interpolation_method',
-                    header: t('marketdata.curveBlueprints.columns.interpolation'),
-                    cell: (row) => (
-                        <CodedValue
-                            domain="interpolation_method"
-                            code={show(row['interpolation_method'])}
-                            catalogue={labels}
-                        />
-                    ),
-                    sort: 'interpolation_method',
-                },
-                {
-                    id: 'day_count_convention',
-                    header: t('marketdata.curveBlueprints.columns.dayCount'),
-                    cell: (row) => (
-                        <CodedValue
-                            domain="day_count_convention"
-                            code={show(row['day_count_convention'])}
-                            catalogue={labels}
-                        />
-                    ),
-                    sort: 'day_count_convention',
-                },
-                {
-                    id: 'pillars',
-                    header: t('marketdata.curveBlueprints.columns.pillars'),
-                    cell: (row) => countOf(show(row['id'])),
-                    numeric: true,
-                },
-                {
-                    id: 'version',
-                    header: t('refdata.fields.version'),
-                    cell: (row) => row.version,
-                    numeric: true,
-                    mono: true,
-                },
-                {
-                    id: 'recorded_at',
-                    header: t('marketdata.curveBlueprints.columns.lastChanged'),
-                    cell: (row) => <RelativeTime at={show(row['recorded_at'])} />,
-                },
-            ]}
-        />
+        <>
+            <RecordList
+                source={source}
+                title={t('marketdata.curveBlueprints.title')}
+                lead={t('marketdata.curveBlueprints.lead')}
+                crumbs={[
+                    ...useAreaRoot('marketdata'),
+                    { label: t('marketdata.curveBlueprints.title') },
+                ]}
+                pathOf={(row) => curveBlueprintPath(show(row['id']))}
+                keyOf={(row) => show(row['id'])}
+                addLabel={t('marketdata.curveBlueprints.add')}
+                onAdd={() => setAdding(true)}
+                columns={[
+                    {
+                        id: 'curve',
+                        header: t('marketdata.curveBlueprints.columns.curve'),
+                        cell: (row) => (
+                            <div>
+                                <span className="font-mono text-xs">{show(row['series_uri'])}</span>
+                                <p className="text-xs text-ink-faint">
+                                    {stateLine(t, row, countOf(show(row['id'])), sets)}
+                                </p>
+                            </div>
+                        ),
+                    },
+                    {
+                        id: 'currency_code',
+                        header: t('marketdata.curveBlueprints.columns.currency'),
+                        cell: (row) => show(row['currency_code']),
+                        mono: true,
+                        sort: 'currency_code',
+                    },
+                    {
+                        id: 'curve_family_role',
+                        header: t('marketdata.curveBlueprints.columns.role'),
+                        cell: (row) => (
+                            <CodedValue
+                                domain="curve_family_role"
+                                code={show(row['curve_family_role'])}
+                                catalogue={labels}
+                            />
+                        ),
+                        sort: 'curve_family_role',
+                    },
+                    {
+                        id: 'index_tenor',
+                        header: t('marketdata.curveBlueprints.columns.indexTenor'),
+                        cell: (row) => show(row['index_tenor']),
+                        mono: true,
+                        sort: 'index_tenor',
+                    },
+                    {
+                        id: 'interpolation_method',
+                        header: t('marketdata.curveBlueprints.columns.interpolation'),
+                        cell: (row) => (
+                            <CodedValue
+                                domain="interpolation_method"
+                                code={show(row['interpolation_method'])}
+                                catalogue={labels}
+                            />
+                        ),
+                        sort: 'interpolation_method',
+                    },
+                    {
+                        id: 'day_count_convention',
+                        header: t('marketdata.curveBlueprints.columns.dayCount'),
+                        cell: (row) => (
+                            <CodedValue
+                                domain="day_count_convention"
+                                code={show(row['day_count_convention'])}
+                                catalogue={labels}
+                            />
+                        ),
+                        sort: 'day_count_convention',
+                    },
+                    {
+                        id: 'pillars',
+                        header: t('marketdata.curveBlueprints.columns.pillars'),
+                        cell: (row) => countOf(show(row['id'])),
+                        numeric: true,
+                    },
+                    {
+                        id: 'version',
+                        header: t('refdata.fields.version'),
+                        cell: (row) => row.version,
+                        numeric: true,
+                        mono: true,
+                    },
+                    {
+                        id: 'recorded_at',
+                        header: t('marketdata.curveBlueprints.columns.lastChanged'),
+                        cell: (row) => <RelativeTime at={show(row['recorded_at'])} />,
+                    },
+                ]}
+            />
+            {adding && (
+                <RecordDialog
+                    title={t('marketdata.curveBlueprints.addTitle')}
+                    resource={CONFIGS}
+                    specs={blueprintFields({
+                        tenors: ladder.tenors,
+                        conventions: ladder.conventions,
+                        fundings,
+                        series,
+                    })}
+                    row={undefined}
+                    given={{ id: crypto.randomUUID() }}
+                    onClose={() => setAdding(false)}
+                    onSaved={(write) => void navigate(curveBlueprintPath(show(write['id'])))}
+                />
+            )}
+        </>
     );
 }
 
@@ -517,7 +564,8 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
     const labels = useLabelCatalogue();
     const ladder = useLadderChoices();
     const fundings = useFundingChoices(show(config['currency_code']));
-    const series = useSeriesUris([show(config['output_series_id'])]);
+    const anyFundings = useFundingChoices();
+    const series = useSeriesChoices();
     const pillars = usePillars(id);
     const sets = usePublishedSets();
     const reading = useRecord(CONFIGS, id);
@@ -529,7 +577,7 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
     const [copying, setCopying] = useState(false);
     const [removing, setRemoving] = useState(false);
     const [reverting, setReverting] = useState<HistoryVersion | null>(null);
-    const uri = series.get(show(config['output_series_id']));
+    const uri = series.find((choice) => choice.value === show(config['output_series_id']))?.label;
     const rows = pillars.data?.rows ?? [];
     const fed = setsOf(sets, id);
     const pageKeys = [
@@ -552,6 +600,7 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
         tenors: ladder.tenors,
         conventions: ladder.conventions,
         fundings,
+        series,
     });
     return (
         <div className="space-y-4">
@@ -586,16 +635,6 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
                         specs={specs}
                         row={config}
                         extra={[
-                            [
-                                t('marketdata.curveBlueprints.fields.outputSeries'),
-                                <Link
-                                    className="text-accent hover:text-accent-bright"
-                                    to={`/market-data/series?series=${encodeURIComponent(show(config['output_series_id']))}`}
-                                >
-                                    {seriesWords(t, uri)}
-                                </Link>,
-                                t('marketdata.curveBlueprints.fields.outputSeriesMeans'),
-                            ],
                             [
                                 t('marketdata.curveBlueprints.fields.usedBy'),
                                 <UsedBy configId={id} />,
@@ -749,7 +788,6 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
                     resource={CONFIGS}
                     specs={specs}
                     row={config}
-                    keep={['output_series_id']}
                     loadedAt={reading.dataUpdatedAt}
                     onClose={() => setEditing(false)}
                 />
@@ -758,7 +796,12 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
                 <RecordDialog
                     title={t('marketdata.curveBlueprints.copyTitle', { code: uri ?? id })}
                     resource={CONFIGS}
-                    specs={specs}
+                    specs={blueprintFields({
+                        tenors: ladder.tenors,
+                        conventions: ladder.conventions,
+                        fundings: anyFundings,
+                        series,
+                    })}
                     row={undefined}
                     given={{ id: crypto.randomUUID() }}
                     initial={{
@@ -773,6 +816,7 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
                             })}
                         </Notice>
                     )}
+                    onSaved={(write) => void navigate(curveBlueprintPath(show(write['id'])))}
                     onClose={() => setCopying(false)}
                 />
             )}
@@ -805,7 +849,6 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
                     specs={specs}
                     row={config}
                     version={reverting}
-                    keep={['output_series_id']}
                     onClose={() => setReverting(null)}
                 />
             )}

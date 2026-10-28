@@ -100,6 +100,10 @@ target_link_libraries(${tests_target_name}
         ores.eventing.core.lib
         ores.refdata.api.lib
         ores.refdata.core.lib
+        ores.iam.api.lib
+        ores.iam.core.lib
+        ores.inbox.api.lib
+        ores.inbox.core.lib
         ores.nats.lib
         ores.service.lib
         ores.security.lib

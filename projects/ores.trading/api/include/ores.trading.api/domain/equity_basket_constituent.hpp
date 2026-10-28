@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_EQUITY_BASKET_CONSTITUENT_HPP
 #define ORES_TRADING_API_DOMAIN_EQUITY_BASKET_CONSTITUENT_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -122,7 +123,7 @@ struct equity_basket_constituent final {
      *
      * A price is a continuous quantity, so it is a binary float as the weight is.
      */
-    std::optional<double> initial_price;
+    std::optional<ores::utility::decimal::decimal> initial_price;
 
     /**
      * @brief Username of the person who last modified this equity basket constituent.

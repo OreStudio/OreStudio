@@ -92,8 +92,10 @@ FUNCTION = re.compile(r"\n(?:refdata::domain::[\w:]+|[\w:]+)\s+conventions_mappe
 DECLARED = re.compile(r"refdata::domain::(\w+)\s+(\w+)\s*[;{=]")
 ALIAS = re.compile(r"auto&\s+(\w+)\s*=\s*\w+\.(\w+)\s*;")
 CHILD = re.compile(r'auto\s+(\w+)\s*=\s*\*?(\w+)(?:->|\.)child\("(\w+)"\)')
-READ = re.compile(r'(?:(\w+)\.(\w+)\s*=\s*\w+\(\s*\*?(\w+),\s*"(\w+)"'
-                  r'|assign\(\s*(\w+)\.(\w+),\s*\w+\(\s*\*?(\w+),\s*"(\w+)")')
+# A read names the record variable first and the column last; a field group
+# such as payload or pay_leg may stand between them.
+READ = re.compile(r'(?:\b(\w+)(?:\.\w+)*\.(\w+)\s*=\s*\w+\(\s*\*?(\w+),\s*"(\w+)"'
+                  r'|assign\(\s*(\w+)(?:\.\w+)*\.(\w+),\s*\w+\(\s*\*?(\w+),\s*"(\w+)")')
 PACK = re.compile(r'pack_family\(\s*bundle,\s*"(\w+)",\s*root\.children\("(\w+)"\)')
 
 # The entity a member of a projection struct holds, where a mapper reaches an

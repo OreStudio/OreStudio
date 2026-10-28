@@ -141,7 +141,9 @@ export function PublishedPointsTab({
                 </div>
                 <ChartOf newest={newest} pillars={pillars} values={values} drawn={drawn.length} />
                 {newest !== undefined && (
-                    <p className="text-xs text-ink-faint italic">{t(caption.key, caption.values)}</p>
+                    <p className="text-xs text-ink-faint italic">
+                        {t(caption.key, caption.values)}
+                    </p>
                 )}
             </section>
             {newest !== undefined && <PillarTable points={newest.points} />}

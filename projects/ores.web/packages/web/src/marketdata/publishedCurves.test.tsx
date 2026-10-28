@@ -78,7 +78,8 @@ function set(overrides: Partial<PublishedCurveSet> = {}): PublishedCurveSet {
         request_id: REQUEST,
         curve: CURVE,
         series_id: SERIES,
-        series_uri: 'oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-ACME',
+        series_uri:
+            'oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-ACME',
         bootstrap_config_id: 'd0e1f2a3-b4c5-4d6e-7f80-91a2b3c4d5e6',
         party: PARTY,
         party_id: '3f1e2d4c-0000-4000-8000-000000000010',
@@ -191,7 +192,12 @@ describe('a published value and the other side it implies', () => {
 });
 
 describe('the comparison of two sets', () => {
-    const baseline = [point('1Y', '0.04', 'rate'), point('2Y', '0.05', 'rate'), point('3Y', '0.06', 'rate'), point('4Y', '0.07', 'rate')];
+    const baseline = [
+        point('1Y', '0.04', 'rate'),
+        point('2Y', '0.05', 'rate'),
+        point('3Y', '0.06', 'rate'),
+        point('4Y', '0.07', 'rate'),
+    ];
     const changed = [
         point('1Y', '0.041', 'rate'),
         point('2Y', '0.05', 'rate'),
@@ -336,8 +342,10 @@ describe('the published curves list', () => {
 
 describe('the published curve record', () => {
     it('states the subject and the act on the details tab', () => {
-        const html = render(<PublishedCurvePage />, `/market-data/published-curves/${CURVE}?party=${PARTY}`, (client) =>
-            seedRecord(client, [set()]),
+        const html = render(
+            <PublishedCurvePage />,
+            `/market-data/published-curves/${CURVE}?party=${PARTY}`,
+            (client) => seedRecord(client, [set()]),
         );
 
         expect(html).toContain(CURVE);
@@ -354,8 +362,10 @@ describe('the published curve record', () => {
             withdrawn_by: 'm.oduya',
             withdrawn_reason_code: 'common.stale_data',
         });
-        const html = render(<PublishedCurvePage />, `/market-data/published-curves/${CURVE}?party=${PARTY}`, (client) =>
-            seedRecord(client, [ended]),
+        const html = render(
+            <PublishedCurvePage />,
+            `/market-data/published-curves/${CURVE}?party=${PARTY}`,
+            (client) => seedRecord(client, [ended]),
         );
 
         expect(html).toContain('Withdrawn');
@@ -365,8 +375,10 @@ describe('the published curve record', () => {
     });
 
     it('overlays the last sets and draws the newest set’s pillars', () => {
-        const html = render(<PublishedCurvePage />, `/market-data/published-curves/${CURVE}?party=${PARTY}&tab=points`, (client) =>
-            seedRecord(client, [set()], 1),
+        const html = render(
+            <PublishedCurvePage />,
+            `/market-data/published-curves/${CURVE}?party=${PARTY}&tab=points`,
+            (client) => seedRecord(client, [set()], 1),
         );
 
         expect(html).toContain('The last published sets');
@@ -379,8 +391,10 @@ describe('the published curve record', () => {
 
     it('says when the chart cannot be drawn, and why', () => {
         const one = set({ points: [point('12M', '0.958')], point_count: 1 });
-        const html = render(<PublishedCurvePage />, `/market-data/published-curves/${CURVE}?party=${PARTY}&tab=points`, (client) =>
-            seedRecord(client, [one], 1),
+        const html = render(
+            <PublishedCurvePage />,
+            `/market-data/published-curves/${CURVE}?party=${PARTY}&tab=points`,
+            (client) => seedRecord(client, [one], 1),
         );
 
         expect(html).toContain('The chart cannot be drawn. A curve needs at least two pillars.');
@@ -395,8 +409,10 @@ describe('the published curve record', () => {
                 point('3Y', '0.9'),
             ],
         });
-        const html = render(<PublishedCurvePage />, `/market-data/published-curves/${CURVE}?party=${PARTY}&tab=compare`, (client) =>
-            seedRecord(client, [published, next]),
+        const html = render(
+            <PublishedCurvePage />,
+            `/market-data/published-curves/${CURVE}?party=${PARTY}&tab=compare`,
+            (client) => seedRecord(client, [published, next]),
         );
 
         expect(html).toContain('The published set');
@@ -412,8 +428,10 @@ describe('the published curve record', () => {
     it('says in words when the candidate matches the published set point for point', () => {
         const published = set();
         const same = candidate({ points: published.points });
-        const html = render(<PublishedCurvePage />, `/market-data/published-curves/${CURVE}?party=${PARTY}&tab=compare`, (client) =>
-            seedRecord(client, [published, same]),
+        const html = render(
+            <PublishedCurvePage />,
+            `/market-data/published-curves/${CURVE}?party=${PARTY}&tab=compare`,
+            (client) => seedRecord(client, [published, same]),
         );
 
         expect(html).toContain(
@@ -423,55 +441,64 @@ describe('the published curve record', () => {
 
     it('warns that an ended baseline is still compared against, and that the desk prices from no set', () => {
         const ended = set({ state_code: 'withdrawn', withdrawn_at: '2026-10-27 17:05:00Z' });
-        const html = render(<PublishedCurvePage />, `/market-data/published-curves/${CURVE}?party=${PARTY}&tab=compare`, (client) =>
-            seedRecord(client, [ended, candidate()]),
+        const html = render(
+            <PublishedCurvePage />,
+            `/market-data/published-curves/${CURVE}?party=${PARTY}&tab=compare`,
+            (client) => seedRecord(client, [ended, candidate()]),
         );
 
         expect(html).toContain('The comparison still answers what the candidate changes');
     });
 
     it('draws the record’s versions with the decision, and offers no Revert', () => {
-        const html = render(<PublishedCurvePage />, `/market-data/published-curves/${CURVE}?party=${PARTY}&tab=history`, (client) => {
-            seedRecord(client, [set()]);
-            client.setQueryData(['history', 'ores.marketdata.curve_publish', set().publish_id], [
-                {
-                    version: 2,
-                    modifiedBy: 'henry.jones',
-                    recordedAt: '2026-10-27 16:07:08Z',
-                    fields: [
-                        { name: 'Published By', value: 'henry.jones' },
-                        { name: 'Change Reason Code', value: 'system.curve_published' },
+        const html = render(
+            <PublishedCurvePage />,
+            `/market-data/published-curves/${CURVE}?party=${PARTY}&tab=history`,
+            (client) => {
+                seedRecord(client, [set()]);
+                client.setQueryData(
+                    ['history', 'ores.marketdata.curve_publish', set().publish_id],
+                    [
+                        {
+                            version: 2,
+                            modifiedBy: 'henry.jones',
+                            recordedAt: '2026-10-27 16:07:08Z',
+                            fields: [
+                                { name: 'Published By', value: 'henry.jones' },
+                                { name: 'Change Reason Code', value: 'system.curve_published' },
+                            ],
+                            changes: [],
+                        },
+                        {
+                            version: 1,
+                            modifiedBy: 'henry.jones',
+                            recordedAt: '2026-10-27 16:00:00Z',
+                            fields: [{ name: 'Change Reason Code', value: 'system.new_record' }],
+                            changes: [],
+                        },
                     ],
-                    changes: [],
-                },
-                {
-                    version: 1,
-                    modifiedBy: 'henry.jones',
-                    recordedAt: '2026-10-27 16:00:00Z',
-                    fields: [{ name: 'Change Reason Code', value: 'system.new_record' }],
-                    changes: [],
-                },
-            ]);
-            client.setQueryData(['request', REQUEST], {
-                id: REQUEST,
-                version: 2,
-                kindCode: 'marketdata.curve_publish',
-                stateCode: 'approved',
-                requestedBy: 'henry.jones',
-                requestedAt: '2026-10-27 16:00:00Z',
-                reason: 'The desk prices off this curve',
-                expiresAt: null,
-                roles: [],
-                decision: {
-                    decisionCode: 'approve',
-                    decidedBy: 'm.oduya',
-                    decidedAt: '2026-10-27 16:05:00Z',
-                    comment: 'The fit is good.',
-                },
-                parts: [],
-                subjects: [],
-            });
-        });
+                );
+                client.setQueryData(['request', REQUEST], {
+                    id: REQUEST,
+                    version: 2,
+                    kindCode: 'marketdata.curve_publish',
+                    stateCode: 'approved',
+                    requestedBy: 'henry.jones',
+                    requestedAt: '2026-10-27 16:00:00Z',
+                    reason: 'The desk prices off this curve',
+                    expiresAt: null,
+                    roles: [],
+                    decision: {
+                        decisionCode: 'approve',
+                        decidedBy: 'm.oduya',
+                        decidedAt: '2026-10-27 16:05:00Z',
+                        comment: 'The fit is good.',
+                    },
+                    parts: [],
+                    subjects: [],
+                });
+            },
+        );
 
         expect(html).toContain('system.curve_published');
         expect(html).toContain('m.oduya');
@@ -481,39 +508,48 @@ describe('the published curve record', () => {
     });
 
     it('states the decision it cannot read as a gap, and not as a silence', () => {
-        const html = render(<PublishedCurvePage />, `/market-data/published-curves/${CURVE}?party=${PARTY}&tab=history`, (client) => {
-            seedRecord(client, [set()]);
-            client.setQueryData(['history', 'ores.marketdata.curve_publish', set().publish_id], [
-                {
-                    version: 1,
-                    modifiedBy: 'henry.jones',
-                    recordedAt: '2026-10-27 16:00:00Z',
-                    fields: [{ name: 'Change Reason Code', value: 'system.new_record' }],
-                    changes: [],
-                },
-            ]);
-            client.setQueryData(['request', REQUEST], {
-                id: REQUEST,
-                version: 2,
-                kindCode: 'marketdata.curve_publish',
-                stateCode: 'approved',
-                requestedBy: 'henry.jones',
-                requestedAt: '2026-10-27 16:00:00Z',
-                reason: 'The desk prices off this curve',
-                expiresAt: null,
-                roles: [],
-                decision: null,
-                parts: [],
-                subjects: [],
-            });
-        });
+        const html = render(
+            <PublishedCurvePage />,
+            `/market-data/published-curves/${CURVE}?party=${PARTY}&tab=history`,
+            (client) => {
+                seedRecord(client, [set()]);
+                client.setQueryData(
+                    ['history', 'ores.marketdata.curve_publish', set().publish_id],
+                    [
+                        {
+                            version: 1,
+                            modifiedBy: 'henry.jones',
+                            recordedAt: '2026-10-27 16:00:00Z',
+                            fields: [{ name: 'Change Reason Code', value: 'system.new_record' }],
+                            changes: [],
+                        },
+                    ],
+                );
+                client.setQueryData(['request', REQUEST], {
+                    id: REQUEST,
+                    version: 2,
+                    kindCode: 'marketdata.curve_publish',
+                    stateCode: 'approved',
+                    requestedBy: 'henry.jones',
+                    requestedAt: '2026-10-27 16:00:00Z',
+                    reason: 'The desk prices off this curve',
+                    expiresAt: null,
+                    roles: [],
+                    decision: null,
+                    parts: [],
+                    subjects: [],
+                });
+            },
+        );
 
         expect(html).toContain('The decision on this request is not readable here');
     });
 
     it('says a curve with no published set has none, and draws no tabs', () => {
-        const html = render(<PublishedCurvePage />, `/market-data/published-curves/${CURVE}?party=${PARTY}`, (client) =>
-            seedRecord(client, [candidate()], 0),
+        const html = render(
+            <PublishedCurvePage />,
+            `/market-data/published-curves/${CURVE}?party=${PARTY}`,
+            (client) => seedRecord(client, [candidate()], 0),
         );
 
         expect(html).toContain('has no published set');

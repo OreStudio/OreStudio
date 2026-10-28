@@ -42,6 +42,7 @@ Keys this group states reach into:
 - ores_iam_accounts_tbl (iam)
 - ores_iam_permissions_tbl (iam)
 - ores_iam_role_grant_requests_tbl (iam)
+- ores_marketdata_curve_publishes_tbl (marketdata)
 - ores_refdata_book_changes_tbl (refdata)
 - ores_refdata_counterparty_changes_tbl (refdata)
 - ores_refdata_counterparty_identifier_changes_tbl (refdata)

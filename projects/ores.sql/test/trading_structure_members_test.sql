@@ -71,19 +71,19 @@ select (select id from ores_refdata_parties_tbl
           and valid_to = ores_utility_infinity_timestamp_fn()) as counterparty_id;
 
 insert into ores_trading_trades_tbl (id, tenant_id, party_id, counterparty_id,
-    trade_type, counterparty_scope, booking_nature, entry_channel,
+    trade_type, counterparty_scope, booking_nature, entry_channel, origin,
     external_version, modified_by, performed_by, change_reason_code, change_commentary)
 select '00000000-0000-0000-0000-0000000cc001', ores_utility_system_tenant_id_fn(), party_id,
     counterparty_id, 'Swap', 'external', 'actual', 'manual',
-    0, current_user, current_user, 'system.new_record', 'Trade pgTAP fixture'
+    'api', 0, current_user, current_user, 'system.new_record', 'Trade pgTAP fixture'
 from t_ctx;
 
 insert into ores_trading_trades_tbl (id, tenant_id, party_id, counterparty_id,
-    trade_type, counterparty_scope, booking_nature, entry_channel,
+    trade_type, counterparty_scope, booking_nature, entry_channel, origin,
     external_version, modified_by, performed_by, change_reason_code, change_commentary)
 select '00000000-0000-0000-0000-0000000cc002', ores_utility_system_tenant_id_fn(), party_id,
     counterparty_id, 'Swap', 'external', 'actual', 'manual',
-    0, current_user, current_user, 'system.new_record', 'Trade pgTAP fixture'
+    'api', 0, current_user, current_user, 'system.new_record', 'Trade pgTAP fixture'
 from t_ctx;
 
 -- A straddle allows one role holding exactly two legs; a butterfly allows a

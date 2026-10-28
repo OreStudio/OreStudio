@@ -743,6 +743,12 @@
       "name": "ores_refdata_publish_commodities_from_dq_fn",
       "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
       "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_equity_underlyings_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "a DQ publish function, written in SQL like every sibling"
     }
   ]
 }

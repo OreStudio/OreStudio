@@ -22,8 +22,8 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-import type { DiffResult } from '../../../diff/protocol.js';
-import type { FieldValue } from '../../../diff/protocol.js';
+import type { DiffResult } from '../../diff/domain/diff_result.js';
+import type { FieldValue } from '../../diff/domain/field_value.js';
 
 /**
  * @brief One rendered, diffed version of an entity's history.

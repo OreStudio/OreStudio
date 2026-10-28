@@ -116,7 +116,9 @@ def declared_symbols(text: str) -> set[tuple[tuple[str, ...], str]]:
     while i < n:
         match = _NAMESPACE_RE.match(text, i)
         if match:
-            scope = scope + tuple(match.group(1).split("::"))
+            for part in match.group(1).split("::"):
+                symbols.add((scope, part))
+                scope = scope + (part,)
             scopes.append(scope)
             i = match.end()
             continue

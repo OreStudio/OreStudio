@@ -1823,3 +1823,19 @@ tangled into the runnable script library
 * Curve Publishes
 
 - [[id:2B9EFF40-8EFF-5E6B-A18C-63441FB72996][How do I run the curve_publishes commands from the shell?]]
+
+* Equity Underlyings
+
+- [[id:705E51EB-4BF3-5EE5-968F-A4741E4DD791][How do I run the equity_underlyings commands from the shell?]]
+
+* Sensitivity Asset Classes
+
+- [[id:2140A203-7219-50CF-A60C-64EB05885CD8][How do I run the sensitivity_asset_classes commands from the shell?]]
+
+* Sensitivity Methods
+
+- [[id:49EB3369-C08A-5543-B811-3EE2C7FA111B][How do I run the sensitivity_methods commands from the shell?]]
+
+* Structure Identifiers
+
+- [[id:20A29E19-EF1F-5DD2-91D5-CBD35E9F93FE][How do I run the structure_identifiers commands from the shell?]]

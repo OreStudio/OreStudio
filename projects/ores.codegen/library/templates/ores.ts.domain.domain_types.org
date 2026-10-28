@@ -74,6 +74,9 @@ import type { {{identity_group_pascal}} } from '{{identity_group_import}}';
 {{#has_audit_group}}
 import type { {{audit_group_pascal}} } from '{{audit_group_import}}';
 {{/has_audit_group}}
+{{#ts_column_imports}}
+import type { {{pascal}} } from '{{module}}';
+{{/ts_column_imports}}
 /**
  * The {{entity_singular_words}} wire shape.
  *

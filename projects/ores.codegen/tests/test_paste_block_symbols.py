@@ -152,6 +152,20 @@ def test_a_name_inside_a_nested_namespace_resolves(tmp_path, monkeypatch,
     assert cps.main() == 0
 
 
+def test_a_namespace_opened_by_a_chain_is_a_name_of_its_parent(
+        tmp_path, monkeypatch, capsys):
+    # "namespace ores::widget::messaging {" declares messaging in ores::widget,
+    # so a block may alias the namespace itself, as a column list does.
+    _point_at(monkeypatch, tmp_path)
+    _tree(tmp_path, """\
+#+begin_src cpp :name alias :implements 11111111-1111-1111-1111-111111111111
+        namespace messaging = ores::widget::messaging;
+#+end_src
+""")
+
+    assert cps.main() == 0
+
+
 def test_a_tree_with_no_paste_block_fails(tmp_path, monkeypatch, capsys):
     _point_at(monkeypatch, tmp_path)
     _write(tmp_path / HEADER, HEADER_BODY)

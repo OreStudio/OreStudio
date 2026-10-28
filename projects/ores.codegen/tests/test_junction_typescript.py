@@ -142,6 +142,20 @@ def test_domain_imports_are_each_emitted_once():
         ]},
     ]
     assert ts_domain_imports(messages) == [
-        {"entity": "account_party", "entity_pascal": "AccountParty"},
-        {"entity": "party", "entity_pascal": "Party"},
+        {"entity": "account_party", "entity_pascal": "AccountParty",
+         "module_dir": "../domain"},
+        {"entity": "party", "entity_pascal": "Party", "module_dir": "../domain"},
+    ]
+
+
+def test_a_domain_import_from_another_component_names_that_component():
+    messages = [{"fields": [
+        {"cpp_type": "ores::diff::domain::diff_result"},
+        {"cpp_type": "ores::history::domain::history_entry"},
+    ]}]
+    assert ts_domain_imports(messages, "history") == [
+        {"entity": "diff_result", "entity_pascal": "DiffResult",
+         "module_dir": "../../diff/domain"},
+        {"entity": "history_entry", "entity_pascal": "HistoryEntry",
+         "module_dir": "../domain"},
     ]

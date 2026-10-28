@@ -129,6 +129,8 @@ static_cast<int>(idx)
 ** Flags
 :PROPERTIES:
 :tablename: ores_analytics_sensitivity_methods_tbl
+:rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 * Insert trigger

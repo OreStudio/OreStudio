@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: analytics
-Tables: 25
+Tables: 27
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -418,14 +418,88 @@ package "analytics" #E8F5E9 {
     The settings a pair of model and engine takes. The pricing engine screens draw a select where this table knows the options and a text field where it does not know the setting.
     end note
 
+    entity ores_analytics_sensitivity_asset_classes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * asset_class_code : text <<PK>>
+        --
+        * version : integer
+        * template_prefix : text
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_sensitivity_asset_classes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Sensitivity Asset Class Table
+    A sensitivity template key names an asset class, and the class is the reference
+    data's: interest_rates, fx, equity, commodity or credit. The key spells
+    that class as a short prefix a person recognises -- IR, FX, EQ, COMM,
+    CR -- and the two spellings are not the same, because ORE's template keys grew
+    their own vocabulary (it spells commodity COMM where the rest of ORE spells it
+    COM).
+    So this table is the bridge. It holds one row per class ORE presents a template
+    prefix for: the reference data code the template points at, the prefix the key
+    spells, and the words a person reads. Bond and inflation are asset classes of the
+    reference data with no row here, because ORE's examples present no template prefix
+    for them; a tenant that needs one adds the row.
+    The prefix is a presentation and never the identity: a key's spelling is the
+    tenant's, ORE resolves the key a configuration states, and the template's
+    asset_class_code is what the table checks. A screen that shows the class shows
+    the name from here, and the prefix stands beside it as what the key spells.
+    The rows are seeded for the system tenant and read by every tenant.
+    end note
+
+    entity ores_analytics_sensitivity_methods_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * needs_asset_class : boolean
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_sensitivity_methods_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Sensitivity Method Table
+    A sensitivity template key spells how its products are priced, in one of the five
+    forms ORE defines: Analytical, Semianalytical, FD, MC and Trade. The key
+    carries the token -- IR_FD -- and a person reads the name beside it.
+    The method decides whether a template has an asset class at all. Four of the five
+    are a way of pricing a class of product, so a template that states one states the
+    class too. Trade is the exception: a trade-level template is the one ORE defines
+    without a class, because the sensitivities come from the trade itself rather than
+    from shifting a class of market data. needs_asset_class states that, and the
+    screen reads it rather than repeating the exception.
+    The methods are seeded for the system tenant and read by every tenant, so a
+    template that names a method ORE does not have is refused.
+    end note
+
     entity ores_analytics_sensitivity_templates_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
         --
         * version : integer
-        * asset_class : text
-        * method : text
         * method_code : text
+          asset_class_code : text
         * description : text
         * modified_by : text
         * performed_by : text
@@ -440,8 +514,25 @@ package "analytics" #E8F5E9 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Sensitivity Template Table
-    A sensitivity template is a key. The pricing engine configuration puts it on a product with the setting SensitivityTemplate. The sensitivity configuration gives shift sizes and shift schemes to the products that carry the key. The key names an asset class and a method, for example IR_FD, and the row states both of them in the two forms ORE uses: the token a key carries, and the words a person reads.
-    The key's spelling is the tenant's. ORE resolves a template key by looking up the key the sensitivity configuration states, and a configuration may state a key that ORE's own list does not hold, so a tenant can add a key of its own. The table therefore holds every row to the metadata it states and does not hold the key to a shape built out of it.
+    A sensitivity template is a key. The pricing engine configuration puts it on a
+    product with the setting SensitivityTemplate, and the sensitivity configuration
+    gives shift sizes and shift schemes to the products that carry the key. So the
+    row states the class of product the key belongs to and the method it is priced
+    by, and both are lookups: the class is the reference data's asset class, and the
+    method is one of the five ORE defines.
+    The class is the product's class and not a claim about which market keys the
+    shifts reach. A key may set shifts on keys outside its own class, which is the
+    sensitivity configuration's business and not this table's, so nothing here links
+    a template to the keys it reaches.
+    The method is the token a key spells -- FD in IR_FD -- and its name is the
+    words a person reads. Four of the five methods price a class of product and
+    state it; the trade-level method is the one ORE defines without a class, so a
+    template that states it states no class, and the table checks that.
+    The key's spelling is the tenant's. ORE resolves a template key by looking up the
+    key the sensitivity configuration states, and a configuration may state a key
+    that ORE's own list does not hold, so a tenant can add a key of its own. The
+    table therefore holds every row to the metadata it states and does not hold the
+    key to a shape built out of asset_class_code and method_code.
     end note
 
     entity ores_analytics_shift_types_tbl <<temporal>> #C6F0D8 {

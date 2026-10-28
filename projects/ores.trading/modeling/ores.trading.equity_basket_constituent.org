@@ -124,8 +124,8 @@ wrote.
 
 ** initial_price
 :PROPERTIES:
-:type:           double precision
-:cpp_type:       std::optional<double>
+:type:           numeric(38, 12)
+:cpp_type:       std::optional<ores::utility::decimal::decimal>
 :nullable:       true
 :END:
 
@@ -178,6 +178,7 @@ std::nullopt
 #+begin_src cpp :name includes
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

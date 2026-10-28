@@ -90,11 +90,11 @@ declare
     v_activity_id uuid := gen_random_uuid();
 begin
     insert into ores_trading_trades_tbl (id, tenant_id, party_id, trade_type,
-        counterparty_scope, booking_nature, entry_channel,
+        counterparty_scope, booking_nature, entry_channel, origin,
         external_version, modified_by, performed_by, change_reason_code, change_commentary)
     select p_id, ores_utility_system_tenant_id_fn(), party_id, 'Swap',
         'intra_entity', 'actual', 'manual',
-        0, current_user, current_user, 'system.new_record', 'Trade pgTAP fixture'
+        'api', 0, current_user, current_user, 'system.new_record', 'Trade pgTAP fixture'
     from t_ctx;
 
     insert into ores_trading_trade_activities_tbl (id, tenant_id, party_id,

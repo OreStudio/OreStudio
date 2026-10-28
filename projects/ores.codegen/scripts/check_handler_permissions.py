@@ -45,7 +45,9 @@ REGISTRY = ("refdata", "analytics", "compute", "assets", "storage", "reporting",
 # has_permission takes the request context first, so the code is the string
 # literal argument. A helper that passes the code through a variable is not
 # visible here, which the "not vacuous" test below guards against.
-PERMISSION_RE = re.compile(r'has_permission\(\s*[^,]+,\s*"([^"]+)"')
+# A code built at run time, "prefix" + name + ":verb", is recorded as its
+# prefix followed by *, and a seed that starts with the prefix satisfies it.
+PERMISSION_RE = re.compile(r'has_permission\(\s*[^,]+,\s*"([^"]+)"(\s*\+)?')
 
 # The seed scripts pass each code as a string literal to the upsert function.
 SEED_RE = re.compile(r"'(?P<code>[a-z_]+::[a-z_]+:[a-z_-]+)'")
@@ -70,7 +72,9 @@ def required_codes(component: str) -> dict[str, set[str]]:
     """``{header path relative to the repo: {permission code, ...}}``."""
     out: dict[str, set[str]] = {}
     for path in handler_headers(component):
-        codes = set(PERMISSION_RE.findall(path.read_text(encoding="utf-8")))
+        codes = {literal + ("*" if built else "")
+                 for literal, built in PERMISSION_RE.findall(
+                     path.read_text(encoding="utf-8"))}
         if codes:
             out[str(path.relative_to(REPO_ROOT))] = codes
     return out
@@ -89,6 +93,9 @@ def check(registry: tuple[str, ...] = REGISTRY,
     for component in registry:
         for path, codes in sorted(required_codes(component).items()):
             for code in sorted(codes - seeded):
+                if code.endswith("*") and any(
+                        s.startswith(code[:-1]) for s in seeded):
+                    continue
                 violations.append((path, code))
     return violations
 

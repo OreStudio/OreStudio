@@ -28,10 +28,12 @@
 #include "ores.trading.api/domain/equity_basket_constituent.hpp"
 #include "ores.trading.api/domain/equity_basket_constituent_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/equity_basket_constituent_entity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -53,7 +55,10 @@ equity_basket_constituent_mapper::map(const equity_basket_constituent_entity& v)
     r.underlying_name = v.underlying_name;
     r.underlying_kind = v.underlying_kind;
     r.weight = v.weight;
-    r.initial_price = v.initial_price;
+    r.initial_price =
+        v.initial_price.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.initial_price).value()) :
+            std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -77,7 +82,8 @@ equity_basket_constituent_mapper::map(const domain::equity_basket_constituent& v
     r.underlying_name = v.underlying_name;
     r.underlying_kind = v.underlying_kind;
     r.weight = v.weight;
-    r.initial_price = v.initial_price;
+    r.initial_price =
+        v.initial_price.has_value() ? std::optional(v.initial_price->to_string()) : std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

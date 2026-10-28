@@ -24,11 +24,8 @@
  */
 #include "ores.trading.core/service/structure_service.hpp"
 #include "ores.trading.api/domain/structure.hpp"
-#include "ores.trading.api/domain/structure_identifier.hpp"
 #include "ores.trading.api/messaging/structure_protocol.hpp"
-#include "ores.trading.core/repository/structure_identifier_repository.hpp"
 #include "ores.trading.core/repository/structure_repository.hpp"
-#include "ores.utility/domain/protocol.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
@@ -47,6 +44,9 @@
 #include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.trading.api/domain/structure_identifier.hpp"
+#include "ores.trading.core/repository/structure_identifier_repository.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
 using ores::service::messaging::stamp;
@@ -60,10 +60,10 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-
 structure_service::structure_service(context ctx)
     : ctx_(std::move(ctx)) {}
 namespace {
+
 /**
  * @brief The prefix a deal reference carries for a kind of structure.
  *
@@ -120,7 +120,6 @@ void name_structure(const ores::database::context& ctx, const domain::structure&
     identifiers.write(
         ctx, identifier, {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt});
 }
-
 
 /**
  * @brief The current row a key names, or an empty vector when there is none.
@@ -239,12 +238,8 @@ structure_service::put_structure(const messaging::put_structure_request& request
     response.result = prepare_change(request.change, request.intent, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
-    // Creation is decided by looking, not by the claim the caller stated: a
-    // caller may amend without saying so.
-    const auto existed = !structure_read_one(repo_, ctx_, structure_key_from(value)).empty();
     repo_.write(ctx_, value, request.change.precondition);
-    if (!existed)
-        name_structure(ctx_, value);
+    name_structure(ctx_, value);
     auto written = structure_read_one(repo_, ctx_, structure_key_from(value));
     if (!written.empty())
         response.structure = std::move(written.front());
@@ -274,14 +269,9 @@ structure_service::put_many_structures(const messaging::put_many_structures_requ
     claims.reserve(request.changes.size());
     for (const auto& change : request.changes)
         claims.push_back(change.precondition);
-    std::vector<bool> existed;
-    existed.reserve(batch.size());
-    for (const auto& value : batch)
-        existed.push_back(!structure_read_one(repo_, ctx_, structure_key_from(value)).empty());
     repo_.write(ctx_, batch, claims);
-    for (std::size_t i = 0; i < batch.size(); ++i)
-        if (!existed[i])
-            name_structure(ctx_, batch[i]);
+    for (const auto& written_value : batch)
+        name_structure(ctx_, written_value);
     response.structures.reserve(batch.size());
     for (const auto& value : batch) {
         auto written = structure_read_one(repo_, ctx_, structure_key_from(value));

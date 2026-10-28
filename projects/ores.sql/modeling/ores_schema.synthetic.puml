@@ -480,6 +480,7 @@ package "synthetic" #F9FBE7 {
         * as_of_date : date
         * seed : bigint
         * trades_per_book : integer
+        * structures_per_book : integer
         * enabled : boolean
           reference_curve_id : text <<FK>>
         * modified_by : text

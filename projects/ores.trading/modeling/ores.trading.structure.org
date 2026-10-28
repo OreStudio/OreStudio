@@ -241,6 +241,86 @@ enforced rather than checked.
 
 ** Custom repository methods
 
+** Naming a structure
+
+A structure is grouped before anybody can book a leg into it, so the grouping
+is where it needs a name: every write gives a structure that has no internal
+reference one. The service names it after the repository writes the row.
+
+#+begin_src cpp :name service_includes :implements A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E
+#include "ores.trading.api/domain/structure_identifier.hpp"
+#include "ores.trading.core/repository/structure_identifier_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name naming_helpers :implements ED2E71EE-7410-4696-A732-C09D67DCA1E9
+
+/**
+ * @brief The prefix a deal reference carries for a kind of structure.
+ *
+ * The desk reads a reference and knows what it is looking at, so the prefix is
+ * the kind's and not a house-wide one. An unknown kind takes the structure
+ * prefix rather than no prefix at all: a reference is what makes a deal
+ * addressable, and a missing one is worse than an approximate one.
+ */
+std::string reference_prefix(const std::string& kind) {
+    if (kind == "Package")
+        return "PKG";
+    if (kind == "Strategy")
+        return "STR";
+    if (kind == "Typed")
+        return "TYP";
+    if (kind == "Dynamic")
+        return "DYN";
+    return "STR";
+}
+
+/**
+ * @brief Names a structure that has no reference yet.
+ *
+ * A structure is grouped before anybody can book a leg into it, so the grouping
+ * is where it needs a name. The value is derived from the structure's own id,
+ * which is unique already, so two structures cannot collide and no counter has
+ * to be kept.
+ *
+ * This runs on every write and not only on a creation. The structure and its
+ * identifier are two statements, so a run cut between them would otherwise
+ * leave a deal that no later write ever names again.
+ */
+void name_structure(const ores::database::context& ctx, const domain::structure& value) {
+    repository::structure_identifier_repository identifiers;
+    const auto named =
+        identifiers.read_latest(ctx, boost::uuids::to_string(value.id), std::string("Internal"));
+    if (!named.empty())
+        return;
+
+    domain::structure_identifier identifier;
+    identifier.tenant_id = value.tenant_id;
+    identifier.structure_id = value.id;
+    identifier.id_type = "Internal";
+    identifier.id_value =
+        reference_prefix(value.kind) + "-" + boost::uuids::to_string(value.id).substr(0, 8);
+    identifier.modified_by = value.modified_by;
+    identifier.performed_by = value.performed_by;
+    identifier.change_reason_code = value.change_reason_code;
+    identifier.change_commentary = value.change_commentary;
+    identifier.recorded_at = value.recorded_at;
+
+    // The claim is the identifier's own: a structure's claim speaks about the
+    // structure, and a version on it would mean nothing here.
+    identifiers.write(
+        ctx, identifier, {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt});
+}
+#+end_src
+
+#+begin_src cpp :name name_after_write :implements 71B64FF3-6991-49F1-BCD4-41115B1E03B2
+    name_structure(ctx_, value);
+#+end_src
+
+#+begin_src cpp :name name_after_batch_write :implements C379A38A-666B-4130-BE6C-419F00081322
+    for (const auto& written_value : batch)
+        name_structure(ctx_, written_value);
+#+end_src
+
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

@@ -47,7 +47,7 @@ struct equity_basket_constituent_write {
     std::string underlying_name;
     std::string underlying_kind;
     std::optional<double> weight;
-    std::optional<double> initial_price;
+    std::optional<ores::utility::decimal::decimal> initial_price;
 };
 
 struct equity_basket_constituent_change {

@@ -50,7 +50,7 @@ struct equity_basket_constituent_entity {
     std::string underlying_name;
     std::string underlying_kind;
     std::optional<double> weight;
-    std::optional<double> initial_price;
+    std::optional<std::string> initial_price;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

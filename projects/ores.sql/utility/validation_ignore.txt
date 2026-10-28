@@ -285,6 +285,17 @@ TENANT_002 ores_marketdata_market_fixings_tbl
 TENANT_002 ores_marketdata_ticks_tbl
 TENANT_002 ores_marketdata_tick_coords_tbl
 
+# Report result rows -- a TimescaleDB hypertable on as_of. A run writes each row
+# once and never edits it; a correction is a new run. The primary key is
+# (id, as_of) because TimescaleDB requires the partition column in it, so GIST
+# exclusion and tenant_id in the key are out, and the rows carry no audit
+# columns: the run records who asked and why.
+TEMPORAL_003 ores_reporting_report_result_rows_tbl
+TEMPORAL_004 ores_reporting_report_result_rows_tbl
+TEMPORAL_005 ores_reporting_report_result_rows_tbl
+TEMPORAL_006 ores_reporting_report_result_rows_tbl
+TENANT_002 ores_reporting_report_result_rows_tbl
+
 # =============================================================================
 # Workflow instances table - tenant_id present but not in PK by design.
 # Uses a UUID primary key for global uniqueness. tenant_id is carried for RLS
@@ -398,6 +409,12 @@ RLS_001 ores_reporting_report_type_configuration_types_tbl
 # party reads these rows, so a party isolation policy would only hide the
 # template from the function that publishes it.
 RLS_002 ores_dq_*_artefact_tbl
+
+# Curve publishes -- the decider of a publish is a tenant function, Market Risk
+# of the tenant, so a party policy would hide a request's subject from the
+# person who decides it. The subject names its party instead; see the model
+# ores.marketdata.curve_publish.
+RLS_002 ores_marketdata_curve_publishes_tbl
 
 # Synthetic generators — the system party owns every collection, folder and feed, and every
 # tenant reads them. A feed stands for one observation in the world, so no party may be

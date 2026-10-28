@@ -64,12 +64,20 @@ select is_empty(
               when 'analytic' then format(
                   '/ORE/Analytics/Analytic[@type=''%s'']/Parameter[@name=''%s'']',
                   subtype, name)
-              when 'EngineParameters' then format(
-                  '/PricingEngines/Product[@type=''%s'']/EngineParameters/Parameter[@name=''%s'']',
-                  subtype, name)
-              when 'ModelParameters' then format(
-                  '/PricingEngines/Product[@type=''%s'']/ModelParameters/Parameter[@name=''%s'']',
-                  subtype, name)
+              when 'EngineParameters' then case subtype
+                  when '' then format(
+                      '/PricingEngines/Product/EngineParameters/Parameter[@name=''%s'']', name)
+                  else format(
+                      '/PricingEngines/Product[@type=''%s'']/EngineParameters/Parameter[@name=''%s'']',
+                      subtype, name)
+                  end
+              when 'ModelParameters' then case subtype
+                  when '' then format(
+                      '/PricingEngines/Product/ModelParameters/Parameter[@name=''%s'']', name)
+                  else format(
+                      '/PricingEngines/Product[@type=''%s'']/ModelParameters/Parameter[@name=''%s'']',
+                      subtype, name)
+                  end
               when 'GlobalParameters' then format(
                   '/PricingEngines/GlobalParameters/Parameter[@name=''%s'']', name)
               when 'Types' then format(

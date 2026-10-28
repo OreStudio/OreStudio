@@ -1,6 +1,6 @@
 :PROPERTIES:
 :ID: 9A5E2C71-4D83-4B06-A17E-35C8F9D2B4E0
-:END
+:END:
 #+title: Copied activity types name system FSM transitions
 #+description: The tenant provisioner copies the activity types verbatim, and eleven of them name a transition row that belongs to the system tenant, which a tenant session cannot read.
 #+type: capture

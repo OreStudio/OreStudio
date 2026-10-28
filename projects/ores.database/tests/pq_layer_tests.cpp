@@ -17,6 +17,7 @@
  *
  */
 #include "ores.database/domain/context_transact.hpp"
+#include "ores.database/pq/codec.hpp"
 #include "ores.database/pq/store_error.hpp"
 #include "ores.database/pq/text.hpp"
 #include "ores.database/pq/unit_of_work.hpp"
@@ -27,7 +28,9 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <span>
 #include <stdexcept>
+#include <string>
 
 using namespace ores::database::pq;
 using std::chrono::system_clock;
@@ -170,6 +173,18 @@ TEST_CASE("the maximum time point is the store's never", "[pq]") {
         CHECK(std::get<0>(tx.query(is_never, system_clock::time_point::max()).at(0)));
         CHECK(std::get<0>(tx.query(never).at(0)) == system_clock::time_point::max());
     });
+}
+
+TEST_CASE("a time point's bounds survive the codec whatever the clock counts", "[pq]") {
+    const auto round_trip = [](system_clock::time_point v) {
+        std::string bytes;
+        codec<system_clock::time_point>::encode(v, bytes);
+        return codec<system_clock::time_point>::decode(std::as_bytes(std::span(bytes)));
+    };
+    CHECK(round_trip(system_clock::time_point::max()) == system_clock::time_point::max());
+    CHECK(round_trip(system_clock::time_point::min()) == system_clock::time_point::min());
+    const auto instant = system_clock::time_point(std::chrono::microseconds(1'761'652'800'123'456));
+    CHECK(round_trip(instant) == instant);
 }
 
 TEST_CASE("a statement is prepared once on a connection and run many times", "[pq]") {

@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: 49C5CB14-56BF-4028-900B-6EF8383BDD9C
+:END:
+#+title: Task: Fix what the checks and CI find on main
+#+description: Initial task for: Make main green after the sqlgen removal
+#+type: task
+#+level: s1
+#+filetags: :make_main_green_after_the_sqlgen_removal:sprint_29:v0:
+#+owner: marco
+#+branch: feature/make-main-green-after-the-sqlgen-removal
+#+pr: 4015
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DA440A05-E0C4-4961-85E3-54DB9B478004][Make main green after the sqlgen removal]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run every local check and read the latest Linux, macOS and Windows CI on
+main, and fix what fails, in one PR.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DA440A05-E0C4-4961-85E3-54DB9B478004][Make main green after the sqlgen removal]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- =compass check= passes every check it runs on the branch.
+- Every failure in the latest CI runs on main has a fix on the branch, or a
+  stated reason it cannot be fixed here.
+- The fleet starts on a fresh database with no ERROR or FATAL line.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4015][#4015]] | [build] Make main green after the sqlgen removal |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Every check of =compass check= passes: 73 of 73, the last four after the
+fleet was stopped for the database recreate. The full site builds. Fixed, by
+what failed on main:
+
+- *SQL schema validation* (Continuous Linux, Nightly Build). Five tables had
+  no row-level security: the two sensitivity lookups now read their own and
+  the system tenant's rows, the structure identifiers are tenant-scoped, and
+  a run's result rows are party-scoped like the run. The result rows'
+  hypertable shape and the tenant-scoped curve publish are recorded as
+  intended in the ignore file.
+- *macOS build.* The libpq codec's time point bounds overflowed on a clock
+  that counts microseconds, and the never instant decoded to a date in 9999
+  there. Both bounds now stay inside the arithmetic, with a test that runs
+  without a database.
+- *Windows build.* =getenv= is deprecated in the CRT and a per-file define
+  does not survive a unity batch: the environment provider uses =_dupenv_s=,
+  tests read through it, and the time zone test skips on Windows. MSVC's
+  reflect-cpp errors are out of scope.
+- *Equity underlying.* The merge left out its event registrar, shell
+  commands, permission seeds, scripts and recipe inventory, and its publish
+  function's place in the write ratchet.
+- *Codegen drift and sweep.* The composite instrument's write observation sat
+  under Messages and produced invalid TypeScript; the paste-block check could
+  not see a namespace opened by a chain; the structure service carried
+  hand-written naming code a regeneration deleted, now model paste blocks
+  through three new service template hooks; the result row lacked its domain
+  includes; the marketdata test libraries, the snapshot protocol, the list
+  request table, the facet inventory and the ER diagrams were stale.
+- *TypeScript and shell script drift.* Prettier and a re-tangle.
+- *Product website.* Three captures closed their property drawer with =:END=,
+  which hid their ids.
+- *Gate checks.* The pgTAP fixtures now state a trade origin and accept a
+  product-wide parameter's XPath; the convention terms generator reads through
+  field groups; a basket constituent's initial price is an exact decimal; the
+  XML benchmark is recorded.
+
+Not fixed here: the workflow engine's recovery errors on a database ctest has
+used, tracked in the capture "Workflow recovery fails on test tenants left by
+ctest".
+

@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 140
+Tables: 141
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1602,6 +1602,24 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_equity_curve_configs_artefact_tbl
     The settings of one EquityCurve entry of a curveconfig.xml, one row per curve_definition in the EquityCurves section: the equity's spot quote and forecasting curve, how its forward curve is given, and how its dividends interpolate. The quotes the forward curve is built from are rows of curve_quote. Three corpus entries write an empty Quotes element, so has_quotes holds whether the element is there. 101 write an empty Calendar; the column then holds the empty text the document wrote. A calendar that is not empty is checked by ores_refdata_validate_calendar_fn. - Artefact Table
+    end note
+
+    entity ores_dq_equity_underlyings_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * description : text
+        * instrument_type : text
+          resolves_to : text
+          currency_code : text <<FK>>
+        * display_order : integer
+    }
+
+    note right of ores_dq_equity_underlyings_artefact_tbl
+    The equity underlyings a population may draw from. An equity instrument states underlying_name, documented as the ORE equity Name identifier, and nothing held the set a tenant may use, so a generator that needed one had to invent it. The code is the name the engine resolves, not a display name. ORE's own example trades price underlyings as bare index names such as .SPX and .STOXX50E, as exchange-suffixed shares such as MSFT.O and CR.N, and as ISINs such as GB0005405286. The catalogue therefore stores the spelling a document states, because that is the string the engine resolves. The same instrument appears under more than one spelling: .SPX and RIC:.SPX are one index, and the catalogue holds both because a document may state either. Resolving them to one instrument is what resolves_to is for: a row that is the instrument leaves it empty, and a row that is an alias names the instrument it resolves to. A population that read the two as two instruments would price one index twice. The kind travels with the underlying because it decides what the trade is. An option on an index and an option on a share are the same instrument type in the store, but a book that claimed to trade single names while holding only indices would misreport itself. Only underlyings a document states as Equity belong here. ORE states each underlying's kind beside its name, and one corpus trade proves the kind is not implied by the trade type: an EquityWorstOfBasketSwap in the examples carries two underlyings whose kind is FX, total return indices on currency pairs. A catalogue that took every name an equity typed trade mentions would file a currency pair as an equity. This model holds the vocabulary only. The prices and the volatility surfaces an equity prices on are market data, and they are not here. - Artefact Table
     end note
 
     entity ores_dq_equity_volatility_configs_artefact_tbl  #F7E5FF {

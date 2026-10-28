@@ -156,3 +156,23 @@ on delete to "ores_analytics_sensitivity_methods_tbl" do instead (
       and code = OLD.code
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Sensitivity Method
+-- Every session reads its own rows and the system tenant's rows; writes
+-- stay the current tenant's.
+-- =============================================================================
+alter table ores_analytics_sensitivity_methods_tbl enable row level security;
+
+drop policy if exists sensitivity_methods_tbl_tenant_isolation_policy
+    on ores_analytics_sensitivity_methods_tbl;
+
+create policy sensitivity_methods_tbl_tenant_isolation_policy
+on ores_analytics_sensitivity_methods_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

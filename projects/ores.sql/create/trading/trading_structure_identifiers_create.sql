@@ -180,3 +180,20 @@ on delete to "ores_trading_structure_identifiers_tbl" do instead (
       and structure_id = OLD.structure_id and id_type = OLD.id_type
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Structure Identifier
+-- =============================================================================
+alter table ores_trading_structure_identifiers_tbl enable row level security;
+
+drop policy if exists structure_identifiers_tbl_tenant_isolation_policy
+    on ores_trading_structure_identifiers_tbl;
+
+create policy structure_identifiers_tbl_tenant_isolation_policy
+on ores_trading_structure_identifiers_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

@@ -75,9 +75,7 @@ export function PublishedCompareTab({
 }): ReactNode {
     const { t, language } = useTranslation();
     const [search, setSearch] = useSearchParams();
-    const [showUnchanged, setShowUnchanged] = useState(
-        search.get('unchanged') === '1',
-    );
+    const [showUnchanged, setShowUnchanged] = useState(search.get('unchanged') === '1');
     const choices = baselineChoicesOf(sets);
     const chosen = search.get('asof') ?? '';
     const baseline = baselineAt(sets, chosen);
@@ -167,7 +165,9 @@ export function PublishedCompareTab({
                     </h3>
                     <LineChart
                         label={t('marketdata.published.compare.chart')}
-                        format={(value) => (value < 1 ? `${(value * 100).toFixed(3)}%` : value.toFixed(4))}
+                        format={(value) =>
+                            value < 1 ? `${(value * 100).toFixed(3)}%` : value.toFixed(4)
+                        }
                         categories={pillars}
                         padding={0.1}
                         series={[
@@ -335,7 +335,9 @@ function CandidatePanel({ set }: { readonly set: PublishedCurveSet }): ReactNode
                 <Fact label={t('marketdata.published.points.asOf')}>
                     {formatDateTime(set.as_of, language)}
                 </Fact>
-                <Fact label={t('marketdata.published.compare.builtBy')}>{t('marketdata.published.compare.nobody')}</Fact>
+                <Fact label={t('marketdata.published.compare.builtBy')}>
+                    {t('marketdata.published.compare.nobody')}
+                </Fact>
                 <Fact label={t('marketdata.published.points.points')}>
                     {String(set.point_count)}
                 </Fact>
@@ -347,7 +349,13 @@ function CandidatePanel({ set }: { readonly set: PublishedCurveSet }): ReactNode
     );
 }
 
-function Fact({ label, children }: { readonly label: string; readonly children: ReactNode }): ReactNode {
+function Fact({
+    label,
+    children,
+}: {
+    readonly label: string;
+    readonly children: ReactNode;
+}): ReactNode {
     return (
         <div>
             <dt className="text-[10px] tracking-wide text-ink-faint uppercase">{label}</dt>

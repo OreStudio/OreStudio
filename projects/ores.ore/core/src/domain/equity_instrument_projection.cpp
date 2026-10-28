@@ -116,23 +116,23 @@ auto equity_instrument_projection_to_ore_date(const std::chrono::year_month_day&
     return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
 }
 
-auto equity_instrument_projection_text_of(const record_reader& r,
-                                          std::string_view name) -> std::string {
+auto equity_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto equity_instrument_projection_spelling_of(const record_reader& r,
-                                              std::string_view name) -> std::string {
+auto equity_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
 }
 
 /// A schema decimal element as the domain's exact decimal, zero when absent.
-auto equity_instrument_projection_decimal_of(const record_reader& r,
-                                             std::string_view name) -> decimal {
+auto equity_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
+    -> decimal {
     if (const auto value = r.decimal(name))
         return *value;
     return decimal{};
@@ -236,8 +236,8 @@ struct range_bound_text final {
 // Reading: one function per product
 // ---------------------------------------------------------------------------
 
-auto read_equity_option(const record_reader& trade,
-                        std::string_view trade_type) -> equity_option_instrument {
+auto read_equity_option(const record_reader& trade, std::string_view trade_type)
+    -> equity_option_instrument {
     auto r = equity_instrument_projection_make_row<equity_option_instrument>(trade_type);
     const auto data = trade.child("EquityOptionData");
     if (!data)
@@ -578,7 +578,7 @@ auto read_equity_worst_of_basket_swap(const record_reader& trade) -> equity_inst
 
     const auto prices = levels("InitialPrices", "InitialPrice");
     for (std::size_t i = 0; i < prices.size() && i < constituents.size(); ++i)
-        constituents[i].initial_price = prices[i].to_double();
+        constituents[i].initial_price = prices[i];
 
     const auto knock_outs = levels("KnockOutLevels", "KnockOutLevel");
     const auto triggers = levels("FixedTriggerLevels", "FixedTriggerLevel");
@@ -967,7 +967,7 @@ void write_equity_worst_of_basket_swap(record_writer& trade,
             continue;
         members.push_back({row.underlying_name, row.underlying_kind});
         if (row.initial_price.has_value())
-            prices.push_back(decimal::from_double(*row.initial_price).value());
+            prices.push_back(*row.initial_price);
     }
     if (members.empty() && !v.underlying_name.empty())
         members.push_back({v.underlying_name, "Equity"});

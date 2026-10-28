@@ -230,6 +230,22 @@ are one value written twice and both move together.
  */
 #+end_src
 
+** publish_equity_underlyings_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_equity_underlyings_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared equity underlyings.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_equity_underlyings_from_dq_fn, which the handler derives
+ * from the subject's last segment.
+ */
+#+end_src
+
 ** publish_conventions_from_dq_request
 :PROPERTIES:
 :subject: refdata.v1.ops.publish_conventions_from_dq

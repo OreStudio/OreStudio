@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-curve-blueprints
-#+pr:
+#+pr: 4006
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -172,7 +172,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4006][#4006]] | [marketdata] Build the curve blueprint screens |
 
 * Review
 

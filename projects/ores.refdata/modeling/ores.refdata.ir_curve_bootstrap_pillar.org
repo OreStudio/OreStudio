@@ -61,9 +61,10 @@ ctx.generate_uuid()
 
 ** bootstrap_config_id
 :PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:       uuid
+:cpp_type:   boost::uuids::uuid
 :natural_key: true
+:filterable: true
 :END:
 
 Parent =ir_curve_bootstrap_config= this pillar contributes to.

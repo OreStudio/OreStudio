@@ -90,11 +90,20 @@ std::optional<query_builder::condition> ir_curve_bootstrap_pillar_filter_conditi
     if (!filter)
         return std::nullopt;
     std::vector<query_builder::condition> r;
+    if (filter->bootstrap_config_id)
+        r.push_back(query_builder::equals(
+            "bootstrap_config_id", query_builder::filter_value(*filter->bootstrap_config_id)));
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(query_builder::filter_value(v));
         r.push_back(query_builder::one_of("id", std::move(values)));
+    }
+    if (filter->bootstrap_config_id_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->bootstrap_config_id_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("bootstrap_config_id", std::move(values)));
     }
     return query_builder::all_of(std::move(r));
 }

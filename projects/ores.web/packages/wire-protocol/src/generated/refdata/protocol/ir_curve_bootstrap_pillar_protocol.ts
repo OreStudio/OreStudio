@@ -58,7 +58,9 @@ export interface IrCurveBootstrapPillarLookup {
 }
 
 export interface IrCurveBootstrapPillarsFilter {
+    bootstrap_config_id: string | null;
     id_one_of: string[] | null;
+    bootstrap_config_id_one_of: string[] | null;
 }
 
 export interface IrCurveBootstrapPillarEvent {

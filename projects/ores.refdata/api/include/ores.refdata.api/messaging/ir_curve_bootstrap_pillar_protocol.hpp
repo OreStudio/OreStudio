@@ -65,7 +65,9 @@ struct ir_curve_bootstrap_pillar_lookup {
 };
 
 struct ir_curve_bootstrap_pillars_filter {
+    std::optional<boost::uuids::uuid> bootstrap_config_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> bootstrap_config_id_one_of;
 };
 
 struct ir_curve_bootstrap_pillar_event {

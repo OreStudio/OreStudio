@@ -61,7 +61,14 @@ export interface IrCurveBootstrapConfigLookup {
 }
 
 export interface IrCurveBootstrapConfigsFilter {
+    currency_code: string | null;
+    curve_family_role: string | null;
+    discount_curve_config_id: string | null;
     id_one_of: string[] | null;
+    currency_code_one_of: string[] | null;
+    curve_family_role_one_of: string[] | null;
+    discount_curve_config_id_one_of: string[] | null;
+    search: string | null;
 }
 
 export interface IrCurveBootstrapConfigEvent {

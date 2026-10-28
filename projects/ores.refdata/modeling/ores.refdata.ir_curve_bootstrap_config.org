@@ -66,6 +66,24 @@ not a fabricated sentinel -- matching the spirit of
 =ir_curve_template_entries='s own ='SPOT'= tenor, which its own doc
 comment is explicit isn't a sentinel hack either.
 
+* List contract
+
+The curve blueprint screens list, search, filter and order these rows on the
+server, so the columns those reads need declare what they support:
+
+- =currency_code= and =index_tenor= are searchable, because a blueprint has no
+  name and a person looks for one by the currency and the index it is quoted
+  for.
+- =currency_code= and =curve_family_role= are filterable, so the currency and
+  role filters reach the server as filter members rather than narrowing a page
+  the screen was given.
+- =currency_code=, =index_tenor=, =curve_family_role=, =interpolation_method=
+  and =day_count_convention= are sortable.
+
+=discount_curve_config_id= is filterable too, so a funding blueprint can read
+the projection blueprints that discount off it without reading every config of
+the tenant.
+
 * Flags
 :PROPERTIES:
 :schema:        public
@@ -105,9 +123,12 @@ ctx.generate_uuid()
 
 ** currency_code
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
+:type:       text
+:cpp_type:   std::string
+:nullable:   false
+:sortable:   true
+:searchable: true
+:filterable: true
 :END:
 
 References =currency.iso_code= -- the currency this curve's pillars are quoted in, and
@@ -121,9 +142,11 @@ std::string("USD")
 
 ** index_tenor
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
+:type:       text
+:cpp_type:   std::string
+:nullable:   false
+:sortable:   true
+:searchable: true
 :END:
 
 The tenor of the floating-rate index this curve stands for, as a period such as =1D= for an
@@ -163,6 +186,8 @@ ctx.generate_uuid()
 :cpp_type:      std::string
 :nullable:      false
 :default_value: "FUNDING"
+:sortable:      true
+:filterable:    true
 :END:
 
 Whether this config bootstraps the discounting anchor curve of its
@@ -181,6 +206,7 @@ std::string("FUNDING")
 :cpp_type:      boost::uuids::uuid
 :nullable:      false
 :default_value: boost::uuids::nil_uuid()
+:filterable:    true
 :END:
 
 Self-referencing: the =FUNDING= config this config's own pillars
@@ -201,6 +227,7 @@ boost::uuids::nil_uuid()
 :cpp_type:      std::string
 :nullable:      false
 :default_value: "LOG_LINEAR_DISCOUNT"
+:sortable:      true
 :END:
 
 Interpolation method for discount factors between pillars
@@ -218,6 +245,7 @@ std::string("LOG_LINEAR_DISCOUNT")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:sortable: true
 :END:
 
 References =day_count_fraction_type.code= (e.g. =A360=, =A365=) --

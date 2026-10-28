@@ -68,7 +68,14 @@ struct ir_curve_bootstrap_config_lookup {
 };
 
 struct ir_curve_bootstrap_configs_filter {
+    std::optional<std::string> currency_code;
+    std::optional<std::string> curve_family_role;
+    std::optional<boost::uuids::uuid> discount_curve_config_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<std::string>> currency_code_one_of;
+    std::optional<std::vector<std::string>> curve_family_role_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> discount_curve_config_id_one_of;
+    std::optional<std::string> search;
 };
 
 struct ir_curve_bootstrap_config_event {

@@ -55,6 +55,8 @@ import type { PartyCountryWrite } from '@ores/wire-protocol/generated/refdata/pr
 import type { PartyCurrencyWrite } from '@ores/wire-protocol/generated/refdata/protocol/party_currency_protocol';
 import type { PartyCounterpartyWrite } from '@ores/wire-protocol/generated/refdata/protocol/party_counterparty_protocol';
 import type { BusinessUnitWrite } from '@ores/wire-protocol/generated/refdata/protocol/business_unit_protocol';
+import type { IrCurveBootstrapConfigWrite } from '@ores/wire-protocol/generated/refdata/protocol/ir_curve_bootstrap_config_protocol';
+import type { IrCurveBootstrapPillarWrite } from '@ores/wire-protocol/generated/refdata/protocol/ir_curve_bootstrap_pillar_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
 import { pageQuerySchema } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
@@ -301,6 +303,31 @@ const WRITES: Readonly<Record<string, z.ZodType<Record<string, unknown>>>> = {
         unit_type_id: z.uuid().nullable(),
         status: code,
     }) satisfies z.ZodType<BusinessUnitWrite>,
+    'ir-curve-bootstrap-configs': z.object({
+        id: z.uuid(),
+        output_series_id: z.uuid(),
+        currency_code: isoCode,
+        index_tenor: code,
+        curve_family_role: z.enum(['FUNDING', 'PROJECTION']),
+        discount_curve_config_id: z.uuid(),
+        interpolation_method: z.enum([
+            'LOG_LINEAR_DISCOUNT',
+            'FLAT_FORWARD_THEN_LOG_LINEAR',
+            'CUBIC_SPLINE',
+        ]),
+        day_count_convention: code,
+        tenor_convention_code: code,
+        split_tenor_code: code,
+    }) satisfies z.ZodType<IrCurveBootstrapConfigWrite>,
+    'ir-curve-bootstrap-pillars': z.object({
+        id: z.uuid(),
+        party_id: z.uuid(),
+        bootstrap_config_id: z.uuid(),
+        sequence_index: z.int().min(0).max(10_000),
+        start_tenor_code: code,
+        end_tenor_code: code,
+        curve_role_code: z.enum(['DEPOSIT', 'FRA', 'SWAP']),
+    }) satisfies z.ZodType<IrCurveBootstrapPillarWrite>,
 };
 
 const intentSchema = z.object({
@@ -340,6 +367,33 @@ function writableFor(request: FastifyRequest): RecordResource {
         throw notPermitted(`${resource.key} is read only here.`);
     }
     return resource;
+}
+
+/**
+ * The filters a page states, each named in the address as `f.<member>`. A
+ * member the resource does not declare filterable is refused rather than
+ * ignored, because a filter that narrowed nothing would read as an answer.
+ */
+function filtersOf(
+    resource: RecordResource,
+    query: Readonly<Record<string, unknown>>,
+): Readonly<Record<string, string>> {
+    const named = resource.filters ?? [];
+    const set: Record<string, string> = {};
+    for (const [key, value] of Object.entries(query)) {
+        if (!key.startsWith('f.')) {
+            continue;
+        }
+        const member = key.slice('f.'.length);
+        if (!named.includes(member)) {
+            throw invalidRequest(`${resource.key} cannot be filtered by ${member}.`);
+        }
+        if (typeof value !== 'string') {
+            throw invalidRequest(`The filter ${member} takes one value.`);
+        }
+        set[member] = value;
+    }
+    return set;
 }
 
 /**
@@ -451,8 +505,8 @@ export function registerRecordRoutes(
 
     /**
      * A resource's rows. A read that names a limit gets one page and the total,
-     * searched and ordered on the server; a read without one gets every row,
-     * for the pickers that offer a whole kind.
+     * searched, filtered and ordered on the server; a read without one gets
+     * every row, for the pickers that offer a whole kind.
      */
     server.get('/api/refdata/:resource', async (request) => {
         const session = requireSession(request);
@@ -471,7 +525,8 @@ export function registerRecordRoutes(
         if (page.data.search !== '' && !resource.search) {
             throw invalidRequest(`${resource.key} cannot be searched.`);
         }
-        return await listRecordPage(session.client, resource, page.data);
+        const filters = filtersOf(resource, query);
+        return await listRecordPage(session.client, resource, { ...page.data, filters });
     });
 
     /** One record, named by its key, for a record page. */

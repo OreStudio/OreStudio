@@ -686,3 +686,76 @@ describe('the published curve routes', () => {
         expect(calls).toHaveLength(0);
     });
 });
+
+describe('the curve blueprint read routes', () => {
+    const CONFIG = '99999999-9999-4999-8999-999999999998';
+    const SERIES = '77777777-7777-4777-8777-777777777777';
+    const INSTANT = '2026-10-07 17:00:00Z';
+
+    it('names the series a set of ids holds, so a blueprint can show what it builds into', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.market_series.list': {
+                result: ok,
+                total: 1,
+                market_series: [
+                    { version: 1, id: SERIES, oresmd_uri: 'DISCOUNT/RATE/USD/USD-SOFR-1D' },
+                ],
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/series-by-id', {
+            ids: [SERIES],
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            series: [{ id: SERIES, uri: 'DISCOUNT/RATE/USD/USD-SOFR-1D' }],
+        });
+        expect(calls[0]?.body).toMatchObject({ filter: { id_one_of: [SERIES] } });
+    });
+
+    it('builds a recipe at an instant and answers the points, without publishing', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.ops.compute_curve': {
+                success: true,
+                message: '',
+                points: [{ point_id: '1Y', date: '2027-10-07', discount_factor: 0.97 }],
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/compute', {
+            bootstrap_config_id: CONFIG,
+            as_of: INSTANT,
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            points: [{ point_id: '1Y', date: '2027-10-07', discount_factor: 0.97 }],
+        });
+        expect(calls[0]?.body).toEqual({ bootstrap_config_id: CONFIG, as_of: INSTANT });
+    });
+
+    it("answers a refused build with the server's own words", async () => {
+        const { server, sessionId } = buildTestServer({
+            'marketdata.v1.ops.compute_curve': {
+                success: false,
+                message: 'output market_series not found for bootstrap config',
+                points: [],
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/compute', {
+            bootstrap_config_id: CONFIG,
+            as_of: INSTANT,
+        });
+        expect(response.statusCode).toBe(422);
+        expect(response.json()).toMatchObject({
+            message: 'output market_series not found for bootstrap config',
+        });
+    });
+
+    it('refuses an instant that is not a wire timestamp', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'POST', '/api/curves/compute', {
+            bootstrap_config_id: CONFIG,
+            as_of: 'now',
+        });
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+});

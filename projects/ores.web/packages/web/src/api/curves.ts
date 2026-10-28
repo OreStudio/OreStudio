@@ -54,10 +54,60 @@ function post(path: string, body: unknown): Promise<unknown> {
  * Both name the object by its typed identity. A read the server refuses comes
  * back as a failure that carries the server's reason.
  */
+/** A series named by its id: the oresmd URI it is published under. */
+const seriesUriSchema = z.object({
+    series: z.array(z.object({ id: z.uuid(), uri: z.string() })),
+});
+
+/** One point of a built curve: the pillar it answers, its date and its factor. */
+export interface ComputedCurvePoint {
+    readonly pointId: string;
+    readonly date: string;
+    readonly discountFactor: number;
+}
+
+const computedSchema = z.object({
+    points: z.array(
+        z.object({ point_id: z.string(), date: z.string(), discount_factor: z.number() }),
+    ),
+});
+
 export const curves = {
     /** The series the session's party can see, each as the identity that names it. */
     async seriesList(): Promise<CurveSeriesList> {
         return curveSeriesListSchema.parse(await post('/api/curves/series-list', {}));
+    },
+
+    /**
+     * Builds one blueprint's curve at an instant and answers its points.
+     *
+     * The test writes nothing, so a re-run replaces the answer a person reads
+     * and leaves the ledger as it was.
+     */
+    async compute(bootstrapConfigId: string, asOf: string): Promise<readonly ComputedCurvePoint[]> {
+        const reply = computedSchema.parse(
+            await post('/api/curves/compute', {
+                bootstrap_config_id: bootstrapConfigId,
+                as_of: asOf,
+            }),
+        );
+        return reply.points.map((point) => ({
+            pointId: point.point_id,
+            date: point.date,
+            discountFactor: point.discount_factor,
+        }));
+    },
+
+    /**
+     * The URI of each series a set of ids names, for the rows of a screen that
+     * holds the series by reference.
+     */
+    async seriesUris(ids: readonly string[]): Promise<ReadonlyMap<string, string>> {
+        if (ids.length === 0) {
+            return new Map();
+        }
+        const reply = seriesUriSchema.parse(await post('/api/curves/series-by-id', { ids }));
+        return new Map(reply.series.map((row) => [row.id, row.uri]));
     },
 
     /** The aligned matrix of instants by nodes over the range. */

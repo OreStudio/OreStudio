@@ -8,7 +8,7 @@
 #+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
 #+owner: marco
 #+branch: feature/construct-the-rest-of-the-equity-family
-#+pr:
+#+pr: 4025
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4025][#4025]] | [trading] Construct every equity product by name |
 
 * Review
 

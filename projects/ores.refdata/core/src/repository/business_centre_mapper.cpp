@@ -43,7 +43,7 @@ domain::business_centre business_centre_mapper::map(const business_centre_entity
     domain::business_centre r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.source = v.source.value_or("");
     r.description = v.description.value_or("");
     r.city_name = v.city_name.value_or("");

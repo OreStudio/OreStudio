@@ -43,7 +43,7 @@ domain::curve_section curve_section_mapper::map(const curve_section_entity& v) {
     domain::curve_section r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.entry_element = v.entry_element;
     r.description = v.description.value_or("");
     r.modified_by = v.modified_by;

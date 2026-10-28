@@ -614,7 +614,7 @@ party_repository::read_system_party(context ctx, const std::string& tenant_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading system party for tenant: " << tenant_id;
     const std::string sql =
         "SELECT * FROM ores_refdata_read_system_party_fn('" + tenant_id + "'::uuid)";
-    const auto rows = execute_raw_multi_column_query(ctx, sql, lg(),
+    const auto rows = query_builder::execute_raw_multi_column_query(ctx, sql, lg(),
         "Reading system party by tenant");
     std::vector<domain::party> result;
     result.reserve(rows.size());
@@ -676,7 +676,7 @@ party_repository::read_descendants(context ctx, const boost::uuids::uuid& root_i
         "  JOIN party_tree pt ON p.parent_party_id = pt.id"
         "  WHERE p.valid_to = '" + MAX_TIMESTAMP + "'"
         ") SELECT id FROM party_tree";
-    const auto rows = execute_raw_multi_column_query(ctx, sql, lg(),
+    const auto rows = query_builder::execute_raw_multi_column_query(ctx, sql, lg(),
         "Reading party descendants");
     std::vector<boost::uuids::uuid> result;
     result.reserve(rows.size());
@@ -706,12 +706,12 @@ std::optional<domain::party>
 party_repository::read_registration_default(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<party_entity>> |
-                       where("tenant_id"_c == tid && "is_registration_default"_c == true &&
+    const auto query = query_builder::read<std::vector<party_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "is_registration_default"_c == true &&
                              "valid_to"_c == max.value()) |
-                       limit(1);
+                       query_builder::limit(1);
 
-    const auto rows = execute_read_query<party_entity, domain::party>(
+    const auto rows = query_builder::execute_read_query<party_entity, domain::party>(
         ctx,
         query,
         [](const auto& entities) { return party_mapper::map(entities); },

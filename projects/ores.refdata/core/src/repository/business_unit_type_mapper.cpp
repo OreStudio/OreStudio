@@ -45,7 +45,7 @@ domain::business_unit_type business_unit_type_mapper::map(const business_unit_ty
     domain::business_unit_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
 
     r.coding_scheme_code = v.coding_scheme_code;
 

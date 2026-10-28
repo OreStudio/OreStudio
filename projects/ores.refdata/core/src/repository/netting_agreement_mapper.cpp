@@ -45,7 +45,7 @@ domain::netting_agreement netting_agreement_mapper::map(const netting_agreement_
     domain::netting_agreement r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
 
     r.agreement_number = v.agreement_number;
 

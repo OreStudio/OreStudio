@@ -25,8 +25,8 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_COMMODITY_FUTURE_CONVENTION_ENTITY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_COMMODITY_FUTURE_CONVENTION_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct commodity_future_convention_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_refdata_commodity_future_conventions_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
     std::string party_id;
@@ -103,6 +103,87 @@ struct commodity_future_convention_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = commodity_future_convention_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("contract_frequency", &e::contract_frequency) |
+               query_builder::bind("calendar", &e::calendar) |
+               query_builder::bind("expiry_calendar", &e::expiry_calendar) |
+               query_builder::bind("expiry_month_lag", &e::expiry_month_lag) |
+               query_builder::bind("one_contract_month", &e::one_contract_month) |
+               query_builder::bind("offset_days", &e::offset_days) |
+               query_builder::bind("business_day_convention", &e::business_day_convention) |
+               query_builder::bind("adjust_before_offset", &e::adjust_before_offset) |
+               query_builder::bind("is_averaging", &e::is_averaging) |
+               query_builder::bind("valid_contract_months", &e::valid_contract_months) |
+               query_builder::bind("anchor_day_of_month", &e::anchor_day_of_month) |
+               query_builder::bind("anchor_calendar_days_before", &e::anchor_calendar_days_before) |
+               query_builder::bind("anchor_business_days_after", &e::anchor_business_days_after) |
+               query_builder::bind("anchor_nth_nth", &e::anchor_nth_nth) |
+               query_builder::bind("anchor_nth_weekday", &e::anchor_nth_weekday) |
+               query_builder::bind("anchor_last_weekday", &e::anchor_last_weekday) |
+               query_builder::bind("anchor_weekly_day_of_the_week",
+                                   &e::anchor_weekly_day_of_the_week) |
+               query_builder::bind("option_expiry_month_lag", &e::option_expiry_month_lag) |
+               query_builder::bind("option_contract_frequency", &e::option_contract_frequency) |
+               query_builder::bind("option_expiry_offset", &e::option_expiry_offset) |
+               query_builder::bind("option_calendar_days_before", &e::option_calendar_days_before) |
+               query_builder::bind("option_min_business_days_before",
+                                   &e::option_min_business_days_before) |
+               query_builder::bind("option_expiry_day", &e::option_expiry_day) |
+               query_builder::bind("option_nth_nth", &e::option_nth_nth) |
+               query_builder::bind("option_nth_weekday", &e::option_nth_weekday) |
+               query_builder::bind("option_expiry_last_weekday_of_month",
+                                   &e::option_expiry_last_weekday_of_month) |
+               query_builder::bind("option_expiry_weekly_day_of_the_week",
+                                   &e::option_expiry_weekly_day_of_the_week) |
+               query_builder::bind("option_business_day_convention",
+                                   &e::option_business_day_convention) |
+               query_builder::bind("hours_per_day", &e::hours_per_day) |
+               query_builder::bind("off_peak_index", &e::off_peak_index) |
+               query_builder::bind("peak_index", &e::peak_index) |
+               query_builder::bind("off_peak_hours", &e::off_peak_hours) |
+               query_builder::bind("peak_calendar", &e::peak_calendar) |
+               query_builder::bind("index_name", &e::index_name) |
+               query_builder::bind("savings_time", &e::savings_time) |
+               query_builder::bind("delivery_location", &e::delivery_location) |
+               query_builder::bind("balance_of_the_month", &e::balance_of_the_month) |
+               query_builder::bind("balance_of_the_month_pricing_calendar",
+                                   &e::balance_of_the_month_pricing_calendar) |
+               query_builder::bind("option_underlying_future_convention",
+                                   &e::option_underlying_future_convention) |
+               query_builder::bind("averaging_commodity_name", &e::averaging_commodity_name) |
+               query_builder::bind("averaging_period", &e::averaging_period) |
+               query_builder::bind("averaging_pricing_calendar", &e::averaging_pricing_calendar) |
+               query_builder::bind("averaging_conventions", &e::averaging_conventions) |
+               query_builder::bind("averaging_use_business_days", &e::averaging_use_business_days) |
+               query_builder::bind("averaging_delivery_roll_days",
+                                   &e::averaging_delivery_roll_days) |
+               query_builder::bind("averaging_future_month_offset",
+                                   &e::averaging_future_month_offset) |
+               query_builder::bind("averaging_daily_expiry_offset",
+                                   &e::averaging_daily_expiry_offset) |
+               query_builder::bind("prohibited_expiries", &e::prohibited_expiries) |
+               query_builder::bind("future_continuation_mappings",
+                                   &e::future_continuation_mappings) |
+               query_builder::bind("option_continuation_mappings",
+                                   &e::option_continuation_mappings) |
+               query_builder::bind("oresmd_uri", &e::oresmd_uri) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const commodity_future_convention_entity& v);

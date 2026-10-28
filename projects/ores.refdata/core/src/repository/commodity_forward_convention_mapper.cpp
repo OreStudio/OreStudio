@@ -46,7 +46,7 @@ commodity_forward_convention_mapper::map(const commodity_forward_convention_enti
     domain::commodity_forward_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = v.id.value();
+    r.id = v.id;
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.spot_days = v.spot_days;
     r.points_factor = v.points_factor;

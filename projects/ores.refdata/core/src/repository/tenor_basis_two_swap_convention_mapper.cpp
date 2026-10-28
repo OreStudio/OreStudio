@@ -46,7 +46,7 @@ tenor_basis_two_swap_convention_mapper::map(const tenor_basis_two_swap_conventio
     domain::tenor_basis_two_swap_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = v.id.value();
+    r.id = v.id;
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.calendar = v.calendar;
     r.long_fixed_frequency = v.long_fixed_frequency;

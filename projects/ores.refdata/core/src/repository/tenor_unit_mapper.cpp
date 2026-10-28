@@ -42,7 +42,7 @@ domain::tenor_unit tenor_unit_mapper::map(const tenor_unit_entity& v) {
     domain::tenor_unit r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

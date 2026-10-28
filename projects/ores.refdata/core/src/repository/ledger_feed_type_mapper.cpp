@@ -42,7 +42,7 @@ domain::ledger_feed_type ledger_feed_type_mapper::map(const ledger_feed_type_ent
     domain::ledger_feed_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

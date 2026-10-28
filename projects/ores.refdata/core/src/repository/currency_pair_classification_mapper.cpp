@@ -43,7 +43,7 @@ currency_pair_classification_mapper::map(const currency_pair_classification_enti
     domain::currency_pair_classification r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

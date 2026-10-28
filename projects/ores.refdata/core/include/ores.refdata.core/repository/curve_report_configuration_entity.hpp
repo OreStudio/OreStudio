@@ -25,8 +25,8 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CURVE_REPORT_CONFIGURATION_ENTITY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CURVE_REPORT_CONFIGURATION_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct curve_report_configuration_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_refdata_curve_report_configurations_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
     std::string party_id;
@@ -65,6 +65,38 @@ struct curve_report_configuration_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = curve_report_configuration_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("curve_definition_id", &e::curve_definition_id) |
+               query_builder::bind("report_on_delta_grid", &e::report_on_delta_grid) |
+               query_builder::bind("report_on_moneyness_grid", &e::report_on_moneyness_grid) |
+               query_builder::bind("report_on_strike_grid", &e::report_on_strike_grid) |
+               query_builder::bind("report_on_strike_spread_grid",
+                                   &e::report_on_strike_spread_grid) |
+               query_builder::bind("deltas", &e::deltas) |
+               query_builder::bind("moneyness", &e::moneyness) |
+               query_builder::bind("strikes", &e::strikes) |
+               query_builder::bind("strike_spreads", &e::strike_spreads) |
+               query_builder::bind("expiries", &e::expiries) |
+               query_builder::bind("pillar_dates", &e::pillar_dates) |
+               query_builder::bind("underlying_tenors", &e::underlying_tenors) |
+               query_builder::bind("continuation_expiry", &e::continuation_expiry) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const curve_report_configuration_entity& v);

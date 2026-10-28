@@ -42,7 +42,7 @@ domain::tenor_kind tenor_kind_mapper::map(const tenor_kind_entity& v) {
     domain::tenor_kind r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

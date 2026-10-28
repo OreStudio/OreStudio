@@ -45,7 +45,7 @@ domain::calendar_rule calendar_rule_mapper::map(const calendar_rule_entity& v) {
     domain::calendar_rule r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.calendar_code = v.calendar_code;
     r.kind = v.kind;
     r.month = v.month;

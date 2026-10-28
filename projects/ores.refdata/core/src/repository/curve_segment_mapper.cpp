@@ -47,7 +47,7 @@ domain::curve_segment curve_segment_mapper::map(const curve_segment_entity& v) {
     domain::curve_segment r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.curve_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.curve_definition_id);
     r.segment_type = v.segment_type;

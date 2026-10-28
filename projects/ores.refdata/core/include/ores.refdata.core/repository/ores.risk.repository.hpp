@@ -22,7 +22,7 @@
 /**
  * @brief Database persistence layer for risk domain types.
  *
- * Provides ORM support using sqlgen including entities, mappers, and
+ * Provides persistence on the libpq layer, including entities, mappers, and
  * repositories for currency and related entities. Supports temporal
  * versioning with valid_from/valid_to fields.
  */

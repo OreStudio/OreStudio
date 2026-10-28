@@ -43,7 +43,7 @@ domain::tenor tenor_mapper::map(const tenor_entity& v) {
     domain::tenor r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.display_name = v.display_name;
     r.description = v.description.value_or("");
     r.sort_order = v.sort_order;

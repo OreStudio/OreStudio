@@ -43,7 +43,7 @@ currency_pair_convention_mapper::map(const currency_pair_convention_entity& v) {
     domain::currency_pair_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.pair_code = v.pair_code.value();
+    r.pair_code = v.pair_code;
     r.pip_factor = v.pip_factor;
     r.tick_size = v.tick_size;
     r.decimal_places = v.decimal_places;

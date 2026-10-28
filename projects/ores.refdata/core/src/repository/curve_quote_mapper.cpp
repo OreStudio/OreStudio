@@ -46,7 +46,7 @@ domain::curve_quote curve_quote_mapper::map(const curve_quote_entity& v) {
     domain::curve_quote r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.curve_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.curve_definition_id);
     r.curve_segment_id = v.curve_segment_id.has_value() ?

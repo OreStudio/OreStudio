@@ -46,7 +46,7 @@ fx_option_convention_mapper::map(const fx_option_convention_entity& v) {
     domain::fx_option_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = v.id.value();
+    r.id = v.id;
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.fx_convention_id = v.fx_convention_id;
     r.atm_type = v.atm_type;

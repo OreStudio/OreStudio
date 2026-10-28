@@ -25,8 +25,8 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_TENOR_CONVENTION_ENTITY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_TENOR_CONVENTION_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct tenor_convention_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_refdata_tenor_conventions_tbl";
 
-    sqlgen::PrimaryKey<std::string> code;
+    std::string code;
     std::string tenant_id;
     int version = 0;
     std::optional<std::string> description;
@@ -56,6 +56,29 @@ struct tenor_convention_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = tenor_convention_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("code", &e::code) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("description", &e::description) |
+               query_builder::bind("measured_from", &e::measured_from) |
+               query_builder::bind("resolution_algorithm", &e::resolution_algorithm) |
+               query_builder::bind("business_day_convention_type",
+                                   &e::business_day_convention_type) |
+               query_builder::bind("oresmd_uri", &e::oresmd_uri) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const tenor_convention_entity& v);

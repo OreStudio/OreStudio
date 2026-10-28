@@ -42,7 +42,7 @@ domain::source_kind source_kind_mapper::map(const source_kind_entity& v) {
     domain::source_kind r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

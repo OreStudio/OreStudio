@@ -25,8 +25,8 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CROSS_CURRENCY_FIX_FLOAT_CONVENTION_ENTITY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CROSS_CURRENCY_FIX_FLOAT_CONVENTION_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -43,7 +43,7 @@ struct cross_currency_fix_float_convention_entity {
     constexpr static const char* tablename =
         "ores_refdata_cross_currency_fix_float_conventions_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
     std::string party_id;
@@ -71,6 +71,41 @@ struct cross_currency_fix_float_convention_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = cross_currency_fix_float_convention_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("settlement_days", &e::settlement_days) |
+               query_builder::bind("settlement_calendar", &e::settlement_calendar) |
+               query_builder::bind("settlement_convention", &e::settlement_convention) |
+               query_builder::bind("fixed_currency", &e::fixed_currency) |
+               query_builder::bind("fixed_frequency", &e::fixed_frequency) |
+               query_builder::bind("fixed_convention", &e::fixed_convention) |
+               query_builder::bind("fixed_day_count_fraction", &e::fixed_day_count_fraction) |
+               query_builder::bind("index", &e::index) | query_builder::bind("eom", &e::eom) |
+               query_builder::bind("is_resettable", &e::is_resettable) |
+               query_builder::bind("float_index_is_resettable", &e::float_index_is_resettable) |
+               query_builder::bind("include_spread", &e::include_spread) |
+               query_builder::bind("lookback", &e::lookback) |
+               query_builder::bind("fixing_days", &e::fixing_days) |
+               query_builder::bind("rate_cutoff", &e::rate_cutoff) |
+               query_builder::bind("is_averaged", &e::is_averaged) |
+               query_builder::bind("observation_shift", &e::observation_shift) |
+               query_builder::bind("oresmd_uri", &e::oresmd_uri) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const cross_currency_fix_float_convention_entity& v);

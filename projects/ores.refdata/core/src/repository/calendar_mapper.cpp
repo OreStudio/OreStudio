@@ -46,7 +46,7 @@ domain::calendar calendar_mapper::map(const calendar_entity& v) {
     domain::calendar r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

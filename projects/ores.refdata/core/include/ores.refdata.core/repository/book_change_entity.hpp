@@ -25,8 +25,8 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_BOOK_CHANGE_ENTITY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_BOOK_CHANGE_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct book_change_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_refdata_book_changes_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
     std::string request_id;
@@ -75,6 +75,44 @@ struct book_change_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = book_change_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("request_id", &e::request_id) |
+               query_builder::bind("line_no", &e::line_no) |
+               query_builder::bind("operation", &e::operation) |
+               query_builder::bind("base_version", &e::base_version) |
+               query_builder::bind("applied", &e::applied) |
+               query_builder::bind("entity_id", &e::entity_id) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("name", &e::name) |
+               query_builder::bind("description", &e::description) |
+               query_builder::bind("parent_portfolio_id", &e::parent_portfolio_id) |
+               query_builder::bind("owner_unit_id", &e::owner_unit_id) |
+               query_builder::bind("functional_currency", &e::functional_currency) |
+               query_builder::bind("gl_account_ref", &e::gl_account_ref) |
+               query_builder::bind("cost_center", &e::cost_center) |
+               query_builder::bind("book_status", &e::book_status) |
+               query_builder::bind("regulatory_book_type", &e::regulatory_book_type) |
+               query_builder::bind("book_purpose_type", &e::book_purpose_type) |
+               query_builder::bind("ledger_feed_type", &e::ledger_feed_type) |
+               query_builder::bind("is_sweepable", &e::is_sweepable) |
+               query_builder::bind("rates_centre_code", &e::rates_centre_code) |
+               query_builder::bind("sandbox_id", &e::sandbox_id) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const book_change_entity& v);

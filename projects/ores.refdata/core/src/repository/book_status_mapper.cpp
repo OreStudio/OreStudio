@@ -42,7 +42,7 @@ domain::book_status book_status_mapper::map(const book_status_entity& v) {
     domain::book_status r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

@@ -47,7 +47,7 @@ netting_set_identifier_mapper::map(const netting_set_identifier_entity& v) {
     domain::netting_set_identifier r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.netting_set_id = boost::lexical_cast<boost::uuids::uuid>(v.netting_set_id);
 
 

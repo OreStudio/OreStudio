@@ -19,12 +19,11 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/repository/counterparty_business_centre_repository.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -39,16 +38,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
-#include <sqlgen/aggregations.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/select_from.hpp>
-#include <sqlgen/to.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -56,13 +45,13 @@
 
 namespace ores::refdata::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string counterparty_business_centre_repository::sql() {
-    return generate_create_table_sql<counterparty_business_centre_entity>(lg());
+    return query_builder::insert_statement_sql<counterparty_business_centre_entity>(lg());
 }
 
 counterparty_business_centre_repository::counterparty_business_centre_repository(context ctx)
@@ -125,10 +114,10 @@ void counterparty_business_centre_repository::write(
                                << counterparty_business_centre.counterparty_id << "/"
                                << counterparty_business_centre.business_centre_code;
     const auto t = apply_claim(counterparty_business_centre, claim);
-    execute_write_query(ctx_,
-                        counterparty_business_centre_mapper::map(t),
-                        lg(),
-                        "writing counterparty business centre to database");
+    query_builder::execute_write_query(ctx_,
+                                       counterparty_business_centre_mapper::map(t),
+                                       lg(),
+                                       "writing counterparty business centre to database");
 }
 
 void counterparty_business_centre_repository::write(
@@ -140,22 +129,22 @@ void counterparty_business_centre_repository::write(
     batch.reserve(counterparty_business_centres.size());
     for (std::size_t i = 0; i < counterparty_business_centres.size(); ++i)
         batch.push_back(apply_claim(counterparty_business_centres[i], claims[i]));
-    execute_write_query(ctx_,
-                        counterparty_business_centre_mapper::map(batch),
-                        lg(),
-                        "writing counterparty business centres to database");
+    query_builder::execute_write_query(ctx_,
+                                       counterparty_business_centre_mapper::map(batch),
+                                       lg(),
+                                       "writing counterparty business centres to database");
 }
 
 std::vector<domain::counterparty_business_centre>
 counterparty_business_centre_repository::read_latest() {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<counterparty_business_centre_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("counterparty_id"_c, "business_centre_code"_c);
+    const auto query = query_builder::read<std::vector<counterparty_business_centre_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("counterparty_id"_c, "business_centre_code"_c);
 
-    return execute_read_query<counterparty_business_centre_entity,
-                              domain::counterparty_business_centre>(
+    return query_builder::execute_read_query<counterparty_business_centre_entity,
+                                             domain::counterparty_business_centre>(
         ctx_,
         query,
         [](const auto& entities) { return counterparty_business_centre_mapper::map(entities); },
@@ -169,13 +158,13 @@ counterparty_business_centre_repository::read_latest(std::uint32_t offset, std::
                                << offset << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<counterparty_business_centre_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("counterparty_id"_c, "business_centre_code"_c) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<counterparty_business_centre_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("counterparty_id"_c, "business_centre_code"_c) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_read_query<counterparty_business_centre_entity,
-                              domain::counterparty_business_centre>(
+    return query_builder::execute_read_query<counterparty_business_centre_entity,
+                                             domain::counterparty_business_centre>(
         ctx_,
         query,
         [](const auto& entities) { return counterparty_business_centre_mapper::map(entities); },
@@ -194,12 +183,13 @@ counterparty_business_centre_repository::read_latest(const boost::uuids::uuid& c
     const auto business_centre_code_str = business_centre_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<counterparty_business_centre_entity>> |
-        where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
-              "business_centre_code"_c == business_centre_code && "valid_to"_c == max.value());
+        query_builder::read<std::vector<counterparty_business_centre_entity>> |
+        query_builder::where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
+                             "business_centre_code"_c == business_centre_code &&
+                             "valid_to"_c == max.value());
 
-    return execute_read_query<counterparty_business_centre_entity,
-                              domain::counterparty_business_centre>(
+    return query_builder::execute_read_query<counterparty_business_centre_entity,
+                                             domain::counterparty_business_centre>(
         ctx_,
         query,
         [](const auto& entities) { return counterparty_business_centre_mapper::map(entities); },
@@ -212,19 +202,12 @@ counterparty_business_centre_repository::get_total_counterparty_business_centre_
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active counterparty business centres count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<counterparty_business_centre_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<counterparty_business_centre_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<counterparty_business_centre_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting counterparty business centres");
     BOOST_LOG_SEV(lg(), debug) << "Total active counterparty business centres count: " << count;
     return count;
 }
@@ -238,13 +221,14 @@ counterparty_business_centre_repository::read_latest_by_counterparty(
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<counterparty_business_centre_entity>> |
-                       where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
+    const auto query =
+        query_builder::read<std::vector<counterparty_business_centre_entity>> |
+        query_builder::where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
                              "valid_to"_c == max.value()) |
-                       order_by("business_centre_code"_c);
+        query_builder::order_by("business_centre_code"_c);
 
-    auto rows = execute_read_query<counterparty_business_centre_entity,
-                                   domain::counterparty_business_centre>(
+    auto rows = query_builder::execute_read_query<counterparty_business_centre_entity,
+                                                  domain::counterparty_business_centre>(
         ctx_,
         query,
         [](const auto& entities) { return counterparty_business_centre_mapper::map(entities); },
@@ -262,14 +246,14 @@ counterparty_business_centre_repository::read_latest_by_business_centre(
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<counterparty_business_centre_entity>> |
-        where("tenant_id"_c == tid && "business_centre_code"_c == business_centre_code &&
-              "valid_to"_c == max.value()) |
-        order_by("counterparty_id"_c);
+    const auto query = query_builder::read<std::vector<counterparty_business_centre_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                                            "business_centre_code"_c == business_centre_code &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("counterparty_id"_c);
 
-    auto rows = execute_read_query<counterparty_business_centre_entity,
-                                   domain::counterparty_business_centre>(
+    auto rows = query_builder::execute_read_query<counterparty_business_centre_entity,
+                                                  domain::counterparty_business_centre>(
         ctx_,
         query,
         [](const auto& entities) { return counterparty_business_centre_mapper::map(entities); },
@@ -288,14 +272,15 @@ counterparty_business_centre_repository::read_latest_by_counterparty(
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<counterparty_business_centre_entity>> |
-                       where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
+    const auto query =
+        query_builder::read<std::vector<counterparty_business_centre_entity>> |
+        query_builder::where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
                              "valid_to"_c == max.value()) |
-                       order_by("business_centre_code"_c) | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+        query_builder::order_by("business_centre_code"_c) | query_builder::offset(offset) |
+        query_builder::limit(limit);
 
-    auto rows = execute_read_query<counterparty_business_centre_entity,
-                                   domain::counterparty_business_centre>(
+    auto rows = query_builder::execute_read_query<counterparty_business_centre_entity,
+                                                  domain::counterparty_business_centre>(
         ctx_,
         query,
         [](const auto& entities) { return counterparty_business_centre_mapper::map(entities); },
@@ -314,21 +299,14 @@ std::uint32_t counterparty_business_centre_repository::
         << counterparty_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
-        sqlgen::select_from<counterparty_business_centre_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
-              "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+        query_builder::read<std::vector<counterparty_business_centre_entity>> |
+        query_builder::where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<counterparty_business_centre_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting counterparty business centres");
     BOOST_LOG_SEV(lg(), debug)
         << "Total active counterparty business centres count by counterparty: " << count;
     return count;
@@ -342,21 +320,14 @@ std::uint32_t counterparty_business_centre_repository::
         << business_centre_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<counterparty_business_centre_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "business_centre_code"_c == business_centre_code &&
-              "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<counterparty_business_centre_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                                            "business_centre_code"_c == business_centre_code &&
+                                            "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<counterparty_business_centre_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting counterparty business centres");
     BOOST_LOG_SEV(lg(), debug)
         << "Total active counterparty business centres count by business_centre: " << count;
     return count;
@@ -371,12 +342,13 @@ counterparty_business_centre_repository::read_all_by_counterparty(
 
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<counterparty_business_centre_entity>> |
-                       where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str) |
-                       order_by("business_centre_code"_c, "valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<counterparty_business_centre_entity>> |
+        query_builder::where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str) |
+        query_builder::order_by("business_centre_code"_c, "valid_from"_c.desc());
 
-    return execute_read_query<counterparty_business_centre_entity,
-                              counterparty_business_centre_history_row>(
+    return query_builder::execute_read_query<counterparty_business_centre_entity,
+                                             counterparty_business_centre_history_row>(
         ctx_,
         query,
         [](const auto& entities) {
@@ -438,12 +410,14 @@ counterparty_business_centre_repository::remove(const boost::uuids::uuid& counte
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
     const auto business_centre_code_str = business_centre_code;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<counterparty_business_centre_entity> |
-                       where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
+    const auto query =
+        query_builder::delete_from<counterparty_business_centre_entity> |
+        query_builder::where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
                              "business_centre_code"_c == business_centre_code &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx_, query, lg(), "removing counterparty business centre from database");
+    query_builder::execute_delete_query(
+        ctx_, query, lg(), "removing counterparty business centre from database");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -472,10 +446,11 @@ void counterparty_business_centre_repository::remove_by_counterparty(
 
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<counterparty_business_centre_entity> |
-                       where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str);
+    const auto query =
+        query_builder::delete_from<counterparty_business_centre_entity> |
+        query_builder::where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str);
 
-    execute_delete_query(
+    query_builder::execute_delete_query(
         ctx_, query, lg(), "removing all counterparty business centres from database");
 }
 

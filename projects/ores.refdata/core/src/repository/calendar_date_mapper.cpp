@@ -43,7 +43,7 @@ domain::calendar_date calendar_date_mapper::map(const calendar_date_entity& v) {
     domain::calendar_date r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.calendar_code = v.calendar_code.value();
+    r.calendar_code = v.calendar_code;
     r.date = ores::platform::time::datetime::from_iso8601_date(v.date);
     r.is_business_day = v.is_business_day;
     r.source = v.source;

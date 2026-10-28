@@ -46,7 +46,7 @@ curve_configuration_section_mapper::map(const curve_configuration_section_entity
     domain::curve_configuration_section r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.curve_configuration_id = boost::lexical_cast<boost::uuids::uuid>(v.curve_configuration_id);
     r.section_code = v.section_code;

@@ -3905,6 +3905,8 @@ const pt: SourceCatalogue = {
             role: 'Papel',
             party: 'Parte',
             noRoles: 'Nenhum papel foi registado com esta transação.',
+            bookingEntry: 'Reserva',
+            membershipEntry: 'Perna de {reference}',
             linkTypesFailed: 'Não foi possível ler os tipos de ligação. {message}',
             linkPickerTruncated:
                 'A mostrar {shown} de {total} transações; as restantes aguardam um campo de pesquisa.',

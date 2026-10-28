@@ -24,7 +24,7 @@ import { useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
 import { trades, type TradeLink, type TradePageRecord } from '../api/trades.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { HistoryPanel } from '../refdata/HistoryPanel.js';
+import { RecordTimeline } from '../refdata/RecordTimeline.js';
 import { localSource, RecordTable } from '../refdata/RecordList.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
@@ -594,10 +594,52 @@ export function TradePage(): ReactNode {
                 )}
                 {tabs.tab === 'links' && <LinksTab record={record} />}
                 {tabs.tab === 'history' && (
-                    // The application's own panel: the timeline, the fields that
-                    // changed at each version, who changed them and why. A table
-                    // of version numbers says nothing a person can act on.
-                    <HistoryPanel entityType="ores.trading.trade" entityId={trade.id} />
+                    /*
+                     * The trade's story is its own booking and membership beside
+                     * the trade's versions: the trade row is written once and
+                     * never changes, so every later version of it is a bump made
+                     * by a write to one of its parts, and the stream leaves those
+                     * out rather than say nothing happened.
+                     */
+                    <RecordTimeline
+                        entityType="ores.trading.trade"
+                        entityId={trade.id}
+                        hideUnchanged
+                        parts={[
+                            ...(record.booking === null
+                                ? []
+                                : [
+                                      {
+                                          entityType: 'ores.trading.trade_booking',
+                                          rows: [
+                                              {
+                                                  id: record.booking.trade_id,
+                                                  version: record.booking.version,
+                                              },
+                                          ],
+                                          name: () => t('trading.page.bookingEntry'),
+                                      },
+                                  ]),
+                            ...(record.structures.length === 0
+                                ? []
+                                : [
+                                      {
+                                          entityType: 'ores.trading.structure_member',
+                                          rows: record.structures.map((entry) => ({
+                                              id: trade.id,
+                                              version: entry.version,
+                                          })),
+                                          name: () =>
+                                              t('trading.page.membershipEntry', {
+                                                  reference:
+                                                      record.structures[0]?.reference ||
+                                                      record.structures[0]?.structure_id ||
+                                                      '',
+                                              }),
+                                      },
+                                  ]),
+                        ]}
+                    />
                 )}
             </div>
         </ScreenFrame>

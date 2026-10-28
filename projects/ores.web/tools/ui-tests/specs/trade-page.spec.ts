@@ -27,6 +27,19 @@ test('a trade opens its own page and every tab answers', async ({ page }) => {
         await page.getByRole('tab', { name: tab }).click();
         await expect(page.getByRole('tab', { name: tab })).toHaveAttribute('aria-selected', 'true');
     }
+
+    /*
+     * The History tab is the shared timeline, over the trade and the parts it
+     * holds. A trade's versions are written by its parts, so the tab reads a
+     * stream rather than the trade table alone: an unregistered provider or a
+     * part the history route does not serve has to fail here.
+     */
+    await page.getByRole('tab', { name: 'History' }).click();
+    await expect(page.getByRole('button', { name: /hide system activity/i })).toBeVisible({
+        timeout: 20_000,
+    });
+    await expect(page.getByText(/did not finish|no history is served/i)).toHaveCount(0);
+    await page.screenshot({ path: 'shots/trade-history.png', fullPage: true });
 });
 
 /**

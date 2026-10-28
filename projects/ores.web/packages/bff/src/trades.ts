@@ -411,6 +411,7 @@ function registerTradePageRoute(
                 reference: referenceOfStructure.get(structureId) ?? '',
                 role: text(entry['role']),
                 sequence_number: Number(entry['sequence_number'] ?? 0),
+                version: Number(entry['version'] ?? 0),
             };
         });
 

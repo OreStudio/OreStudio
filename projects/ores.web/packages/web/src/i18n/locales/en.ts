@@ -3878,6 +3878,8 @@ export const en: SourceCatalogue = {
             role: 'Role',
             party: 'Party',
             noRoles: 'No role was recorded with this trade.',
+            bookingEntry: 'Booking',
+            membershipEntry: 'Leg of {reference}',
             linkTypesFailed: 'The link types could not be read. {message}',
             linkPickerTruncated:
                 'Showing {shown} of {total} trades; the rest wait for a search box.',

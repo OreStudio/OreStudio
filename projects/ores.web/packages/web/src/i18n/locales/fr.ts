@@ -3924,6 +3924,8 @@ const fr: SourceCatalogue = {
             role: 'Rôle',
             party: 'Partie',
             noRoles: 'Aucun rôle enregistré avec cette transaction.',
+            bookingEntry: 'Réservation',
+            membershipEntry: 'Jambe de {reference}',
             linkTypesFailed: 'Les types de lien n’ont pas pu être lus. {message}',
             linkPickerTruncated:
                 'Affichage de {shown} transactions sur {total} ; les autres attendent un champ de recherche.',

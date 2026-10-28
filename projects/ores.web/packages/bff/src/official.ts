@@ -122,6 +122,19 @@ export function registerOfficialRatesRoutes(
                 const pair = fixingPair(row.oresmd_uri);
                 return pair === null ? [] : [{ ...row, ...pair }];
             });
+        // The screen takes a provider's first series as its base; the catalogue gives every
+        // series of a provider one base, and a catalogue that does not is said here.
+        for (const code of codes) {
+            const bases = new Set(
+                parsedSeries.filter((s) => s.provider_code === code).map((s) => s.base),
+            );
+            if (bases.size > 1) {
+                request.log.warn(
+                    { provider: code, bases: [...bases] },
+                    'an official provider has more than one base',
+                );
+            }
+        }
         return {
             providers: providers
                 .map((provider) => ({

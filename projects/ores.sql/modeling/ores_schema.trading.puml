@@ -1853,7 +1853,7 @@ package "trading" #E8F5E9 {
         * underlying_name : text
         * underlying_kind : text
           weight : double
-          initial_price : double
+          initial_price : numeric(38, 12)
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

@@ -13,7 +13,7 @@
 
 Curves and surfaces: their blueprints, the market they are built from, their adjustments, their approval and publication, and how they are read over time.
 
-25 prototypes answer to this group. Each one is a static page under
+26 prototypes answer to this group. Each one is a static page under
 =doc/prototypes/=, opens with no build and no session, and reads mock data
 only. The table below opens each one and says what it argues. Where a
 prototype carries a Gemini review, the last column opens it: a review is a
@@ -51,6 +51,7 @@ generated alternative kept beside the agreed design, never instead of it.
 | [[file:manage-yield-curve-process-types.org][Manage yield curve process types]] | The short-rate models and their parameters are data, not code, so a new model appears in the curve editor with no change to the editor. | [[file:manage-yield-curve-process-types/][prototype]] | none |
 | [[file:control-how-a-market-ticks.org][Control how a market ticks]] | A feed's own clustering and the market-wide factor are two surfaces: the feed's tab edits its arrivals and reads the market, and the market's tab is the only place that forces a state and the only figure that shows rows speeding up together. | [[file:control-how-a-market-ticks/][prototype]] | [[file:control-how-a-market-ticks/review/][Gemini review]] |
 | [[file:run-the-market.org][Run the market]] | The market is six questions, so it is six tabs under one strip of figures: now, settings, arrivals, laws, fit and trace. Its raster folds the last hour by the minute, because a regime spell lasts minutes. | [[file:run-the-market/][prototype]] | none |
+| [[file:official-rates.org][Official rates]] | The public sources as one screen a person runs: terms, freshness and adapter state on one row, the three failures told apart, the paused row kept beside a hidden variant, and the backfill range at rest and running. | [[file:official-rates/][prototype]] | none |
 
 * Adding a prototype
 

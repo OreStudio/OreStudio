@@ -95,7 +95,18 @@ task and name that file in the Command column.
 
 * Notes
 
+Target state: [[id:42930B6A-544A-4F7E-ACF4-9ABC60F2B408][The environments share the database through a transaction pooler]]. Its caps,
+its list of what connects directly and its prepared-statement rule are this
+task's specification.
+
 Points to settle in the plan:
+
+- One pgbouncer for the machine or one for each environment. The target doc
+  caps server connections for each environment's database and for the
+  instance; one pgbouncer in front of the shared instance enforces both. A
+  unit for each environment fits =ores-<env>.target= and keeps environments
+  independent, but then the instance cap is only the sum of the environment
+  caps. Bring the choice to the user with the numbers.
 
 - LISTEN needs a session that stays on one server connection, which
   transaction pooling does not give. The =postgres_listener_service= keeps a

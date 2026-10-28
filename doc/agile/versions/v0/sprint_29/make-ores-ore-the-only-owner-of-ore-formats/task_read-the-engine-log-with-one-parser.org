@@ -8,7 +8,7 @@
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
 #+owner: marco
 #+branch: feature/read-the-engine-log-with-one-parser
-#+pr: 4023
+#+pr: 4026
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -99,6 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4026][#4026]] | [ore] Answer the one parser review |
 | [[https://github.com/OreStudio/OreStudio/pull/4023][#4023]] | [ore] Read the engine's log with one parser |
 
 * Review

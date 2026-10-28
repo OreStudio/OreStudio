@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 51E4851F-5F8C-4143-A034-E3E1A2F9C7CE
+:END:
+#+title: Run the market, prototype
+#+description: The market as five tabs, one question each — now, settings, arrivals, fit and trace — in the look Gemini's review argued, with a temporal raster of the last hour and nothing the service does not have
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:synthetic:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+| Item          | Where                                                      |
+|---------------+------------------------------------------------------------|
+| Prototype     | [[file:run-the-market/][the prototype page]]                                 |
+| Gemini review | none                                                       |
+| Answers       | [[file:control-how-a-market-ticks/review/][Gemini's review of Control how a market ticks]] |
+| Group         | [[file:index.org][Market data prototypes]]                             |
+
+* Summary
+
+The built Market regime tab does six jobs on one page. It reads the market,
+forces it, sets what moves it, draws every feed's arrivals, checks each feed
+against its law, and logs the loop. Gemini reviewed it and drew it twice. This
+prototype takes the review's look and its best ideas. It drops every control and
+model the review invented, and it splits the page into five tabs, one question
+each. Its raster is a temporal raster: an hour folded by the minute, so a regime
+spell, which lasts minutes, is visible at all.
+
+It is throwaway. It reads no service, and the market on it is a small model of
+the service's own, run in the page with a fixed seed. A link can open one tab,
+for example =run-the-market/#arrivals=. The bar at the top switches between a
+system administrator, who sets the market, and a tenant, who reads it.
+
+* Detail
+
+** The tabs
+
+| Tab      | The question                     | What it holds |
+|----------+----------------------------------+---------------|
+| Now      | What is the market doing?        | The pace over two minutes, with the regime and the heat stacked and the active spells shaded. Ticks a second on an axis of its own. The force switch, who holds the state, how long it has held, the mean spells and the active share. The last changes. |
+| Settings | What moves it?                   | The six numbers in four cards: the regime, the heat, simulated time, the tails. Each field shows the number it implies, the old value once it is edited, and the service's own rule as it is typed. Apply shows the change before it is made. |
+| Arrivals | How do the ticks come?           | The last hour as a temporal raster, coloured by all feeds, a class, one feed or the pace. Below it, the zoom: two minutes, feed by feed. |
+| Fit      | Does each feed follow its law?   | Seen against asked per feed on a log scale, the chosen feed's gaps against Exp(1), and the loop's health. |
+| Trace    | What did the loop do?            | Every decision, filtered by kind and by feed, newest first. |
+
+A strip of seven figures stays above every tab: the state, the multiplier, the
+pace, the heat's loop gain, ticks a second, the market speed and the lateness.
+That is the review's strongest idea. A person on any tab can see the market
+without leaving the question they came with.
+
+** The temporal raster
+
+The user asked for the raster to be a
+[[https://en.wikipedia.org/wiki/Temporal_raster_plot][temporal raster plot]].
+Time is folded: each column is a minute and each cell one second of it, so an
+hour is a 60 by 60 grid. A regime spell lasts five or ten minutes, so the
+two-minute raster of the built tab almost never shows one whole. Folded, a
+busy spell is a band of bright columns, and the strip above the columns says
+which minutes were active. The scale tops out at the 98th percentile, so one
+burst does not wash every other cell out.
+
+The feed-by-feed lanes stay, as the zoom. They answer a different question:
+whether the rows densify together, which is what a market-wide factor means.
+
+** What was taken from the review
+
+| From the review | Here |
+|-----------------+------|
+| A telemetry strip above the content | Kept on every tab, with the product's own figures |
+| Cards with an icon, a mono uppercase title, a line of purpose and the action on the right | Every card |
+| Each setting with the number it implies under it | Every field: a spell's rate, the loop gain, the half-life, a wall minute in simulated time, the tilt when active |
+| Figures without float noise | Six significant figures at most: 0.0016666666666666668 prints as 0.00166667 |
+| A spell length, not a rate | The regime's two fields are spells in seconds; the rate is what they imply |
+| A half-life beside the decay | Shown as what the decay implies; the decay stays the stored number |
+| Window presets of 30, 60 and 120 seconds | On the zoom |
+| Rows coloured by asset class, with a count | The class tokens, and seen against asked |
+| A toast after a change | Kept |
+| The dark, dense, monospaced look | On the product's tokens, with Gemini's cyan, emerald, amber and rose mapped to the accent, up, warn and down |
+
+** What was dropped, and why
+
+| From the review | Why not |
+|-----------------+---------|
+| Pause and resume the engine | The market is not paused; a feed is started and stopped on the feeds screen |
+| Inject a burst of ticks | No such verb exists; a person forces a state instead |
+| ACD and inhomogeneous Poisson models | Not in the service; a feed's law is periodic, Poisson or Hawkes, and is set on its own Arrivals tab |
+| Hawkes alpha as a market setting | Clustering is a feed's own, on its Arrivals tab; the market has a heat, not an alpha |
+| Heat thresholds that turn the state | Wrong model: the chain turns on its own, and the heat adds to the pace |
+| A third, volatile state | The chain has two states |
+| A cross-asset excitation matrix | Out of scope, as the market volatility channel note records |
+| Burst and cross-excited tick markers, spillover arcs | The service does not classify ticks, so the marks would claim what nobody measured |
+| Two units on one axis | The pace and ticks a second have axes of their own |
+| A frame-rate counter and version badges | They describe the page, not the market |
+| A "now" line inset from the axis's end | The axis ends at now |
+| Font Awesome, Chart.js and MathJax | The product has its own icons and draws its own figures |
+
+** What the review missed that the built tab had
+
+The τ axis, the regime band behind the arrivals, seen against asked, the QQ
+plot and the loop's trace. All five stay.
+
+* See also
+
+- [[file:control-how-a-market-ticks.org][Control how a market ticks]] — the prototype this one follows, and the split it keeps.
+- [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] — the story whose task builds it.
+- [[file:index.org][Market data prototypes]] — the group.

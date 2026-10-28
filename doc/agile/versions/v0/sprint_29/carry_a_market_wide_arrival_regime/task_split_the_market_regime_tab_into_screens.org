@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 797C9E4E-8F40-49C2-ACC3-5BB8C4243A27
+:END:
+#+title: Task: Split the market regime tab into screens of their own
+#+description: The Market regime tab does every job on one page: it reads the market, forces it, sets what moves it, draws every feed's arrivals, checks each feed against its law and logs the loop. Give each job a tab of its own, in the look Gemini's review argued, and drop what the review invented.
+#+type: task
+#+level: s1
+#+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
+#+owner: marco
+#+branch: feature/split-the-market-regime-tab-into-screens
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person who opens the market finds one question per tab: what is the market doing now, what moves it, how every feed's ticks arrive, whether each feed follows its law, and what the loop did. The page takes the review's look: a telemetry strip, cards with a titled header and an action on the right, each setting with the number it implies under it, and figures printed without float noise. It keeps the product's tokens, and nothing on it claims a control or a model the service does not have.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- The Gemini prototypes are kept as a review of the Control how a market ticks prototype, and the note says what was taken and what was dropped, and why.
+- A new prototype draws the market as specialised tabs, on the product's tokens, and is listed on the market data prototypes page.
+- The Market regime screen is split into those tabs, a system session sets and a tenant reads, and every number prints without float noise.
+- The harness spec covers each tab.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

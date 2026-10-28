@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Run the market — one tab a question</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<div class="proto-bar">
+  <span><b>Prototype</b> · throwaway · mock data, simulated in the page with a fixed seed</span>
+  <a href="../run-the-market.org">the design note</a>
+  <a href="../control-how-a-market-ticks/review/">Gemini's review</a>
+  <span class="seg" role="radiogroup" aria-label="Signed in as">
+    <button role="radio" aria-checked="true" data-persona="system">System administrator</button>
+    <button role="radio" aria-checked="false" data-persona="tenant">Tenant</button>
+  </span>
+</div>
+
+<header class="page">
+  <div class="crumbs"><a href="#">Market data</a> / <a href="#">Synthetic</a> / Market</div>
+  <div class="title-row">
+    <h1>The market</h1>
+    <span class="muted" style="font-size:.85rem">one clock for every feed of the installation</span>
+    <span class="live"><span class="dot pulse"></span><span id="live-text">running · 16 feeds</span></span>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="The market">
+    <button role="tab" data-tab="now" aria-selected="true">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 12l4-5 3 3 4-6 3 4"/></svg>Now <span class="q">what is it doing</span></button>
+    <button role="tab" data-tab="settings" aria-selected="false">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 2v12M8 2v12M13 2v12"/><circle cx="3" cy="10" r="1.6" fill="currentColor"/><circle cx="8" cy="5" r="1.6" fill="currentColor"/><circle cx="13" cy="9" r="1.6" fill="currentColor"/></svg>Settings <span class="q">what moves it</span></button>
+    <button role="tab" data-tab="arrivals" aria-selected="false">
+      <svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="3" width="1.4" height="2.5"/><rect x="5" y="3" width="1.4" height="2.5"/><rect x="7" y="3" width="1.4" height="2.5"/><rect x="13" y="3" width="1.4" height="2.5"/><rect x="2" y="10" width="1.4" height="2.5"/><rect x="9" y="10" width="1.4" height="2.5"/><rect x="10.6" y="10" width="1.4" height="2.5"/><rect x="12.2" y="10" width="1.4" height="2.5"/></svg>Arrivals <span class="q">how the ticks come</span></button>
+    <button role="tab" data-tab="fit" aria-selected="false">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 14L14 2"/><circle cx="4" cy="11" r="1" fill="currentColor"/><circle cx="7" cy="9" r="1" fill="currentColor"/><circle cx="9" cy="6" r="1" fill="currentColor"/><circle cx="12" cy="4.5" r="1" fill="currentColor"/></svg>Fit <span class="q">does each feed follow its law</span></button>
+    <button role="tab" data-tab="trace" aria-selected="false">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 3h12M2 8h12M2 13h8"/></svg>Trace <span class="q">what the loop did</span></button>
+  </nav>
+</header>
+
+<main>
+  <!-- The strip stays on every tab: the market in seven numbers. -->
+  <section class="strip" aria-label="The market now">
+    <div class="metric"><span class="label">State</span>
+      <div class="row"><span id="m-state" class="badge calm">calm</span><span id="m-forced" class="chip forced" hidden>forced</span></div></div>
+    <div class="metric"><span class="label">Multiplier</span>
+      <div class="row"><span id="m-mult" class="v">×0.50</span><span class="sub">the regime</span></div></div>
+    <div class="metric"><span class="label">Pace</span>
+      <div class="row"><span id="m-pace" class="v accent">×0.52</span><span class="sub">regime + heat</span></div></div>
+    <div class="metric"><span class="label">Heat loop gain</span>
+      <div class="row"><span id="m-gain" class="v warn">0.025</span><span class="sub">of 1</span></div></div>
+    <div class="metric"><span class="label">Ticks a second</span>
+      <div class="row"><span id="m-tps" class="v up">—</span><span class="sub">every feed</span></div></div>
+    <div class="metric"><span class="label">Market speed</span>
+      <div class="row"><span id="m-speed" class="v">1440</span><span class="sub">sim s a unit of τ</span></div></div>
+    <div class="metric"><span class="label">Lateness</span>
+      <div class="row"><span id="m-late" class="v">0.6 ms</span><span id="m-late-max" class="sub">at most 3.1 ms</span></div></div>
+  </section>
+
+  <!-- NOW ------------------------------------------------------------------ -->
+  <section id="tab-now" class="grid" role="tabpanel">
+    <div class="grid g-2-1">
+      <div class="card">
+        <div class="card-head">
+          <span class="ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 12l4-5 3 3 4-6 3 4"/></svg></span>
+          <div><h2>How fast market time runs</h2><p>The pace every feed's rate is scaled by: the regime's multiplier, and the heat's share stacked on it.</p></div>
+        </div>
+        <svg id="fig-pace" class="fig" viewBox="0 0 800 220" preserveAspectRatio="none" role="img" aria-label="The pace over the last two minutes"></svg>
+        <div class="legend"><span><i style="background:rgba(88,166,255,.55)"></i>the regime</span><span><i style="background:rgba(210,153,34,.7)"></i>the heat</span><span><i style="background:rgba(210,153,34,.15);border:1px solid rgba(210,153,34,.4)"></i>an active market</span><span class="faint">last 120 s · now at the right</span></div>
+        <svg id="fig-tps" class="fig" viewBox="0 0 800 70" preserveAspectRatio="none" role="img" aria-label="Ticks a second over the last two minutes"></svg>
+        <div class="legend"><span><i style="background:var(--up)"></i>ticks a second, every feed</span><span class="faint">its own axis: a count is not a pace</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="ico warn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M9 1L3 9h4l-1 6 6-8H8z"/></svg></span>
+          <div><h2>Force the state</h2><p>Hold the market calm or active for a demonstration or a stress run, or hand it back to the chain.</p></div>
+        </div>
+        <div id="force-controls">
+          <div class="seg big" role="group" aria-label="Force the state">
+            <button data-mode="auto" aria-pressed="true">Auto</button>
+            <button data-mode="calm" aria-pressed="false">Calm</button>
+            <button data-mode="active" aria-pressed="false">Active</button>
+          </div>
+        </div>
+        <p id="force-readonly" class="note" hidden><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="7" opacity=".25"/><rect x="7.2" y="7" width="1.6" height="5"/><rect x="7.2" y="4" width="1.6" height="1.6"/></svg>The system administrator sets the market for the whole installation. This view reads it.</p>
+        <div class="kv">
+          <div><span>Set by</span><span id="k-by">the chain, turning on its own</span></div>
+          <div><span>In this state for</span><span id="k-for">—</span></div>
+          <div><span>A spell lasts</span><span id="k-spell">—</span></div>
+          <div><span>Active share</span><span id="k-share">—</span></div>
+        </div>
+        <div class="card-foot"><span>Last change</span><b id="k-last">—</b></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <span class="ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 3h12M2 8h12M2 13h8"/></svg></span>
+        <div><h2>What changed the market</h2><p>Pins, settings and feeds joining or leaving, newest first. Every decision is on the Trace tab.</p></div>
+        <div class="act"><button class="btn" data-goto="trace">Open the trace</button></div>
+      </div>
+      <table><thead><tr><th>When</th><th>What</th><th>Detail</th><th class="num">τ</th></tr></thead><tbody id="now-log"></tbody></table>
+    </div>
+  </section>
+
+  <!-- SETTINGS ------------------------------------------------------------- -->
+  <section id="tab-settings" class="grid" role="tabpanel" hidden>
+    <div class="card">
+      <div class="card-head">
+        <span class="ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2.5M8 12.5V15M1 8h2.5M12.5 8H15M3 3l1.8 1.8M11.2 11.2L13 13M3 13l1.8-1.8M11.2 4.8L13 3"/></svg></span>
+        <div><h2>What moves the market</h2><p>Six numbers for the whole installation. A change applies from now; what has passed stays as it was.</p></div>
+        <div class="act">
+          <button class="btn" id="discard" disabled>Discard</button>
+          <button class="btn primary" id="apply" disabled>Apply</button>
+        </div>
+      </div>
+      <div id="diff" class="diff" hidden></div>
+      <div id="refusal" class="refusal" hidden></div>
+      <p id="settings-readonly" class="note" hidden><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="7" opacity=".25"/><rect x="7.2" y="7" width="1.6" height="5"/><rect x="7.2" y="4" width="1.6" height="1.6"/></svg>Read only. The system administrator sets these for the whole installation.</p>
+    </div>
+
+    <div class="grid g-2">
+      <div class="card">
+        <div class="card-head"><div><h2>The regime</h2><p>A chain that turns calm and active on its own. Its two rates say how long each spell lasts.</p></div></div>
+        <div class="fields">
+          <div class="field" data-key="calmSpell"><label for="f-calmSpell">A calm spell lasts, s</label><input id="f-calmSpell" inputmode="decimal">
+            <div class="implies"><span>calm to active</span><b data-implies="calmSpell"></b></div><div class="was" data-was="calmSpell"></div></div>
+          <div class="field" data-key="activeSpell"><label for="f-activeSpell">An active spell lasts, s</label><input id="f-activeSpell" inputmode="decimal">
+            <div class="implies"><span>active to calm</span><b data-implies="activeSpell"></b></div><div class="was" data-was="activeSpell"></div></div>
+        </div>
+        <div class="kv" id="regime-derived"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div><h2>The heat</h2><p>Every tick adds to one shared heat, which fades. It is what makes a burst in one feed lift the others.</p></div></div>
+        <div class="fields">
+          <div class="field" data-key="jump"><label for="f-jump">Heat one tick adds</label><input id="f-jump" inputmode="decimal">
+            <div class="implies"><span>loop gain</span><b data-implies="jump"></b></div><div class="was" data-was="jump"></div></div>
+          <div class="field" data-key="decay"><label for="f-decay">Heat decay, a second</label><input id="f-decay" inputmode="decimal">
+            <div class="implies"><span>half-life</span><b data-implies="decay"></b></div><div class="was" data-was="decay"></div></div>
+        </div>
+        <div>
+          <div class="gauge" aria-hidden="true"><i id="gain-bar"></i></div>
+          <div class="gauge-row"><span>0</span><span id="gain-text">loop gain 0.025 · settles</span><span>1 · runs away</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div><h2>Simulated time</h2><p>How many simulated seconds one unit of market time spans. One number for the run, so every feed lives in one simulated world.</p></div></div>
+        <div class="fields">
+          <div class="field" data-key="speed"><label for="f-speed">Market speed</label><input id="f-speed" inputmode="decimal">
+            <div class="implies"><span>a wall minute at pace one</span><b data-implies="speed"></b></div><div class="was" data-was="speed"></div></div>
+        </div>
+        <p class="note"><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="7" opacity=".25"/><rect x="7.2" y="7" width="1.6" height="5"/><rect x="7.2" y="4" width="1.6" height="1.6"/></svg>A spot feed takes a new speed at its next tick. A curve keeps the step it started with until it starts again.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div><h2>The tails</h2><p>How far a busy market fattens a spot price's tails, with its mean and its variance held. Zero leaves every mixture as configured.</p></div></div>
+        <div class="fields">
+          <div class="field" data-key="tail"><label for="f-tail">Tail loading</label><input id="f-tail" inputmode="decimal">
+            <div class="implies"><span>tilt when active</span><b data-implies="tail"></b></div><div class="was" data-was="tail"></div></div>
+        </div>
+        <div class="kv" id="tail-derived"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARRIVALS ------------------------------------------------------------- -->
+  <section id="tab-arrivals" class="grid" role="tabpanel" hidden>
+    <div class="card">
+      <div class="card-head">
+        <span class="ico"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="4" height="4" opacity=".3"/><rect x="6" y="1" width="4" height="4" opacity=".8"/><rect x="11" y="1" width="4" height="4" opacity=".5"/><rect x="1" y="6" width="4" height="4" opacity=".6"/><rect x="6" y="6" width="4" height="4"/><rect x="11" y="6" width="4" height="4" opacity=".3"/><rect x="1" y="11" width="4" height="4" opacity=".4"/><rect x="6" y="11" width="4" height="4" opacity=".9"/><rect x="11" y="11" width="4" height="4" opacity=".2"/></svg></span>
+        <div><h2>The last hour, folded</h2><p>A temporal raster: each column is a minute, each cell one second of it, and the colour is how many ticks arrived. A spell lasts minutes, so a busy market shows as a band of columns; the strip above them says which minutes were active.</p></div>
+      </div>
+      <div class="toolbar">
+        <span class="label">Colour by</span>
+        <select class="pick" id="fold-series" aria-label="Colour by">
+          <option value="all">Ticks, every feed</option>
+          <option value="fx">Ticks, FX feeds</option>
+          <option value="ir">Ticks, interest rate feeds</option>
+          <option value="pace">Pace</option>
+        </select>
+        <select class="pick" id="fold-feed" aria-label="One feed"><option value="">or one feed…</option></select>
+        <span class="label">Span</span>
+        <span class="seg" role="radiogroup" aria-label="Span" id="fold-span">
+          <button role="radio" aria-checked="false" data-span="30">30 min</button>
+          <button role="radio" aria-checked="true" data-span="60">60 min</button>
+        </span>
+      </div>
+      <div class="fold">
+        <div class="yaxis"><span>:00</span><span>:15</span><span>:30</span><span>:45</span><span>:59</span></div>
+        <div>
+          <svg id="fold-state" viewBox="0 0 600 10" preserveAspectRatio="none" style="height:10px;margin-bottom:4px" aria-hidden="true"></svg>
+          <svg id="fold" viewBox="0 0 600 300" preserveAspectRatio="none" style="height:300px;border:1px solid var(--line);border-radius:4px;background:var(--sunk)" role="img" aria-label="Ticks a second over the last hour, folded by minute"></svg>
+          <div class="fold-x" id="fold-x"></div>
+        </div>
+        <div class="bar"><span id="fold-max">—</span><div id="fold-ramp"></div><span>0</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <span class="ico"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="3" width="1.4" height="2.5"/><rect x="5" y="3" width="1.4" height="2.5"/><rect x="7" y="3" width="1.4" height="2.5"/><rect x="13" y="3" width="1.4" height="2.5"/><rect x="2" y="10" width="1.4" height="2.5"/><rect x="9" y="10" width="1.4" height="2.5"/><rect x="10.6" y="10" width="1.4" height="2.5"/><rect x="12.2" y="10" width="1.4" height="2.5"/></svg></span>
+        <div><h2>The last two minutes, feed by feed</h2><p>The zoom: one row a feed, every tick a mark, on one time axis with the heat and the regime above it. Rows densify together when the market turns.</p></div>
+      </div>
+      <div class="toolbar">
+        <span class="label">Window</span>
+        <span class="seg" role="radiogroup" aria-label="Window" id="win">
+          <button role="radio" aria-checked="false" data-win="30">30 s</button>
+          <button role="radio" aria-checked="false" data-win="60">60 s</button>
+          <button role="radio" aria-checked="true" data-win="120">120 s</button>
+        </span>
+        <span class="label">Place marks by</span>
+        <span class="seg" role="radiogroup" aria-label="Place marks by" id="axis">
+          <button role="radio" aria-checked="true" data-axis="clock">Clock time</button>
+          <button role="radio" aria-checked="false" data-axis="tau">Market time τ</button>
+        </span>
+        <span class="label">Show</span>
+        <span class="seg" role="group" aria-label="Asset classes" id="classes">
+          <button aria-pressed="true" data-class="fx">FX</button>
+          <button aria-pressed="true" data-class="ir">Interest rate</button>
+        </span>
+        <span class="grow"></span>
+        <button class="btn" id="freeze" aria-pressed="false">Freeze</button>
+      </div>
+      <div id="raster" class="raster" aria-label="Tick arrivals of every feed"></div>
+      <div class="legend">
+        <span><i style="background:var(--class-fx)"></i>FX</span>
+        <span><i style="background:var(--class-ir)"></i>Interest rate</span>
+        <span><i style="background:rgba(210,153,34,.15);border:1px solid rgba(210,153,34,.4)"></i>an active market</span>
+        <span class="faint">seen / asked: the ticks in the window against the count the feed's law asks for at the pace that ran</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FIT ------------------------------------------------------------------ -->
+  <section id="tab-fit" class="grid" role="tabpanel" hidden>
+    <div class="grid g-2-1">
+      <div class="card">
+        <div class="card-head">
+          <span class="ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 14L14 2"/></svg></span>
+          <div><h2>Each feed against its law</h2><p>The ticks a feed made over the window against the count its law asks for: its rate, times its sensitivity, times the market time that passed. Pick a feed to see its gaps.</p></div>
+        </div>
+        <table><thead><tr><th>Feed</th><th>Law</th><th class="num">Rate × sens</th><th class="num">Seen</th><th class="num">Asked</th><th class="num">Seen / asked</th></tr></thead><tbody id="fit-rows"></tbody></table>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><h2 id="qq-title">Gaps against Exp(1)</h2><p>Each gap rescaled by the feed's law. A feed that follows its law lies on the diagonal; a periodic feed's gaps are all one.</p></div></div>
+        <svg id="fig-qq" class="fig" viewBox="0 0 300 300" role="img" aria-label="QQ plot"></svg>
+        <div class="card-foot"><span id="qq-n">—</span><span>needs 5 gaps</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <span class="ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg></span>
+        <div><h2>The loop's health</h2><p>How the one scheduler that owns the market keeps up. Lateness is when a tick reached its feed less when it was due.</p></div>
+      </div>
+      <div class="strip" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))" id="health"></div>
+    </div>
+  </section>
+
+  <!-- TRACE ---------------------------------------------------------------- -->
+  <section id="tab-trace" class="grid" role="tabpanel" hidden>
+    <div class="card">
+      <div class="card-head">
+        <span class="ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 3h12M2 8h12M2 13h8"/></svg></span>
+        <div><h2>What the loop decided</h2><p>Every tick, turn, pin, setting and change of feeds, each with its clock time and its market time. The newest first.</p></div>
+      </div>
+      <div class="toolbar">
+        <span class="label">Kinds</span>
+        <span class="seg" role="group" aria-label="Kinds" id="kinds"></span>
+        <span class="grow"></span>
+        <input class="search" id="trace-search" placeholder="Filter by feed" aria-label="Filter by feed">
+      </div>
+      <div class="scroll">
+        <table><thead><tr><th>When</th><th class="num">τ</th><th>Kind</th><th>Feed</th><th>State</th><th class="num">Pace</th><th class="num">Gap, τ</th><th class="num">Wall gap</th></tr></thead><tbody id="trace-rows"></tbody></table>
+      </div>
+      <div class="card-foot"><span id="trace-count">—</span><span>the loop keeps the last 65,536 decisions</span></div>
+    </div>
+  </section>
+</main>
+
+<footer class="page">
+  <span>Run seed 42 · the same seed draws the same market</span>
+  <span>A change applies from now. Spot feeds take it at their next tick.</span>
+</footer>
+
+<div class="tip" id="tip" hidden></div>
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-text"></span></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

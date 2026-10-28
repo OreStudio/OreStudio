@@ -47,6 +47,20 @@ std::string exported_swap_document() {
     swap.position = 0;
     document.products.push_back(swap);
 
+    // The settings of one scope, in an order no sort would produce, so a
+    // document that comes back sorted fails the round trip.
+    for (const auto& [position, name] : std::vector<std::pair<int, std::string>>{
+             {0, "Training.Sequence"}, {1, "Training.Seed"}, {2, "Pricing.Sequence"}}) {
+        ores::analytics::domain::pricing_model_product_parameter setting;
+        setting.id = boost::uuids::random_generator()();
+        setting.pricing_model_product_id = swap.id;
+        setting.parameter_scope = "engine";
+        setting.parameter_name = name;
+        setting.parameter_value = name + "-value";
+        setting.position = position;
+        document.parameters.push_back(setting);
+    }
+
     ores::analytics::domain::pricing_model_product_parameter calibration;
     calibration.id = boost::uuids::random_generator()();
     calibration.pricing_model_product_id = swap.id;
@@ -95,7 +109,7 @@ TEST_CASE("a_pricing_engine_document_exports_and_imports_back_as_the_same_docume
     CHECK(file.products.front().type_code == "Swap");
     CHECK(file.products.front().model == "DiscountedCashflows");
     CHECK(file.products.front().engine == "DiscountingSwapEngine");
-    CHECK(file.products.front().parameters == 1);
+    CHECK(file.products.front().parameters == 4);
     REQUIRE(file.global_parameters.size() == 1);
     CHECK(file.global_parameters.front() == "ContinueOnCalibrationError");
 

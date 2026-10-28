@@ -19,6 +19,7 @@
  */
 #include "ores.ore.core/domain/pricing_engines_import.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <array>
@@ -698,7 +699,6 @@ pei_document pricing_engines_import::merge(const pricing_engines_import_file& fi
                 const auto& found = grouped.settings_of(pei_id_of(theirs), identity);
                 pei_parameter_row setting = *parameter;
                 setting.pricing_model_product_id = row.id;
-                setting.position = at;
                 if (at < static_cast<int>(found.size())) {
                     const auto* held = found[at];
                     setting.id = held->id;
@@ -757,7 +757,6 @@ pei_document pricing_engines_import::merge(const pricing_engines_import_file& fi
                     if (!kept.contains(pei_setting_key(key, scope, name, at)))
                         continue;
                     pei_parameter_row setting = *rows[at];
-                    setting.position = static_cast<int>(out.parameters.size());
                     out.parameters.push_back(setting);
                 }
             }
@@ -788,6 +787,17 @@ pei_document pricing_engines_import::merge(const pricing_engines_import_file& fi
             continue;
         if (kept.contains(pei_setting_key("/", pei_scope_global, name, 0)))
             out.parameters.push_back(*rows.front());
+    }
+
+    // A setting's position is the place it takes in its own scope, and the rows
+    // were laid out in the order the document is to state them: the file's
+    // settings as it wrote them, then whatever the person kept. Numbering them
+    // here, rather than as each row is pushed, is what keeps a scope in the
+    // document's order when a row's name repeats or a kept row joins it.
+    std::map<std::pair<boost::uuids::uuid, std::string>, int> positions;
+    for (auto& parameter : out.parameters) {
+        const auto owner = parameter.pricing_model_product_id.value_or(boost::uuids::nil_uuid());
+        parameter.position = positions[{owner, parameter.parameter_scope}]++;
     }
 
     return out;

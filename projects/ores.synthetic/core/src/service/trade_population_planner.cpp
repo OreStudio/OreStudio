@@ -186,7 +186,8 @@ void validate_scope(const domain::trade_generation_scope& scope) {
 }
 
 std::vector<std::string_view> planned_asset_classes() {
-    static const std::vector<std::string_view> codes{"bond", "commodity", "fx", "interest_rates"};
+    static const std::vector<std::string_view> codes{"bond", "commodity", "equity", "fx",
+                                                          "interest_rates"};
     return codes;
 }
 
@@ -195,8 +196,12 @@ const trade_planner& planner_for(const std::string& asset_class_code) {
     static const commodity_trade_planner commodity;
     static const rate_trade_planner rates;
     static const fx_trade_planner fx;
-    static const std::map<std::string, const trade_planner*> planners{
-        {"bond", &bond}, {"commodity", &commodity}, {"fx", &fx}, {"interest_rates", &rates}};
+    static const equity_trade_planner equity;
+    static const std::map<std::string, const trade_planner*> planners{{"bond", &bond},
+                                                                     {"commodity", &commodity},
+                                                                     {"equity", &equity},
+                                                                     {"fx", &fx},
+                                                                     {"interest_rates", &rates}};
 
     const auto entry = planners.find(asset_class_code);
     if (entry == planners.end()) {
@@ -888,6 +893,178 @@ fx_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         entry.trade_type_code = std::string(type);
         entry.notional = notional;
         entry.terms = terms;
+        plan.slots.push_back(std::move(entry));
+    }
+
+    return plan;
+}
+
+
+std::string_view equity_trade_planner::asset_class_code() const {
+    return "equity";
+}
+
+namespace {
+
+constexpr std::string_view equity_types[] = {
+    "EquityAccumulator",       "EquityAsianOption",         "EquityBarrierOption",
+    "EquityCliquetOption",     "EquityDigitalOption",       "EquityDoubleBarrierOption",
+    "EquityEuropeanBarrierOption", "EquityForward",         "EquityOption",
+    "EquityOptionPosition",    "EquityOutperformanceOption", "EquityPosition",
+    "EquitySwap",              "EquityTaRF",                "EquityTouchOption",
+    "EquityVarianceSwap",      "EquityWorstOfBasketSwap"};
+
+constexpr std::size_t equity_type_count = std::size(equity_types);
+
+/// The underlying the slot draws, cycling the catalogue the tenant published.
+const domain::equity_underlying_reference& equity_for(const domain::trade_generation_scope& scope,
+                                                      std::uint32_t slot) {
+    return scope.equity_underlyings[slot % scope.equity_underlyings.size()];
+}
+
+}
+
+domain::trade_population_plan
+equity_trade_planner::plan(const domain::trade_generation_scope& scope) const {
+    validate_scope(scope);
+
+    if (scope.equity_underlyings.empty())
+        throw trade_population_error(
+            "The tenant holds no equity underlying, so no equity trade can name one. Publish "
+            "the equity underlying catalogue first.");
+
+    const auto min_years = tenor_years_of(scope.min_tenor_code);
+    const auto max_years = tenor_years_of(scope.max_tenor_code);
+
+    domain::trade_population_plan plan;
+    plan.config_id = scope.config_id;
+    plan.party_id = scope.party_id;
+    plan.as_of_date = scope.as_of_date;
+
+    for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
+        const auto name = slot_name(scope, slot);
+        const auto& type = equity_types[slot % equity_type_count];
+        const auto& underlying = equity_for(scope, slot);
+
+        const auto span = max_years - min_years + 1;
+        const auto drawn =
+            min_years + static_cast<std::uint32_t>(draw(name, 0) * static_cast<double>(span));
+        const auto tenor_years = std::clamp(drawn, min_years, max_years);
+        const auto start = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
+        const auto end = add_years(start, static_cast<int>(tenor_years));
+        const auto notional =
+            price_from(name, 1, scope.min_notional, scope.max_notional - scope.min_notional);
+        const auto level = std::round(price_from(name, 2, 10.0, 4990.0) * 100.0) / 100.0;
+
+        domain::equity_terms terms;
+        terms.underlying_name = underlying.code;
+        terms.underlying_kind = underlying.kind;
+        terms.currency = underlying.currency.empty() ? "USD" : underlying.currency;
+        terms.notional = notional;
+        terms.quantity = notional;
+        terms.start_date = start;
+        terms.maturity_date = end;
+        terms.expiry_date = end;
+        terms.long_short = (draw(name, 3) < 0.5) ? "Long" : "Short";
+        terms.option_type = (draw(name, 4) < 0.5) ? "Call" : "Put";
+        terms.exercise_type = "European";
+        terms.settlement_type = "Cash";
+
+        if (type == "EquityOption" || type == "EquityAsianOption" ||
+            type == "EquityOutperformanceOption" || type == "EquityCliquetOption" ||
+            type == "EquityPosition" || type == "EquityOptionPosition")
+            terms.strike = level;
+
+        if (type == "EquityForward") {
+            terms.fixed_price = level;
+            terms.quantity = notional;
+        }
+
+        if (type == "EquityPosition" || type == "EquityOptionPosition")
+            terms.fixed_price = level;
+
+        if (type.ends_with("BarrierOption")) {
+            terms.lower_barrier = std::round(level * 0.9 * 100.0) / 100.0;
+            terms.lower_barrier_type = "DownAndOut";
+            if (type == "EquityDoubleBarrierOption") {
+                terms.upper_barrier = std::round(level * 1.1 * 100.0) / 100.0;
+                terms.upper_barrier_type = "UpAndOut";
+            }
+            terms.rebate = 0.0;
+        }
+
+        if (type == "EquityDigitalOption" || type == "EquityTouchOption") {
+            terms.barrier_level = std::round(level * 0.9 * 100.0) / 100.0;
+            terms.barrier_type = "DownAndOut";
+            terms.payout_amount = notional;
+        }
+
+        if (type == "EquityAsianOption") {
+            terms.average_type = "Arithmetic";
+            terms.averaging_start_date = start;
+            terms.averaging_end_date = end;
+        }
+
+        if (type == "EquitySwap") {
+            terms.return_type = "PriceReturn";
+            terms.payment_frequency_code = "Quarterly";
+        }
+
+        if (type == "EquityVarianceSwap") {
+            terms.variance_strike = 0.04;
+            terms.moment_type = "Variance";
+        }
+
+        if (type == "EquityAccumulator") {
+            terms.fixing_frequency = "Daily";
+            terms.knock_out_level = std::round(level * 1.1 * 100.0) / 100.0;
+            terms.target_amount = notional * 2.0;
+            terms.target_type = "Amount";
+            terms.payoff_type = "Accumulation";
+            terms.range_bounds.push_back(domain::equity_range_bound{std::nullopt, level, 1.0});
+            terms.range_bounds.push_back(domain::equity_range_bound{level, std::nullopt, 2.0});
+        }
+
+        if (type == "EquityTaRF") {
+            terms.target_points = 2.0;
+            terms.knock_out_level = std::round(level * 1.1 * 100.0) / 100.0;
+        }
+
+        if (type == "EquityCliquetOption") {
+            terms.cliquet_frequency = "Quarterly";
+            terms.moneyness = 1.0;
+            terms.local_cap = 0.05;
+            terms.global_cap = 0.2;
+        }
+
+        /*
+         * A worst-of basket states rows: its constituents carry the kind and
+         * the price each opened at, and its periods carry the levels the
+         * determination dates observe. Two constituents over four dates is the
+         * shape the corpus states, and the ordinal pairs each list.
+         */
+        if (type == "EquityWorstOfBasketSwap") {
+            for (std::uint32_t member = 0; member < 2; ++member) {
+                const auto& drawn_underlying = equity_for(scope, slot + member);
+                domain::equity_basket_member constituent;
+                constituent.name = drawn_underlying.code;
+                constituent.kind = drawn_underlying.kind;
+                constituent.initial_price = std::round(level * (1.0 + 0.1 * member) * 100.0) / 100.0;
+                terms.basket.push_back(std::move(constituent));
+            }
+            for (std::uint32_t period = 0; period < 4; ++period) {
+                domain::equity_basket_period row;
+                row.period_date = add_months(start, static_cast<int>(period));
+                row.knock_out_level = 1.0;
+                row.fixed_trigger_level = 0.75;
+                terms.periods.push_back(std::move(row));
+            }
+        }
+
+        auto entry = common_slot(scope, slot);
+        entry.trade_type_code = std::string(type);
+        entry.notional = notional;
+        entry.terms = std::move(terms);
         plan.slots.push_back(std::move(entry));
     }
 

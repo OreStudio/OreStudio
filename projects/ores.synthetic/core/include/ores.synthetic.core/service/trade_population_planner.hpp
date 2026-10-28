@@ -155,6 +155,31 @@ public:
 };
 
 /**
+ * @brief The planner for an equity population.
+ *
+ * The routing table sends eighteen trade types to nine tables, and the family
+ * shares one vocabulary: an underlying the tenant's equity catalogue holds,
+ * a currency, a notional and a set of dates. The planner draws an underlying
+ * per slot and states the fields the routed product names, so every code books
+ * and the export can carry it back.
+ *
+ * A worst-of basket is the one product that states rows: its constituents
+ * carry the kind and the price each opened at, and its periods carry the
+ * levels the determination dates observe.
+ *
+ * It refuses when the tenant's catalogue names no equity underlying, because a
+ * population that invented one would name something the engine cannot resolve
+ * and the store would refuse when the row was written.
+ */
+class ORES_SYNTHETIC_CORE_EXPORT equity_trade_planner final : public trade_planner {
+public:
+    [[nodiscard]] domain::trade_population_plan
+    plan(const domain::trade_generation_scope& scope) const override;
+
+    [[nodiscard]] std::string_view asset_class_code() const override;
+};
+
+/**
  * @brief The planner registered for an asset class.
  *
  * A class with no planner is refused by name rather than falling back to one,

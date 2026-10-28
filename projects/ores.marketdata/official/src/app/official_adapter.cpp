@@ -85,14 +85,16 @@ void official_adapter::on_demand(served& s, const ores::nats::message& msg) {
         return;
     }
     // Until its universe is read, a source has not announced, and it rejects every id as not
-    // ready rather than leave the service to read an empty answer.
-    messaging::adapter_demand_response response;
-    if (s.ready.load(std::memory_order_acquire)) {
-        response = s.feed->answer(*request);
-    } else {
+    // ready rather than leave the service to read an empty answer. It keeps no demand it
+    // refused: the service sends the demand again when the source announces.
+    if (!s.ready.load(std::memory_order_acquire)) {
+        messaging::adapter_demand_response refused;
         for (const auto& id : request->ids)
-            response.rejected.push_back({id, "not_ready"});
+            refused.rejected.push_back({id, "not_ready"});
+        ores::service::messaging::reply(nats_, msg, refused);
+        return;
     }
+    const auto response = s.feed->answer(*request);
     {
         std::lock_guard lock(s.mu);
         s.pending = std::move(*request);

@@ -73,7 +73,6 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:5E222CAA-EC8C-4A16-A835-6C76FD660406][Build the curve blueprint screens]] | STARTED | 2026-10-28 | | Implement the signed-off prototype with the standard record infrastructure. |
 | [[id:D8092FA1-9513-4CF1-8388-B51AADC32DCD][Complete the publish policies]] | DONE | 2026-10-28 | 2026-10-28 | The zero-approval path, the maker/checker pair and the publish notice are decided and not built. |
 | [[id:72C51792-6C2B-4674-ACBB-18B5444AF347][Address the blueprint review]] | DONE | 2026-10-28 | 2026-10-28 | The blueprint needs a name in the database, a null discount curve instead of the nil sentinel, and the publisher drawn as a person. |
-| [[id:725D6265-A89F-4AA6-A430-73A4FCC90E23][Scenario, bootstrap a curve to publication]] | STARTED | 2026-10-28 | | A from-scratch scenario that shows how a curve is bootstrapped and published, live-verified. |
 | [[id:EAD9F02F-3B4B-495E-B37D-71BF766F7970][Name a curve pillar's market series]] | BACKLOG | | | Implement the decision that a pillar names its market series: model, reader, picker, seed and tests. |
 | [[id:407E2CD6-3607-4B3E-9A95-61DDD3096CC9][Document the market data path]] | STARTED | 2026-10-28 | | One path from a public provider's fixing to a report, clean via oresmd, with the in-flight Frankfurter work covered. |
 

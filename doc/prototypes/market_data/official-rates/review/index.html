@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official Rates & Market Data Provider Control Panel</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            950: '#07090e',
+                            900: '#0c1017',
+                            850: '#111622',
+                            800: '#181f30',
+                            750: '#20293d',
+                            700: '#2a344d',
+                            600: '#3a4768',
+                        },
+                        status: {
+                            serving: '#06d6a0',
+                            late: '#ffb703',
+                            notserving: '#ff0055',
+                            neverfixed: '#8338ec',
+                            paused: '#64748b'
+                        }
+                    },
+                    fontFamily: {
+                        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0c1017; }
+        ::-webkit-scrollbar-thumb { background: #2a344d; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3a4768; }
+
+        .badge-glow-serving { box-shadow: 0 0 10px rgba(6, 214, 160, 0.2); }
+        .badge-glow-late { box-shadow: 0 0 10px rgba(255, 183, 3, 0.2); }
+        .badge-glow-notserving { box-shadow: 0 0 10px rgba(255, 0, 85, 0.25); }
+
+        .drawer-slide {
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+    </style>
+</head>
+<div id="review-banner" style="font-family:ui-sans-serif,system-ui,sans-serif;background:#3b2300;color:#ffd479;border-bottom:1px solid #7a5200;padding:10px 18px;font-size:13px;line-height:1.5">
+  <b>Review.</b> Gemini's alternative to the agreed design, generated from the journey. It is kept as the
+  record of what was considered and not chosen; the agreed design is
+  <a style="color:#ffd479;text-decoration:underline" href="../../official-rates/">the prototype</a> and
+  <a style="color:#ffd479;text-decoration:underline" href="../../official-rates.org">its design note</a>.
+</div>
+<body class="bg-dark-950 text-slate-300 font-sans antialiased min-h-screen flex flex-col selection:bg-cyan-500 selection:text-dark-950">
+
+    <!-- Header / Navigation Bar -->
+    <header class="bg-dark-900 border-b border-dark-750 px-6 py-3 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-40">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-3">
+                <div class="h-8 w-8 rounded bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-dark-950 font-bold text-sm shadow-md">
+                    <i class="fa-solid fa-building-columns"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-mono text-slate-400">Market Data / Official rates</span>
+                        <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-dark-800 text-cyan-400 border border-dark-700">v2.4.0</span>
+                    </div>
+                    <h1 class="font-bold text-slate-100 text-base tracking-tight flex items-center gap-2">
+                        Official rates
+                        <span class="text-xs font-normal text-slate-400 font-sans">— Central bank & public body daily fixings and arrival monitoring</span>
+                    </h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-3 text-xs font-mono">
+            <button onclick="refreshData()" class="px-3 py-1.5 rounded bg-dark-800 hover:bg-dark-750 border border-dark-700 text-slate-200 transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-rotate text-cyan-400" id="refresh-icon"></i>
+                <span>Refresh</span>
+            </button>
+            <button onclick="toggleHistoryModal()" class="px-3 py-1.5 rounded bg-dark-800 hover:bg-dark-750 border border-dark-700 text-slate-200 transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-clock-rotate-left text-amber-400"></i>
+                <span>History Log</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 p-6 space-y-6 max-w-[1850px] mx-auto w-full">
+
+        <!-- Top Summary Cards & SLA Banner -->
+        <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="bg-dark-900 border border-dark-750 rounded-lg p-3.5 flex flex-col justify-between">
+                <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">TOTAL PROVIDERS</span>
+                <div class="flex items-baseline justify-between mt-2">
+                    <span class="text-2xl font-mono font-bold text-slate-100">6</span>
+                    <span class="text-[11px] font-mono text-slate-400">1 paused</span>
+                </div>
+            </div>
+
+            <div class="bg-dark-900 border border-dark-750 rounded-lg p-3.5 flex flex-col justify-between">
+                <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">SERVING (ON TIME)</span>
+                <div class="flex items-baseline justify-between mt-2">
+                    <span class="text-2xl font-mono font-bold text-emerald-400">2</span>
+                    <span class="text-[11px] font-mono text-emerald-500/80">33.3%</span>
+                </div>
+            </div>
+
+            <div class="bg-dark-900 border border-dark-750 rounded-lg p-3.5 flex flex-col justify-between">
+                <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">LATE / AT RISK</span>
+                <div class="flex items-baseline justify-between mt-2">
+                    <span class="text-2xl font-mono font-bold text-amber-400">1</span>
+                    <span class="text-[11px] font-mono text-amber-500/80">BoC today</span>
+                </div>
+            </div>
+
+            <div class="bg-dark-900 border border-dark-750 rounded-lg p-3.5 flex flex-col justify-between">
+                <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">NOT SERVING / OFFLINE</span>
+                <div class="flex items-baseline justify-between mt-2">
+                    <span class="text-2xl font-mono font-bold text-rose-500">2</span>
+                    <span class="text-[11px] font-mono text-rose-500/80">CBT & Norges</span>
+                </div>
+            </div>
+
+            <div class="bg-dark-900 border border-dark-750 rounded-lg p-3.5 flex flex-col justify-between">
+                <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">SYSTEM SLA (30D)</span>
+                <div class="flex items-baseline justify-between mt-2">
+                    <span class="text-2xl font-mono font-bold text-cyan-400">98.4%</span>
+                    <span class="text-[11px] font-mono text-slate-400">target 99.0%</span>
+                </div>
+            </div>
+
+            <div class="bg-dark-900 border border-dark-750 rounded-lg p-3.5 flex flex-col justify-between">
+                <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">AVG LATENESS LATENCY</span>
+                <div class="flex items-baseline justify-between mt-2">
+                    <span class="text-2xl font-mono font-bold text-slate-200">14m 22s</span>
+                    <span class="text-[11px] font-mono text-slate-400">max 1h 02m</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search & Filter Toolbar -->
+        <section class="bg-dark-900 border border-dark-750 rounded-lg p-4 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-3 flex-1 min-w-[300px]">
+                <!-- Search Input -->
+                <div class="relative flex-1 min-w-[220px] max-w-md">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                    <input type="text" id="search-input" onkeyup="filterProviders()" placeholder="Search provider, symbol (e.g. EUR/USD, TRY)..." class="w-full bg-dark-950 border border-dark-700 rounded-md pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-mono transition-colors">
+                </div>
+
+                <!-- State Filters -->
+                <div class="flex items-center space-x-1 bg-dark-950 p-1 rounded-md border border-dark-700 text-xs font-mono">
+                    <button onclick="setFilterState('all')" id="filter-all" class="px-2.5 py-1 rounded text-cyan-400 bg-dark-800 font-semibold transition-all">All (6)</button>
+                    <button onclick="setFilterState('serving')" id="filter-serving" class="px-2.5 py-1 rounded text-slate-400 hover:text-emerald-400 transition-all">Serving</button>
+                    <button onclick="setFilterState('late')" id="filter-late" class="px-2.5 py-1 rounded text-slate-400 hover:text-amber-400 transition-all">Late</button>
+                    <button onclick="setFilterState('notserving')" id="filter-notserving" class="px-2.5 py-1 rounded text-slate-400 hover:text-rose-400 transition-all">Not Serving</button>
+                    <button onclick="setFilterState('paused')" id="filter-paused" class="px-2.5 py-1 rounded text-slate-400 hover:text-slate-200 transition-all">Paused</button>
+                </div>
+            </div>
+
+            <!-- Legend Toggle -->
+            <button onclick="toggleLegend()" class="text-xs font-mono text-slate-400 hover:text-slate-200 flex items-center gap-1.5 bg-dark-850 px-3 py-1.5 rounded border border-dark-700 transition-colors">
+                <i class="fa-solid fa-circle-info text-cyan-400"></i>
+                <span>Status Badge Legend</span>
+            </button>
+        </section>
+
+        <!-- Collapsible Legend Drawer -->
+        <section id="legend-drawer" class="hidden bg-dark-900/90 border border-dark-750 rounded-lg p-4 space-y-3 text-xs">
+            <div class="font-mono text-slate-200 font-bold border-b border-dark-750 pb-2 flex justify-between items-center">
+                <span>STATE BADGE DEFINITIONS & ADAPTER BEHAVIOR</span>
+                <button onclick="toggleLegend()" class="text-slate-500 hover:text-slate-300"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 font-sans">
+                <div class="flex items-start space-x-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-500/40 badge-glow-serving">● serving</span>
+                    <span class="text-slate-400 text-[11px]">Serving. The last fixing is today's and it arrived on time.</span>
+                </div>
+                <div class="flex items-start space-x-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-950 text-amber-400 border border-amber-500/40 badge-glow-late">● late</span>
+                    <span class="text-slate-400 text-[11px]">Late. Publisher's day passed with no fixing. Backfill may be required.</span>
+                </div>
+                <div class="flex items-start space-x-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-950 text-rose-400 border border-rose-500/40 badge-glow-notserving">● not serving</span>
+                    <span class="text-slate-400 text-[11px]">Not serving. Heartbeat stopped or publisher terms withdrawn.</span>
+                </div>
+                <div class="flex items-start space-x-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-950 text-purple-300 border border-purple-500/40">● never fixed</span>
+                    <span class="text-slate-400 text-[11px]">Never fixed. Terms accepted, but no fixing value stored yet.</span>
+                </div>
+                <div class="flex items-start space-x-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-slate-400 border border-slate-600">● paused</span>
+                    <span class="text-slate-400 text-[11px]">Paused by administrator. Ingest feeds frozen in current state.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- MAIN PROVIDER MATRIX TABLE -->
+        <section class="bg-dark-900 border border-dark-750 rounded-lg overflow-hidden shadow-xl">
+            <div class="px-5 py-3 border-b border-dark-750 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <h2 class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">Official Rates Providers</h2>
+                    <span class="text-xs font-mono text-slate-500" id="provider-count-label">6 providers · 1 paused</span>
+                </div>
+                <div class="text-[11px] font-mono text-slate-500">
+                    Live System Clock: <span class="text-slate-300" id="live-clock">2026-10-28 19:24:02 UTC</span>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs font-sans border-collapse">
+                    <thead>
+                        <tr class="bg-dark-850/80 text-[11px] font-mono text-slate-400 border-b border-dark-750 uppercase tracking-wider">
+                            <th class="py-3 px-4">Provider / Instruments</th>
+                            <th class="py-3 px-4">Terms Version</th>
+                            <th class="py-3 px-4">Last Fixing</th>
+                            <th class="py-3 px-4">Received</th>
+                            <th class="py-3 px-4">State</th>
+                            <th class="py-3 px-4">Adapter</th>
+                            <th class="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="provider-table-body" class="divide-y divide-dark-750/60 font-mono">
+                        <!-- Provider Rows generated via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- BOTTOM SECTION: FIXING CURVE & HISTORICAL WINDOW INSPECTOR -->
+        <section class="bg-dark-900 border border-dark-750 rounded-lg p-5 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-4 border-b border-dark-750 pb-3">
+                <div class="flex items-center space-x-3">
+                    <div class="h-3 w-3 rounded-full bg-cyan-400 animate-pulse"></div>
+                    <div>
+                        <h3 class="text-sm font-mono font-bold text-slate-100 flex items-center gap-2" id="inspector-title">
+                            European Central Bank — EUR/CAD
+                            <span class="text-xs font-normal text-slate-400">FX-ECB-EUR-CAD · 7 fixings in current window</span>
+                        </h3>
+                    </div>
+                </div>
+
+                <!-- Instrument Selector Dropdown -->
+                <div class="flex items-center space-x-3 text-xs font-mono">
+                    <span class="text-slate-400">Select Feed Window:</span>
+                    <select id="feed-window-select" onchange="changeSelectedFeed(this.value)" class="bg-dark-950 border border-dark-700 rounded px-3 py-1 text-slate-200 outline-none focus:border-cyan-500">
+                        <option value="ECB-EURCAD">European Central Bank — EUR/CAD</option>
+                        <option value="ECB-EURUSD">European Central Bank — EUR/USD</option>
+                        <option value="BOC-CADUSD">Bank of Canada — CAD/USD</option>
+                        <option value="IMF-USDCHF">IMF — USD/CHF</option>
+                        <option value="BOE-GBPUSD">Bank of England — GBP/USD</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Canvas & Detail Panel Split -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Fixing Curve Canvas -->
+                <div class="lg:col-span-2 bg-dark-950 rounded-lg p-4 border border-dark-800 space-y-2 relative">
+                    <div class="flex justify-between items-center text-[11px] font-mono text-slate-400">
+                        <span>Fixing Rate Trend (Past 7 Business Days)</span>
+                        <span class="text-cyan-400 font-semibold" id="latest-rate-display">Latest: 1.4892 (+14 bps)</span>
+                    </div>
+                    <canvas id="fixingCurveCanvas" class="w-full h-56 block cursor-crosshair"></canvas>
+                </div>
+
+                <!-- Historical Fixing Breakdown Table -->
+                <div class="bg-dark-950 rounded-lg p-4 border border-dark-800 space-y-3 flex flex-col justify-between">
+                    <div>
+                        <div class="text-xs font-mono font-bold text-slate-300 border-b border-dark-750 pb-2 flex justify-between">
+                            <span>Recent Fixing Log</span>
+                            <span class="text-slate-500">Window: 7D</span>
+                        </div>
+                        <div class="mt-2 space-y-1.5 text-xs font-mono max-h-48 overflow-y-auto" id="fixing-log-list">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                    
+                    <div class="pt-2 border-t border-dark-750 flex items-center justify-between text-[11px] font-mono">
+                        <span class="text-slate-400">Anomaly Check: <span class="text-emerald-400 font-bold">Passed</span></span>
+                        <button onclick="openDrawer('European Central Bank')" class="text-cyan-400 hover:text-cyan-300 underline">View Full Provider Audit</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- RIGHT SLIDE-OVER INSPECTION DRAWER -->
+    <div id="drawer-backdrop" onclick="closeDrawer()" class="fixed inset-0 bg-dark-950/80 backdrop-blur-sm z-50 hidden transition-opacity"></div>
+    <aside id="inspection-drawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-dark-900 border-l border-dark-750 z-50 transform translate-x-full drawer-slide flex flex-col justify-between p-6">
+        <div class="space-y-6">
+            <div class="flex items-center justify-between border-b border-dark-750 pb-4">
+                <div>
+                    <span class="text-xs font-mono text-cyan-400">Provider Inspector</span>
+                    <h3 class="text-base font-mono font-bold text-slate-100" id="drawer-provider-name">European Central Bank</h3>
+                </div>
+                <button onclick="closeDrawer()" class="text-slate-400 hover:text-slate-200 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="space-y-4 text-xs font-mono">
+                <!-- Terms Audit -->
+                <div class="bg-dark-950 p-3.5 rounded border border-dark-800 space-y-2">
+                    <div class="text-slate-400 text-[11px] uppercase tracking-wider font-bold">Terms & Approvals</div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Current Terms:</span>
+                        <span class="text-emerald-400 font-bold" id="drawer-terms-ver">accepted v3</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Approved By:</span>
+                        <span class="text-slate-200" id="drawer-approver">super_admin</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Acceptance Date:</span>
+                        <span class="text-slate-200">2026-01-15 10:22 UTC</span>
+                    </div>
+                </div>
+
+                <!-- Heartbeat & Adapter Details -->
+                <div class="bg-dark-950 p-3.5 rounded border border-dark-800 space-y-2">
+                    <div class="text-slate-400 text-[11px] uppercase tracking-wider font-bold">Adapter Telemetry</div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Heartbeat:</span>
+                        <span class="text-slate-200" id="drawer-hb">hb 19:24:00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Adapter Class:</span>
+                        <span class="text-slate-200">EcbFixingAdapterV3</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Retry Attempts:</span>
+                        <span class="text-slate-200">0 / 5</span>
+                    </div>
+                </div>
+
+                <!-- Manual Backfill Trigger Form -->
+                <div class="bg-dark-950 p-3.5 rounded border border-dark-800 space-y-3">
+                    <div class="text-slate-400 text-[11px] uppercase tracking-wider font-bold">Manual Backfill Trigger</div>
+                    <p class="text-[11px] text-slate-400 font-sans">Force a manual fetch & backfill for missing daily fixing dates.</p>
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-slate-400">Target Date:</label>
+                        <input type="date" value="2026-10-28" class="w-full bg-dark-900 border border-dark-700 rounded px-2.5 py-1.5 text-slate-200 text-xs focus:border-cyan-500 outline-none">
+                    </div>
+                    <button onclick="triggerBackfill()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-dark-950 font-bold py-2 rounded text-xs transition-colors flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-download"></i> Trigger Immediate Backfill
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t border-dark-750 pt-4 text-center">
+            <button onclick="closeDrawer()" class="w-full bg-dark-800 hover:bg-dark-750 text-slate-300 font-mono py-2 rounded text-xs transition-colors">Close Drawer</button>
+        </div>
+    </aside>
+
+    <!-- SCRIPT LOGIC -->
+    <script>
+        // --- PROVIDER DATA SET ---
+        const PROVIDERS = [
+            {
+                id: 'ecb',
+                name: 'European Central Bank',
+                symbols: ['EUR/CAD', 'EUR/USD', 'EUR/GBP'],
+                termsVer: 'accepted v3',
+                approver: 'super_admin',
+                lastFixingDate: '2026-10-28',
+                lastFixingTime: '19:23',
+                receivedStatus: 'today, on time',
+                receivedState: 'on_time',
+                state: 'serving',
+                heartbeat: 'hb 19:24',
+                hbState: 'normal',
+                paused: false
+            },
+            {
+                id: 'boc',
+                name: 'Bank of Canada',
+                symbols: ['CAD/EUR', 'CAD/USD'],
+                termsVer: 'accepted v2',
+                approver: 'super_admin',
+                lastFixingDate: '2026-10-27',
+                lastFixingTime: '19:20',
+                receivedStatus: 'today, late',
+                receivedState: 'late',
+                state: 'late',
+                heartbeat: 'hb 19:24',
+                hbState: 'normal',
+                paused: false
+            },
+            {
+                id: 'imf',
+                name: 'International Monetary Fund',
+                symbols: ['EUR/USD', 'USD/CHF', 'USD/JPY'],
+                termsVer: 'accepted v1',
+                approver: 'super_admin',
+                lastFixingDate: '2026-10-28',
+                lastFixingTime: '19:24',
+                receivedStatus: 'today, on time',
+                receivedState: 'on_time',
+                state: 'serving',
+                heartbeat: 'hb 19:24',
+                hbState: 'normal',
+                paused: false
+            },
+            {
+                id: 'cbt',
+                name: 'Central Bank of Turkiye',
+                symbols: ['TRY/USD', 'TRY/EUR'],
+                termsVer: 'accepted v1',
+                approver: 'super_admin',
+                lastFixingDate: '—',
+                lastFixingTime: 'no fixing ever',
+                receivedStatus: '—',
+                receivedState: 'none',
+                state: 'not serving',
+                heartbeat: 'hb 16:02',
+                hbState: 'alert',
+                paused: false
+            },
+            {
+                id: 'norges',
+                name: 'Norges Bank',
+                symbols: ['NOK/EUR', 'NOK/USD'],
+                termsVer: 'accepted v1',
+                approver: 'super_admin',
+                lastFixingDate: '—',
+                lastFixingTime: 'no fixing ever',
+                receivedStatus: '—',
+                receivedState: 'none',
+                state: 'never fixed',
+                heartbeat: 'hb 19:24',
+                hbState: 'normal',
+                paused: false
+            },
+            {
+                id: 'boe',
+                name: 'Bank of England',
+                symbols: ['GBP/USD', 'GBP/EUR'],
+                termsVer: 'accepted v1',
+                approver: 'super_admin',
+                lastFixingDate: '2026-10-28',
+                lastFixingTime: '15:00',
+                receivedStatus: 'today, on time',
+                receivedState: 'on_time',
+                state: 'paused',
+                heartbeat: 'hb 19:24',
+                hbState: 'normal',
+                paused: true
+            }
+        ];
+
+        // --- FIXING HISTORY DATA FOR CANVAS ---
+        const FIXING_DATA = {
+            'ECB-EURCAD': [
+                { date: '10-20', rate: 1.4820, bps: '+2' },
+                { date: '10-21', rate: 1.4835, bps: '+15' },
+                { date: '10-22', rate: 1.4810, bps: '-25' },
+                { date: '10-23', rate: 1.4850, bps: '+40' },
+                { date: '10-24', rate: 1.4842, bps: '-8' },
+                { date: '10-27', rate: 1.4878, bps: '+36' },
+                { date: '10-28', rate: 1.4892, bps: '+14' }
+            ],
+            'ECB-EURUSD': [
+                { date: '10-20', rate: 1.0810, bps: '-5' },
+                { date: '10-21', rate: 1.0825, bps: '+15' },
+                { date: '10-22', rate: 1.0840, bps: '+15' },
+                { date: '10-23', rate: 1.0830, bps: '-10' },
+                { date: '10-24', rate: 1.0865, bps: '+35' },
+                { date: '10-27', rate: 1.0870, bps: '+5' },
+                { date: '10-28', rate: 1.0895, bps: '+25' }
+            ],
+            'BOC-CADUSD': [
+                { date: '10-20', rate: 0.7250, bps: '0' },
+                { date: '10-21', rate: 0.7240, bps: '-10' },
+                { date: '10-22', rate: 0.7265, bps: '+25' },
+                { date: '10-23', rate: 0.7255, bps: '-10' },
+                { date: '10-24', rate: 0.7280, bps: '+25' },
+                { date: '10-27', rate: 0.7270, bps: '-10' },
+                { date: '10-28', rate: 0.7260, bps: '-10' }
+            ]
+        };
+
+        let activeFilterState = 'all';
+        let selectedFeedKey = 'ECB-EURCAD';
+
+        // --- RENDER PROVIDER TABLE ---
+        function renderTable() {
+            const tbody = document.getElementById('provider-table-body');
+            const searchVal = document.getElementById('search-input').value.toLowerCase();
+
+            tbody.innerHTML = '';
+
+            const filtered = PROVIDERS.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(searchVal) ||
+                                      p.symbols.some(s => s.toLowerCase().includes(searchVal));
+                
+                if (activeFilterState === 'all') return matchesSearch;
+                if (activeFilterState === 'paused') return matchesSearch && p.paused;
+                return matchesSearch && p.state.replace(' ', '') === activeFilterState.replace(' ', '');
+            });
+
+            filtered.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-dark-800/50 transition-colors group";
+
+                // State Badge Config
+                let badgeClass = '';
+                if (p.state === 'serving') badgeClass = 'bg-emerald-950 text-emerald-400 border-emerald-500/40 badge-glow-serving';
+                else if (p.state === 'late') badgeClass = 'bg-amber-950 text-amber-400 border-amber-500/40 badge-glow-late';
+                else if (p.state === 'not serving') badgeClass = 'bg-rose-950 text-rose-400 border-rose-500/40 badge-glow-notserving';
+                else if (p.state === 'never fixed') badgeClass = 'bg-purple-950 text-purple-300 border-purple-500/40';
+                else if (p.state === 'paused') badgeClass = 'bg-slate-800 text-slate-400 border-slate-600';
+
+                // Heartbeat Badge
+                let hbClass = p.hbState === 'alert' 
+                    ? 'bg-rose-950/80 text-rose-400 border-rose-500/50 animate-pulse' 
+                    : 'text-slate-400 border-transparent';
+
+                tr.innerHTML = `
+                    <td class="py-3.5 px-4">
+                        <div class="font-bold text-slate-100 group-hover:text-cyan-400 transition-colors">${p.name}</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">${p.symbols.join(', ')}</div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/60 text-emerald-400 border border-emerald-500/30">${p.termsVer}</span>
+                        <span class="text-[11px] text-slate-400 ml-1.5">${p.approver}</span>
+                    </td>
+                    <td class="py-3.5 px-4">
+                        <div class="text-slate-200">${p.lastFixingDate}</div>
+                        <div class="text-[10px] text-slate-400">${p.lastFixingTime}</div>
+                    </td>
+                    <td class="py-3.5 px-4 text-slate-300">
+                        ${p.receivedStatus}
+                    </td>
+                    <td class="py-3.5 px-4">
+                        <span class="px-2.5 py-1 rounded text-[11px] font-bold border inline-flex items-center gap-1.5 ${badgeClass}">
+                            <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                            ${p.state}
+                        </span>
+                    </td>
+                    <td class="py-3.5 px-4">
+                        <span class="px-2 py-0.5 rounded text-[10px] border ${hbClass}">${p.heartbeat}</span>
+                    </td>
+                    <td class="py-3.5 px-4 text-right space-x-1">
+                        <button onclick="openDrawer('${p.name}')" class="px-2.5 py-1 rounded bg-dark-800 hover:bg-dark-750 text-slate-300 border border-dark-700 text-[11px] transition-colors">Open</button>
+                        <button onclick="togglePause('${p.id}')" class="px-2.5 py-1 rounded bg-dark-800 hover:bg-dark-750 text-slate-300 border border-dark-700 text-[11px] transition-colors">
+                            ${p.paused ? 'Resume' : 'Pause'}
+                        </button>
+                    </td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('provider-count-label').innerText = `${filtered.length} providers visible · 1 paused`;
+        }
+
+        // --- RENDER CANVAS FIXING CURVE ---
+        function renderCanvasCurve() {
+            const canvas = document.getElementById('fixingCurveCanvas');
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            const width = rect.width;
+            const height = rect.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const data = FIXING_DATA[selectedFeedKey] || FIXING_DATA['ECB-EURCAD'];
+
+            // Gridlines
+            ctx.strokeStyle = '#181f30';
+            ctx.lineWidth = 1;
+            for (let y = 20; y < height; y += 40) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+
+            if (data.length < 2) return;
+
+            const minRate = Math.min(...data.map(d => d.rate)) * 0.998;
+            const maxRate = Math.max(...data.map(d => d.rate)) * 1.002;
+
+            const stepX = width / (data.length - 1);
+
+            // Draw Area Fill Under Curve
+            ctx.beginPath();
+            data.forEach((pt, i) => {
+                let x = i * stepX;
+                let y = height - ((pt.rate - minRate) / (maxRate - minRate)) * (height - 40) - 20;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.lineTo(width, height);
+            ctx.lineTo(0, height);
+            ctx.closePath();
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, height);
+            gradient.addColorStop(0, 'rgba(6, 214, 160, 0.25)');
+            gradient.addColorStop(1, 'rgba(6, 214, 160, 0.0)');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            // Draw Curve Line
+            ctx.beginPath();
+            ctx.strokeStyle = '#06d6a0';
+            ctx.lineWidth = 2.5;
+
+            data.forEach((pt, i) => {
+                let x = i * stepX;
+                let y = height - ((pt.rate - minRate) / (maxRate - minRate)) * (height - 40) - 20;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Draw Points
+            data.forEach((pt, i) => {
+                let x = i * stepX;
+                let y = height - ((pt.rate - minRate) / (maxRate - minRate)) * (height - 40) - 20;
+
+                ctx.beginPath();
+                ctx.fillStyle = '#06d6a0';
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Point Halo
+                ctx.beginPath();
+                ctx.strokeStyle = '#07090e';
+                ctx.lineWidth = 1.5;
+                ctx.arc(x, y, 5.5, 0, Math.PI * 2);
+                ctx.stroke();
+            });
+
+            // Update Log Breakdown List
+            const logContainer = document.getElementById('fixing-log-list');
+            logContainer.innerHTML = '';
+            
+            [...data].reverse().forEach(item => {
+                const row = document.createElement('div');
+                row.className = "flex justify-between items-center bg-dark-900 px-2.5 py-1.5 rounded border border-dark-800";
+                row.innerHTML = `
+                    <span class="text-slate-400">${item.date}</span>
+                    <span class="text-slate-100 font-bold">${item.rate.toFixed(4)}</span>
+                    <span class="${item.bps.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'}">${item.bps} bps</span>
+                `;
+                logContainer.appendChild(row);
+            });
+
+            const lastItem = data[data.length - 1];
+            document.getElementById('latest-rate-display').innerText = `Latest: ${lastItem.rate.toFixed(4)} (${lastItem.bps} bps)`;
+        }
+
+        // --- HANDLERS & INTERACTIONS ---
+        function filterProviders() {
+            renderTable();
+        }
+
+        function setFilterState(state) {
+            activeFilterState = state;
+            ['all', 'serving', 'late', 'notserving', 'paused'].forEach(s => {
+                const btn = document.getElementById(`filter-${s}`);
+                if (s === state) {
+                    btn.className = 'px-2.5 py-1 rounded text-cyan-400 bg-dark-800 font-semibold transition-all';
+                } else {
+                    btn.className = 'px-2.5 py-1 rounded text-slate-400 hover:text-slate-200 transition-all';
+                }
+            });
+            renderTable();
+        }
+
+        function toggleLegend() {
+            const el = document.getElementById('legend-drawer');
+            el.classList.toggle('hidden');
+        }
+
+        function changeSelectedFeed(val) {
+            selectedFeedKey = val;
+            const titles = {
+                'ECB-EURCAD': 'European Central Bank — EUR/CAD',
+                'ECB-EURUSD': 'European Central Bank — EUR/USD',
+                'BOC-CADUSD': 'Bank of Canada — CAD/USD'
+            };
+            document.getElementById('inspector-title').innerHTML = `${titles[val] || val} <span class="text-xs font-normal text-slate-400">7 fixings in current window</span>`;
+            renderCanvasCurve();
+        }
+
+        function togglePause(id) {
+            const provider = PROVIDERS.find(p => p.id === id);
+            if (provider) {
+                provider.paused = !provider.paused;
+                provider.state = provider.paused ? 'paused' : 'serving';
+                renderTable();
+            }
+        }
+
+        function openDrawer(providerName) {
+            document.getElementById('drawer-provider-name').innerText = providerName;
+            document.getElementById('drawer-backdrop').classList.remove('hidden');
+            document.getElementById('inspection-drawer').classList.remove('translate-x-full');
+        }
+
+        function closeDrawer() {
+            document.getElementById('drawer-backdrop').classList.add('hidden');
+            document.getElementById('inspection-drawer').classList.add('translate-x-full');
+        }
+
+        function triggerBackfill() {
+            alert('Manual backfill job dispatched to message queue for processing.');
+            closeDrawer();
+        }
+
+        function refreshData() {
+            const icon = document.getElementById('refresh-icon');
+            icon.classList.add('fa-spin');
+            setTimeout(() => {
+                icon.classList.remove('fa-spin');
+                renderTable();
+                renderCanvasCurve();
+            }, 600);
+        }
+
+        // Live Clock
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('live-clock').innerText = now.toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+        }, 1000);
+
+        // Initial Load
+        window.onload = function() {
+            renderTable();
+            renderCanvasCurve();
+            window.addEventListener('resize', renderCanvasCurve);
+        };
+    </script>
+</body>
+</html>

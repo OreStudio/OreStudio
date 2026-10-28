@@ -56,7 +56,8 @@ acts the architecture can carry.
 1. *Read the providers.* The person opens *Market data* and then *Official
    rates*. The system lists every public provider that has terms: its name, the
    kind of source it is, whether its terms are accepted at the version shown,
-   the items it serves, and its freshness.
+   the items it serves, and its freshness. The route that reaches it, Frankfurter
+   or later another, is on the adapter's health, not on the row.
 2. *Read the freshness.* For each provider the row states the last fixing's
    date, the time it was received, and whether the next expected publication is
    late. A provider that has never had a fixing says so in words rather than
@@ -81,9 +82,10 @@ acts the architecture can carry.
    and the system stops demanding its items. The fixings the provider already
    published stay, and a feed that started from one keeps its start. Resume
    restores the demand. Each act is audited with an actor and a reason.
-8. *Start a backfill of a range.* The person names a date range and asks for it.
-   The service asks the adapter for the range, and the screen says the backfill
-   is running and names the days it has fetched. A range that overlaps what the
+8. *Force a fetch.* The person opens the Fetch tab, picks today, yesterday or a
+   range, all providers or one, one pair or every pair, and asks for it. The
+   service asks the adapters for exactly that, and the screen says the fetch is
+   running and names the days it has fetched. A range that overlaps what the
    store holds adds nothing, because the store skips a fixing it already has.
 9. *Delete the fixings of a provider whose terms withdrew storage.* When a new
    terms version withdraws permission to store, the person deletes that
@@ -95,7 +97,51 @@ acts the architecture can carry.
 11. *See who changed it.* The person opens the provider's history: terms
     acceptances and declines, pauses and resumes, backfills and deletions, each
     with its actor and its reason.
-12. *Leave.* The person returns to *Market data*.
+12. *Read the availability of one underlying.* The person opens the Availability
+    tab and picks a pair. The system lists each publisher that fixes the pair,
+    with the first and last date it holds, the count, and the gaps. A publisher
+    whose terms are not accepted shows as a row with no data and the reason.
+13. *Compare the publishers.* The person opens the Compare tab for the same
+    pair. The system draws each publisher's fixing over the window on one axis,
+    the difference of each against the others in basis points, and the largest
+    disagreement. It names the publisher whose value is furthest from the rest.
+14. *Read one publisher's history for one underlying.* The person opens the
+    publisher and picks the pair. The system shows the fixings over the window,
+    the corrections, the days with no value, and the synthetic feeds that started
+    from a value, with the value each took.
+15. *Read a provider's configuration.* The person opens the provider's record
+    page. The Details tab shows its name, kind, terms page, credit, credential
+    reference and whether storage is allowed. The History tab is the shared
+    timeline: every version and every acceptance, with the person and the time.
+16. *Leave.* The person returns to *Market data*.
+
+* The screen is five surfaces, not one
+
+The review of this journey and the prototype it produced made one thing clear:
+the screen carries several jobs, and each deserves its own surface. A person
+moves between them without losing the provider they were reading.
+
+#+ATTR_HTML: :class hug-leading
+| Surface | The question it answers | Where it sits |
+|---------+-------------------------+---------------|
+| Providers | Which publishers are there, what are their terms, and is their data arriving? | The Official rates list, the home of the journey |
+| Publisher | What did this one publisher publish for this pair, over time, and where did a feed start from it? | A provider's page |
+| Availability | For one underlying, what does each publisher hold, and what gaps does it have? | A tab, read by underlying first |
+| Compare | For one underlying, how far apart are the publishers' values, and which one is off? | A tab, read by underlying first |
+| Fetch | Ask for data now: a day or a range, one publisher or all, one pair or every pair | A tab, the only place a person starts a fetch |
+| Configuration | What does this publisher's record say, and who changed it? | The provider's record page, Details and History |
+
+The hierarchy the words must follow is three levels deep. An *access route* is
+how the platform reaches a publisher, such as Frankfurter. A *publisher* is the
+central bank or public body whose terms apply, such as the ECB. An *item*, or
+underlying, is one pair from one publisher, such as =FX-ECB-EUR-CAD=. The
+provider entity is the publisher, and Frankfurter is a route, not a provider; the
+screen groups publishers by route only to show the adapter's health.
+
+The schedule is not this screen's. The platform's scheduler runs a job that asks
+the adapters to refresh on each publisher's publication rhythm. The Fetch tab
+sends the same request on demand, so one request serves the schedule and the
+person, and the screen owns neither the poll nor the interval.
 
 * Screens and wireframes
 
@@ -172,11 +218,12 @@ progress. It is a static page: no build, no server, no session.
   [[id:EFAC2D06-56C6-41FD-856E-2B2AB415A947][Decide how a provider is
   paused]]. Until it exists the screen states that a provider is fetched
   because the system party subscribes to it, and names the subscription.
-- *A backfill of a chosen range.* The adapter contract carries announce,
-  demand, tick and heartbeat, and no fetch request. The design is
-  [[id:B9BCE538-9616-4C0F-A56F-BBE981CB2043][Design a backfill request on the
-  adapter contract]]. Until it exists the screen offers the window the service
-  already fetches and says that the choice cannot yet be made from here.
+- *A fetch on demand and on a schedule.* The adapter contract carries announce,
+  demand, tick and heartbeat, and no fetch request. One request must serve the
+  scheduler's job and the screen's Fetch tab, and the design is
+  [[id:B9BCE538-9616-4C0F-A56F-BBE981CB2043][Design the refresh request the
+  scheduler and the screen share]]. Until it exists the screen offers only the
+  window the service fetches on its own.
 - *Deleting a provider's fixings.* The durable table is never deleted today,
   because the terms in force when a value was stored keep it. A terms version
   that withdraws storage needs an act with an actor, which

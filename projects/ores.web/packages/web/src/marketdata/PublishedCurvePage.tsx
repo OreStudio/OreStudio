@@ -30,7 +30,6 @@ import {
 import { api, type PublishedCurveSet } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
-import { PATHS } from '../shell/paths.js';
 
 import { Timeline } from '../timeline/Timeline.js';
 import { Notice, PageHeader, Tag } from '../ui/Primitives.js';
@@ -242,12 +241,7 @@ function DetailsTab({
                         </Link>
                     </Fact>
                     <Fact label={t('marketdata.published.details.config')}>
-                        <Link
-                            className="text-accent hover:underline"
-                            to={`${PATHS.curveConfigurations}/${encodeURIComponent(record.bootstrap_config_id)}`}
-                        >
-                            {record.bootstrap_config_id}
-                        </Link>
+                        <span className="break-all">{record.bootstrap_config_id}</span>
                     </Fact>
                     <Fact label={t('marketdata.published.columns.state')}>
                         {t(`marketdata.published.state.${state}`)}

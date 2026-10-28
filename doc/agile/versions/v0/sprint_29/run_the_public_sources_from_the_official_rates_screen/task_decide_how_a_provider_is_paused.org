@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: EFAC2D06-56C6-41FD-856E-2B2AB415A947
+:END:
+#+title: Task: Decide how a provider is paused
+#+description: A decision, not a control: whether a pause is a fact about demand or a provider state, and what it does to the provider's fixings and its feeds.
+#+type: task
+#+level: s1
+#+filetags: :run_the_public_sources_from_the_official_rates_screen:sprint_29:v0:
+#+owner: marco
+#+branch: feature/run-the-public-sources-from-the-official-rates-screen
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D0DECE4-B91C-4855-96E9-A302A6B99E19][Run the public sources from the Official rates screen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The decision names the object the pause lives on, the effect on the adapter's demand set, the effect on fixings already stored, and the effect on a feed that started from one of them. It states the sentence the screen shows while paused.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3D0DECE4-B91C-4855-96E9-A302A6B99E19][Run the public sources from the Official rates screen]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- The decision names whether a pause is a fact about demand or about the provider, with the reason for the choice.
+- The decision states what happens to stored fixings, to a feed that started from one, and to a running adapter's demand set.
+- The decision states what the screen shows while a provider is paused, in one sentence.
+- If the choice needs a provider state, the task names the model change and the consumers that must honour it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

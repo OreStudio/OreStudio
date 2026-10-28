@@ -175,7 +175,6 @@ The default index keeps one default source for each provider.
 #+begin_src cpp :name includes
 #include <boost/uuid/uuid.hpp>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

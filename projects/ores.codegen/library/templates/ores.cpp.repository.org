@@ -20,14 +20,14 @@ table to them.
 * Summary
 
 Six templates — three hpp/cpp pairs — forming the entity's persistence
-triplet: the sqlgen entity struct mirroring the table, the mapper
+triplet: the entity struct mirroring the table, the mapper
 converting domain ↔ entity, and the repository exposing CRUD and
 temporal queries. =repository= profile.
 
 * The ores.cpp.repository facet
 
 The persistence layer of the /entity/ projection: the database
-round-trip entity ↔ mapper ↔ repository over sqlgen. Declarations in
+round-trip entity ↔ mapper ↔ repository through the query builder on the libpq layer. Declarations in
 =.hpp=, out-of-class implementations in =.cpp=, with custom-method
 paste points from the entity org-model where the generated default is
 not enough.
@@ -44,12 +44,12 @@ group's standard constructs.
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:12A5AACD-D13B-4192-90EF-7ACFF7DC149A][ores.cpp.repository.entity_header]] | sqlgen-side struct mirroring the table shape. =repository= profile. |
-| [[id:2EC5AE36-6305-42A3-8FDD-747555B87E89][ores.cpp.repository.entity_impl]] | Out-of-class implementations for the sqlgen entity. =repository= profile. |
+| [[id:12A5AACD-D13B-4192-90EF-7ACFF7DC149A][ores.cpp.repository.entity_header]] | The repository entity: a struct mirroring the table shape, with the column list the query builder binds. =repository= profile. |
+| [[id:2EC5AE36-6305-42A3-8FDD-747555B87E89][ores.cpp.repository.entity_impl]] | Out-of-class implementations for the repository entity. =repository= profile. |
 | [[id:F0BDDB58-D4D1-4D37-AE93-5171B271C469][ores.cpp.repository.mapper_header]] | Mapper declarations. =repository= profile. |
 | [[id:D09D4DE0-811D-458B-BF03-79B21A4E888E][ores.cpp.repository.mapper_impl]] | Domain ↔ entity conversions including timestamp handling. =repository= profile. |
 | [[id:6499F37D-73C3-4E3C-A5D8-6DE23D160D33][ores.cpp.repository.repository_header]] | Repository declarations with custom-member paste points. =repository= profile. |
-| [[id:CA9F9135-3EB4-4578-9A97-760F4CA28480][ores.cpp.repository.repository_impl]] | CRUD + temporal queries over sqlgen; custom-method paste points. =repository= profile. |
+| [[id:CA9F9135-3EB4-4578-9A97-760F4CA28480][ores.cpp.repository.repository_impl]] | CRUD + temporal queries through the ores.database query builder on the libpq layer; custom-method paste points. =repository= profile. |
 
 * See also
 

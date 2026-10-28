@@ -2,7 +2,7 @@
 :ID: 12A5AACD-D13B-4192-90EF-7ACFF7DC149A
 :END:
 #+title: ores.cpp.repository.entity_header
-#+description: sqlgen-side struct mirroring the table shape. =repository= profile.
+#+description: The repository entity: a struct mirroring the table shape, with the column list the query builder binds. =repository= profile.
 #+type: archetype
 #+output: projects/{component_core_dir}/include/ores.{component_core}/repository/{entity}_entity.hpp
 #+facet: ores.cpp.repository
@@ -11,7 +11,7 @@
 #+created: 2026-06-08
 #+updated: 2026-06-08
 
-sqlgen-side struct mirroring the table shape. =repository= profile.
+The repository entity: a struct mirroring the table shape, with the column list the query builder binds. =repository= profile.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -288,16 +288,14 @@ e.g. the header of a domain-enum column type such as
 repeat the standard set leave regeneration byte-identical.
 
 The filter (org_loader's =_ENTITY_HEADER_STANDARD_INCLUDES=) also drops
-the tokens legacy blocks add that no emitted member can require, and
+the tokens org blocks add that no emitted member can require, and
 applies to junction entity headers as well as domain ones:
 
-- =sqlgen/Timestamp.hpp= arrives via =db_types.hpp='s =db_timestamp= alias,
-  which the template always emits and which includes Timestamp.hpp;
 - =boost/uuid/uuid.hpp= is never needed: the template renders every
   uuid-typed column and junction PK/FK side as =std::string=;
-- =<cstdint>= appears in drift-rollout-era blocks as a stale transcription
-  of pre-org headers; the canonical entity headers compile without it and
-  the drift registry pins them byte-for-byte.
+- =<cstdint>= is a stale transcription of headers no entity member needs;
+  the canonical entity headers compile without it and the drift registry
+  pins them byte-for-byte.
 
 Without these drops, the whole-estate drift check flags the four
 registered-component headers whose orgs declare them (compute
@@ -306,28 +304,12 @@ registered-component headers whose orgs declare them (compute
 these headers in the entity header belongs in this template's fixed
 include set, not in an org block.
 
-** Domain entity vs junction: unified on =db_timestamp= (2026-07-15)
+** Domain entity and junction
 
-Both the ={{#domain_entity}}= and ={{#junction}}= sections now use the
-=db_timestamp= type alias (=ores::database::repository::db_timestamp=,
-imported via =db_types.hpp=) for =valid_from=/=valid_to=, and both use the
+Both the ={{#domain_entity}}= and ={{#junction}}= sections use the
+=db_timestamp= type (=ores::database::repository::db_timestamp=, from
+=db_types.hpp=) for =valid_from= and =valid_to=, and both use the
 =component_core_upper=-based include guard.
-
-This was previously a documented, deliberate divergence (the junction
-section used raw =sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">= and a
-=component_upper=-based guard instead), justified by "the composite-PK
-interaction with =sqlgen='s =db_timestamp= alias has not been validated" —
-but the existing hand-authored =party_currency_entity.hpp=/
-=party_country_entity.hpp= (real, currently-compiling junction entities)
-already use =db_timestamp= and the CORE-prefixed guard in production, which
-is exactly the validation the old note said was missing. Unified the
-template to match what already ships, while adding a codegen junction
-facet for =tenor_convention_resolution= (see the
-[[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile
-system; add junction support to physical-space codegen]] story).
-
-Capture [[id:0CD7A581-8C72-40E9-B87D-62C80BBD342D][Unify junction entity
-timestamp type to db_timestamp alias]] can be closed as done.
 
 * See also
 

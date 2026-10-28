@@ -271,9 +271,7 @@ The gaps are of two kinds, and the two need different answers.
 - [[id:5724BDE2-7FA4-4667-9129-2D9DD7783AB2][Entity-table writes go
   through the repositories]] — the write path each single-owner row must
   use inside its transaction.
-- [[id:9562C34E-5790-422D-8E31-774691995860][A read inside a unit of work
-  commits it]] — the rule that decides whether a row's transaction
-  survives its own reads.
+- [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]] — why a row's reads run on the row's own transaction.
 - [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — where
   B10, B11 and the absent packages would keep their parts.
 - [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] — the isolation

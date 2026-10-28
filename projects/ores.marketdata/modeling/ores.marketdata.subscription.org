@@ -198,7 +198,6 @@ subscription_repository::read_latest_all_tenants(context ctx) {
 #+begin_src cpp :name includes
 #include <boost/uuid/uuid.hpp>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

@@ -114,10 +114,10 @@ Variables available inside ={{#columns}}=…={{/columns}}= and
 | =is_nullable_string=    | Nullable string (maps to SQL NULL).               | =true=                     |
 | =is_nullable_int=       | Nullable integer.                                 | =true=                     |
 | =is_base64=     | True for a =:base64: true= column: the domain member is =std::vector<std::uint8_t>= and the row member is its base64 =std::string=. | =true= |
-| =is_date=       | True for a plain date column whose domain member is =std::chrono::year_month_day=: the entity member stays the ISO-8601 =std::string= sqlgen binds and the mapper converts. Keys keep their own date projection. | =true= |
+| =is_date=       | True for a plain date column whose domain member is =std::chrono::year_month_day=: the entity member stays the ISO-8601 =std::string= the query builder binds and the mapper converts. Keys keep their own date projection. | =true= |
 | =is_required_date= | A plain NOT NULL date: the entity member is =std::string=.    | =true=                     |
 | =is_optional_date= | A plain nullable date: the entity member is =std::optional<std::string>=. | =true=          |
-| =is_decimal=    | True for a =numeric= money column whose domain member is =ores::utility::decimal::decimal=: the entity member stays the exact decimal =std::string= sqlgen binds and the mapper parses and renders it. Keying on the domain type keeps a rate, volatility or correlation column =double=. | =true= |
+| =is_decimal=    | True for a =numeric= money column whose domain member is =ores::utility::decimal::decimal=: the entity member stays the exact decimal =std::string= the query builder binds and the mapper parses and renders it. Keying on the domain type keeps a rate, volatility or correlation column =double=. | =true= |
 | =is_required_decimal= | A NOT NULL decimal: the entity member is =std::string=. | =true= |
 | =is_optional_decimal= | A nullable decimal: the entity member is =std::optional<std::string>=, and the domain member must be =std::optional<decimal>=. | =true= |
 | =is_computed=   | True if the value is computed (not stored directly).      | =true=                     |

@@ -12,9 +12,8 @@
 #+updated: 2026-06-08
 
 CRUD + temporal queries through =ores::database::query_builder= on the libpq layer, with
-custom-method paste points. =repository= profile. The query builder keeps the names the
-template first used with sqlgen and writes the SQL sqlgen wrote, with every value a text
-parameter, tracking =valid_from= and =valid_to=.
+custom-method paste points. =repository= profile. Every value is a text parameter, and
+bitemporal reads and writes track =valid_from= and =valid_to=.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.

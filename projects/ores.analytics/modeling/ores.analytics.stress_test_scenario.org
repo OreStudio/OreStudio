@@ -151,7 +151,6 @@ The order the document wrote the scenario in.
 #+begin_src cpp :name includes
 #include <string>
 #include <optional>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

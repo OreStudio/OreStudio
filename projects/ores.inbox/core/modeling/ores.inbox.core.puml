@@ -208,7 +208,7 @@ namespace ores #F2F2F2 {
             class approval_decision_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +request_id : string
@@ -255,7 +255,7 @@ namespace ores #F2F2F2 {
             class approval_decision_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -300,7 +300,7 @@ namespace ores #F2F2F2 {
             class approval_kind_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -349,7 +349,7 @@ namespace ores #F2F2F2 {
             class approval_request_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +kind_code : string
@@ -396,7 +396,7 @@ namespace ores #F2F2F2 {
             class approval_request_state_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -441,7 +441,7 @@ namespace ores #F2F2F2 {
             class delivery_outcome_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +description : string
             }
             class delivery_outcome_type_mapper {
@@ -474,7 +474,7 @@ namespace ores #F2F2F2 {
             class notification_argument_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +notification_id : sqlgen::PrimaryKey<string>
+                +notification_id : string
                 +tenant_id : string
                 +name : string
                 +version : int
@@ -522,7 +522,7 @@ namespace ores #F2F2F2 {
             class notification_channel_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -566,7 +566,7 @@ namespace ores #F2F2F2 {
             class notification_delivery_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +notification_id : string
@@ -614,7 +614,7 @@ namespace ores #F2F2F2 {
             class notification_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +kind_code : string
@@ -633,7 +633,7 @@ namespace ores #F2F2F2 {
             class notification_kind_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -686,9 +686,9 @@ namespace ores #F2F2F2 {
             class notification_preference_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +account_id : sqlgen::PrimaryKey<string>
-                +kind_code : sqlgen::PrimaryKey<string>
-                +channel_code : sqlgen::PrimaryKey<string>
+                +account_id : string
+                +kind_code : string
+                +channel_code : string
                 +tenant_id : string
                 +version : int
                 +enabled : bool
@@ -731,7 +731,7 @@ namespace ores #F2F2F2 {
             class notification_recipient_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +notification_id : sqlgen::PrimaryKey<string>
+                +notification_id : string
                 +tenant_id : string
                 +account_id : string
                 +version : int

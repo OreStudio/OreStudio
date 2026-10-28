@@ -371,7 +371,6 @@ resolves the name for the party it publishes to and writes the portfolio scope r
 #include <optional>
 #include <ostream>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #include <boost/uuid/uuid.hpp>
 #+end_src
 

@@ -145,7 +145,6 @@ The first instant at which the mapping no longer holds. Empty while it holds.
 #+begin_src cpp :name includes
 #include <boost/uuid/uuid.hpp>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #include <chrono>
 #include <optional>
 #+end_src

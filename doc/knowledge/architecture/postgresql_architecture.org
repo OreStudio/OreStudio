@@ -209,7 +209,11 @@ SELECT set_config('app.current_party_id', '<uuid>', true);
 SELECT set_config('app.visible_party_ids', '<uuids>', true);
 SELECT set_config('app.current_actor', '<account>', true);
 SELECT set_config('app.current_service', '<service>', true);
+SELECT set_config('TimeZone', 'UTC', true);
 #+end_src
+
+The transaction sets =TimeZone= too, so a role without the default still reads
+UTC.
 
 The unit of work sends these settings in the same round trip as the
 transaction's first statement. See [[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]] and [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]].

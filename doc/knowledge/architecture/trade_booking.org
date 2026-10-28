@@ -170,9 +170,9 @@ its trade id booked treats the trade as present.
 
 *** Reads and failures inside the unit of work
 
-A read made through the unit of work joins it and does not end it. Code that
-opens its own session for a read inside a booking ends the transaction early.
-The memory [[id:9562C34E-5790-422D-8E31-774691995860][A read inside a unit of work commits it]] states the rule.
+A read made with the unit of work's context runs on its transaction and does
+not end it, so the booking's reads see its own writes. See
+[[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]].
 
 A refusal by the database rolls the whole unit back. The service reports the
 database's own words. It does not map them to a second set of codes.

@@ -249,7 +249,6 @@ check reads that tenant whatever tenant owns the shift.
 #+begin_src cpp :name includes
 #include <string>
 #include <optional>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

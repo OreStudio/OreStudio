@@ -49,7 +49,7 @@ when regenerating a single layer (e.g. during a commissioning task):
 | SQL schema               | =ores.sql.schema=              | table DDL, insert/update triggers, indexes |
 | SQL populate             | =ores.sql.populate=            | seed-data DML                              |
 | C++ domain struct        | =ores.cpp.domain=              | domain struct + JSON I/O                   |
-| C++ repository           | =ores.cpp.repository=          | repository class (sqlgen queries)          |
+| C++ repository           | =ores.cpp.repository=          | repository class (libpq statements)        |
 | C++ service              | =ores.cpp.service=             | service class wrapping the repository      |
 | C++ NATS protocol        | =ores.cpp.protocol=            | request/response message structs           |
 | C++ NATS handler         | =ores.cpp.nats-handler=        | message handler class                      |

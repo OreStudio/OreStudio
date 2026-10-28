@@ -400,8 +400,6 @@ entity versioning" architecture doc, "Multi-level composition".
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #+end_src
 
 ** Conventions

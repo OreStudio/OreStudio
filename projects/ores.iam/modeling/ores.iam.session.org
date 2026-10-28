@@ -277,8 +277,6 @@ std::string("binary")
 #+begin_src cpp :name includes
 #include <cstdint>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #+end_src
 
 ** Conventions

@@ -446,7 +446,6 @@ column, so the split needs no vocabulary read.
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

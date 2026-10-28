@@ -182,7 +182,6 @@ Where the setting sits in its group, counting from zero.
 #+begin_src cpp :name includes
 #include <optional>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

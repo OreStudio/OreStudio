@@ -246,7 +246,6 @@ request is of is the system's and its rule is what a decider reads.
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

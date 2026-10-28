@@ -420,7 +420,7 @@ namespace ores #F2F2F2 {
             class asset_class_code_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -443,7 +443,7 @@ namespace ores #F2F2F2 {
             class book_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +party_id : string
@@ -470,7 +470,7 @@ namespace ores #F2F2F2 {
             class book_purpose_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -494,7 +494,7 @@ namespace ores #F2F2F2 {
             class book_status_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -515,7 +515,7 @@ namespace ores #F2F2F2 {
             class business_centre_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +source : optional<string>
@@ -538,7 +538,7 @@ namespace ores #F2F2F2 {
             class business_day_convention_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -559,7 +559,7 @@ namespace ores #F2F2F2 {
             class business_unit_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +party_id : string
@@ -584,7 +584,7 @@ namespace ores #F2F2F2 {
             class business_unit_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +coding_scheme_code : string
@@ -607,7 +607,7 @@ namespace ores #F2F2F2 {
             class calendar_date_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +calendar_code : sqlgen::PrimaryKey<string>
+                +calendar_code : string
                 +tenant_id : string
                 +date : string
                 +version : int
@@ -629,7 +629,7 @@ namespace ores #F2F2F2 {
             class calendar_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -649,7 +649,7 @@ namespace ores #F2F2F2 {
             class calendar_event_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +calendar_code : string
@@ -673,7 +673,7 @@ namespace ores #F2F2F2 {
             class calendar_exception_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +calendar_code : string
@@ -700,7 +700,7 @@ namespace ores #F2F2F2 {
             class calendar_rule_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +calendar_code : string
@@ -728,7 +728,7 @@ namespace ores #F2F2F2 {
             class calendar_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -749,7 +749,7 @@ namespace ores #F2F2F2 {
             class cds_convention_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +settlement_days : int
@@ -777,7 +777,7 @@ namespace ores #F2F2F2 {
             class contact_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -798,7 +798,7 @@ namespace ores #F2F2F2 {
             class counterparty_contact_information_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +counterparty_id : string
@@ -827,7 +827,7 @@ namespace ores #F2F2F2 {
             class counterparty_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +short_code : string
@@ -848,7 +848,7 @@ namespace ores #F2F2F2 {
             class counterparty_identifier_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +counterparty_id : string
@@ -875,7 +875,7 @@ namespace ores #F2F2F2 {
             class country_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +alpha2_code : sqlgen::PrimaryKey<string>
+                +alpha2_code : string
                 +tenant_id : string
                 +version : int
                 +alpha3_code : string
@@ -899,7 +899,7 @@ namespace ores #F2F2F2 {
             class crm_driver_pair_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +party_id : string
@@ -922,7 +922,7 @@ namespace ores #F2F2F2 {
             class crm_enabled_derived_pair_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +party_id : string
@@ -945,7 +945,7 @@ namespace ores #F2F2F2 {
             class crm_topology_config_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +party_id : string
@@ -967,7 +967,7 @@ namespace ores #F2F2F2 {
             class currency_calendar_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +currency_iso_code : sqlgen::PrimaryKey<string>
+                +currency_iso_code : string
                 +tenant_id : string
                 +calendar_code : string
                 +version : int
@@ -987,7 +987,7 @@ namespace ores #F2F2F2 {
             class currency_country_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +currency_iso_code : sqlgen::PrimaryKey<string>
+                +currency_iso_code : string
                 +tenant_id : string
                 +country_alpha2_code : string
                 +version : int
@@ -1007,7 +1007,7 @@ namespace ores #F2F2F2 {
             class currency_currency_group_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +currency_iso_code : sqlgen::PrimaryKey<string>
+                +currency_iso_code : string
                 +tenant_id : string
                 +currency_group_code : string
                 +version : int
@@ -1027,7 +1027,7 @@ namespace ores #F2F2F2 {
             class currency_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +iso_code : sqlgen::PrimaryKey<string>
+                +iso_code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1054,7 +1054,7 @@ namespace ores #F2F2F2 {
             class currency_group_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1077,7 +1077,7 @@ namespace ores #F2F2F2 {
             class currency_market_tier_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1098,7 +1098,7 @@ namespace ores #F2F2F2 {
             class currency_pair_classification_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1119,7 +1119,7 @@ namespace ores #F2F2F2 {
             class currency_pair_convention_calendar_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +pair_code : sqlgen::PrimaryKey<string>
+                +pair_code : string
                 +tenant_id : string
                 +calendar_code : string
                 +version : int
@@ -1139,7 +1139,7 @@ namespace ores #F2F2F2 {
             class currency_pair_convention_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +pair_code : sqlgen::PrimaryKey<string>
+                +pair_code : string
                 +tenant_id : string
                 +version : int
                 +pip_factor : double
@@ -1163,7 +1163,7 @@ namespace ores #F2F2F2 {
             class currency_pair_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +pair_code : sqlgen::PrimaryKey<string>
+                +pair_code : string
                 +tenant_id : string
                 +version : int
                 +base_currency : string
@@ -1187,7 +1187,7 @@ namespace ores #F2F2F2 {
             class curve_role_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1208,7 +1208,7 @@ namespace ores #F2F2F2 {
             class day_count_fraction_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1229,7 +1229,7 @@ namespace ores #F2F2F2 {
             class deposit_convention_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +index_based : bool
@@ -1254,7 +1254,7 @@ namespace ores #F2F2F2 {
             class derivation_kind_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1275,7 +1275,7 @@ namespace ores #F2F2F2 {
             class diary_entry_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1296,7 +1296,7 @@ namespace ores #F2F2F2 {
             class floating_index_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +description : optional<string>
@@ -1315,7 +1315,7 @@ namespace ores #F2F2F2 {
             class fra_convention_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +index : string
@@ -1334,7 +1334,7 @@ namespace ores #F2F2F2 {
             class ibor_index_convention_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +fixing_calendar : string
@@ -1357,7 +1357,7 @@ namespace ores #F2F2F2 {
             class instrument_code_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1381,7 +1381,7 @@ namespace ores #F2F2F2 {
             class ir_curve_bootstrap_config_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +output_series_id : string
@@ -1407,7 +1407,7 @@ namespace ores #F2F2F2 {
             class ir_curve_bootstrap_pillar_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +party_id : string
@@ -1431,7 +1431,7 @@ namespace ores #F2F2F2 {
             class ledger_feed_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1452,7 +1452,7 @@ namespace ores #F2F2F2 {
             class leg_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +description : optional<string>
@@ -1471,7 +1471,7 @@ namespace ores #F2F2F2 {
             class monetary_nature_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1492,7 +1492,7 @@ namespace ores #F2F2F2 {
             class ois_convention_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +spot_lag : int
@@ -1522,7 +1522,7 @@ namespace ores #F2F2F2 {
             class overnight_index_convention_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +fixing_calendar : string
@@ -1543,7 +1543,7 @@ namespace ores #F2F2F2 {
             class party_contact_information_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +party_id : string
@@ -1572,7 +1572,7 @@ namespace ores #F2F2F2 {
             class party_counterparty_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +party_id : sqlgen::PrimaryKey<string>
+                +party_id : string
                 +tenant_id : string
                 +counterparty_id : string
                 +version : int
@@ -1592,7 +1592,7 @@ namespace ores #F2F2F2 {
             class party_country_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +party_id : sqlgen::PrimaryKey<string>
+                +party_id : string
                 +tenant_id : string
                 +country_alpha2_code : string
                 +version : int
@@ -1612,7 +1612,7 @@ namespace ores #F2F2F2 {
             class party_currency_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +party_id : sqlgen::PrimaryKey<string>
+                +party_id : string
                 +tenant_id : string
                 +currency_iso_code : string
                 +version : int
@@ -1632,7 +1632,7 @@ namespace ores #F2F2F2 {
             class party_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +short_code : string
@@ -1655,7 +1655,7 @@ namespace ores #F2F2F2 {
             class party_id_scheme_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1678,7 +1678,7 @@ namespace ores #F2F2F2 {
             class party_identifier_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +party_id : string
@@ -1705,7 +1705,7 @@ namespace ores #F2F2F2 {
             class party_status_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1726,7 +1726,7 @@ namespace ores #F2F2F2 {
             class party_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1747,7 +1747,7 @@ namespace ores #F2F2F2 {
             class payment_frequency_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1770,7 +1770,7 @@ namespace ores #F2F2F2 {
             class portfolio_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +party_id : string
@@ -1797,7 +1797,7 @@ namespace ores #F2F2F2 {
             class purpose_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1818,7 +1818,7 @@ namespace ores #F2F2F2 {
             class regulatory_book_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1839,7 +1839,7 @@ namespace ores #F2F2F2 {
             class rounding_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1860,7 +1860,7 @@ namespace ores #F2F2F2 {
             class series_subclass_code_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -1881,7 +1881,7 @@ namespace ores #F2F2F2 {
             class swap_convention_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +fixed_calendar : optional<string>
@@ -1906,7 +1906,7 @@ namespace ores #F2F2F2 {
             class tenor_anchor_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +description : optional<string>
@@ -1926,7 +1926,7 @@ namespace ores #F2F2F2 {
             class tenor_convention_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +description : optional<string>
@@ -1947,7 +1947,7 @@ namespace ores #F2F2F2 {
             class tenor_convention_resolution_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +convention_code : sqlgen::PrimaryKey<string>
+                +convention_code : string
                 +tenant_id : string
                 +tenor_code : string
                 +version : int
@@ -1971,7 +1971,7 @@ namespace ores #F2F2F2 {
             class tenor_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +display_name : string
@@ -1990,7 +1990,7 @@ namespace ores #F2F2F2 {
             class tenor_kind_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -2016,7 +2016,7 @@ namespace ores #F2F2F2 {
             class tenor_resolution_algorithm_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -2037,7 +2037,7 @@ namespace ores #F2F2F2 {
             class tenor_schedule_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -2061,7 +2061,7 @@ namespace ores #F2F2F2 {
             class tenor_unit_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -2082,7 +2082,7 @@ namespace ores #F2F2F2 {
             class zero_convention_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +tenor_based : bool

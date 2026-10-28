@@ -193,10 +193,11 @@ extension.
 ** Row-Level Security
 
 PostgreSQL RLS policies enforce tenant isolation at the database level. Each
-connection sets a session variable that RLS policies use to filter data:
+transaction sets a transaction-local variable that RLS policies use to filter
+data:
 
 #+begin_src sql
-SET app.current_tenant_id = 'tenant-uuid-here';
+select set_config('app.current_tenant_id', 'tenant-uuid-here', true);
 #+end_src
 
 All queries on tenant-scoped tables automatically filter by this value,
@@ -204,14 +205,14 @@ preventing cross-tenant data access.
 
 The value comes from the request, not from the service. A request carries an
 [[id:4E0D934A-21D4-4609-8B7C-29F6D9A6A52D][Access Token]] whose claims state the
-tenant and the party, and the handler's request context sets the session from
-them. A service that calls with its own identity, by
+tenant and the party, and every transaction of the request's context sets
+the variables from them. A service that calls with its own identity, by
 [[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]], therefore has no
 party and sees no party rows.
 
 ** The three policy shapes
 
-The session variable is one mechanism; what a policy does with it is the
+The tenant variable is one mechanism; what a policy does with it is the
 decision, and not every row belongs to a tenant. A row belongs to a tenant, to
 the system tenant, or to the installation — the deployment's own facts, which
 no tenant owns. Three shapes are in use, and only one of them can hand one
@@ -310,193 +311,148 @@ What the exception does not do:
 
 ** =context= Class
 
-The =database::context= class encapsulates database connectivity with tenant
-awareness:
+A =database::context= names who a statement acts for. It holds the tenant and,
+optionally, the party and the parties that party sees, which the row-level
+security policies read; the actor, the end user behind the request, which
+=modified_by= records; and the service account, the service that performs the
+write, which =performed_by= records.
 
 #+begin_src cpp
 class context {
 public:
-    explicit context(sqlgen::ConnectionPool<connection_type> connection_pool,
-                     sqlgen::postgres::Credentials credentials,
-                     utility::uuid::tenant_id tenant_id);
+    explicit context(pq::connection_options options,
+                     utility::uuid::tenant_id tenant_id,
+                     std::string actor = "",
+                     std::string service_account = "",
+                     pq::open_policy policy = {});
 
     const utility::uuid::tenant_id& tenant_id() const;
 
-    // Create a new context with a different tenant (shares connection pool)
-    context with_tenant(utility::uuid::tenant_id tenant_id) const;
+    context with_tenant(utility::uuid::tenant_id tenant_id, std::string actor) const;
+    context with_party(utility::uuid::tenant_id tenant_id,
+                       boost::uuids::uuid party_id,
+                       std::vector<boost::uuids::uuid> visible_party_ids,
+                       std::string actor) const;
 
-private:
-    tenant_aware_pool<connection_type> connection_pool_;
-    sqlgen::postgres::Credentials credentials_;
+    pq::pool& pq_pool() const;
+    pq::session_context pq_session() const;
 };
 #+end_src
 
 Key properties:
 
-- Tenant ID is mandatory at construction
-- =with_tenant()= creates a lightweight copy with a different tenant
-- The underlying connection pool is shared across contexts
+- The tenant ID is mandatory at construction.
+- =with_tenant()= and =with_party()= return a light copy for another tenant or
+  party. The copy keeps the service account, the roles, the pool and any bound
+  unit of work, so narrowing a context never widens what it may do.
+- Every copy shares one libpq pool, which the context opens on first use.
 
-** =tenant_aware_pool=
+** Tenant settings are transaction-local
 
-The =tenant_aware_pool= wraps a connection pool and sets tenant context on each
-connection acquisition:
+A pooled connection carries no tenant. Every transaction that a context opens
+sends its settings with its first statement, in the same pipeline as =begin=:
 
-#+begin_src cpp
-template <class Connection>
-class tenant_aware_pool {
-public:
-    tenant_aware_pool(sqlgen::ConnectionPool<Connection> pool,
-                      utility::uuid::tenant_id tenant_id)
-        : pool_(std::move(pool)), tenant_id_(std::move(tenant_id)) {}
-
-    const utility::uuid::tenant_id& tenant_id() const { return tenant_id_; }
-
-    expected<AcquiredConnection, sqlgen::Error> acquire() {
-        auto conn = pool_.acquire();
-        if (!conn) {
-            return sqlgen::error(conn.error());
-        }
-        // Set PostgreSQL session variable for RLS
-        auto stmt = fmt::format(
-            "SET app.current_tenant_id = '{}'", tenant_id_.to_string());
-        (*conn)->exec(stmt);
-        return conn;
-    }
-
-private:
-    sqlgen::ConnectionPool<Connection> pool_;
-    utility::uuid::tenant_id tenant_id_;
-};
+#+begin_src sql
+select set_config('app.current_tenant_id', $1, true),
+       set_config('app.current_party_id', $2, true),
+       set_config('app.visible_party_ids', $3, true),
+       set_config('app.current_actor', $4, true),
+       set_config('app.current_service', $5, true),
+       set_config('TimeZone', 'UTC', true);
 #+end_src
 
-Key properties:
+The third argument, =true=, makes each setting local to the transaction.
+PostgreSQL clears them at commit or rollback, so the next transaction on that
+connection starts with no tenant and cannot read rows of the previous one. The
+settings cost no extra round trip: they travel in the pipeline with =begin= and
+the first statement.
 
-- Tenant ID is immutable after construction
-- Every =acquire()= sets the PostgreSQL session variable
-- Multiple =tenant_aware_pool= instances share the underlying connection pool
+A unit of work binds its context to its transaction. Every repository call
+made with that context runs on the one transaction, under the one set of
+settings.
 
 * Connection Pool Architecture
 
-A single connection pool is shared across all tenants. Each request creates a
-lightweight wrapper that sets the appropriate tenant context:
+One pool serves every tenant and party. Each service process holds a few
+long-lived connections to pgbouncer, which runs in transaction pooling mode in
+front of PostgreSQL:
 
 #+begin_example
-                        ┌─────────────────────────────────────┐
-                        │   sqlgen::ConnectionPool            │
-                        │   (shared via rfl::Ref, =10 conns)  │
-                        └─────────────────┬───────────────────┘
-                                          │ shared_ptr semantics
-            ┌─────────────────────────────┼─────────────────────────────┐
-            │                             │                             │
-            ▼                             ▼                             ▼
-  ┌─────────────────────┐   ┌─────────────────────┐   ┌─────────────────────┐
-  │ tenant_aware_pool   │   │ tenant_aware_pool   │   │ tenant_aware_pool   │
-  │ tenant_id = "AAA"   │   │ tenant_id = "BBB"   │   │ tenant_id = "CCC"   │
-  │ (request 1)         │   │ (request 2)         │   │ (request 3)         │
-  └─────────────────────┘   └─────────────────────┘   └─────────────────────┘
-            │                             │                             │
-            ▼                             ▼                             ▼
-  SET app.current_tenant   SET app.current_tenant   SET app.current_tenant
-       = 'AAA'                  = 'BBB'                  = 'CCC'
+  request 1 (tenant AAA)   request 2 (tenant BBB)   request 3 (tenant CCC)
+            │                        │                        │
+            ▼                        ▼                        ▼
+  ┌──────────────────────────────────────────────────────────────────┐
+  │ database::context copies (tenant, party, actor; one shared pool) │
+  └────────────────────────────────┬─────────────────────────────────┘
+                                   │ lease a connection for one transaction
+                                   ▼
+  ┌──────────────────────────────────────────────────────────────────┐
+  │ pq::pool: a few long-lived connections per service               │
+  └────────────────────────────────┬─────────────────────────────────┘
+                                   ▼
+  ┌──────────────────────────────────────────────────────────────────┐
+  │ pgbouncer (transaction pooling)                                  │
+  └────────────────────────────────┬─────────────────────────────────┘
+                                   ▼
+  begin; set_config('app.current_tenant_id', 'AAA', true); ...; commit
 #+end_example
 
 This architecture provides:
 
-- Efficient connection utilization (single pool for all tenants)
-- Tenant isolation through RLS (each request sets its own context)
-- Thread safety (each request has its own immutable wrapper)
+- Efficient use of server connections: pgbouncer bounds them for the whole
+  fleet, and no tenant needs a connection of its own.
+- Tenant isolation through RLS: each transaction sets its own context.
+- Thread safety: each request holds its own immutable context copy, and a
+  leased connection serves one transaction at a time.
 
-* Session Management
+Transaction pooling is safe because no setting outlives its transaction. A
+session-level =SET= would follow the server connection to the next client, so
+no code sets one. The PostgreSQL listener is the exception to the pool: =LISTEN=
+needs a session that stays on one server connection, so the listener holds a
+direct connection to PostgreSQL.
 
-** Session Data
+* Request Context
 
-Each authenticated session stores the tenant ID resolved at login, along with
-party context set after the user selects a party:
+** The bearer token carries the tenant
 
-#+begin_src cpp
-struct session_info {
-    boost::uuids::uuid account_id;
-    utility::uuid::tenant_id tenant_id;
-    boost::uuids::uuid party_id;
-    std::vector<boost::uuids::uuid> visible_party_ids;
-    std::string username;
-};
-#+end_src
+A request names its caller in a JWT bearer token, in the =Authorization= header
+of its NATS message. A downstream service forwards the end user's token in
+=X-Delegated-Authorization=. The token's claims carry the tenant, and
+optionally the active party, the parties it may see, the username and the
+roles.
 
-The tenant ID is:
-
-- Resolved once at login time
-- Immutable for the session lifetime
-- Used for all subsequent requests in that session
-
-The =party_id= and =visible_party_ids= fields are:
-
-- Set via =update_session_party()= after the user selects a party
-- Used by =make_request_context()= to set =app.visible_party_ids= in the DB
-  session, enabling party-level RLS enforcement
-
-** Session-Tenant Binding
-
-When a user authenticates:
-
-1. The system resolves the tenant from the principal (e.g., =user@hostname=)
-2. The tenant ID is stored in the session
-3. All subsequent requests use the session's tenant context
-
-This ensures that a user's operations are always scoped to their tenant.
-
-* Message Handler Architecture
-
-** =tenant_aware_handler= Base Class
-
-Message handlers inherit from =tenant_aware_handler= which provides common
-tenant-handling functionality:
-
-#+begin_src cpp
-template <class Derived>
-class tenant_aware_handler {
-protected:
-    tenant_aware_handler(database::context ctx,
-        std::shared_ptr<comms::service::auth_session_service> sessions)
-        : ctx_(std::move(ctx)), sessions_(std::move(sessions)) {}
-
-    // Validate authentication and return session data
-    std::expected<comms::service::session_data,
-                  utility::serialization::error_code>
-    require_authentication(const std::string& remote_address,
-                          const std::string& operation);
-
-    // Create per-request context using session's tenant
-    database::context make_request_context(
-        const comms::service::session_data& session);
-
-    database::context ctx_;
-    std::shared_ptr<comms::service::auth_session_service> sessions_;
-};
-#+end_src
+The tenant is resolved once, at login, and signed into the token. A request
+cannot change it, because the service verifies the signature before it reads
+any claim.
 
 ** Per-Request Context Creation
 
-The =make_request_context()= method creates a context bound to the session's
-tenant and, when a party is set, also configures party context:
+=ores::service::service::make_request_context()= turns a message into a
+=database::context=. It verifies the token, then narrows the service's base
+context to the token's tenant, or to its tenant and party:
 
 #+begin_src cpp
-database::context make_request_context(
-    const comms::service::session_info& auth) {
-    auto ctx = ctx_.with_tenant(auth.tenant_id);
-    if (!boost::uuids::uuid_is_nil(auth.party_id))
-        ctx = ctx.with_party(auth.party_id, auth.visible_party_ids);
-    return ctx;
-}
+if (!claims->party_id || claims->party_id->empty())
+    return base_ctx.with_tenant(*tid_result, claims->username.value_or(""))
+        .with_roles(claims->roles);
+
+return base_ctx
+    .with_party(*tid_result, party_id, std::move(visible_ids),
+                claims->username.value_or(""))
+    .with_roles(claims->roles);
 #+end_src
 
 This ensures:
 
-- Each request operates in the correct tenant context
-- The underlying connection pool is shared (lightweight)
-- Tenant context is immutable for the request lifetime
-- Party context sets =app.visible_party_ids= in the DB session for RLS
+- Each request operates in the correct tenant context.
+- The username becomes the actor, which =modified_by= records.
+- The pool is shared: the context copy is light.
+- Tenant context is immutable for the request lifetime.
+- Party context sets =app.visible_party_ids= in each transaction for RLS.
+
+A token that is absent, expired, unsigned or without a tenant is refused as
+unauthorized. A malformed party falls back to tenant scope, because the party
+only narrows a context that the tenant already authorises.
 
 * Request Processing Flow
 
@@ -511,20 +467,20 @@ For requests from authenticated users:
            │
            ▼
 ┌─────────────────────┐
-│ require_            │
-│ authentication()    │
+│ verify the bearer   │
+│ token               │
 └──────────┬──────────┘
            │
            ▼
 ┌─────────────────────┐
-│ Session found with  │
-│ tenant_id           │
+│ read the tenant and │
+│ party claims        │
 └──────────┬──────────┘
            │
            ▼
 ┌─────────────────────┐
 │ make_request_       │
-│ context(session)    │
+│ context(ctx, msg)   │
 └──────────┬──────────┘
            │
            ▼
@@ -537,14 +493,14 @@ For requests from authenticated users:
 Example:
 
 #+begin_src cpp
-auto auth = require_authentication(remote_address, "Get accounts");
-if (!auth) {
-    co_return std::unexpected(auth.error());
+auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
+if (!ctx) {
+    error_reply(nats_, msg, ctx.error());
+    return;
 }
 
-auto ctx = make_request_context(*auth);
-repository::accounts_repository repo;
-auto accounts = repo.list(ctx);
+repository::account_repository repo;
+auto accounts = repo.read_latest(*ctx);
 #+end_src
 
 ** Pre-Authentication Requests
@@ -631,33 +587,18 @@ When no hostname is provided in the principal:
 
 ** Per-Request Overhead
 
-| Operation                         | Cost          |
-|-----------------------------------+---------------|
-| Copy shared_ptr (pool reference)  | =10 ns        |
-| Copy tenant_id string (=36 chars) | =50 ns        |
-| Create context wrapper            | =20 ns        |
-| SET app.current_tenant_id         | Part of query |
-|-----------------------------------+---------------|
-| Total additional overhead         | < 1 μs        |
-
-** Memory Per Request
-
-| Component               | Size        |
-|-------------------------+-------------|
-| tenant_aware_pool       | =40 bytes   |
-| database::context       | =48 bytes   |
-|-------------------------+-------------|
-| Total (stack allocated) | < 100 bytes |
-
-All request-scoped objects are stack-allocated and freed when the request
-completes.
+A request pays for one context copy: the tenant, the party list, the actor and
+a reference to the shared pool. The tenant settings cost no round trip of
+their own: =pq::transaction= sends them in the pipeline with =begin= and the
+first statement.
 
 ** Connection Pool
 
-- Single pool shared across all tenants
-- Pool size configured at startup (typically 10-20 connections)
-- No per-tenant connection overhead
-- RLS handles isolation at the query level
+- One pool per service process, shared by every tenant and party.
+- The pool opens its connections at startup and keeps them. No query opens a
+  connection.
+- pgbouncer bounds the server connections of the whole fleet.
+- RLS handles isolation at the query level.
 
 * Tenant Isolation Guarantees
 
@@ -672,61 +613,57 @@ completes.
   and [[id:6C930659-6548-4371-B9EB-1AACE597D0E9][Read each tenant's cache
   partition inside its tenant]] is removing them.
 
-** Session Isolation
+** Token Isolation
 
-- Each session is bound to exactly one tenant
-- Tenant binding is immutable for the session lifetime
-- Session hijacking cannot change tenant context
+- Each token names exactly one tenant.
+- The tenant is signed into the token, so a request cannot change it.
+- A refused token gives no context, so no statement runs for it.
 
 ** Request Isolation
 
 - Each request creates its own tenant context
-- Contexts are immutable and stack-allocated
-- Concurrent requests cannot interfere with each other's tenant context
+- Contexts are immutable values.
+- Tenant settings are local to a transaction, so concurrent requests, and
+  consecutive transactions on one pooled connection, cannot see each other's
+  tenant context.
 
 * Configuration
 
 ** Production
 
-In production, handlers are configured with the system tenant:
+=context_factory::make_context()= builds a service's base context from its
+configuration. The tenant defaults to the system tenant; the service account
+names the service and becomes the connection's =application_name=; the open
+policy says how often and how long the pool retries opening its connections:
 
 #+begin_src cpp
-// context_factory creates context with system tenant by default
+auto options = to_connection_options(cfg.database_options);
+options.application_name = cfg.service_account;
+
+const pq::open_policy policy{.attempts = cfg.num_attempts,
+                             .wait = std::chrono::seconds(cfg.wait_time_in_seconds),
+                             .shape = ...};
+
 utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-if (!cfg.database_options.tenant.empty()) {
-    auto parsed = utility::uuid::tenant_id::from_string(
-        cfg.database_options.tenant);
-    if (parsed) {
-        tenant_id = *parsed;
-    }
-}
-return context(pool, credentials, tenant_id);
+if (!cfg.database_options.tenant.empty())
+    tenant_id = /* parsed from cfg.database_options.tenant */;
 #+end_src
+
+Each request then narrows this base context to its token's tenant.
 
 ** Testing
 
-In tests, handlers receive an isolated test tenant:
-
-#+begin_src cpp
-// Test fixture creates context with test tenant
-auto test_tenant = utility::uuid::tenant_id::generate();
-database::context ctx(pool, credentials, test_tenant);
-accounts_message_handler handler(ctx, sessions);
-#+end_src
-
-This provides:
-
-- Isolation between test runs
-- Parallel test execution without interference
-- Clean tenant context for each test
+In tests, =ores::testing::database_helper= builds the context with the test
+tenant that the test environment names, and can switch it to party scope. Each
+test run provisions its own tenant, so runs do not interfere.
 
 ** Related Components
 
 | Component | File                                                  | Purpose                             |
 |-----------+-------------------------------------------------------+-------------------------------------|
 | utility   | include/ores.utility/uuid/tenant_id.hpp               | Tenant ID wrapper type              |
-| database  | include/ores.database/domain/tenant_aware_pool.hpp    | Connection pool with tenant context |
+| database  | include/ores.database/pq/transaction.hpp              | Transaction-local tenant settings   |
+| database  | include/ores.database/pq/pool.hpp                     | Connection pool                     |
 | database  | include/ores.database/domain/context.hpp              | Database context with tenant        |
 | database  | src/service/context_factory.cpp                       | Context creation from config        |
-| comms     | include/ores.comms/messaging/tenant_aware_handler.hpp | Base class for handlers             |
-| iam       | src/messaging/accounts_message_handler.cpp            | Account operations with tenancy     |
+| service   | src/service/request_context.cpp                       | Request context from the JWT        |

@@ -2,14 +2,14 @@
 :ID: 9B16B5F0-CBF5-4664-9637-8B9E74277C5D
 :END:
 #+title: How do I regenerate the C++ repository layer for an entity?
-#+description: Run the repository codegen profile to regenerate sqlgen entity, mapper, and repository files.
+#+description: Run the repository codegen profile to regenerate the repository entity, mapper, and repository files.
 #+type: recipe
 #+level: cross
 #+filetags: :codegen:recipe:repository:cpp:regenerate:entity:
 #+created: 2026-06-26
 #+updated: 2026-06-26
 
-Runs the =repository= profile via =compass codegen regenerate=, generating sqlgen entities, mappers, and CRUD repository header and implementation. See [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
+Runs the =repository= profile via =compass codegen regenerate=, generating repository entities, mappers, and CRUD repository header and implementation. See [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]] for the template list and [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system.
 
 * Question
 
@@ -17,7 +17,7 @@ How do I regenerate the C++ repository files (entity, mapper, repository) for a 
 
 * Answer
 
-The =repository= profile generates the sqlgen entity, mapper, and repository header/implementation pairs.
+The =repository= profile generates the repository entity, mapper, and repository header/implementation pairs.
 
 #+begin_src sh
 ./compass.sh codegen regenerate --component refdata --address ores.cpp.repository

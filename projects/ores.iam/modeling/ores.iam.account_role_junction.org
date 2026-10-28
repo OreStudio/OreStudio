@@ -124,8 +124,6 @@ ID of the role assigned to the account; must exist in ores_iam_roles_tbl.
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #+end_src
 
 ** Conventions

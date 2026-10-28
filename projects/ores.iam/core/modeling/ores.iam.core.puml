@@ -144,7 +144,7 @@ namespace ores #F2F2F2 {
             class account_contact_information_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +account_id : string
@@ -172,7 +172,7 @@ namespace ores #F2F2F2 {
             class account_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +username : string
@@ -199,7 +199,7 @@ namespace ores #F2F2F2 {
             class account_party_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +account_id : sqlgen::PrimaryKey<string>
+                +account_id : string
                 +tenant_id : string
                 +party_id : string
                 +version : int
@@ -240,7 +240,7 @@ namespace ores #F2F2F2 {
             class account_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +type : sqlgen::PrimaryKey<string>
+                +type : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -261,8 +261,8 @@ namespace ores #F2F2F2 {
             class auth_event_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
-                +event_time : sqlgen::PrimaryKey<string>
+                +id : string
+                +event_time : string
                 +tenant_id : string
                 +account_id : string
                 +event_type : string
@@ -277,7 +277,7 @@ namespace ores #F2F2F2 {
             class login_info_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +account_id : sqlgen::PrimaryKey<string>
+                +account_id : string
                 +tenant_id : string
                 +last_ip : string
                 +last_attempt_ip : string
@@ -295,7 +295,7 @@ namespace ores #F2F2F2 {
             class permission_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +code : string
                 +description : string
@@ -310,7 +310,7 @@ namespace ores #F2F2F2 {
             class role_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -344,8 +344,8 @@ namespace ores #F2F2F2 {
             class session_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
-                +start_time : sqlgen::PrimaryKey<string>
+                +id : string
+                +start_time : string
                 +tenant_id : string
                 +account_id : string
                 +end_time : string
@@ -366,7 +366,7 @@ namespace ores #F2F2F2 {
             class tenant_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +code : string
@@ -390,7 +390,7 @@ namespace ores #F2F2F2 {
             class tenant_status_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +status : sqlgen::PrimaryKey<string>
+                +status : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -411,7 +411,7 @@ namespace ores #F2F2F2 {
             class tenant_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +type : sqlgen::PrimaryKey<string>
+                +type : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -981,7 +981,7 @@ class ores::iam::repository::tenant_type_mapper {
 }
 
 note top of "ores::iam::repository::account_mapper"
-Every mapper exists for the same reason: sqlgen reads and writes the
+Every mapper exists for the same reason: the repository reads and writes the
 *_entity struct, while the protocol and the services speak the domain
 type. The mapper is the only place the two meet, so a column rename
 touches the entity, the mapper and the migration -- never a service or a

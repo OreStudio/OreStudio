@@ -360,11 +360,9 @@ its own. It receives one message per bundle:
    =part.row_count= for every part. A row that fails validation, a count
    that differs and any write error roll back the whole bundle. The
    bundle is all or nothing.
-8. Do not read between the writes of the unit of work. In unpatched
-   sqlgen a read commits the transaction, so the rule that keeps the
-   bundle atomic is the one in
-   [[id:9562C34E-5790-422D-8E31-774691995860][A read inside a unit of
-   work commits it]].
+8. Make every read of the bundle with the unit of work's context, so it
+   runs on the bundle's transaction and sees the bundle's own writes; see
+   [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]].
 9. Stamp the session's tenant and party, never a value from the payload.
 10. Reply with the counts per part and, on failure, the reason.
 
@@ -397,9 +395,8 @@ Each family is the generated =ores.codegen.family= model, whose
 put writes the central row and that kind's parts in one transaction, per
 [[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing a
 model shape]]. The unit of work is bounded by the database connection,
-and the rule that keeps a read from ending it is the unit-of-work rule
-in [[id:9562C34E-5790-422D-8E31-774691995860][A read inside a unit of
-work commits it]].
+and every read made with its context runs on its transaction; see
+[[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]].
 
 *** A package whose bundles span several services
 
@@ -746,8 +743,7 @@ sandbox is what makes that limit safe.
   the pattern each bundle's families are declared with.
 - [[id:5724BDE2-7FA4-4667-9129-2D9DD7783AB2][Entity-table writes go through the repositories]] — the rule that
   binds the owner's apply to the generated repository of each kind.
-- [[id:9562C34E-5790-422D-8E31-774691995860][A read inside a unit of work commits it]] — the read rule that keeps
-  the owner's one transaction atomic.
+- [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]] — why the owner's reads run on its one transaction.
 - [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the store the archive and manifest live in, and
   its key rule.
 - [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the structure note that places the archive against

@@ -135,7 +135,6 @@ drop function if exists ores_refdata_validate_currency_pair_classification_fn;
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

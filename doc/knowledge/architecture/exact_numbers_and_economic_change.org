@@ -435,9 +435,9 @@ discover halfway through the trigger.
 ** A third option, and the evidence for it
 
 Every write already passes one place.
-=ores.database/repository/bitemporal_operations.hpp= exposes
+=ores.database/query_builder/execute.hpp= exposes
 =execute_write_query(ctx, entity, lg, desc)=, which forwards to
-=execute_write_op= and =sqlgen::insert=. It is the single choke point: one function, and no
+=execute_write_op= and =query_builder::insert=. It is the single choke point: one function, and no
 repository writes without it. Re-measured on this tree:
 =grep -rl 'execute_write_query(' projects --include=*.cpp | wc -l= gives **358**
 files, against the 359 recorded when this page was written — the count is of

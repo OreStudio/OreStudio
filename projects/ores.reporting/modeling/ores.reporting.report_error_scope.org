@@ -118,7 +118,6 @@ own rows and nothing else, so every tenant would find the vocabulary empty.
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

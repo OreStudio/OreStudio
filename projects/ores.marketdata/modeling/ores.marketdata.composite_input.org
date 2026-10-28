@@ -159,7 +159,6 @@ Two inputs of a composite never share a place, so the order a rule reads does no
 #include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

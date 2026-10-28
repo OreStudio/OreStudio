@@ -155,7 +155,6 @@ drop function if exists ores_iam_validate_tenant_status_fn;
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

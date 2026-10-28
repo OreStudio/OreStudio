@@ -126,8 +126,6 @@ system tenant's catalogue and a bootstrap load still passes through.
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #+end_src
 
 ** Conventions

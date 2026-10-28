@@ -169,3 +169,33 @@ TEST_CASE("a log with no error in it says so", "[ore][log][engine_run_verdict]")
     CHECK_FALSE(outcome.succeeded);
     CHECK(outcome.failure == "The engine produced no analytics. It logged 3 lines and no error.");
 }
+
+TEST_CASE("a curve failure names the curve a person reads", "[ore][log][engine_run_verdict]") {
+    const auto log = line("ALERT",
+                          "StructuredMessage { \"category\": \"Error\", \"group\": \"Curve\", "
+                          "\"message\": \"yield curve building failed\", \"sub_fields\": [ "
+                          "{ \"name\": \"curveId\", \"value\": "
+                          "\"[IndexCurve(HKD-HONIA)]\" } ] }") +
+                     line("ALERT", "Error in ORE analytics: Failed to run analytics PRICING");
+
+    const auto outcome = judge_engine_run({"log.txt", "runtimes.csv"}, log);
+
+    CHECK_FALSE(outcome.succeeded);
+    CHECK(outcome.failure == "The engine's analytic failed. The engine reported:\n"
+                             "  Error in ORE analytics: Failed to run analytics PRICING\n"
+                             "  yield curve building failed (curve HKD-HONIA)");
+}
+
+TEST_CASE("a structured failure that states no message is not a reason",
+          "[ore][log][engine_run_verdict]") {
+    const auto log = line("ALERT", "Error in ORE analytics: Failed to run analytics PRICING") +
+                     line("ALERT",
+                          "StructuredMessage { \"group\": \"Curve\", \"sub_fields\": [ "
+                          "{ \"name\": \"curveId\", \"value\": \"[IndexCurve(HKD-HONIA)]\" } ] }");
+
+    const auto outcome = judge_engine_run({"log.txt"}, log);
+
+    CHECK_FALSE(outcome.succeeded);
+    CHECK(outcome.failure == "The engine's analytic failed. The engine reported:\n"
+                             "  Error in ORE analytics: Failed to run analytics PRICING");
+}

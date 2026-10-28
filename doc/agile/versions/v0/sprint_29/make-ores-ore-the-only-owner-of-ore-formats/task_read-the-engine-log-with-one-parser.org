@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
 #+owner: marco
-#+branch: feature/read-the-engine-log-with-one-parser
-#+pr: 4023
+#+branch: fix/answer-the-one-parser-review
+#+pr: 4026
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
-#+updated: 2026-10-27
+#+updated: 2026-10-28
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -76,7 +76,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Parsers of the engine log | 2 → 1 | =grep -rln "parse_ore_log_line" projects/ --include=*.cpp= | (this branch) |
+| Files that name the old parser | 0 | =grep -rln "ore_log_parser\|parse_ore_log_line" projects/ --include=*.cpp --include=*.hpp= | (this branch) |
 | Cases of the one suite | 27 (18 belonged to the deleted suite) | =grep -c "^TEST_CASE" projects/ores.ore/core/tests/log_engine_log_tests.cpp= | (this branch) |
 | =ores.ore.core.tests= | passed, 23.94s | =compass test run -- -R ores.ore.core.tests= | (this branch) |
 | =ores.compute.core.tests= | passed, 19.42s | =compass test run -- -R ores.compute.core.tests= | (this branch) |
@@ -99,13 +99,25 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4026][#4026]] | [ore] Answer the one parser review |
 | [[https://github.com/OreStudio/OreStudio/pull/4023][#4023]] | [ore] Read the engine's log with one parser |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | The reader stripped every space after the separator, so a message that starts with spaces came back changed | engine_log.cpp | Accepted | The line is now read once, in the engine's order, and one space after the separator is dropped, as the old parser did. A case states it. |
+| 2 | A structured record with no category reached the store with an empty severity | engine_log.cpp | Accepted | It reads as =notice=, as before, and a case states it. |
+| 3 | The contract said =engine_format= describes a line, but the structured log set it too | engine_log.hpp | Accepted | Renamed to =states_line_fields=: true only for a line that states a level, a readable time, a location and the separator, in that order. A structured record states none. |
+| 4 | The location and time were found anywhere in the line, so a parenthesis in the message became a location | engine_log.cpp | Accepted | The four fields are read in order, so a bracket or parenthesis after the separator cannot be mistaken for one. A case states it. |
+| 5 | The level table was duplicated in the wrapper and untested | log_publisher.cpp | Accepted | =store_level_of= lives in ores.ore beside the severity vocabulary, and the table has cases for all five levels, a memory report and a line the engine did not write. |
+| 6 | The verdict re-read =tradeId=/=curveId= from the raw fields | engine_run_verdict.cpp | Accepted | It uses the subject and the cause the event already carries. A curve reason now names the curve a person reads rather than the engine's raw reference. |
+| 7 | A structured failure with no message became the raw JSON in a user-facing sentence | engine_run_verdict.cpp | Accepted | The event states whether the engine stated the message, and a record that states none is not a reason. A case states it. |
+| 8 | =line_count= walked the lines again, without the byte order mark and carriage return rules | engine_log.cpp | Accepted | =line_count= moved beside the line rules and the verdict calls it. |
+| 9 | Stale public-API comment, an unused flag test, a =find= where =contains= reads better, comments that restate names | several | Accepted | All corrected. |
+| 10 | The synthetic build fix is unrelated to this task's subject | trading_trade_population_writer.cpp | Accepted | It was needed to build; a parallel environment landed the same fix as =c18fc190ad=, so it is redundant history and cannot be removed from a merged commit. |
 | — | The review bot did not run: three requests each failed within a second with an infrastructure error, at no cost, before reading anything | — | Not reviewed by the bot | The branch was reviewed by hand instead: the publisher keeps the old level table and the old skip set, the verdict's reasons keep their wording, and the comment on =message_after_separator= was moved back onto its function after the diff review found it orphaned. |
+| — | The review bot did not run for #4026 either: the same infrastructure error, at no cost, before reading anything | — | Not reviewed by the bot | #4026 was reviewed by hand: the line parser was replayed against each fixture the old suite held, the level table against all five levels, and the whitespace and parenthesis cases each have a test. |
 
 * Result
 
@@ -129,6 +141,15 @@ writes. Both are fixed.
 
 One break on main is fixed here because it stopped these suites from building:
 the synthetic trade writer assigned a =double= into the =decimal= type that
-carries a basket constituent's initial price.
+carries a basket constituent's initial price. A parallel environment landed the
+same fix as =c18fc190ad=, so this one is redundant history.
 
-* Review
+* Follow-up
+
+The review of this task found four defects in what it shipped and several
+clean-ups, all answered in one later PR: the reader stripped the spaces after
+the separator, a structured record without a category reached the store with an
+empty severity, the location could be read from a parenthesis inside the
+message, and the level table was duplicated in the wrapper with no test. The
+line is now read once, in the engine's order, and the level table lives with the
+severity vocabulary it translates.

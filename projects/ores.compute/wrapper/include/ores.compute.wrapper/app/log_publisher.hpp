@@ -29,10 +29,11 @@ namespace ores::compute::wrapper::app {
 /**
  * @brief Reads ORE's log.txt through the one parser and publishes its entries.
  *
- * Reads @c job_dir/log.txt, reads each line through @c ores.ore.core's engine
- * log, converts the lines the engine wrote in its own shape to
- * publish_log_entry_item records, and publishes them in batches of up to 200 to
- * "telemetry.v1.ops.publish_log_entries". Tagged with @c result_id.
+ * Reads @c job_dir/log.txt through @c ores.ore.core's engine log, converts the
+ * lines the engine wrote in its own shape to publish_log_entry_item records --
+ * the level is the one @c store_level_of gives the line -- and publishes them in
+ * batches of up to 200 to "telemetry.v1.ops.publish_log_entries". Tagged with
+ * @c result_id.
  */
 void publish_ore_logs(ores::nats::service::client& nats,
                       const std::string& result_id,

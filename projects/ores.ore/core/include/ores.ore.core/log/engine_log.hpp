@@ -67,22 +67,18 @@ struct engine_log_event {
      */
     std::string severity;
     /**
-     * @brief The severity as the engine wrote it, when the line stated one.
-     *
-     * The engine names its own levels -- =DATA=, =NOTICE=, =WARNING=, =ERROR=,
-     * =ALERT= -- and a reader that forwards its lines to a log store keeps that
-     * store's names, so the word is kept beside the severity it means.
-     */
-    std::string level_word;
-    /**
      * @brief Whether the line stated the fields the engine writes on its lines.
      *
-     * A line of the engine's own shape states a level, a time in brackets, the
-     * location that logged it in parentheses and then the separator. A line that
-     * states less is kept as text, so that a reader sees it, but this is false
-     * and a client that needs a time and a location skips it.
+     * The engine writes a level, a time in brackets, the location that logged
+     * the line in parentheses, then the separator. Only a line that states all
+     * four, in that order, and whose time can be read, sets this true; a line
+     * that states less is kept as text so a reader sees it, but it is not one of
+     * the engine's lines and a client that needs a time and a location skips it.
+     *
+     * This is always false for a structured log: its records state no line
+     * fields, because there is no line around them.
      */
-    bool engine_format = false;
+    bool states_line_fields = false;
     /**
      * @brief The group the engine put the message in: =Curve=, =Trade=,
      * =Analytics=, and the report's own =Report= for a line the wrapper adds.
@@ -90,8 +86,17 @@ struct engine_log_event {
     std::string scope;
     /**
      * @brief What the engine said.
+     *
+     * A structured message that states no message of its own leaves the reader
+     * with the text it was given, so this is never empty while @c message_stated
+     * says whether the engine stated it or the reader had to keep the line.
      */
     std::string message;
+    /**
+     * @brief Whether the engine stated @c message, rather than the reader
+     * keeping the line because the message stated none.
+     */
+    bool message_stated = false;
     /**
      * @brief The kind of record the message is about, when it names one: =trade=.
      */
@@ -180,6 +185,21 @@ parse_engine_log_json(std::string_view text, std::string_view source_file);
  * @see engine_memory_report_suffix
  */
 [[nodiscard]] ORES_ORE_CORE_EXPORT bool is_memory_report(const engine_log_event& event);
+
+/**
+ * @brief The level a log store keeps for a line, or empty when it keeps none.
+ *
+ * The store names its levels for a person to read -- =debug=, =info=, =warn=,
+ * =error= -- and the engine names its own; this is the one table between them.
+ * A line that is not one of the engine's is not forwarded, so this is empty for
+ * it, and the engine's memory reports read as =debug= rather than as warnings.
+ */
+[[nodiscard]] ORES_ORE_CORE_EXPORT std::string store_level_of(const engine_log_event& event);
+
+/**
+ * @brief How many lines a log holds, as the engine wrote them.
+ */
+[[nodiscard]] ORES_ORE_CORE_EXPORT std::size_t line_count(std::string_view text);
 
 /**
  * @brief The events as the newline-delimited CSV the loader reads.

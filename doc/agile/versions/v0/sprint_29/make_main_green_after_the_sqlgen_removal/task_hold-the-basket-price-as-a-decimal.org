@@ -41,9 +41,11 @@ Main compiles again. The writer converts the plan's drawn price at the boundary 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Reproduce first: build the library from a clean tree at =origin/main= with
+the change stashed, so the failure is shown to predate the branch. Then
+convert the drawn price through the existing =maybe_money= helper, which is
+the =decimal::from_double= boundary the type documents, and build and run the
+suite that links the library.
 
 * Measurements
 
@@ -57,6 +59,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Suite size after the fix | 1733 assertions in 78 test cases | =ores.synthetic.core.tests= | =c18fc190ad= |
 |      |       |         |        |
 
 * Notes
@@ -85,3 +88,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Main compiles again. The writer converts the plan's drawn price with
+=maybe_money=, so the row carries the same value through
+=decimal::from_double= that the trading domain now declares.
+
+Measured: =ores.synthetic.core.lib= failed to compile at
+=trading_trade_population_writer.cpp:901= on a clean tree at =origin/main=
+with this branch stashed, and compiles after the change. =ores.synthetic.core.tests=
+passes with 1,733 assertions in 78 test cases.
+
+The break came in with =e2e0718a66=, which changed the domain field to a
+decimal and left this assignment alone. Nothing here changes what the basket
+states; it restores the build and the value the column was already meant to
+hold.

@@ -53,6 +53,12 @@ struct engine_log_error {
 
     /// The sub-fields other than the identifying one, as the engine wrote them.
     std::string detail;
+
+    /// The time the engine stated, as the node passed it on.
+    std::string event_time;
+
+    /// The file the row came from.
+    std::string source;
 };
 
 /**

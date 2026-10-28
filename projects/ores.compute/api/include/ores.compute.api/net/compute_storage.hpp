@@ -177,6 +177,20 @@ struct compute_storage {
         return ores::storage::net::storage_paths::make_object_path(bucket, results_key(result_id));
     }
 
+    /**
+     * @brief Key for the canonical log rows a job produced.
+     *
+     * @param result_id  Result UUID as string.
+     */
+    static std::string logs_key(std::string_view result_id) {
+        return ores::storage::api::object_keys::make(
+            service, "logs", std::string(result_id) + ".csv");
+    }
+
+    static std::string logs_path(std::string_view result_id) {
+        return ores::storage::net::storage_paths::make_object_path(bucket, logs_key(result_id));
+    }
+
 private:
     /**
      * @brief The service segment every compute key starts with.

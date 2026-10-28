@@ -26,6 +26,7 @@ set(files
     "credit_simulation_database_roundtrip_tests.cpp"
     "curve_configuration_database_roundtrip_tests.cpp"
     "hierarchy_hierarchy_builder_tests.cpp"
+    "log_engine_log_tests.cpp"
     "log_engine_run_verdict_tests.cpp"
     "log_ore_log_parser_tests.cpp"
     "main.cpp"

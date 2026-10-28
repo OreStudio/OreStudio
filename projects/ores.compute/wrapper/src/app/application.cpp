@@ -27,6 +27,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.ore.core/log/engine_run_verdict.hpp"
+#include "ores.ore.core/log/engine_log.hpp"
 #include "ores.ore.core/results/canonical_rows.hpp"
 #include "ores.platform/net/network_info.hpp"
 #include "ores.platform/system/system_info.hpp"
@@ -468,6 +469,45 @@ std::string read_file_text(const fs::path& path) {
  */
 std::string read_file_text(const fs::path& path);
 
+
+/**
+ * @brief Projects the engine's log onto rows and uploads them.
+ *
+ * The engine writes what it did into its own log, and this is the one place that
+ * knows how to read it: the format belongs to the engine, and the reporting
+ * service loads what this writes without knowing any of it. Every line becomes a
+ * row, whatever its severity, so a reader can see the whole account.
+ */
+void upload_canonical_log(auto& lg,
+                          const config::options& cfg,
+                          const compute::messaging::work_assignment_event& evt,
+                          const fs::path& output_dir) {
+    if (evt.logs_uri.empty())
+        return;
+    const auto text_log = output_dir / "log.txt";
+    if (!fs::is_regular_file(text_log))
+        return;
+
+    const auto events =
+        ores::ore::log::parse_engine_log_text(read_file_text(text_log), "log.txt");
+    if (events.empty())
+        return;
+
+    const auto text = ores::ore::log::canonical_log_csv(events);
+    const auto compressed = ores::utility::compression::gzip_compress(
+        std::span(reinterpret_cast<const char*>(text.data()), text.size()));
+
+    const auto log_file = output_dir.parent_path() / "logs.csv.gz";
+    {
+        std::ofstream out(log_file, std::ios::binary);
+        out.write(compressed.data(), static_cast<std::streamsize>(compressed.size()));
+    }
+    BOOST_LOG_SEV(lg, info) << "Uploading " << events.size() << " log rows for "
+                            << evt.result_id << " (" << compressed.size() << " bytes)";
+    ores::storage::net::http_client::put(
+        make_url(cfg.http_base_url, evt.logs_uri), log_file, evt.storage_token);
+}
+
 void upload_canonical_rows(auto& lg,
                            const config::options& cfg,
                            const compute::messaging::work_assignment_event& evt,
@@ -807,6 +847,9 @@ void process_assignment(ores::nats::service::client& nats,
                 // archive for the reporting service to load. A refusal is stated in
                 // the log and leaves the archive as the record of what the run said.
                 upload_canonical_rows(lg, cfg, evt, output_dir);
+                // The engine's own account of the run, in the same shape: every
+                // line it wrote, whatever its severity.
+                upload_canonical_log(lg, cfg, evt, output_dir);
 
                 BOOST_LOG_SEV(lg, info) << "Job complete: " << evt.result_id;
                 // Success.

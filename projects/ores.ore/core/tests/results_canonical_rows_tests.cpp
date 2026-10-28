@@ -88,3 +88,81 @@ TEST_CASE("the canonical csv states its header and a field is quoted when it mus
                      0) == 0);
     CHECK(text.find("trade,T1,npv,GBP,,1.5,npv.csv\n") != std::string::npos);
 }
+
+TEST_CASE("a file that states no notional projects only the measures it has", tags) {
+    const std::string csv = "#TradeId,NPV,NpvCurrency\nT1,1.5,GBP\nT2,2.5,GBP\n";
+
+    const auto outcome = marshal_npv_csv(csv, "npv.csv");
+
+    REQUIRE(outcome.refusals.empty());
+    REQUIRE(outcome.rows.size() == 2);
+    CHECK(outcome.rows[0].measure == "npv");
+    CHECK(outcome.rows[1].measure == "npv");
+}
+
+TEST_CASE("a negative figure is a figure", tags) {
+    const auto outcome = marshal_npv_csv("#TradeId,NPV,NpvCurrency\nT1,-12.25,GBP\n", "npv.csv");
+
+    REQUIRE(outcome.refusals.empty());
+    REQUIRE(outcome.rows.size() == 1);
+    CHECK(outcome.rows[0].figure == -12.25);
+}
+
+TEST_CASE("a quoted field holding a comma stays one field", tags) {
+    const std::string csv =
+        "#TradeId,NPV,NpvCurrency,CounterParty\n"
+        "T1,1.5,GBP,\"Northwind Capital, Ltd\"\n";
+
+    const auto outcome = marshal_npv_csv(csv, "npv.csv");
+
+    REQUIRE(outcome.refusals.empty());
+    REQUIRE(outcome.rows.size() == 1);
+    CHECK(outcome.rows[0].counterparty_id == "Northwind Capital, Ltd");
+}
+
+TEST_CASE("a file with dos line endings and a byte order mark still reads", tags) {
+    const std::string csv = "\xEF\xBB\xBF#TradeId,NPV,NpvCurrency\r\nT1,1.5,GBP\r\nT2,2.5,GBP\r\n";
+
+    const auto outcome = marshal_npv_csv(csv, "npv.csv");
+
+    REQUIRE(outcome.refusals.empty());
+    REQUIRE(outcome.rows.size() == 2);
+    CHECK(outcome.rows[1].subject_id == "T2");
+}
+
+TEST_CASE("a row with more fields than the header names is still read by name", tags) {
+    const std::string csv = "#TradeId,NPV,NpvCurrency\nT1,1.5,GBP,extra,more\n";
+
+    const auto outcome = marshal_npv_csv(csv, "npv.csv");
+
+    REQUIRE(outcome.refusals.empty());
+    REQUIRE(outcome.rows.size() == 1);
+    CHECK(outcome.rows[0].subject_id == "T1");
+}
+
+TEST_CASE("an empty file is refused by name", tags) {
+    const auto outcome = marshal_npv_csv("", "npv.csv");
+
+    CHECK(outcome.rows.empty());
+    REQUIRE(outcome.refusals.size() == 1);
+    CHECK(outcome.refusals[0].find("npv.csv") != std::string::npos);
+}
+
+TEST_CASE("blank lines between rows are not rows", tags) {
+    const std::string csv = "#TradeId,NPV,NpvCurrency\n\nT1,1.5,GBP\n\n";
+
+    const auto outcome = marshal_npv_csv(csv, "npv.csv");
+
+    REQUIRE(outcome.refusals.empty());
+    CHECK(outcome.rows.size() == 1);
+}
+
+TEST_CASE("a row with a figure but no currency is refused with its line", tags) {
+    const auto outcome =
+        marshal_npv_csv("#TradeId,NPV,NpvCurrency\nT1,1.5,GBP\nT2,2.5,\n", "npv.csv");
+
+    REQUIRE(outcome.rows.size() == 1);
+    REQUIRE(outcome.refusals.size() == 1);
+    CHECK(outcome.refusals[0].find("line 3") != std::string::npos);
+    CHECK(outcome.refusals[0].find("no currency") != std::string::npos);
+}

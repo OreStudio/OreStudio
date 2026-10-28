@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/load-published-quotes-from-the-public-sources
-#+pr: 3685
+#+pr: 3985
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
@@ -113,6 +113,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3985][#3985]] | [doc] Make public sources adapters that publish durable fixings |
 | [[https://github.com/OreStudio/OreStudio/pull/3685][#3685]] | [agile] Propose the architecture of the published quotes |
 
 * Review

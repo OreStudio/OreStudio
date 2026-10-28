@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 9C112C73-10C4-4FAC-A7D3-C182540C99F8
+:END:
+#+title: Task: Write the journey that runs the public sources
+#+description: The journey a system administrator takes through the Official rates screen: the providers, their terms and freshness, the three failures, the acts still to come, and what the screen cannot do yet.
+#+type: task
+#+level: s1
+#+filetags: :run_the_public_sources_from_the_official_rates_screen:sprint_29:v0:
+#+owner: marco
+#+branch: feature/run-the-public-sources-from-the-official-rates-screen
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D0DECE4-B91C-4855-96E9-A302A6B99E19][Run the public sources from the Official rates screen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A journey is the design document a prototype answers to, written before anything is built. This one states the person's goal on the Official rates screen, every step with the shape the standard already draws and the judgement where it does not, the wireframe, the prototype that draws it, the entities and operations each step needs, and what the server does not provide yet. Every gap names the task that owns it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D0DECE4-B91C-4855-96E9-A302A6B99E19][Run the public sources from the Official rates screen]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- A user journey exists under doc/knowledge/journeys/market_data with every section its contract requires.
+- Every step is judged against the record screen standard, with the steps no rule draws named.
+- A wireframe is drawn beside it and embedded, and the prototype section links the prototype and lists its states.
+- Every missing operation is listed with the task that owns it, and the journey is wired into the market data journeys index.
+
+* Plan
+
+- Write the journey from the screen's two jobs, not from the existing screen:
+  governance, which the screen does, and operations, which it does not.
+- Judge every step against the Record screen standard and against the
+  operations the server answers today.
+- Draw the row and the page as one wireframe: the list with terms, freshness and
+  adapter state, and one provider's fixings and comparison.
+- Name every gap with the task that owns it: the health read, the pause
+  decision, the backfill design, and the deletion an accepted withdrawal needs.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The journey is written at
+=doc/knowledge/journeys/market_data/journey_run-the-public-sources.org= and wired
+into the market data journeys index. It states the goal in the person's words,
+twelve steps, the eleven-row judgement table, the wireframe, the prototype and
+its states, the entities and the operations with their status.
+
+Four gaps are named with the task that owns each: freshness and the three
+failure states (the health task), the pause and the deletion a withdrawal needs
+(the pause decision), and the chosen backfill range (the backfill design).
+

@@ -53,11 +53,11 @@ its window, who accepted what, and the trail of the acts done to it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D0DECE4-B91C-4855-96E9-A302A6B99E19][Run the public sources from the Official rates screen]] |
-| Now          | Building the static page and its design note. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Build the row and the page with the competing paused and freshness answers. |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -91,6 +91,12 @@ its window, who accepted what, and the trail of the acts done to it.
   tell a person what to do.
 - Take the next review as the design review; the two decision tasks take the
   open questions from it.
+
+The page shipped with the row and the page, the three failure states, both
+paused variants, both freshness lines, the backfill at rest, running and done,
+and the feed start the row explains. Its states are addresses, and it was
+rendered with Playwright in every state and read against the standard before
+this task closed.
 
 * Measurements
 
@@ -132,3 +138,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The prototype is at =doc/prototypes/market_data/official-rates/=, with its design
+note =official-rates.org= beside it and a row on the market data prototypes page.
+It answers the four questions: the paused row stays and is drawn hidden beside
+it, the backfill shows a progress and a done state that says what the store
+skipped, three failure states read as three sentences, and deleting fixings is
+offered after a withdrawal rather than as a row action.
+
+The design note states what is fake and what the two decision tasks still own.
+

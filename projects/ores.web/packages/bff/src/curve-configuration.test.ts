@@ -231,7 +231,7 @@ function repliesFor(overrides: Replies = {}): Replies {
         },
         'refdata.v1.curve_configurations.list': {
             result: ok,
-            curve_configurations: [
+            configurations: [
                 {
                     id: CURVE_ID,
                     configuration_id: CONFIGURATION_ID,
@@ -244,15 +244,11 @@ function repliesFor(overrides: Replies = {}): Replies {
         },
         'refdata.v1.curve_definitions.list': {
             result: ok,
-            curve_definitions: [
+            curves: [
                 { id: '1', curve_configuration_id: CURVE_ID, section_code: 'YieldCurves' },
                 { id: '2', curve_configuration_id: CURVE_ID, section_code: 'YieldCurves' },
                 { id: '3', curve_configuration_id: CURVE_ID, section_code: 'DefaultCurves' },
             ],
-        },
-        'refdata.v1.parties.list': {
-            result: ok,
-            parties: [{ id: PARTY_ID, name: 'Acme Corporation Plc' }],
         },
         'refdata.v1.curve_sections.list': {
             result: ok,
@@ -413,7 +409,6 @@ describe('the curve configuration a report binds', () => {
         expect(body.rows[0]).toMatchObject({
             configurationId: CONFIGURATION_ID,
             name: 'UK curve configuration',
-            partyName: 'Acme Corporation Plc',
             sections: 2,
             curves: 3,
         });

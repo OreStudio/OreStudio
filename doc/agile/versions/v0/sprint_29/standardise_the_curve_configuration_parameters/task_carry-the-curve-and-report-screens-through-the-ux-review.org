@@ -96,6 +96,15 @@ task and name that file in the Command column.
   =reporting.results.oneRowPer.tradeId= and =.tradeType=, which the English
   source catalogue does not have, so the i18n catalogue test failed for every
   branch. Both were unused and are gone.
+- *A person could not start a run.* The report page offers *Start* only to a
+  person who holds =reporting::report_instances:write=, and only the =ReportRun=
+  service role held it, so the button never rendered. =Operations= now holds it:
+  starting a run costs compute, so the role that owns operations has it and a
+  reader does not. The screen was right and the seed was wrong.
+- *A curve configuration's party is not named in the list.* The parties read the
+  list would need is a read the screen is not granted, and the session's parties
+  are already what scope the rows, so the column is left out rather than drawn
+  empty. It returns when the parties read is granted to the screen.
 - *The copies of a report are a party-scope defect, not a display one.* The
   owner's account works in four parties, so the list reads the definitions of
   all four (78 of them) with no party on the row and no party selector on the

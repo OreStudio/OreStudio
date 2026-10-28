@@ -70,9 +70,6 @@ export function CurveConfigurationsPage(): ReactNode {
                                     {t('curveConfiguration.list.columns.name')}
                                 </th>
                                 <th className="px-4 py-2 font-medium">
-                                    {t('curveConfiguration.list.columns.party')}
-                                </th>
-                                <th className="px-4 py-2 font-medium">
                                     {t('curveConfiguration.list.columns.sections')}
                                 </th>
                                 <th className="px-4 py-2 font-medium">
@@ -102,7 +99,6 @@ export function CurveConfigurationsPage(): ReactNode {
                                             </p>
                                         )}
                                     </td>
-                                    <td className="px-4 py-2 text-ink-muted">{row.partyName}</td>
                                     <td className="px-4 py-2 text-ink-muted">{row.sections}</td>
                                     <td className="px-4 py-2 text-ink-muted">{row.curves}</td>
                                     <td className="px-4 py-2 text-ink-muted">{row.version}</td>

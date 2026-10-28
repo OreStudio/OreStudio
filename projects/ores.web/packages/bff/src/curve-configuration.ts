@@ -24,7 +24,6 @@ import { subjects as documentSubjects } from '@ores/wire-protocol/generated/refd
 import { subjects as sectionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/curve_section_protocol';
 import { subjects as configurationSubjects } from '@ores/wire-protocol/generated/refdata/protocol/curve_configuration_protocol';
 import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/curve_definition_protocol';
-import { subjects as partySubjects } from '@ores/wire-protocol/generated/refdata/protocol/party_protocol';
 import { subjects as parameterSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_protocol';
 import { subjects as valueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_protocol';
 import { subjects as valueSetValueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_value_protocol';
@@ -148,7 +147,6 @@ export interface CurveConfigurationSummary {
     readonly name: string;
     readonly description: string;
     readonly partyId: string;
-    readonly partyName: string;
     readonly version: number;
     readonly sections: number;
     readonly curves: number;
@@ -358,31 +356,21 @@ export function registerCurveConfigurationRoutes(
      */
     server.get('/api/refdata/curve-configurations', async (request) => {
         const session = requireSession(request);
-        const [configurations, definitions, parties] = await Promise.all([
+        const [configurations, definitions] = await Promise.all([
             readAll(
                 session,
                 configurationSubjects.list_curve_configurations_request,
-                'curve_configurations',
+                'configurations',
                 {
                     filter: null,
                     as_of: null,
                 },
             ),
-            readAll(
-                session,
-                definitionSubjects.list_curve_definitions_request,
-                'curve_definitions',
-                {
-                    filter: null,
-                    as_of: null,
-                },
-            ),
-            readAll(session, partySubjects.list_parties_request, 'parties', {
+            readAll(session, definitionSubjects.list_curve_definitions_request, 'curves', {
                 filter: null,
                 as_of: null,
             }),
         ]);
-        const partyOf = new Map(parties.map((party) => [text(party['id']), text(party['name'])]));
         const byConfiguration = new Map<string, Set<string>>();
         for (const definition of definitions) {
             const key = text(definition['curve_configuration_id']);
@@ -400,7 +388,6 @@ export function registerCurveConfigurationRoutes(
                     name: text(configuration['name']),
                     description: text(configuration['description']),
                     partyId: text(configuration['party_id']),
-                    partyName: partyOf.get(text(configuration['party_id'])) ?? '',
                     version: numberOf(configuration['version']),
                     sections: sections.size,
                     curves: definitions.filter(

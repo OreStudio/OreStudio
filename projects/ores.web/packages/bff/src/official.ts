@@ -158,6 +158,9 @@ export function registerOfficialRatesRoutes(
         if (ids.length > MOST_SERIES) {
             throw invalidRequest(`A read names at most ${String(MOST_SERIES)} series.`);
         }
+        if (!ids.every((id) => z.uuid().safeParse(id).success)) {
+            throw invalidRequest('A series is named by its id.');
+        }
         const rows = await readAll(session, fixingSubjects.list_market_fixings_request, 'market_fixings', {
             filter: { series_id: null, id_one_of: null, series_id_one_of: ids },
             as_of: null,

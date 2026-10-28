@@ -223,29 +223,33 @@ function PairCompare({ providers }: { readonly providers: readonly OfficialProvi
                 <span className="text-xs text-ink-faint">{t('marketdata.official.compare.lead')}</span>
             </header>
             <div className="flex flex-wrap items-center gap-2">
-                <Select
-                    aria-label={t('marketdata.official.compare.base')}
-                    value={base}
-                    onChange={(e) => setBase(e.target.value)}
-                >
-                    {currencies.map((c) => (
-                        <option key={c} value={c}>
-                            {c}
-                        </option>
-                    ))}
-                </Select>
+                <div className="w-28">
+                    <Select
+                        aria-label={t('marketdata.official.compare.base')}
+                        value={base}
+                        onChange={(e) => setBase(e.target.value)}
+                    >
+                        {currencies.map((c) => (
+                            <option key={c} value={c}>
+                                {c}
+                            </option>
+                        ))}
+                    </Select>
+                </div>
                 <span className="text-ink-faint">/</span>
-                <Select
-                    aria-label={t('marketdata.official.compare.quote')}
-                    value={quote}
-                    onChange={(e) => setQuote(e.target.value)}
-                >
-                    {currencies.map((c) => (
-                        <option key={c} value={c}>
-                            {c}
-                        </option>
-                    ))}
-                </Select>
+                <div className="w-28">
+                    <Select
+                        aria-label={t('marketdata.official.compare.quote')}
+                        value={quote}
+                        onChange={(e) => setQuote(e.target.value)}
+                    >
+                        {currencies.map((c) => (
+                            <option key={c} value={c}>
+                                {c}
+                            </option>
+                        ))}
+                    </Select>
+                </div>
             </div>
             {plans.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('marketdata.official.compare.none')}</p>
@@ -264,7 +268,7 @@ function PairCompare({ providers }: { readonly providers: readonly OfficialProvi
                             <tr>
                                 <th className="py-1 font-normal">{t('marketdata.official.columns.provider')}</th>
                                 <th className="py-1 font-normal">{t('marketdata.official.columns.route')}</th>
-                                <th className="py-1 font-normal">{t('marketdata.official.columns.date')}</th>
+                                <th className="px-3 py-1 font-normal">{t('marketdata.official.columns.date')}</th>
                                 <th className="py-1 text-right font-normal">
                                     {t('marketdata.official.columns.value')}
                                 </th>
@@ -285,7 +289,7 @@ function PairCompare({ providers }: { readonly providers: readonly OfficialProvi
                                                 {t(`marketdata.official.route.${plan.route}`)}
                                             </Tag>
                                         </td>
-                                        <td className="py-1 font-mono text-xs">{last ?? '—'}</td>
+                                        <td className="whitespace-nowrap px-3 py-1 font-mono text-xs">{last ?? '—'}</td>
                                         <td className="py-1 text-right font-mono text-xs tabular-nums">
                                             {last === undefined ? '—' : (values.get(last) ?? 0).toPrecision(6)}
                                         </td>

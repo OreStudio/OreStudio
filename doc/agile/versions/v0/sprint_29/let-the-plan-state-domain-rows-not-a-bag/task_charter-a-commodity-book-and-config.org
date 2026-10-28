@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 244591FF-582C-4710-BC6D-EBA5D536F36E
+:END:
+#+title: Task: Charter a book and a config for the commodity population
+#+description: No ACME book trades commodities, so the family cannot be booked and its constructors are never reached by a run. Charter a commodity book for the UK entity and a generate_trades config that reaches every routed code, so the family books and its constructor can be proved.
+#+type: task
+#+level: s1
+#+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
+#+owner: marco
+#+branch: feature/charter-a-commodity-book-and-config
+#+pr: 4035
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Commodities book. A run reaches all twenty-five routed commodity codes, so the constructors are exercised by something stronger than a unit test, and the family can be extended with real product facts afterwards.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- The UK entity has a commodity book with its own GL account and cost centre.
+- The ACME profile seeds a commodity generate_trades config that reaches every routed commodity code.
+- A provisioning run books commodity trades and the commodity instrument table holds one row per routed code.
+- The constructors refuse nothing the planner draws, and the suites stay green.
+
+* Plan
+
+Mirror the equity charter: one book row in the ACME UK artefact seed with its
+own GL account and cost centre, and one =commodity= config in the demo
+profile's generate_trades block. Twenty-five trades per book, because the
+planner cycles the catalogue rather than drawing a type, so a population of
+twenty-five reaches every routed code exactly once.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Commodity rows before | 0 | =compass db sql= on =ores_trading_commodity_instruments_tbl= | =101288ceef= |
+| Commodity rows after | 25, one per routed code | the same | =101288ceef= |
+| Forward-shaped rows carrying an option column | 0 of 4 | the same, grouped by shape | =101288ceef= |
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4035][#4035]] | [acme,iam] Charter a book and a config for commodities |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Commodities book. The UK entity has a =USD Commodity Derivatives= book
+(=d1a47792-a5ea-457f-809a-c48896242723=, GL-COMMODITY-001, CC-UK-COMMODITY),
+and the demo profile seeds =ACME ACCOUK commodity= with twenty-five trades per
+book.
+
+Measured by a provisioning run on a recreated database: =generate_trades=
+completed and the commodity instrument table holds 25 rows, one for each
+routed code, so every constructor the previous task added is now exercised by
+a run and not only by a unit test.
+
+The shape separation shows in the data: the four forward-shaped rows carry no
+option type, strike, average, barrier, variance or swaption expiry; the
+fourteen option-shaped rows carry an option type and a strike, of which three
+also carry an average and two a barrier; the accumulator rows carry an
+accumulation amount and no strike.
+
+No C++ changed, so the suites are unaffected by this task; the full build was
+re-run before it because the published tree was stale, which is a separate
+defect already captured.

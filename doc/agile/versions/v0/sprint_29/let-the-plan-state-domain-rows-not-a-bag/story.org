@@ -43,6 +43,7 @@ A trade has one description, in the domain. The planner draws a product and cons
 | [[id:E68EF41E-CF67-4B93-9787-E24D278FAFBB][Implement Let the plan state domain rows, not a bag]] | BACKLOG | | | Initial task for: Let the plan state domain rows, not a bag |
 | [[id:1702F734-593F-4BE2-AC4D-10BCC6C3822C][Construct one product properly]] | DONE | 2026-10-28 | 2026-10-28 | Prove the story's shape on one product before five families move. Add a named constructor for EquityCliquetOption beside the equity option instrument type, make the writer build that product through it, and show that a frequency cannot be stated on a product that has none. |
 | [[id:E3D9AF40-C60F-47D7-AFD0-EF76D9C11A50][Construct every commodity product by shape]] | DONE | | 2026-10-28 | The commodity writer copies every field of the bag into one row for all twenty-five codes, and the table has no cross-column check to stop a forward carrying a barrier. Give each code a named constructor whose terms hold only the columns its shape states, so a mixture cannot be assembled. |
+| [[id:244591FF-582C-4710-BC6D-EBA5D536F36E][Charter a book and a config for the commodity population]] | DONE | 2026-10-28 | 2026-10-28 | No ACME book trades commodities, so the family cannot be booked and its constructors are never reached by a run. Charter a commodity book for the UK entity and a generate_trades config that reaches every routed code, so the family books and its constructor can be proved. |
 
 * Decisions
 

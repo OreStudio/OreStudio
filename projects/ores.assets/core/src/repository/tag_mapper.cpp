@@ -45,7 +45,7 @@ domain::tag tag_mapper::map(const tag_entity& v) {
     domain::tag r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
 
     r.name = v.name;
 

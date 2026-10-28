@@ -19,7 +19,7 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.assets.core/repository/image_tag_repository.hpp"
@@ -27,8 +27,7 @@
 #include "ores.assets.api/domain/image_tag_json_io.hpp" // IWYU pragma: keep.
 #include "ores.assets.core/repository/image_tag_entity.hpp"
 #include "ores.assets.core/repository/image_tag_mapper.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -38,16 +37,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
-#include <sqlgen/aggregations.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/select_from.hpp>
-#include <sqlgen/to.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -55,13 +44,13 @@
 
 namespace ores::assets::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string image_tag_repository::sql() {
-    return generate_create_table_sql<image_tag_entity>(lg());
+    return query_builder::insert_statement_sql<image_tag_entity>(lg());
 }
 
 image_tag_repository::image_tag_repository(context ctx)
@@ -120,7 +109,8 @@ void image_tag_repository::write(const domain::image_tag& image_tag,
     BOOST_LOG_SEV(lg(), debug) << "Writing image tag to database: " << image_tag.image_id << "/"
                                << image_tag.tag_id;
     const auto t = apply_claim(image_tag, claim);
-    execute_write_query(ctx_, image_tag_mapper::map(t), lg(), "writing image tag to database");
+    query_builder::execute_write_query(
+        ctx_, image_tag_mapper::map(t), lg(), "writing image tag to database");
 }
 
 void image_tag_repository::write(const std::vector<domain::image_tag>& image_tags,
@@ -130,17 +120,18 @@ void image_tag_repository::write(const std::vector<domain::image_tag>& image_tag
     batch.reserve(image_tags.size());
     for (std::size_t i = 0; i < image_tags.size(); ++i)
         batch.push_back(apply_claim(image_tags[i], claims[i]));
-    execute_write_query(ctx_, image_tag_mapper::map(batch), lg(), "writing image tags to database");
+    query_builder::execute_write_query(
+        ctx_, image_tag_mapper::map(batch), lg(), "writing image tags to database");
 }
 
 std::vector<domain::image_tag> image_tag_repository::read_latest() {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<image_tag_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("image_id"_c, "tag_id"_c);
+    const auto query = query_builder::read<std::vector<image_tag_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("image_id"_c, "tag_id"_c);
 
-    return execute_read_query<image_tag_entity, domain::image_tag>(
+    return query_builder::execute_read_query<image_tag_entity, domain::image_tag>(
         ctx_,
         query,
         [](const auto& entities) { return image_tag_mapper::map(entities); },
@@ -154,12 +145,12 @@ std::vector<domain::image_tag> image_tag_repository::read_latest(std::uint32_t o
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<image_tag_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("image_id"_c, "tag_id"_c) | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<image_tag_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("image_id"_c, "tag_id"_c) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_read_query<image_tag_entity, domain::image_tag>(
+    return query_builder::execute_read_query<image_tag_entity, domain::image_tag>(
         ctx_,
         query,
         [](const auto& entities) { return image_tag_mapper::map(entities); },
@@ -175,11 +166,12 @@ std::vector<domain::image_tag> image_tag_repository::read_latest(const boost::uu
     const auto image_id_str = boost::uuids::to_string(image_id);
     const auto tag_id_str = boost::uuids::to_string(tag_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<image_tag_entity>> |
-                       where("tenant_id"_c == tid && "image_id"_c == image_id_str &&
+    const auto query =
+        query_builder::read<std::vector<image_tag_entity>> |
+        query_builder::where("tenant_id"_c == tid && "image_id"_c == image_id_str &&
                              "tag_id"_c == tag_id_str && "valid_to"_c == max.value());
 
-    return execute_read_query<image_tag_entity, domain::image_tag>(
+    return query_builder::execute_read_query<image_tag_entity, domain::image_tag>(
         ctx_,
         query,
         [](const auto& entities) { return image_tag_mapper::map(entities); },
@@ -191,19 +183,12 @@ std::uint32_t image_tag_repository::get_total_image_tag_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active image tags count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::select_from<image_tag_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<image_tag_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<image_tag_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting image tags");
     BOOST_LOG_SEV(lg(), debug) << "Total active image tags count: " << count;
     return count;
 }
@@ -215,12 +200,12 @@ image_tag_repository::read_latest_by_image(const boost::uuids::uuid& image_id) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto image_id_str = boost::uuids::to_string(image_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<image_tag_entity>> |
-        where("tenant_id"_c == tid && "image_id"_c == image_id_str && "valid_to"_c == max.value()) |
-        order_by("tag_id"_c);
+    const auto query = query_builder::read<std::vector<image_tag_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "image_id"_c == image_id_str &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("tag_id"_c);
 
-    auto rows = execute_read_query<image_tag_entity, domain::image_tag>(
+    auto rows = query_builder::execute_read_query<image_tag_entity, domain::image_tag>(
         ctx_,
         query,
         [](const auto& entities) { return image_tag_mapper::map(entities); },
@@ -237,12 +222,12 @@ image_tag_repository::read_latest_by_tag(const boost::uuids::uuid& tag_id) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tag_id_str = boost::uuids::to_string(tag_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<image_tag_entity>> |
-        where("tenant_id"_c == tid && "tag_id"_c == tag_id_str && "valid_to"_c == max.value()) |
-        order_by("image_id"_c);
+    const auto query = query_builder::read<std::vector<image_tag_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "tag_id"_c == tag_id_str &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("image_id"_c);
 
-    auto rows = execute_read_query<image_tag_entity, domain::image_tag>(
+    auto rows = query_builder::execute_read_query<image_tag_entity, domain::image_tag>(
         ctx_,
         query,
         [](const auto& entities) { return image_tag_mapper::map(entities); },
@@ -260,12 +245,13 @@ std::vector<domain::image_tag> image_tag_repository::read_latest_by_image(
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<image_tag_entity>> |
-        where("tenant_id"_c == tid && "image_id"_c == image_id_str && "valid_to"_c == max.value()) |
-        order_by("tag_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<image_tag_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "image_id"_c == image_id_str &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("tag_id"_c) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
-    auto rows = execute_read_query<image_tag_entity, domain::image_tag>(
+    auto rows = query_builder::execute_read_query<image_tag_entity, domain::image_tag>(
         ctx_,
         query,
         [](const auto& entities) { return image_tag_mapper::map(entities); },
@@ -281,20 +267,13 @@ image_tag_repository::get_total_image_tag_count_by_image(const boost::uuids::uui
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active image tags count. Image: " << image_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<image_tag_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "image_id"_c == image_id_str && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<image_tag_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "image_id"_c == image_id_str &&
+                                            "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<image_tag_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting image tags");
     BOOST_LOG_SEV(lg(), debug) << "Total active image tags count by image: " << count;
     return count;
 }
@@ -305,20 +284,13 @@ image_tag_repository::get_total_image_tag_count_by_tag(const boost::uuids::uuid&
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active image tags count. Tag: " << tag_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<image_tag_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "tag_id"_c == tag_id_str && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<image_tag_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "tag_id"_c == tag_id_str &&
+                                            "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<image_tag_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting image tags");
     BOOST_LOG_SEV(lg(), debug) << "Total active image tags count by tag: " << count;
     return count;
 }
@@ -350,12 +322,12 @@ image_tag_repository::remove(const boost::uuids::uuid& image_id,
     const auto image_id_str = boost::uuids::to_string(image_id);
     const auto tag_id_str = boost::uuids::to_string(tag_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::delete_from<image_tag_entity> |
-        where("tenant_id"_c == tid && "image_id"_c == image_id_str && "tag_id"_c == tag_id_str &&
-              "valid_to"_c == max.value() && "version"_c == expected);
+    const auto query = query_builder::delete_from<image_tag_entity> |
+                       query_builder::where("tenant_id"_c == tid && "image_id"_c == image_id_str &&
+                                            "tag_id"_c == tag_id_str &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx_, query, lg(), "removing image tag from database");
+    query_builder::execute_delete_query(ctx_, query, lg(), "removing image tag from database");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -381,10 +353,10 @@ void image_tag_repository::remove_by_image(const boost::uuids::uuid& image_id) {
 
     const auto image_id_str = boost::uuids::to_string(image_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<image_tag_entity> |
-                       where("tenant_id"_c == tid && "image_id"_c == image_id_str);
+    const auto query = query_builder::delete_from<image_tag_entity> |
+                       query_builder::where("tenant_id"_c == tid && "image_id"_c == image_id_str);
 
-    execute_delete_query(ctx_, query, lg(), "removing all image tags from database");
+    query_builder::execute_delete_query(ctx_, query, lg(), "removing all image tags from database");
 }
 
 

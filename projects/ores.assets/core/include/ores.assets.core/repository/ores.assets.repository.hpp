@@ -22,7 +22,7 @@
 /**
  * @brief Database persistence layer for asset domain types.
  *
- * Provides ORM support using sqlgen including entities, mappers, and
+ * Provides persistence on the libpq layer, including entities, mappers, and
  * repositories for image, tag, image_tag, and currency_image. Supports
  * temporal versioning with valid_from/valid_to fields.
  */

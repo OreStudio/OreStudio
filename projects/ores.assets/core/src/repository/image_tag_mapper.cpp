@@ -47,7 +47,7 @@ domain::image_tag image_tag_mapper::map(const image_tag_entity& v) {
     domain::image_tag r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.image_id = boost::lexical_cast<boost::uuids::uuid>(v.image_id.value());
+    r.image_id = boost::lexical_cast<boost::uuids::uuid>(v.image_id);
     r.tag_id = boost::lexical_cast<boost::uuids::uuid>(v.tag_id);
     r.assigned_by = v.assigned_by;
     r.assigned_at = timestamp_to_timepoint(std::string_view{v.assigned_at});

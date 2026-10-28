@@ -12,7 +12,7 @@
 #+full_name: ores.marketdata
 #+brief: Market data component
 #+component_kind: composite
-#+parts: api client core service
+#+parts: api client core official service
 
 * Summary
 

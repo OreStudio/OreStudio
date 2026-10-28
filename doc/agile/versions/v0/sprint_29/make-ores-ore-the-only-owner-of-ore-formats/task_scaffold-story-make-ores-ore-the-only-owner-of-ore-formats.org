@@ -26,11 +26,11 @@ The story exists with its tasks, its decisions and its sprint wiring, so the wor
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] |
-| Now          | The story, its nine work tasks and the sprint wiring are written. The scaffolding is being committed. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit the scaffolding and open the scaffold pull request. |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -85,3 +85,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged as #3952. The story, its nine work tasks and the Sprint 29 wiring are on
+main, and the first task is the only one started.
+
+The review's four minor points are answered in one follow-up: the remove-the-store
+task now carries its measurements with the command and the commit for each, the
+story lists the six unjustified links the Status table's "four of six" refers to,
+and the dependency claims the Decisions rest on have a measured row each.

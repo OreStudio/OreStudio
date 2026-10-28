@@ -27,7 +27,7 @@ namespace ores::reporting::results {
 namespace {
 
 constexpr std::string_view log_expected_header =
-    "ordinal,severity,scope,message,subject,subject_id,cause,event_time,source";
+    "ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,source";
 
 /**
  * @brief The records of a file, and what the scan refused.
@@ -144,9 +144,9 @@ log_read_outcome read_canonical_log_csv(std::string_view csv) {
         const auto record_number = i + 1;
         if (fields.size() == 1 && fields[0].find_first_not_of(" \t") == std::string::npos)
             continue;
-        if (fields.size() != 9) {
+        if (fields.size() != 10) {
             outcome.refusals.push_back("record " + std::to_string(record_number) + " states " +
-                                       std::to_string(fields.size()) + " fields, not nine.");
+                                       std::to_string(fields.size()) + " fields, not ten.");
             continue;
         }
         if (fields[1].empty() || fields[3].empty()) {
@@ -155,15 +155,16 @@ log_read_outcome read_canonical_log_csv(std::string_view csv) {
             continue;
         }
 
-        service::engine_log_error row;
+        service::engine_log_row row;
         row.severity = fields[1];
         row.scope = fields[2];
         row.message = fields[3];
         row.subject = fields[4];
         row.subject_id = fields[5];
         row.cause = fields[6];
-        row.event_time = fields[7];
-        row.source = fields[8];
+        row.detail = fields[7];
+        row.event_time = fields[8];
+        row.source = fields[9];
         outcome.rows.push_back(std::move(row));
     }
 

@@ -205,7 +205,7 @@ parse_engine_log_json(std::string_view text, std::string_view source_file);
  * @brief The events as the newline-delimited CSV the loader reads.
  *
  * The header is
- * =ordinal,severity,scope,message,subject,subject_id,cause,event_time,source=,
+ * =ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,source=,
  * which is the shape the reporting service stores and the screen draws.
  */
 [[nodiscard]] ORES_ORE_CORE_EXPORT std::string

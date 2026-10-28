@@ -21,7 +21,7 @@
 #define ORES_REPORTING_CORE_RESULTS_CANONICAL_LOG_READER_HPP
 
 #include "ores.reporting.core/export.hpp"
-#include "ores.reporting.core/service/engine_log_error.hpp"
+#include "ores.reporting.core/service/engine_log_row.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
@@ -35,7 +35,7 @@ struct log_read_outcome {
     /**
      * @brief The rows the node wrote, in the order the engine wrote them.
      */
-    std::vector<service::engine_log_error> rows;
+    std::vector<service::engine_log_row> rows;
     /**
      * @brief The reasons the file or its rows could not be read.
      */
@@ -46,8 +46,8 @@ struct log_read_outcome {
  * @brief Reads the log rows a node marshalled from the engine's log.
  *
  * The file is the contract between the grid and this service: the node alone
- * knows how the engine writes its log, and this reads
- * =ordinal,severity,scope,message,subject,subject_id,cause,event_time,source=.
+ * knows how the engine writes its log, and this reads the header
+ * @c ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,source.
  * A file whose header is not that, or a row with the wrong number of fields, is
  * refused rather than half read.
  */

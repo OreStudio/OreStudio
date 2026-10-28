@@ -141,20 +141,6 @@ std::string time_between_brackets(std::string_view line) {
 }
 
 /**
- * @brief The message after the engine's own separator, which is what the line says.
- *
- * The engine writes the file that logged the line between parentheses and then
- * the separator, so the message is what follows the closed parenthesis. A line
- * that names no file falls back to the first separator, and a line with neither
- * is all message. The message itself may hold a separator -- =group = setup :
- * nThreads = 1= is one message -- so the first separator is only a fallback.
- *
- * A line that names no file but whose message holds a parenthesis is read as if
- * the parenthesis named the file, and the message is cut at the separator after
- * it. The engine states its file on every line it writes, so this is a limit of
- * the shape rather than of a line it writes today.
- */
-/**
  * @brief What a line states after the engine's separator, and whether it had one.
  */
 struct stated_message {
@@ -166,6 +152,21 @@ struct stated_message {
     bool after_separator = false;
 };
 
+/**
+ * @brief The message after the engine's own separator, which is what the line says.
+ *
+ * The engine writes the file that logged the line between parentheses and then
+ * the separator, so the message is what follows the closed parenthesis. A line
+ * that names no file falls back to the first separator, and a line with neither
+ * is all message and states no separator. The message itself may hold a
+ * separator -- =group = setup : nThreads = 1= is one message -- so the first
+ * separator is only a fallback.
+ *
+ * A line that names no file but whose message holds a parenthesis is read as if
+ * the parenthesis named the file, and the message is cut at the separator after
+ * it. The engine states its file on every line it writes, so this is a limit of
+ * the shape rather than of a line it writes today.
+ */
 stated_message message_after_separator(std::string_view line) {
     const auto file = line.find('(');
     if (file != std::string_view::npos) {

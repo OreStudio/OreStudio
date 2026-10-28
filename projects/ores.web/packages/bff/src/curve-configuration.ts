@@ -146,7 +146,6 @@ export interface CurveConfigurationSummary {
     readonly id: string;
     readonly name: string;
     readonly description: string;
-    readonly partyId: string;
     readonly version: number;
     readonly sections: number;
     readonly curves: number;
@@ -348,7 +347,7 @@ export function registerCurveConfigurationRoutes(
     requireSession: (request: FastifyRequest) => LiveSession,
 ): void {
     /*
-     * The curve configurations the session's parties hold, newest name first.
+     * The curve configurations the session's parties hold, in name order.
      *
      * The list reads the header rows and the definitions, and counts the curves
      * of each by the section their definition names, so a person reaches a
@@ -371,28 +370,26 @@ export function registerCurveConfigurationRoutes(
                 as_of: null,
             }),
         ]);
-        const byConfiguration = new Map<string, Set<string>>();
+        const counted = new Map<string, { sections: Set<string>; curves: number }>();
         for (const definition of definitions) {
             const key = text(definition['curve_configuration_id']);
-            const sections = byConfiguration.get(key) ?? new Set<string>();
-            sections.add(text(definition['section_code']));
-            byConfiguration.set(key, sections);
+            const counts = counted.get(key) ?? { sections: new Set<string>(), curves: 0 };
+            counts.sections.add(text(definition['section_code']));
+            counts.curves += 1;
+            counted.set(key, counts);
         }
         const rows: CurveConfigurationSummary[] = configurations
             .map((configuration) => {
                 const id = text(configuration['id']);
-                const sections = byConfiguration.get(id) ?? new Set<string>();
+                const counts = counted.get(id) ?? { sections: new Set<string>(), curves: 0 };
                 return {
                     configurationId: text(configuration['configuration_id']),
                     id,
                     name: text(configuration['name']),
                     description: text(configuration['description']),
-                    partyId: text(configuration['party_id']),
                     version: numberOf(configuration['version']),
-                    sections: sections.size,
-                    curves: definitions.filter(
-                        (definition) => text(definition['curve_configuration_id']) === id,
-                    ).length,
+                    sections: counts.sections.size,
+                    curves: counts.curves,
                 };
             })
             .sort((left, right) => left.name.localeCompare(right.name));

@@ -269,7 +269,8 @@ async function readConvention(
     id: string,
     party: string | undefined,
 ): Promise<
-    { readonly row: Readonly<Record<string, unknown>>; readonly held: ReadonlySet<string> } | undefined
+    | { readonly row: Readonly<Record<string, unknown>>; readonly held: ReadonlySet<string> }
+    | undefined
 > {
     const composite = COMPOSITE_FAMILIES[family.key];
     if (composite === undefined) {
@@ -292,7 +293,10 @@ async function readConvention(
     // The party that holds the row is part of its grouped identity, and the
     // party is how one row among several is chosen, so the groups come off
     // before the choice is made.
-    const found = oneOf(rows.map((row) => flattenCentral(row)), party);
+    const found = oneOf(
+        rows.map((row) => flattenCentral(row)),
+        party,
+    );
     const central = found === undefined ? undefined : centralRow.parse(found);
     if (central === undefined) {
         return undefined;

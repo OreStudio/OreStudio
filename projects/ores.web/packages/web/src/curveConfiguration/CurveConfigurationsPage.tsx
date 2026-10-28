@@ -28,6 +28,9 @@ import { useAreaRoot } from '../shell/AreaTrail.js';
 import { curveConfigurationPath } from '../shell/paths.js';
 import { Notice, PageHeader } from '../ui/Primitives.js';
 
+/** Where the list of curve configurations is cached. */
+export const curveConfigurationsKey = ['curve-configurations'] as const;
+
 /**
  * The curve configurations the session's parties hold, one row each.
  *
@@ -35,9 +38,6 @@ import { Notice, PageHeader } from '../ui/Primitives.js';
  * this list is for: the report page links the configurations it binds, and this
  * page is the way in for a person who starts from the configuration.
  */
-
-/** Where the list of curve configurations is cached. */
-export const curveConfigurationsKey = ['curve-configurations'] as const;
 
 export function CurveConfigurationsPage(): ReactNode {
     const { t } = useTranslation();

@@ -114,7 +114,6 @@ const summarySchema = z.object({
     id: z.string(),
     name: z.string(),
     description: z.string(),
-    partyId: z.string(),
     version: z.number(),
     sections: z.number(),
     curves: z.number(),

@@ -131,7 +131,7 @@ describe('the cards', () => {
         // is read. Every other card has one home.
         const repeated = new Set(['conventions']);
         const drawn = Object.entries(AREA_CARDS).flatMap(([area, ids]) =>
-            [...ids].filter((id) => area === 'reporting' && repeated.has(id) ? false : true),
+            [...ids].filter((id) => (area === 'reporting' && repeated.has(id) ? false : true)),
         );
 
         expect(drawn.length + repeated.size).toBeGreaterThan(0);

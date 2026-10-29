@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 196C254E-7632-4F8B-93FF-33B3A4E0C9D4
+:END:
+#+title: No config books credit, so the family never runs
+#+description: The credit writer and its routing exist and the credit catalogue is seeded, but no ACME party has a credit generation config, so a provisioned tenant holds no credit trades at all. Measured on a recreated database: zero rows in the credit instrument table, and the demo profile seeds bond, commodity, equity, fx and interest_rates only. Unlike commodities, which were chartered in the same sprint, credit has neither a book nor a config.
+#+type: capture
+#+level: cross
+#+filetags: :=credit= =synthetic= =population= =defect=:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

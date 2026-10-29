@@ -63,7 +63,7 @@ struct ir_curve_bootstrap_pillar_entity {
     std::string start_tenor_code;
     std::string end_tenor_code;
     std::string curve_role_code;
-    std::string market_series_id;
+    boost::uuids::uuid market_series_id;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

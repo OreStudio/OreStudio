@@ -7,41 +7,224 @@
 #+level: s1
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/make-the-parameter-data-model-the-source-of-valid-values-and-rules
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+One parameter model states a parameter's control and its rule, and every screen
+reads it from there. A parameter's allowed values, its bounds, its pattern and
+its catalogue live in the value set tables and nowhere else. The per-pair
+=kind= and =options= columns go, because the value set now says the same thing
+once instead of on every pair that takes the setting. The engine run settings
+reach the same contract, so the =Setup= parameters stop carrying a second copy
+of their control in the group settings table. The screens keep one source, the
+write path keeps one enforcement point, and a build check fails when a
+parameter loses its set.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Not yet started.                       |
+| Now          | The inventory is written, and the value sets for the Setup scope are in. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-25                               |
+| Next         | Read the value set on the engine settings screen, then retire the per-pair columns. |
+| Last touched | 2026-10-29                               |
 
 * Acceptance
 
--
+- The value set tables are the only place that states a parameter's control and
+  its rule. No screen, server or seed restates an allowed value.
+- The 15 settings whose set said text although the guide lists their choices
+  state an enumerated or boolean set, from a curation entry that names the
+  guide as its source. The settings that stay text say in the set why they are
+  text.
+- =ores_analytics_pricing_pair_settings_tbl= holds no =kind= and no =options=
+  column. The C++, the protocol, the SQL, the TypeScript, the shell recipe and
+  the seed are generated from the model without them.
+- =usual_value= stays, because the pricing screen shows the usual setting of a
+  pair, and it states a value and not a rule.
+- Every =Setup= parameter that the engine run settings screen draws has a value
+  set and a link, and that screen draws its control and checks its value from
+  the set through the same fields the pricing screen reads.
+- A check in =build/scripts/local_checks.py= fails when a parameter a screen
+  draws has no value set, when a set breaks its own rule, or when a per-pair
+  override column returns.
+- The build, the four test suites, the drift checks and a live environment
+  prove the behaviour: a change to a set changes the screen's choices, a
+  refused value names its set, and the ORE export and import still roundtrip.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** The inventory, taken before any change
+
+The inventory was taken at commit =92fd6990bc85=. Counts came from the
+curation and the seed files, which are deterministic, and from the restored
+database, whose schema is =a4924adbc941bfc7= and is therefore a cross-check
+only; the seed row count is stated beside each database count.
+
+*** The two tables
+
+**** The per-pair settings table
+
+=ores_analytics_pricing_pair_settings_tbl= (model
+[[file:../../../../../projects/ores.analytics/modeling/ores.analytics.pricing_pair_setting.org][ores.analytics.pricing_pair_setting]],
+create
+[[file:../../../../../projects/ores.sql/create/analytics/analytics_pricing_pair_settings_create.sql][analytics_pricing_pair_settings_create.sql]])
+holds one row per (type, model, engine, scope, name): 834 rows and 126
+distinct =(scope, name)= settings. The columns that state a value rule are:
+
+| column        | holds                                                     |
+|---------------+-----------------------------------------------------------|
+| =kind=        | how the screen draws the value: =select=, =number=, =tenor=, =reference= or =text= |
+| =options=     | the allowed values of a =select=, as one comma separated string |
+| =usual_value= | the value ORE's examples use                              |
+| =is_required= | whether the screens start a new product with the setting  |
+
+The kind counts are =number= 332, =select= 291, =reference= 140, =text= 67 and
+=tenor= 4. 291 of the 834 rows carry a non-empty =options=, which repeats the
+same list on every pair that takes the setting.
+
+**** The value set model
+
+The newer source is four reporting tables, read through the view
+=ores_reporting_ore_parameter_settings_v= (create
+[[file:../../../../../projects/ores.sql/create/reporting/reporting_ore_parameter_settings_view_create.sql][reporting_ore_parameter_settings_view_create.sql]]):
+
+| table | holds | rows |
+|-------+-------+------|
+| =ores_reporting_ore_parameter_value_sets_tbl= | the set: its code, =source_kind=, =catalogue_code=, =minimum=, =maximum=, =pattern= | 218 |
+| =ores_reporting_ore_parameter_value_set_values_tbl= | the values of an enumerated set, with a label and an order | 202 |
+| =ores_reporting_ore_parameter_value_set_catalogues_tbl= | the relations a catalogue set may read | 5 |
+| =ores_reporting_ore_parameter_setting_value_sets_tbl= | the link from =(scope, name)= to its set | 712 |
+
+The source kinds are =text= 72, =number= 63, =integer= 42, =enumerated= 29,
+=catalogue= 7, =boolean= 3 and =regex= 2. The one enforcement point is a
+trigger on the analytics parameter table,
+[[file:../../../../../projects/ores.sql/create/analytics/analytics_pricing_model_product_parameters_value_set_trigger_create.sql][analytics_pricing_model_product_parameters_value_set_trigger_create.sql]],
+which calls =ores_reporting_validate_parameter_value_fn=. It reads the set by
+=(scope, name)= and reads no per-pair column.
+
+*** The consumers
+
+- *The BFF vocabulary.* =vocabulary()= in
+  [[file:../../../../../projects/ores.web/packages/bff/src/pricing-engines.ts][pricing-engines.ts]]
+  reads the pair settings and serves, for each setting, =kind= from the row and
+  =options= from the row's comma separated string, beside the value set fields
+  =valueSet=, =sourceKind=, =choices=, =minimum=, =maximum= and =pattern=,
+  which it also serves as the =valueSets= map keyed =(scope, name)=. The reader
+  is
+  [[file:../../../../../projects/ores.web/packages/bff/src/ore-value-sets.ts][ore-value-sets.ts]],
+  which registers 8 catalogue relations.
+- *The web pricing screens.*
+  [[file:../../../../../projects/ores.web/packages/web/src/api/pricingEngines.ts][pricingEngines.ts]]
+  parses =kind= and =options= into the vocabulary type.
+  [[file:../../../../../projects/ores.web/packages/web/src/pricingEngines/parts.tsx][parts.tsx]]
+  reads =setting.kind= to decide one thing: when it is =reference= it draws the
+  sensitivity template's asset class and method. The control itself already
+  comes from =controlOfValueSet()= in
+  [[file:../../../../../projects/ores.web/packages/web/src/parameters/control.ts][control.ts]],
+  which reads the value set alone.
+- *The analytics parameter rows.*
+  =ores_analytics_pricing_model_product_parameters_tbl= holds the values a
+  product carries and is guarded by the trigger above.
+- *The seeder curation and its loaders.*
+  =projects/ores.seeder/datasets/ore_pricing_engines/curation/= holds
+  =value-sets.json= (the guide's sets), =value-sets-code.json= (the sets the
+  type extractor writes), =value-sets-review.json= (a person's settlements),
+  =engine-settings-groups.json= (the =Setup= groups) and =settings-code.json=.
+  =curation/__init__.py= loads them and refuses an entry without a reason, a
+  source, a source reference, a curator or a date.
+- *The generators.* =generate_vocabulary_sql.py= writes
+  =analytics_pricing_pair_settings_populate.sql=, including =kind= and
+  =options=. =projects/ores.sql/utility/generate_value_sets.py= writes
+  =reporting_ore_parameter_value_sets_populate.sql= and fails when a contract
+  parameter has no set. =generate_engine_settings_groups.py= writes the two
+  =Setup= tables from =engine-settings-groups.json=. =pricing_parameter_rows.py=
+  writes the ore parameter contract, and renders the guide's options into the
+  =format= prose as =One of: A, B, C=.
+- *The codegen.* The analytics entity model renders the pair setting into C++,
+  SQL, the wire protocol, the TypeScript domain and protocol, the shell
+  commands and the shell recipe document. The model's =Table display=,
+  =Columns= and =Detail fields= state =kind= and =options=, so every one of
+  those carries them.
+- *The shell.* =pricing_pair_settings list= prints the row, =kind= included.
+  =ore_parameter_settings list|show|check= already reads the sets and the
+  links, and is the live gate.
+
+*** Where kind and options are read today, and what depends on them
+
+| reader | reads | depends on it for |
+|--------+-------+-------------------|
+| BFF =vocabulary()= | =kind=, =options= | the reply's =kind= and =options= fields |
+| web =parts.tsx= =SettingValue= | =kind= | the sensitivity template heading when the kind is =reference= |
+| web =api/pricingEngines.ts= | =kind=, =options= | parsing the reply |
+| generated C++, protocol, TypeScript, shell, recipe | =kind=, =options= | the row's fields |
+| =generate_vocabulary_sql.py= | the guide's =kind=, =options= | the seed's two columns |
+
+No validator reads them. The trigger reads the sets. The ORE XML export and
+import in =projects/ores.ore= read neither: the =options= in that component are
+instrument options and have nothing to do with this table, and the import writes
+values through the save that the trigger guards. =is_required= is read by the
+screen and is not a value rule, so it stays.
+
+*** Which parameters still have no value set, and why
+
+- The pricing, convention, curve and global parameters have no gap: 251
+  parameters (61 =ModelParameters=, 173 =EngineParameters=, 17
+  =GlobalParameters=) carry 1 link each, and =generate_value_sets.py= fails on
+  the first one that does not. The links also cover 461 convention and curve
+  leaves, which is why 712 links stand against 251 pricing parameters.
+- 72 sets are =text=. That is the deliberate statement that a parameter is free
+  text, and it is data, not a gap. It is also under-stated for 15 of them: the
+  guide lists their choices and the code typed them as text, and a code set
+  replaces a guide set. They are =Curve=, =FepCurve=, =OptionExpiryPosition=,
+  =Policy=, =RegressorModel=, =SensitivityDecomposition=,
+  =SeparateCallPutVols=, =SpreadOnIncomeCurve=, =useIndexCDSPricer=,
+  =Calibration=, =CalibrationStrategy=, =FxCalibration=, =ReversionType=,
+  =TreatSecuritySpreadAsCreditSpread= and =VolatilityType=.
+- The =Setup= scope is the real gap: the engine run settings screen draws 15
+  settings and none of them has a set or a link. Their control lives in
+  =ores_reporting_engine_settings_group_settings_tbl= as =kind=, =options=,
+  =minimum= and =maximum=, so the second screen restates what a set would say.
+- The =Setup= block holds 54 more parameters from the ORE input files, such as
+  =outputPath=, =csvSeparator= and =baselTrafficLightConfig=. No screen draws
+  them and the contract states their domains, so a set would be a rule nothing
+  reads. Three of them do name a catalogue vocabulary (=dateCalendar=,
+  =dateConvention=, =baseCurrency=) and are a candidate for a later task.
+
+*** What this task changes
+
+1. Add the setup sets: =generate_value_sets.py= reads the engine settings
+   groups' curation and writes one set per setting (=flag= is a boolean set, a
+   =whole= with bounds is a numeric set with =minimum= and =maximum=, a =choice=
+   is an enumerated set), linked at scope =Setup= by the ORE name. The numeric
+   kinds gain bound enforcement in the same function the parameter trigger uses,
+   because a =whole= setting states a floor today and a set must be able to.
+2. Convert the 12 settings the evidence supports to an enumerated or boolean
+   set through a reviewed curation entry. =Calibration= stays text because the
+   stored population holds =Deal=, which the guide's list omits, and
+   =SeparateCallPutVols= stays text because ORE also accepts a regex pattern
+   there; both sets say so in their description.
+3. Read the set on the engine settings screen: the BFF serves the =Setup= value
+   sets, checks the values a person writes against them, and the screen draws
+   its control from =controlOfValueSet()= and checks the text from the set. The
+   duplicated columns leave the group settings model.
+4. Retire =kind= and =options= from the pair setting model, regenerate every
+   address, and delete the seed, BFF and web code that reads them. The web reads
+   the catalogue of the set instead of the =reference= kind.
+5. Add =build/scripts/check_parameter_value_sets.py= and register it in
+   =local_checks.py=.
 
 * Measurements
 
@@ -55,7 +238,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Pair settings in the seed | 834 rows, 126 distinct settings | =grep -c "^    ('" projects/ores.sql/populate/analytics/analytics_pricing_pair_settings_populate.sql= | 92fd6990bc85 |
+| Pair settings with options | 291 rows | =select count(*) filter (where options <> '') from ores_analytics_pricing_pair_settings_tbl= | database a4924adbc941bfc7 |
+| Kinds in the pair settings | number 332, select 291, reference 140, text 67, tenor 4 | =select kind, count(*) from ores_analytics_pricing_pair_settings_tbl group by kind= | database a4924adbc941bfc7 |
+| Value sets and links | 218 sets, 712 links | =python3 projects/ores.sql/utility/generate_value_sets.py --check= | 92fd6990bc85 |
+| Pricing contract parameters | 251 (61 model, 173 engine, 17 global), 0 without a set | =generate_value_sets.contract_pairs()= and =resolve()= | 92fd6990bc85 |
+| Setup parameters | 15 engine settings, 0 links | =curation/engine-settings-groups.json= and the link rows | 92fd6990bc85 |
+| Setup block parameters with no screen | 54 | =block_parameter_rows.rows()= filtered to =Setup= | 92fd6990bc85 |
 
 * Notes
 

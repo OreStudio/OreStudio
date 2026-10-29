@@ -8,7 +8,20 @@ The credit family is unimplemented in ores.synthetic. There is no credit trade p
 
 Measured on a recreated database: zero credit instrument rows, and the demo profile seeds bond, commodity, equity, fx and interest_rates only. The book is the one thing that does exist -- four credit books are seeded, including IG CDS EMEA in EUR.
 
-The reference entity is the open question. credit_instruments.reference_entity is free text, the tenant has no legal entity table of its own, and the 38,213 LEI entities a provisioned tenant holds sit in the DQ artefact table, which the synthetic service has no read path to. Drawing a credit population therefore needs a decision about where a reference entity comes from before it needs code.
+The reference entity is the open question, and it is also a defect in its own right. credit_instruments.reference_entity is text whose model says "name or identifier", so a trade may carry whatever string a caller types, and nothing relates that string to the entity the risk is actually on. The tenant's 38,213 LEI entities sit in the DQ lei_entity dataset, which the synthetic service has no read path to.
+
+* Decisions
+
+- The reference entity is the LEI of the legal entity the risk is on, and the column is renamed to say so: reference_entity_lei. Its model states the soft reference to the DQ lei_entity dataset, in the shape the other soft references use.
+- The population draws its reference entities from the DQ lei_entity dataset (option A). That means a read path from the synthetic service into the DQ subject, which is the work this task carries beyond the writer.
+
+* Scope
+
+Three parts, in this order:
+
+1. The column fix: rename, state the soft reference, and refuse a value that is not an LEI.
+2. The read path: the synthetic service resolves reference entities from the DQ lei_entity dataset.
+3. The family: constructors for the six routed codes, a credit planner, a writer arm, a book (IG CDS EMEA exists) and a config, proved by a run.
 #+type: task
 #+level: s1
 #+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
@@ -32,7 +45,20 @@ The credit family is unimplemented in ores.synthetic. There is no credit trade p
 
 Measured on a recreated database: zero credit instrument rows, and the demo profile seeds bond, commodity, equity, fx and interest_rates only. The book is the one thing that does exist -- four credit books are seeded, including IG CDS EMEA in EUR.
 
-The reference entity is the open question. credit_instruments.reference_entity is free text, the tenant has no legal entity table of its own, and the 38,213 LEI entities a provisioned tenant holds sit in the DQ artefact table, which the synthetic service has no read path to. Drawing a credit population therefore needs a decision about where a reference entity comes from before it needs code.
+The reference entity is the open question, and it is also a defect in its own right. credit_instruments.reference_entity is text whose model says "name or identifier", so a trade may carry whatever string a caller types, and nothing relates that string to the entity the risk is actually on. The tenant's 38,213 LEI entities sit in the DQ lei_entity dataset, which the synthetic service has no read path to.
+
+* Decisions
+
+- The reference entity is the LEI of the legal entity the risk is on, and the column is renamed to say so: reference_entity_lei. Its model states the soft reference to the DQ lei_entity dataset, in the shape the other soft references use.
+- The population draws its reference entities from the DQ lei_entity dataset (option A). That means a read path from the synthetic service into the DQ subject, which is the work this task carries beyond the writer.
+
+* Scope
+
+Three parts, in this order:
+
+1. The column fix: rename, state the soft reference, and refuse a value that is not an LEI.
+2. The read path: the synthetic service resolves reference entities from the DQ lei_entity dataset.
+3. The family: constructors for the six routed codes, a credit planner, a writer arm, a book (IG CDS EMEA exists) and a config, proved by a run.
 
 * Status
 

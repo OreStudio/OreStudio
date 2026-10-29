@@ -8,7 +8,7 @@
 #+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
 #+owner: marco
 #+branch: feature/construct-every-bond-product
-#+pr:
+#+pr: 4040
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4040][#4040]] | [agile] Record two populations that do not book |
 
 * Review
 

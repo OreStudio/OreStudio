@@ -2,12 +2,12 @@
 :ID: 19F25765-80A5-4D5E-99F9-095EE207AD6F
 :END:
 #+title: Connectivity, prototype
-#+description: The junction of the configured providers, the adapters the code provides and the sources that join them: a source per provider and asset class, each with its own transport, scope, schedule and route.
+#+description: The delivery tree of market data: who publishes, who supplies, the configured sessions of an adapter, and the feeds that bind a publisher to a session and a service.
 #+type: knowledge
 #+level: cross
-#+filetags: :prototype:ui:marketdata:connectivity:adapters:sources:routes:
+#+filetags: :prototype:ui:marketdata:connectivity:publishers:suppliers:sessions:feeds:
 #+created: 2026-10-28
-#+updated: 2026-10-29
+#+updated: 2026-10-30
 
 | Item | Where |
 |------+-------|
@@ -19,77 +19,63 @@
 
 * What it argues
 
-Connectivity is the one place where the three things that make a feed are
-joined:
-
-1. The *providers* we configured: who owns the ids, the terms and the licence.
-2. The *adapters* the code provides: the modules, their versions, their
-   descriptions and the configuration each one needs.
-3. The *sources* we configure from them: one adapter instance of one provider,
-   with its transport, its scope of underlyings, its schedule and its route.
-
-The words are the code's words, with one example each.
+Connectivity is where the delivery of market data is configured. It is a tree,
+not a list: a supplier has sessions, a session is one configured adapter, and a
+feed binds one publisher to one session and one service.
 
 #+ATTR_HTML: :class hug-leading
 | Word | Meaning | Example |
 |------+---------+---------|
-| /Provider/ | Whoever owns the ids, the terms and the licence. | =ecb=, =ust=, =bloomberg= |
-| /Adapter/ | A code module the release installs. It has a version, a description and a configuration schema. | =frankfurter= 1.4.0; =ecb-sdw= 1.0.0 |
-| /Source/ | One adapter instance of one provider, with its own transport, scope and schedule. | =ecb-frankfurter=, =ecb-ecb-data=, =bloomberg-b= |
-| /Kind/ | How a source gets its values. | =live=, =test=, =simulated= |
-| /Route/ | The party's one source, for one provider and one asset class. | System Party routes =ecb-frankfurter= for =ecb= and FX |
-| /Scope/ | The underlyings a source fetches. No item belongs to two sources of one provider. | =ecb-frankfurter= fetches the ECB's FX items |
-| /Schedule/ | The scheduler job that asks the adapter to fetch a source, and its rhythm. | =marketdata.refresh.ecb-frankfurter=, daily 16:00 CET |
+| /Publisher/ | Owns the ids, the credit and the terms. | =ecb=, =imf=, =ust=, =bloomberg= for its own data |
+| /Supplier/ | Who we contract with and connect to. | =frankfurter=, =bloomberg=, =lseg=, =ecb-data-portal=, =fred= |
+| /Adapter/ | Code module that speaks one supplier protocol. | =frankfurter= 1.4.0 |
+| /Session/ | One configured adapter: supplier, environment, endpoint, credential, settings. | =frankfurter-eu= (production) |
+| /Environment/ | Where a session runs. | =production=, =test=, =dr=, =simulated= |
+| /Service/ | What a session offers; it decides the feed's shape. | =real_time=, =delayed=, =end_of_day=, =reference=, =historical= |
+| /Feed/ | One publisher on one service through one session, with key, scope and schedule. | =ecb-frankfurter= |
+| /Route/ | A party's feed for one publisher and one asset class. | System Party, =ecb=, FX → =ecb-frankfurter= |
 
-The screen has three lists and two records.
+Frankfurter is a supplier that delivers the ECB's data; it is not the publisher.
+Bloomberg is both: the supplier of a session and the publisher of its own values.
+That distinction is the point of the screen.
 
 * The lists
 
 | Tab | What it draws |
 |-----+---------------|
-| Providers | The configured providers: kind, classes, terms state, number of sources, credential reference |
-| Adapters | Every adapter the release installs: version, description, classes, the fields a source must set, and the sources and providers that use it |
-| Sources | Every configured source: provider, adapter, kind, classes, scope, schedule, runtime state |
-
-The Adapters tab is read-only. An adapter is code; the release installs the row.
-A person adds a source that uses one.
+| Publishers | The content owners: kind, classes, terms, feeds and suppliers |
+| Suppliers | The delivery tree: supplier → session → feed, with the adapter on the session |
+| Adapters | The code catalogue, read-only: version, description, services, schema, sessions |
+| Feeds | Every feed flat: publisher, session, supplier, service, scope, schedule, state |
 
 * The records
 
-A provider record has Overview, Sources and History. It shows the terms and the
-credential reference every source inherits, its sources, and the adapters that
-fit its classes but have no source yet. From here a person adds a source.
+- A *publisher* record has Overview, Feeds and History.
+- A *supplier* record has Overview (contract, support) and Sessions.
+- A *session* record has Overview (endpoint, environment, credential, settings,
+  services), Feeds, Runtime and History.
+- A *feed* record has Overview (publisher, session, service, provider key,
+  default), Underlyings, Schedule, Routes and History.
 
-A source record has seven tabs. Each tab answers one question.
+A session owns the endpoint, the credential and the settings; a feed owns the
+publisher, the service, the provider key, the scope and the schedule. The
+endpoint is entered once per session.
 
-#+ATTR_HTML: :class hug-leading
-| Tab | The question |
-|-----+--------------|
-| Overview | What is this source: provider, adapter, kind, default, classes? |
-| Transport | What does the adapter need: endpoint, path, settings, credential reference? The fields come from the adapter's schema. |
-| Underlyings | What does it fetch? All items of a class, or a chosen set. No item belongs to two sources of one provider. |
-| Schedule | Which scheduler job fetches it, at what rhythm, and when did it last run? |
-| Runtime | What does the service see: state, heartbeat, ids served, refused and unknown, last tick? |
-| Routes | Which party reads it, for which class? One route per party, provider and class. |
-| History | Who changed it, and when? |
+* The two setup flows
 
-* Adding a source
-
-=??add=1&provider=ecb= draws the four steps of the initial setup: pick the
-provider and the adapter, fill the transport from the adapter's schema, set the
-scope of underlyings, then set the schedule and the route. The adapter list is
-filtered to the provider's classes.
+=??add-session=1&supplier=frankfurter= configures a session: adapter,
+environment, endpoint, credential and schema settings, with a test connection.
+=??add-feed=1&publisher=ecb= adds a feed to an enabled session: service,
+provider key, scope, schedule and route.
 
 * What is fake
 
 Every endpoint, credential, version, count and date is invented. Secrets are
-masks only; nothing is configured or written. No request leaves the page.
+masks only. No request leaves the page.
 
 * Where the border is
 
-Connectivity owns the editable facts: who the provider is, what the adapter can
-do, and what the source fetches, over which transport, on which schedule and for
-which party. Public rates owns the observed facts: the values, their coverage,
-their provenance and whether they arrive. A person who reads a value follows its
-source here to see where it came from; a person who wants to change the feed does
-it here.
+Connectivity owns the editable facts: publishers, suppliers, adapters, sessions,
+feeds, scopes, schedules and routes. Public rates owns the observed facts:
+values, coverage, provenance and freshness. A value names its feed; the feed
+names its session and supplier; the supplier is who we call.

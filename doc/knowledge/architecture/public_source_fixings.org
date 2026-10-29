@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE
 :END:
-#+title: Public sources publish daily fixings through an adapter
-#+description: The architecture of the public market data sources: each publisher is a provider, an adapter fetches what they published and sends it as durable fixing ticks, the ingest stores them in a class of their own, and a feed starts from the latest one.
+#+title: Public publishers publish daily fixings through a supplier session
+#+description: The architecture of the public data: a publisher owns the fixing, a supplier session fetches it, a feed binds the publisher to the session and the end-of-day service, the ingest stores durable fixing ticks, and a synthetic feed starts from the latest one.
 #+type: knowledge
 #+level: cross
 #+filetags: :marketdata:adapter:fixing:calibration:
@@ -12,15 +12,19 @@
 * Summary
 
 Central banks and other public bodies publish rates every day. Each of them is a
-market data provider like Bloomberg or LSEG, with its own vendor ids and its own
-terms. One adapter, the public sources adapter, fetches what they published and
+*publisher*, with its own ids, credit and terms. A *supplier* is who we connect
+to, and Frankfurter is one: it delivers many publishers' daily rates over one
+endpoint. A *session* is one configured adapter at a supplier, and a *feed* binds
+one publisher to one session and one service — here the =end_of_day= service.
+
+One adapter, the public sources adapter, fetches what the publishers publish and
 sends it as ticks over the adapter contract, as the simulator does. The values
 are official fixings, so they are durable: the ingest keeps them in a tick class
 of their own, with no age gate and no expiry. When a synthetic feed starts, it
 reads the latest fixing on or before the date of the market clock, so a feed
 that stops and starts again takes the most recent published value. The catalogue
-starts wide, with many providers that publish the same pairs, so the case of one
-pair from several providers is exercised from the first day.
+starts wide, with many publishers that publish the same pairs, so the case of one
+pair from several publishers is exercised from the first day.
 
 * Detail
 
@@ -28,10 +32,14 @@ pair from several providers is exercised from the first day.
 
 #+begin_example
  publishers (ECB, Bank of England, Bank of Canada, FRED, IMF, ...)
-        |  fetchers (Frankfurter first; Treasury and overnight rates later)
+        |  one feed each, on a supplier session and the end-of-day service
         v
- public sources adapter  -- announce, demand, tick, heartbeat -->  ores.marketdata
-        (backfill on start, then daily)                              | map vendor id -> item
+ suppliers (Frankfurter, ECB Data Portal, FRED, BoE, Treasury)
+        |
+ sessions (one configured adapter each, e.g. frankfurter-eu)
+        |
+ the public sources adapter  -- announce, demand, tick, heartbeat -->  ores.marketdata
+        (backfill on start, then daily)                              | map supplier id -> item
                                                                      | durable class: no age gate
                                                                      v
                                                      durable tick table (kept for good)
@@ -41,23 +49,30 @@ pair from several providers is exercised from the first day.
 #+end_example
 
 - The adapter knows nothing of stochastic processes. It publishes what it
-  fetched, in the vendor's own notation.
+  fetched, in the supplier's own notation.
 - The service knows nothing of HTTP. It maps, checks, stores and delivers, as
   for any adapter.
 - A feed never fetches. It reads the store. When no fixing is stored, the feed
   keeps its fixed level and the screen says so.
 
-** Each publisher is a provider
+** Each publisher is a publisher, delivered by a supplier
 
-A publisher is a =provider= of kind =reference=, with a source of kind =live=.
-The data is real, so nothing marks it as simulated. The provider owns its vendor
-ids, and a =market_data_vendor_instrument= names each value in the publisher's
-own notation. A =market_data_mapping= maps it to an oresmd item. Nothing new is
-needed for this: it is the pattern of every vendor.
+A publisher is a row in the publisher catalogue, of kind =reference=. It owns its
+ids and its terms; it is not a delivery path. Frankfurter is a *supplier*: one
+endpoint, one session (=frankfurter-eu=), many feeds. A feed such as
+=ecb-frankfurter= names the publisher =ecb=, the session, the =end_of_day=
+service and the provider key the supplier needs. A publisher can also be reached
+through another supplier, and the two feeds are two paths to the same publisher's
+items.
+
+The supplier owns its vendor ids: a =market_data_vendor_instrument= names each
+value in the supplier's own notation, and a =market_data_mapping= maps it to an
+oresmd item. The mapping belongs to the publisher, because the same value can
+arrive through more than one supplier.
 
 The design is generic. The catalogue is data, so a new publisher is a row and a
 set of vendor ids, not code. A fetcher is code, and one fetcher serves many
-publishers: Frankfurter alone reaches about a hundred providers. The counts are
+publishers: Frankfurter alone reaches about a hundred publishers. The counts are
 in "Coverage at the start".
 
 ** The item is an FX fixing
@@ -73,7 +88,7 @@ oresmd://fx/EUR?type=fixing&index=fx&source=BOE&ccy=USD     (FX-BOE-EUR-USD)
 The publisher is part of the identity, because two banks' fixings of one pair
 are two numbers taken at two times. So EUR/USD from the ECB, the Bank of England,
 the Bank of Canada and the IMF are four items. Each is a series of its own
-provider. A pair covered by several publishers is the duplicate case: the
+publisher. A pair covered by several publishers is the duplicate case: the
 calibration has several fixings for one pair and chooses by a rank, and the
 screens and the demand show several providers for one underlying.
 

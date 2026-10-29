@@ -19,44 +19,39 @@
 
 salt
 {
-  <b>MARKET DATA SOURCES</b> | [ Market data / Sources ]
+  <b>MARKET DATA / CONNECTIVITY</b>
   --
-  Sources | Adapters
+  Publishers | Suppliers | Adapters | Feeds
   --
-  {#
-    . | Source | Provider | Kind | Default | Classes | State | Last delivery | Acts
-    1 | ecb-frankfurter | ecb · reference | live | yes | FX | serving | 19:24 | [ Open ]
-    2 | ecb-ecb-data | ecb · reference | live | no | IR | serving | 17:02 | [ Open ]
-    3 | bloomberg-a | bloomberg · data_vendor | live | yes | FX, IR | serving | 19:23 | [ Open ]
-    4 | bloomberg-b | bloomberg · data_vendor | test | no | FX, IR | not serving | — | [ Open ]
-    5 | lseg-simulated | lseg · data_vendor | simulated | yes | FX, IR | serving | now | [ Open ]
-  }
+  <b>Delivery tree</b>
+  * Frankfurter · aggregator · 1 session · 7 feeds | [ New session ] [ Open ]
+    * frankfurter-eu · frankfurter 1.4.0 · production · https://api.frankfurter.app · serving | [ Add feed ] [ Open ]
+      * ecb-frankfurter → European Central Bank · end_of_day · all items · daily 16:00 CET
+      * imf-frankfurter → International Monetary Fund · end_of_day · all items · daily 16:00 CET
+      * boc-frankfurter → Bank of Canada · end_of_day · all items · daily 16:00 CET
+  * Bloomberg · vendor · 2 sessions · 2 feeds | [ New session ] [ Open ]
+  * ECB Data Portal · authority · 1 session · 1 feed | [ New session ] [ Open ]
   --
-  <b>ecb-frankfurter</b> | [ Overview ] [ Adapter ] [ Routes ] [ History ]
-  --
-  Adapter: serving · heartbeat 19:24 · served 44 · refused 0 · unknown 0
-  Transport: endpoint https://api.frankfurter.app · path /v2/providers/ECB/rates
-  <i>Poll and backfill are flags today; the story persists them on this record.</i>
-  --
-  <i>A party routes one source for each provider. ecb-frankfurter serves FX; ecb-ecb-data serves IR. A party cannot read both until the IR story settles the rule.</i>
+  <b>ecb-frankfurter</b> | [ Overview ] [ Underlyings ] [ Schedule ] [ Routes ] [ History ]
+  Publisher: ecb · Session: frankfurter-eu · Supplier: frankfurter · Service: end_of_day · key ECB
+  Scope: all FX items · Schedule: marketdata.refresh.ecb-frankfurter, daily 16:00
+  <i>The session owns the endpoint and the credential; the feed owns the publisher, the service, the scope and the schedule.</i>
   ==
-  <b>PUBLIC RATES</b> | [ Market data / Public rates ]
+  <b>MARKET DATA / PUBLIC RATES</b>
+  --
+  Publishers | Availability | Compare | Fetch
   --
   {#
-    . | Provider | Underlyings | Terms | Source | Last fixing | State | Last delivery | Acts
-    1 | European Central Bank | 5 | accepted v3 | ecb-frankfurter | 2026-10-28 | serving | 19:23 | [ Open ]
-    2 | Bank of Canada | 2 | accepted v2 | boc-frankfurter | 2026-10-27 | late | 19:20 | [ Open ]
-    3 | International Monetary Fund | 2 | accepted v1 | imf-frankfurter | 2026-10-28 | serving | 19:24 | [ Open ]
-    4 | Bank of England | 3 | accepted v1 | boe-frankfurter | 2026-10-28 | paused | 15:00 | [ Open ]
+    . | Publisher | Underlyings | Terms | Feeds | Last fixing | Last delivery | Acts
+    1 | European Central Bank | 5 | accepted v3 | FX ecb-frankfurter (frankfurter, end_of_day) · IR ecb-ecb-data (ecb-data-portal) | 2026-10-28 | 19:24 | [ Open ]
+    2 | Bank of Canada | 2 | accepted v2 | FX boc-frankfurter (frankfurter) | 2026-10-27 | 19:20 | [ Open ]
+    3 | Bank of England | 3 | accepted v1 | FX boe-frankfurter · IR boe-boe (boe) | 2026-10-28 | 15:00 | [ Open ]
   }
   [ Accept terms ] | [ Pause ] | [ Fetch a range ] | [ History ]
   --
-  Legend: <i>serving</i> · <i>late</i> · <i>not serving</i> · <i>paused</i> · <i>never fixed</i>
-  --
   <b>European Central Bank — EUR/CAD, 2026-10-28, 1.5638</b>
-  <i>Terms v2 withdrawals are offered where the terms are accepted, with the fixings they remove, not as a row command.</i>
   {#
-    Date | Value | Item | Source | Received
+    Date | Value | Item | Feed | Received
     2026-10-28 | 1.5638 | FX-ECB-EUR-CAD | ecb-frankfurter | 19:23:58
     2026-10-27 | 1.5591 | FX-ECB-EUR-CAD | ecb-frankfurter | 19:24:02
   }
@@ -65,7 +60,7 @@ salt
   }
   --
   <b>Fetch a range</b>
-  From [ 2026-01-01 ] to [ 2026-10-28 ] | [ Fetch ] | Fetching: 218 of 300 days
+  Publisher [ European Central Bank ] · Class [ FX ] · From [ 2026-01-01 ] to [ 2026-10-28 ] | [ Fetch ] | 218 of 300 days
 }
 
 @enduml

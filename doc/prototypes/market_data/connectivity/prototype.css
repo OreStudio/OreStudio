@@ -218,3 +218,14 @@ table.list td.num, table.list td.when { font-family: var(--mono); font-variant-n
 /* Two screens: the plumbing and the rates. */
 .screen-switch { display: flex; gap: 8px; align-items: baseline; margin-top: 10px; }
 .screen-switch a[aria-current="page"] { background: var(--accent-dim); border-color: var(--accent-line); }
+
+/* --- Delivery tree ------------------------------------------------------ */
+.tree { font-size: .88rem; }
+.tree details { margin: 2px 0; }
+.tree summary { cursor: pointer; padding: 3px 4px; border-radius: 4px; }
+.tree summary:hover { background: var(--overlay); }
+.tree ul { margin: 0 0 6px 20px; padding: 0; list-style: none; border-left: 1px solid var(--line-subtle); }
+.tree li { padding: 2px 0 2px 10px; }
+.tree .node { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.tree .label { font: 600 .88rem/1.4 var(--sans, system-ui); letter-spacing: 0; text-transform: none; color: var(--ink); }
+.tree .acts { margin-left: auto; display: flex; gap: 8px; }

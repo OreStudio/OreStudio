@@ -1,7 +1,7 @@
 /*
- * Static prototype of Public rates: the real observed values, the provider that
- * publishes them and the source that delivered them. Mock data only; no request
- * leaves the page. Every state is a query string.
+ * Static prototype of Public rates: the real observed values, the publisher that
+ * owns them and the feed that delivered them. Mock data only; no request leaves
+ * the page. Every state is a query string.
  *
  *   ?tab=providers|availability|compare|fetch
  *   ?provider=<code>&rtab=overview|underlyings|fixings|history
@@ -26,19 +26,19 @@ let irItem = q.get('item') ?? '€STR';
 const DATES = ['2026-10-15', '2026-10-16', '2026-10-19', '2026-10-20', '2026-10-21',
     '2026-10-22', '2026-10-23', '2026-10-26', '2026-10-27', '2026-10-28'];
 
-/* The sources, as Connectivity configures them: one per (provider, class). */
+/* The feeds, as Connectivity configures them: one per (publisher, class). */
 const SOURCES = {
-    'ecb-frankfurter': { provider: 'ecb', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'serving', last: '19:24' },
-    'ecb-ecb-data': { provider: 'ecb', class: 'ir', adapter: 'ecb-sdw', kind: 'live', state: 'serving', last: '17:02' },
-    'imf-frankfurter': { provider: 'imf', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'serving', last: '19:24' },
-    'boc-frankfurter': { provider: 'boc', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'serving', last: '19:20' },
-    'tcmb-frankfurter': { provider: 'tcmb', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'not serving', last: '2026-10-27' },
-    'norges-frankfurter': { provider: 'norges', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'serving', last: null },
-    'boe-frankfurter': { provider: 'boe', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'serving', last: '15:00' },
-    'boe-boe': { provider: 'boe', class: 'ir', adapter: 'boe-stats', kind: 'live', state: 'serving', last: '15:00' },
-    'fred-frankfurter': { provider: 'fred', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'serving', last: '19:22' },
-    'fred-api': { provider: 'fred', class: 'ir', adapter: 'fred-api', kind: 'live', state: 'serving', last: '19:22' },
-    'ust-treasury': { provider: 'ust', class: 'ir', adapter: 'treasury-feed', kind: 'live', state: 'serving', last: '18:05' },
+    'ecb-frankfurter': { supplier: 'frankfurter', session: 'frankfurter-eu', service: 'end_of_day', provider: 'ecb', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'serving', last: '19:24' },
+    'ecb-ecb-data': { supplier: 'ecb-data-portal', session: 'ecb-sdw', service: 'end_of_day', provider: 'ecb', class: 'ir', adapter: 'ecb-sdw', kind: 'live', state: 'serving', last: '17:02' },
+    'imf-frankfurter': { supplier: 'frankfurter', session: 'frankfurter-eu', service: 'end_of_day', provider: 'imf', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'serving', last: '19:24' },
+    'boc-frankfurter': { supplier: 'frankfurter', session: 'frankfurter-eu', service: 'end_of_day', provider: 'boc', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'serving', last: '19:20' },
+    'tcmb-frankfurter': { supplier: 'frankfurter', session: 'frankfurter-eu', service: 'end_of_day', provider: 'tcmb', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'not serving', last: '2026-10-27' },
+    'norges-frankfurter': { supplier: 'frankfurter', session: 'frankfurter-eu', service: 'end_of_day', provider: 'norges', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'serving', last: null },
+    'boe-frankfurter': { supplier: 'frankfurter', session: 'frankfurter-eu', service: 'end_of_day', provider: 'boe', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'serving', last: '15:00' },
+    'boe-boe': { supplier: 'boe', session: 'boe-stats', service: 'end_of_day', provider: 'boe', class: 'ir', adapter: 'boe-stats', kind: 'live', state: 'serving', last: '15:00' },
+    'fred-frankfurter': { supplier: 'frankfurter', session: 'frankfurter-eu', service: 'end_of_day', provider: 'fred', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'serving', last: '19:22' },
+    'fred-api': { supplier: 'fred', session: 'fred-api', service: 'end_of_day', provider: 'fred', class: 'ir', adapter: 'fred-api', kind: 'live', state: 'serving', last: '19:22' },
+    'ust-treasury': { supplier: 'treasury', session: 'treasury', service: 'end_of_day', provider: 'ust', class: 'ir', adapter: 'treasury-feed', kind: 'live', state: 'serving', last: '18:05' },
 };
 
 const FIXING = { 'EUR/USD': 1.1638, 'EUR/CAD': 1.5638, 'EUR/GBP': 0.8646, 'CAD/EUR': 0.6392, 'CAD/USD': 1.3848,
@@ -126,7 +126,7 @@ function renderList() {
           <td class="when">${Object.values(p.sources).map((s) => SOURCES[s].last ?? '—').join(' · ')}</td>
           <td class="acts"><a class="act" href="${fn.href({ tab: null, provider: p.code, rtab: 'overview' })}">Open</a></td>
         </tr>`).join('');
-    document.querySelector('#providers-sub').textContent = `${PROVIDERS.length} providers`;
+    document.querySelector('#providers-sub').textContent = `${PROVIDERS.length} publishers`;
 }
 
 function chart(values) {
@@ -150,22 +150,22 @@ function renderProviderRecord() {
     document.querySelectorAll('[data-rtab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.rtab === rtab)));
     const body = document.querySelector('#rec-body');
     const detail = (rows) => `<div class="kv">${rows.map(([k, v]) => `<span class="k">${k}</span><span>${v}</span>`).join('')}</div>`;
-    const sourcesTable = `<table class="list"><thead><tr><th>Class</th><th>Source</th><th>Adapter</th><th>Kind</th><th>State</th><th>Last delivery</th><th class="acts"></th></tr></thead><tbody>${Object.entries(p.sources).map(([cls, name]) => {
+    const sourcesTable = `<table class="list"><thead><tr><th>Class</th><th>Feed</th><th>Supplier</th><th>Session</th><th>Service</th><th>State</th><th>Last delivery</th><th class="acts"></th></tr></thead><tbody>${Object.entries(p.sources).map(([cls, name]) => {
         const s = SOURCES[name];
-        return `<tr><td>${cls.toUpperCase()}</td><td class="mono">${name}</td><td class="mono">${s.adapter}</td><td>${s.kind}</td>
+        return `<tr><td>${cls.toUpperCase()}</td><td class="mono">${name}</td><td>${s.supplier}</td><td class="mono">${s.session}</td><td>${s.service}</td>
             <td>${fn.sourceState(name)}</td><td class="when">${s.last ?? '—'}</td>
             <td class="acts"><a class="act" href="../connectivity/index.html?source=${name}&stab=overview">Configure <span class="faint">· in Connectivity</span></a></td></tr>`;
     }).join('')}</tbody></table>`;
 
     if (rtab === 'overview') {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Provider</h2><p>the terms, and the source that serves each class</p></div><div class="card-body">${detail([
+        body.innerHTML = `<div class="card"><div class="card-head"><h2>Publisher</h2><p>the terms, and the feed that serves each class</p></div><div class="card-body">${detail([
             ['Code', `<span class="mono">${p.code}</span>`],
             ['Kind', p.kind],
             ['Asset classes', p.classes.map((c) => c.toUpperCase()).join(', ')],
             ['Terms', p.terms.accepted ? `accepted ${p.terms.version} by ${p.terms.who} · ${p.terms.at}` : 'not accepted'],
             ['Underlyings', String(fn.items(p))],
         ])}</div></div>
-        <div class="card" style="margin-top:12px"><div class="card-head"><h2>Sources</h2><p>one source for each class; a party routes one source per class</p></div>${sourcesTable}</div>`;
+        <div class="card" style="margin-top:12px"><div class="card-head"><h2>Feeds</h2><p>one feed for each class; a party routes one feed per class</p></div>${sourcesTable}</div>`;
     } else if (rtab === 'underlyings') {
         const fx = Object.keys(p.series).map((x) => `<tr><td class="mono">${x}</td><td>pair</td><td class="mono">${p.sources.fx}</td>
             <td class="when">${DATES[0]}</td><td class="when">${DATES[DATES.length - 1]}</td><td class="num">${p.series[x].length}</td>
@@ -173,11 +173,11 @@ function renderProviderRecord() {
         const ir = (p.ir ?? []).map((it) => `<tr><td class="mono">${it.name}</td><td>${it.kind}</td><td class="mono">${p.sources.ir}</td>
             <td class="when">2026-01-02</td><td class="when">2026-10-28</td><td class="num">${it.kind === 'curve' ? '10 pillars' : 204}</td>
             <td class="num">0</td><td class="acts"><span class="faint">IR series</span></td></tr>`).join('');
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Underlyings</h2><p>${fn.items(p)} items, by class, each with its source</p></div>
-          <table class="list"><thead><tr><th>Item</th><th>Shape</th><th>Source</th><th>First</th><th>Last</th><th>Values</th><th>Gaps</th><th class="acts"></th></tr></thead>
+        body.innerHTML = `<div class="card"><div class="card-head"><h2>Underlyings</h2><p>${fn.items(p)} items, by class, each with its feed</p></div>
+          <table class="list"><thead><tr><th>Item</th><th>Shape</th><th>Feed</th><th>First</th><th>Last</th><th>Values</th><th>Gaps</th><th class="acts"></th></tr></thead>
           <tbody><tr><td colspan="8" class="faint">FX</td></tr>${fx || '<tr><td colspan="8" class="faint">No FX item.</td></tr>'}
           <tr><td colspan="8" class="faint">Interest rates</td></tr>${ir || '<tr><td colspan="8" class="faint">No IR item.</td></tr>'}</tbody></table>
-          <div class="faint" style="margin-top:8px;padding:0 14px 12px">The source is provenance: the same provider's FX and IR arrive through different sources, and the values keep the provider's identity.</div></div>`;
+          <div class="faint" style="margin-top:8px;padding:0 14px 12px">The feed is provenance: the same publisher's FX and IR arrive through different feeds, and the values keep the publisher's identity.</div></div>`;
     } else if (rtab === 'fixings') {
         const values = p.series[pair] ?? p.series[Object.keys(p.series)[0]];
         const chosen = p.series[pair] ? pair : Object.keys(p.series)[0];
@@ -187,7 +187,7 @@ function renderProviderRecord() {
         body.innerHTML = `<div class="card"><div class="card-head"><h2>${chosen}</h2><p>${values.length} fixings, delivered by ${p.sources.fx}</p>
             <span class="filters"><select>${Object.keys(p.series).map((x) => `<option ${x === chosen ? 'selected' : ''}>${x}</option>`).join('')}</select></span></div>
           <div class="card-body">${chart(values)}
-          <table class="list" style="margin-top:10px"><thead><tr><th>Date</th><th>Value</th><th>Source</th><th>Item</th></tr></thead><tbody>${table}</tbody></table></div></div>`;
+          <table class="list" style="margin-top:10px"><thead><tr><th>Date</th><th>Value</th><th>Feed</th><th>Item</th></tr></thead><tbody>${table}</tbody></table></div></div>`;
     } else {
         body.innerHTML = `<div class="card"><div class="card-head"><h2>History</h2><p>the provider and its sources</p></div><div class="card-body"><div class="timeline">
           <div class="row"><span class="at">2026-10-01 09:00</span><span class="what"><b>Provider created</b> · v1 · by super_admin</span></div>
@@ -210,7 +210,7 @@ function renderAvailability() {
               <td class="mono">${s ?? '—'}</td><td>${s ? fn.sourceState(s) : ''}</td><td class="when">2026-01-02</td>
               <td class="when">2026-10-28</td><td class="num">${it.kind === 'curve' ? '10 pillars' : 204}</td></tr>`;
         }).join('');
-        document.querySelector('#av-body').innerHTML = `<table class="list"><thead><tr><th>Provider</th><th>Shape</th><th>Source</th><th>State</th><th>First</th><th>Last</th><th>Values</th></tr></thead><tbody>${rows}</tbody></table>`;
+        document.querySelector('#av-body').innerHTML = `<table class="list"><thead><tr><th>Publisher</th><th>Shape</th><th>Feed</th><th>State</th><th>First</th><th>Last</th><th>Values</th></tr></thead><tbody>${rows}</tbody></table>`;
         return;
     }
     const pairs = [...new Set(PROVIDERS.flatMap((p) => Object.keys(p.series)))].sort();
@@ -223,7 +223,7 @@ function renderAvailability() {
           <td>${fn.sourceState(s)}</td><td class="when">${DATES[0]}</td><td class="when">${DATES[DATES.length - 1]}</td>
           <td class="num">${p.series[pair].length}</td><td class="num">0</td></tr>`;
     }).join('');
-    document.querySelector('#av-body').innerHTML = `<table class="list"><thead><tr><th>Provider</th><th>Source</th><th>State</th><th>First</th><th>Last</th><th>Values</th><th>Gaps</th></tr></thead><tbody>${rows}</tbody></table>`;
+    document.querySelector('#av-body').innerHTML = `<table class="list"><thead><tr><th>Publisher</th><th>Feed</th><th>State</th><th>First</th><th>Last</th><th>Values</th><th>Gaps</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 function renderCompare() {
@@ -242,7 +242,7 @@ function renderCompare() {
     document.querySelector('#cmp-sub').textContent = `${holders.length} providers · the base is ${holders[0].code.toUpperCase()}`;
     document.querySelector('#cmp-body').innerHTML = chart(base) +
         `<table class="list" style="margin-top:10px"><thead><tr><th>Date</th>${holders.map((p) => `<th>${p.code.toUpperCase()}</th>`).join('')}<th>Spread bps</th></tr></thead><tbody>${rows}</tbody></table>
-        <div class="faint" style="margin-top:8px">Each provider's value comes from the source its class routes. A comparison is across providers, never across sources of one provider.</div>`;
+        <div class="faint" style="margin-top:8px">Each publisher's value comes from the feed its class routes. A comparison is across publishers, never across feeds of one publisher.</div>`;
 }
 
 function renderFetch() {
@@ -263,11 +263,11 @@ function renderFetch() {
         <div class="fields">
           <label>When<select><option>Today</option><option>Yesterday</option><option selected>Range</option></select></label>
           <label>From<input value="2026-10-01"></label><label>To<input value="2026-10-28"></label>
-          <label>Provider<select><option>Every provider</option>${PROVIDERS.map((p) => `<option>${p.name}</option>`).join('')}</select></label>
+          <label>Publisher<select><option>Every publisher</option>${PROVIDERS.map((p) => `<option>${p.name}</option>`).join('')}</select></label>
           <label>Class<select><option>FX</option><option>IR</option></select></label>
           <label>Underlyings<select><option>Every item</option><option>One item</option></select></label>
         </div>
-        <div class="faint">The fetch asks the source that serves the class. It does not change the source's scope: that is configured in Connectivity.</div>
+        <div class="faint">The fetch asks the feed that serves the class. It does not change the feed's scope: that is configured in Connectivity.</div>
         <div class="foot"><a class="act primary" href="${fn.href({ tab: 'fetch', fetch: 'progress' })}">Fetch</a></div></div>`;
 }
 

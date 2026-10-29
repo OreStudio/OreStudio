@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: D6076124-A427-4DCC-B018-A2992AA13CB3
 :END:
-#+title: Task: Prototype the sources and adapters screens
-#+description: The sources list, the adapters list and a source record with its transport, drawn before the entity changes.
+#+title: Task: Prototype the Connectivity tree and its records
+#+description: The delivery tree of suppliers, sessions and feeds, the adapter catalogue, the five records and the two setup flows, drawn before the entity changes.
 #+type: task
 #+level: s1
-#+filetags: :marketdata:sources:adapters:prototype:model_the_route_transport_configuration:sprint_29:v0:
+#+filetags: :marketdata:publishers:suppliers:sessions:feeds:prototype:model_the_route_transport_configuration:sprint_29:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -20,9 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The sources list, the adapters list and a source record, drawn in the code's
-words: provider, source, adapter, kind, route. The Adapter tab shows the
-transport the story will persist, and marks it not persisted today.
+The Connectivity delivery tree and its five records, drawn in the target words:
+publisher, supplier, adapter, session, service, feed, route. The session record
+shows the transport the story persists, and the feed record shows the scope and
+schedule.
 
 * Status
 
@@ -37,13 +38,17 @@ transport the story will persist, and marks it not persisted today.
 
 * Acceptance
 
-- The screen lists sources with provider, kind, default flag, classes, state and
-  last delivery.
-- The adapters list shows state, heartbeat, served, refused, unknown and last
-  tick per adapter id.
-- A source record has Overview, Adapter, Routes and History, and the Adapter tab
-  shows the transport with a *not persisted yet* marker.
-- The screen uses the words provider, source, adapter, kind and route, and no others for these rows.
+- The Suppliers tab draws the tree: supplier → session → feed, with the adapter,
+  environment and endpoint on the session and the publisher, service and scope
+  on the feed.
+- The Adapters tab is the read-only catalogue: version, services, schema,
+  sessions.
+- A session record has Overview, Feeds, Runtime and History; a feed record has
+  Overview, Underlyings, Schedule, Routes and History.
+- The two flows, new session and new feed, are drawn from the node they belong
+  to.
+- The screen uses the words publisher, supplier, adapter, session, service,
+  feed and route, and no others for these rows.
 
 * Plan
 

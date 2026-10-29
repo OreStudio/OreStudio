@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Public rates — the sources we observe</title>
+<title>Public rates — the publishers we read</title>
 <link rel="stylesheet" href="prototype.css">
 </head>
 <body>
@@ -23,7 +23,7 @@
     <span class="actions"><button class="act" id="refresh">Refresh</button></span>
   </div>
   <nav class="tabs" role="tablist" aria-label="The screen">
-    <button role="tab" data-tab="providers">Providers <span class="q">who is arriving</span></button>
+    <button role="tab" data-tab="providers">Publishers <span class="q">who is arriving</span></button>
     <button role="tab" data-tab="availability">Availability <span class="q">who holds this underlying</span></button>
     <button role="tab" data-tab="compare">Compare <span class="q">how far apart they are</span></button>
     <button role="tab" data-tab="fetch">Fetch <span class="q">ask for data now</span></button>
@@ -34,12 +34,12 @@
   <section id="tab-providers" role="tabpanel">
     <div class="card">
       <div class="card-head">
-        <h2>Providers</h2><p id="providers-sub"></p>
+        <h2>Publishers</h2><p id="providers-sub"></p>
         <span class="filters" id="filters"></span>
-        <input id="search" placeholder="Find a provider">
+        <input id="search" placeholder="Find a publisher">
       </div>
       <table class="list" id="providers">
-        <thead><tr><th>Provider</th><th>Underlyings</th><th>Terms</th><th>Sources</th><th>Last fixing</th>
+        <thead><tr><th>Publisher</th><th>Underlyings</th><th>Terms</th><th>Feeds</th><th>Last fixing</th>
           <th>Last delivery</th><th class="acts"></th></tr></thead>
         <tbody></tbody>
       </table>
@@ -50,7 +50,7 @@
   <section id="tab-availability" role="tabpanel" hidden>
     <div class="card">
       <div class="card-head">
-        <h2>Who holds an underlying</h2><p>one item, every provider that fixes it</p>
+        <h2>Who holds an underlying</h2><p>one item, every publisher that fixes it</p>
         <span class="filters"><select id="av-class"><option value="fx">FX</option><option value="ir">IR</option></select><select id="av-pair"></select></span>
       </div>
       <div class="card-body" id="av-body"></div>
@@ -60,7 +60,7 @@
   <section id="tab-compare" role="tabpanel" hidden>
     <div class="card">
       <div class="card-head">
-        <h2>How far apart the providers are</h2><p id="cmp-sub"></p>
+        <h2>How far apart the publishers are</h2><p id="cmp-sub"></p>
         <span class="filters"><select id="cmp-pair"></select></span>
       </div>
       <div class="card-body" id="cmp-body"></div>

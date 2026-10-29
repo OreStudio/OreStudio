@@ -26,11 +26,11 @@ Every leaf a curve segment or its quotes holds carries its words in the ORE para
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Done, awaiting the pull request.       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Draw the segments and quotes, which this unblocks. |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance

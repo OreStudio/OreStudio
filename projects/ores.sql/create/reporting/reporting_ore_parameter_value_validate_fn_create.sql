@@ -30,6 +30,33 @@
  */
 
 /**
+ * Whether a number lies within the bounds its set states.
+ *
+ * A set states a bound only when it has one, so an absent bound admits every
+ * number. A set code the tables do not hold admits every number, the same way
+ * ores_reporting_value_in_set_fn admits every value.
+ */
+create or replace function ores_reporting_number_in_bounds_fn(p_set_code text, p_value numeric)
+returns boolean
+security definer
+set search_path = public, pg_temp
+stable
+as $$
+declare
+    v_ok boolean := true;
+begin
+    select p_value >= coalesce(s.minimum, '-Infinity'::numeric)
+       and p_value <= coalesce(s.maximum, 'Infinity'::numeric)
+      into v_ok
+      from ores_reporting_ore_parameter_value_sets_tbl s
+     where s.code = p_set_code
+       and s.valid_to = ores_utility_infinity_timestamp_fn();
+
+    return coalesce(v_ok, true);
+end;
+$$ language plpgsql;
+
+/**
  * Whether a value lies in a value set: the one rule of every check of an ORE
  * leaf's value, so a parameter and a convention term get the same answer from
  * the same set. A set code the tables do not hold admits every value.
@@ -81,12 +108,7 @@ begin
         v_ok := lower(p_value) in ('true', 'false', 'y', 'n');
     elsif v_kind = 'range' then
         begin
-            select p_value::numeric >= coalesce(s.minimum, '-Infinity'::numeric)
-               and p_value::numeric <= coalesce(s.maximum, 'Infinity'::numeric)
-              into v_ok
-              from ores_reporting_ore_parameter_value_sets_tbl s
-             where s.code = v_set_code
-               and s.valid_to = ores_utility_infinity_timestamp_fn();
+            v_ok := ores_reporting_number_in_bounds_fn(v_set_code, p_value::numeric);
         exception when others then
             v_ok := false;
         end;
@@ -101,7 +123,9 @@ begin
          * A numeric parameter may state one number or a list of them, such as
          * the discretisation grid a replicating engine reads. Each comma
          * separated part is checked and an empty part is a typo, so a list is
-         * as guarded as a single value rather than waved through.
+         * as guarded as a single value rather than waved through. A set that
+         * states a bound holds every part to it, because a numeric set is the
+         * one place a floor or a ceiling lives.
          */
         v_ok := true;
         foreach v_part in array string_to_array(p_value, ',') loop
@@ -110,10 +134,14 @@ begin
             elsif v_kind = 'integer' then
                 if btrim(v_part) !~ '^-?[0-9]+$' then
                     v_ok := false;
+                elsif not ores_reporting_number_in_bounds_fn(v_set_code, btrim(v_part)::numeric) then
+                    v_ok := false;
                 end if;
             else
                 begin
-                    perform btrim(v_part)::numeric;
+                    if not ores_reporting_number_in_bounds_fn(v_set_code, btrim(v_part)::numeric) then
+                        v_ok := false;
+                    end if;
                 exception when others then
                     v_ok := false;
                 end;

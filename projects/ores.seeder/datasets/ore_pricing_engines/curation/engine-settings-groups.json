@@ -1,4 +1,98 @@
 {
+  "value_sets": {
+    "setup.flag": {
+      "name": "Flag",
+      "description": "True or false, as ORE writes a switch in the engine run settings.",
+      "source_kind": "boolean",
+      "reason": "The engine run settings screen drew the switch from a constant in the server code. The set states the two values so the screen and the write path read one rule.",
+      "source": "seed",
+      "source_ref": "projects/ores.web/packages/bff/src/engine-settings.ts (the GROUPS constant, before the groups moved into data)",
+      "curator": "marco",
+      "date": "2026-10-29"
+    },
+    "setup.fixing_lag_days": {
+      "name": "Fixing lag days",
+      "description": "A whole number of days at or above zero that the run ignores around today's fixing.",
+      "source_kind": "integer",
+      "minimum": 0,
+      "reason": "The screen drew a floor of zero from a constant in the server code. The set states it so the screen and the write path read one rule.",
+      "source": "seed",
+      "source_ref": "projects/ores.web/packages/bff/src/engine-settings.ts (the GROUPS constant, before the groups moved into data)",
+      "curator": "marco",
+      "date": "2026-10-29"
+    },
+    "setup.n_threads": {
+      "name": "Threads",
+      "description": "The number of threads the run uses, one or more.",
+      "source_kind": "integer",
+      "minimum": 1,
+      "reason": "The screen drew a floor of one from a constant in the server code. The set states it so the screen and the write path read one rule.",
+      "source": "seed",
+      "source_ref": "projects/ores.web/packages/bff/src/engine-settings.ts (the GROUPS constant, before the groups moved into data)",
+      "curator": "marco",
+      "date": "2026-10-29"
+    },
+    "setup.log_mask": {
+      "name": "Log mask",
+      "description": "A whole number at or above zero whose bits choose the message kinds the run writes.",
+      "source_kind": "integer",
+      "minimum": 0,
+      "reason": "The screen drew a floor of zero from a constant in the server code. The set states it so the screen and the write path read one rule.",
+      "source": "seed",
+      "source_ref": "projects/ores.web/packages/bff/src/engine-settings.ts (the GROUPS constant, before the groups moved into data)",
+      "curator": "marco",
+      "date": "2026-10-29"
+    },
+    "setup.gzip_compression_level": {
+      "name": "Gzip compression level",
+      "description": "A whole number from zero to nine that states how much the run compresses its output.",
+      "source_kind": "integer",
+      "minimum": 0,
+      "maximum": 9,
+      "reason": "The screen drew the bounds from a constant in the server code. The set states them so the screen and the write path read one rule.",
+      "source": "seed",
+      "source_ref": "projects/ores.web/packages/bff/src/engine-settings.ts (the GROUPS constant, before the groups moved into data)",
+      "curator": "marco",
+      "date": "2026-10-29"
+    },
+    "setup.observation_model": {
+      "name": "Observation model",
+      "description": "How the run handles an observation it cannot make on the date it reads.",
+      "source_kind": "enumerated",
+      "is_ordered": true,
+      "values": [
+        {
+          "value": "None",
+          "label": "None",
+          "description": "The run takes the observation as it stands.",
+          "order": 0
+        },
+        {
+          "value": "Disable",
+          "label": "Disable",
+          "description": "The run turns the observation off.",
+          "order": 1
+        },
+        {
+          "value": "Defer",
+          "label": "Defer",
+          "description": "The run moves the observation to a later date.",
+          "order": 2
+        },
+        {
+          "value": "Unregister",
+          "label": "Unregister",
+          "description": "The run removes the observation.",
+          "order": 3
+        }
+      ],
+      "reason": "The screen offered these four words from a constant in the server code. The set states them so the screen and the write path read one rule.",
+      "source": "seed",
+      "source_ref": "projects/ores.web/packages/bff/src/engine-settings.ts (the OBSERVATION_MODELS constant, before the groups moved into data)",
+      "curator": "marco",
+      "date": "2026-10-29"
+    }
+  },
   "groups": [
     {
       "code": "fixings",
@@ -8,40 +102,38 @@
         {
           "column": "imply_todays_fixings",
           "ore": "implyTodaysFixings",
-          "kind": "flag",
+          "value_set": "setup.flag",
           "changes_numbers": true
         },
         {
           "column": "include_todays_cash_flows",
           "ore": "includeTodaysCashFlows",
-          "kind": "flag",
+          "value_set": "setup.flag",
           "changes_numbers": true
         },
         {
           "column": "include_reference_date_events",
           "ore": "includeReferenceDateEvents",
-          "kind": "flag",
+          "value_set": "setup.flag",
           "changes_numbers": true
         },
         {
           "column": "enrich_index_fixings",
           "ore": "enrichIndexFixings",
-          "kind": "flag",
+          "value_set": "setup.flag",
           "changes_numbers": true
         },
         {
           "column": "ignore_fixing_lag",
           "ore": "ignoreFixingLag",
-          "kind": "whole",
-          "changes_numbers": true,
-          "minimum": 0
+          "value_set": "setup.fixing_lag_days",
+          "changes_numbers": true
         },
         {
           "column": "ignore_fixing_lead",
           "ore": "ignoreFixingLead",
-          "kind": "whole",
-          "changes_numbers": true,
-          "minimum": 0
+          "value_set": "setup.fixing_lag_days",
+          "changes_numbers": true
         }
       ]
     },
@@ -53,38 +145,37 @@
         {
           "column": "observation_model",
           "ore": "observationModel",
-          "kind": "choice",
-          "changes_numbers": false,
-          "options": ["None", "Disable", "Defer", "Unregister"]
+          "value_set": "setup.observation_model",
+          "changes_numbers": false
         },
         {
           "column": "lazy_market_building",
           "ore": "lazyMarketBuilding",
-          "kind": "flag",
+          "value_set": "setup.flag",
           "changes_numbers": false
         },
         {
           "column": "build_failed_trades",
           "ore": "buildFailedTrades",
-          "kind": "flag",
+          "value_set": "setup.flag",
           "changes_numbers": true
         },
         {
           "column": "continue_on_error",
           "ore": "continueOnError",
-          "kind": "flag",
+          "value_set": "setup.flag",
           "changes_numbers": true
         },
         {
           "column": "use_at_par_coupons_curves",
           "ore": "useAtParCouponsCurves",
-          "kind": "flag",
+          "value_set": "setup.flag",
           "changes_numbers": true
         },
         {
           "column": "use_at_par_coupons_trades",
           "ore": "useAtParCouponsTrades",
-          "kind": "flag",
+          "value_set": "setup.flag",
           "changes_numbers": true
         }
       ]
@@ -97,24 +188,20 @@
         {
           "column": "n_threads",
           "ore": "nThreads",
-          "kind": "whole",
-          "changes_numbers": false,
-          "minimum": 1
+          "value_set": "setup.n_threads",
+          "changes_numbers": false
         },
         {
           "column": "log_mask",
           "ore": "logMask",
-          "kind": "whole",
-          "changes_numbers": false,
-          "minimum": 0
+          "value_set": "setup.log_mask",
+          "changes_numbers": false
         },
         {
           "column": "gzip_compression_level",
           "ore": "gzipCompressionLevel",
-          "kind": "whole",
-          "changes_numbers": false,
-          "minimum": 0,
-          "maximum": 9
+          "value_set": "setup.gzip_compression_level",
+          "changes_numbers": false
         }
       ]
     }

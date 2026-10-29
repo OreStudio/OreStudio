@@ -33,8 +33,9 @@ std::chrono::year_month_day ymd(int y, unsigned m, unsigned d) {
 
 } // namespace
 
-using ores::ore::market::parse_market_data;
+using ores::ore::market::latest_market_data_date;
 using ores::ore::market::parse_fixings;
+using ores::ore::market::parse_market_data;
 
 // =============================================================================
 // parse_market_data — date formats
@@ -355,4 +356,27 @@ TEST_CASE("parse_fixings_preserves_trailing_zeros_in_value", "[ore][market][mark
 TEST_CASE("parse_fixings_throws_on_fewer_than_three_tokens", "[ore][market][market_data_parser]") {
     std::istringstream in("2021-09-30 EUR-EONIA\n");
     CHECK_THROWS_AS(parse_fixings(in), std::invalid_argument);
+}
+
+TEST_CASE("the latest date a body states is the last one it carries",
+          "[ore][market][market_data_parser]") {
+    const auto body = R"(# Market data gathered for the run
+2016-02-03 ZERO/RATE/EUR/BANK_EUR_BORROW/A365/1Y 0.0010
+20160205 ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y 0.0024
+
+2016-01-29 ZERO/RATE/EUR/BANK_EUR_BORROW/A365/6M 0.0008
+)";
+
+    CHECK(latest_market_data_date(body) == std::optional<std::string>("2016-02-05"));
+}
+
+TEST_CASE("a body the parser cannot read states no date", "[ore][market][market_data_parser]") {
+    const auto body = "20160205 ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y 0.0024\nnot a market datum\n";
+
+    CHECK_FALSE(latest_market_data_date(body).has_value());
+}
+
+TEST_CASE("an empty market data body states no date", "[ore][market][market_data_parser]") {
+    CHECK_FALSE(latest_market_data_date("").has_value());
+    CHECK_FALSE(latest_market_data_date("# nothing but a comment\n").has_value());
 }

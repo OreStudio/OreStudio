@@ -24,7 +24,9 @@
 #include "ores.ore.core/market/fixing.hpp"
 #include "ores.ore.core/market/market_datum.hpp"
 #include <iosfwd>
+#include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::ore::market {
@@ -114,6 +116,20 @@ ORES_ORE_CORE_EXPORT std::vector<fixing>
 parse_fixings(std::istream& in,
               duplicate_policy on_duplicate = duplicate_policy::warn,
               parse_report* report = nullptr);
+
+/**
+ * @brief The latest date a market data body carries, as an ISO 8601 date.
+ *
+ * A run can only price a date the gathered data speaks to, so a caller that
+ * asks for a later date needs to know the last one the data states. The body is
+ * read by the same parser as any market data file, so a comment, a second date
+ * spelling or a repeated key is handled the way the file format says.
+ *
+ * @param body The market data file, as text.
+ * @return The date, or nothing when the body carries no line the parser reads.
+ */
+[[nodiscard]] ORES_ORE_CORE_EXPORT std::optional<std::string>
+latest_market_data_date(std::string_view body);
 
 } // namespace ores::ore::market
 

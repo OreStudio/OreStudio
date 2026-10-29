@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/edit-the-run-document-through-the-projection
+#+pr: 4042
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The package handler states a date change as a document change and asks the codec
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-27                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-29                               |
 
 * Acceptance
 
@@ -42,9 +42,23 @@ The package handler states a date change as a document change and asks the codec
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Both facts the handler needs are operations the codec can state, so they become
+operations on the two readers rather than searches inside the handler:
+
+- =run_document_projection::as_of_date= reads the document and maps it, so the
+  parameter is found by name and the projection decides what an as-of date is.
+  =with_as_of_date= maps the document, sets the date, and writes it back through
+  the projection, which is also how the export built it.
+- =market::latest_market_data_date= reads the body with the market data parser
+  and takes the last date it states, so a comment, a second date spelling or a
+  repeated key are the parser's business.
+
+The handler keeps what it alone knows: that a run prices at the data's last date
+when the data ends before the date the run asked for.
+
+The tests live with the owners: a document that mentions the parameter in a
+comment, one that spells its attributes another way, one that states no date,
+and a body with comments, mixed date spellings and a line the parser refuses.
 
 * Measurements
 
@@ -58,7 +72,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Searches for an ORE spelling outside the projection | 0 (was 3 helpers) | =grep -rn 'name=\"' projects/ --include=*.cpp --include=*.hpp | grep -v "_tests.cpp\|/generated/"= | (this branch) |
+| Cases added for the two readers | 6 | =git diff origin/main -- '*_tests.cpp' | grep -c "^+TEST_CASE"= | (this branch) |
+| =ores.ore.core.tests= | passed, 20.74s | =compass test run -- -R ores.ore.core.tests= | (this branch) |
+| =ores.ore.service.tests= | passed, 1.08s | =compass test run -- -R ores.ore.service.tests= | (this branch) |
 
 * Notes
 
@@ -77,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4042][#4042]] | [ore] Edit a run document through its projection |
 
 * Review
 
@@ -86,3 +103,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The package handler states a date change as a document change and asks the codec
+for the facts it needs. Its three text helpers are gone: no code outside the
+projection searches for an ORE element name or attribute spelling.
+
+=as_of_date= and =with_as_of_date= are operations on the run document
+projection, and =latest_market_data_date= is an operation on the market data
+parser. The rewrite goes through the same =reverse= the export used, so a
+document that prices at the data's date keeps every parameter the model states
+and invents none.
+
+The handler keeps one rule of its own, which is about runs and not about ORE: a
+run whose gathered data ends before the date it asked for prices at the data's
+last date, and says so.

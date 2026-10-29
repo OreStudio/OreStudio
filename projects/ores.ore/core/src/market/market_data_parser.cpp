@@ -20,8 +20,10 @@
 #include "ores.ore.core/market/market_data_parser.hpp"
 #include "ores.platform/time/time_utils.hpp"
 #include <algorithm>
+#include <format>
 #include <istream>
 #include <map>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -237,6 +239,21 @@ parse_fixings(std::istream& in, duplicate_policy on_duplicate, parse_report* rep
         std::move(result), line_numbers, on_duplicate, report, [](const fixing& f) {
             return f.index_name;
         });
+}
+
+std::optional<std::string> latest_market_data_date(std::string_view body) {
+    std::istringstream in{std::string(body)};
+    try {
+        const auto data = parse_market_data(in);
+        if (data.empty())
+            return std::nullopt;
+        const auto latest = std::ranges::max_element(data, {}, &market_datum::date);
+        return std::format("{:%Y-%m-%d}", latest->date);
+    } catch (const std::invalid_argument&) {
+        // A line the parser cannot read leaves the body without a date the
+        // caller could rely on, which is what no date means here.
+        return std::nullopt;
+    }
 }
 
 } // namespace ores::ore::market

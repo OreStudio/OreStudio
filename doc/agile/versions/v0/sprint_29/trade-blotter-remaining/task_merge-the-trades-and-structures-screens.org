@@ -1,0 +1,211 @@
+:PROPERTIES:
+:ID: 5057B9A6-66F0-4E4E-967F-DF915809DF3E
+:END:
+#+title: Task: Merge the trades and structures screens
+#+description: Analysis: should a structure be a row in the trade blotter rather than a screen beside it, and how does one screen hold the portfolio, counterparty and book perspectives at once?
+#+type: task
+#+level: s1
+#+filetags: :trading:web:ux:analysis:trade-blotter-remaining:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Settle whether a structure is a row in the trade blotter or a screen beside it,
+and design the one screen that reads trades and structures together from more
+than one perspective: the portfolio and book tree, the counterparty, and the
+book.
+
+Today the arc has two screens with no shared surface. The trade blotter lists
+trades and cannot show a deal; the structures list shows deals and cannot show a
+trade's economics; the deal's page repeats the legs that the blotter already
+holds. A person who wants "everything we did with this counterparty today" has to
+read two lists and join them by eye.
+
+The deliverable is a decision, not a screen: which shape the screens take, what
+each perspective asks, and what the read that serves them states. A prototype
+follows the decision, and the screen follows the prototype.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-29                               |
+
+* Acceptance
+
+- A recorded decision on the shape: a structure is a row of the blotter with its
+  legs folded under it, a separate screen, or a row that opens a record page —
+  with the reason the other shapes were rejected.
+- The perspectives the screen offers are named, each with the question it
+  answers and the column or grouping that answers it.
+- A clickable prototype of the chosen screen, beside the two screens it replaces
+  or folds, so the difference is visible.
+- The read that serves it is stated: one paged read over the summary the views
+  already produce, or several. It names the filter, the order and the grouping.
+- What happens to the structures list and the deal page is stated: kept, folded
+  into the blotter, or deleted.
+
+* Plan
+
+*Analysis before a screen: the shapes, the perspectives, and the evidence.*
+
+** What already says the answer
+
+Two pages in the tree state the target, and both contradict the two screens this
+arc built.
+
+[[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] gives the deal grid a
+*Trade ID*, a *Structure ID* ("Parent structure identifier; blank for standalone
+trades") and a *Strategy* column ("Named structure: RR, Butterfly, Strangle,
+Spread, DNT"), and it draws the *Structure view* as a mini-blotter of the
+selected deal's legs, tabbed by product type. That is one screen, with the deal
+as a row and the legs read inside it.
+
+[[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]
+states the same as a requirement: "the blotter needs to show the deal as one row
+and the legs as children of it", and notes that front-office screens offer a
+condensed and an expanded presentation of the same tree.
+
+The data layer already agrees. The trade summary view emits rows of two kinds —
+=trade= and =structure= — and the blotter's own read filters on =row_kind=. The
+screen beside the blotter is a screen that reads the same rows with a different
+filter.
+
+** Prior art: the industry does not separate them
+
+| System | Where the structure lives | What it implies for us |
++--------+--------------------------+------------------------+
+| FpML =strategy= | Inside the trade: it substitutes for the abstract =product= and holds the legs as =product+ | A same-family structure is a trade whose product is composed, not a record beside the trade |
+| FpML =tradePackage= | Around trades: "a bundle of trades collected together into a single unit for reporting", with a header, the trades, allocations and approvals | The untyped container is a reporting and allocation unit over trades, with no economics of its own |
+| OpenGamma Strata | Inside the product: a =Swap= composes =SwapLeg= and resolves to =ResolvedSwapLeg= per leg | Keep the trade shape and the pricing shape apart; the screen reads the trade shape |
+| Murex MX.3 | Inside the catalogue: "instruments can be combined to design structured products ... processed and risk managed like any native instruments" | A structured product is a first-class instrument, and the same blotter reads it |
+| Nasdaq Calypso | Named topics: "1010 - Structured Flows" and "Calypso Trade Blotter" | Structured flows and the blotter are one continuous workflow, not two products |
+
+The external sources are marketing pages and schema documentation, and the vendor
+detail behind them is behind a training login. They are cited for the shape of the
+answer, not for implementation detail:
+- [[https://cdn.fpml.org/spec/fpml-5-12-4-rec-1/html/confirmation/schemaDocumentation/schemas/fpml-doc-5-12_xsd/elements/strategy.html][FpML strategy element]]
+- [[https://schemas.liquid-technologies.com/FpML/5.10/tradepackage4.html][FpML TradePackage]]
+- [[https://www.murex.com/en/solutions/business-solutions/sales-trading][Murex MX.3 sales and trading]]
+- [[https://calypsoeducation.nasdaq.com/courses/1010-structured-flows][Calypso 1010 - Structured Flows]]
+- [[https://calypsoeducation.nasdaq.com/courses/calypso-trade-blotter][Calypso Trade Blotter]]
+
+** The candidate shapes
+
+- *A. One blotter, structures folded in it.* The list reads the summary rows of
+  both kinds; a structure row carries a disclosure triangle and its legs unfold
+  under it; the columns state the deal for a structure and the leg for a trade.
+  The deal page survives as the record a row opens.
+- *B. One blotter with a perspective switch.* Shape A, plus a rail or a switch
+  that changes the grouping and the columns: portfolio and book tree,
+  counterparty, book, product family. Every perspective is the same read with a
+  different filter and order.
+- *C. Two screens, joined by links.* What exists today, with the blotter gaining
+  a structure column and the structures list gaining the trade's economics. The
+  cheapest change and the one that keeps the duplication.
+
+The question the task answers is which of A, B or C the next screens take, and
+whether the deal page is the record a row opens or a tab inside the blotter.
+
+** The perspectives, and what each asks
+
+| Perspective | The question | What it groups by | Evidence it needs |
+|-------------+--------------+-------------------+-------------------|
+| Portfolio and book tree | What does this portfolio hold, down to the trade? | The portfolio, book and desk hierarchy | The portfolio of each book, and a roll-up per node |
+| Counterparty | What have we done with this counterparty, and when? | Counterparty, then trade date | Counterparty on every row, which the summary carries |
+| Book | What is in this book today? | Book, then product family | Book on every row, which the summary carries |
+| Deal | What does this structure hold? | The structure, then its legs | The structure rows and the member rows the summary view already emits |
+| My day | What did I book or change today? | The trader and the day | The trader and the audit fields |
+
+Two questions follow, and the task answers them rather than assuming: whether a
+perspective is a saved view of one list or a different screen, and whether the
+rows a perspective shows are structures, legs, or both with the choice folded.
+
+** The read
+
+The blotter's read is one page of =trade_summaries= with a filter. A structure
+row already arrives from it. What the screen needs beyond today's read is: the
+row kinds it may ask for (trade, structure, or both), the grouping the view
+states (portfolio, book, counterparty), and the roll-up a group row carries. The
+decision states which of those join the existing read and which need a new one;
+it does not add a route per perspective.
+
+** The prototype
+
+A clickable prototype beside =doc/prototypes/trades/= with the chosen shape: the
+list with its row kinds, the disclosure of a structure, the perspective switch,
+and the trade page and deal page reached from a row. The prototype is the
+artefact the screen is built from, as with the pages this arc already built.
+
+** What this task does not do
+
+It does not build the screen, move the routes, or change the read. It decides,
+prototypes, and leaves the build to the tasks it files.
+
+* Measurements
+
+This task claims no number yet. The one that matters — how many structures a
+party holds against how many trades — is read from the provisioned database when
+the screen is designed, with its command and commit recorded then.
+
+* Notes
+
+- The question came from the owner on 2026-10-29, after the structures screens
+  were reviewed: "we created a complete separation between trades and structures
+  but to me that is not how a real trading system behaves", and "we need a screen
+  that combines the portfolio tree and the trades display, possibly from
+  different perspectives (e.g. counterparty perspective rather than portfolio
+  tree and so on)". The task exists to answer that with evidence rather than
+  preference.
+- The two screens that exist today were built in
+  [[id:2D3C5B23-E6DB-46D5-8732-ACF54987A33A][Build Book a trade]] and its
+  structure screens; their shapes follow the prototypes, and the prototypes did
+  not answer this question.
+- The summary view's two row kinds are also why the blotter's search finds a deal
+  by its own reference: a structure is already a row there.
+- The counterparty rule is a separate, open question: the store enforces the party
+  of a structure's legs and not the counterparty, while the screens state both.
+  Whichever shape this task picks has to state what it can enforce.
+- What is not prior art: no public Murex or Calypso documentation describes their
+  internal trade-package model. The vendor pages are cited for the shape of the
+  answer, and the schema documentation for the data model.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

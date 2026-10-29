@@ -43,7 +43,8 @@ struct credit_instrument_write {
     boost::uuids::uuid trade_id;
     std::string trade_type_code;
     boost::uuids::uuid trade_activity_id;
-    std::string reference_entity;
+    std::string reference_entity_id_type;
+    std::string reference_entity_id;
     std::optional<std::chrono::year_month_day> start_date;
     std::optional<std::chrono::year_month_day> maturity_date;
     std::string description;

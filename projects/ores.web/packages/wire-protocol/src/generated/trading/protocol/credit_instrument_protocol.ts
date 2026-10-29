@@ -36,7 +36,8 @@ export interface CreditInstrumentWrite {
     trade_id: string;
     trade_type_code: string;
     trade_activity_id: string;
-    reference_entity: string;
+    reference_entity_id_type: string;
+    reference_entity_id: string;
     start_date: string | null;
     maturity_date: string | null;
     description: string;

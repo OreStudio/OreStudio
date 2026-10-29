@@ -67,12 +67,36 @@ struct credit_instrument final {
     instrument_identity identity;
 
     /**
-     * @brief Name or identifier of the reference entity the risk is on.
+     * @brief What kind of identifier reference_entity_id states: the legal entity's LEI, or an
+     * identifier the system's own data uses.
      *
-     * Every credit product states one: the issuer or the credit curve of a swap, the index, the
-     * qualifier of a CDO.
+     * A reference is typed rather than guessed, because a credit curve named ACME in an engine
+     * document and an LEI are different things and a column that holds either without saying which
+     * cannot be joined to anything.
+     *
+     * The closed set is LEI and Internal. It is a check on this column rather than a catalogue
+     * table, because the two kinds of identifier are a property of how a reference is stated and
+     * not a list the tenant curates.
      */
-    std::string reference_entity;
+    std::string reference_entity_id_type;
+
+    /**
+     * @brief The identifier of the reference entity the risk is on, read with
+     * reference_entity_id_type.
+     *
+     * Every credit product states one. When the type is LEI the value is the legal entity's LEI and
+     * the soft reference below applies; when it is Internal the value is the identifier the source
+     * states, such as an engine document's credit curve or issuer id, and nothing is claimed about
+     * a legal entity.
+     *
+     * Soft FK to the DQ lei_entity dataset when the type is LEI: the entity belongs to that dataset
+     * rather than to a trading table, so the reference is recorded rather than copied. A later
+     * change tightens it into a real foreign key once a legal entity lives in refdata.
+     *
+     * Resolving an internal identifier into an LEI replaces both this value and its type together,
+     * so a trade states one identifier and never two.
+     */
+    std::string reference_entity_id;
 
     /**
      * @brief The instrument's start date. A risk participation agreement's protection start is this
@@ -117,7 +141,8 @@ struct credit_instrument final {
  * Declared by the model's :economic: property on each column.
  */
 inline constexpr std::string_view credit_instrument_economic_fields[] = {
-    "reference_entity",
+    "reference_entity_id_type",
+    "reference_entity_id",
     "start_date",
     "maturity_date",
 };

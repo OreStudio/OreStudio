@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 196C254E-7632-4F8B-93FF-33B3A4E0C9D4
+:END:
+#+title: Task: State what a credit reference entity is
+#+description: credit_instruments.reference_entity held "a name or identifier" as free text, so a credit trade could carry whatever a caller typed and nothing related that string to the entity the risk is on. A reference is now typed: the legal entity's LEI, or an identifier of our own data.
+#+type: task
+#+level: s1
+#+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
+#+owner: marco
+#+branch: feature/no-config-books-credit-so-the-family-never-runs
+#+pr: 4054
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This task was promoted from a capture about credit booking nothing. Reading
+the code to start it found two facts, and the capture was wrong about both: the
+credit family has no planner and no writer at all, and its reference entity is
+free text that nothing relates to a legal entity.
+
+* Goal
+
+A credit trade states what its reference entity is: the legal entity's LEI, or
+an identifier of our own data, and the model says which.
+
+* Decisions
+
+- The reference is typed, not guessed. =reference_entity_id_type= holds =LEI= or
+  =Internal=, and =reference_entity_id= holds the identifier that type describes.
+  A single column holding either could not be joined to anything.
+- The ORE import states =Internal=, because an engine document names its own
+  credit curve, issuer or qualifier and none of those is an LEI. The mapping
+  layer is where a resolver will turn a curve id into an LEI, and the type is
+  what makes that a data problem rather than a guess.
+- Resolution replaces the identifier and its type together. A trade whose curve
+  id is resolved states =LEI= and the LEI; it does not carry both at once.
+- The LEI kind has a soft reference to the DQ =lei_entity= dataset, recorded in
+  the model rather than enforced by a foreign key, as the family's other soft
+  references are.
+
+* Scope
+
+This task is the column fix only. The two parts it was originally scoped with
+are their own tasks, because one task is one pull request:
+
+- the synthetic read path into the DQ =lei_entity= dataset;
+- the credit family itself: constructors, a planner, a writer arm, a book and a
+  config, proved by a run.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED |
+| Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
+| Now          | The typed reference is written and its suites are green. |
+| Waiting on   | Nothing. |
+| Next         | The family's own task. |
+| Last touched | 2026-10-29 |
+
+* Acceptance
+
+- A credit instrument states a typed reference, and the type is closed to LEI
+  and Internal.
+- A row typed LEI carries a twenty-character identifier, so the string a caller
+  types is refused rather than stored.
+- The ORE import states what it actually holds, and its projection tests assert
+  both columns.
+- The affected suites are green.
+
+* Plan
+
+Replace the free-text column with the type and the identifier, regenerate the
+entity across its SQL, C++ and web facets, and update the one hand-written
+mapping layer that populates it. The generated fixture states a synthetic LEI so
+a fixture satisfies the check.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Credit instrument rows before the change | 0 | =compass db sql= on =ores_trading_credit_instruments_tbl= | =7d2bec8a67= |
+| =ores.trading.core.tests= | 1423 assertions in 223 test cases | the suite binary | =cede048e39= |
+| =ores.ore.core.tests= | 478874 assertions in 441 test cases | the suite binary | =cede048e39= |
+
+* Notes
+
+The economic digest covers the economic fields, and renaming one changes every
+digest that covers it. The tenant that matters holds no credit instruments at
+all, because the family has never been provisioned: zero rows for ACME. The
+dev database holds two credit rows, and both are residue from the trading core
+integration suite rather than customer data; they carry the identifier this
+change stops generating, and their digests were computed under the old field
+names. A real environment that holds credit instruments would need a digest
+migration with this rename, and there is none to migrate here.
+
+The generated shell recipe for credit instruments states =__none__= for string
+columns, including the checked ones. That predates this change -- the same
+placeholder sits in =trade_type_code=, which has always been checked -- so it is
+recorded as a capture rather than fixed in this task.
+
+* Result
+
+A credit trade states what its reference entity is. The column is typed, the
+LEI case is length-checked, and the ORE import says =Internal= because that is
+what an engine document gives us.

@@ -43,7 +43,8 @@ render_credit_instrument_fields(const domain::credit_instrument& v) {
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
     fields.push_back({.name = "Trade Activity ID",
                       .value = boost::uuids::to_string(v.identity.trade_activity_id)});
-    fields.push_back({.name = "Reference Entity", .value = v.reference_entity});
+    fields.push_back({.name = "Reference Entity ID Type", .value = v.reference_entity_id_type});
+    fields.push_back({.name = "Reference Entity ID", .value = v.reference_entity_id});
     fields.push_back({.name = "Start Date",
                       .value = v.start_date ?
                                    ores::platform::time::datetime::to_iso8601_date(*v.start_date) :

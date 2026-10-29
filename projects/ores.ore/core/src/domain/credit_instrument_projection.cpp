@@ -34,6 +34,17 @@ namespace ores::ore::domain {
 
 namespace {
 
+/*
+ * An engine document names its credit curve or issuer itself; nothing in it is
+ * an LEI. So the reference is stated as what it is: an internal identifier, and
+ * not a claim about a legal entity the projection cannot make.
+ */
+void set_internal_reference_entity(ores::trading::domain::credit_instrument& instrument,
+                                   const std::string& identifier) {
+    instrument.reference_entity_id_type = "Internal";
+    instrument.reference_entity_id = identifier;
+}
+
 using ores::utility::decimal::decimal;
 
 using trading::domain::credit_basket_constituent;
@@ -712,8 +723,9 @@ auto read_cds(const record_reader& trade) -> credit_instrument_data {
         fact.trade_date = credit_instrument_projection_to_optional_domain_date(
             credit_instrument_projection_text_of(*d, "TradeDate"));
         fact.cash_settlement_days = optional_int_of(*d, "CashSettlementDays");
-        result.instrument.reference_entity =
-            fact.issuer_id ? *fact.issuer_id : fact.credit_curve_id.value_or("");
+        set_internal_reference_entity(
+            result.instrument,
+            fact.issuer_id ? *fact.issuer_id : fact.credit_curve_id.value_or(""));
         if (const auto leg = d->child("LegData")) {
             map_leg_dates(*leg, result.instrument);
             append_leg(result, *leg, "premium");
@@ -731,7 +743,7 @@ auto read_index_cds(const record_reader& trade) -> credit_instrument_data {
     index_credit_default_swap_instrument fact;
     if (const auto d = trade.child("IndexCreditDefaultSwapData")) {
         fact = read_index_swap(*d);
-        result.instrument.reference_entity = fact.credit_curve_id;
+        set_internal_reference_entity(result.instrument, fact.credit_curve_id);
         if (const auto leg = d->child("LegData")) {
             map_leg_dates(*leg, result.instrument);
             append_leg(result, *leg, "premium");
@@ -762,7 +774,8 @@ auto read_index_cds_option(const record_reader& trade) -> credit_instrument_data
         if (const auto d = od->child("IndexCreditDefaultSwapData")) {
             result.wrapped_index_swap = read_index_swap(*d);
             credit_instrument_projection_stamp_row(*result.wrapped_index_swap);
-            result.instrument.reference_entity = result.wrapped_index_swap->credit_curve_id;
+            set_internal_reference_entity(result.instrument,
+                                          result.wrapped_index_swap->credit_curve_id);
             if (const auto leg = d->child("LegData")) {
                 map_leg_dates(*leg, result.instrument);
                 append_leg(result, *leg, "premium");
@@ -800,7 +813,7 @@ auto read_credit_linked_swap(const record_reader& trade) -> credit_instrument_da
         fact.settles_accrual = d->flag("SettlesAccrual");
         fact.recovery_rate = decimal_as_double(*d, "FixedRecoveryRate");
         fact.default_payment_time = d->text("DefaultPaymentTime");
-        result.instrument.reference_entity = fact.credit_curve_id;
+        set_internal_reference_entity(result.instrument, fact.credit_curve_id);
 
         // The header's dates are those of the first contingent payment leg.
         if (const auto contingent = d->child("ContingentPayments")) {
@@ -839,7 +852,7 @@ auto read_synthetic_cdo(const record_reader& trade) -> credit_instrument_data {
         fact.attachment_point = decimal_as_double(*d, "AttachmentPoint").value_or(0.0);
         fact.detachment_point = decimal_as_double(*d, "DetachmentPoint").value_or(0.0);
         fact.recovery_rate = decimal_as_double(*d, "FixedRecoveryRate");
-        result.instrument.reference_entity = fact.qualifier;
+        set_internal_reference_entity(result.instrument, fact.qualifier);
         result.instrument.start_date = credit_instrument_projection_to_optional_domain_date(
             credit_instrument_projection_text_of(*d, "ProtectionStart"));
         if (const auto leg = d->child("LegData")) {
@@ -868,8 +881,8 @@ auto read_rpa(const record_reader& trade) -> credit_instrument_data {
             fact.settles_accrual = credit_instrument_projection_is_flag_on(
                 credit_instrument_projection_text_of(*d, "SettlesAccrual"));
         fact.recovery_rate = decimal_as_double(*d, "FixedRecoveryRate");
-        result.instrument.reference_entity =
-            fact.issuer_id ? *fact.issuer_id : fact.credit_curve_id;
+        set_internal_reference_entity(result.instrument,
+                                      fact.issuer_id ? *fact.issuer_id : fact.credit_curve_id);
         result.instrument.start_date = credit_instrument_projection_to_optional_domain_date(
             credit_instrument_projection_text_of(*d, "ProtectionStart"));
         result.instrument.maturity_date = credit_instrument_projection_to_optional_domain_date(

@@ -1941,7 +1941,8 @@ TEST_CASE("a_portfolio_document_projects_a_credit_default_swap_and_its_premium_l
     REQUIRE(instrument != nullptr);
     CHECK(instrument->instrument.identity.trade_type_code == "CreditDefaultSwap");
     CHECK(instrument->instrument.audit.modified_by == "ores");
-    CHECK(instrument->instrument.reference_entity == "ACME");
+    CHECK(instrument->instrument.reference_entity_id == "ACME");
+    CHECK(instrument->instrument.reference_entity_id_type == "Internal");
     CHECK(instrument->instrument.start_date ==
           std::optional<std::chrono::year_month_day>(date_of(2024, 6, 3)));
     CHECK(instrument->instrument.maturity_date ==
@@ -1986,7 +1987,8 @@ TEST_CASE("a_portfolio_document_projects_a_credit_default_swap_and_its_premium_l
         std::get_if<ores::trading::domain::credit_instrument_data>(&back.instrument);
     REQUIRE(round != nullptr);
     CHECK(back.anchor.trade_type == "CreditDefaultSwap");
-    CHECK(round->instrument.reference_entity == "ACME");
+    CHECK(round->instrument.reference_entity_id == "ACME");
+    CHECK(round->instrument.reference_entity_id_type == "Internal");
     CHECK(round->instrument.start_date ==
           std::optional<std::chrono::year_month_day>(date_of(2024, 6, 3)));
     CHECK(round->instrument.maturity_date ==
@@ -2081,7 +2083,8 @@ TEST_CASE("a_portfolio_document_projects_a_credit_linked_swap_and_its_payment_gr
         std::get_if<ores::trading::domain::credit_instrument_data>(&items[0].instrument);
     REQUIRE(instrument != nullptr);
     CHECK(instrument->instrument.identity.trade_type_code == "CreditLinkedSwap");
-    CHECK(instrument->instrument.reference_entity == "ACME-SR");
+    CHECK(instrument->instrument.reference_entity_id == "ACME-SR");
+    CHECK(instrument->instrument.reference_entity_id_type == "Internal");
     // The header's dates are those of the first contingent payment leg.
     CHECK(instrument->instrument.start_date ==
           std::optional<std::chrono::year_month_day>(date_of(2024, 7, 1)));
@@ -2120,7 +2123,8 @@ TEST_CASE("a_portfolio_document_projects_a_credit_linked_swap_and_its_payment_gr
         std::get_if<ores::trading::domain::credit_instrument_data>(&back.instrument);
     REQUIRE(round != nullptr);
     CHECK(back.anchor.trade_type == "CreditLinkedSwap");
-    CHECK(round->instrument.reference_entity == "ACME-SR");
+    CHECK(round->instrument.reference_entity_id == "ACME-SR");
+    CHECK(round->instrument.reference_entity_id_type == "Internal");
     CHECK(round->instrument.start_date ==
           std::optional<std::chrono::year_month_day>(date_of(2024, 7, 1)));
     CHECK(round->instrument.maturity_date ==
@@ -2239,7 +2243,8 @@ TEST_CASE("a_portfolio_document_projects_an_index_swap_and_a_synthetic_cdo",
     const auto* index_swap =
         std::get_if<ores::trading::domain::credit_instrument_data>(&items[0].instrument);
     REQUIRE(index_swap != nullptr);
-    CHECK(index_swap->instrument.reference_entity == "ITRAXX-S28-5Y");
+    CHECK(index_swap->instrument.reference_entity_id == "ITRAXX-S28-5Y");
+    CHECK(index_swap->instrument.reference_entity_id_type == "Internal");
     REQUIRE(index_swap->index_credit_default_swap_instruments.size() == 1);
     const auto& index_fact = index_swap->index_credit_default_swap_instruments[0];
     CHECK(index_fact.credit_curve_id == "ITRAXX-S28-5Y");
@@ -2265,7 +2270,8 @@ TEST_CASE("a_portfolio_document_projects_an_index_swap_and_a_synthetic_cdo",
     const auto* cdo =
         std::get_if<ores::trading::domain::credit_instrument_data>(&items[1].instrument);
     REQUIRE(cdo != nullptr);
-    CHECK(cdo->instrument.reference_entity == "CDO-1");
+    CHECK(cdo->instrument.reference_entity_id == "CDO-1");
+    CHECK(cdo->instrument.reference_entity_id_type == "Internal");
     CHECK(cdo->instrument.start_date ==
           std::optional<std::chrono::year_month_day>(date_of(2024, 1, 10)));
     CHECK(cdo->instrument.maturity_date ==
@@ -2385,7 +2391,8 @@ TEST_CASE("a_portfolio_document_projects_a_risk_participation_agreement",
         std::get_if<ores::trading::domain::credit_instrument_data>(&items[0].instrument);
     REQUIRE(instrument != nullptr);
     CHECK(instrument->instrument.identity.trade_type_code == "RiskParticipationAgreement");
-    CHECK(instrument->instrument.reference_entity == "ACME");
+    CHECK(instrument->instrument.reference_entity_id == "ACME");
+    CHECK(instrument->instrument.reference_entity_id_type == "Internal");
     CHECK(instrument->instrument.start_date ==
           std::optional<std::chrono::year_month_day>(date_of(2024, 2, 1)));
     CHECK(instrument->instrument.maturity_date ==
@@ -2437,7 +2444,8 @@ TEST_CASE("a_portfolio_document_projects_a_risk_participation_agreement",
         std::get_if<ores::trading::domain::credit_instrument_data>(&back.instrument);
     REQUIRE(round != nullptr);
     CHECK(back.anchor.trade_type == "RiskParticipationAgreement");
-    CHECK(round->instrument.reference_entity == "ACME");
+    CHECK(round->instrument.reference_entity_id == "ACME");
+    CHECK(round->instrument.reference_entity_id_type == "Internal");
     CHECK(round->instrument.start_date ==
           std::optional<std::chrono::year_month_day>(date_of(2024, 2, 1)));
     CHECK(round->instrument.maturity_date ==
@@ -2534,7 +2542,8 @@ TEST_CASE("a_portfolio_document_projects_an_index_swap_option_and_its_wrapped_sw
         std::get_if<ores::trading::domain::credit_instrument_data>(&items[0].instrument);
     REQUIRE(instrument != nullptr);
     CHECK(instrument->instrument.identity.trade_type_code == "IndexCreditDefaultSwapOption");
-    CHECK(instrument->instrument.reference_entity == "ITRAXX-S28-5Y");
+    CHECK(instrument->instrument.reference_entity_id == "ITRAXX-S28-5Y");
+    CHECK(instrument->instrument.reference_entity_id_type == "Internal");
 
     REQUIRE(instrument->index_credit_default_swap_option_instruments.size() == 1);
     const auto& fact = instrument->index_credit_default_swap_option_instruments[0];
@@ -2570,7 +2579,8 @@ TEST_CASE("a_portfolio_document_projects_an_index_swap_option_and_its_wrapped_sw
         std::get_if<ores::trading::domain::credit_instrument_data>(&back.instrument);
     REQUIRE(round != nullptr);
     CHECK(back.anchor.trade_type == "IndexCreditDefaultSwapOption");
-    CHECK(round->instrument.reference_entity == "ITRAXX-S28-5Y");
+    CHECK(round->instrument.reference_entity_id == "ITRAXX-S28-5Y");
+    CHECK(round->instrument.reference_entity_id_type == "Internal");
     REQUIRE(round->index_credit_default_swap_option_instruments.size() == 1);
     const auto& round_fact = round->index_credit_default_swap_option_instruments[0];
     CHECK(round_fact.knock_out == std::optional<bool>(true));

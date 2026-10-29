@@ -242,18 +242,36 @@ parse_fixings(std::istream& in, duplicate_policy on_duplicate, parse_report* rep
 }
 
 std::optional<std::string> latest_market_data_date(std::string_view body) {
-    std::istringstream in{std::string(body)};
-    try {
-        const auto data = parse_market_data(in);
-        if (data.empty())
-            return std::nullopt;
-        const auto latest = std::ranges::max_element(data, {}, &market_datum::date);
-        return std::format("{:%Y-%m-%d}", latest->date);
-    } catch (const std::invalid_argument&) {
-        // A line the parser cannot read leaves the body without a date the
-        // caller could rely on, which is what no date means here.
-        return std::nullopt;
+    const auto skip_ws = [](std::string_view sv) -> std::string_view {
+        const auto p = sv.find_first_not_of(" \t\r");
+        return p == std::string_view::npos ? std::string_view{} : sv.substr(p);
+    };
+
+    std::optional<std::chrono::year_month_day> latest;
+    std::size_t first = 0;
+    while (first < body.size()) {
+        const auto end = body.find('\n', first);
+        const auto line = body.substr(
+            first, end == std::string_view::npos ? std::string_view::npos : end - first);
+        first = end == std::string_view::npos ? body.size() : end + 1;
+
+        const auto text = skip_ws(line);
+        if (text.empty() || text.front() == '#')
+            continue;
+        try {
+            const auto date = ores::platform::time::time_utils::parse_date(tokenize(text).date);
+            if (!latest || date > *latest)
+                latest = date;
+        } catch (const std::invalid_argument&) {
+            // A line this module cannot read is not a date line. A caller asks
+            // for the newest date the data states, and one unreadable line must
+            // not take the dates around it away.
+            continue;
+        }
     }
+    if (!latest)
+        return std::nullopt;
+    return ores::platform::time::time_utils::format_date_iso(*latest);
 }
 
-} // namespace ores::ore::market
+}

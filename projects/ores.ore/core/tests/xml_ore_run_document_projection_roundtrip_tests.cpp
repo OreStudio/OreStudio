@@ -308,30 +308,43 @@ TEST_CASE("a_setup_parameter_that_is_not_a_number_is_refused",
         Catch::Matchers::ContainsSubstring("is not an integer"));
 }
 
-TEST_CASE("the as-of date is read where the document states it, not where it is mentioned",
+TEST_CASE("as_of_date_reads_where_the_document_states_it_not_where_it_is_mentioned",
           "[ore][xml][roundtrip][run_document]") {
-    // A search for the text would read the comment's date.
+    auto lg(make_logger(test_suite));
+
+    // A comment and an analytic's parameter list both name the parameter. Only
+    // the Setup parameter is the date the run prices at.
     const std::string text = R"(
 <ORE>
   <Setup>
     <!-- the run asked for name="asofDate">2020-01-01< before the desk moved it -->
     <Parameter name="asofDate">2026-01-02</Parameter>
+    <Parameter name="inputPath">Input</Parameter>
   </Setup>
-  <Analytics></Analytics>
+  <Analytics>
+    <Analytic type="pnl"><Parameter name="asofDate">1999-12-31</Parameter></Analytic>
+  </Analytics>
 </ORE>)";
 
     const auto date = run_document_projection::as_of_date(text);
 
     REQUIRE(date.has_value());
     CHECK(*date == "2026-01-02");
-    CHECK(*run_document_projection::as_of_date(
-              run_document_projection::with_as_of_date(text, "2026-01-05")) == "2026-01-05");
+    BOOST_LOG_SEV(lg, info) << "read " << *date;
+
+    // The rewrite states the new date and keeps what the document said.
+    const auto rewritten = run_document_projection::with_as_of_date(text, "2026-01-05");
+    CHECK(*run_document_projection::as_of_date(rewritten) == "2026-01-05");
+    CHECK(rewritten.find("inputPath") != std::string::npos);
+    CHECK(rewritten.find("1999-12-31") != std::string::npos);
 }
 
-TEST_CASE("a document that writes its attributes in another order states the same date",
+TEST_CASE("as_of_date_reads_the_same_date_however_the_attribute_is_spelled",
           "[ore][xml][roundtrip][run_document]") {
+    auto lg(make_logger(test_suite));
+
     // A search for the text needs the attribute spelled one way; XML allows the
-    // spaces and the quotes to move.
+    // spaces and the quote characters to move.
     const std::string text = R"(
 <ORE>
   <Setup>
@@ -344,10 +357,13 @@ TEST_CASE("a document that writes its attributes in another order states the sam
 
     REQUIRE(date.has_value());
     CHECK(*date == "2026-01-02");
+    BOOST_LOG_SEV(lg, info) << "read " << *date;
 }
 
-TEST_CASE("a run document that prices at the latest data states no date",
+TEST_CASE("as_of_date_states_nothing_for_a_document_that_prices_at_the_latest_data",
           "[ore][xml][roundtrip][run_document]") {
+    auto lg(make_logger(test_suite));
+
     const std::string text = R"(
 <ORE>
   <Setup>
@@ -357,4 +373,5 @@ TEST_CASE("a run document that prices at the latest data states no date",
 </ORE>)";
 
     CHECK_FALSE(run_document_projection::as_of_date(text).has_value());
+    BOOST_LOG_SEV(lg, info) << "no date, as expected";
 }

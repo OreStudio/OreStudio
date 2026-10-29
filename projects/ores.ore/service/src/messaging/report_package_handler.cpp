@@ -39,7 +39,6 @@
 #include <filesystem>
 #include <format>
 #include <fstream>
-#include <optional>
 #include <rfl/json.hpp>
 #include <rfl/msgpack.hpp>
 #include <string_view>
@@ -58,7 +57,7 @@ std::string tarball_storage_key(const std::string& instance_id) {
     return ores::ore::net::ore_storage::package_key(instance_id);
 }
 
-}
+} // namespace
 
 report_package_handler::report_package_handler(ores::nats::service::client& nats,
                                                ores::database::context ctx,

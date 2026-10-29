@@ -121,12 +121,16 @@ parse_fixings(std::istream& in,
  * @brief The latest date a market data body carries, as an ISO 8601 date.
  *
  * A run can only price a date the gathered data speaks to, so a caller that
- * asks for a later date needs to know the last one the data states. The body is
- * read by the same parser as any market data file, so a comment, a second date
- * spelling or a repeated key is handled the way the file format says.
+ * asks for a later date needs to know the newest one the data states. The lines
+ * are read by the same tokeniser as any market data file, so a comment, a
+ * separator or a second date spelling is the format's business.
+ *
+ * A line the tokeniser cannot read is not a date line and is skipped: one
+ * unreadable line does not take the dates around it away. A body that states no
+ * date at all gives nothing.
  *
  * @param body The market data file, as text.
- * @return The date, or nothing when the body carries no line the parser reads.
+ * @return The newest date the body states, as ISO 8601, or nothing.
  */
 [[nodiscard]] ORES_ORE_CORE_EXPORT std::optional<std::string>
 latest_market_data_date(std::string_view body);

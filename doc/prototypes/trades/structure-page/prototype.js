@@ -30,9 +30,8 @@ const pricingText = k => KIND[k].whole ? 'Priced as a whole' : 'Priced leg by le
 const DEALS = allDeals();
 const childrenOf = id => Object.entries(DEALS).filter(([, v]) => v.parent === id);
 const rootOf = id => DEALS[id] && DEALS[id].parent ? rootOf(DEALS[id].parent) : id;
-let SID = P.get('deal') || '';
+let SID = P.get('deal') || 'STR-0010';
 let SEL = P.get('trade') || '';
-const LIST = !SID && !MODE;
 let stale = STATE_P === 'stale';
 /* A tab, a structure or a trade opens in place and puts its address in the history, so what the person did on the page stays. */
 function go(change, render) {
@@ -43,20 +42,18 @@ const openDeal = (id, trade) => go({ deal: id, trade: trade || null, tab: null }
 const dealLink = id => h('a', { href: qs({ deal: id, trade: null, tab: null }), 'data-text': id, onclick: e => { e.preventDefault(); openDeal(id); } }, id);
 function dealCrumbs() {
     const c = DEALS[SID];
-    return [['Home', '#'], ['Trades', '../trade-page/'], ['Structures and packages', qs({ deal: null, tab: null, trade: null })]].concat(c && c.parent ? [[c.parent, qs({ deal: c.parent, tab: null, trade: null })]] : []).concat([[SID]]);
+    return [['Home', '#'], ['Trades', '../blotter/']].concat(c && c.parent ? [[c.parent, qs({ deal: c.parent, tab: null, trade: null })]] : []).concat([[SID]]);
 }
 
 const main = shell({
-    title: MODE ? 'Group trades' : LIST ? 'Structures and packages' : (DEALS[SID] ? Noun(DEALS[SID].kind) : 'Structure') + ' ' + SID, name: 'structure-page',
+    title: MODE ? 'Group trades' : (DEALS[SID] ? Noun(DEALS[SID].kind) : 'Structure') + ' ' + SID, name: 'structure-page',
     question: 'How are several trades held together, as one deal or as a package?',
-    crumbs: MODE ? [['Home', '#'], ['Trades', '../trade-page/'], ['Group trades']] : LIST ? [['Home', '#'], ['Trades', '../trade-page/'], ['Structures and packages']] : dealCrumbs(),
-    states: LIST
-        ? [['list', { state: null }, !STATE_P], ['stale', { state: 'stale' }, STATE_P === 'stale'], ['loading', { state: 'loading' }, STATE_P === 'loading'], ['empty', { state: 'empty' }, STATE_P === 'empty'], ['error', { state: 'error' }, STATE_P === 'error']]
-        : [['list', { mode: null, trades: null, deal: null, tab: null, trade: null, state: null }, false], ['structure tree', { mode: null, trades: null, deal: 'STR-0010', tab: null, trade: null, state: null }, SID === 'STR-0010'], ['strategy', { mode: null, trades: null, deal: 'STR-0007', tab: null, trade: null, state: null }, SID === 'STR-0007'],
+    crumbs: MODE ? [['Home', '#'], ['Trades', '../blotter/'], ['Group trades']] : dealCrumbs(),
+    states: [['structure tree', { mode: null, trades: null, deal: 'STR-0010', tab: null, trade: null, state: null }, SID === 'STR-0010'], ['strategy', { mode: null, trades: null, deal: 'STR-0007', tab: null, trade: null, state: null }, SID === 'STR-0007'],
             ['package', { mode: null, trades: null, deal: 'PKG-0021', tab: null, trade: null, state: null }, SID === 'PKG-0021'], ['typed structure', { mode: null, trades: null, deal: 'STR-0009', tab: null, trade: null, state: null }, SID === 'STR-0009'], ['package alone', { mode: null, trades: null, deal: 'PKG-0004', tab: null, trade: null, state: null }, SID === 'PKG-0004'],
             ['group', { mode: 'group', deal: null, trades: 'ACME-100202,ACME-100209', state: null }, MODE === 'group'], ['mismatch', { mode: 'group', deal: null, trades: 'ACME-100201,ACME-100202' }, false],
             ['loading', { state: 'loading' }, STATE_P === 'loading'], ['error', { state: 'error' }, STATE_P === 'error'], ['refused', { state: 'refused', tab: 'history' }, STATE_P === 'refused']],
-    says: LIST ? 'A structure is a tree. The root is the deal the customer sees. Inside it are strategies, packages and plain trades. The list shows the trees; open the root to see the whole tree.' : MODE
+    says: MODE
         ? 'One workflow, and the kind decides what the customer receives. A strategy is one deal. A package is trades the customer holds one by one. The screen states each kind\'s consequences and the rules the server will enforce, before it writes.'
         : 'A package is a kind of structure, so there is one screen and its words follow the kind. Compare the strategy and the package: how it confirms, how it prices, where the external version lives, what unlinking a leg means.'
 });
@@ -336,55 +333,6 @@ function renderGroup() {
     }
     put(wrap(pageHead({ title: 'Group trades', lead: GROUP_LEAD }), rail, pane, h('div', { class: 'filters' }, nav)));
 }
-/* ---------- the list ---------- */
-/* The list is its address: the page, the page size, the search, the filter and the order. */
-const num = (key, dflt) => { const n = Number(P.get(key)); return P.get(key) && Number.isFinite(n) && n >= 0 ? n : dflt; };
-const LQ = { offset: num('offset', 0), limit: PAGE_SIZES.includes(num('limit', 15)) ? num('limit', 15) : 15, kind: P.get('kind') || '', search: P.get('search') || '', sort: P.get('sort') || '', desc: P.get('dir') !== 'asc' };
-const LSORT = { id: ([id]) => id, kind: ([, v]) => v.kind, template: ([, v]) => v.template, cp: ([, v]) => cpty(v.cp).name, trades: ([, v]) => v.members.length };
-const LSORT_FIELDS = { id: 'id', kind: 'kind', template: 'template', cp: 'counterparty_id', trades: 'member_count' };
-function sortLBy(key) {
-    if (LQ.sort !== key) { LQ.sort = key; LQ.desc = false; } else if (!LQ.desc) LQ.desc = true; else { LQ.sort = ''; LQ.desc = true; }
-    LQ.offset = 0;
-    renderList();
-}
-function listQuery() {
-    const roots = Object.entries(DEALS).filter(([, v]) => !v.parent);
-    const key = LSORT[LQ.sort] || (([, v]) => v.created), dir = LQ.sort && !LQ.desc ? 1 : -1;
-    roots.sort((a, b) => { const x = key(a), y = key(b); return dir * (typeof x === 'number' ? x - y : String(x || '').localeCompare(String(y || ''))); });
-    const rows = [];
-    roots.forEach(([id, v]) => { rows.push([id, v, 0]); childrenOf(id).forEach(([cid, cv]) => rows.push([cid, cv, 1])); });
-    const q = LQ.search.toLowerCase();
-    return rows.filter(([id, v]) => (!LQ.kind || v.kind === LQ.kind) && (!q || (id + ' ' + v.template + ' ' + cpty(v.cp).name).toLowerCase().includes(q)));
-}
-function searchBox() {
-    let t;
-    return h('input', { placeholder: 'Search by identifier, template or counterparty', value: LQ.search, 'aria-label': 'Search', id: 'deal-search', oninput: e => {
-        clearTimeout(t);
-        t = setTimeout(() => { const at = e.target.selectionStart; LQ.search = e.target.value; LQ.offset = 0; renderList(); const again = document.getElementById('deal-search'); if (again) { again.focus(); again.setSelectionRange(at, at); } }, 300);
-    } });
-}
-function renderList() {
-    history.replaceState(null, '', qs({ offset: LQ.offset || null, limit: LQ.limit === 15 ? null : LQ.limit, kind: LQ.kind, search: LQ.search, sort: LQ.sort, dir: LQ.sort ? (LQ.desc ? 'desc' : 'asc') : null }));
-    const head = pageHead({ title: 'Structures and packages', lead: 'What the tenant holds together. A structure is a tree: the deal the customer sees at the root, with strategies, packages and trades inside.',
-        actions: [refreshButton({ stale, onClick: () => { stale = false; LOADED = NOW; renderList(); } }), workflowMenu([{ title: 'Group trades', line: 'Choose trades in the trade list, then hold them together.', href: '../trade-page/', allowed: !!CAN.structure }])] });
-    const filters = h('div', { class: 'filters' }, searchBox(), select([['', 'All kinds']].concat(Object.keys(KIND).map(k => [k, k])), LQ.kind, v => { LQ.kind = v; LQ.offset = 0; renderList(); }));
-    if (STATE_P === 'loading') return put(wrap(head, filters, h('div', { class: 'notice' }, 'Loading…')));
-    if (STATE_P === 'error') return put(wrap(head, failure('trading.v1.structures.list', 503, 'unavailable', '1e8c4a07d3f5', 'The structures could not be read.', h('button', { class: 'btn small', onclick: () => { location.href = qs({ state: null }); } }, 'Retry'))));
-    const shown = STATE_P === 'empty' ? [] : listQuery();
-    const page = shown.slice(LQ.offset, LQ.offset + LQ.limit);
-    const filtered = !!(LQ.kind || LQ.search);
-    const sortTh = (key, label) => h('th', { 'aria-sort': LQ.sort === key ? (LQ.desc ? 'descending' : 'ascending') : 'none' }, h('button', { class: 'sort', onclick: () => sortLBy(key) }, label + (LQ.sort === key ? (LQ.desc ? ' ▾' : ' ▴') : '')));
-    const table = h('div', { class: 'tablewrap' }, h('table', { class: 'grid' }, h('thead', null, h('tr', null, sortTh('id', 'Identifier'), sortTh('kind', 'Kind'), sortTh('template', 'Template'), sortTh('cp', 'Counterparty'), sortTh('trades', 'Inside it'), h('th', null, 'Confirms'), h('th', null, 'Priced'))),
-        h('tbody', null, page.length ? page.map(([id, v, depth]) => { const kids = childrenOf(id).length; return h('tr', null, h('td', { class: 'nw', style: 'padding-left:' + (0.7 + depth * 1.4) + 'rem' }, depth ? h('span', { class: 'faint' }, '└ ') : null, h('a', { href: qs({ deal: id, offset: null, limit: null, kind: null, search: null, sort: null, dir: null }) }, id)), h('td', null, chip(v.kind, 'acc')), h('td', null, v.template ? ref('structure_template', v.template) : h('span', { class: 'dash' }, '—')), h('td', null, ref('counterparty', v.cp, cpty(v.cp).name)),
-            h('td', null, (kids ? kids + ' inner · ' : '') + v.members.length + ' trade' + (v.members.length === 1 ? '' : 's')), h('td', null, confirmText(v.kind)), h('td', null, pricingText(v.kind))); })
-            : h('tr', null, h('td', { colspan: 7 }, filtered
-                ? ['No structure matches. ', h('button', { class: 'btn small', onclick: () => { Object.assign(LQ, { offset: 0, kind: '', search: '' }); renderList(); } }, 'Clear filters')]
-                : ['There are no structures yet. ', CAN.structure ? h('a', { href: '../trade-page/' }, 'Group trades') : null])))));
-    const order = LQ.sort ? { field: LSORT_FIELDS[LQ.sort], descending: LQ.desc } : { field: 'updated_at', descending: true };
-    const filter = {}; if (LQ.kind) filter.kind = LQ.kind; if (LQ.search) filter.search = LQ.search;
-    put(wrap(head, filters, table, pager({ offset: LQ.offset, limit: LQ.limit, total: shown.length, onChange: v => { Object.assign(LQ, v); renderList(); } }),
-        h('div', { class: 'reqline' }, 'trading.v1.structures.list  offset=' + LQ.offset + ' limit=' + LQ.limit + ' order=' + JSON.stringify(order) + ' filter=' + JSON.stringify(filter) + '  →  total=' + shown.length)));
-}
 setTimeout(() => { if (TAB === 'price' && SID && !stale) { marketNewer = true; stale = true; renderDeal(); } }, 8000);
 leaveGuard(() => MODE === 'group' && !G.done && (G.step > 0 || !!G.kind));
-if (MODE) renderGroup(); else if (LIST) renderList(); else renderDeal();
+if (MODE) renderGroup(); else renderDeal();

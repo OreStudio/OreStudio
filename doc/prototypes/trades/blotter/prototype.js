@@ -187,8 +187,10 @@ main.append(h('div', { class: 'toolbar', style: 'display:flex;gap:.5rem;align-it
         title: 'Read the legs of a structure as trades',
         onclick: e => { e.preventDefault(); go({ flat: flat ? null : '1' }, render); },
     }, 'Flat'),
-    h('span', { class: 'small faint', style: 'margin-left:auto' }, 'Mock data · one party · ' +
-        ROWS.length + ' rows at the top level'),
+    h('span', { style: 'margin-left:auto' }, ' '),
+    h('a', { class: 'btn small', href: '../structure-page/index.html?mode=group', title: 'Hold two or more trades together' }, 'Group trades'),
+    h('a', { class: 'btn small primary', href: '../book-a-trade/index.html' }, '+ Book a trade'),
+    h('span', { class: 'small faint' }, 'Mock data · one party · ' + ROWS.length + ' rows'),
 ), h('div', { class: 'workspace', style: 'grid-template-columns:320px minmax(0,1fr)' }, railPanel, listPanel));
 
 function go(change, render) {

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :data-oriented-design:modeling:refdata:split_the_types_that_carry_too_many_columns:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/inventory-the-types-that-carry-too-many-columns
+#+pr: 4068
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ One page lists every generated persistent type with the numbers that decide its 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | Not yet started.                       |
+| Now          | Done; the report and its lever are written. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Close, and start the split task.       |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -108,12 +108,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Persisted column bindings in =commodity_future_convention= | 60 | `grep -c 'query_builder::bind(' projects/ores.refdata/core/include/ores.refdata.core/repository/commodity_future_convention_entity.hpp` | `1dab64c857` |
-| The same for =cap_floor_volatility_config= | 46 | same, `.../cap_floor_volatility_config_entity.hpp` | `1dab64c857` |
-| The same for =curve_segment= | 40 | same, `.../curve_segment_entity.hpp` | `1dab64c857` |
-| Where MSVC first runs out of instantiation depth | =column_binding<cap_floor_volatility_config_entity, ...>= in `unity_36`, `tuple(320)` | `gh api repos/OreStudio/OreStudio/actions/jobs/<id>/logs` for run 40942373087 | `1dab64c857` |
+| Persisted types the models declare | 457 | `python3 build/scripts/inventory_entity_columns.py --summary` | `0e0c542b3c` |
+| Types carrying 20 members or more | 24 | same | `0e0c542b3c` |
+| Types carrying 30 or more | 6 | same | `0e0c542b3c` |
+| Median members per type | 6 | same | `0e0c542b3c` |
+| Widest type | 57, `market_series_identity` | same | `0e0c542b3c` |
+| Generated bindings over the model's columns | 8 (`tenant_id`, `version`, `modified_by`, `change_reason_code`, `change_commentary`, `performed_by`, `valid_from`, `valid_to`) | `grep -c 'query_builder::bind(' projects/ores.refdata/core/include/ores.refdata.core/repository/cap_floor_volatility_config_entity.hpp` = 46, plus one key, against 39 model columns | `0e0c542b3c` |
+| Where MSVC first runs out of instantiation depth | `column_binding<cap_floor_volatility_config_entity, ...>` in `unity_36`, `tuple(320)` | `gh api repos/OreStudio/OreStudio/actions/jobs/<id>/logs` for run 40942373087 | `1dab64c857` |
 
 * Notes
+
+- The report is [[id:E6C92BB1-8AB4-4580-A318-A5EB2A10BBB1][Inventory of type widths]].
 
 - The count of bindings above is the count the query builder sees, which is the
   persisted column count plus the audit columns; it is a proxy until the script
@@ -138,7 +143,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4068][#4068]] | [tooling] Count the members of every persisted type |
 
 * Review
 
@@ -147,3 +152,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+[[id:E6C92BB1-8AB4-4580-A318-A5EB2A10BBB1][Inventory of type widths]] is the
+report. It carries the verdicts, the three shapes they repeat, and the order the
+split task works in.
+
+=build/scripts/inventory_entity_columns.py= is the lever, and
+=evidence/entity_columns.tsv= its output: one row per persisted type, with the
+members the domain struct carries, the columns the table holds, the nullable
+count and the distinct groups. The page states the command and the commit.
+
+Nothing outside the script, its output and the report changed. The numbers
+released three findings that the split task now depends on:
+
+- the median type carries 6 members, so the model is not wrong everywhere and
+  the work is a tail of 24 types;
+- three shapes repeat across that tail, and each names its own split;
+- the failure that started this was 47 bindings, which is a model with 39
+  columns plus the scaffold's eight.
+

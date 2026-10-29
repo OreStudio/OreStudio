@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: 8C947D0F-E4AB-41C0-BA1A-C5AFE23A48E9
+:END:
+#+title: Task: Split the ORE volatility entries by kind
+#+description: Five refdata volatility entries are one row per kind with a column per kind: cap floor and swaption carry a proxy block behind a flag, FX a smile behind a dimension, inflation cap floor a quote structure, and the volatility config a surface per kind.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-design:modeling:refdata:codegen:split_the_types_that_carry_too_many_columns:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each of the five volatility entries holds one kind of entry, and the block that only exists for one kind is a type of its own. Cap floor and swaption share one proxy part, so the same split is made once and used twice.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-29                               |
+
+* Acceptance
+
+- Every one of the five types ends with at most one block per entry, and no column is meaningful only for a value another column selects.
+- The proxy block is one part type that cap floor and swaption both carry, not two copies.
+- The ORE export and import of a volatility entry writes one typed array per part, and the bytes the reader sees stay what the ORE file states.
+- No compiler flag, unity exclusion or field-group reshuffle is added.
+- The split is argued by the invariant each part holds, not by the entry's member count, and the argument is in the task's Result.
+
+* Plan
+
+** The rules a split obeys
+
+The data-oriented model decides the shape, not the column count. Its rules, and
+the reasons behind them, are in
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] and
+[[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data classification checklist]]; this task applies them and
+does not restate them. In short:
+
+- a type holds one component: fields that share one invariant, hold at one
+  instant, and are keyed by the same key;
+- a part is joined by key and never nested, so the wire carries one typed array
+  per component and no part's fields appear inside another's object;
+- a field read on a different cadence, or by a different screen, job or service,
+  goes with its readers and not with the row it happens to sit in;
+- the classification comes first. A compile error never reclassifies data: if a
+  shape has to be denormalised for a compiler, the classification stays and the
+  denormalisation is recorded;
+- the centre keeps the identity and whatever the parts must agree on. A part one
+  reader needs does not stay on the centre.
+
+** This grouping
+
+Five refdata volatility entries, and their shapes come from
+[[id:E6C92BB1-8AB4-4580-A318-A5EB2A10BBB1][the inventory]]:
+
+| Type | Members | Columns | The block that should not be a column |
+|------+---------+---------+---------------------------------------|
+| =cap_floor_volatility_config= | 39 | 39 | =has_proxy_config= and seven proxy columns |
+| =curve_volatility_config= | 32 | 32 | =kind= and one curve column per surface |
+| =swaption_volatility_config= | 27 | 27 | =has_proxy_config= and five proxy columns |
+| =fx_volatility_config= | 22 | 22 | =dimension= and the smile columns it selects |
+| =inflation_cap_floor_volatility_config= | 22 | 22 | =quote_type= and one column per quote structure |
+
+The proxy block is the same component in the cap floor and swaption entries: it
+names a source curve, an index, a rate computation period, a target and a
+scaling factor, and it is present or absent as a unit. It is one part type, not
+two copies, and its own key is the entry's key.
+
+The kind columns are the entry's kind stated as a column. =kind=,
+=dimension= and =quote_type= select a construction, and a column that exists for
+one construction is that construction's part.
+
+** What moves in one change
+
+Per entry: the model, every generated address, the ORE projection and the
+fixtures, and the screens that read the volatility section.
+
+** What proves it
+
+- No row carries a column its own kind cannot use.
+- The proxy part is one type, and both entries use it.
+- A round trip of the ORE fixture states the same values, written as arrays per
+  part rather than one row of nulls.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

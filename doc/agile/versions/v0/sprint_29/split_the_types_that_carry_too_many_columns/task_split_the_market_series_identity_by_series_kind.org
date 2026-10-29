@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: CC94A796-F6C1-4F59-B89E-CB5EB3133EC2
+:END:
+#+title: Task: Split the market series identity by series kind
+#+description: market_series_identity is the widest type in the tree at 57 members and 54 nullable columns, with one column per identity field of a series kind and no discriminator to say which kind a row is. This is the market data owner's call, handed over with the inventory's reading.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-design:modeling:marketdata:codegen:split_the_types_that_carry_too_many_columns:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A series row says what kind it is, and the identity fields that belong to one kind are that kind's part. No row holds fields it can never use.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-29                               |
+
+* Acceptance
+
+- The series kinds' identity fields are parts, and the series carries the kind.
+- The generated codec and the wire carry one typed array per part.
+- The market data owner confirms the split before it is made.
+- The split is argued from what each kind's identity fields mean, not from the type's width, and the argument is in the task's Result.
+
+* Plan
+
+** The rules a split obeys
+
+The data-oriented model decides the shape, not the column count. Its rules, and
+the reasons behind them, are in
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] and
+[[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data classification checklist]]; this task applies them and
+does not restate them. In short:
+
+- a type holds one component: fields that share one invariant, hold at one
+  instant, and are keyed by the same key;
+- a part is joined by key and never nested, so the wire carries one typed array
+  per component and no part's fields appear inside another's object;
+- a field read on a different cadence, or by a different screen, job or service,
+  goes with its readers and not with the row it happens to sit in;
+- the classification comes first. A compile error never reclassifies data: if a
+  shape has to be denormalised for a compiler, the classification stays and the
+  denormalisation is recorded;
+- the centre keeps the identity and whatever the parts must agree on. A part one
+  reader needs does not stay on the centre.
+
+** This grouping
+
+=market_series_identity= is the widest type in the tree: 57 members and 54
+nullable columns, one column per identity field of a series kind, and no
+discriminator to say which kind a row is. The kinds are the components, and the
+row is the union of all of them written as nullable columns.
+
+This is the market data owner's component. The verdict is the inventory's
+reading and is put to that owner; the task is not started until they confirm it.
+
+** What proves it
+
+- A series row states its kind, and the fields that belong to one kind live in
+  that kind's part.
+- The codec and the wire carry one typed array per part, joined by the series
+  key.
+- The widest remaining type in the component is inside the inventory's
+  threshold.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

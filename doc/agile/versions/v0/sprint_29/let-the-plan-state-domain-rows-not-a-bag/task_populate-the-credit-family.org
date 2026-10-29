@@ -8,7 +8,7 @@
 #+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
 #+owner: marco
 #+branch: feature/populate-the-credit-family
-#+pr:
+#+pr: 4061
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4061][#4061]] | [trading,synthetic] Build the credit family and find its blocker |
 
 * Review
 

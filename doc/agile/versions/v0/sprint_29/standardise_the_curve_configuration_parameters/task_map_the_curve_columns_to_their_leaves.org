@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,16 +26,49 @@ A curve configuration value outside the set its leaf names is refused on write, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Not yet started.                       |
+| Now          | Design written, implementation next.    |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
 
-- The map names, for each curve table and column, the leaf it holds by schema and XPath, and it is enough for the existing trigger to check the value. The map exists: =generate_curve_section_parameters.py= writes it for the screen, and this task emits it for the trigger from the same source.
+1. Every column the curve projection reads from a family table is mapped to the
+   ORE leaf it holds, in a table rather than in a trigger body.
+2. One trigger function reads that map and refuses a value outside the leaf's
+   value set, naming the leaf, the column and the set.
+3. The trigger is attached to every curve family table, and a table the map names
+   but no trigger guards fails the generation rather than passing silently.
+4. The map is generated from the same projection and schema the page's column
+   wiring is generated from, so the database and the screen cannot disagree.
+5. A write of a value outside the set is refused by the database, and a write of
+   an accepted value passes, both proven against a recreated environment.
+
+* Plan
+
+Option A, generated from the wiring. =generate_curve_section_parameters.py=
+already derives, from the projection and the ORE schema, every family table and
+every column it reads, each with its leaf's ORE name and xpath; the same output
+draws the page's columns. A second script reads that output and writes:
+
+1. a column-to-leaf map, one row per family column, keyed by the entity the
+   trigger names and the column it reads, carrying the schema and the xpath;
+2. the guard function, which resolves a column's leaf to its value set by xpath
+   and asks =ores_reporting_value_in_set_fn=, exactly as the convention guard
+   does for a term;
+3. one trigger per family table, installed by a block that fails when a table the
+   map names does not exist, so an entity cannot be left unguarded.
+
+The definition table is not guarded: its two leaves are the curve's identifier and
+description, which every section shares and whose set is free text. The map says
+so once rather than the guard special-casing it.
+
+The table name of each entity is the one thing the projection does not state, so
+the generator takes it from the same place codegen does — the model's
+=:tablename:= — and the check fails when a mapped entity has no model. Reading it
+from a second source is what stops the guard drifting from the schema. The map names, for each curve table and column, the leaf it holds by schema and XPath, and it is enough for the existing trigger to check the value. The map exists: =generate_curve_section_parameters.py= writes it for the screen, and this task emits it for the trigger from the same source.
 - The trigger is attached to every curve table that holds a checked leaf, generated rather than hand-written.
 - A pgTAP test writes a value outside its set and sees the refusal, and a value inside it and sees the write.
 - A column with no leaf, or a leaf with no set, admits every value, as it does for a convention term.
@@ -61,6 +94,19 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- *The guard exists; only the map is missing.* =ores_reporting_value_in_set_fn=
+  is the one rule, used by the pricing parameter guard and the convention term
+  guard. This task adds the curve's map and its trigger, not a second rule.
+- *The write path already refuses at the boundary.* The curve save checks each
+  value against the leaf's choices, bounds and pattern before it writes
+  (task CA40C9B0). That stays: the boundary gives the person a sentence on the
+  field, and the database gives every other writer the same refusal.
+- *What the map cannot cover yet.* A segment's leaves are not drawn and their
+  documentation covers 22 of the forty-odd a segment holds, so the segment,
+  quote and bootstrap columns are mapped only once task 894F3A64 draws them.
+  The map states what the projection reads today; a column added later is a
+  regeneration, and the check fails when the map and the projection disagree.
 
 - *The map is already generated.*
   [[id:FCD8EE04-D549-45B2-AE29-8C5FBBC66B74][The page task]] had to join every

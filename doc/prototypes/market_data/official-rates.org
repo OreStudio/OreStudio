@@ -175,3 +175,18 @@ What the prototype cannot settle is what this story's two decision tasks own:
 whether the pause is a demand fact or a provider state, and what form the
 backfill request takes on the adapter contract. The prototype's choices are the
 input to those decisions, not their substitute.
+
+* Four words, and where each is drawn
+
+A *driver* is code that speaks an external language. A *connection* is a driver
+configured as one instance: Bloomberg production, Bloomberg test, Frankfurter,
+and the synthetic simulator, which has no endpoint and no credential. A
+*provider* is a publisher a connection reaches. A *destination* is the party and
+the store the values land in.
+
+The Connections tab lists the configured instances; a connection's record draws
+its configuration, its masked credentials, the providers it reaches, its
+routing, its health and its history. The Drivers tab is a read-only catalogue of
+what can be configured. The provider list states the connections that deliver
+each publisher, and the provider record's Connections tab names them.
+

@@ -11,18 +11,25 @@
     change to the wire format.
 
     The first use case is a column block composed into an entity. The
-    group is reflected as its own struct with a literal of its own
-    names, so a reader states what belongs together, and the entity's
-    mapper names every column through the member that carries it. The
-    domain struct nests; the wire and the write records stay flat.
+    group is its own struct with a literal of its own names, so a reader
+    states what belongs together, and the entity's mapper names every
+    column through the member that carries it.
 
-    Flatten is NOT a cure for MSVC C1202. rfl::Flatten adds the
-    flattened struct's names to the parent's literal, recursively, so a
-    wide parent stays wide, and reflect-cpp reflects a plain nested
-    member as one name already. C1202 has two paths -- one literal that
-    is too wide, and accumulation across a unit -- and a group answers
-    neither. See the decomposition section of
+    C1202 has two paths, and a group meets only the first. A plain
+    nested member costs the parent one name, so a group declared as a
+    plain member lowers the parent's literal: that is the remedy for one
+    literal that is too wide on its own. rfl::Flatten instead hoists the
+    group's names into the parent's literal, recursively, so it keeps a
+    shape and lowers nothing. Neither touches the second path,
+    accumulation across a unit, which is decided by how many types the
+    unit reflects and not by how they are declared. See the
+    decomposition section of
     doc/knowledge/architecture/data_oriented_design.org.
+
+    The wire is a separate question. The generated JSON writer is a
+    bare rfl::json::write, so a plain nested member appears as a nested
+    object on the wire. That is a known defect against the atomised
+    shape, not something a group sets out to do.
 
     The second use case is a document-only struct: a shape the ORE
     schema states and no table holds, such as a bond's option block.
@@ -66,12 +73,8 @@
     The composing parent struct (e.g. trade) is hand-crafted; it
     is not generated.  It should:
       #include the generated sub-struct headers
-      declare one member per group, nested by default
+      declare one member per group
       itself be marked final if appropriate
-    Declare a group as  rfl::Flatten<SubStruct>  only when the parent's
-    JSON must carry that group's members beside its own -- the shape the
-    wire already had.  Flatten keeps the wire flat; it does not narrow
-    the parent's reflected literal.
     ============================================================ }}
 {{{cpp_license}}}
 #ifndef ORES_{{field_group.component_include_upper}}_DOMAIN_{{field_group.entity_singular_upper}}_HPP

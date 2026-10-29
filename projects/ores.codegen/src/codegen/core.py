@@ -5356,6 +5356,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             pk['params'] = ', '.join(
                 f'const std::string& {c["column"]}' for c in pk_columns
             )
+            # The same parameter list with the names left out, for a
+            # signature whose body never reads them: a gated entity's
+            # direct write is a refusal and nothing else, so naming the
+            # parameters would draw an unused-parameter warning.
+            pk['params_unnamed'] = ', '.join(
+                'const std::string&' for _ in pk_columns
+            )
             pk['args'] = ', '.join(c['column'] for c in pk_columns)
             # The service's own key parameters, which name the type a caller
             # holds rather than the text the store keeps. A uuid primary key is
@@ -5369,6 +5376,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             pk['typed_params'] = (
                 f'const boost::uuids::uuid& {pk_columns[0]["column"]}'
                 if _single_uuid else pk['params'])
+            pk['typed_params_unnamed'] = (
+                'const boost::uuids::uuid&'
+                if _single_uuid else pk['params_unnamed'])
             pk['typed_args'] = (
                 f'boost::uuids::to_string({pk_columns[0]["column"]})'
                 if _single_uuid else pk['args'])
@@ -5453,6 +5463,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # requested key-tuples are then filtered in C++.
             pk['batch_params'] = ', '.join(
                 f'const std::vector<std::string>& {c["column"]}s' for c in pk_columns
+            )
+            pk['batch_params_unnamed'] = ', '.join(
+                'const std::vector<std::string>&' for _ in pk_columns
             )
             pk['batch_args'] = ', '.join(f"{c['column']}s" for c in pk_columns)
             pk['batch_empty_check'] = ' || '.join(

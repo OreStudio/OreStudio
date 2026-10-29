@@ -163,7 +163,7 @@ void validate(const ores::database::context& ctx,
         return;
 
     const std::string sql =
-        "select l.value_set_code,"
+        "select l.value_set_code, s.source_kind,"
         " coalesce(ores_reporting_value_in_set_fn(l.value_set_code, $2)::text, 'true')"
         " from ores_reporting_ore_parameter_setting_value_sets_tbl l"
         "  join ores_reporting_ore_parameter_value_sets_tbl s"
@@ -173,15 +173,30 @@ void validate(const ores::database::context& ctx,
         "   and l.valid_to = ores_utility_infinity_timestamp_fn()";
 
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
-        ctx, sql, {"Setup:" + setting.ore_name, value}, lg,
+        ctx,
+        sql,
+        {"Setup:" + setting.ore_name, value},
+        lg,
         "validate an engine setting against its value set");
 
-    if (rows.empty() || rows.front().size() < 2 || !rows.front()[1].has_value())
-        return;
-    if (rows.front()[1].value() == "true")
+    if (rows.empty() || rows.front().size() < 3)
         return;
 
     const auto set_code = rows.front()[0].value_or(std::string{});
+    const auto kind = rows.front()[1].value_or(std::string{});
+
+    /*
+     * A kind the set states as a whole has a column of its own, and a number the
+     * column cannot hold is content the setting cannot hold. The parse is the
+     * one the apply makes, so a value refused here is the value refused there,
+     * and the refusal is permanent rather than retried.
+     */
+    if (kind == "integer")
+        as_whole(text);
+
+    if (rows.front()[2].value_or(std::string{}) == "true")
+        return;
+
     throw std::invalid_argument(setting.column_name + " is not a value its value set " + set_code +
                                 " accepts, so the proposal would be refused when it is applied.");
 }
@@ -239,16 +254,16 @@ std::optional<group_row> read_fixings(const ores::database::context& ctx,
     if (rows.empty())
         return std::nullopt;
     const auto& r = rows.front();
-    return group_row{.id = r.id,
-                     .version = r.version,
-                     .party_id = r.party_id,
-                     .values = {{"imply_todays_fixings", text_of(r.imply_todays_fixings)},
-                                {"include_todays_cash_flows", text_of(r.include_todays_cash_flows)},
-                                {"include_reference_date_events",
-                                 text_of(r.include_reference_date_events)},
-                                {"enrich_index_fixings", text_of(r.enrich_index_fixings)},
-                                {"ignore_fixing_lag", text_of(r.ignore_fixing_lag)},
-                                {"ignore_fixing_lead", text_of(r.ignore_fixing_lead)}}};
+    return group_row{
+        .id = r.id,
+        .version = r.version,
+        .party_id = r.party_id,
+        .values = {{"imply_todays_fixings", text_of(r.imply_todays_fixings)},
+                   {"include_todays_cash_flows", text_of(r.include_todays_cash_flows)},
+                   {"include_reference_date_events", text_of(r.include_reference_date_events)},
+                   {"enrich_index_fixings", text_of(r.enrich_index_fixings)},
+                   {"ignore_fixing_lag", text_of(r.ignore_fixing_lag)},
+                   {"ignore_fixing_lead", text_of(r.ignore_fixing_lead)}}};
 }
 
 std::optional<group_row> read_building(const ores::database::context& ctx,
@@ -259,17 +274,16 @@ std::optional<group_row> read_building(const ores::database::context& ctx,
     if (rows.empty())
         return std::nullopt;
     const auto& r = rows.front();
-    return group_row{.id = r.id,
-                     .version = r.version,
-                     .party_id = r.party_id,
-                     .values = {{"observation_model", text_of(r.observation_model)},
-                                {"lazy_market_building", text_of(r.lazy_market_building)},
-                                {"build_failed_trades", text_of(r.build_failed_trades)},
-                                {"continue_on_error", text_of(r.continue_on_error)},
-                                {"use_at_par_coupons_curves",
-                                 text_of(r.use_at_par_coupons_curves)},
-                                {"use_at_par_coupons_trades",
-                                 text_of(r.use_at_par_coupons_trades)}}};
+    return group_row{
+        .id = r.id,
+        .version = r.version,
+        .party_id = r.party_id,
+        .values = {{"observation_model", text_of(r.observation_model)},
+                   {"lazy_market_building", text_of(r.lazy_market_building)},
+                   {"build_failed_trades", text_of(r.build_failed_trades)},
+                   {"continue_on_error", text_of(r.continue_on_error)},
+                   {"use_at_par_coupons_curves", text_of(r.use_at_par_coupons_curves)},
+                   {"use_at_par_coupons_trades", text_of(r.use_at_par_coupons_trades)}}};
 }
 
 std::optional<group_row> read_execution(const ores::database::context& ctx,
@@ -285,8 +299,7 @@ std::optional<group_row> read_execution(const ores::database::context& ctx,
                      .party_id = r.party_id,
                      .values = {{"n_threads", text_of(r.n_threads)},
                                 {"log_mask", text_of(r.log_mask)},
-                                {"gzip_compression_level",
-                                 text_of(r.gzip_compression_level)}}};
+                                {"gzip_compression_level", text_of(r.gzip_compression_level)}}};
 }
 
 void write_fixings(const ores::database::context& ctx,
@@ -460,8 +473,7 @@ void write_group(const ores::database::context& ctx,
                  const std::optional<group_row>& row_in_force,
                  const value_map& values,
                  const std::string& reason) {
-    part_of(group_code).write(
-        ctx, engine_settings_id, party_id, row_in_force, values, reason);
+    part_of(group_code).write(ctx, engine_settings_id, party_id, row_in_force, values, reason);
 }
 
 /**
@@ -829,8 +841,7 @@ std::vector<std::string> engine_settings_proposal_service::refusals(const std::s
         const auto group_rows = rows_of_group(rows, code);
         if (group_rows.empty())
             continue;
-        const auto in_force =
-            version_of(row_at(ctx_, code, group_rows.front().engine_settings_id));
+        const auto in_force = version_of(row_at(ctx_, code, group_rows.front().engine_settings_id));
         if (in_force != group_rows.front().base_version) {
             out.push_back("The " + code +
                           " group has moved since the proposal was raised: it is "

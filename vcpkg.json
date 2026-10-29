@@ -5,6 +5,8 @@
     "version-string": "0.0.29",
     "dependencies": [
         "openssl",
+        "yyjson",
+        "msgpack-c",
         {
             "name": "reflectcpp",
             "features": [ "xml", "msgpack" ]

@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "codec_json_tests.cpp"
     "compression_gzip_tests.cpp"
     "convert_base64_converter_tests.cpp"
     "crypto_sha256_tests.cpp"

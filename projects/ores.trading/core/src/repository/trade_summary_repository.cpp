@@ -128,6 +128,11 @@ trade_summary_filter_condition(const std::optional<messaging::trade_summaries_fi
                         query_builder::equals("trade_date",
                                               query_builder::filter_value(**filter->trade_date)) :
                         query_builder::is_null("trade_date"));
+    if (filter->structure_id)
+        r.push_back(query_builder::equals("structure_id",
+                                          query_builder::filter_value(*filter->structure_id)));
+    if (filter->is_leg)
+        r.push_back(query_builder::equals("is_leg", query_builder::filter_value(*filter->is_leg)));
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
@@ -181,6 +186,18 @@ trade_summary_filter_condition(const std::optional<messaging::trade_summaries_fi
         for (const auto& v : *filter->trade_date_one_of)
             values.push_back(query_builder::filter_value(v));
         r.push_back(query_builder::one_of("trade_date", std::move(values)));
+    }
+    if (filter->structure_id_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->structure_id_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("structure_id", std::move(values)));
+    }
+    if (filter->is_leg_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->is_leg_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("is_leg", std::move(values)));
     }
     if (filter->trade_date_from) {
         const auto bound = range_bound(*filter->trade_date_from, range_end::from, false);

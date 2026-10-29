@@ -141,6 +141,18 @@ messaging::list_trade_summaries_response trade_summary_service::list_trade_summa
             refuse(outcome_code::filter_too_large, {.field = "trade_date_one_of", .limit = "1000"});
         return response;
     }
+    if (request.filter && request.filter->structure_id_one_of &&
+        request.filter->structure_id_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "structure_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->is_leg_one_of &&
+        request.filter->is_leg_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "is_leg_one_of", .limit = "1000"});
+        return response;
+    }
     if (request.filter && request.filter->trade_date_from &&
         !ores::database::repository::range_bound(
             *request.filter->trade_date_from, ores::database::repository::range_end::from, false)) {

@@ -267,6 +267,14 @@ struct bond_terms final {
  * own terms need and leaves the rest empty. This mirrors that shape rather
  * than inventing a hierarchy the store does not have.
  */
+/**
+ * @brief One member of a commodity basket, as the catalogue spells it.
+ */
+struct commodity_basket_member final {
+    std::string code;
+    std::optional<double> weight;
+};
+
 struct commodity_terms final {
     /**
      * @brief The commodity the trade names, as the catalogue spells it, such
@@ -298,6 +306,8 @@ struct commodity_terms final {
     std::optional<double> lower_barrier;
     std::optional<double> upper_barrier;
     std::optional<std::chrono::year_month_day> swaption_expiry_date;
+    /// The members a basket product names, in the order it draws them.
+    std::vector<commodity_basket_member> basket;
 };
 
 /**

@@ -5,7 +5,7 @@
 #+description: A system administrator sees whether each public provider's fixings are arriving, accepts or declines its terms, pauses or resumes it, asks for a backfill, and reads where each feed started.
 #+type: user_journey
 #+level: cross
-#+filetags: :user_journey:marketdata:official_rates:operations:
+#+filetags: :user_journey:marketdata:public_rates:sources:adapters:operations:
 #+created: 2026-10-28
 #+updated: 2026-10-28
 #+startup: inlineimages
@@ -136,8 +136,8 @@ example.
 | /Item/ | The internal identity a value is stored under. | =FX-ECB-EUR-CAD= |
 | /Fixing/ | The daily value a public provider publishes for one item. | the ECB EUR/CAD fixing, 1.5638 on 2026-10-28 |
 
-This journey has no *driver* and no *connection*: the code has neither row. A
-test environment is a source of kind =test=.
+A test environment is a source of kind =test=. A data vendor is a provider of
+kind =data_vendor=.
 
 #+ATTR_HTML: :class hug-leading
 | Screen | Surface | The question it answers |

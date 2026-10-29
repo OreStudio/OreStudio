@@ -57,9 +57,9 @@ an example that is a real row or a real id.
 | /Subscription/ | A party's entitlement to a provider. | the System Party subscribes to provider =ecb= | [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]] |
 | /Tick/ | What an adapter sends on the wire and what a party receives. | one value of =iso4217/USD/rate=, stamped 16:00 | [[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]] |
 
-This model has no *driver* and no *connection*. A connection, in the sense of an
-endpoint with credentials, is a *source*. The code that speaks an external
-language is the *adapter*. A test environment is a source of kind =test=.
+A test environment is a source of kind =test=. A data vendor is a provider of
+kind =data_vendor=. The endpoint and the credential belong to the source and the
+provider it serves.
 
 * Why one service and one rule
 

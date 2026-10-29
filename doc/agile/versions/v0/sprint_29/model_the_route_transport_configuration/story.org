@@ -57,11 +57,12 @@ provider can differ in endpoint and secret without a redeploy.
 
 * Decisions
 
-- The entity is the *source*, not a "connection". The code already has
-  =market_data_source= as one adapter instance of a provider; a new entity would
-  duplicate it.
+- The entity is the *source*: =market_data_source= is already one adapter
+  instance of a provider, so the transport belongs on it.
 - The *adapter* is the runtime, known by its adapter id, and the adapter id is
-  the source name. There is no "driver": the kind of code is not a row.
+  the source name.
+- The kind of code is not a row. The *kind* of a source is a value a person
+  reads: =live=, =test=, =simulated=.
 - The *provider* is whoever owns the ids and the terms: a central bank, a
   treasury, or a data vendor. The credential reference stays on the provider.
 - A party routes one source for each provider. A provider may have several
@@ -86,4 +87,19 @@ These are the code's words. The story uses no other words for these rows.
 | /Item/ | The internal identity of a value. | =FX-ECB-EUR-USD= |
 | /Vendor instrument/ | An id scheme, an id and a field in the vendor's notation. | =iso4217/USD/rate= |
 
-"Driver" and "connection" are not words of this story: the code has neither row.
+* Terms compared
+
+The story had to choose a name for the configured instance of a provider. This
+table records the candidates and the reason the story uses the fourth.
+
+#+ATTR_HTML: :class hug-leading
+| Candidate | What it would name | Why the story does not use it | Word used instead |
+|-----------+--------------------+-------------------------------+-------------------|
+| Driver | The code that speaks an external language | It names code, and the code has no such row. The runtime is the adapter; the implementation is not configured per row. | Adapter for the runtime; Kind for the value |
+| Connection | An endpoint with credentials, configured as an instance | =market_data_source= already holds one adapter instance of a provider, so a second entity would duplicate it. | Source |
+| Endpoint | The URL a source reads | The endpoint is one field of the transport, not the entity. | Source |
+| Destination | Where the values land | The route names the party's source, and the market data service stores the values. | Route |
+
+The story uses *provider*, *source*, *adapter*, *kind*, *route*, *item* and
+*vendor instrument*, with the meanings in the table above and the examples in
+the prototype.

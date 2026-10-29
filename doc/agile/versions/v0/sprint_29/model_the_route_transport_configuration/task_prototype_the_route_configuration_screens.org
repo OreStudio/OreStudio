@@ -43,7 +43,7 @@ transport the story will persist, and marks it not persisted today.
   tick per adapter id.
 - A source record has Overview, Adapter, Routes and History, and the Adapter tab
   shows the transport with a *not persisted yet* marker.
-- The screen uses no "driver" or "connection".
+- The screen uses the words provider, source, adapter, kind and route, and no others for these rows.
 
 * Plan
 

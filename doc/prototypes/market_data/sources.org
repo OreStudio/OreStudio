@@ -37,9 +37,9 @@ The screen uses the words of the code, and these are the only words it uses.
 | /Item/ | The internal identity a vendor instrument maps to. | =FX-ECB-EUR-USD=, =IR-ECB-ESTR= |
 | /Subscription/ | A party's entitlement to a provider. | System Party subscribes to provider =ecb= |
 
-The screen does not use "driver" or "connection". The code has no such rows:
-what we called a connection is a *source*, and what we called a driver is the
-*adapter* behind it, or the kind of code that runs an adapter.
+A test environment is a source of kind =test=. A data vendor is a provider of
+kind =data_vendor=. The endpoint, the path, the poll interval and the backfill
+window belong to the source; the credential reference belongs to the provider.
 
 * States
 

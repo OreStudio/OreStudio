@@ -5,7 +5,7 @@
 #+description: The public sources as one screen a person runs: each provider's terms, freshness and source state on one row, the three failures told apart, and the paused and backfill variants drawn before either is built.
 #+type: knowledge
 #+level: cross
-#+filetags: :prototype:ui:market_data:official_rates:
+#+filetags: :prototype:ui:market_data:public_rates:
 #+created: 2026-10-28
 #+updated: 2026-10-28
 
@@ -183,8 +183,8 @@ architecture hub; the example is the one this screen draws.
 | /Item/ | The internal identity a value is stored under. | =FX-ECB-EUR-USD= |
 | /Fixing/ | The daily value a public source publishes for one item. | ECB EUR/CAD 1.5638 on 2026-10-28 |
 
-"Driver" and "connection" are not words of the code and this screen does not use
-them. A source is a row; the adapter is the runtime that serves it.
+A source is a row; the adapter is the runtime that serves it. The provider owns
+the terms and the credential reference.
 
 * The setup is a screen of its own
 

@@ -19,34 +19,48 @@
 
 salt
 {
-  <b>OFFICIAL RATES</b> | [ Market data / Official rates ]
+  <b>MARKET DATA / CONNECTIVITY</b>
+  --
+  Publishers | Suppliers | Adapters | Feeds
+  --
+  <b>Delivery tree</b>
+  * Frankfurter · aggregator · 1 session · 7 feeds | [ New session ] [ Open ]
+    * frankfurter-eu · frankfurter 1.4.0 · production · https://api.frankfurter.app · serving | [ Add feed ] [ Open ]
+      * ecb-frankfurter → European Central Bank · end_of_day · all items · daily 16:00 CET
+      * imf-frankfurter → International Monetary Fund · end_of_day · all items · daily 16:00 CET
+      * boc-frankfurter → Bank of Canada · end_of_day · all items · daily 16:00 CET
+  * Bloomberg · vendor · 2 sessions · 2 feeds | [ New session ] [ Open ]
+  * ECB Data Portal · authority · 1 session · 1 feed | [ New session ] [ Open ]
+  --
+  <b>ecb-frankfurter</b> | [ Overview ] [ Underlyings ] [ Schedule ] [ Routes ] [ History ]
+  Publisher: ecb · Session: frankfurter-eu · Supplier: frankfurter · Service: end_of_day · key ECB
+  Scope: all FX items · Schedule: marketdata.refresh.ecb-frankfurter, daily 16:00
+  <i>The session owns the endpoint and the credential; the feed owns the publisher, the service, the scope and the schedule.</i>
+  ==
+  <b>MARKET DATA / PUBLIC RATES</b>
+  --
+  Publishers | Availability | Compare | Fetch
   --
   {#
-    . | Provider | Terms | Last fixing | Received | Next expected | Adapter | Acts
-    1 | European Central Bank | accepted v3 | 2026-10-28 | 19:23 today | today, on time | serving | [ Open ] [ Pause ]
-    2 | Bank of Canada | accepted v2 | 2026-10-27 | 19:20 yesterday | today, late | serving | [ Open ] [ Pause ]
-    3 | International Monetary Fund | not accepted | — | — | — | serving | [ Review terms ]
-    4 | Central Bank of Turkiye | accepted v1 | — | — | — | not serving | [ Open ]
-    5 | Bank of England | accepted v1 | 2026-10-28 | 15:00 today | today, on time | serving · paused by a person | [ Open ] [ Resume ]
+    . | Publisher | Underlyings | Terms | Feeds | Last fixing | Last delivery | Acts
+    1 | European Central Bank | 5 | accepted v3 | FX ecb-frankfurter (frankfurter, end_of_day) · IR ecb-ecb-data (ecb-data-portal) | 2026-10-28 | 19:24 | [ Open ]
+    2 | Bank of Canada | 2 | accepted v2 | FX boc-frankfurter (frankfurter) | 2026-10-27 | 19:20 | [ Open ]
+    3 | Bank of England | 3 | accepted v1 | FX boe-frankfurter · IR boe-boe (boe) | 2026-10-28 | 15:00 | [ Open ]
   }
-  [ Accept terms ] | [ Pause ] | [ Backfill a range ] | [ History ]
-  --
-  Legend: <i>serving</i> · <i>late</i> · <i>not serving</i> · <i>paused</i> · <i>never fixed</i>
+  [ Accept terms ] | [ Pause ] | [ Fetch a range ] | [ History ]
   --
   <b>European Central Bank — EUR/CAD, 2026-10-28, 1.5638</b>
-  <i>Terms v2 withdrawals are offered where the terms are accepted, with the fixings they remove, not as a row command.</i>
   {#
-    Date | Value | Item | Received
-    2026-10-28 | 1.5638 | FX-ECB-EUR-CAD | 19:23:58
-    2026-10-27 | 1.5591 | FX-ECB-EUR-CAD | 19:24:02
-    2026-10-26 | 1.5574 | FX-ECB-EUR-CAD | 19:23:57
+    Date | Value | Item | Feed | Received
+    2026-10-28 | 1.5638 | FX-ECB-EUR-CAD | ecb-frankfurter | 19:23:58
+    2026-10-27 | 1.5591 | FX-ECB-EUR-CAD | ecb-frankfurter | 19:24:02
   }
   {#
     EUR/CAD | ECB 1.5638 | BOC 1/0.63926 = 1.5643 | IMF 1.5637
   }
   --
-  <b>Backfill a range</b>
-  From [ 2026-01-01 ] to [ 2026-10-28 ] | [ Fetch ] | Fetching: 218 of 300 days
+  <b>Fetch a range</b>
+  Publisher [ European Central Bank ] · Class [ FX ] · From [ 2026-01-01 ] to [ 2026-10-28 ] | [ Fetch ] | 218 of 300 days
 }
 
 @enduml

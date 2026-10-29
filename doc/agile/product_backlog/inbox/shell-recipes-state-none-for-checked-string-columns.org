@@ -5,7 +5,7 @@
 #+description: The generated shell recipes put the token __none__ in every string column of their example commands, including columns with a closed-set check such as trade_type_code. __none__ is only meaningful for list tokens, so a string column takes it verbatim and the example command fails the check it documents. The recipes are generated, so the fix belongs in the codegen that emits the examples, not in the files.
 #+type: capture
 #+level: cross
-#+filetags: :=shell= =codegen= =doc= =defect=:
+#+filetags: :shell:codegen:doc:defect:
 #+created: 2026-10-29
 #+updated: 2026-10-29
 

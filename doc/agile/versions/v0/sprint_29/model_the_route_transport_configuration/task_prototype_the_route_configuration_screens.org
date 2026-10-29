@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: D6076124-A427-4DCC-B018-A2992AA13CB3
+:END:
+#+title: Task: Prototype the Connectivity tree and its records
+#+description: The delivery tree of suppliers, sessions and feeds, the adapter catalogue, the five records and the two setup flows, drawn before the entity changes.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:publishers:suppliers:sessions:feeds:prototype:model_the_route_transport_configuration:sprint_29:v0:
+#+owner: marco
+#+branch: feature/run-the-public-sources-from-the-official-rates-screen
+#+pr: 4062
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Persist the adapter transport on the source]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Connectivity delivery tree and its five records, drawn in the target words:
+publisher, supplier, adapter, session, service, feed, route. The session record
+shows the transport the story persists, and the feed record shows the scope and
+schedule.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Persist the adapter transport on the source]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-29                               |
+
+* Acceptance
+
+- The Suppliers tab draws the tree: supplier → session → feed, with the adapter,
+  environment and endpoint on the session and the publisher, service and scope
+  on the feed.
+- The Adapters tab is the read-only catalogue: version, services, schema,
+  sessions.
+- A session record has Overview, Feeds, Runtime and History; a feed record has
+  Overview, Underlyings, Schedule, Routes and History.
+- The two flows, new session and new feed, are drawn from the node they belong
+  to.
+- The screen uses the words publisher, supplier, adapter, session, service,
+  feed and route, and no others for these rows.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4062][#4062]] | [doc] Model suppliers, sessions and feeds, with the Connectivity and Public rates prototypes |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The prototypes are built and signed off.
+
+- Connectivity: a delivery tree (supplier → session → feed) on the left and an
+  inspector on the right, with a supplier dashboard, the adapter catalogue,
+  publisher and feed lists, records for publisher, supplier, session and feed,
+  and the two flows, new session and new feed.
+- Public rates: one row per publisher and class, the routed feed and supplier,
+  freshness separate from session state, the class carried on the record,
+  service-aware fetch, and availability and compare naming the feed.
+- Both are static pages with mock data, rendered at 1440px with Playwright.
+- The documentation gate passed 8 of 8 at the merge commit; no code changed.
+- The model is the target. The atomic architecture pages that document the
+  current code keep its words until the implementation story lands.

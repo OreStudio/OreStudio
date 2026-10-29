@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 19F25765-80A5-4D5E-99F9-095EE207AD6F
+:END:
+#+title: Connectivity, prototype
+#+description: The delivery tree of market data: who publishes, who supplies, the configured sessions of an adapter, and the feeds that bind a publisher to a session and a service.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:marketdata:connectivity:publishers:suppliers:sessions:feeds:
+#+created: 2026-10-28
+#+updated: 2026-10-30
+
+| Item | Where |
+|------+-------|
+| Prototype | [[file:connectivity/][the prototype page]] |
+| Design note | this page |
+| Group | [[file:index.org][Market data prototypes]] |
+| Sibling | [[file:public-rates.org][Public rates]] |
+| Review | none |
+
+* What it argues
+
+Connectivity is where the delivery of market data is configured. It is a tree,
+not a list: a supplier has sessions, a session is one configured adapter, and a
+feed binds one publisher to one session and one service.
+
+#+ATTR_HTML: :class hug-leading
+| Word | Meaning | Example |
+|------+---------+---------|
+| /Publisher/ | Owns the ids, the credit and the terms. | =ecb=, =imf=, =ust=, =bloomberg= for its own data |
+| /Supplier/ | Who we contract with and connect to. | =frankfurter=, =bloomberg=, =lseg=, =ecb-data-portal=, =fred= |
+| /Adapter/ | Code module that speaks one supplier protocol. | =frankfurter= 1.4.0 |
+| /Session/ | One configured adapter: supplier, environment, endpoint, credential, settings. | =frankfurter-eu= (production) |
+| /Environment/ | Where a session runs. | =production=, =test=, =dr=, =simulated= |
+| /Service/ | What a session offers; it decides the feed's shape. | =real_time=, =delayed=, =end_of_day=, =reference=, =historical= |
+| /Feed/ | One publisher on one service through one session, with key, scope and schedule. | =ecb-frankfurter= |
+| /Route/ | A party's feed for one publisher and one asset class. | System Party, =ecb=, FX → =ecb-frankfurter= |
+
+Frankfurter is a supplier that delivers the ECB's data; it is not the publisher.
+Bloomberg is both: the supplier of a session and the publisher of its own values.
+That distinction is the point of the screen.
+
+* The shape: a tree on the left, a list or the details on the right
+
+The screen is one page split in two.
+
+- *Left*: the delivery tree, supplier → session → feed, and a second tree of
+  publishers → feeds. A search box filters both. The selected node is marked.
+- *Right*: what the person came to see.
+  - A supplier shows a dashboard: its sessions, the coverage of publishers it
+    serves, the feeds that need attention, its contract, all its feeds, and the
+    recent activity. The first thing a person sees is what needs a person.
+  - A session shows its transport and its feeds; runtime and history are tabs.
+  - A feed shows its details, then Underlyings, Schedule, Routes and History.
+  - A publisher shows its terms and the list of its feeds.
+  - With nothing selected, the pane is a short overview: the counts, and the
+    reminder that the tree is supplier → session → feed.
+
+The Adapters catalogue is one click from the rail. Nobody configures an adapter;
+they configure a session of one.
+
+* The records
+
+- A *publisher* record has Overview, Feeds and History.
+- A *supplier* record has Overview (contract, support) and Sessions.
+- A *session* record has Overview (endpoint, environment, credential, settings,
+  services), Feeds, Runtime and History.
+- A *feed* record has Overview (publisher, session, service, provider key,
+  default), Underlyings, Schedule, Routes and History.
+
+A session owns the endpoint, the credential and the settings; a feed owns the
+publisher, the service, the provider key, the scope and the schedule. The
+endpoint is entered once per session.
+
+* The two setup flows
+
+=??add-session=1&supplier=frankfurter= configures a session: adapter,
+environment, endpoint, credential and schema settings, with a test connection.
+=??add-feed=1&publisher=ecb= adds a feed to an enabled session: service,
+provider key, scope, schedule and route.
+
+* What is fake
+
+Every endpoint, credential, version, count and date is invented. Secrets are
+masks only. No request leaves the page.
+
+* Where the border is
+
+Connectivity owns the editable facts: publishers, suppliers, adapters, sessions,
+feeds, scopes, schedules and routes. Public rates owns the observed facts:
+values, coverage, provenance and freshness. A value names its feed; the feed
+names its session and supplier; the supplier is who we call.

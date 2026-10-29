@@ -29,11 +29,11 @@ schedule.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Persist the adapter transport on the source]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -96,3 +96,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The prototypes are built and signed off.
+
+- Connectivity: a delivery tree (supplier → session → feed) on the left and an
+  inspector on the right, with a supplier dashboard, the adapter catalogue,
+  publisher and feed lists, records for publisher, supplier, session and feed,
+  and the two flows, new session and new feed.
+- Public rates: one row per publisher and class, the routed feed and supplier,
+  freshness separate from session state, the class carried on the record,
+  service-aware fetch, and availability and compare naming the feed.
+- Both are static pages with mock data, rendered at 1440px with Playwright.
+- The documentation gate passed 8 of 8 at the merge commit; no code changed.
+- The model is the target. The atomic architecture pages that document the
+  current code keep its words until the implementation story lands.

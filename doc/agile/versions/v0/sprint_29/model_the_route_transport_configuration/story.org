@@ -49,7 +49,7 @@ session and a production session of one supplier differ without a redeploy.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:D6076124-A427-4DCC-B018-A2992AA13CB3][Prototype the sources and adapters screens]] | STARTED | 2026-10-29 | | The sources list, the adapters list and a source record with its transport, drawn before the entity changes. |
+| [[id:D6076124-A427-4DCC-B018-A2992AA13CB3][Prototype the sources and adapters screens]] | DONE | 2026-10-29 | 2026-10-29 | The sources list, the adapters list and a source record with its transport, drawn before the entity changes. |
 
 * Decisions
 

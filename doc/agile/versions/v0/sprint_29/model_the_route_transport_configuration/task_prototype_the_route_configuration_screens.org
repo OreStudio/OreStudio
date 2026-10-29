@@ -8,7 +8,7 @@
 #+filetags: :marketdata:publishers:suppliers:sessions:feeds:prototype:model_the_route_transport_configuration:sprint_29:v0:
 #+owner: marco
 #+branch: feature/run-the-public-sources-from-the-official-rates-screen
-#+pr:
+#+pr: 4062
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4062][#4062]] | [doc] Model suppliers, sessions and feeds, with the Connectivity and Public rates prototypes |
 
 * Review
 

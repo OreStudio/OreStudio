@@ -172,6 +172,11 @@ const LINKS = [
         name: 'InterpolationMethod',
         value_set_code: 'curve_interpolation_method',
     },
+    {
+        scope: 'YieldCurves',
+        name: 'Currency',
+        value_set_code: 'currency',
+    },
 ];
 
 type Replies = Readonly<Record<string, unknown>>;
@@ -273,6 +278,20 @@ function repliesFor(overrides: Replies = {}): Replies {
                     minimum: null,
                     maximum: null,
                 },
+                {
+                    code: 'currency',
+                    source_kind: 'catalogue',
+                    catalogue_code: 'refdata.currency',
+                    minimum: null,
+                    maximum: null,
+                },
+            ],
+        },
+        'refdata.v1.currencies.list': {
+            result: ok,
+            currencies: [
+                { iso_code: 'GBP', name: 'Pound Sterling' },
+                { iso_code: 'USD', name: 'US Dollar' },
             ],
         },
         'reporting.v1.ore_parameter_value_set_values.list': {
@@ -292,7 +311,12 @@ function repliesFor(overrides: Replies = {}): Replies {
                 },
             ],
         },
-        'reporting.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
+        'reporting.v1.ore_parameter_value_set_catalogues.list': {
+            result: ok,
+            catalogues: [
+                { code: 'refdata.currency', relation: 'ores_refdata_currency_catalogue_v' },
+            ],
+        },
         'reporting.v1.ore_parameter_setting_value_sets.list': {
             result: ok,
             setting_value_sets: LINKS,
@@ -464,6 +488,10 @@ describe('the curve configuration a report binds', () => {
         expect(currency?.value).toBe('USD');
         expect(currency?.label).toBe('Currency');
         expect(currency?.required).toBe(true);
+        // The leaf says which catalogue it draws on, so the screen draws the
+        // currency list with its flags rather than a bare list of codes.
+        expect(currency?.catalogue).toBe('refdata.currency');
+        expect(currency?.choices.map((choice) => choice.value)).toEqual(['GBP', 'USD']);
 
         const method = entry?.parameters.find((leaf) => leaf.ore === 'InterpolationMethod');
         expect(method?.value).toBe('Linear');

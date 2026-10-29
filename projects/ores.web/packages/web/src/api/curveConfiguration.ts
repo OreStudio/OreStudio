@@ -53,6 +53,7 @@ const parameterSchema = z.object({
     removedIn: z.string(),
     valueSet: z.string(),
     sourceKind: z.string(),
+    catalogue: z.string().default(''),
     choices: z.array(choiceSchema),
     minimum: z.number().nullable(),
     maximum: z.number().nullable(),

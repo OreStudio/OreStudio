@@ -1,0 +1,149 @@
+:PROPERTIES:
+:ID: 066BEB24-5BFB-4D30-85E2-723E90C75712
+:END:
+#+title: Task: Inventory the types that carry too many columns
+#+description: A reproducible inventory of every generated persistent type: member count, column count, the blocks that cluster, and a verdict of what each type should become.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-design:modeling:refdata:split_the_types_that_carry_too_many_columns:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One page lists every generated persistent type with the numbers that decide its shape, and a verdict for each: keep, group, or split into named components. The verdicts are the work list the split task works from.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-29                               |
+
+* Acceptance
+
+- A script in the repository prints, per model, its field count, its persisted column count and its nullable column count, and runs from a clean checkout.
+- The report is committed with its command and the commit it was measured at.
+- Every type above the stated threshold carries a verdict with a one-line reason that names the model and the use it serves.
+- The types are ranked worst first, so the split task has an order rather than a list.
+- Nothing outside the report and its script changes.
+
+* Plan
+
+** What decides a type's shape
+
+The model file is the authority, not the generated header: a model states its
+fields, which of them are optional, and which table each belongs to. The
+generated header is one projection of it.
+
+The criteria come from [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented
+Design in ORE Studio]] and [[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data
+classification checklist]]. A type passes when:
+
+- it holds one component: the fields share one invariant that must hold at one
+  instant, and one key identifies them;
+- every member is read by whoever reads the component. A member read by a
+  different screen, job or service, on a different cadence, is a candidate for
+  an annex or a component of its own;
+- a block of members that always move together is a candidate for a field
+  group, and a block that a different owner writes is a component.
+
+A count is a signal of a problem, never the problem. 60 columns can be one
+correct component and 12 can be two components badly joined, so every verdict
+states its reason and the count alone decides nothing.
+
+** The lever
+
+One script under =build/scripts/= reads every =modeling/*.org= and prints one
+row per persistent type: the model path, the field count, the optional count,
+the persisted column count, and the column prefixes that recur. It runs from a
+clean checkout, takes no arguments, and its output is committed under
+=evidence/= beside this page so a reader can re-run it and compare.
+
+The numbers in the report are the script's, and each row names the model it came
+from, so a reader can go from a verdict to the fields in one step.
+
+** The verdicts
+
+Three, and only three:
+
+- *keep* — one component, and the fields belong to it.
+- *group* — one component, but a block of fields is its own type and belongs
+  together: a =field_group= member, not a new table.
+- *split* — more than one component. The verdict names each part and the fields
+  that go to it.
+
+Every type above the threshold gets a verdict. The threshold is stated in the
+report and justified there, not assumed.
+
+** The order
+
+The split task works worst first, so the report ends with the =split= types
+ranked: by the number of parts their verdict names, then by persisted column
+count. A type with three parts and 60 columns comes before one with two parts
+and 20.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Persisted column bindings in =commodity_future_convention= | 60 | `grep -c 'query_builder::bind(' projects/ores.refdata/core/include/ores.refdata.core/repository/commodity_future_convention_entity.hpp` | `1dab64c857` |
+| The same for =cap_floor_volatility_config= | 46 | same, `.../cap_floor_volatility_config_entity.hpp` | `1dab64c857` |
+| The same for =curve_segment= | 40 | same, `.../curve_segment_entity.hpp` | `1dab64c857` |
+| Where MSVC first runs out of instantiation depth | =column_binding<cap_floor_volatility_config_entity, ...>= in `unity_36`, `tuple(320)` | `gh api repos/OreStudio/OreStudio/actions/jobs/<id>/logs` for run 40942373087 | `1dab64c857` |
+
+* Notes
+
+- The count of bindings above is the count the query builder sees, which is the
+  persisted column count plus the audit columns; it is a proxy until the script
+  exists, and the script's number replaces it.
+- MSVC runs out of instantiation depth at 46 bindings for one entity. That is
+  where the shape stops compiling, not where it stops being wrong: the model was
+  wrong at 20 too, and a split made to reach 45 would be a split made for a
+  compiler.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

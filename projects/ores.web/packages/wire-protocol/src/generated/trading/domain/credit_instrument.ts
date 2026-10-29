@@ -34,7 +34,8 @@ import type { AuditRecord } from '../../dq/domain/audit_record.js';
  */
 export interface CreditInstrument {
     identity: InstrumentIdentity;
-    reference_entity: string;
+    reference_entity_id_type: string;
+    reference_entity_id: string;
     start_date: string | null;
     maturity_date: string | null;
     description: string;

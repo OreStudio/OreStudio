@@ -55,7 +55,8 @@ create table if not exists "ores_trading_credit_instruments_tbl" (
     "trade_type_code" text not null,
     "party_id" uuid not null,
     "trade_activity_id" uuid not null,
-    "reference_entity" text not null,
+    "reference_entity_id_type" text not null,
+    "reference_entity_id" text not null,
     "start_date" date null,
     "maturity_date" date null,
     "description" text null,
@@ -74,7 +75,8 @@ create table if not exists "ores_trading_credit_instruments_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("trade_type_code" in ('RiskParticipationAgreement', 'CreditDefaultSwap', 'IndexCreditDefaultSwap', 'IndexCreditDefaultSwapOption', 'SyntheticCDO', 'CreditLinkedSwap')),
-    check ("reference_entity" <> ''),
+    check ("reference_entity_id" <> ''),
+    check ("reference_entity_id_type" in ('LEI', 'Internal')),
     check ("maturity_date" is null or "start_date" is null or "maturity_date" >= "start_date")
 );
 

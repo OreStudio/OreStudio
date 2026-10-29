@@ -105,7 +105,8 @@ credit_instrument_to_domain(const messaging::credit_instrument_write& write) {
     v.identity.trade_id = write.trade_id;
     v.identity.trade_type_code = write.trade_type_code;
     v.identity.trade_activity_id = write.trade_activity_id;
-    v.reference_entity = write.reference_entity;
+    v.reference_entity_id_type = write.reference_entity_id_type;
+    v.reference_entity_id = write.reference_entity_id;
     v.start_date = write.start_date;
     v.maturity_date = write.maturity_date;
     v.description = write.description;

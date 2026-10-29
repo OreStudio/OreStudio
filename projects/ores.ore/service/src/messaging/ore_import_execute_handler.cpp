@@ -2969,7 +2969,9 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                     req.change.write.trade_id = instr.identity.trade_id;
                     req.change.write.trade_activity_id = instr.identity.trade_activity_id;
                     req.change.write.trade_type_code = instr.identity.trade_type_code;
-                    req.change.write.reference_entity = instr.reference_entity;
+                    req.change.write.reference_entity_id_type =
+                        instr.reference_entity_id_type;
+                    req.change.write.reference_entity_id = instr.reference_entity_id;
                     req.change.write.start_date = instr.start_date;
                     req.change.write.maturity_date = instr.maturity_date;
                     req.change.write.description = instr.description;

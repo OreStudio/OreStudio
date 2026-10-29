@@ -105,7 +105,7 @@ family names the same trade.
 
 The activity that wrote this version.
 
-** reference_entity
+** reference_entity_id_type
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
@@ -113,13 +113,43 @@ The activity that wrote this version.
 :economic: true
 :END:
 
-Name or identifier of the reference entity the risk is on.
+What kind of identifier =reference_entity_id= states: the legal entity's LEI,
+or an identifier the system's own data uses.
 
-Every credit product states one: the issuer or the credit curve of a swap, the
-index, the qualifier of a CDO.
+A reference is typed rather than guessed, because a credit curve named =ACME=
+in an engine document and an LEI are different things and a column that holds
+either without saying which cannot be joined to anything.
+
+The closed set is LEI and Internal, and it follows the shape the trading
+family's other identifier columns use.
 
 #+begin_src cpp :name generator
-std::string("ACME Corp")
+std::string("LEI")
+#+end_src
+
+** reference_entity_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:economic: true
+:END:
+
+The identifier of the reference entity the risk is on, read with
+=reference_entity_id_type=.
+
+Every credit product states one. When the type is LEI the value is the legal
+entity's LEI and the soft reference below applies; when it is Internal the
+value is the identifier the source states, such as an engine document's credit
+curve or issuer id, and nothing is claimed about a legal entity.
+
+Soft FK to the DQ lei_entity dataset when the type is LEI: the entity belongs
+to that dataset rather than to a trading table, so the reference is recorded
+rather than copied. A later change tightens it into a real foreign key once a
+legal entity lives in refdata.
+
+#+begin_src cpp :name generator
+std::string("529900T8BM49AURSDO55")
 #+end_src
 
 ** start_date
@@ -346,7 +376,8 @@ widening them.
 
 | expression |
 |------------|
-| "reference_entity" <> '' |
+| "reference_entity_id" <> '' |
+| "reference_entity_id_type" in ('LEI', 'Internal') |
 | "maturity_date" is null or "start_date" is null or "maturity_date" >= "start_date" |
 
 ** Indexes
@@ -433,7 +464,7 @@ domain and repository profiles regenerate correctly.
 |--------------------------+--------------|
 | identity.trade_id        | ID           |
 | identity.trade_type_code | Type         |
-| reference_entity         | Reference    |
+| reference_entity_id      | Reference    |
 | start_date               | Start Date   |
 | maturity_date            | Maturity Date |
 | description              | Description  |

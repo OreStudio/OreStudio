@@ -50,7 +50,7 @@ std::string convert_to_table(const std::vector<credit_instrument>& v) {
           << "Description" << "Version" << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& ci : v) {
-        table << ci.identity.trade_id << ci.identity.trade_type_code << ci.reference_entity
+        table << ci.identity.trade_id << ci.identity.trade_type_code << ci.reference_entity_id
               << credit_instrument_opt_str(ci.start_date)
               << credit_instrument_opt_str(ci.maturity_date) << ci.description
               << ci.identity.version << ci.audit.recorded_at << fort::endr;

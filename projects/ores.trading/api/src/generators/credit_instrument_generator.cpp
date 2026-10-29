@@ -48,7 +48,8 @@ generate_synthetic_credit_instrument(utility::generation::generation_context& ct
     r.identity.trade_type_code = std::string("CreditDefaultSwap");
     r.identity.party_id = ctx.generate_uuid();
     r.identity.trade_activity_id = ctx.generate_uuid();
-    r.reference_entity = std::string("ACME Corp");
+    r.reference_entity_id_type = std::string("LEI");
+    r.reference_entity_id = std::string("529900T8BM49AURSDO55");
     r.start_date =
         std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
     r.maturity_date =

@@ -48,7 +48,8 @@ struct credit_instrument_entity {
     std::string trade_type_code;
     std::string party_id;
     std::string trade_activity_id;
-    std::string reference_entity;
+    std::string reference_entity_id_type;
+    std::string reference_entity_id;
     std::optional<std::string> start_date;
     std::optional<std::string> maturity_date;
     std::optional<std::string> description;
@@ -71,7 +72,8 @@ struct credit_instrument_entity {
                query_builder::bind("trade_type_code", &e::trade_type_code) |
                query_builder::bind("party_id", &e::party_id) |
                query_builder::bind("trade_activity_id", &e::trade_activity_id) |
-               query_builder::bind("reference_entity", &e::reference_entity) |
+               query_builder::bind("reference_entity_id_type", &e::reference_entity_id_type) |
+               query_builder::bind("reference_entity_id", &e::reference_entity_id) |
                query_builder::bind("start_date", &e::start_date) |
                query_builder::bind("maturity_date", &e::maturity_date) |
                query_builder::bind("description", &e::description) |

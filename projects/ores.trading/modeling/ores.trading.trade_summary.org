@@ -220,6 +220,10 @@ select
     end as authorisation_status,
     b.trade_date,
     1 as trade_count,
+    -- The structure that holds this trade, when one does: a leg is a trade inside
+    -- a structure, and the list leaves the legs out of its top rows.
+    sm.structure_id,
+    (sm.structure_id is not null) as is_leg,
     t.id::text || ' ' || coalesce(ids.id_values, '') as search_text
 from ores_trading_trades_tbl t
 left join ores_trading_trade_bookings_tbl b
@@ -250,6 +254,14 @@ left join lateral (
       and i.trade_id = t.id
       and i.valid_to = ores_utility_infinity_timestamp_fn()
 ) ids on true
+left join lateral (
+    select m.structure_id
+    from ores_trading_structure_members_tbl m
+    where m.tenant_id = t.tenant_id
+      and m.trade_id = t.id
+      and m.valid_to = ores_utility_infinity_timestamp_fn()
+    limit 1
+) sm on true
 where t.valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select
@@ -264,6 +276,8 @@ select
     'not_applicable'::text as authorisation_status,
     null::date as trade_date,
     coalesce(m.member_count, 0)::integer as trade_count,
+    null::uuid as structure_id,
+    false as is_leg,
     -- A structure is found by its own reference first: the desk looks for the
     -- deal it grouped, and the legs' identifiers are what it groups, not what
     -- names it.

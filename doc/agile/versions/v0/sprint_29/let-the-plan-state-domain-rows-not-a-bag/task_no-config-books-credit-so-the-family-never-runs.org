@@ -28,7 +28,7 @@ Three parts, in this order:
 #+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
 #+owner: marco
 #+branch: feature/no-config-books-credit-so-the-family-never-runs
-#+pr:
+#+pr: 4054
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -114,7 +114,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4054][#4054]] | [trading,ore] State what a credit reference entity is |
 
 * Review
 

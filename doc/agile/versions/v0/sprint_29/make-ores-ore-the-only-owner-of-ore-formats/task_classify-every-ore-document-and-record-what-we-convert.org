@@ -8,7 +8,7 @@
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
 #+owner: marco
 #+branch: feature/classify-every-ore-document-and-record-what-we-convert
-#+pr:
+#+pr: 4064
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4064][#4064]] | [ore] Classify every ORE document family in one table |
 
 * Review
 

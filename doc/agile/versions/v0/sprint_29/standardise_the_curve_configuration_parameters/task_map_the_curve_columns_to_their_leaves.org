@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/map-the-curve-columns-to-their-leaves
-#+pr:
+#+pr: 4065
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -154,7 +154,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4065][#4065]] | [refdata] Guard a curve column with the set its leaf names |
 
 * Review
 

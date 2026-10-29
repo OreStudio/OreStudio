@@ -45,6 +45,7 @@ import os
 import re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(HERE))
 TERMS = os.path.join(HERE, "curve_terms.json")
 CURATION = os.path.join(HERE, "curve_value_set_curation.json")
 
@@ -69,13 +70,34 @@ CATALOGUES = {
     },
 }
 
-# The leaves whose name is one of ORE's vocabularies, and the catalogue each takes.
-CATALOGUE_OF = {
-    "Currency": "refdata.currency",
-    "DayCounter": "refdata.day_counter",
-    "YieldCurveDayCounter": "refdata.day_counter",
-    "BusinessDayConvention": "refdata.business_day_convention",
-}
+# The vocabularies the schema declares, and the value set each element name takes.
+# They are declared as data, one row per element name, so a new vocabulary is a
+# row in the declaration and a seeded table row, not a change to this generator.
+VOCABULARIES = os.path.join(HERE, "ore_parameter_vocabularies.json")
+SCHEMA = "curveconfig.xsd"
+
+
+def vocabularies():
+    """The element names this schema declares, and the value set each takes."""
+    with open(VOCABULARIES) as f:
+        declared = json.load(f)
+    return {
+        entry["element"]: entry["value_set"]
+        for entry in declared.values()
+        if entry["schema"] == SCHEMA
+    }
+
+
+def catalogue_of_set(value_set):
+    """The catalogue a curve value set draws on, from the set's own name."""
+    suffix = value_set.split(".", 1)[1]
+    for catalogue in CATALOGUES:
+        if catalogue.endswith("." + suffix):
+            return catalogue
+    raise ValueError(f"{value_set}: the declaration names a set no catalogue backs")
+
+
+CATALOGUE_OF = vocabularies()
 
 TYPE_SETS = {
     "boolean": "curve.flag",
@@ -210,7 +232,7 @@ def set_of(term, curated, parsers, section):
                              "states a list for; correct the entry or drop it")
         return parser_set_code(link), link
     if name in CATALOGUE_OF:
-        return "curve." + CATALOGUE_OF[name].split(".", 1)[1], None
+        return CATALOGUE_OF[name], None
     if term["type"] in TYPE_SETS:
         return TYPE_SETS[term["type"]], None
     return "curve.text", None
@@ -225,8 +247,9 @@ def data():
     import curve_parameter_rows
     documented = {(r["scope"], r["name"]) for r in curve_parameter_rows.rows()}
     sets = dict(OWN_SETS)
-    for catalogue in CATALOGUE_OF.values():
-        sets["curve." + catalogue.split(".", 1)[1]] = {
+    for value_set in set(CATALOGUE_OF.values()):
+        catalogue = catalogue_of_set(value_set)
+        sets[value_set] = {
             "name": CATALOGUES[catalogue]["name"],
             "description": f"One of the {CATALOGUES[catalogue]['name'].lower()} "
                            "that reference data holds.",

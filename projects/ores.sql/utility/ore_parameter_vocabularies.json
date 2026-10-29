@@ -1,0 +1,38 @@
+{
+ "curveconfig.xsd|Currency": {
+  "schema": "curveconfig.xsd",
+  "element": "Currency",
+  "value_set": "curve.currency",
+  "name": "Currencies",
+  "source": "ore_xsd",
+  "source_ref": "share/ore/xsd/curveconfig.xsd",
+  "reason": "ORE spells the element Currency, and a currency is one of the currencies reference data holds. The rule is the element's own name, which the schema states, so every section that declares a Currency leaf takes the same catalogue."
+ },
+ "curveconfig.xsd|DayCounter": {
+  "schema": "curveconfig.xsd",
+  "element": "DayCounter",
+  "value_set": "curve.day_counter",
+  "name": "Day counters",
+  "source": "ore_xsd",
+  "source_ref": "share/ore/xsd/curveconfig.xsd",
+  "reason": "ORE spells the element DayCounter, and a day counter is one of the day counters reference data holds."
+ },
+ "curveconfig.xsd|YieldCurveDayCounter": {
+  "schema": "curveconfig.xsd",
+  "element": "YieldCurveDayCounter",
+  "value_set": "curve.day_counter",
+  "name": "Day counters",
+  "source": "ore_xsd",
+  "source_ref": "share/ore/xsd/curveconfig.xsd",
+  "reason": "The yield curve names its day counter with an element of its own, and its values are the day counters reference data holds."
+ },
+ "curveconfig.xsd|BusinessDayConvention": {
+  "schema": "curveconfig.xsd",
+  "element": "BusinessDayConvention",
+  "value_set": "curve.business_day_convention",
+  "name": "Business day conventions",
+  "source": "ore_xsd",
+  "source_ref": "share/ore/xsd/curveconfig.xsd",
+  "reason": "ORE spells the element BusinessDayConvention, and a convention is one of the business day conventions reference data holds."
+ }
+}

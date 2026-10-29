@@ -12,18 +12,13 @@
   <span><b>Prototype</b> · throwaway · mock data, no server</span>
   <a href="../official-rates.org">the design note</a>
   <a href="../index.org">market data prototypes</a>
+  <a href="review/">Gemini's review</a>
   <span class="label">Paused</span>
   <span class="seg" role="radiogroup" aria-label="Paused variant">
     <button role="radio" data-q="paused" data-v="muted">kept</button>
     <button role="radio" data-q="paused" data-v="hidden">hidden</button>
   </span>
-  <span class="label">Freshness</span>
-  <span class="seg" role="radiogroup" aria-label="Freshness variant">
-    <button role="radio" data-q="fresh" data-v="quiet">quiet</button>
-    <button role="radio" data-q="fresh" data-v="strong">strong</button>
-  </span>
-  <a href="?compare=1">competing answers</a>
-  <a href="?terms=withdraw">withdrawn terms</a>
+  <a href="?tab=fetch&amp;terms=withdraw">withdrawn terms</a>
 </div>
 
 <header class="page">
@@ -31,50 +26,103 @@
   <div class="title-row">
     <h1>Official rates</h1>
     <span class="lead">the daily rates central banks and public bodies publish, and whether they are arriving</span>
-    <span class="actions">
-      <button class="act" id="refresh">Refresh</button>
-      <button class="act" id="history">History</button>
-    </span>
+    <span class="actions"><button class="act" id="refresh">Refresh</button></span>
   </div>
+  <nav class="tabs" role="tablist" aria-label="Official rates">
+    <button role="tab" data-tab="providers">Providers <span class="q">who is arriving</span></button>
+    <button role="tab" data-tab="publisher">Publisher <span class="q">one publisher, over time</span></button>
+    <button role="tab" data-tab="availability">Availability <span class="q">who holds this underlying</span></button>
+    <button role="tab" data-tab="compare">Compare <span class="q">how far apart they are</span></button>
+    <button role="tab" data-tab="fetch">Fetch <span class="q">ask for data now</span></button>
+    <button role="tab" data-tab="config">Configuration <span class="q">the record and its history</span></button>
+  </nav>
 </header>
 
 <main>
-  <div id="compare"></div>
 
-  <section class="card" aria-label="The providers">
-    <div class="card-head">
-      <h2>The providers</h2>
-      <p id="providers-sub"></p>
+  <section id="tab-providers" role="tabpanel">
+    <div class="strip" aria-label="The providers now">
+      <div class="metric"><span class="label">Providers</span><div class="v" id="k-total">—</div><span class="sub">with terms</span></div>
+      <div class="metric"><span class="label">Serving</span><div class="v up" id="k-serving">—</div><span class="sub">fixing on time</span></div>
+      <div class="metric"><span class="label">Late</span><div class="v warn" id="k-late">—</div><span class="sub">publication missed</span></div>
+      <div class="metric"><span class="label">Not serving</span><div class="v down" id="k-down">—</div><span class="sub">adapter stopped</span></div>
+      <div class="metric"><span class="label">Paused</span><div class="v" id="k-paused">—</div><span class="sub">not fetched</span></div>
+      <div class="metric"><span class="label">Underlyings</span><div class="v" id="k-items">—</div><span class="sub">across all publishers</span></div>
     </div>
-    <table class="list" id="providers">
-      <thead>
-        <tr>
-          <th>Provider</th><th>Terms</th><th>Last fixing</th><th>Received</th>
-          <th>Next expected</th><th>State</th><th>Adapter</th><th class="acts">Acts</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <div class="card-body" id="withdraw" hidden></div>
-    <div class="card-body legend" id="legend"></div>
+    <div class="card">
+      <div class="card-head">
+        <h2>The providers</h2><p id="providers-sub"></p>
+        <span class="filters" id="filters"></span>
+        <input id="search" placeholder="Find a provider or pair">
+      </div>
+      <table class="list" id="providers">
+        <thead><tr><th>Provider</th><th>Terms</th><th>Last fixing</th><th>Received</th>
+          <th>Next expected</th><th>State</th><th>Adapter</th><th class="acts">Acts</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="card-body" id="withdraw" hidden></div>
+      <div class="card-body legend" id="legend"></div>
+    </div>
   </section>
 
-  <section class="card" id="provider-page" aria-label="The selected provider">
-    <div class="card-head">
-      <h2 id="provider-title"></h2>
-      <p id="provider-sub"></p>
+  <section id="tab-publisher" role="tabpanel" hidden>
+    <div class="card">
+      <div class="card-head">
+        <h2 id="pub-title">Publisher</h2><p id="pub-sub"></p>
+        <span class="filters"><select id="pub-provider"></select><select id="pub-pair"></select></span>
+      </div>
+      <div class="card-body" id="pub-body"></div>
     </div>
-    <div class="card-body" id="provider-body"></div>
+    <div class="card" id="pub-start" hidden></div>
   </section>
 
-  <section class="card" id="backfill-card" aria-label="A backfill of a range">
-    <div class="card-head">
-      <h2>Backfill a range</h2>
-      <p>a request only the adapter can answer, and the contract does not carry it yet</p>
+  <section id="tab-availability" role="tabpanel" hidden>
+    <div class="card">
+      <div class="card-head">
+        <h2>Who holds <span id="av-pair-label">EUR/USD</span></h2>
+        <p>one underlying, every publisher that fixes it</p>
+        <span class="filters"><select id="av-pair"></select></span>
+      </div>
+      <div class="card-body" id="av-body"></div>
     </div>
-    <div class="card-body" id="backfill"></div>
   </section>
+
+  <section id="tab-compare" role="tabpanel" hidden>
+    <div class="card">
+      <div class="card-head">
+        <h2>How far apart the publishers are</h2><p id="cmp-sub"></p>
+        <span class="filters"><select id="cmp-pair"></select></span>
+      </div>
+      <div class="card-body" id="cmp-body"></div>
+    </div>
+  </section>
+
+  <section id="tab-fetch" role="tabpanel" hidden>
+    <div class="card">
+      <div class="card-head">
+        <h2>Fetch now</h2>
+        <p>the schedule is the scheduler's; this is the on-demand trigger, and it sends the same request</p>
+      </div>
+      <div class="card-body" id="fetch-body"></div>
+    </div>
+  </section>
+
+  <section id="tab-config" role="tabpanel" hidden>
+    <div class="card">
+      <div class="card-head">
+        <h2 id="cfg-title">Provider</h2><p>the record and its history</p>
+        <span class="filters"><select id="cfg-provider"></select></span>
+      </div>
+      <div class="card-body" id="cfg-body"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>History</h2><p>the shared timeline: every version and acceptance</p></div>
+      <div class="card-body" id="cfg-history"></div>
+    </div>
+  </section>
+
 </main>
+
 <script src="prototype.js"></script>
 </body>
 </html>

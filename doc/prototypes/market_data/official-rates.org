@@ -25,10 +25,25 @@ the version shown. It does not answer the operational question a system
 administrator asks next: is the data actually arriving, and what do I do when
 it is not.
 
-This prototype argues the shape of that answer before any control is built. The
-provider is the object, over time: its terms, its freshness, the state of its
-adapter, and the acts that follow. Three of the facts it draws already exist as
-reads; two of the acts rest on decisions the architecture has not taken.
+This prototype argues the shape of that answer before any control is built, and
+it is the shape the story will implement: six surfaces under one title. The
+provider is the object over time, and each tab answers one question about it or
+about the underlying it fixes.
+
+#+ATTR_HTML: :class hug-leading
+| Surface | Question | Reads |
+|---------+----------+-------|
+| Providers | Who is arriving? | providers, adapter status, latest fixing per item |
+| Publisher | What did this one publish for this pair, over time? | fixings by series, the feed start read |
+| Availability | Who holds this underlying, and with what gaps? | fixings by series |
+| Compare | How far apart are the publishers? | fixings by series, arithmetic in the page |
+| Fetch | Fetch now, for this scope | the refresh request the adapter contract does not carry yet |
+| Configuration | What does this provider's record say, and who changed it? | provider, provider history |
+
+The publisher and the availability surfaces do not need a new read: a fixings
+read answers a window of up to twelve series, and the coverage and the distances
+are arithmetic over it. Fetch needs the refresh request the design task names,
+and a provider's expected rhythm, which the record does not carry yet.
 
 * What it asks
 
@@ -43,28 +58,28 @@ reads; two of the acts rest on decisions the architecture has not taken.
    provider's fixings as a consequence, or as a command the person must
    remember?
 
-* Variants and states
+* States and addresses
 
-Every state has an address, so a reviewer opens it rather than clicking to it.
+Every surface and variant is an address.
 
+#+ATTR_HTML: :class hug-leading
 | State | Address | What it shows |
 |-------+---------+---------------|
-| At rest | =index.html= | Five providers: serving, late, not accepted, adapter down, and one paused and dimmed |
-| Late | =?state=late= | The Bank of Canada alone, with the sentence that says to read the heartbeat and then ask for a backfill |
-| Down | =?state=down= | The Central Bank of Turkiye alone: no heartbeat, refused ids, and no fixing ever stored |
-| Never fixed | =?state=never= | The same row with the never-fixed badge, telling it apart from the adapter being down |
-| Paused, kept | =?paused=muted= (default) | The paused provider stays in the list, dimmed, with Resume; its fixings and the feed start it explains stay |
-| Paused, hidden | =?paused=hidden= | The paused provider leaves the list; a count and a link bring it back |
-| Competing answers | =?compare=1= | The paused row kept, the row hidden, and both freshness lines side by side above the list |
-| Paused provider's page | =?provider=boe= | A paused provider's fixings, chart and pair still drawn, and a notice that nothing new arrives |
-| Pause, in the address | =?pause=boe= and =?resume=boe= | A pause survives a reload because the address holds it |
-| Withdrawn terms | =?terms=withdraw= | The fund's v2 withdraws storage: the row says so, and the consequence offers deleting its fixings |
-| Terms and paused states | =?state=terms= and =?state=paused= | One state alone, as the three failures are shown |
-| Freshness, quiet | =?fresh=quiet= (default) | The date and the received line, small and grey |
-| Freshness, strong | =?fresh=strong= | The same facts in the body colour, for the comparison |
-| Backfill at rest | =?backfill=none= (default) | The range fields and the sentence that the contract cannot carry the request yet |
-| Backfill running | =?backfill=progress= | A progress bar, the days fetched oldest first, and Stop |
-| Backfill done | =?backfill=fill= | 300 days asked, 280 stored, 20 skipped because the store held them |
+| Providers | =?tab=providers= | Seven publishers, the KPI strip, the filters, the state legend |
+| Late | =?tab=providers&filter=late= | The Bank of Canada alone |
+| Not serving | =?tab=providers&filter=down= | The Central Bank of Turkiye: heartbeat stopped |
+| Never fixed | =?tab=providers&filter=never= | Norges Bank: accepted, serving, no value stored |
+| Paused, kept | =?tab=providers&paused=muted= | The paused publisher stays, dimmed, with Resume |
+| Paused, hidden | =?tab=providers&paused=hidden= | The paused publisher leaves the list |
+| Withdrawn terms | =?tab=providers&terms=withdraw= | The fund's v2 withdraws storage and the deletion is offered where it is accepted |
+| Publisher | =?tab=publisher&provider=ecb&pair=EUR/CAD= | One publisher, one pair, over ten dates, and where a feed started |
+| Publisher paused | =?tab=publisher&provider=boe&pair=GBP/USD= | A paused publisher's stored fixings still drawn |
+| Availability | =?tab=availability&pair=EUR/USD= | Publishers against months, with counts and gaps |
+| Compare | =?tab=compare&pair=EUR/USD= | Three publishers on one chart, bps against the base, the spread, and the outlier named |
+| Fetch at rest | =?tab=fetch= | The scope: when, publishers, underlyings, and what will be asked |
+| Fetch running | =?tab=fetch&fetch=progress= | A progress over the days, oldest first |
+| Fetch done | =?tab=fetch&fetch=done= | What was stored and what the store skipped |
+| Configuration | =?tab=config&provider=ecb= | The record's fields and the history timeline |
 
 * What it argues
 
@@ -96,14 +111,18 @@ Every state has an address, so a reviewer opens it rather than clicking to it.
 * What is fake
 
 - Every provider, item, fixing, date and time is invented.
-- The chart is seven points drawn in the page, not a series.
+- The monthly coverage matrix is invented for EUR/USD only; every other pair
+  falls back to empty month cells, which is the shape, not a measurement.
 - The adapter's state and heartbeat are written into the mock data; the real
   read answers them per adapter, with the ids it serves and refuses.
-- The backfill progress is a fixed number, and no request is made.
-- Refresh does nothing, and the history and feed links point nowhere.
+- The fetch progress and the counts in its done state are fixed numbers.
+- The expected rhythm on the configuration surface is the answer the record
+  cannot give yet, and the =not modelled yet= chip says so.
 - Nothing is written. Accepting terms and deleting fixings are inert buttons.
-  Pause and resume move the query string, so the state survives a reload.
-  Fetch moves the address to the running state and no request leaves the page.
+  Pause and resume move the query string. Fetch moves the address to the running
+  state and no request leaves the page.
+- The Pause act carries a =design pending= note: the pause is a demand decision
+  the story has not taken yet.
 
 * Where the code lives
 
@@ -127,10 +146,11 @@ publication, the adapter and the acts; the three failures have three sentences;
 the paused row stays unless the hidden variant's count and the lost comparison
 column are wanted; the backfill is a dialog that says the adapter answers it.
 
-The comparison state is the one the prototype now recommends: the paused row
-stays, and the hidden variant's only gain is a shorter list whose pair
-comparison silently loses a column. The withdrawn-terms state draws the
-deletion where the person accepts the new version, never as a row command.
+The paused row stays, and the hidden variant's only gain is a shorter list
+whose pair comparison silently loses a column. The withdrawn-terms state draws
+the deletion where the person accepts the new version, never as a row command.
+The availability and compare surfaces read the same fixings the publisher page
+reads; neither needs a new operation.
 
 What the prototype cannot settle is what this story's two decision tasks own:
 whether the pause is a demand fact or a provider state, and what form the

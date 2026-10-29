@@ -175,14 +175,20 @@ answers today.
 
 - Directory :: [[file:../../../prototypes/market_data/official-rates/][doc/prototypes/market_data/official-rates/]]
 - Note :: [[file:../../../prototypes/market_data/official-rates.org][the design note]]
-- States :: =?state=live|late|down|never|paused|terms=, =?paused=muted|hidden=,
-  =?fresh=quiet|strong=, =?compare=1=, =?provider=<code>=,
-  =?pause=<code>= and =?resume=<code>=, =?terms=withdraw=,
-  =?backfill=none|progress|fill=
+- Surfaces :: =?tab=providers|publisher|availability|compare|fetch|config=
+- Providers :: =?tab=providers&filter=live|late|down|never|paused|terms=,
+  =?paused=muted|hidden=, =?terms=withdraw=
+- Publisher :: =?tab=publisher&provider=<code>&pair=<PAIR>=
+- Availability :: =?tab=availability&pair=<PAIR>=
+- Compare :: =?tab=compare&pair=<PAIR>=
+- Fetch :: =?tab=fetch=, =&fetch=progress=, =&fetch=done=
+- Configuration :: =?tab=config&provider=<code>=
 
-The prototype draws the provider row and the provider page, the three failure
-states, the two paused variants, and the backfill range at rest and in
-progress. It is a static page: no build, no server, no session.
+The prototype draws the six surfaces: the providers with their states, one
+publisher over time, availability across publishers for one underlying, the
+compare view with the distance between them, the fetch scope and its progress,
+and a provider's configuration with its history. It is a static page: no build,
+no server, no session.
 
 * Entities composed
 

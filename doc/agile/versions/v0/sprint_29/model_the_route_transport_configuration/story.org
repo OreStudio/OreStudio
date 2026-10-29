@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 9E70A684-203C-472B-88E0-3E913B822EF7
+:END:
+#+title: Story: Model the route transport configuration
+#+description: A route's HTTP address, publisher key path, credential reference, expected rhythm, poll interval and backfill window are rows the adapter reads, not service command-line flags; secrets stay references.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:routes:configuration:adapter:sprint_29:v0:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-29                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D6076124-A427-4DCC-B018-A2992AA13CB3][Prototype the route configuration screens]] | BACKLOG | | | The route record, its Details and its History, drawn before the entity is built. |
+
+* Decisions
+
+* Out of scope
+
+-

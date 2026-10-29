@@ -269,6 +269,15 @@ function renderRecord() {
         body.innerHTML = `<div class="card"><div class="card-head"><h2>Routes</h2><p>every way this publisher's values can reach the platform</p></div>
           <table class="list"><thead><tr><th>Route</th><th>Adapter</th><th>State</th><th>Last delivery</th></tr></thead><tbody>${p.routes.map((r) =>
             `<tr><td class="mono">${r.name}</td><td class="mono">${r.adapter}</td><td>${r.state === 'serving' ? fn.badge('live') : fn.badge('down')}</td><td class="when">${r.last}</td></tr>`).join('')}</tbody></table>
+          <div class="card-body"><div class="kv">
+            <span class="k">Base URL</span><span class="mono">https://api.frankfurter.app</span>
+            <span class="k">Publisher path</span><span class="mono">/v2/providers/{key}/rates</span>
+            <span class="k">Credential</span><span class="mono">none</span>
+            <span class="k">Expected rhythm</span><span>daily, 16:00 CET</span>
+            <span class="k">Poll interval</span><span>60 minutes</span>
+            <span class="k">Backfill window</span><span>400 days</span>
+            <span class="k">Timeout / retries</span><span>10 s / 3</span>
+          </div><div class="faint" style="margin-top:8px">The route's transport is a row the adapter reads, not a flag. A secret is a reference such as <span class="mono">env:FRANKFURTER_KEY</span>, never a column, a log or a URL. <a href="#">Edit configuration <span class="faint">· design pending</span></a></div></div>
           <div class="faint" style="margin-top:8px">A publisher's value keeps its own identity; the route that delivered it is provenance. A second route is a way to the same fixing, not a second fixing.</div></div></div>`;
     } else if (rtab === 'health') {
         body.innerHTML = `<div class="card"><div class="card-head"><h2>Adapter</h2><p>the official adapter, serving every publisher</p></div>

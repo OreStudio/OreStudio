@@ -52,9 +52,9 @@ observed or constructed, and the whole question of provenance would dissolve int
 a naming convention.
 
 The distinction is visible in the identity itself. An observed OIS quote is a
-series of the form `oresmd://ir/USD?...instrument=ir_swap&quote=rate...`; a point
+series of the form =oresmd://ir/USD?...instrument=ir_swap&quote=rate...=; a point
 of a bootstrapped discount curve is a series such as
-`oresmd://ir/USD?...instrument=discount&quote=rate&curve_id=...`, and its datum
+=oresmd://ir/USD?...instrument=discount&quote=rate&curve_id=...=, and its datum
 carries the term. The instrument, the quote and the curve identity separate the
 two; the provider, the party and the series separate one curve from another. The
 identity of the input is not a weaker version of the identity of the output; it is

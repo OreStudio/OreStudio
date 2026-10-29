@@ -189,7 +189,7 @@ TEST_CASE("export_currency_without_optional_fields", "[ore][xml][exporter]") {
 TEST_CASE("import_export_roundtrip_preserves_currency_fields", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
-    const auto f = ore_path("examples/Input/currencies.xml");
+    const auto f = ores::testing::ore_path("examples/Input/currencies.xml");
     BOOST_LOG_SEV(lg, debug) << "Importing from: " << f;
 
     // Import

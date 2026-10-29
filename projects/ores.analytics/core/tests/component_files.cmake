@@ -22,11 +22,13 @@
 set(files
     "configuration_document_handler_tests.cpp"
     "credit_simulation_config_eventing_integration_tests.cpp"
+    "credit_simulation_database_roundtrip_tests.cpp"
     "credit_simulation_entity_config_eventing_integration_tests.cpp"
     "credit_simulation_matrix_config_eventing_integration_tests.cpp"
     "credit_simulation_matrix_row_config_eventing_integration_tests.cpp"
     "credit_simulation_netting_set_config_eventing_integration_tests.cpp"
     "main.cpp"
+    "pricing_engine_database_roundtrip_tests.cpp"
     "pricing_engine_type_eventing_integration_tests.cpp"
     "pricing_method_eventing_integration_tests.cpp"
     "pricing_model_config_eventing_integration_tests.cpp"
@@ -55,5 +57,6 @@ set(files
     "todays_market_config_eventing_integration_tests.cpp"
     "todays_market_configuration_binding_eventing_integration_tests.cpp"
     "todays_market_configuration_eventing_integration_tests.cpp"
+    "todays_market_database_roundtrip_tests.cpp"
     "todays_market_entry_eventing_integration_tests.cpp"
 )

@@ -139,6 +139,11 @@ const std::set<std::string> unbound = {"simulation",
 
 }
 
+/*
+ * The one case in this suite that opens a session: it guards the ORE format
+ * coverage, which is the codec's, not a component's rows.
+ */
+
 TEST_CASE("every seeded configuration type the codec carries names its root element",
           "[ore][configuration_types][database]") {
     auto lg(ores::logging::make_logger(test_suite));

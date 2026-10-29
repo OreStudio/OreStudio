@@ -46,7 +46,7 @@ using namespace ores::logging;
 TEST_CASE("import_portfolio_from_minimal_swap", "[ore][xml][trade_import]") {
     auto lg(make_logger(test_suite));
 
-    const auto f = ore_path("examples/MinimalSetup/Input/portfolio_swap.xml");
+    const auto f = ores::testing::ore_path("examples/MinimalSetup/Input/portfolio_swap.xml");
     BOOST_LOG_SEV(lg, debug) << "Importing from: " << f;
 
     const auto items = importer::import_portfolio_with_context(f);
@@ -66,7 +66,7 @@ TEST_CASE("import_portfolio_leaves_the_ids_to_the_planner", "[ore][xml][trade_im
     auto lg(make_logger(test_suite));
 
     const auto items = importer::import_portfolio_with_context(
-        ore_path("examples/MinimalSetup/Input/portfolio_swap.xml"));
+        ores::testing::ore_path("examples/MinimalSetup/Input/portfolio_swap.xml"));
     REQUIRE(items.size() == 1);
 
     const auto nil = boost::uuids::nil_uuid();
@@ -81,7 +81,7 @@ TEST_CASE("import_portfolio_leaves_the_ids_to_the_planner", "[ore][xml][trade_im
 TEST_CASE("import_portfolio_from_example_1", "[ore][xml][trade_import]") {
     auto lg(make_logger(test_suite));
 
-    const auto f = ore_path("examples/Legacy/Example_1/Input/portfolio.xml");
+    const auto f = ores::testing::ore_path("examples/Legacy/Example_1/Input/portfolio.xml");
     BOOST_LOG_SEV(lg, debug) << "Importing from: " << f;
 
     const auto items = importer::import_portfolio_with_context(f);
@@ -104,7 +104,7 @@ TEST_CASE("import_portfolio_from_example_1", "[ore][xml][trade_import]") {
 TEST_CASE("import_portfolio_from_minimal_swaptions", "[ore][xml][trade_import]") {
     auto lg(make_logger(test_suite));
 
-    const auto f = ore_path("examples/MinimalSetup/Input/portfolio_swaptions.xml");
+    const auto f = ores::testing::ore_path("examples/MinimalSetup/Input/portfolio_swaptions.xml");
     BOOST_LOG_SEV(lg, debug) << "Importing from: " << f;
 
     const auto items = importer::import_portfolio_with_context(f);
@@ -121,7 +121,7 @@ TEST_CASE("import_portfolio_from_minimal_swaptions", "[ore][xml][trade_import]")
 TEST_CASE("import_portfolio_gives_every_trade_an_ore_id_and_type", "[ore][xml][trade_import]") {
     auto lg(make_logger(test_suite));
 
-    const auto f = ore_path("examples/Legacy/Example_1/Input/portfolio.xml");
+    const auto f = ores::testing::ore_path("examples/Legacy/Example_1/Input/portfolio.xml");
     const auto items = importer::import_portfolio_with_context(f);
     REQUIRE(!items.empty());
 

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ORE_CORE_TESTS_CONVENTIONS_ROWS_HPP
-#define ORES_ORE_CORE_TESTS_CONVENTIONS_ROWS_HPP
+#ifndef ORES_TESTING_CONVENTIONS_ROWS_HPP
+#define ORES_TESTING_CONVENTIONS_ROWS_HPP
 
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -28,7 +28,7 @@
 #include <string_view>
 #include <vector>
 
-namespace ores::ore::tests {
+namespace ores::testing {
 
 /**
  * @brief One family's rows of a package, each decoded as that family's own type.

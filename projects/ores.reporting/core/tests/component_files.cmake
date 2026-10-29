@@ -44,6 +44,8 @@ set(files
     "ore_parameter_value_set_catalogue_eventing_integration_tests.cpp"
     "ore_parameter_value_set_eventing_integration_tests.cpp"
     "ore_parameter_value_set_value_eventing_integration_tests.cpp"
+    "ore_run_document_database_roundtrip_tests.cpp"
+    "pooled_session_tests.cpp"
     "report_configuration_eventing_integration_tests.cpp"
     "report_definition_eventing_integration_tests.cpp"
     "report_error_scope_eventing_integration_tests.cpp"

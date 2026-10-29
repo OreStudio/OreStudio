@@ -22,6 +22,7 @@
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.testing/test_files.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include <fstream>
 #include <set>
@@ -76,19 +77,10 @@ inline const std::set<std::string>& known_row_differences() {
     return differences;
 }
 
-inline std::string read(const std::filesystem::path& path) {
-    std::ifstream in(path, std::ios::binary);
-    std::ostringstream buffer;
-    buffer << in.rdbuf();
-    return buffer.str();
-}
 
 inline ores::ore::domain::conventions load(const std::filesystem::path& path) {
-    return ores::ore::domain::conventions_mapper::read(read(path), path.string());
-}
-
-inline std::filesystem::path ore_path(const std::string& relative) {
-    return ores::testing::project_root::resolve("external/ore/" + relative);
+    return ores::ore::domain::conventions_mapper::read(ores::testing::read_file(path),
+                                                       path.string());
 }
 
 #endif

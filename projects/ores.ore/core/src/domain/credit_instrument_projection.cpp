@@ -45,7 +45,6 @@ void set_internal_reference_entity(ores::trading::domain::credit_instrument& ins
     instrument.reference_entity_id = identifier;
 }
 
-
 using ores::utility::decimal::decimal;
 
 using trading::domain::credit_basket_constituent;

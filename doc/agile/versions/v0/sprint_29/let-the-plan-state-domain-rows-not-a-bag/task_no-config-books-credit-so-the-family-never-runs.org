@@ -1,28 +1,8 @@
 :PROPERTIES:
 :ID: 196C254E-7632-4F8B-93FF-33B3A4E0C9D4
 :END:
-#+title: Task: No config books credit, so the family never runs
-#+description: The capture this task was promoted from said the credit writer existed and only a config was missing. It was wrong, and this is the correction.
-
-The credit family is unimplemented in ores.synthetic. There is no credit trade planner and no credit writer: the planner registry holds bond, commodity, equity, fx and interest_rates, and grep finds no credit_terms, no credit_instrument and no credit_trade_planner anywhere in the project. The routed table, the trade type catalogue rows and the permission vocabulary exist; nothing writes them.
-
-Measured on a recreated database: zero credit instrument rows, and the demo profile seeds bond, commodity, equity, fx and interest_rates only. The book is the one thing that does exist -- four credit books are seeded, including IG CDS EMEA in EUR.
-
-The reference entity is the open question, and it is also a defect in its own right. credit_instruments.reference_entity is text whose model says "name or identifier", so a trade may carry whatever string a caller types, and nothing relates that string to the entity the risk is actually on. The tenant's 38,213 LEI entities sit in the DQ lei_entity dataset, which the synthetic service has no read path to.
-
-* Decisions
-
-- The population draws its reference entities from the DQ lei_entity dataset (option A). That means a read path from the synthetic service into the DQ subject, which is the work this task carries beyond the writer.
-- The column cannot simply become an LEI. Measured while attempting the rename: the ORE importer writes a credit curve identifier or an issuer identifier into it (credit_instrument_projection.cpp: reference_entity is the issuer id, the credit curve id, or a qualifier such as =ACME= or =ACME-SR=), and the projection tests assert exactly that. A rename to reference_entity_lei plus a twenty-character check compiles but breaks the import path and misnames what imported trades carry.
-- Two shapes reconcile it, and the choice is not made: (a) one column named for what it holds, the identifier the source states, with no referential integrity; or (b) two columns, the source's identifier and a nullable LEI, where the population writes the LEI and an ORE import leaves it empty. (b) is a real fix and keeps the import honest; it changes the table's shape and the import mapping.
-
-* Scope
-
-Three parts, in this order:
-
-1. The column fix: rename, state the soft reference, and refuse a value that is not an LEI.
-2. The read path: the synthetic service resolves reference entities from the DQ lei_entity dataset.
-3. The family: constructors for the six routed codes, a credit planner, a writer arm, a book (IG CDS EMEA exists) and a config, proved by a run.
+#+title: Task: State what a credit reference entity is
+#+description: credit_instruments.reference_entity held "a name or identifier" as free text, so a credit trade could carry whatever a caller typed and nothing related that string to the entity the risk is on. A reference is now typed: the legal entity's LEI, or an identifier of our own data.
 #+type: task
 #+level: s1
 #+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
@@ -36,90 +16,94 @@ Three parts, in this order:
 #+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
+This task was promoted from a capture about credit booking nothing. Reading
+the code to start it found two facts, and the capture was wrong about both: the
+credit family has no planner and no writer at all, and its reference entity is
+free text that nothing relates to a legal entity.
 
 * Goal
 
-The capture this task was promoted from said the credit writer existed and only a config was missing. It was wrong, and this is the correction.
-
-The credit family is unimplemented in ores.synthetic. There is no credit trade planner and no credit writer: the planner registry holds bond, commodity, equity, fx and interest_rates, and grep finds no credit_terms, no credit_instrument and no credit_trade_planner anywhere in the project. The routed table, the trade type catalogue rows and the permission vocabulary exist; nothing writes them.
-
-Measured on a recreated database: zero credit instrument rows, and the demo profile seeds bond, commodity, equity, fx and interest_rates only. The book is the one thing that does exist -- four credit books are seeded, including IG CDS EMEA in EUR.
-
-The reference entity is the open question, and it is also a defect in its own right. credit_instruments.reference_entity is text whose model says "name or identifier", so a trade may carry whatever string a caller types, and nothing relates that string to the entity the risk is actually on. The tenant's 38,213 LEI entities sit in the DQ lei_entity dataset, which the synthetic service has no read path to.
+A credit trade states what its reference entity is: the legal entity's LEI, or
+an identifier of our own data, and the model says which.
 
 * Decisions
 
-- The population draws its reference entities from the DQ lei_entity dataset (option A). That means a read path from the synthetic service into the DQ subject, which is the work this task carries beyond the writer.
-- The column cannot simply become an LEI. Measured while attempting the rename: the ORE importer writes a credit curve identifier or an issuer identifier into it (credit_instrument_projection.cpp: reference_entity is the issuer id, the credit curve id, or a qualifier such as =ACME= or =ACME-SR=), and the projection tests assert exactly that. A rename to reference_entity_lei plus a twenty-character check compiles but breaks the import path and misnames what imported trades carry.
-- Two shapes reconcile it, and the choice is not made: (a) one column named for what it holds, the identifier the source states, with no referential integrity; or (b) two columns, the source's identifier and a nullable LEI, where the population writes the LEI and an ORE import leaves it empty. (b) is a real fix and keeps the import honest; it changes the table's shape and the import mapping.
+- The reference is typed, not guessed. =reference_entity_id_type= holds =LEI= or
+  =Internal=, and =reference_entity_id= holds the identifier that type describes.
+  A single column holding either could not be joined to anything.
+- The ORE import states =Internal=, because an engine document names its own
+  credit curve, issuer or qualifier and none of those is an LEI. The mapping
+  layer is where a resolver will turn a curve id into an LEI, and the type is
+  what makes that a data problem rather than a guess.
+- Resolution replaces the identifier and its type together. A trade whose curve
+  id is resolved states =LEI= and the LEI; it does not carry both at once.
+- The LEI kind has a soft reference to the DQ =lei_entity= dataset, recorded in
+  the model rather than enforced by a foreign key, as the family's other soft
+  references are.
 
 * Scope
 
-Three parts, in this order:
+This task is the column fix only. The two parts it was originally scoped with
+are their own tasks, because one task is one pull request:
 
-1. The column fix: rename, state the soft reference, and refuse a value that is not an LEI.
-2. The read path: the synthetic service resolves reference entities from the DQ lei_entity dataset.
-3. The family: constructors for the six routed codes, a credit planner, a writer arm, a book (IG CDS EMEA exists) and a config, proved by a run.
+- the synthetic read path into the DQ =lei_entity= dataset;
+- the credit family itself: constructors, a planner, a writer arm, a book and a
+  config, proved by a run.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | STARTED |
 | Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-29                               |
+| Now          | The typed reference is written and its suites are green. |
+| Waiting on   | Nothing. |
+| Next         | The family's own task. |
+| Last touched | 2026-10-29 |
 
 * Acceptance
 
--
+- A credit instrument states a typed reference, and the type is closed to LEI
+  and Internal.
+- A row typed LEI carries a twenty-character identifier, so the string a caller
+  types is refused rather than stored.
+- The ORE import states what it actually holds, and its projection tests assert
+  both columns.
+- The affected suites are green.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Replace the free-text column with the type and the identifier, regenerate the
+entity across its SQL, C++ and web facets, and update the one hand-written
+mapping layer that populates it. The generated fixture states a synthetic LEI so
+a fixture satisfies the check.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Credit instrument rows before the change | 0 | =compass db sql= on =ores_trading_credit_instruments_tbl= | =7d2bec8a67= |
+| =ores.trading.core.tests= | 1423 assertions in 223 test cases | the suite binary | =cede048e39= |
+| =ores.ore.core.tests= | 478874 assertions in 441 test cases | the suite binary | =cede048e39= |
 
 * Notes
 
-* Test Scenarios
+The economic digest covers the economic fields, and renaming one changes every
+digest that covers it. The tenant that matters holds no credit instruments at
+all, because the family has never been provisioned: zero rows for ACME. The
+dev database holds two credit rows, and both are residue from the trading core
+integration suite rather than customer data; they carry the identifier this
+change stops generating, and their digests were computed under the old field
+names. A real environment that holds credit instruments would need a digest
+migration with this rename, and there is none to migrate here.
 
-Manual QA scenarios (scaffolded via =compass add test_scenario=)
-that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
-
-| Scenario | State | Notes |
-|----------+-------+-------|
-|          |       |       |
-
-* PRs
-
-| PR | Title |
-|----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/4054][#4054]] | [trading,ore] State what a credit reference entity is |
-
-* Review
-
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+The generated shell recipe for credit instruments states =__none__= for string
+columns, including the checked ones. That predates this change -- the same
+placeholder sits in =trade_type_code=, which has always been checked -- so it is
+recorded as a capture rather than fixed in this task.
 
 * Result
+
+A credit trade states what its reference entity is. The column is typed, the
+LEI case is length-checked, and the ORE import says =Internal= because that is
+what an engine document gives us.

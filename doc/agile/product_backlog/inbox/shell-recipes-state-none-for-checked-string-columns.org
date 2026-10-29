@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 60027026-9559-4811-8919-CF291D9B7141
+:END:
+#+title: Shell recipes state __none__ for checked string columns
+#+description: The generated shell recipes put the token __none__ in every string column of their example commands, including columns with a closed-set check such as trade_type_code. __none__ is only meaningful for list tokens, so a string column takes it verbatim and the example command fails the check it documents. The recipes are generated, so the fix belongs in the codegen that emits the examples, not in the files.
+#+type: capture
+#+level: cross
+#+filetags: :=shell= =codegen= =doc= =defect=:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

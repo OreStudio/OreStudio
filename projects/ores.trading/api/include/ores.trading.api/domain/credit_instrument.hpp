@@ -74,8 +74,9 @@ struct credit_instrument final {
      * document and an LEI are different things and a column that holds either without saying which
      * cannot be joined to anything.
      *
-     * The closed set is LEI and Internal, and it follows the shape the trading family's other
-     * identifier columns use.
+     * The closed set is LEI and Internal. It is a check on this column rather than a catalogue
+     * table, because the two kinds of identifier are a property of how a reference is stated and
+     * not a list the tenant curates.
      */
     std::string reference_entity_id_type;
 
@@ -91,6 +92,9 @@ struct credit_instrument final {
      * Soft FK to the DQ lei_entity dataset when the type is LEI: the entity belongs to that dataset
      * rather than to a trading table, so the reference is recorded rather than copied. A later
      * change tightens it into a real foreign key once a legal entity lives in refdata.
+     *
+     * Resolving an internal identifier into an LEI replaces both this value and its type together,
+     * so a trade states one identifier and never two.
      */
     std::string reference_entity_id;
 

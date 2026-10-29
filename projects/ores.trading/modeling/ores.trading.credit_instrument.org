@@ -120,8 +120,9 @@ A reference is typed rather than guessed, because a credit curve named =ACME=
 in an engine document and an LEI are different things and a column that holds
 either without saying which cannot be joined to anything.
 
-The closed set is LEI and Internal, and it follows the shape the trading
-family's other identifier columns use.
+The closed set is LEI and Internal. It is a check on this column rather than a
+catalogue table, because the two kinds of identifier are a property of how a
+reference is stated and not a list the tenant curates.
 
 #+begin_src cpp :name generator
 std::string("LEI")
@@ -148,8 +149,11 @@ to that dataset rather than to a trading table, so the reference is recorded
 rather than copied. A later change tightens it into a real foreign key once a
 legal entity lives in refdata.
 
+Resolving an internal identifier into an LEI replaces both this value and its
+type together, so a trade states one identifier and never two.
+
 #+begin_src cpp :name generator
-std::string("529900T8BM49AURSDO55")
+std::string("ORESLEI0000000000001")
 #+end_src
 
 ** start_date
@@ -378,6 +382,7 @@ widening them.
 |------------|
 | "reference_entity_id" <> '' |
 | "reference_entity_id_type" in ('LEI', 'Internal') |
+| "reference_entity_id_type" <> 'LEI' or char_length("reference_entity_id") = 20 |
 | "maturity_date" is null or "start_date" is null or "maturity_date" >= "start_date" |
 
 ** Indexes
@@ -464,6 +469,7 @@ domain and repository profiles regenerate correctly.
 |--------------------------+--------------|
 | identity.trade_id        | ID           |
 | identity.trade_type_code | Type         |
+| reference_entity_id_type | Reference Type |
 | reference_entity_id      | Reference    |
 | start_date               | Start Date   |
 | maturity_date            | Maturity Date |

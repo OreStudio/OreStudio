@@ -158,6 +158,22 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The vocabulary table has a tenant column and no row-level security, so it ships a boundary no policy enforces. | ore_parameter_vocabulary.org | Accept | The model now states `:rls_tenant_isolation:` in its SQL drawer, where every other entity states it, and the generated create enables the policy. |
+| 2 | `:tablename:` sits in the root drawer instead of the SQL drawer's `** Flags`. | ore_parameter_vocabulary.org | Accept | Moved, with the table's other flags. |
+| 3 | The generator's module docstring still describes one script and a singular `--check`. | generate_value_sets.py | Accept | It now states the two scripts it writes. |
+| 4 | The declaration repeats `schema`/`element` inside its key, which can disagree with the fields. | ore_parameter_vocabularies.json | Accept | The code stays the row's identity, as every keyed table in the repo is, and the loader now reads the fields it applies and refuses a row for a schema no generator applies. |
+| 5 | The catalogue a value set draws on is guessed by splitting the set code and matching suffixes. | curve_value_sets.py | Accept | The declaration states the catalogue, and the generator refuses one it does not know. |
+| 6 | The provenance a row states is never checked. | generate_value_sets.py | Accept | A source outside the curation's set is refused before the populate script is written. |
+| 7 | The local check that guards the value-set scripts does not name the declaration, the new populate script or the generators. | local_checks.py | Accept | The paths are named, so editing any of them alone runs the check. |
+| 8 | The generator does not join the table, so the JSON and the table are two sources. | ore_parameter_vocabulary.org | No change | The table renders no C++ unit by design (`:sql_only:`), so there is nothing to join at generation time. The JSON is the authoring surface and the populate is generated from it, so the table cannot disagree with the generator; the table is the declaration a person and a query read. Recorded in the PR's limitations. |
+| 9 | Resolved `value_set_code` was not emitted onto the parameter row. | ores.reporting.ore_parameter | Deferred | The accepted option kept the `(scope, name)` link table as the statement, and a per-leaf column would restate it 4,530 times. Filed as the second step if the link table's join ever costs a query. |
+| 10 | Notify trigger and `pg_notify` for a table nothing subscribes to. | reporting_ore_parameter_vocabularies_notify_trigger_create.sql | No change | Every entity in the component carries the trigger; removing it for one table would be a divergence, not a simplification. |
+| 11 | No pgTAP test asserts a vocabulary row names an existing value set. | projects/ores.sql | Deferred | The suite this names does not exist in the tree; the check that regenerates the script covers the pairing today. |
+
 * Result
 
 A person changes a curve parameter and saves it. The page offers *Edit* to a

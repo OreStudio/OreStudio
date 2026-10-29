@@ -22,36 +22,44 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
+import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
 import { subjects as portfolioSubjects } from '@ores/wire-protocol/generated/refdata/protocol/portfolio_protocol';
 import { subjects as memberSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_member_protocol';
 import { subjects as structureIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_identifier_protocol';
 import { subjects as structureSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_protocol';
 import { subjects as summarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
-import { readAll, resultSchema, text } from './refdata-calls.js';
+import { readAll, refusal, resultSchema, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
 /*
- * The blotter: the party's books as a tree, and one page of the rows a person
- * reads.
+ * The blotter: the rows a person reads, and the rail they are read by.
  *
- * The rows are the trade summary view's, which states two kinds already — a
- * trade and a structure. A structure's legs are trades too, so the view states
- * them as well. The top list leaves out the trades a structure holds and shows
- * the structure in their place; the flat list does the opposite and shows the
- * legs, each carrying the structure it belongs to.
+ * A row is a trade or a whole structure. The summary view states both kinds, and
+ * a structure's legs are trades too, so it states them as well; the view also
+ * states, for each trade, the structure that holds it. The top list is therefore
+ * the rows the view marks as not legs, and a structure stands in place of the legs
+ * it holds. The flat list is every trade, legs included, each leg naming its
+ * structure.
  *
- * The wire has no "not one of" filter and no structure column on the summary, so
- * the memberships are read and applied here, and a page is narrowed after it is
- * read. That is a first cut, and the read design the task owes says so: the
- * summary wants a structure column a filter can name, and the tree's counts want
- * one grouped read rather than one per node.
+ * A structure has no book of its own. It is placed where its legs are: on the book
+ * they share, or on the lowest portfolio that holds them all, which is the spot a
+ * person looks for a structure that spans books. The rail counts what sits where:
+ * a book's figure is the rows placed on it, a portfolio's is every row below it.
  */
 
 const MAX_PAGE = 200;
 
+/** How many rows one read asks for, and the stop against a runaway read. */
+const READ_PAGE = 200;
+const READ_CAP = 20_000;
+
 const blotterQuerySchema = z.object({
-    view: z.enum(['portfolio', 'counterparty', 'instrument']).default('portfolio'),
-    /** The node the list is narrowed to: `book:<id>` or `portfolio:<id>`, empty for the party. */
+    /** The grouping the rail is drawn by. */
+    view: z.enum(['portfolio', 'counterparty']).default('portfolio'),
+    /**
+     * The node the list is narrowed to: `book:<id>`, `portfolio:<id>`,
+     * `counterparty:<id>`, or empty for the party itself.
+     */
     node: z.string().trim().max(100).default(''),
     flat: z
         .enum(['0', '1'])
@@ -77,6 +85,8 @@ const NO_FILTER = {
     status: null,
     authorisation_status: null,
     trade_date: null,
+    structure_id: null,
+    is_leg: null,
     id_one_of: null,
     row_kind_one_of: null,
     party_id_one_of: null,
@@ -88,16 +98,12 @@ const NO_FILTER = {
     trade_date_one_of: null,
     trade_date_from: null,
     trade_date_to: null,
+    structure_id_one_of: null,
+    is_leg_one_of: null,
     search: null,
 } as const;
 
 type Summary = Readonly<Record<string, unknown>>;
-
-/** How many rows one read asks for. The services cap a page; this is under it. */
-const READ_PAGE = 200;
-
-/** Every row the filter matches, read a page at a time. The cap is a stop against a runaway read. */
-const READ_CAP = 20_000;
 
 /** One page of the summaries, with the total the filter matches. */
 async function summaries(
@@ -107,11 +113,7 @@ async function summaries(
     offset: number,
     limit: number,
 ): Promise<{ readonly rows: readonly Summary[]; readonly total: number }> {
-    /*
-     * The filter is built before the call so the static check of the wire
-     * requests can tell a variable from a literal, as it does for the other
-     * reads: every member of the filter is stated here, absent or not.
-     */
+    /* The filter is built above the call so every member it declares is stated in one place. */
     const filterBody = { ...NO_FILTER, ...filter };
     const reply = await session.client.callAuthenticated(
         summarySubjects.list_trade_summaries_request,
@@ -123,21 +125,17 @@ async function summaries(
         }),
     );
     if (reply.result.outcome !== 'ok') {
-        throw new Error(
-            reply.result.message === '' ? 'The rows could not be read.' : reply.result.message,
-        );
+        throw refusal(reply.result);
     }
-    return { rows: reply.trade_summaries as readonly Summary[], total: reply.total };
+    return { rows: reply.trade_summaries, total: reply.total };
 }
 
 /**
- * Every row a filter matches, newest first.
+ * Every row a filter matches, in the order asked for.
  *
- * The read is paged because the wire states one page at a time, and it is read
- * whole because the list narrows it after: the summary view has no structure
- * column, so "the trades no structure holds" cannot be asked of the service.
- * Closing that gap is the read design's first unit; until then this is right at
- * any size and reads more than a page should.
+ * The rail's figures come from these rows, so a page cannot answer them: a count
+ * needs the whole set, and the view has no grouped read yet. The list itself is
+ * sliced after the rail is counted.
  */
 async function allSummaries(
     session: LiveSession,
@@ -155,29 +153,102 @@ async function allSummaries(
     return rows;
 }
 
-/** A node of the tree the list is narrowed to. Its id says what kind of node it is. */
+/** A node of the rail. Its id says what kind of node it is; the party is the empty id. */
 interface TreeNode {
     readonly id: string;
     readonly label: string;
-    readonly kind: 'party' | 'portfolio' | 'book';
+    readonly kind: 'party' | 'portfolio' | 'book' | 'counterparty';
     readonly parent: string;
     readonly count: number;
 }
 
 const bookNodeId = (id: string): string => `book:${id}`;
 const portfolioNodeId = (id: string): string => `portfolio:${id}`;
+const counterpartyNodeId = (id: string): string => `counterparty:${id}`;
 
-/** The books under a portfolio or a book, and the ones under it at any depth. */
-function bookIdsUnder(node: string, books: readonly Summary[]): readonly string[] {
-    if (node === '') {
-        return [];
+/** Where a portfolio sits: its parent, or the empty string when it is a root. */
+type PortfolioParent = ReadonlyMap<string, string>;
+
+/** A portfolio and every portfolio under it. */
+function subtreeOf(id: string, parentOf: PortfolioParent): readonly string[] {
+    const under = [id];
+    for (let index = 0; index < under.length; index += 1) {
+        const current = under[index] ?? '';
+        for (const [candidate, parent] of parentOf) {
+            if (parent === current && !under.includes(candidate)) {
+                under.push(candidate);
+            }
+        }
     }
-    if (node.startsWith('book:')) {
-        return [node.slice('book:'.length)];
+    return under;
+}
+
+/** The portfolios above a portfolio, nearest first, ending at a root. */
+function ancestorsOf(id: string, parentOf: PortfolioParent): readonly string[] {
+    const above: string[] = [];
+    let parent = parentOf.get(id) ?? '';
+    while (parent !== '' && !above.includes(parent)) {
+        above.push(parent);
+        parent = parentOf.get(parent) ?? '';
     }
-    return books
-        .filter((book) => text(book['parent_portfolio_id']) === node.slice('portfolio:'.length))
-        .map((book) => text(book['id']));
+    return above;
+}
+
+/**
+ * The lowest portfolio that holds every one of these portfolios.
+ *
+ * A portfolio holds itself, so a set of one answers itself. A set that shares no
+ * portfolio above them answers the party, which the empty string states.
+ */
+function lowestCommonAncestor(ids: readonly string[], parentOf: PortfolioParent): string {
+    const first = ids[0];
+    if (first === undefined) {
+        return '';
+    }
+    for (const candidate of [first, ...ancestorsOf(first, parentOf)]) {
+        if (ids.every((id) => id === candidate || ancestorsOf(id, parentOf).includes(candidate))) {
+            return candidate;
+        }
+    }
+    return '';
+}
+
+/** The rail nodes a placement sits under: itself, the portfolios above it, and the party. */
+function ancestorsOfPlacement(
+    placement: string,
+    portfolioOfBook: ReadonlyMap<string, string>,
+    parentOf: PortfolioParent,
+): readonly string[] {
+    const chain = [placement];
+    let portfolio = '';
+    if (placement.startsWith('book:')) {
+        portfolio = portfolioOfBook.get(placement.slice('book:'.length)) ?? '';
+    } else if (placement.startsWith('portfolio:')) {
+        portfolio = placement.slice('portfolio:'.length);
+    }
+    if (portfolio !== '') {
+        chain.push(portfolioNodeId(portfolio));
+        for (const above of ancestorsOf(portfolio, parentOf)) {
+            chain.push(portfolioNodeId(above));
+        }
+    }
+    chain.push('');
+    return chain;
+}
+
+/** A row of the list, as the screen reads it. */
+interface BlotterRow {
+    readonly row_kind: string;
+    readonly id: string;
+    readonly reference: string;
+    readonly structure: string;
+    readonly structure_reference: string;
+    readonly instrument_type: string;
+    readonly book_id: string;
+    readonly counterparty_id: string;
+    readonly status: string;
+    readonly trade_date: string;
+    readonly spans_books: boolean;
 }
 
 export function registerBlotterRoutes(
@@ -185,18 +256,18 @@ export function registerBlotterRoutes(
     requireSession: (request: FastifyRequest) => LiveSession,
 ): void {
     /**
-     * One page of the blotter, with the tree beside it.
+     * One page of the blotter, with the rail beside it.
      *
-     * The tree's counts are the number of rows under each node, read from the
-     * total a page of one row answers: the count is part of the answer to the
-     * page, as every list's count is.
+     * The rail is the grouping the view states: the party's portfolios and their
+     * books, or the counterparties its rows face. Each node carries the number of
+     * rows placed under it.
      */
     server.get('/api/blotter', async (request) => {
         const session = requireSession(request);
         const query = blotterQuerySchema.parse(request.query);
         const order = { field: query.sort, descending: query.descending };
 
-        const [books, portfolios, structures, members] = await Promise.all([
+        const [books, portfolios, structures, members, counterparties] = await Promise.all([
             readAll(session, bookSubjects.list_books_request, 'books', {
                 filter: {
                     parent_portfolio_id: null,
@@ -217,9 +288,13 @@ export function registerBlotterRoutes(
                 filter: { trade_id_one_of: null },
                 as_of: null,
             }),
+            readAll(session, counterpartySubjects.list_counterparties_request, 'counterparties', {
+                filter: null,
+                as_of: null,
+            }),
         ]);
 
-        /* Which structure holds which trade, and so which trades are legs. */
+        /* Which structure holds which trade. */
         const holderOf = new Map<string, string>();
         for (const member of members) {
             const trade = text(member['trade_id']);
@@ -232,20 +307,15 @@ export function registerBlotterRoutes(
             legsOf.set(structure, [...(legsOf.get(structure) ?? []), trade]);
         }
 
-        /* The books a structure's legs sit in, so the list can say it spans them. */
+        /*
+         * The books a structure's legs sit in, read in one filtered read so a
+         * structure of any size is placed by all of its legs, not by a page.
+         */
         const legIds = [...holderOf.keys()];
         const legRows =
             legIds.length === 0
                 ? []
-                : (
-                      await summaries(
-                          session,
-                          { id_one_of: legIds, row_kind: 'trade' },
-                          { field: 'trade_date', descending: true },
-                          0,
-                          MAX_PAGE,
-                      )
-                  ).rows;
+                : await allSummaries(session, { id_one_of: legIds, row_kind: 'trade' }, order);
         const bookOfTrade = new Map(
             legRows.map((row) => [text(row['id']), text(row['book_id'])] as const),
         );
@@ -262,7 +332,9 @@ export function registerBlotterRoutes(
         }
 
         /* A structure is found by its own reference, and a leg by the structure's. */
-        const referenceOf = new Map<string, string>();
+        const referenceOf = new Map<string, string>(
+            structures.map((row) => [text(row['id']), ''] as const),
+        );
         if (structures.length > 0) {
             const identifiers = await readAll(
                 session,
@@ -279,69 +351,30 @@ export function registerBlotterRoutes(
             for (const row of identifiers) {
                 const owner = text(row['structure_id']);
                 const value = text(row['id_value']);
-                if (owner !== '' && value !== '' && !referenceOf.has(owner)) {
+                if (owner !== '' && value !== '' && (referenceOf.get(owner) ?? '') === '') {
                     referenceOf.set(owner, value);
                 }
             }
         }
 
-        /* The tree: the party, its portfolios and their books, each with its count. */
+        /* The tree of portfolios and books, built once and read by every placement. */
         const portfolioOf = new Map(portfolios.map((row) => [text(row['id']), row] as const));
-        const booksUnder = new Map<string, Summary[]>();
-        for (const book of books) {
-            const portfolio = text(book['parent_portfolio_id']);
-            if (portfolio !== '' && portfolioOf.has(portfolio)) {
-                booksUnder.set(portfolio, [...(booksUnder.get(portfolio) ?? []), book]);
-            }
-        }
-        const shown = new Set(booksUnder.keys());
-        for (const start of [...shown]) {
-            let parent = text(portfolioOf.get(start)?.['parent_portfolio_id']);
-            while (parent !== '' && portfolioOf.has(parent) && !shown.has(parent)) {
-                shown.add(parent);
-                parent = text(portfolioOf.get(parent)?.['parent_portfolio_id']);
-            }
-        }
-        const childrenOf = new Map<string, string[]>();
-        for (const id of shown) {
-            const parent = text(portfolioOf.get(id)?.['parent_portfolio_id']);
-            const key = parent !== '' && shown.has(parent) ? parent : '';
-            childrenOf.set(key, [...(childrenOf.get(key) ?? []), id]);
-        }
-        const bare: Omit<TreeNode, 'count'>[] = [
-            { id: '', label: session.party?.name ?? '', kind: 'party', parent: '' },
-        ];
-        const walk = (parent: string): void => {
-            for (const id of childrenOf.get(parent) ?? []) {
-                bare.push({
-                    id: portfolioNodeId(id),
-                    label: text(portfolioOf.get(id)?.['name']) || id,
-                    kind: 'portfolio',
-                    parent: parent === '' ? '' : portfolioNodeId(parent),
-                });
-                for (const book of booksUnder.get(id) ?? []) {
-                    bare.push({
-                        id: bookNodeId(text(book['id'])),
-                        label: text(book['name']) || text(book['id']),
-                        kind: 'book',
-                        parent: portfolioNodeId(id),
-                    });
-                }
-                walk(id);
-            }
-        };
-        walk('');
+        const parentOf: PortfolioParent = new Map(
+            portfolios.map((row) => [text(row['id']), text(row['parent_portfolio_id'])] as const),
+        );
+        const portfolioOfBook = new Map(
+            books.map((row) => [text(row['id']), text(row['parent_portfolio_id'])] as const),
+        );
 
         /*
-         * The tree's counts come from the rows already read for the page, grouped
-         * by book: one pass, and no read per node. A row with no book counts at the
-         * party alone.
+         * Where a row is placed: a trade on its book, a structure on the book its
+         * legs share or on the lowest portfolio that holds them. A row with no book
+         * sits at the party.
          */
-        const everyRow = await allSummaries(session, {}, order);
-        /* A structure counts where it is placed, which is its legs' book or the node holding them. */
         const placementOf = (row: Summary): string => {
             if (text(row['row_kind']) !== 'structure') {
-                return text(row['book_id']) === '' ? '' : bookNodeId(text(row['book_id']));
+                const book = text(row['book_id']);
+                return book === '' ? '' : bookNodeId(book);
             }
             const structureBooks = booksOfStructure.get(text(row['id'])) ?? [];
             if (structureBooks.length === 0) {
@@ -350,82 +383,193 @@ export function registerBlotterRoutes(
             if (structureBooks.length === 1) {
                 return bookNodeId(structureBooks[0] ?? '');
             }
-            const owners = [
-                ...new Set(
-                    structureBooks.map((id) =>
-                        text(books.find((b) => text(b['id']) === id)?.['parent_portfolio_id']),
-                    ),
-                ),
-            ];
-            return owners.length === 1 && owners[0] !== '' ? portfolioNodeId(owners[0] ?? '') : '';
+            const holdings = structureBooks.map((id) => portfolioOfBook.get(id) ?? '');
+            const holding = lowestCommonAncestor(
+                holdings.filter((id) => id !== ''),
+                parentOf,
+            );
+            return holding === '' ? '' : portfolioNodeId(holding);
         };
+
+        /* The rows the top list holds: the trades no structure holds, and the structures. */
+        const topRows = await allSummaries(session, { is_leg: false }, order);
         const byNode = new Map<string, number>();
-        for (const row of everyRow) {
+        for (const row of topRows) {
             const node = placementOf(row);
             byNode.set(node, (byNode.get(node) ?? 0) + 1);
         }
-        const countUnder = (node: Omit<TreeNode, 'count'>): number => {
-            if (node.kind === 'party') {
-                return everyRow.length;
-            }
-            const own = byNode.get(node.id) ?? 0;
-            if (node.kind === 'book') {
-                return own;
-            }
-            return bookIdsUnder(node.id, books).reduce(
-                (sum, id) => sum + (byNode.get(bookNodeId(id)) ?? 0),
-                own,
-            );
-        };
-        const tree: TreeNode[] = bare.map((node) => ({ ...node, count: countUnder(node) }));
 
-        /* The page, narrowed by the node and the search, then by what the list holds. */
-        const nodeFilter =
-            query.node === ''
-                ? {}
-                : query.node.startsWith('book:')
-                  ? { book_id: query.node.slice('book:'.length) }
-                  : { book_id_one_of: bookIdsUnder(query.node, books) };
-        const matched = await allSummaries(
-            session,
-            {
-                ...nodeFilter,
-                /* The top list leaves the legs out; the flat list is every trade, legs included. */
-                ...(query.flat ? { row_kind: 'trade' } : { is_leg: false }),
-                ...(query.search === '' ? {} : { search: query.search }),
-            },
-            order,
+        const labelOfCounterparty = new Map(
+            counterparties.map(
+                (row) =>
+                    [
+                        text(row['id']),
+                        text(row['full_name']) || text(row['short_code']) || text(row['id']),
+                    ] as const,
+            ),
         );
-        /*
-         * The view states whether a row is a leg, so the two lists ask for their
-         * own rows: the top list leaves the legs out and the flat list keeps only
-         * them.
-         */
-        const kept = matched;
-        const rows = kept.slice(query.offset, query.offset + query.limit).map((row) => {
-            const id = text(row['id']);
-            const kind = text(row['row_kind']);
-            const structure = holderOf.get(id) ?? '';
-            return {
-                row_kind: kind,
-                id,
-                reference: kind === 'structure' ? (referenceOf.get(id) ?? '') : '',
-                structure,
-                structure_reference: structure === '' ? '' : (referenceOf.get(structure) ?? ''),
-                instrument_type: text(row['instrument_type']),
-                book_id: text(row['book_id']),
-                counterparty_id: text(row['counterparty_id']),
-                status: text(row['status']),
-                trade_date: text(row['trade_date']),
-                legs: kind === 'structure' ? (legsOf.get(id) ?? []).length : 0,
-                spans_books: (booksOfStructure.get(id) ?? []).length > 1,
+
+        const portfolioRail = (): readonly TreeNode[] => {
+            const booksUnder = new Map<string, Summary[]>();
+            for (const book of books) {
+                const portfolio = text(book['parent_portfolio_id']);
+                if (portfolio !== '' && portfolioOf.has(portfolio)) {
+                    booksUnder.set(portfolio, [...(booksUnder.get(portfolio) ?? []), book]);
+                }
+            }
+            const shown = new Set(booksUnder.keys());
+            for (const start of [...shown]) {
+                let parent = text(portfolioOf.get(start)?.['parent_portfolio_id']);
+                while (parent !== '' && portfolioOf.has(parent) && !shown.has(parent)) {
+                    shown.add(parent);
+                    parent = text(portfolioOf.get(parent)?.['parent_portfolio_id']);
+                }
+            }
+            const childrenOf = new Map<string, string[]>();
+            for (const id of shown) {
+                const parent = text(portfolioOf.get(id)?.['parent_portfolio_id']);
+                const key = parent !== '' && shown.has(parent) ? parent : '';
+                childrenOf.set(key, [...(childrenOf.get(key) ?? []), id]);
+            }
+            const countUnder = (node: string): number => {
+                if (node === '') {
+                    return topRows.length;
+                }
+                if (node.startsWith('book:')) {
+                    return byNode.get(node) ?? 0;
+                }
+                const portfolio = node.slice('portfolio:'.length);
+                const below = subtreeOf(portfolio, parentOf);
+                const nested = below
+                    .slice(1)
+                    .reduce((sum, id) => sum + (byNode.get(portfolioNodeId(id)) ?? 0), 0);
+                const booksHere = books
+                    .filter((book) => below.includes(text(book['parent_portfolio_id'])))
+                    .reduce(
+                        (sum, book) => sum + (byNode.get(bookNodeId(text(book['id']))) ?? 0),
+                        0,
+                    );
+                return (byNode.get(node) ?? 0) + nested + booksHere;
             };
-        });
+            const nodes: TreeNode[] = [
+                {
+                    id: '',
+                    label: session.party?.name ?? '',
+                    kind: 'party',
+                    parent: '',
+                    count: topRows.length,
+                },
+            ];
+            const walk = (parent: string): void => {
+                for (const id of childrenOf.get(parent) ?? []) {
+                    nodes.push({
+                        id: portfolioNodeId(id),
+                        label: text(portfolioOf.get(id)?.['name']) || id,
+                        kind: 'portfolio',
+                        parent: parent === '' ? '' : portfolioNodeId(parent),
+                        count: countUnder(portfolioNodeId(id)),
+                    });
+                    for (const book of booksUnder.get(id) ?? []) {
+                        nodes.push({
+                            id: bookNodeId(text(book['id'])),
+                            label: text(book['name']) || text(book['id']),
+                            kind: 'book',
+                            parent: portfolioNodeId(id),
+                            count: countUnder(bookNodeId(text(book['id']))),
+                        });
+                    }
+                    walk(id);
+                }
+            };
+            walk('');
+            return nodes;
+        };
+
+        const counterpartyRail = (): readonly TreeNode[] => {
+            const counts = new Map<string, number>();
+            for (const row of topRows) {
+                const id = text(row['counterparty_id']);
+                if (id !== '') {
+                    counts.set(id, (counts.get(id) ?? 0) + 1);
+                }
+            }
+            return [
+                {
+                    id: '',
+                    label: session.party?.name ?? '',
+                    kind: 'party',
+                    parent: '',
+                    count: topRows.length,
+                },
+                ...[...counts.entries()]
+                    .sort(([left], [right]) =>
+                        (labelOfCounterparty.get(left) ?? left).localeCompare(
+                            labelOfCounterparty.get(right) ?? right,
+                        ),
+                    )
+                    .map(([id, count]) => ({
+                        id: counterpartyNodeId(id),
+                        label: labelOfCounterparty.get(id) ?? id,
+                        kind: 'counterparty' as const,
+                        parent: '',
+                        count,
+                    })),
+            ];
+        };
+
+        const tree = query.view === 'counterparty' ? counterpartyRail() : portfolioRail();
+
+        /* The rows the list is read from: every trade when flat, the top rows otherwise. */
+        const listed =
+            query.flat || query.search !== ''
+                ? await allSummaries(
+                      session,
+                      {
+                          ...(query.flat ? { row_kind: 'trade' } : { is_leg: false }),
+                          ...(query.search === '' ? {} : { search: query.search }),
+                      },
+                      order,
+                  )
+                : topRows;
+
+        /* Narrow to the node, and read the page from what is left. */
+        const within = (row: Summary): boolean => {
+            const node = query.node;
+            if (node === '') {
+                return true;
+            }
+            if (node.startsWith('counterparty:')) {
+                return text(row['counterparty_id']) === node.slice('counterparty:'.length);
+            }
+            const placement = placementOf(row);
+            return ancestorsOfPlacement(placement, portfolioOfBook, parentOf).includes(node);
+        };
+        const rows = listed.filter(within);
+        const page: BlotterRow[] = rows
+            .slice(query.offset, query.offset + query.limit)
+            .map((row) => {
+                const id = text(row['id']);
+                const kind = text(row['row_kind']);
+                const structure = holderOf.get(id) ?? '';
+                return {
+                    row_kind: kind,
+                    id,
+                    reference: kind === 'structure' ? (referenceOf.get(id) ?? '') : '',
+                    structure,
+                    structure_reference: structure === '' ? '' : (referenceOf.get(structure) ?? ''),
+                    instrument_type: text(row['instrument_type']),
+                    book_id: text(row['book_id']),
+                    counterparty_id: text(row['counterparty_id']),
+                    status: text(row['status']),
+                    trade_date: text(row['trade_date']),
+                    spans_books: (booksOfStructure.get(id) ?? []).length > 1,
+                };
+            });
 
         return {
             tree,
-            rows,
-            total: kept.length,
+            rows: page,
+            total: rows.length,
             flat: query.flat,
             view: query.view,
             node: query.node,

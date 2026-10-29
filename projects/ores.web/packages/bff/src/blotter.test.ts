@@ -10,11 +10,11 @@ import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
 /**
  * The blotter's read.
  *
- * The rows are the trade summary's and the tree is the party's books. The two
- * things worth proving are the two the wire does not state: a structure's legs
- * are not rows of the top list, and a structure stands in their place. The flat
- * list inverts that and names each leg's structure. The tree counts a book by the
- * rows it holds.
+ * The cases prove the two things the screen relies on and the wire cannot state
+ * on its own: a structure stands in place of its legs, and it is placed where its
+ * legs are — on the book they share, or on the lowest portfolio that holds them
+ * all. The rail counts what sits where, so a structure counts once, on the node a
+ * person opens it from.
  */
 
 const config: Config = {
@@ -41,77 +41,209 @@ function siteConfiguration(): ReturnType<typeof loadSiteConfiguration> {
     });
 }
 
-const STRUCTURE = '77777777-7777-4777-8777-777777777777';
-const LEG = '55555555-5555-4555-8555-555555555555';
-const FREE_TRADE = '56565656-5656-4565-8656-565656565656';
-const BOOK = '12121212-1212-4212-8212-121212121212';
-const PORTFOLIO = '13131313-1313-4313-8313-131313131313';
 const PARTY = '99999999-9999-4999-8999-999999999999';
+const RATES = '11111111-1111-4111-8111-111111111111';
+const CREDIT = '22222222-2222-4222-8222-222222222222';
+const EQUITIES = '33333333-3333-4333-8333-333333333333';
+const EMEA = '44444444-4444-4444-8444-444444444444';
+const CREDIT_FLOW = '55555555-5555-4555-8555-555555555555';
+const EQUITY_BOOK = '66666666-6666-4666-8666-666666666666';
+const SPANNING = '77777777-7777-4777-8777-777777777777';
+const SINGLE = '88888888-8888-4888-8888-888888888888';
+const LEG_RATES = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+const LEG_CREDIT = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+const LEG_EQUITY = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+const FREE_EMEA = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+const FREE_EQUITY = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
+const ACME_BANK = 'f1f1f1f1-f1f1-4f1f-8f1f-f1f1f1f1f1f1';
+const GLOBEX = 'f2f2f2f2-f2f2-4f2f-8f2f-f2f2f2f2f2f2';
 
 const subjects = {
     books: 'refdata.v1.books.list',
     portfolios: 'refdata.v1.portfolios.list',
+    counterparties: 'refdata.v1.counterparties.list',
     structures: 'trading.v1.structures.list',
     members: 'trading.v1.structure_members.list',
     identifiers: 'trading.v1.structure_identifiers.list',
     summaries: 'trading.v1.trade_summaries.list',
 };
 
+interface SummaryRow {
+    readonly id: string;
+    readonly row_kind: string;
+    readonly book_id: string | null;
+    readonly is_leg: boolean;
+    readonly structure_id: string | null;
+    readonly counterparty_id: string | null;
+    readonly instrument_type: string;
+    readonly status: string;
+    readonly trade_date: string;
+}
+
+/**
+ * The party's rows: a structure spanning two books under one portfolio, a
+ * structure of one book, two free trades, and the legs behind the structures.
+ */
+function rows(): readonly SummaryRow[] {
+    return [
+        {
+            id: SPANNING,
+            row_kind: 'structure',
+            book_id: null,
+            is_leg: false,
+            structure_id: null,
+            counterparty_id: ACME_BANK,
+            instrument_type: 'Package',
+            status: 'Booked',
+            trade_date: '2026-03-02',
+        },
+        {
+            id: FREE_EMEA,
+            row_kind: 'trade',
+            book_id: EMEA,
+            is_leg: false,
+            structure_id: null,
+            counterparty_id: ACME_BANK,
+            instrument_type: 'Swap',
+            status: 'Booked',
+            trade_date: '2026-03-03',
+        },
+        {
+            id: SINGLE,
+            row_kind: 'structure',
+            book_id: null,
+            is_leg: false,
+            structure_id: null,
+            counterparty_id: GLOBEX,
+            instrument_type: 'Package',
+            status: 'Booked',
+            trade_date: '2026-03-04',
+        },
+        {
+            id: FREE_EQUITY,
+            row_kind: 'trade',
+            book_id: EQUITY_BOOK,
+            is_leg: false,
+            structure_id: null,
+            counterparty_id: GLOBEX,
+            instrument_type: 'Swap',
+            status: 'Booked',
+            trade_date: '2026-03-05',
+        },
+        {
+            id: LEG_RATES,
+            row_kind: 'trade',
+            book_id: EMEA,
+            is_leg: true,
+            structure_id: SPANNING,
+            counterparty_id: ACME_BANK,
+            instrument_type: 'Swap',
+            status: 'Booked',
+            trade_date: '2026-03-06',
+        },
+        {
+            id: LEG_CREDIT,
+            row_kind: 'trade',
+            book_id: CREDIT_FLOW,
+            is_leg: true,
+            structure_id: SPANNING,
+            counterparty_id: ACME_BANK,
+            instrument_type: 'Swap',
+            status: 'Booked',
+            trade_date: '2026-03-07',
+        },
+        {
+            id: LEG_EQUITY,
+            row_kind: 'trade',
+            book_id: EQUITY_BOOK,
+            is_leg: true,
+            structure_id: SINGLE,
+            counterparty_id: GLOBEX,
+            instrument_type: 'Swap',
+            status: 'Booked',
+            trade_date: '2026-03-08',
+        },
+    ];
+}
+
 function replies(): Readonly<Record<string, unknown>> {
     return {
         [subjects.books]: {
             result: ok,
-            books: [{ id: BOOK, name: 'EMEA Rates', parent_portfolio_id: PORTFOLIO }],
-            total: 1,
-        },
-        [subjects.portfolios]: {
-            result: ok,
-            portfolios: [{ id: PORTFOLIO, name: 'Rates and credit', parent_portfolio_id: null }],
-            total: 1,
-        },
-        [subjects.structures]: {
-            result: ok,
-            structures: [{ id: STRUCTURE, kind: 'Package', counterparty_id: null }],
-            total: 1,
-        },
-        [subjects.members]: {
-            result: ok,
-            members: [{ trade_id: LEG, structure_id: STRUCTURE, role: 'leg' }],
-            total: 1,
-        },
-        [subjects.identifiers]: {
-            result: ok,
-            identifiers: [{ structure_id: STRUCTURE, id_value: 'PKG-0004' }],
-            total: 1,
-        },
-        [subjects.summaries]: {
-            result: ok,
-            trade_summaries: [
-                {
-                    id: STRUCTURE,
-                    row_kind: 'structure',
-                    book_id: null,
-                    is_leg: false,
-                    structure_id: null,
-                },
-                {
-                    id: LEG,
-                    row_kind: 'trade',
-                    book_id: BOOK,
-                    is_leg: true,
-                    structure_id: STRUCTURE,
-                },
-                {
-                    id: FREE_TRADE,
-                    row_kind: 'trade',
-                    book_id: BOOK,
-                    is_leg: false,
-                    structure_id: null,
-                },
+            books: [
+                { id: EMEA, name: 'EMEA Rates', parent_portfolio_id: RATES },
+                { id: CREDIT_FLOW, name: 'Credit Flow', parent_portfolio_id: CREDIT },
+                { id: EQUITY_BOOK, name: 'Equity Derivatives', parent_portfolio_id: EQUITIES },
             ],
             total: 3,
         },
+        [subjects.portfolios]: {
+            result: ok,
+            portfolios: [
+                { id: RATES, name: 'Rates', parent_portfolio_id: null },
+                { id: CREDIT, name: 'Credit', parent_portfolio_id: RATES },
+                { id: EQUITIES, name: 'Equities', parent_portfolio_id: null },
+            ],
+            total: 3,
+        },
+        [subjects.counterparties]: {
+            result: ok,
+            counterparties: [
+                { id: ACME_BANK, full_name: 'Acme Bank', short_code: 'ACME' },
+                { id: GLOBEX, full_name: 'Globex', short_code: 'GLBX' },
+            ],
+            total: 2,
+        },
+        [subjects.structures]: {
+            result: ok,
+            structures: [
+                { id: SPANNING, kind: 'Package' },
+                { id: SINGLE, kind: 'Package' },
+            ],
+            total: 2,
+        },
+        [subjects.members]: {
+            result: ok,
+            members: [
+                { trade_id: LEG_RATES, structure_id: SPANNING },
+                { trade_id: LEG_CREDIT, structure_id: SPANNING },
+                { trade_id: LEG_EQUITY, structure_id: SINGLE },
+            ],
+            total: 3,
+        },
+        [subjects.identifiers]: {
+            result: ok,
+            identifiers: [
+                { structure_id: SPANNING, id_value: 'PKG-0001' },
+                { structure_id: SINGLE, id_value: 'PKG-0002' },
+            ],
+            total: 2,
+        },
+        [subjects.summaries]: { result: ok, trade_summaries: rows(), total: rows().length },
     };
+}
+
+interface Asked {
+    readonly filter?: {
+        readonly is_leg?: boolean | null;
+        readonly row_kind?: string | null;
+        readonly id_one_of?: readonly string[] | null;
+        readonly search?: string | null;
+    };
+}
+
+/** The canned summaries, narrowed the way the service narrows them. */
+function summariesFor(asked: Asked): readonly SummaryRow[] {
+    const filter = asked.filter;
+    return rows()
+        .filter((row) => filter?.is_leg == null || row.is_leg === filter.is_leg)
+        .filter((row) => filter?.row_kind == null || row.row_kind === filter.row_kind)
+        .filter(
+            (row) =>
+                filter?.id_one_of == null ||
+                filter.id_one_of.length === 0 ||
+                filter.id_one_of.includes(row.id),
+        );
 }
 
 function buildTestServer(): {
@@ -123,29 +255,17 @@ function buildTestServer(): {
     const client = {
         async callAuthenticated(
             subject: string,
-            _body: unknown,
+            body: unknown,
             schema: { parse: (value: unknown) => unknown },
         ): Promise<unknown> {
             if (!(subject in canned)) {
                 throw new Error(`No canned reply for ${subject}`);
             }
-            const reply = canned[subject] as {
-                trade_summaries?: { is_leg: boolean; row_kind: string }[];
-            };
-            const asked = (_body as { filter?: { is_leg?: boolean | null } }).filter?.is_leg;
-            const kind = (_body as { filter?: { row_kind?: string | null } }).filter?.row_kind;
-            if (
-                subject === subjects.summaries &&
-                (typeof asked === 'boolean' || typeof kind === 'string')
-            ) {
-                const rows = (reply.trade_summaries ?? []).filter(
-                    (row) =>
-                        (typeof asked !== 'boolean' || row.is_leg === asked) &&
-                        (typeof kind !== 'string' || row.row_kind === kind),
-                );
-                return schema.parse({ ...reply, trade_summaries: rows, total: rows.length });
+            if (subject === subjects.summaries) {
+                const found = summariesFor(body as Asked);
+                return schema.parse({ result: ok, trade_summaries: found, total: found.length });
             }
-            return schema.parse(reply);
+            return schema.parse(canned[subject]);
         },
         async close(): Promise<void> {
             return undefined;
@@ -193,35 +313,85 @@ function get(
 }
 
 describe('the blotter read', () => {
-    it('shows the structure in place of its leg, and counts the book it sits in', async () => {
+    it('shows each structure in place of its legs', async () => {
         const { server, sessionId } = buildTestServer();
         const answer = await get(server, sessionId, '/api/blotter');
         expect(answer.statusCode).toBe(200);
         const body = answer.json();
-        const kinds = body.rows.map((row: { row_kind: string }) => row.row_kind);
-        const ids = body.rows.map((row: { id: string }) => row.id);
-        // The structure stands for its leg: the leg is not a row of the top list.
-        expect(kinds).toEqual(['structure', 'trade']);
-        expect(ids).toContain(STRUCTURE);
-        expect(ids).toContain(FREE_TRADE);
-        expect(ids).not.toContain(LEG);
-        // A structure row states its own reference and how many legs it holds.
-        expect(body.rows[0]).toMatchObject({ reference: 'PKG-0004', legs: 1, spans_books: false });
-        // The tree counts the book by the rows it holds, and the party by all of them.
-        const tree = body.tree as { id: string; kind: string; count: number }[];
-        expect(tree.find((node) => node.kind === 'book')?.count).toBe(3);
-        expect(tree[0]).toMatchObject({ kind: 'party', count: 3 });
+        expect(body.rows.map((row: { id: string }) => row.id)).toEqual([
+            SPANNING,
+            FREE_EMEA,
+            SINGLE,
+            FREE_EQUITY,
+        ]);
+        expect(body.rows[0]).toMatchObject({
+            row_kind: 'structure',
+            reference: 'PKG-0001',
+            spans_books: true,
+        });
+        expect(body.rows[2]).toMatchObject({ reference: 'PKG-0002', spans_books: false });
+    });
+
+    it('counts each row once, where it is placed', async () => {
+        const { server, sessionId } = buildTestServer();
+        const body = (await get(server, sessionId, '/api/blotter')).json();
+        const counts = Object.fromEntries(
+            (body.tree as { id: string; count: number }[]).map((node) => [node.id, node.count]),
+        );
+        // The party holds every top row: two structures and two free trades.
+        expect(counts['']).toBe(4);
+        // Rates holds the spanning structure and the EMEA trade; its Credit child holds none.
+        expect(counts[`portfolio:${RATES}`]).toBe(2);
+        expect(counts[`portfolio:${CREDIT}`]).toBe(0);
+        // A book holds the rows placed on it, and a leg is not one of them.
+        expect(counts[`book:${EMEA}`]).toBe(1);
+        expect(counts[`book:${EQUITY_BOOK}`]).toBe(2);
+    });
+
+    it('does not show a spanning structure under either book, but under the portfolio holding them', async () => {
+        const { server, sessionId } = buildTestServer();
+        const onBook = (await get(server, sessionId, `/api/blotter?node=book:${EMEA}`)).json();
+        expect(onBook.rows.map((row: { id: string }) => row.id)).toEqual([FREE_EMEA]);
+        const onRates = (
+            await get(server, sessionId, `/api/blotter?node=portfolio:${RATES}`)
+        ).json();
+        expect(onRates.rows.map((row: { id: string }) => row.id)).toEqual([SPANNING, FREE_EMEA]);
     });
 
     it('reads the legs in the flat list, each naming its structure', async () => {
         const { server, sessionId } = buildTestServer();
-        const answer = await get(server, sessionId, '/api/blotter?flat=1');
-        const body = answer.json();
-        expect(body.rows.map((row: { id: string }) => row.id)).toEqual([LEG, FREE_TRADE]);
-        expect(body.rows[0]).toMatchObject({
-            structure: STRUCTURE,
-            structure_reference: 'PKG-0004',
+        const body = (await get(server, sessionId, '/api/blotter?flat=1')).json();
+        expect(body.rows.map((row: { id: string }) => row.id)).toEqual([
+            FREE_EMEA,
+            FREE_EQUITY,
+            LEG_RATES,
+            LEG_CREDIT,
+            LEG_EQUITY,
+        ]);
+        expect(body.rows[2]).toMatchObject({
+            structure: SPANNING,
+            structure_reference: 'PKG-0001',
         });
-        expect(body.rows[1]).toMatchObject({ structure: '' });
+        expect(body.rows[0]).toMatchObject({ structure: '' });
+    });
+
+    it('draws the counterparty rail from the rows and narrows to one', async () => {
+        const { server, sessionId } = buildTestServer();
+        const body = (await get(server, sessionId, '/api/blotter?view=counterparty')).json();
+        const rail = (body.tree as { id: string; label: string; count: number }[]).filter(
+            (node) => node.id !== '',
+        );
+        expect(rail.map((node) => [node.label, node.count])).toEqual([
+            ['Acme Bank', 2],
+            ['Globex', 2],
+        ]);
+        const narrowed = (
+            await get(
+                server,
+                sessionId,
+                `/api/blotter?view=counterparty&node=counterparty:${ACME_BANK}`,
+            )
+        ).json();
+        expect(narrowed.rows.map((row: { id: string }) => row.id)).toEqual([SPANNING, FREE_EMEA]);
     });
 });

@@ -193,6 +193,26 @@ artefact: a portfolio tree beside the list, the row kinds, the flat option, the
 three perspectives, and the trade view and structure view reached from a row. It
 is the shape the screen is built from, as with the pages this arc already built.
 
+** The build, in units
+
+The prototypes are signed off, so the work is the screens. The summary view already
+states both row kinds, and =GET /api/blotter= reads one page of them with the tree
+beside it — the party, its portfolios and their books, each with the count of the
+rows under it. What remains, in order:
+
+1. *The read, finished.* The page narrows after it is read, because the summary has
+   no structure column a filter can name, and the tree asks for a count per node
+   rather than one grouped read. Both want the summary view to state the structure
+   a trade is a leg of, and a grouped count per book and portfolio.
+2. *The blotter screen.* A tree panel on the left and the list beside it, a flat
+   option, and the perspective control. It reuses =RecordList= for the rows, so
+   the pager, the search and the empty and error states are the house ones.
+3. *The routes.* A trade row opens =/trading/trades/:id= and a structure row
+   =/trading/structures/:reference=, which already exist and stay.
+4. *The removal.* The trades list and the structures list become redirects to the
+   blotter, and the Trading area offers one card, *Trade blotter*, whose permission
+   is the trades read and the structures read together.
+
 ** What this task does not do
 
 It does not build the screen, move the routes, or change the read. It decides,

@@ -46,6 +46,8 @@ TEST_CASE("the workflow vocabulary is the tokens reflect-cpp writes", "[codec]")
         CHECK(wire_msgpack::write(v) == rfl_msgpack_vocabulary(v));
         CHECK(wire_json::read<step_log_level>(wire_json::write(v)) == v);
         CHECK(wire_msgpack::read<step_log_level>(wire_msgpack::write(v)) == v);
+        CHECK(wire_json::read<step_log_level>(rfl::json::write(v)) == v);
+        CHECK(wire_msgpack::read<step_log_level>(rfl_msgpack_vocabulary(v)) == v);
     }
     for (const auto v :
          {step_outcome::completed, step_outcome::completed_with_warnings, step_outcome::failed}) {
@@ -53,6 +55,8 @@ TEST_CASE("the workflow vocabulary is the tokens reflect-cpp writes", "[codec]")
         CHECK(wire_msgpack::write(v) == rfl_msgpack_vocabulary(v));
         CHECK(wire_json::read<step_outcome>(wire_json::write(v)) == v);
         CHECK(wire_msgpack::read<step_outcome>(wire_msgpack::write(v)) == v);
+        CHECK(wire_json::read<step_outcome>(rfl::json::write(v)) == v);
+        CHECK(wire_msgpack::read<step_outcome>(rfl_msgpack_vocabulary(v)) == v);
     }
 }
 

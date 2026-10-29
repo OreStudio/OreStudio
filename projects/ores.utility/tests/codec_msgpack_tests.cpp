@@ -73,6 +73,8 @@ TEST_CASE("an absent uuid is the format's nil", "[codec][msgpack]") {
     CHECK(wire_msgpack::read<std::optional<boost::uuids::uuid>>(wire_msgpack::write(absent)) ==
           absent);
     CHECK(wire_msgpack::read<std::optional<boost::uuids::uuid>>(wire_msgpack::write(id)) == id);
+    CHECK(wire_msgpack::read<std::optional<boost::uuids::uuid>>(rfl_msgpack(absent)) == absent);
+    CHECK(wire_msgpack::read<std::optional<boost::uuids::uuid>>(rfl_msgpack(id)) == id);
 }
 
 TEST_CASE("an array of uuids is an array of the same strings", "[codec][msgpack]") {
@@ -81,6 +83,7 @@ TEST_CASE("an array of uuids is an array of the same strings", "[codec][msgpack]
         boost::uuids::string_generator{}("6ba7b810-9dad-11d1-80b4-00c04fd430c8")};
 
     CHECK(wire_msgpack::read<std::vector<boost::uuids::uuid>>(wire_msgpack::write(ids)) == ids);
+    CHECK(wire_msgpack::read<std::vector<boost::uuids::uuid>>(rfl_msgpack(ids)) == ids);
 }
 
 TEST_CASE("a tenant id, a date and a decimal are the strings reflect-cpp writes",
@@ -129,6 +132,13 @@ TEST_CASE("a string is its own MessagePack form", "[codec][msgpack]") {
 
     CHECK(wire_msgpack::write(text) == theirs);
     CHECK(wire_msgpack::read<std::string>(theirs) == text);
+}
+
+TEST_CASE("a buffer holding more than one value is refused", "[codec][msgpack]") {
+    const auto id = boost::uuids::string_generator{}("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
+    const auto one = wire_msgpack::write(id);
+
+    CHECK_THROWS_AS(wire_msgpack::read<boost::uuids::uuid>(one + one), std::invalid_argument);
 }
 
 TEST_CASE("a value of another shape is refused with what it should have been", "[codec][msgpack]") {

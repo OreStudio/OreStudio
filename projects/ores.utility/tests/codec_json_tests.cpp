@@ -68,6 +68,8 @@ TEST_CASE("an absent uuid is the format's null", "[codec][json]") {
     CHECK(wire_json::write(id) == rfl::json::write(id));
     CHECK(wire_json::read<std::optional<boost::uuids::uuid>>(wire_json::write(absent)) == absent);
     CHECK(wire_json::read<std::optional<boost::uuids::uuid>>(wire_json::write(id)) == id);
+    CHECK(wire_json::read<std::optional<boost::uuids::uuid>>(rfl::json::write(absent)) == absent);
+    CHECK(wire_json::read<std::optional<boost::uuids::uuid>>(rfl::json::write(id)) == id);
 }
 
 TEST_CASE("an array of uuids is an array of the same strings", "[codec][json]") {
@@ -77,6 +79,7 @@ TEST_CASE("an array of uuids is an array of the same strings", "[codec][json]") 
 
     CHECK(wire_json::write(ids) == rfl::json::write(ids));
     CHECK(wire_json::read<std::vector<boost::uuids::uuid>>(wire_json::write(ids)) == ids);
+    CHECK(wire_json::read<std::vector<boost::uuids::uuid>>(rfl::json::write(ids)) == ids);
 }
 
 TEST_CASE("a tenant id, a date and a decimal are the strings reflect-cpp writes", "[codec][json]") {

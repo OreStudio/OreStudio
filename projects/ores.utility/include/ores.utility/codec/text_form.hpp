@@ -22,7 +22,6 @@
 
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/decimal/decimal.hpp"
-#include "ores.utility/export.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/lexical_cast.hpp>
@@ -39,10 +38,12 @@ namespace ores::utility::codec {
 /**
  * @brief The text a type takes on the wire.
  *
- * Every type with a custom encoding is a string on the wire, and the custom
- * part is the spelling of that string. The spelling is stated once here, so the
- * JSON and the MessagePack carriers write the same text and read the same text,
- * and so a value that goes out through one comes back through the other.
+ * The types with a custom encoding whose wire form is a string state the
+ * spelling of that string once here, so the JSON and the MessagePack carriers
+ * write the same text and read the same text, and so a value that goes out
+ * through one comes back through the other. A type whose wire form is not a
+ * string states it in its carrier's own specialisation instead -- an error code
+ * is the one such type today.
  *
  * A type that has a text form specialises this with three members: =wire_name=,
  * which names it in a refusal, =to_text=, and =from_text=.

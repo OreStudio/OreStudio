@@ -46,6 +46,9 @@ TEST_CASE("a product type is the token reflect-cpp writes", "[codec]") {
         CHECK(wire_msgpack::write(v) == rfl_msgpack_product_type(v));
         CHECK(wire_json::read<ores::trading::domain::product_type>(wire_json::write(v)) == v);
         CHECK(wire_msgpack::read<ores::trading::domain::product_type>(wire_msgpack::write(v)) == v);
+        CHECK(wire_json::read<ores::trading::domain::product_type>(rfl::json::write(v)) == v);
+        CHECK(wire_msgpack::read<ores::trading::domain::product_type>(
+                  rfl_msgpack_product_type(v)) == v);
     }
 }
 

@@ -154,6 +154,11 @@ T read(std::string_view text) {
         msgpack_unpacked_destroy(&result);
         throw std::invalid_argument("Not a MessagePack value");
     }
+    if (offset != text.size()) {
+        msgpack_unpacked_destroy(&result);
+        throw std::invalid_argument("Not one MessagePack value: " + std::to_string(offset) +
+                                    " of " + std::to_string(text.size()) + " bytes read");
+    }
     try {
         const auto v = msgpack_codec<T>::read(result.data);
         msgpack_unpacked_destroy(&result);

@@ -441,3 +441,5 @@
 \ir ./refdata_reporting_regimes_drop.sql
 \ir ./refdata_supervisory_bodies_notify_trigger_drop.sql
 \ir ./refdata_supervisory_bodies_drop.sql
+\ir ./refdata_legal_entities_notify_trigger_drop.sql
+\ir ./refdata_legal_entities_drop.sql

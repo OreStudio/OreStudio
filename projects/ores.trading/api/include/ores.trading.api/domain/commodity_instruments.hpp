@@ -87,14 +87,16 @@ inline constexpr auto barrier_types =
                                   ".");
 }
 
-inline void require_text(std::string_view product, std::string_view fact,
-                         const std::string& value) {
+inline void
+require_text(std::string_view product, std::string_view fact, const std::string& value) {
     if (value.empty())
         refuse(product, fact);
 }
 
-inline void require_one_of(std::string_view product, std::string_view fact,
-                           const std::string& value, std::span<const std::string_view> allowed) {
+inline void require_one_of(std::string_view product,
+                           std::string_view fact,
+                           const std::string& value,
+                           std::span<const std::string_view> allowed) {
     if (!states_one_of(value, allowed))
         refuse(product, fact);
 }
@@ -109,14 +111,16 @@ inline void require_amount(std::string_view product, std::string_view fact, cons
         refuse(product, fact);
 }
 
-inline void require_present(std::string_view product, std::string_view fact,
+inline void require_present(std::string_view product,
+                            std::string_view fact,
                             const std::optional<decimal>& value) {
     if (!value.has_value())
         refuse(product, fact);
     require_amount(product, fact, *value);
 }
 
-inline void require_date(std::string_view product, std::string_view fact,
+inline void require_date(std::string_view product,
+                         std::string_view fact,
                          const std::optional<std::chrono::year_month_day>& value) {
     if (!value.has_value() || *value == std::chrono::year_month_day{})
         refuse(product, fact);
@@ -298,9 +302,9 @@ struct commodity_swaption_terms final {
 
 namespace commodity_builders {
 
-inline commodity_instrument
-common_row(std::string_view product, const std::string& trade_type_code,
-           const commodity_common_terms& common) {
+inline commodity_instrument common_row(std::string_view product,
+                                       const std::string& trade_type_code,
+                                       const commodity_common_terms& common) {
     using namespace commodity_terms;
     require_text(product, "a commodity code", common.commodity_code);
     require_text(product, "a currency", common.currency);
@@ -346,10 +350,12 @@ basket_rows(std::string_view product, const std::vector<commodity_basket_member_
     return rows;
 }
 
-inline commodity_instrument
-option_row(std::string_view product, const std::string& trade_type_code,
-           const commodity_common_terms& common, const std::string& option_type,
-           const decimal& strike_price, const std::string& exercise_type) {
+inline commodity_instrument option_row(std::string_view product,
+                                       const std::string& trade_type_code,
+                                       const commodity_common_terms& common,
+                                       const std::string& option_type,
+                                       const decimal& strike_price,
+                                       const std::string& exercise_type) {
     using namespace commodity_terms;
     auto row = common_row(product, trade_type_code, common);
     require_one_of(product, "a Call or Put option type", option_type, option_types);
@@ -366,8 +372,8 @@ option_row(std::string_view product, const std::string& trade_type_code,
 [[nodiscard]] inline commodity_instrument
 construct_commodity_forward(const commodity_forward_terms& terms) {
     using namespace commodity_terms;
-    auto row = commodity_builders::common_row("commodity forward", "CommodityForward",
-                                              terms.common);
+    auto row =
+        commodity_builders::common_row("commodity forward", "CommodityForward", terms.common);
     if (terms.fixed_price.has_value())
         require_amount("commodity forward", "a non-negative price", *terms.fixed_price);
     row.fixed_price = terms.fixed_price;
@@ -376,8 +382,8 @@ construct_commodity_forward(const commodity_forward_terms& terms) {
 
 [[nodiscard]] inline commodity_instrument
 construct_intraday_power_forward(const commodity_forward_terms& terms) {
-    auto row = commodity_builders::common_row("intraday power forward", "IntradayPowerForward",
-                                              terms.common);
+    auto row = commodity_builders::common_row(
+        "intraday power forward", "IntradayPowerForward", terms.common);
     row.fixed_price = terms.fixed_price;
     return row;
 }
@@ -385,45 +391,54 @@ construct_intraday_power_forward(const commodity_forward_terms& terms) {
 [[nodiscard]] inline commodity_instrument
 construct_commodity_forward_volatility_agreement(const commodity_forward_terms& terms) {
     auto row = commodity_builders::common_row("commodity forward volatility agreement",
-                                              "CommodityForwardVolatilityAgreement", terms.common);
+                                              "CommodityForwardVolatilityAgreement",
+                                              terms.common);
     row.fixed_price = terms.fixed_price;
     return row;
 }
 
 [[nodiscard]] inline commodity_instrument
 construct_commodity_position(const commodity_forward_terms& terms) {
-    auto row = commodity_builders::common_row("commodity position", "CommodityPosition",
-                                              terms.common);
+    auto row =
+        commodity_builders::common_row("commodity position", "CommodityPosition", terms.common);
     row.fixed_price = terms.fixed_price;
     return row;
 }
 
 [[nodiscard]] inline commodity_instrument
 construct_commodity_option(const commodity_option_terms& terms) {
-    return commodity_builders::option_row("commodity option", "CommodityOption", terms.common,
-                                          terms.option_type, terms.strike_price,
+    return commodity_builders::option_row("commodity option",
+                                          "CommodityOption",
+                                          terms.common,
+                                          terms.option_type,
+                                          terms.strike_price,
                                           terms.exercise_type);
 }
 
 [[nodiscard]] inline commodity_instrument
 construct_commodity_digital_option(const commodity_option_terms& terms) {
-    return commodity_builders::option_row("commodity digital option", "CommodityDigitalOption",
-                                          terms.common, terms.option_type, terms.strike_price,
+    return commodity_builders::option_row("commodity digital option",
+                                          "CommodityDigitalOption",
+                                          terms.common,
+                                          terms.option_type,
+                                          terms.strike_price,
                                           terms.exercise_type);
 }
 
 [[nodiscard]] inline commodity_instrument
 construct_commodity_asian_option(const commodity_asian_option_terms& terms) {
     using namespace commodity_terms;
-    auto row = commodity_builders::common_row("commodity Asian option", "CommodityAsianOption",
-                                              terms.common);
-    require_one_of("commodity Asian option", "a Call or Put option type", terms.option_type,
-                   option_types);
+    auto row = commodity_builders::common_row(
+        "commodity Asian option", "CommodityAsianOption", terms.common);
+    require_one_of(
+        "commodity Asian option", "a Call or Put option type", terms.option_type, option_types);
     require_amount("commodity Asian option", "a non-negative strike price", terms.strike_price);
-    require_one_of("commodity Asian option", "an Arithmetic or Geometric average",
-                   terms.average_type, average_types);
-    require_date("commodity Asian option", "the start of its averaging",
-                 terms.averaging_start_date);
+    require_one_of("commodity Asian option",
+                   "an Arithmetic or Geometric average",
+                   terms.average_type,
+                   average_types);
+    require_date(
+        "commodity Asian option", "the start of its averaging", terms.averaging_start_date);
     require_date("commodity Asian option", "the end of its averaging", terms.averaging_end_date);
     row.option_type = terms.option_type;
     row.strike_price = terms.strike_price;
@@ -436,19 +451,25 @@ construct_commodity_asian_option(const commodity_asian_option_terms& terms) {
 [[nodiscard]] inline commodity_instrument
 construct_commodity_strike_resettable_option(const commodity_option_terms& terms) {
     return commodity_builders::option_row("commodity strike resettable option",
-                                          "CommodityStrikeResettableOption", terms.common,
-                                          terms.option_type, terms.strike_price,
+                                          "CommodityStrikeResettableOption",
+                                          terms.common,
+                                          terms.option_type,
+                                          terms.strike_price,
                                           terms.exercise_type);
 }
 
 namespace commodity_builders {
 
-inline commodity_basket_product
-basket_option_product(std::string_view product, const std::string& trade_type_code,
-                      const commodity_basket_option_terms& terms) {
+inline commodity_basket_product basket_option_product(std::string_view product,
+                                                      const std::string& trade_type_code,
+                                                      const commodity_basket_option_terms& terms) {
     commodity_basket_product built;
-    built.row = option_row(product, trade_type_code, terms.common, terms.option_type,
-                           terms.strike_price, terms.exercise_type);
+    built.row = option_row(product,
+                           trade_type_code,
+                           terms.common,
+                           terms.option_type,
+                           terms.strike_price,
+                           terms.exercise_type);
     built.constituents = basket_rows(product, terms.basket);
     return built;
 }
@@ -457,33 +478,33 @@ basket_option_product(std::string_view product, const std::string& trade_type_co
 
 [[nodiscard]] inline commodity_basket_product
 construct_commodity_basket_option(const commodity_basket_option_terms& terms) {
-    return commodity_builders::basket_option_product("commodity basket option",
-                                                     "CommodityBasketOption", terms);
+    return commodity_builders::basket_option_product(
+        "commodity basket option", "CommodityBasketOption", terms);
 }
 
 [[nodiscard]] inline commodity_basket_product
 construct_commodity_rainbow_option(const commodity_basket_option_terms& terms) {
-    return commodity_builders::basket_option_product("commodity rainbow option",
-                                                     "CommodityRainbowOption", terms);
+    return commodity_builders::basket_option_product(
+        "commodity rainbow option", "CommodityRainbowOption", terms);
 }
 
 [[nodiscard]] inline commodity_basket_product
 construct_commodity_best_entry_option(const commodity_basket_option_terms& terms) {
-    return commodity_builders::basket_option_product("commodity best entry option",
-                                                     "CommodityBestEntryOption", terms);
+    return commodity_builders::basket_option_product(
+        "commodity best entry option", "CommodityBestEntryOption", terms);
 }
 
 namespace commodity_builders {
 
-inline commodity_instrument
-average_price_row(std::string_view product, const std::string& trade_type_code,
-                  const commodity_average_price_option_terms& terms) {
+inline commodity_instrument average_price_row(std::string_view product,
+                                              const std::string& trade_type_code,
+                                              const commodity_average_price_option_terms& terms) {
     using namespace commodity_terms;
     auto row = common_row(product, trade_type_code, terms.common);
     require_one_of(product, "a Call or Put option type", terms.option_type, option_types);
     require_amount(product, "a non-negative strike price", terms.strike_price);
-    require_one_of(product, "an Arithmetic or Geometric average", terms.average_type,
-                   average_types);
+    require_one_of(
+        product, "an Arithmetic or Geometric average", terms.average_type, average_types);
     require_date(product, "the start of its averaging", terms.averaging_start_date);
     require_date(product, "the end of its averaging", terms.averaging_end_date);
     row.option_type = terms.option_type;
@@ -498,28 +519,29 @@ average_price_row(std::string_view product, const std::string& trade_type_code,
 
 [[nodiscard]] inline commodity_instrument
 construct_commodity_average_price_option(const commodity_average_price_option_terms& terms) {
-    return commodity_builders::average_price_row("commodity average price option",
-                                                 "CommodityAveragePriceOption", terms);
+    return commodity_builders::average_price_row(
+        "commodity average price option", "CommodityAveragePriceOption", terms);
 }
 
-[[nodiscard]] inline commodity_instrument
-construct_commodity_digital_average_price_option(
+[[nodiscard]] inline commodity_instrument construct_commodity_digital_average_price_option(
     const commodity_average_price_option_terms& terms) {
-    return commodity_builders::average_price_row("commodity digital average price option",
-                                                 "CommodityDigitalAveragePriceOption", terms);
+    return commodity_builders::average_price_row(
+        "commodity digital average price option", "CommodityDigitalAveragePriceOption", terms);
 }
 
 [[nodiscard]] inline commodity_instrument
 construct_commodity_option_strip(const commodity_option_strip_terms& terms) {
     using namespace commodity_terms;
-    commodity_average_price_option_terms shared{terms.common, terms.option_type,
-                                                terms.strike_price, terms.average_type,
+    commodity_average_price_option_terms shared{terms.common,
+                                                terms.option_type,
+                                                terms.strike_price,
+                                                terms.average_type,
                                                 terms.averaging_start_date,
                                                 terms.averaging_end_date};
-    auto row = commodity_builders::average_price_row("commodity option strip",
-                                                     "CommodityOptionStrip", shared);
-    require_text("commodity option strip", "the frequency its strip rolls at",
-                 terms.strip_frequency_code);
+    auto row = commodity_builders::average_price_row(
+        "commodity option strip", "CommodityOptionStrip", shared);
+    require_text(
+        "commodity option strip", "the frequency its strip rolls at", terms.strip_frequency_code);
     row.strip_frequency_code = terms.strip_frequency_code;
     return row;
 }
@@ -527,16 +549,20 @@ construct_commodity_option_strip(const commodity_option_strip_terms& terms) {
 [[nodiscard]] inline commodity_instrument
 construct_commodity_window_barrier_option(const commodity_barrier_option_terms& terms) {
     using namespace commodity_terms;
-    auto row = commodity_builders::common_row("commodity window barrier option",
-                                              "CommodityWindowBarrierOption", terms.common);
-    require_one_of("commodity window barrier option", "a Call or Put option type",
-                   terms.option_type, option_types);
-    require_amount("commodity window barrier option", "a non-negative strike price",
-                   terms.strike_price);
-    require_one_of("commodity window barrier option", "a barrier type from ORE's set",
-                   terms.barrier_type, barrier_types);
-    require_amount("commodity window barrier option", "a non-negative lower barrier",
-                   terms.lower_barrier);
+    auto row = commodity_builders::common_row(
+        "commodity window barrier option", "CommodityWindowBarrierOption", terms.common);
+    require_one_of("commodity window barrier option",
+                   "a Call or Put option type",
+                   terms.option_type,
+                   option_types);
+    require_amount(
+        "commodity window barrier option", "a non-negative strike price", terms.strike_price);
+    require_one_of("commodity window barrier option",
+                   "a barrier type from ORE's set",
+                   terms.barrier_type,
+                   barrier_types);
+    require_amount(
+        "commodity window barrier option", "a non-negative lower barrier", terms.lower_barrier);
     row.option_type = terms.option_type;
     row.strike_price = terms.strike_price;
     row.barrier_type = terms.barrier_type;
@@ -548,16 +574,20 @@ construct_commodity_window_barrier_option(const commodity_barrier_option_terms& 
 [[nodiscard]] inline commodity_instrument
 construct_commodity_generic_barrier_option(const commodity_barrier_option_terms& terms) {
     using namespace commodity_terms;
-    auto row = commodity_builders::common_row("commodity generic barrier option",
-                                              "CommodityGenericBarrierOption", terms.common);
-    require_one_of("commodity generic barrier option", "a Call or Put option type",
-                   terms.option_type, option_types);
-    require_amount("commodity generic barrier option", "a non-negative strike price",
-                   terms.strike_price);
-    require_one_of("commodity generic barrier option", "a barrier type from ORE's set",
-                   terms.barrier_type, barrier_types);
-    require_amount("commodity generic barrier option", "a non-negative lower barrier",
-                   terms.lower_barrier);
+    auto row = commodity_builders::common_row(
+        "commodity generic barrier option", "CommodityGenericBarrierOption", terms.common);
+    require_one_of("commodity generic barrier option",
+                   "a Call or Put option type",
+                   terms.option_type,
+                   option_types);
+    require_amount(
+        "commodity generic barrier option", "a non-negative strike price", terms.strike_price);
+    require_one_of("commodity generic barrier option",
+                   "a barrier type from ORE's set",
+                   terms.barrier_type,
+                   barrier_types);
+    require_amount(
+        "commodity generic barrier option", "a non-negative lower barrier", terms.lower_barrier);
     row.option_type = terms.option_type;
     row.strike_price = terms.strike_price;
     row.barrier_type = terms.barrier_type;
@@ -568,9 +598,10 @@ construct_commodity_generic_barrier_option(const commodity_barrier_option_terms&
 
 namespace commodity_builders {
 
-inline commodity_instrument
-accumulation_row(std::string_view product, const std::string& trade_type_code,
-                 const commodity_accumulation_terms& terms, bool with_target) {
+inline commodity_instrument accumulation_row(std::string_view product,
+                                             const std::string& trade_type_code,
+                                             const commodity_accumulation_terms& terms,
+                                             bool with_target) {
     using namespace commodity_terms;
     auto row = common_row(product, trade_type_code, terms.common);
     require_one_of(product, "a Call or Put option type", terms.option_type, option_types);
@@ -588,25 +619,26 @@ accumulation_row(std::string_view product, const std::string& trade_type_code,
 
 [[nodiscard]] inline commodity_instrument
 construct_commodity_accumulator(const commodity_accumulation_terms& terms) {
-    return commodity_builders::accumulation_row("commodity accumulator", "CommodityAccumulator",
-                                                terms, false);
+    return commodity_builders::accumulation_row(
+        "commodity accumulator", "CommodityAccumulator", terms, false);
 }
 
 [[nodiscard]] inline commodity_instrument
 construct_commodity_target_redemption_forward(const commodity_accumulation_terms& terms) {
-    return commodity_builders::accumulation_row("commodity target redemption forward",
-                                                "CommodityTaRF", terms, true);
+    return commodity_builders::accumulation_row(
+        "commodity target redemption forward", "CommodityTaRF", terms, true);
 }
 
 [[nodiscard]] inline commodity_instrument
 construct_commodity_spread_option(const commodity_spread_option_terms& terms) {
     using namespace commodity_terms;
-    auto row = commodity_builders::common_row("commodity spread option", "CommoditySpreadOption",
-                                              terms.common);
-    require_one_of("commodity spread option", "a Call or Put option type", terms.option_type,
-                   option_types);
+    auto row = commodity_builders::common_row(
+        "commodity spread option", "CommoditySpreadOption", terms.common);
+    require_one_of(
+        "commodity spread option", "a Call or Put option type", terms.option_type, option_types);
     require_amount("commodity spread option", "a non-negative strike price", terms.strike_price);
-    require_text("commodity spread option", "the second commodity it spreads against",
+    require_text("commodity spread option",
+                 "the second commodity it spreads against",
                  terms.spread_commodity_code);
     require_amount("commodity spread option", "a non-negative spread amount", terms.spread_amount);
     row.option_type = terms.option_type;
@@ -619,8 +651,8 @@ construct_commodity_spread_option(const commodity_spread_option_terms& terms) {
 [[nodiscard]] inline commodity_instrument
 construct_commodity_variance_swap(const commodity_variance_swap_terms& terms) {
     using namespace commodity_terms;
-    auto row = commodity_builders::common_row("commodity variance swap", "CommodityVarianceSwap",
-                                              terms.common);
+    auto row = commodity_builders::common_row(
+        "commodity variance swap", "CommodityVarianceSwap", terms.common);
     if (!(terms.variance_strike >= 0.0) || !std::isfinite(terms.variance_strike))
         refuse("commodity variance swap", "a finite, non-negative variance strike");
     row.variance_strike = terms.variance_strike;
@@ -629,21 +661,22 @@ construct_commodity_variance_swap(const commodity_variance_swap_terms& terms) {
 
 [[nodiscard]] inline commodity_instrument
 construct_commodity_pairwise_variance_swap(const commodity_variance_swap_terms& terms) {
-    auto row = commodity_builders::common_row("commodity pairwise variance swap",
-                                              "CommodityPairwiseVarianceSwap", terms.common);
+    auto row = commodity_builders::common_row(
+        "commodity pairwise variance swap", "CommodityPairwiseVarianceSwap", terms.common);
     row.variance_strike = terms.variance_strike;
     return row;
 }
 
 [[nodiscard]] inline commodity_instrument
 construct_commodity_basket_variance_swap(const commodity_variance_swap_terms& terms) {
-    auto row = commodity_builders::common_row("commodity basket variance swap",
-                                              "CommodityBasketVarianceSwap", terms.common);
+    auto row = commodity_builders::common_row(
+        "commodity basket variance swap", "CommodityBasketVarianceSwap", terms.common);
     row.variance_strike = terms.variance_strike;
     return row;
 }
 
-[[nodiscard]] inline commodity_instrument construct_commodity_swap(const commodity_swap_terms& terms) {
+[[nodiscard]] inline commodity_instrument
+construct_commodity_swap(const commodity_swap_terms& terms) {
     using namespace commodity_terms;
     auto row = commodity_builders::common_row("commodity swap", "CommoditySwap", terms.common);
     if (terms.fixed_price.has_value())
@@ -656,24 +689,24 @@ construct_commodity_basket_variance_swap(const commodity_variance_swap_terms& te
 construct_commodity_worst_of_basket_swap(const commodity_worst_of_basket_swap_terms& terms) {
     using namespace commodity_terms;
     commodity_basket_product built;
-    built.row = commodity_builders::common_row("commodity worst-of basket swap",
-                                               "CommodityWorstOfBasketSwap", terms.common);
+    built.row = commodity_builders::common_row(
+        "commodity worst-of basket swap", "CommodityWorstOfBasketSwap", terms.common);
     if (terms.fixed_price.has_value())
-        require_amount("commodity worst-of basket swap", "a non-negative price",
-                       *terms.fixed_price);
+        require_amount(
+            "commodity worst-of basket swap", "a non-negative price", *terms.fixed_price);
     built.row.fixed_price = terms.fixed_price;
-    built.constituents = commodity_builders::basket_rows("commodity worst-of basket swap",
-                                                         terms.basket);
+    built.constituents =
+        commodity_builders::basket_rows("commodity worst-of basket swap", terms.basket);
     return built;
 }
 
 [[nodiscard]] inline commodity_instrument
 construct_commodity_swaption(const commodity_swaption_terms& terms) {
     using namespace commodity_terms;
-    auto row = commodity_builders::common_row("commodity swaption", "CommoditySwaption",
-                                              terms.common);
-    require_one_of("commodity swaption", "a Call or Put option type", terms.option_type,
-                   option_types);
+    auto row =
+        commodity_builders::common_row("commodity swaption", "CommoditySwaption", terms.common);
+    require_one_of(
+        "commodity swaption", "a Call or Put option type", terms.option_type, option_types);
     require_amount("commodity swaption", "a non-negative strike price", terms.strike_price);
     require_date("commodity swaption", "the date it expires", terms.swaption_expiry_date);
     row.option_type = terms.option_type;

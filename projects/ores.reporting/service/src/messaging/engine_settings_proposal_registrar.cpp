@@ -58,18 +58,18 @@ engine_settings_proposal_registrar::register_handlers(
 
     auto h = std::make_shared<engine_settings_proposal_handler>(
         nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(
-        raise_engine_settings_change_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->raise(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        get_engine_settings_changes_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->get_changes(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        recheck_engine_settings_changes_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->recheck(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(raise_engine_settings_change_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) { h->raise(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_engine_settings_changes_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) { h->get_changes(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(recheck_engine_settings_changes_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) { h->recheck(std::move(msg)); }));
     return subs;
 }
 

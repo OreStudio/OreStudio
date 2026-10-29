@@ -26,13 +26,13 @@
 #include "ores.inbox.api/messaging/notification_operations_protocol.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.logging/boost_severity.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.service/app/curve_notices.hpp"
-#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.marketdata.service/app/curve_publish_gate.hpp"
-#include "ores.marketdata.service/app/curve_withdrawal.hpp"
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
+#include "ores.marketdata.service/app/curve_withdrawal.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <boost/uuid/uuid_io.hpp>
@@ -183,10 +183,8 @@ TEST_CASE("a_publish_sends_one_notice_that_names_the_subject_and_the_act", "[cur
     const auto decider = seed_person(f.h);
     const reader_account reader(f);
 
-    const auto raised =
-        ores::marketdata::service::app::raise_publish_request(maker.ctx,
-                                                             f.subject(),
-                                                             "Today's bootstrapped curve");
+    const auto raised = ores::marketdata::service::app::raise_publish_request(
+        maker.ctx, f.subject(), "Today's bootstrapped curve");
     const auto id = boost::uuids::to_string(raised.id);
     REQUIRE(approval_lifecycle(*f.party)
                 .decide(id, raised.version, "approve", decider.account.id, "")
@@ -239,10 +237,8 @@ TEST_CASE("a_withdrawal_sends_its_own_notice_with_the_reason", "[curve_notices]"
     const auto decider = seed_person(f.h);
     const reader_account reader(f);
 
-    const auto raised =
-        ores::marketdata::service::app::raise_publish_request(maker.ctx,
-                                                             f.subject(),
-                                                             "Today's bootstrapped curve");
+    const auto raised = ores::marketdata::service::app::raise_publish_request(
+        maker.ctx, f.subject(), "Today's bootstrapped curve");
     const auto id = boost::uuids::to_string(raised.id);
     REQUIRE(approval_lifecycle(*f.party)
                 .decide(id, raised.version, "approve", decider.account.id, "")
@@ -254,8 +250,7 @@ TEST_CASE("a_withdrawal_sends_its_own_notice_with_the_reason", "[curve_notices]"
     request.publish_id = boost::uuids::to_string(published.id);
     request.reason_code = "common.stale_data";
     request.comment = "The 2Y pillar was stale.";
-    const auto withdrawn =
-        ores::marketdata::service::app::withdraw_curve(maker.ctx, request);
+    const auto withdrawn = ores::marketdata::service::app::withdraw_curve(maker.ctx, request);
     REQUIRE(withdrawn.success);
 
     const auto notices = notices_of(f, reader.account());
@@ -274,8 +269,9 @@ TEST_CASE("a_withdrawal_sends_its_own_notice_with_the_reason", "[curve_notices]"
     CHECK(*argument_of(*withdrawal, "request") == id);
 
     // The publish's own notice stands beside it: the two acts are two notices.
-    CHECK(1 == std::ranges::count_if(
-                    notices, [](const auto& n) { return n.kind_code == "marketdata.curve_published"; }));
+    CHECK(1 == std::ranges::count_if(notices, [](const auto& n) {
+              return n.kind_code == "marketdata.curve_published";
+          }));
 }
 
 TEST_CASE("a_refused_publish_sends_nothing", "[curve_notices]") {
@@ -284,10 +280,8 @@ TEST_CASE("a_refused_publish_sends_nothing", "[curve_notices]") {
     const auto decider = seed_person(f.h);
     const reader_account reader(f);
 
-    const auto raised =
-        ores::marketdata::service::app::raise_publish_request(maker.ctx,
-                                                             f.subject(),
-                                                             "A curve nobody checked");
+    const auto raised = ores::marketdata::service::app::raise_publish_request(
+        maker.ctx, f.subject(), "A curve nobody checked");
     const auto id = boost::uuids::to_string(raised.id);
     REQUIRE(approval_lifecycle(*f.party)
                 .decide(id, raised.version, "refuse", decider.account.id, "The fit is wrong")

@@ -1426,9 +1426,8 @@ std::size_t workflow_engine::expire_overdue_steps() {
             const auto claimed_at = claim_repo_.claimed_at(ctx_, step.id);
             if (!claimed_at) {
                 const auto seen = last_seen_of(step.command_subject);
-                const auto queued_for =
-                    std::chrono::duration_cast<std::chrono::seconds>(now -
-                                                                    *step.command_published_at);
+                const auto queued_for = std::chrono::duration_cast<std::chrono::seconds>(
+                    now - *step.command_published_at);
                 if (seen && *seen >= *step.command_published_at &&
                     queued_for < waiting.budget * unclaimed_queue_budget_multiple) {
                     ++it;
@@ -1441,11 +1440,10 @@ std::size_t workflow_engine::expire_overdue_steps() {
              * silent, so a command that waited in a queue still gets the whole
              * budget once someone takes it.
              */
-            const auto since = claimed_at && *claimed_at > *step.command_published_at
-                                   ? *claimed_at
-                                   : *step.command_published_at;
-            const auto silent_for =
-                std::chrono::duration_cast<std::chrono::seconds>(now - since);
+            const auto since = claimed_at && *claimed_at > *step.command_published_at ?
+                                   *claimed_at :
+                                   *step.command_published_at;
+            const auto silent_for = std::chrono::duration_cast<std::chrono::seconds>(now - since);
             if (silent_for < waiting.budget) {
                 ++it;
                 continue;

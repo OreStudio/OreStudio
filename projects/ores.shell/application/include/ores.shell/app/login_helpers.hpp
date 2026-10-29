@@ -142,7 +142,8 @@ inline bool sign_in_again(ores::nats::service::nats_client& session,
             session, iam::messaging::login_request::nats_subject, req);
         if (!result) {
             BOOST_LOG_SEV(detail::login_lg(), ores::logging::error)
-                << "Re-signing in as " << principal << " failed: the login answer could not be read";
+                << "Re-signing in as " << principal
+                << " failed: the login answer could not be read";
             return false;
         }
         if (!result->success) {

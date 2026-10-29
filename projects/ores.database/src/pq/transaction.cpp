@@ -250,9 +250,10 @@ void transaction::commit() {
         return;
     if (PQtransactionStatus(connection_.native()) == PQTRANS_INERROR) {
         const result r(PQexec(connection_.native(), "rollback"));
-        throw store_error("The transaction was aborted by a failed statement, so it was rolled back",
-                          "25P02",
-                          error_kind::refused);
+        throw store_error(
+            "The transaction was aborted by a failed statement, so it was rolled back",
+            "25P02",
+            error_kind::refused);
     }
     const result r(PQexec(connection_.native(), "commit"));
     check(connection_, r, "commit");

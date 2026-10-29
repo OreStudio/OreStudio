@@ -89,8 +89,7 @@ TEST_CASE("a_raise_without_the_kinds_raise_permission_is_refused", "[approval][m
     CHECK_FALSE(as_maker.may_decide(*kind));
 }
 
-TEST_CASE("a_decider_without_the_kinds_decide_permission_is_refused",
-          "[approval][maker_checker]") {
+TEST_CASE("a_decider_without_the_kinds_decide_permission_is_refused", "[approval][maker_checker]") {
     ores::testing::scoped_database_helper h;
     const auto maker = seed_account(h);
     const auto planner = seed_account(h);
@@ -163,8 +162,8 @@ TEST_CASE("the_queue_is_filtered_by_the_kinds_decide_permission", "[approval][ma
     approval_lifecycle as_asker(holding(h, {market_risk_decision}));
     const auto asker_scope = as_asker.decidable_by_role();
     const auto asker_page = as_asker.queue(asker_scope, maker.id, 0, 500);
-    CHECK_FALSE(std::ranges::any_of(asker_page.requests,
-                                    [&](const auto& r) { return r.id == raised.id; }));
+    CHECK_FALSE(
+        std::ranges::any_of(asker_page.requests, [&](const auto& r) { return r.id == raised.id; }));
 }
 
 TEST_CASE("a_kind_that_names_no_raise_permission_keeps_the_rule_it_had",

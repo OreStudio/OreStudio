@@ -24,7 +24,6 @@
 #include "ores.inbox.core/repository/approval_decision_repository.hpp"
 #include "ores.inbox.core/repository/approval_kind_repository.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
@@ -33,8 +32,8 @@
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/service/series_snapshot_reader.hpp"
 #include "ores.marketdata.service/app/curve_publish_gate.hpp"
-#include "ores.marketdata.service/app/curve_withdrawal.hpp"
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
+#include "ores.marketdata.service/app/curve_withdrawal.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
@@ -43,6 +42,7 @@
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -493,8 +493,8 @@ TEST_CASE("the_maker_permission_a_publish_asks_for_is_the_kinds_own", tags) {
         maker.ctx, ores::marketdata::service::app::curve_publish_kind_code);
     CHECK(publish == "marketdata::curve_bootstrap:publish");
     CHECK(publish == approval_lifecycle(maker.ctx)
-                          .kind(std::string(curve_publish_kind_code))
-                          ->raise_permission_code);
+                         .kind(std::string(curve_publish_kind_code))
+                         ->raise_permission_code);
 
     // A withdrawal is raised by the account that may publish, as the withdrawal
     // journey states, so its kind names the same code.
@@ -504,8 +504,8 @@ TEST_CASE("the_maker_permission_a_publish_asks_for_is_the_kinds_own", tags) {
 
     // A kind that names no maker's code answers empty, and the operation then
     // keeps the rule it had rather than inventing one.
-    const auto grant = ores::marketdata::service::app::raise_permission_of(maker.ctx,
-                                                                          "iam.role_grant");
+    const auto grant =
+        ores::marketdata::service::app::raise_permission_of(maker.ctx, "iam.role_grant");
     CHECK(grant.empty());
 
     // A kind that does not exist is a failure and not an empty answer: the gate

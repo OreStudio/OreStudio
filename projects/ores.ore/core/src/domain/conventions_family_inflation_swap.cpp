@@ -298,7 +298,8 @@ void conventions_mapper::reverse_inflation_swap(const refdata::domain::inflation
 
 namespace conventions_family {
 
-void pack_inflation_swap(const record_reader& root, refdata::messaging::conventions_bundle& bundle) {
+void pack_inflation_swap(const record_reader& root,
+                         refdata::messaging::conventions_bundle& bundle) {
     pack_family(bundle,
                 "inflation_swap",
                 root.children("InflationSwap"),

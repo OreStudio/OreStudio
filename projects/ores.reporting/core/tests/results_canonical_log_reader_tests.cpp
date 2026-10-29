@@ -120,7 +120,8 @@ TEST_CASE("an empty log file is refused rather than read as no events",
     CHECK(outcome.refusals[0].find("empty") != std::string::npos);
 }
 
-TEST_CASE("a row keeps the detail and the time the node stated", "[results][canonical_log_reader]") {
+TEST_CASE("a row keeps the detail and the time the node stated",
+          "[results][canonical_log_reader]") {
     const auto outcome = read_canonical_log_csv(
         log_header +
         "1,error,Trade,did not build,,,,\"{\"\"exceptionType\"\":\"\"Error building trade\"\"}\","

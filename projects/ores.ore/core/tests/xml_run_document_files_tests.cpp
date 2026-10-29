@@ -20,10 +20,10 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/document.hpp"
 #include "ores.ore.core/xml/run_document_files.hpp"
-#include "test_suite.hpp"
 #include "ores.testing/project_root.hpp"
-#include <catch2/catch_test_macros.hpp>
+#include "test_suite.hpp"
 #include <algorithm>
+#include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -73,8 +73,7 @@ std::optional<std::string> file_named_by(const std::filesystem::path& path,
             if (token.kind == ores::ore::xml::token_kind::attribute &&
                 parsed->name(token) == "name")
                 name = parsed->value(token);
-            if (token.kind == ores::ore::xml::token_kind::text &&
-                has_text(parsed->value(token)))
+            if (token.kind == ores::ore::xml::token_kind::text && has_text(parsed->value(token)))
                 value = std::string(parsed->value(token));
         }
         if (name == parameter && !value.empty())

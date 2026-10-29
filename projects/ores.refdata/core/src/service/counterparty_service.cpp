@@ -620,8 +620,7 @@ void counterparty_service::save_counterparty(const domain::counterparty&) {
     counterparty_refuse_direct_write();
 }
 
-void counterparty_service::save_counterparties(
-    const std::vector<domain::counterparty>&) {
+void counterparty_service::save_counterparties(const std::vector<domain::counterparty>&) {
     counterparty_refuse_direct_write();
 }
 

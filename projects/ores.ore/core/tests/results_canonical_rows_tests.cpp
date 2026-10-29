@@ -109,9 +109,8 @@ TEST_CASE("a negative figure is a figure", tags) {
 }
 
 TEST_CASE("a quoted field holding a comma stays one field", tags) {
-    const std::string csv =
-        "#TradeId,NPV,NpvCurrency,CounterParty\n"
-        "T1,1.5,GBP,\"Northwind Capital, Ltd\"\n";
+    const std::string csv = "#TradeId,NPV,NpvCurrency,CounterParty\n"
+                            "T1,1.5,GBP,\"Northwind Capital, Ltd\"\n";
 
     const auto outcome = marshal_npv_csv(csv, "npv.csv");
 

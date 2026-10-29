@@ -1319,8 +1319,7 @@ public:
                                         .party_name = p_name,
                                         .party_setup_required = party_setup_required,
                                         .party_setup_warning = party_setup_warning,
-                                        .access_lifetime_s =
-                                            token_settings()->access_lifetime_s});
+                                        .access_lifetime_s = token_settings()->access_lifetime_s});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, select_party_response{.success = false, .message = e.what()});
@@ -1514,8 +1513,7 @@ public:
                                         .party_name = p_name,
                                         .party_setup_required = party_setup_required,
                                         .party_setup_warning = party_setup_warning,
-                                        .access_lifetime_s =
-                                            token_settings()->access_lifetime_s});
+                                        .access_lifetime_s = token_settings()->access_lifetime_s});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, select_party_response{.success = false, .message = e.what()});

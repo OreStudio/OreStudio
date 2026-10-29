@@ -107,9 +107,9 @@ input_files archive_layout(const input_files& files) {
 
     input_files layout;
     for (const auto& [name, content] : files) {
-        const std::filesystem::path directory =
-            name == run_document_file ? std::filesystem::path("Input") :
-                                        std::filesystem::path(input_path);
+        const std::filesystem::path directory = name == run_document_file ?
+                                                    std::filesystem::path("Input") :
+                                                    std::filesystem::path(input_path);
         const auto path = directory / name;
         if (!inside(std::filesystem::path(name)) || !inside(path))
             throw std::invalid_argument(

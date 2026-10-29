@@ -236,8 +236,10 @@ domain::trade_generation_scope equity_scope() {
     scope.equity_underlyings = {
         domain::equity_underlying_reference{.code = ".SPX", .kind = "index", .currency = "USD"},
         domain::equity_underlying_reference{.code = "MSFT.O", .kind = "share", .currency = "USD"},
-        domain::equity_underlying_reference{.code = ".STOXX50E", .kind = "index", .currency = "EUR"},
-        domain::equity_underlying_reference{.code = "GB0005405286", .kind = "share", .currency = "GBP"}};
+        domain::equity_underlying_reference{
+            .code = ".STOXX50E", .kind = "index", .currency = "EUR"},
+        domain::equity_underlying_reference{
+            .code = "GB0005405286", .kind = "share", .currency = "GBP"}};
     return scope;
 }
 
@@ -259,8 +261,7 @@ TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", "[trade_
     REQUIRE(types.size() == 25u);
 }
 
-TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length",
-          "[trade_population]") {
+TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length", "[trade_population]") {
     auto wide = equity_scope();
     wide.trades_per_book = 16;
 
@@ -295,8 +296,7 @@ TEST_CASE("an_equity_slot_names_an_underlying_the_catalogue_holds", "[trade_popu
     REQUIRE((named.contains(".SPX") && named.contains("MSFT.O")));
 }
 
-TEST_CASE("a_worst_of_basket_states_its_constituents_and_its_periods",
-          "[trade_population]") {
+TEST_CASE("a_worst_of_basket_states_its_constituents_and_its_periods", "[trade_population]") {
     auto scope = equity_scope();
     scope.trades_per_book = 16;
 

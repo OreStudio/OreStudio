@@ -37,9 +37,9 @@
 #include "ores.reporting.core/service/engine_settings_fixings_service.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
-#include <algorithm>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <charconv>
 #include <map>
 #include <stdexcept>
@@ -390,12 +390,9 @@ bool needs_approval_in(const ores::database::context& ctx,
     if (settings.empty())
         return false;
 
-    const auto bindings = repository::report_configuration_repository{}
-                              .read_latest_by_configuration_id(
-                                  ctx,
-                                  boost::uuids::to_string(settings.front().configuration_id),
-                                  0,
-                                  1000);
+    const auto bindings =
+        repository::report_configuration_repository{}.read_latest_by_configuration_id(
+            ctx, boost::uuids::to_string(settings.front().configuration_id), 0, 1000);
     return !bindings.empty();
 }
 
@@ -406,8 +403,8 @@ bool needs_approval_in(const ores::database::context& ctx,
 std::vector<std::string> part_codes_in(const ores::database::context& ctx,
                                        const std::string& group_code) {
     ores::inbox::service::approval_lifecycle lifecycle(ctx);
-    const auto named = lifecycle.part_codes_of_kind(
-        std::string(engine_settings_proposal_service::kind_code));
+    const auto named =
+        lifecycle.part_codes_of_kind(std::string(engine_settings_proposal_service::kind_code));
     if (std::ranges::find(named, group_code) != named.end())
         return {group_code};
     return {};
@@ -476,8 +473,8 @@ void lock_request(const ores::database::context& ctx, const std::string& request
     const auto sql = "select id from ores_inbox_approval_requests_tbl where id = '" + id +
                      "'::uuid and valid_to = ores_utility_infinity_timestamp_fn() for update";
     const ores::database::pq::text_statement statement({}, sql);
-    ores::database::transact(
-        ctx, [&](ores::database::pq::transaction& tx) { tx.run(statement, {}); });
+    ores::database::transact(ctx,
+                             [&](ores::database::pq::transaction& tx) { tx.run(statement, {}); });
 }
 
 }
@@ -506,9 +503,8 @@ std::vector<settings_group> engine_settings_proposal_service::groups() {
                 group.settings.push_back(s);
         }
         std::ranges::sort(group.settings, {}, &domain::engine_settings_group_setting::position);
-        group.changes_numbers = std::ranges::any_of(group.settings, [](const auto& s) {
-            return s.changes_numbers;
-        });
+        group.changes_numbers =
+            std::ranges::any_of(group.settings, [](const auto& s) { return s.changes_numbers; });
         out.push_back(std::move(group));
     }
     return out;
@@ -530,11 +526,13 @@ bool engine_settings_proposal_service::needs_approval(const boost::uuids::uuid& 
     return needs_approval_in(ctx_, engine_settings_id, *found);
 }
 
-std::vector<std::string> engine_settings_proposal_service::part_codes(const std::string& group_code) {
+std::vector<std::string>
+engine_settings_proposal_service::part_codes(const std::string& group_code) {
     return part_codes_in(ctx_, group_code);
 }
 
-ores::reporting::messaging::raise_engine_settings_change_response engine_settings_proposal_service::raise(
+ores::reporting::messaging::raise_engine_settings_change_response
+engine_settings_proposal_service::raise(
     const ores::reporting::messaging::raise_engine_settings_change_request& request) {
     ores::reporting::messaging::raise_engine_settings_change_response response;
 
@@ -563,10 +561,11 @@ ores::reporting::messaging::raise_engine_settings_change_response engine_setting
     // sees the transaction's tenant, and the parts are the system tenant's.
     const auto parts = part_codes(request.group_code);
     if (parts.empty()) {
-        response.result = refusal_of(outcome::failed,
-                                     "The kind " + std::string(engine_settings_proposal_service::kind_code) +
-                                         " names no part for the " + request.group_code +
-                                         " group, so nobody could sign it.");
+        response.result =
+            refusal_of(outcome::failed,
+                       "The kind " + std::string(engine_settings_proposal_service::kind_code) +
+                           " names no part for the " + request.group_code +
+                           " group, so nobody could sign it.");
         return response;
     }
 
@@ -601,8 +600,7 @@ ores::reporting::messaging::raise_engine_settings_change_response engine_setting
         // anything is held.
         const auto in_force =
             values_in_force(ctx, request.group_code, request.engine_settings_id, *asked);
-        const auto claimed =
-            version_in_force(ctx, request.group_code, request.engine_settings_id);
+        const auto claimed = version_in_force(ctx, request.group_code, request.engine_settings_id);
         if (request.base_version != claimed) {
             response.result = refusal_of(outcome::conflict, std::string(stale_words));
             return response;
@@ -613,9 +611,8 @@ ores::reporting::messaging::raise_engine_settings_change_response engine_setting
         // a patch of it.
         auto values = in_force;
         for (const auto& v : request.values) {
-            const auto setting = std::ranges::find_if(asked->settings, [&](const auto& s) {
-                return s.code == v.setting_code;
-            });
+            const auto setting = std::ranges::find_if(
+                asked->settings, [&](const auto& s) { return s.code == v.setting_code; });
             if (setting == asked->settings.end()) {
                 response.result = refusal_of(outcome::invalid,
                                              v.setting_code + " is not a setting of the " +
@@ -712,8 +709,7 @@ engine_settings_proposal_service::lines(const std::string& request_id) {
         line.applied = std::ranges::all_of(group_rows, [](const auto& r) { return r.applied; });
 
         if (settings) {
-            const auto in_force =
-                values_in_force(ctx_, code, first.engine_settings_id, *settings);
+            const auto in_force = values_in_force(ctx_, code, first.engine_settings_id, *settings);
             for (const auto& setting : settings->settings) {
                 ores::reporting::messaging::engine_settings_value_change field;
                 field.column_name = setting.column_name;
@@ -741,11 +737,12 @@ std::vector<std::string> engine_settings_proposal_service::refusals(const std::s
         const auto group_rows = rows_of_group(rows, code);
         if (group_rows.empty())
             continue;
-        const auto in_force =
-            version_in_force(ctx_, code, group_rows.front().engine_settings_id);
+        const auto in_force = version_in_force(ctx_, code, group_rows.front().engine_settings_id);
         if (in_force != group_rows.front().base_version) {
-            out.push_back("The " + code + " group has moved since the proposal was raised: it is "
-                          "at version " + std::to_string(in_force) + " and the proposal claims " +
+            out.push_back("The " + code +
+                          " group has moved since the proposal was raised: it is "
+                          "at version " +
+                          std::to_string(in_force) + " and the proposal claims " +
                           std::to_string(group_rows.front().base_version) + ".");
             continue;
         }
@@ -848,16 +845,16 @@ engine_settings_apply engine_settings_proposal_service::apply(const std::string&
     // here: a refusal does not change on a retry.
     out.groups_applied = 0;
     try {
-        const auto moved = lifecycle.fail_apply(
-            request_id, "The proposal could not be applied: " + out.refusal);
+        const auto moved =
+            lifecycle.fail_apply(request_id, "The proposal could not be applied: " + out.refusal);
         if (moved.outcome != "ok") {
-            BOOST_LOG_SEV(lg(), warn) << "Request " << request_id << " was refused but is "
-                                      << moved.state_code << ", not apply_failed: "
-                                      << moved.message;
+            BOOST_LOG_SEV(lg(), warn)
+                << "Request " << request_id << " was refused but is " << moved.state_code
+                << ", not apply_failed: " << moved.message;
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Request " << request_id
-                                   << " could not be moved to apply_failed: " << e.what();
+        BOOST_LOG_SEV(lg(), error)
+            << "Request " << request_id << " could not be moved to apply_failed: " << e.what();
         return {.refusal = e.what(), .transient = true};
     }
     return out;

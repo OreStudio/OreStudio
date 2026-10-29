@@ -18,11 +18,11 @@
  *
  */
 #include "ores.marketdata.service/app/curve_publish_gate.hpp"
-#include "ores.marketdata.service/app/curve_notices.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.service/app/curve_notices.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"

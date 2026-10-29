@@ -20,8 +20,8 @@
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
-#include "ores.inbox.core/repository/approval_kind_repository.hpp"
 #include "ores.inbox.core/repository/approval_kind_part_repository.hpp"
+#include "ores.inbox.core/repository/approval_kind_repository.hpp"
 #include "ores.inbox.core/repository/approval_part_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_part_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_repository.hpp"
@@ -31,10 +31,10 @@
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
-#include <tuple>
 #include <chrono>
 #include <functional>
 #include <stdexcept>
+#include <tuple>
 
 namespace ores::inbox::service {
 
@@ -346,12 +346,13 @@ approval_lifecycle::close_without_approval(const domain::approval_request& reque
                           request.version,
                           "approve",
                           system_actor,
-                          "No approval is needed for a " + kind.code +
-                              " request: its kind names " +
+                          "No approval is needed for a " + kind.code + " request: its kind names " +
                               std::to_string(kind.approvals_required) + " approvals.");
     if (r.outcome != "ok")
-        throw std::runtime_error("A " + kind.code + " request that needs no approval was not "
-                                 "closed: " + r.message);
+        throw std::runtime_error("A " + kind.code +
+                                 " request that needs no approval was not "
+                                 "closed: " +
+                                 r.message);
     const auto closed = this->request(boost::uuids::to_string(request.id));
     if (!closed)
         throw std::runtime_error("The closed request could not be read back.");

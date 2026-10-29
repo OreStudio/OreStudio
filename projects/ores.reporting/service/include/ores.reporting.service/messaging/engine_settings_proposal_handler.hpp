@@ -82,12 +82,12 @@ public:
             return;
         auto req = ores::service::messaging::decode<raise_engine_settings_change_request>(msg);
         if (!req) {
-            ores::service::messaging::error_reply(nats_, msg, ores::service::error_code::bad_request);
+            ores::service::messaging::error_reply(
+                nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         if (!may_write_engine_settings(*ctx, req->group_code)) {
-            ores::service::messaging::error_reply(
-                nats_, msg, ores::service::error_code::forbidden);
+            ores::service::messaging::error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
         try {
@@ -100,9 +100,8 @@ public:
                 nats_,
                 msg,
                 raise_engine_settings_change_response{
-                    .result = result_of(outcome::failed,
-                                        "raise_failed",
-                                        "The change could not be proposed."),
+                    .result = result_of(
+                        outcome::failed, "raise_failed", "The change could not be proposed."),
                     .request_id = {}});
         }
     }
@@ -117,7 +116,8 @@ public:
             return;
         auto req = ores::service::messaging::decode<get_engine_settings_changes_request>(msg);
         if (!req) {
-            ores::service::messaging::error_reply(nats_, msg, ores::service::error_code::bad_request);
+            ores::service::messaging::error_reply(
+                nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         if (!may_open(*ctx, req->request_id)) {
@@ -159,7 +159,8 @@ public:
             return;
         auto req = ores::service::messaging::decode<recheck_engine_settings_changes_request>(msg);
         if (!req) {
-            ores::service::messaging::error_reply(nats_, msg, ores::service::error_code::bad_request);
+            ores::service::messaging::error_reply(
+                nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         if (!may_open(*ctx, req->request_id)) {
@@ -187,11 +188,10 @@ public:
             ores::service::messaging::reply(
                 nats_,
                 msg,
-                recheck_engine_settings_changes_response{
-                    .result = result_of(outcome::ok, {}, {}),
-                    .changes = std::move(changes),
-                    .refusals = refusals,
-                    .part_codes = std::move(parts)});
+                recheck_engine_settings_changes_response{.result = result_of(outcome::ok, {}, {}),
+                                                         .changes = std::move(changes),
+                                                         .refusals = refusals,
+                                                         .part_codes = std::move(parts)});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), ores::logging::error)
                 << "Error checking an engine run settings proposal: " << e.what();
@@ -230,7 +230,8 @@ private:
     bool may_open(const ores::database::context& ctx, const std::string& request_id) {
         ores::inbox::service::approval_lifecycle lifecycle(ctx);
         const auto found = lifecycle.request(request_id);
-        if (!found || found->kind_code != std::string(service::engine_settings_proposal_service::kind_code))
+        if (!found ||
+            found->kind_code != std::string(service::engine_settings_proposal_service::kind_code))
             return false;
         const auto me = lifecycle.actor_account_id();
         if (me && found->requested_by == *me)

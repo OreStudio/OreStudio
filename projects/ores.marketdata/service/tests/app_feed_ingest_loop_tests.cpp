@@ -260,11 +260,11 @@ std::optional<std::string> env_setting(const std::string& name) {
 /// policies let a reader see.
 std::string
 tick_scalar(const std::string& tenant, const std::string& party, const std::string& sql_text) {
-    const auto info = "host=" + env_setting("ORES_TEST_DB_HOST").value_or("") +
-                      " dbname=" + env_setting("ORES_TEST_DB_DATABASE").value_or("") +
-                      " user=" + env_setting("ORES_MARKETDATA_SERVICE_DB_USER").value_or("") +
-                      " password=" +
-                      env_setting("ORES_MARKETDATA_SERVICE_DB_PASSWORD").value_or("");
+    const auto info =
+        "host=" + env_setting("ORES_TEST_DB_HOST").value_or("") +
+        " dbname=" + env_setting("ORES_TEST_DB_DATABASE").value_or("") +
+        " user=" + env_setting("ORES_MARKETDATA_SERVICE_DB_USER").value_or("") +
+        " password=" + env_setting("ORES_MARKETDATA_SERVICE_DB_PASSWORD").value_or("");
     std::unique_ptr<PGconn, decltype(&PQfinish)> conn(PQconnectdb(info.c_str()), &PQfinish);
     REQUIRE(PQstatus(conn.get()) == CONNECTION_OK);
     const auto run = [&](const std::string& sql) {
@@ -667,10 +667,10 @@ struct burst_cleanup {
                       << " remain" << std::endl;
             return;
         }
-        const std::string info =
-            std::string("host=") + env_setting("ORES_TEST_DB_HOST").value_or("") +
-            " dbname=" + env_setting("ORES_TEST_DB_DATABASE").value_or("") + " user=" + *user +
-            " password=" + *password;
+        const std::string info = std::string("host=") +
+                                 env_setting("ORES_TEST_DB_HOST").value_or("") +
+                                 " dbname=" + env_setting("ORES_TEST_DB_DATABASE").value_or("") +
+                                 " user=" + *user + " password=" + *password;
         std::unique_ptr<PGconn, decltype(&PQfinish)> conn(PQconnectdb(info.c_str()), &PQfinish);
         if (PQstatus(conn.get()) != CONNECTION_OK)
             return;

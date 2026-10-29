@@ -148,8 +148,10 @@ inline world seed_world(ores::testing::scoped_database_helper& h) {
     const auto bound_configuration = write_configuration("Engine run settings a report binds");
     const auto draft_configuration = write_configuration("Engine run settings no report binds");
 
-    const auto bound_id = detail::write_engine_settings(ctx, "bound", bound_configuration, party.id);
-    const auto draft_id = detail::write_engine_settings(ctx, "draft", draft_configuration, party.id);
+    const auto bound_id =
+        detail::write_engine_settings(ctx, "bound", bound_configuration, party.id);
+    const auto draft_id =
+        detail::write_engine_settings(ctx, "draft", draft_configuration, party.id);
 
     // The report definition the binding names, and the binding itself: a
     // numbers-changing write is a proposal only where a report binds it.
@@ -187,12 +189,11 @@ inline world seed_world(ores::testing::scoped_database_helper& h) {
  * A proposal claims the version it read, so a test that wants the group to move
  * under a waiting proposal writes the part the way a person would.
  */
-inline void write_fixings(const ores::database::context& ctx,
-                          const world& w,
-                          bool imply_todays_fixings) {
+inline void
+write_fixings(const ores::database::context& ctx, const world& w, bool imply_todays_fixings) {
     repository::engine_settings_fixings_repository repo;
-    const auto rows = repo.read_latest_by_engine_settings_id(
-        ctx, boost::uuids::to_string(w.bound_id), 0, 1000);
+    const auto rows =
+        repo.read_latest_by_engine_settings_id(ctx, boost::uuids::to_string(w.bound_id), 0, 1000);
     domain::engine_settings_fixings row;
     if (!rows.empty()) {
         // The row in force keeps its identity and its version, so the write is
@@ -250,8 +251,9 @@ inline std::uint32_t change_lines(const ores::database::context& ctx,
  */
 inline std::optional<domain::engine_settings_fixings>
 fixings_of(const ores::database::context& ctx, const boost::uuids::uuid& engine_settings_id) {
-    const auto rows = repository::engine_settings_fixings_repository{}.read_latest_by_engine_settings_id(
-        ctx, boost::uuids::to_string(engine_settings_id), 0, 1000);
+    const auto rows =
+        repository::engine_settings_fixings_repository{}.read_latest_by_engine_settings_id(
+            ctx, boost::uuids::to_string(engine_settings_id), 0, 1000);
     if (rows.empty())
         return std::nullopt;
     return rows.front();

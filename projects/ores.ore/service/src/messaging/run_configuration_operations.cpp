@@ -333,7 +333,8 @@ run_configuration_import_execute_result import_run(nats_client& owners,
                 "The run document names {} as its {} file, which the input does not hold.",
                 *file,
                 kind.configuration_type));
-        run_configuration_operations_parse_document(kind.configuration_type, *file, content->second, parsed);
+        run_configuration_operations_parse_document(
+            kind.configuration_type, *file, content->second, parsed);
     }
 
     run_configuration_import_execute_result r;
@@ -358,8 +359,12 @@ run_configuration_import_execute_result import_run(nats_client& owners,
                                                    .configuration_type_code =
                                                        std::string(kind.configuration_type),
                                                    .name = configuration_name});
-                store_document(
-                    owners, kind.configuration_type, parsed, bound.configuration_id, configuration_name, r);
+                store_document(owners,
+                               kind.configuration_type,
+                               parsed,
+                               bound.configuration_id,
+                               configuration_name,
+                               r);
             } catch (const std::exception& e) {
                 throw std::runtime_error(std::format("{}: {}", *file, e.what()));
             }

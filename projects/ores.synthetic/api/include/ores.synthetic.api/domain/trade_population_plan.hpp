@@ -519,8 +519,7 @@ struct equity_terms final {
     std::vector<equity_range_bound> range_bounds;
 };
 
-using trade_terms =
-    std::variant<bond_terms, commodity_terms, rate_terms, fx_terms, equity_terms>;
+using trade_terms = std::variant<bond_terms, commodity_terms, rate_terms, fx_terms, equity_terms>;
 
 /**
  * @brief One trade the population states, with every reference already

@@ -183,11 +183,27 @@ const oreImportResultSchema = z.looseObject({
 });
 
 /**
+ * The largest document the import reads, in bytes: the limit the ORE service
+ * states in `pricing_engines_import::maximum_content`. The route holds its body
+ * to it as well, so a document too large to serve is refused here with a
+ * sentence rather than deep in the service.
+ */
+const MAX_DOCUMENT_BYTES = 4 * 1024 * 1024;
+
+/** The file's text, refused by its size rather than by its shape. */
+const documentContent = z
+    .string()
+    .min(1)
+    .refine((content) => Buffer.byteLength(content, 'utf8') <= MAX_DOCUMENT_BYTES, {
+        message: `An ORE pricing engines document may be at most ${MAX_DOCUMENT_BYTES} bytes.`,
+    });
+
+/**
  * The preview's body: the file's text and the configuration to compare it
  * against, or nothing for a configuration the file would create.
  */
 const oreImportPreviewBodySchema = z.object({
-    content: z.string().min(1),
+    content: documentContent,
     configurationId: idSchema.nullable().default(null),
 });
 
@@ -1062,23 +1078,31 @@ export function registerPricingEngineRoutes(
      * screen shows; the service reads a document by the reporting configuration
      * the record fills, so the two ids are joined here.
      */
-    server.post('/api/reporting/pricing-engines/ore-import/preview', async (request) => {
-        const session = requireSession(request);
-        const body = input(oreImportPreviewBodySchema, request.body);
-        // The screen's id names the configuration; the service reads a document
-        // by the reporting configuration the record fills.
-        const configurationId =
-            body.configurationId === null
-                ? ''
-                : text(
-                      (await readStored(session, body.configurationId)).config['configuration_id'],
-                  );
-        return session.client.callAuthenticated(
-            orePricingSubjects.preview_pricing_engines_import_request,
-            { content: body.content, target_configuration_id: configurationId },
-            oreImportPreviewSchema,
-        );
-    });
+    server.post(
+        '/api/reporting/pricing-engines/ore-import/preview',
+        // The body is a document and its JSON escaping, so the route's own limit
+        // is twice the document's: the schema is what refuses a document by size.
+        { bodyLimit: MAX_DOCUMENT_BYTES * 2 },
+        async (request) => {
+            const session = requireSession(request);
+            const body = input(oreImportPreviewBodySchema, request.body);
+            // The screen's id names the configuration; the service reads a document
+            // by the reporting configuration the record fills.
+            const configurationId =
+                body.configurationId === null
+                    ? ''
+                    : text(
+                          (await readStored(session, body.configurationId)).config[
+                              'configuration_id'
+                          ],
+                      );
+            return session.client.callAuthenticated(
+                orePricingSubjects.preview_pricing_engines_import_request,
+                { content: body.content, target_configuration_id: configurationId },
+                oreImportPreviewSchema,
+            );
+        },
+    );
 
     /**
      * The standard Import, last step (RS-ORE-05, RS-ORE-06): the ORE service
@@ -1089,31 +1113,37 @@ export function registerPricingEngineRoutes(
      * A new configuration is registered and written by the service, in the order
      * the screen's create takes, so a client does not carry that order twice.
      */
-    server.post('/api/reporting/pricing-engines/ore-import', async (request) => {
-        const session = requireSession(request);
-        const body = input(oreImportBodySchema, request.body);
-        // The screen's id names the configuration; the service reads a document
-        // by the reporting configuration the record fills.
-        const configurationId =
-            body.configurationId === null
-                ? ''
-                : text(
-                      (await readStored(session, body.configurationId)).config['configuration_id'],
-                  );
-        return session.client.callAuthenticated(
-            orePricingSubjects.import_pricing_engines_request,
-            {
-                content: body.content,
-                target_configuration_id: configurationId,
-                new_configuration_name: body.newName,
-                new_configuration_variant: body.newVariant,
-                removals_kept: body.removalsKept,
-                reason_code: body.intent.reason_code,
-                commentary: body.intent.commentary,
-            },
-            oreImportResultSchema,
-        );
-    });
+    server.post(
+        '/api/reporting/pricing-engines/ore-import',
+        { bodyLimit: MAX_DOCUMENT_BYTES * 2 },
+        async (request) => {
+            const session = requireSession(request);
+            const body = input(oreImportBodySchema, request.body);
+            // The screen's id names the configuration; the service reads a document
+            // by the reporting configuration the record fills.
+            const configurationId =
+                body.configurationId === null
+                    ? ''
+                    : text(
+                          (await readStored(session, body.configurationId)).config[
+                              'configuration_id'
+                          ],
+                      );
+            return session.client.callAuthenticated(
+                orePricingSubjects.import_pricing_engines_request,
+                {
+                    content: body.content,
+                    target_configuration_id: configurationId,
+                    new_configuration_name: body.newName,
+                    new_configuration_variant: body.newVariant,
+                    removals_kept: body.removalsKept,
+                    reason_code: body.intent.reason_code,
+                    commentary: body.intent.commentary,
+                },
+                oreImportResultSchema,
+            );
+        },
+    );
 
     server.delete('/api/reporting/pricing-engines/:id', async (request, reply) => {
         const session = requireSession(request);

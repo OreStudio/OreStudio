@@ -73,21 +73,21 @@ public:
                              const std::vector<std::string>& args);
 
     /**
-     * @brief get <series_type> <metric>
+     * @brief get <instrument> <quote> <key_kind>
      */
     static void process_get(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief get-many <series_type> <metric>
+     * @brief get-many <instrument> <quote> <key_kind>
      */
     static void process_get_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <series_type> <metric> <asset_class_source> <asset_class_code>
+     * @brief add <instrument> <quote> <key_kind> <asset_class_source> <asset_class_code>
      * <series_subclass_code> <description> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
@@ -95,7 +95,7 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <series_type> <metric> <asset_class_source> <asset_class_code>
+     * @brief set <instrument> <quote> <key_kind> <asset_class_source> <asset_class_code>
      * <series_subclass_code> <description> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
@@ -103,37 +103,37 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <series_type> <metric> <asset_class_source> <asset_class_code>
-     * <series_subclass_code> <description> <reason> <commentary>
+     * @brief put-many --count <n> <instrument> <quote> <key_kind> <asset_class_source>
+     * <asset_class_code> <series_subclass_code> <description> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief delete <series_type> <metric> <reason> <commentary> [--version <n>]
+     * @brief delete <instrument> <quote> <key_kind> <reason> <commentary> [--version <n>]
      */
     static void process_delete(std::ostream& out,
                                ores::nats::service::nats_client& session,
                                const std::vector<std::string>& args);
 
     /**
-     * @brief delete-many <series_type> <metric> <reason> <commentary>
+     * @brief delete-many <instrument> <quote> <key_kind> <reason> <commentary>
      */
     static void process_delete_many(std::ostream& out,
                                     ores::nats::service::nats_client& session,
                                     const std::vector<std::string>& args);
 
     /**
-     * @brief versions <series_type> <metric> [--offset <n>] [--limit <n>] [--order <field>]
-     * [--desc]
+     * @brief versions <instrument> <quote> <key_kind> [--offset <n>] [--limit <n>] [--order
+     * <field>] [--desc]
      */
     static void process_versions(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief version <series_type> <metric> --version <n>
+     * @brief version <instrument> <quote> <key_kind> --version <n>
      */
     static void process_version(std::ostream& out,
                                 ores::nats::service::nats_client& session,

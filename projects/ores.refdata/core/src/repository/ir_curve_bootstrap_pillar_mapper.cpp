@@ -57,6 +57,7 @@ ir_curve_bootstrap_pillar_mapper::map(const ir_curve_bootstrap_pillar_entity& v)
     r.start_tenor_code = v.start_tenor_code;
     r.end_tenor_code = v.end_tenor_code;
     r.curve_role_code = v.curve_role_code;
+    r.market_series_id = boost::lexical_cast<boost::uuids::uuid>(v.market_series_id);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -85,6 +86,7 @@ ir_curve_bootstrap_pillar_mapper::map(const domain::ir_curve_bootstrap_pillar& v
     r.start_tenor_code = v.start_tenor_code;
     r.end_tenor_code = v.end_tenor_code;
     r.curve_role_code = v.curve_role_code;
+    r.market_series_id = boost::uuids::to_string(v.market_series_id);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

@@ -36,6 +36,17 @@
  * columns exactly -- tenor validation happens through the
  * tenor_resolution machinery at the application layer, not a
  * per-consumer DB-level FK.
+ *
+ * The pillar names the market series it reads, as market_series_id: a
+ * soft reference to ores.marketdata.market_series, per
+ * [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market
+ * series it reads]]. The dependency is stated where a person reads it,
+ * and a pillar can read any series the party holds: a synthetic feed's,
+ * a vendor's, an official fixing's, or one seeded for a scenario.
+ *
+ * Only the series is named. The term of the point a pillar reads stays
+ * derived, because the pillar's end tenor and the parent config's tenor
+ * convention are what say where the point falls.
  */
 
 create table if not exists "ores_refdata_ir_curve_bootstrap_pillars_tbl" (
@@ -48,6 +59,7 @@ create table if not exists "ores_refdata_ir_curve_bootstrap_pillars_tbl" (
     "start_tenor_code" text not null,
     "end_tenor_code" text not null,
     "curve_role_code" text not null,
+    "market_series_id" uuid not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

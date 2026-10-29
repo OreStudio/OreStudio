@@ -36,13 +36,15 @@
 namespace ores::marketdata::messaging {
 
 struct series_classification_rule_key {
-    std::string series_type;
-    std::string metric;
+    std::string instrument;
+    std::string quote;
+    std::string key_kind;
 };
 
 struct series_classification_rule_write {
-    std::string series_type;
-    std::string metric;
+    std::string instrument;
+    std::string quote;
+    std::string key_kind;
     std::string asset_class_source;
     std::optional<std::string> asset_class_code;
     std::string series_subclass_code;

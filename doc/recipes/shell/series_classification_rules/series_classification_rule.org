@@ -44,14 +44,14 @@ Reads the one row its key addresses. A key states every identifying column, so a
 The command is shaped like this:
 
 #+begin_example
-series_classification_rules get <series_type> <metric>
+series_classification_rules get <instrument> <quote> <key_kind>
 #+end_example
 
 It is addressed at =marketdata.v1.series_classification_rules.get=.
 
 #+name: series_classification_rules-get
 #+begin_src ores-shell :tangle series_classification_rules-get.ores :exports none
-series_classification_rules get __none__ __none__
+series_classification_rules get __none__ __none__ __none__
 #+end_src
 
 ** =get-many=
@@ -65,14 +65,14 @@ Reads several rows in one request, one key group per row.
 The command is shaped like this:
 
 #+begin_example
-series_classification_rules get-many <series_type> <metric>
+series_classification_rules get-many <instrument> <quote> <key_kind>
 #+end_example
 
 It is addressed at =marketdata.v1.series_classification_rules.get_many=.
 
 #+name: series_classification_rules-get-many
 #+begin_src ores-shell :tangle series_classification_rules-get-many.ores :exports none
-series_classification_rules get-many __none__ __none__
+series_classification_rules get-many __none__ __none__ __none__
 #+end_src
 
 ** =add=
@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-series_classification_rules add <series_type> <metric> <asset_class_source> <asset_class_code> <series_subclass_code> <description> <reason> <commentary>
+series_classification_rules add <instrument> <quote> <key_kind> <asset_class_source> <asset_class_code> <series_subclass_code> <description> <reason> <commentary>
 #+end_example
 
 It is addressed at =marketdata.v1.series_classification_rules.put=.
 
 #+name: series_classification_rules-add
 #+begin_src ores-shell :tangle series_classification_rules-add.ores :exports none
-series_classification_rules add __none__ __none__ __none__ - __none__ __none__ system.new_record generated_script
+series_classification_rules add __none__ __none__ __none__ __none__ - __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-series_classification_rules set <series_type> <metric> <asset_class_source> <asset_class_code> <series_subclass_code> <description> <reason> <commentary> [--version <n>]
+series_classification_rules set <instrument> <quote> <key_kind> <asset_class_source> <asset_class_code> <series_subclass_code> <description> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =marketdata.v1.series_classification_rules.put=.
 
 #+name: series_classification_rules-set
 #+begin_src ores-shell :tangle series_classification_rules-set.ores :exports none
-series_classification_rules set __none__ __none__ __none__ - __none__ __none__ system.new_record generated_script
+series_classification_rules set __none__ __none__ __none__ __none__ - __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-series_classification_rules put-many --count <n> <series_type> <metric> <asset_class_source> <asset_class_code> <series_subclass_code> <description> <reason> <commentary>
+series_classification_rules put-many --count <n> <instrument> <quote> <key_kind> <asset_class_source> <asset_class_code> <series_subclass_code> <description> <reason> <commentary>
 #+end_example
 
 It is addressed at =marketdata.v1.series_classification_rules.put_many=.
 
 #+name: series_classification_rules-put-many
 #+begin_src ores-shell :tangle series_classification_rules-put-many.ores :exports none
-series_classification_rules put-many --count 1 __none__ __none__ __none__ - __none__ __none__ system.new_record generated_script
+series_classification_rules put-many --count 1 __none__ __none__ __none__ __none__ - __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=
@@ -149,14 +149,14 @@ Removes a row. The change carries a reason and a commentary, which the server re
 The command is shaped like this:
 
 #+begin_example
-series_classification_rules delete <series_type> <metric> <reason> <commentary> [--version <n>]
+series_classification_rules delete <instrument> <quote> <key_kind> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =marketdata.v1.series_classification_rules.delete=.
 
 #+name: series_classification_rules-delete
 #+begin_src ores-shell :tangle series_classification_rules-delete.ores :exports none
-series_classification_rules delete __none__ __none__ system.new_record generated_script
+series_classification_rules delete __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =delete-many=
@@ -170,14 +170,14 @@ Removes several rows in one request. The change carries a reason and a commentar
 The command is shaped like this:
 
 #+begin_example
-series_classification_rules delete-many <series_type> <metric> <reason> <commentary>
+series_classification_rules delete-many <instrument> <quote> <key_kind> <reason> <commentary>
 #+end_example
 
 It is addressed at =marketdata.v1.series_classification_rules.delete_many=.
 
 #+name: series_classification_rules-delete-many
 #+begin_src ores-shell :tangle series_classification_rules-delete-many.ores :exports none
-series_classification_rules delete-many __none__ __none__ system.new_record generated_script
+series_classification_rules delete-many __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =versions=
@@ -191,14 +191,14 @@ Reads the row's recorded history, newest first.
 The command is shaped like this:
 
 #+begin_example
-series_classification_rules versions <series_type> <metric> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+series_classification_rules versions <instrument> <quote> <key_kind> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
 #+end_example
 
 It is addressed at =marketdata.v1.series_classification_rules_versions.list=.
 
 #+name: series_classification_rules-versions
 #+begin_src ores-shell :tangle series_classification_rules-versions.ores :exports none
-series_classification_rules versions __none__ __none__ --limit 1
+series_classification_rules versions __none__ __none__ __none__ --limit 1
 #+end_src
 
 ** =version=
@@ -212,13 +212,13 @@ Reads one recorded version of the row.
 The command is shaped like this:
 
 #+begin_example
-series_classification_rules version <series_type> <metric> --version <n>
+series_classification_rules version <instrument> <quote> <key_kind> --version <n>
 #+end_example
 
 It is addressed at =marketdata.v1.series_classification_rules_versions.get=.
 
 #+name: series_classification_rules-version
 #+begin_src ores-shell :tangle series_classification_rules-version.ores :exports none
-series_classification_rules version __none__ __none__ --version 1
+series_classification_rules version __none__ __none__ __none__ --version 1
 #+end_src
 

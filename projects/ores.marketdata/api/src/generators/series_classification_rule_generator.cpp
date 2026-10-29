@@ -46,8 +46,9 @@ generate_synthetic_series_classification_rule(utility::generation::generation_co
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
-    r.series_type = std::string(faker::word::noun()) + "-" + std::to_string(idx);
-    r.metric = std::string(faker::word::noun());
+    r.instrument = std::string("ir_swap") + "-" + std::to_string(idx);
+    r.quote = std::string("rate");
+    r.key_kind = std::string("datum");
     r.asset_class_source = std::string("literal");
     r.asset_class_code = [idx] {
         constexpr auto count =

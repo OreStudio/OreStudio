@@ -130,66 +130,67 @@ void series_classification_rule_commands::register_commands(cli::Menu& root_menu
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get(std::ref(out), std::ref(session), std::move(args));
         },
-        "get <series_type> <metric>");
+        "get <instrument> <quote> <key_kind>");
 
     menu->Insert(
         "get-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-many <series_type> <metric>");
+        "get-many <instrument> <quote> <key_kind>");
 
     menu->Insert(
         "add",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <series_type> <metric> <asset_class_source> <asset_class_code> <series_subclass_code> "
-        "<description> <reason> <commentary>");
+        "add <instrument> <quote> <key_kind> <asset_class_source> <asset_class_code> "
+        "<series_subclass_code> <description> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <series_type> <metric> <asset_class_source> <asset_class_code> <series_subclass_code> "
-        "<description> <reason> <commentary> [--version <n>]");
+        "set <instrument> <quote> <key_kind> <asset_class_source> <asset_class_code> "
+        "<series_subclass_code> <description> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <series_type> <metric> <asset_class_source> <asset_class_code> "
-        "<series_subclass_code> <description> <reason> <commentary>");
+        "put-many --count <n> <instrument> <quote> <key_kind> <asset_class_source> "
+        "<asset_class_code> <series_subclass_code> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete <series_type> <metric> <reason> <commentary> [--version <n>]");
+        "delete <instrument> <quote> <key_kind> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "delete-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete-many <series_type> <metric> <reason> <commentary>");
+        "delete-many <instrument> <quote> <key_kind> <reason> <commentary>");
 
     menu->Insert(
         "versions",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_versions(std::ref(out), std::ref(session), std::move(args));
         },
-        "versions <series_type> <metric> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+        "versions <instrument> <quote> <key_kind> [--offset <n>] [--limit <n>] [--order <field>] "
+        "[--desc]");
 
     menu->Insert(
         "version",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_version(std::ref(out), std::ref(session), std::move(args));
         },
-        "version <series_type> <metric> --version <n>");
+        "version <instrument> <quote> <key_kind> --version <n>");
 
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
@@ -266,15 +267,16 @@ void series_classification_rule_commands::process_get(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 2) {
-            fail(out) << "Expected 2 arguments, got " << parsed->positionals.size() << "."
+        if (parsed->positionals.size() != 3) {
+            fail(out) << "Expected 3 arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
             return;
         }
         series_classification_rule_read_token(
-            req.key.series_type, parsed->positionals[next++], "series_type");
+            req.key.instrument, parsed->positionals[next++], "instrument");
+        series_classification_rule_read_token(req.key.quote, parsed->positionals[next++], "quote");
         series_classification_rule_read_token(
-            req.key.metric, parsed->positionals[next++], "metric");
+            req.key.key_kind, parsed->positionals[next++], "key_kind");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -312,16 +314,18 @@ void series_classification_rule_commands::process_get_many(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.empty() || parsed->positionals.size() % 2 != 0) {
-            fail(out) << "Expected a multiple of 2 arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.empty() || parsed->positionals.size() % 3 != 0) {
+            fail(out) << "Expected a multiple of 3 arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
-        for (std::size_t i = 0; i < parsed->positionals.size(); i += 2) {
+        for (std::size_t i = 0; i < parsed->positionals.size(); i += 3) {
             messaging::series_classification_rule_key key;
             series_classification_rule_read_token(
-                key.series_type, parsed->positionals[i + 0], "series_type");
-            series_classification_rule_read_token(key.metric, parsed->positionals[i + 1], "metric");
+                key.instrument, parsed->positionals[i + 0], "instrument");
+            series_classification_rule_read_token(key.quote, parsed->positionals[i + 1], "quote");
+            series_classification_rule_read_token(
+                key.key_kind, parsed->positionals[i + 2], "key_kind");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -361,15 +365,17 @@ void series_classification_rule_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 6 + 2) {
-            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         series_classification_rule_read_token(
-            req.change.write.series_type, parsed->positionals[next++], "series_type");
+            req.change.write.instrument, parsed->positionals[next++], "instrument");
         series_classification_rule_read_token(
-            req.change.write.metric, parsed->positionals[next++], "metric");
+            req.change.write.quote, parsed->positionals[next++], "quote");
+        series_classification_rule_read_token(
+            req.change.write.key_kind, parsed->positionals[next++], "key_kind");
         series_classification_rule_read_token(
             req.change.write.asset_class_source, parsed->positionals[next++], "asset_class_source");
         series_classification_rule_read_token(
@@ -421,15 +427,17 @@ void series_classification_rule_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 6 + 2) {
-            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         series_classification_rule_read_token(
-            req.change.write.series_type, parsed->positionals[next++], "series_type");
+            req.change.write.instrument, parsed->positionals[next++], "instrument");
         series_classification_rule_read_token(
-            req.change.write.metric, parsed->positionals[next++], "metric");
+            req.change.write.quote, parsed->positionals[next++], "quote");
+        series_classification_rule_read_token(
+            req.change.write.key_kind, parsed->positionals[next++], "key_kind");
         series_classification_rule_read_token(
             req.change.write.asset_class_source, parsed->positionals[next++], "asset_class_source");
         series_classification_rule_read_token(
@@ -493,17 +501,19 @@ void series_classification_rule_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 6 + 2) {
-            fail(out) << "Expected " << (change_count * 6 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 7 + 2) {
+            fail(out) << "Expected " << (change_count * 7 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::series_classification_rule_change change;
             series_classification_rule_read_token(
-                change.write.series_type, parsed->positionals[next++], "series_type");
+                change.write.instrument, parsed->positionals[next++], "instrument");
             series_classification_rule_read_token(
-                change.write.metric, parsed->positionals[next++], "metric");
+                change.write.quote, parsed->positionals[next++], "quote");
+            series_classification_rule_read_token(
+                change.write.key_kind, parsed->positionals[next++], "key_kind");
             series_classification_rule_read_token(
                 change.write.asset_class_source, parsed->positionals[next++], "asset_class_source");
             series_classification_rule_read_token(
@@ -557,15 +567,17 @@ void series_classification_rule_commands::process_delete(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 2 + 2) {
-            fail(out) << "Expected " << (2 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 3 + 2) {
+            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         series_classification_rule_read_token(
-            req.removal.key.series_type, parsed->positionals[next++], "series_type");
+            req.removal.key.instrument, parsed->positionals[next++], "instrument");
         series_classification_rule_read_token(
-            req.removal.key.metric, parsed->positionals[next++], "metric");
+            req.removal.key.quote, parsed->positionals[next++], "quote");
+        series_classification_rule_read_token(
+            req.removal.key.key_kind, parsed->positionals[next++], "key_kind");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -610,18 +622,20 @@ void series_classification_rule_commands::process_delete_many(
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() < 2 + 2 || (parsed->positionals.size() - 2) % 2 != 0) {
+        if (parsed->positionals.size() < 3 + 2 || (parsed->positionals.size() - 2) % 3 != 0) {
             fail(out) << "Expected a whole number of key groups and an intent, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
-        const std::size_t key_groups = (parsed->positionals.size() - 2) / 2;
+        const std::size_t key_groups = (parsed->positionals.size() - 2) / 3;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::series_classification_rule_key key;
             series_classification_rule_read_token(
-                key.series_type, parsed->positionals[i * 2 + 0], "series_type");
+                key.instrument, parsed->positionals[i * 3 + 0], "instrument");
             series_classification_rule_read_token(
-                key.metric, parsed->positionals[i * 2 + 1], "metric");
+                key.quote, parsed->positionals[i * 3 + 1], "quote");
+            series_classification_rule_read_token(
+                key.key_kind, parsed->positionals[i * 3 + 2], "key_kind");
             req.removals.push_back(
                 messaging::series_classification_rule_removal{.key = std::move(key)});
         }
@@ -669,15 +683,16 @@ void series_classification_rule_commands::process_versions(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 2) {
-            fail(out) << "Expected 2 arguments, got " << parsed->positionals.size() << "."
+        if (parsed->positionals.size() != 3) {
+            fail(out) << "Expected 3 arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
             return;
         }
         series_classification_rule_read_token(
-            req.key.series_type, parsed->positionals[next++], "series_type");
+            req.key.instrument, parsed->positionals[next++], "instrument");
+        series_classification_rule_read_token(req.key.quote, parsed->positionals[next++], "quote");
         series_classification_rule_read_token(
-            req.key.metric, parsed->positionals[next++], "metric");
+            req.key.key_kind, parsed->positionals[next++], "key_kind");
         series_classification_rule_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -718,16 +733,18 @@ void series_classification_rule_commands::process_version(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 2) {
-            fail(out) << "Expected 2 arguments, got " << parsed->positionals.size() << "."
+        if (parsed->positionals.size() != 3) {
+            fail(out) << "Expected 3 arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
             return;
         }
-        series_classification_rule_read_token(req.key.series_classification_rule.series_type,
+        series_classification_rule_read_token(req.key.series_classification_rule.instrument,
                                               parsed->positionals[next++],
-                                              "series_type");
+                                              "instrument");
         series_classification_rule_read_token(
-            req.key.series_classification_rule.metric, parsed->positionals[next++], "metric");
+            req.key.series_classification_rule.quote, parsed->positionals[next++], "quote");
+        series_classification_rule_read_token(
+            req.key.series_classification_rule.key_kind, parsed->positionals[next++], "key_kind");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

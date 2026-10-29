@@ -34,7 +34,7 @@
 namespace ores::refdata::domain {
 
 /**
- * @brief One (tenor, curve-role) pillar of an IR curve bootstrap config's recipe.
+ * @brief One (tenor, curve-role, named series) pillar of an IR curve bootstrap config's recipe.
  *
  * One row of a bootstrap config's pillar list: which tenor period,
  * priced/bootstrapped as which curve role (deposit-equivalent,
@@ -48,6 +48,17 @@ namespace ores::refdata::domain {
  * columns exactly -- tenor validation happens through the
  * tenor_resolution machinery at the application layer, not a
  * per-consumer DB-level FK.
+ *
+ * The pillar names the market series it reads, as market_series_id: a
+ * soft reference to ores.marketdata.market_series, per
+ * [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market
+ * series it reads]]. The dependency is stated where a person reads it,
+ * and a pillar can read any series the party holds: a synthetic feed's,
+ * a vendor's, an official fixing's, or one seeded for a scenario.
+ *
+ * Only the series is named. The term of the point a pillar reads stays
+ * derived, because the pillar's end tenor and the parent config's tenor
+ * convention are what say where the point falls.
  */
 struct ir_curve_bootstrap_pillar final {
     /**
@@ -99,6 +110,18 @@ struct ir_curve_bootstrap_pillar final {
      * which inverse-pricing derivation the bootstrapping engine applies at this pillar.
      */
     std::string curve_role_code;
+
+    /**
+     * @brief Soft reference to the market_series (in ores.marketdata) whose observation at the
+     * as-of is this pillar's quote. Named by the caller from the series its desk already holds; no
+     * operation composes it.
+     *
+     * The read resolves the datum's term from end_tenor_code through the parent config's
+     * tenor_convention_code, so the named series and the pillar's end tenor together say which
+     * observation the pillar reads. One series holds a ladder: every pillar that starts at the same
+     * place and stands for the same index reads the same series at its own term.
+     */
+    boost::uuids::uuid market_series_id;
 
     /**
      * @brief Username of the person who last modified this IR curve bootstrap pillar.

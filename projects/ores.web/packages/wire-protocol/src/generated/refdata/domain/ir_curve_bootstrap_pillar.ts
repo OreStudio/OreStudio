@@ -40,6 +40,7 @@ export interface IrCurveBootstrapPillar {
     start_tenor_code: string;
     end_tenor_code: string;
     curve_role_code: string;
+    market_series_id: string;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

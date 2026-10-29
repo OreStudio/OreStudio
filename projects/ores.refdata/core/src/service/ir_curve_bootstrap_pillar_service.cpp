@@ -110,6 +110,7 @@ ir_curve_bootstrap_pillar_to_domain(const messaging::ir_curve_bootstrap_pillar_w
     v.start_tenor_code = write.start_tenor_code;
     v.end_tenor_code = write.end_tenor_code;
     v.curve_role_code = write.curve_role_code;
+    v.market_series_id = write.market_series_id;
     return v;
 }
 

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/use-oresmd-on-the-generation-path
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -33,11 +33,11 @@ seed, the tests, and the recreation of the demonstration tenant.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -111,6 +111,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A pillar now names the market series it reads.
+
+- ir_curve_bootstrap_pillar carries market_series_id through full codegen.
+- The curve reader reads the named series' observation at the as-of and takes
+  the rung whose term the pillar's end tenor resolves to; one series answers a
+  whole ladder and the lineage names it once.
+- The read path no longer composes an ORE key: make_pillar_quote_key and
+  pillar_datum_uri are gone, replaced by pillar_quote_datum for the feed.
+- The Add and Edit pillar dialogs pick the series with the standard record
+  picker, drawn as its oresmd URI.
+- The feed and the reader agree because they build the same datum, not because
+  they share a spelling; the synthetic and marketdata suites prove it.
+
+Evidence: marketdata core 330, service 203, synthetic 94; codegen idempotent
+over two runs; live: the seeded pillars name the seeded series.
 
 * See also
 

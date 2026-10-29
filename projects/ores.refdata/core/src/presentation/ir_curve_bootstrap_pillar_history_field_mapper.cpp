@@ -46,6 +46,8 @@ render_ir_curve_bootstrap_pillar_fields(const domain::ir_curve_bootstrap_pillar&
     fields.push_back({.name = "Start Tenor Code", .value = v.start_tenor_code});
     fields.push_back({.name = "End Tenor Code", .value = v.end_tenor_code});
     fields.push_back({.name = "Curve Role Code", .value = v.curve_role_code});
+    fields.push_back(
+        {.name = "Market Series ID", .value = boost::uuids::to_string(v.market_series_id)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

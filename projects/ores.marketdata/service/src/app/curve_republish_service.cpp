@@ -25,9 +25,7 @@
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/observation_lineage.hpp"
-#include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
-#include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
@@ -189,18 +187,12 @@ void stamp_output_series(ores::database::context ctx,
 }
 
 // The datum an observation is written under: the output series at the pillar's
-// own point. A series and a point that make no datum, or a datum no ORE key
-// names, is a config-integrity error.
+// own point. A series and a point that make no datum is a config-integrity error.
 datum::market_datum datum_for(const datum::market_datum& series, const std::string& point_id) {
-    const auto fail = [&](const std::string& why) {
-        return std::invalid_argument("curve_republish_service: output series and point '" +
-                                     point_id + "' name no ORE quote: " + why);
-    };
     auto d = datum::datum_at_point(series, point_id);
     if (!d)
-        throw fail(d.error());
-    if (const auto key = datum::ore_key_codec::write(*d); !key)
-        throw fail(key.error());
+        throw std::invalid_argument("curve_republish_service: output series and point '" +
+                                    point_id + "' name no datum: " + d.error());
     return std::move(*d);
 }
 
@@ -224,7 +216,7 @@ curve_computation compute_curve(ores::database::context ctx,
     const auto horizon = std::chrono::floor<std::chrono::days>(as_of);
     const auto refctx = build_refdata_context(
         ctx, std::chrono::year_month_day{horizon}, config.tenor_convention_code);
-    const auto raw = read_pillar_rates(ctx, config, pillars, refctx, as_of);
+    const auto raw = read_pillar_rates(ctx, pillars, refctx, as_of);
     const auto bootstrap_pillars =
         resolve_bootstrap_pillars(pillars, refctx, raw.rates_by_point_id);
 

@@ -46,20 +46,24 @@ namespace ores::marketdata::datum {
  * schema order, with the case of its value kept. A field that holds none is
  * left out.
  *
- * The reader is strict. It refuses a missing key for a field that may not be
- * none, an unknown key, a repeated key, an empty value, a coordinate field in a
- * series, and a quote URI whose datum has no ORE key, so a quote URI maps one
- * to one onto the canonical ORE key. It also refuses any text other than the
- * writer's own spelling, such as a reordered query, so one datum has one URI
- * and stored URIs compare as text.
+ * The reader is strict about the grammar. It refuses a missing key for a field
+ * that may not be none, an unknown key, a repeated key, an empty value, a
+ * coordinate field in a series, and any text other than the writer's own
+ * spelling, such as a reordered query, so one datum has one URI and stored URIs
+ * compare as text.
+ *
+ * It is not strict about ORE. Every datum the market data model admits has a
+ * URI, whether or not an ORE key can spell it, because the URI is the datum's
+ * identity and an ORE key is a boundary format: a quote type ORE has no token
+ * for is a datum like any other. What ORE can and cannot name is the ORE axis
+ * codec's question, at the edge where ORE XML is read and written.
  */
 class ORES_MARKETDATA_CORE_EXPORT oresmd_uri_codec final {
 public:
     /// The datum or series @p uri names, or why the grammar does not admit it.
     [[nodiscard]] static std::expected<market_datum, std::string> read(std::string_view uri);
 
-    /// The URI of @p datum, or why it has none: a datum with no ORE key has no
-    /// quote URI.
+    /// The URI of @p datum, or why the grammar admits no URI for it.
     [[nodiscard]] static std::expected<std::string, std::string> write(const market_datum& datum);
 
     /**

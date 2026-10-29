@@ -162,7 +162,7 @@ TEST_CASE("ir_curve_bootstrap_pillar_commands_process_add_requires_a_session", "
 
     command_feedback::reset();
     ir_curve_bootstrap_pillar_commands::process_add(
-        out, session, ir_curve_bootstrap_pillar_tokens(7));
+        out, session, ir_curve_bootstrap_pillar_tokens(8));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -198,7 +198,7 @@ TEST_CASE("ir_curve_bootstrap_pillar_commands_process_set_requires_a_session", "
 
     command_feedback::reset();
     ir_curve_bootstrap_pillar_commands::process_set(
-        out, session, ir_curve_bootstrap_pillar_tokens(7));
+        out, session, ir_curve_bootstrap_pillar_tokens(8));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -234,7 +234,7 @@ TEST_CASE("ir_curve_bootstrap_pillar_commands_process_put_many_requires_a_sessio
 
     command_feedback::reset();
     ir_curve_bootstrap_pillar_commands::process_put_many(
-        out, session, ir_curve_bootstrap_pillar_tokens(7));
+        out, session, ir_curve_bootstrap_pillar_tokens(8));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

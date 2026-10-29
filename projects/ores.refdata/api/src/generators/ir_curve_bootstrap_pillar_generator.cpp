@@ -51,6 +51,7 @@ generate_synthetic_ir_curve_bootstrap_pillar(utility::generation::generation_con
     r.start_tenor_code = std::string("SPOT");
     r.end_tenor_code = std::string("1Y");
     r.curve_role_code = std::string("SWAP");
+    r.market_series_id = ctx.generate_uuid();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

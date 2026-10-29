@@ -53,13 +53,14 @@ seed_classification_rules() {
         const auto sql = ores::platform::filesystem::file::read_content(path);
 
         // Column positions of one `values` row, as the script writes them.
-        constexpr std::size_t series_type_column = 1;
-        constexpr std::size_t metric_column = 2;
-        constexpr std::size_t asset_class_source_column = 4;
-        constexpr std::size_t asset_class_code_column = 5;
-        constexpr std::size_t series_subclass_code_column = 6;
-        constexpr std::size_t description_column = 7;
-        constexpr std::size_t min_columns = 8;
+        constexpr std::size_t instrument_column = 1;
+        constexpr std::size_t quote_column = 2;
+        constexpr std::size_t key_kind_column = 3;
+        constexpr std::size_t asset_class_source_column = 5;
+        constexpr std::size_t asset_class_code_column = 6;
+        constexpr std::size_t series_subclass_code_column = 7;
+        constexpr std::size_t description_column = 8;
+        constexpr std::size_t min_columns = 9;
 
         std::vector<ores::marketdata::domain::series_classification_rule> result;
         for (const auto& columns : sql_values_rows(sql, path.string())) {
@@ -69,8 +70,9 @@ seed_classification_rules() {
                                             ", expected at least " + std::to_string(min_columns));
 
             ores::marketdata::domain::series_classification_rule rule;
-            rule.series_type = columns[series_type_column];
-            rule.metric = columns[metric_column];
+            rule.key_kind = columns[key_kind_column];
+            rule.instrument = columns[instrument_column];
+            rule.quote = columns[quote_column];
             rule.asset_class_source = columns[asset_class_source_column];
             // Null is the honest "no class here" for a correlation rule, and
             // the script writes the keyword rather than an empty string.

@@ -193,22 +193,26 @@ has.
 The reader takes only the writer's own spelling, so one datum has one URI, and
 stored URIs compare as text. For a quote, this is a rule of the grammar:
 
-1. A =type=quote= URI names exactly one ORE datum.
+1. A =type=quote= URI names exactly one market datum.
 2. Every required field of the type's schema row is present.
 3. A field that may be none is present only when it holds a value.
 4. No other key is present.
 5. No default applies. No partial form and no requirement form exist.
-6. The URI maps one to one onto the canonical ORE key, with case kept.
 
 The reader refuses each of these:
 
 - a missing key for a field that may not be none;
 - an unknown key, a repeated key or an empty value;
 - a coordinate field in a series URI;
-- a quote URI whose datum has no ORE key, such as one with the quote type
-  =hazard_rate=, which has no ORE token;
 - any other spelling of a valid URI, such as a reordered query or a
   percent-encoded letter in the path.
+
+The reader does not ask whether ORE can spell the datum. The URI is the datum's
+identity and an ORE key is a boundary format, so a quote whose type ORE has no
+token for, such as =hazard_rate=, is a datum like any other and has a URI. What
+ORE can name is the question of
+[[id:D1A25B9E-B1A0-4E7C-AB5C-1C7C3EF07F90][ORE import and export]], at the edge
+where ORE XML is read and written.
 
 A series URI follows the same rules, without the coordinate fields. A fixing
 URI follows them too, and the reader also requires that the index writes an

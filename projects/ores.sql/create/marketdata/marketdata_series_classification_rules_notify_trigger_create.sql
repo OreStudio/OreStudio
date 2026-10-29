@@ -29,15 +29,17 @@ declare
     notification_payload jsonb;
     change_action text;
     changed_version integer := 0;
-    changed_series_type text;
-    changed_metric text;
+    changed_instrument text;
+    changed_quote text;
+    changed_key_kind text;
     changed_key jsonb;
     changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
         change_action := 'deleted';
-        changed_series_type := OLD.series_type;
-        changed_metric := OLD.metric;
+        changed_instrument := OLD.instrument;
+        changed_quote := OLD.quote;
+        changed_key_kind := OLD.key_kind;
         changed_version := OLD.version;
         changed_tenant_id := OLD.tenant_id::text;
     elsif TG_OP = 'UPDATE' then
@@ -55,12 +57,13 @@ begin
             change_action := 'updated';
         end if;
         changed_version := NEW.version;
-        changed_series_type := NEW.series_type;
-        changed_metric := NEW.metric;
+        changed_instrument := NEW.instrument;
+        changed_quote := NEW.quote;
+        changed_key_kind := NEW.key_kind;
         changed_tenant_id := NEW.tenant_id::text;
     end if;
 
-    changed_key := jsonb_build_object('series_type', changed_series_type, 'metric', changed_metric);
+    changed_key := jsonb_build_object('instrument', changed_instrument, 'quote', changed_quote, 'key_kind', changed_key_kind);
 
     notification_payload := jsonb_build_object(
         'event_id', gen_random_uuid()::text,

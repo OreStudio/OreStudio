@@ -35,37 +35,51 @@
 namespace ores::marketdata::domain {
 
 /**
- * @brief How one ORE series type maps onto the refdata asset class and series subclass codes.
+ * @brief How one oresmd identity maps onto the refdata asset class and series subclass codes.
  *
- * The taxonomy rule for an ORE market data series, one row per series
- * type and metric. An import reads the whole table once, builds a
- * classifier from it, and asks that classifier for the asset classes and
- * the series subclass of every key it meets.
+ * The taxonomy rule for a market series, one row per identity the runtime
+ * classifies. The runtime reads the whole table once, builds a classifier from it,
+ * and asks that classifier for the asset classes and the series subclass of every
+ * series it creates.
  *
- * The table replaces a compiled C++ map, so the taxonomy is now managed
- * like every other catalogue: a type ORE adds later, or one a user
- * brings, is an inserted row rather than a rebuild. This matters because
- * an import aborts on a type it cannot classify, so a compiled table
- * makes every new ORE type a code change.
+ * The table replaces a compiled C++ map, so the taxonomy is managed like every
+ * other catalogue: an instrument a corpus adds later, or one a user brings, is an
+ * inserted row rather than a rebuild. This matters because an ingest that cannot
+ * classify a series it must create aborts on it, so a compiled table makes every
+ * new instrument a code change.
  *
- * The class codes name rows in refdata.asset_class_code and the
- * subclass codes name rows in refdata.series_subclass_code, and the
- * insert trigger checks both against those catalogues.
+ * The key is the oresmd identity and not an ORE key. Two kinds of identity reach
+ * this table, and key_kind says which a row is keyed by:
  *
- * Two things a single class column could not hold, and how this table
- * holds them:
+ * - datum, keyed by instrument -- the text the URI writes under
+ *   instrument, such as ir_swap or discount -- and by quote, the text it
+ *   writes under quote, or the empty string for a rule that applies to every
+ *   quote of its instrument. Most instruments classify the same way whatever their
+ *   quote carries, so their row holds the empty string; a lookup tries the exact
+ *   quote first and falls back to the empty one.
+ * - index, keyed by instrument too, which for this kind holds the index
+ *   family's oresmd name or the empty string for every family. A fixing series is
+ *   an index and not a datum, so it is keyed by the index's own vocabulary.
  *
- * - A pairwise correlation relates two classes and belongs to both, so
- *   neither is a property of the type. Its row names no class at all and
- *   its classes are read from the two operands of the key, which is what
- *   asset_class_source records.
- * - GENERIC-MD is a wrapper whose metric slot names the instrument
- *   inside it, so its rule is keyed by the metric rather than by the type
- *   alone.
+ * asset_class_source says where a row's classes come from:
  *
- * The reader rejects an empty table, because an empty table aborts the
- * first import that reads it and the message should name the table rather
- * than the first series it met.
+ * - literal names its class in asset_class_code.
+ * - correlation_operands reads the classes from the two operand fields of a
+ *   correlation datum, because a pairwise correlation belongs to the two classes
+ *   it relates and to no class of its own.
+ * - index_authority reads the class from the index family's schema row, whose
+ *   asset authority names the market-data namespace the index is written in, and
+ *   ores.refdata.asset_class_catalogue maps that authority onto a refdata class.
+ *   One row serves every index family, and a family the catalogue maps to no class
+ *   leaves the class list empty rather than mis-classing the series.
+ *
+ * The class codes name rows in refdata.asset_class_code and the subclass codes
+ * name rows in refdata.series_subclass_code, and the insert trigger checks both
+ * against those catalogues.
+ *
+ * The reader rejects an empty table, because an empty table aborts the first
+ * ingest that reads it and the message should name the table rather than the first
+ * series it met.
  */
 struct series_classification_rule final {
     /**
@@ -79,34 +93,40 @@ struct series_classification_rule final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief The ORE key type: the first segment of a market data key, verbatim.
-     *
-     * Examples: 'DISCOUNT', 'SWAPTION', 'FIXING', 'CORRELATION'.
+     * @brief The identity's instrument, as the URI writes it under instrument, in lower case:
+     * ir_swap, discount, correlation for a datum; the index family's name such as ibor for an
+     * index, or the empty string for a rule that speaks for every family. An empty instrument is
+     * the one honest "any" this table states, and only an index row uses it: a datum's identity
+     * always names its instrument.
      */
-    std::string series_type;
+    std::string instrument;
 
     /**
-     * @brief The metric this rule applies to, or the empty string for a rule that applies to every
-     * metric of its type.
+     * @brief The identity's quote, as the URI writes it under quote, in lower case, or the empty
+     * string for a rule that applies to every quote of its instrument. An index has no quote and
+     * holds the empty string.
      *
-     * Most types classify the same way whatever their metric carries, so their row holds the empty
-     * string. GENERIC-MD is the exception: its metric slot names the instrument inside it, so
-     * GENERIC-MD/EQUITY_OPTION/PRICE/... is classified by the row whose metric is EQUITY_OPTION. A
-     * lookup tries the exact metric first and falls back to the empty one.
+     * A lookup tries the exact quote first and falls back to the empty one.
      */
-    std::string metric;
+    std::string quote;
 
     /**
-     * @brief How this rule obtains its asset classes: literal, correlation_operands or index_name.
+     * @brief Which kind of oresmd identity this rule is keyed by: datum for a market datum and
+     * index for a market index, which is what a fixing series is.
+     *
+     * Examples: 'datum', 'index'.
+     */
+    std::string key_kind;
+
+    /**
+     * @brief How this rule obtains its asset classes: literal, correlation_operands or
+     * index_authority.
      *
      * A literal rule names its class in asset_class_code. A correlation rule reads the classes from
-     * the two operands at the front of the qualifier, because a pairwise correlation belongs to the
-     * two classes it relates and to no class of its own. An index_name rule reads the class from
-     * the index name the qualifier carries: the name projects onto an oresmd identifier, whose
-     * authority names the market-data namespace the index is written in, and
-     * ores.refdata.asset_class_catalogue maps that authority onto a refdata class. A fixing is the
-     * case this exists for -- one FIXING row serves every index name, and the class cannot be a
-     * literal because the corpus carries rates, equity, commodity, power, inflation, security and
+     * the two operand fields of the datum, because a pairwise correlation belongs to the two
+     * classes it relates and to no class of its own. An index_authority rule reads the class from
+     * the index family's own schema row: one index row serves every family, and the class cannot be
+     * a literal because the corpus carries rates, equity, commodity, power, inflation, security and
      * generic fixings alike.
      */
     std::string asset_class_source;
@@ -128,11 +148,10 @@ struct series_classification_rule final {
     std::string series_subclass_code;
 
     /**
-     * @brief Why the type carries this taxonomy, and the evidence behind the rule where the metric
-     * decides it.
+     * @brief Why the identity carries this taxonomy, and the evidence behind it.
      *
-     * Example: 'The two operands of a correlation key name the classes it relates; the subclass is
-     * the correlation itself.'
+     * Example: 'The two operands of a correlation datum name the classes it relates; the subclass
+     * is the correlation itself.'
      */
     std::string description;
 

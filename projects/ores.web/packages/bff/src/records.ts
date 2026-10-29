@@ -340,6 +340,7 @@ const WRITES: Readonly<Record<string, z.ZodType<Record<string, unknown>>>> = {
         start_tenor_code: code,
         end_tenor_code: code,
         curve_role_code: z.enum(['DEPOSIT', 'FRA', 'SWAP']),
+        market_series_id: anyUuid,
     }) satisfies z.ZodType<IrCurveBootstrapPillarWrite>,
 };
 

@@ -35,6 +35,10 @@ const CONFIGS = 'ir-curve-bootstrap-configs';
 const NAME = 'USD-SOFR-FOMC';
 const SERIES = 'a1a1a1a1-0000-4000-8000-000000000001';
 const URI = 'oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-FOMC';
+/** The ladder the pillars read, which is a quote series and not the curve's own. */
+const PILLAR_SERIES = 'a2a2a2a2-0000-4000-8000-000000000002';
+const PILLAR_URI =
+    'oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D';
 
 const everything: AccountAccess = {
     roles: [
@@ -82,6 +86,7 @@ function pillar(end: string, role: string, sequence: number): RecordRow {
         start_tenor_code: sequence === 0 ? 'SPOT' : `F${String(sequence)}`,
         end_tenor_code: end,
         curve_role_code: role,
+        market_series_id: PILLAR_SERIES,
         modified_by: 'tenant_admin',
         performed_by: 'tenant_admin',
         change_reason_code: 'system.initial_load',
@@ -142,7 +147,13 @@ async function render(
             error: new Error('the catalogue did not answer'),
         });
     } else {
-        client.setQueryData(['held-market-series'], new Map([[SERIES, URI]]));
+        client.setQueryData(
+            ['held-market-series'],
+            new Map([
+                [SERIES, URI],
+                [PILLAR_SERIES, PILLAR_URI],
+            ]),
+        );
     }
     client.setQueryData(['tenor-catalogue'], { tenors: TENORS, conventions: [], schedules: [] });
     client.setQueryData(['records', CONFIGS, 'all'], [blueprint]);
@@ -304,6 +315,18 @@ describe('the blueprint record page', () => {
         expect(html.indexOf('>1F<')).toBeGreaterThan(-1);
     });
 
+    it('draws each pillar with the market series it names, as its oresmd URI', async () => {
+        const html = await render(`/market-data/curve-blueprints/${blueprint['id']}?tab=pillars`);
+        // The URI is how a series is named everywhere, so the pillar reads in
+        // the panel as the identity it holds and not as a uuid.
+        expect(html).toContain('instrument=ir_swap');
+        expect(html).toContain('Market Series');
+        // No pillar names the curve's own output series: the input of a curve is
+        // a quote series and never the series its points are written to.
+        expect(html).not.toContain('curve_id=USD-SOFR-FOMC');
+        expect(html).not.toContain(PILLAR_SERIES);
+    });
+
     it('draws the id and says the series no longer resolves when the catalogue has lost it', async () => {
         // The cache is seeded, so nothing reads again on mount: a state a test
         // seeded is the state the page draws.
@@ -317,7 +340,13 @@ describe('the blueprint record page', () => {
                 },
             },
         });
-        client.setQueryData(['held-market-series'], new Map([[SERIES, URI]]));
+        client.setQueryData(
+            ['held-market-series'],
+            new Map([
+                [SERIES, URI],
+                [PILLAR_SERIES, PILLAR_URI],
+            ]),
+        );
         // The record names a series the party's catalogue does not hold.
         const orphan = { ...blueprint, output_series_id: 'a9a9a9a9-0000-4000-8000-000000000009' };
         client.setQueryData(['records', CONFIGS, 'key', blueprint['id']], orphan);

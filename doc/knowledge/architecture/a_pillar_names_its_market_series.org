@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:curves:bootstrap:architecture:decision:
 #+created: 2026-10-28
-#+updated: 2026-10-28
+#+updated: 2026-10-29
 
 * Summary
 
@@ -132,8 +132,8 @@ A pillar names the market series it reads. And no runtime identity is an ORE
 key: an internal identity is an oresmd URI and nothing else, and a boundary
 format is an ORE key and lives only in the ORE XML import and export.
 
-The derivation hides a dependency. A curve's input is a fact a person must be
-able to read, and today it is a computation. Naming the series makes the
+The derivation hid a dependency. A curve's input is a fact a person must be able
+to read, and it was a computation. Naming the series makes the
 provenance explicit: the blueprint states its input, the lineage continues to
 record the series each point was built from, and the two can be compared.
 
@@ -187,8 +187,11 @@ while the classifier still speaks ORE. The classifier is last because it is the
 unit that changes stored classification rules, and a mistake there misclassifies
 every series a feed creates.
 
-Until the task lands, the bootstrap derives the series and this page describes
-the target.
+The task has landed. The pillar names its series, the read takes the term it
+derives from the pillar's end tenor, the feed builds its datums from the market
+data model, the classifier is keyed by the oresmd identity, and the codec accepts
+every datum the model admits. The four places /Today/ lists above are the state
+this page replaced.
 
 * What this does not settle
 

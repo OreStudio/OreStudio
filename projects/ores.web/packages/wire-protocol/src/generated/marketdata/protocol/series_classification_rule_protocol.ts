@@ -29,13 +29,15 @@ import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
 
 export interface SeriesClassificationRuleKey {
-    series_type: string;
-    metric: string;
+    instrument: string;
+    quote: string;
+    key_kind: string;
 }
 
 export interface SeriesClassificationRuleWrite {
-    series_type: string;
-    metric: string;
+    instrument: string;
+    quote: string;
+    key_kind: string;
     asset_class_source: string;
     asset_class_code: string | null;
     series_subclass_code: string;

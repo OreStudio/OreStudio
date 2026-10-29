@@ -65,12 +65,12 @@ TEST_CASE("series_classification_rule_reads_back_by_key_until_removed", "[reposi
     const auto r = generate_synthetic_series_classification_rule(ctx);
     repo.write(h.context(), r);
 
-    const auto read = repo.read_latest(h.context(), r.series_type, r.metric);
+    const auto read = repo.read_latest(h.context(), r.instrument, r.quote, r.key_kind);
     REQUIRE(read.size() == 1);
     CHECK(read.front().series_subclass_code == r.series_subclass_code);
 
-    repo.remove(h.context(), r.series_type, r.metric);
-    CHECK(repo.read_latest(h.context(), r.series_type, r.metric).empty());
+    repo.remove(h.context(), r.instrument, r.quote, r.key_kind);
+    CHECK(repo.read_latest(h.context(), r.instrument, r.quote, r.key_kind).empty());
 }
 
 TEST_CASE("market_series_asset_class_pages_the_classes_of_one_series", "[repository]") {

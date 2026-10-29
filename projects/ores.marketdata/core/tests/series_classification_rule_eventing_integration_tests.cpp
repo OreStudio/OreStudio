@@ -120,8 +120,8 @@ TEST_CASE("write_series_classification_rule_publishes_an_event", "[eventing][int
     // a uuid through to_string and a number through std::to_string. The notify
     // trigger emits one entity_id per key column, so a notification belongs to
     // this row only when every key part is in it.
-    const auto id_str = v.series_type;
-    const std::vector<std::string> key_parts = {id_str, v.metric};
+    const auto id_str = v.instrument;
+    const std::vector<std::string> key_parts = {id_str, v.quote, v.key_kind};
     BOOST_LOG_SEV(lg, debug) << "Series Classification Rule: " << v;
 
     series_classification_rule_repository repo;
@@ -150,8 +150,8 @@ TEST_CASE("write_series_classification_rule_publishes_an_event", "[eventing][int
                 auto decoded = ores::nats::default_wire_codec().decode<event_type>(msg.data);
                 // The event carries the row's own key record, so the row under
                 // test is recognised by comparing it with the row written.
-                if (decoded && decoded->key.series_type == v.series_type &&
-                    decoded->key.metric == v.metric)
+                if (decoded && decoded->key.instrument == v.instrument &&
+                    decoded->key.quote == v.quote && decoded->key.key_kind == v.key_kind)
                     received.push_back(msg);
             }
         }
@@ -164,7 +164,7 @@ TEST_CASE("write_series_classification_rule_publishes_an_event", "[eventing][int
         // genuinely broken chain is diagnosable, not a bare empty check.
         const auto final_snapshot = observer.snapshot();
         BOOST_LOG_SEV(lg, error) << "No notification for series_classification_rule " << id_str
-                                 << "/" << v.metric << " after " << max_attempts
+                                 << "/" << v.quote << "/" << v.key_kind << " after " << max_attempts
                                  << " writes; observer received " << final_snapshot.size()
                                  << " message(s) in total";
         for (const auto& msg : final_snapshot)
@@ -177,7 +177,7 @@ TEST_CASE("write_series_classification_rule_publishes_an_event", "[eventing][int
     REQUIRE(received.front().headers.contains(std::string(ores::nats::headers::x_tenant_id)));
     BOOST_LOG_SEV(lg, info) << "Received " << received.size()
                             << " matching NATS notification(s) for series_classification_rule "
-                            << id_str << "/" << v.metric;
+                            << id_str << "/" << v.quote << "/" << v.key_kind;
 
     // 5. CRUD round trip on the same row: update through the
     // repository, read the version history through the service, and
@@ -193,15 +193,15 @@ TEST_CASE("write_series_classification_rule_publishes_an_event", "[eventing][int
         v.change_commentary = "updated-by-crud-round-trip";
         repo.write(crud_ctx, v);
 
-        auto versions = svc.get_rule_history(id_str, v.metric);
+        auto versions = svc.get_rule_history(id_str, v.quote, v.key_kind);
         REQUIRE(versions.size() >= 2);
         REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
 
-        svc.delete_rule(id_str, v.metric);
+        svc.delete_rule(id_str, v.quote, v.key_kind);
         // Delete soft-closes the active row (the instead-of delete
         // rule sets valid_to): the row disappears from latest reads,
         // and the version history keeps every version.
-        REQUIRE_FALSE(svc.get_rule(id_str, v.metric).has_value());
-        REQUIRE(svc.get_rule_history(id_str, v.metric).size() == versions.size());
+        REQUIRE_FALSE(svc.get_rule(id_str, v.quote, v.key_kind).has_value());
+        REQUIRE(svc.get_rule_history(id_str, v.quote, v.key_kind).size() == versions.size());
     }
 }

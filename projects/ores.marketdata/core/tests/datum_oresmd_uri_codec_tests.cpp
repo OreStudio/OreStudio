@@ -129,16 +129,17 @@ std::string random_text(std::mt19937& rng) {
     return out;
 }
 
-/// The datum with @p f holding @p v, if the schema admits it and ORE has a key
-/// for it; a value the ORE key cannot hold is no URI either.
+/// The datum with @p f holding @p v, if the schema admits it. Nothing here asks
+/// whether ORE can spell the result: the URI is the datum's identity, and ORE's
+/// vocabulary is the boundary's business.
 std::optional<market_datum> with(const market_datum& d, field f, value v) {
     std::vector<field_value> fields(d.fields().begin(), d.fields().end());
     for (auto& fv : fields) {
         if (fv.name == f)
             fv.held = std::move(v);
     }
-    auto changed = market_datum::make(d.type(), d.quote(), std::move(fields));
-    if (!changed || !ore_key_codec::write(*changed))
+    const auto changed = market_datum::make(d.type(), d.quote(), std::move(fields));
+    if (!changed)
         return std::nullopt;
     return std::move(*changed);
 }
@@ -182,12 +183,34 @@ TEST_CASE("every_quote_type_ore_admits_round_trips_through_its_uri",
           "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=null&ccy=USD");
 }
 
-TEST_CASE("a_quote_type_no_ore_key_can_name_is_refused", "[marketdata][datum][oresmd_uri_codec]") {
-    const auto uri = oresmd_uri_codec::read(
+TEST_CASE("a_quote_type_no_ore_key_can_name_still_has_a_uri",
+          "[marketdata][datum][oresmd_uri_codec]") {
+    // The URI is the datum's identity and an ORE key is a boundary format, so a
+    // datum ORE has no token for is a datum like any other: it reads, it writes,
+    // and its spelling is its own.
+    const std::string text =
         "oresmd://credit/ACME?type=quote&instrument=hazard_rate&quote=hazard_rate"
-        "&seniority=SNRFOR&ccy=USD&term=5Y");
-    REQUIRE_FALSE(uri);
-    CHECK(uri.error().contains("no ORE key names this datum"));
+        "&seniority=SNRFOR&ccy=USD&term=5Y";
+    const auto datum = oresmd_uri_codec::read(text);
+    REQUIRE(datum.has_value());
+    CHECK(oresmd_uri_codec::write(*datum) == text);
+    // What ORE makes of it is the other codec's question, and the answer here is
+    // that it makes nothing: no key names it.
+    CHECK_FALSE(ore_key_codec::write(*datum).has_value());
+}
+
+TEST_CASE("a_datum_the_schema_admits_and_ore_cannot_spell_is_still_a_uri",
+          "[marketdata][datum][oresmd_uri_codec]") {
+    // A CDS naming no seniority is a datum the row admits: the field may be
+    // none. ORE has no key for it, and that is no longer a reason to refuse the
+    // datum its identity.
+    const std::string text =
+        "oresmd://credit/ACME?type=quote&instrument=cds&quote=credit_spread"
+        "&ccy=USD&doc_clause=XR14&term=5Y";
+    const auto datum = oresmd_uri_codec::read(text);
+    REQUIRE(datum.has_value());
+    CHECK(oresmd_uri_codec::write(*datum) == text);
+    CHECK_FALSE(ore_key_codec::write(*datum).has_value());
 }
 
 TEST_CASE("a_quote_uri_has_the_agreed_shape", "[marketdata][datum][oresmd_uri_codec]") {
@@ -277,7 +300,6 @@ TEST_CASE("the_reader_refuses_a_uri_that_breaks_the_contract",
              base + "&seniority=SNRFOR&ccy=USD&doc_clause=&term=5Y",
              base + "&underlying_name=ACME&seniority=SNRFOR&ccy=USD&term=5Y",
              base + "&seniority=SNRFOR&ccy=USD&term=5X",
-             base + "&ccy=USD&doc_clause=XR14&term=5Y",
              "oresmd://ir/ACME?type=quote&instrument=cds&quote=credit_spread&ccy=USD&term=5Y",
              "oresmd://credit/ACME?type=quote&instrument=CDS&quote=credit_spread&ccy=USD&term=5Y",
              "oresmd://credit/ACME?type=curve&instrument=cds&quote=credit_spread&ccy=USD&term=5Y",

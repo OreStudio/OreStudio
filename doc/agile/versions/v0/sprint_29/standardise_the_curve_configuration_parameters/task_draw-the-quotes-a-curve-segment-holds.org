@@ -26,11 +26,11 @@ A person reads, under each segment, the quotes it bootstraps from: their list, t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Not yet started.                       |
+| Now          | Quotes and their parts are drawn; the entry-level quotes are not. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Close on the pull request once seen in the browser. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -38,13 +38,27 @@ A person reads, under each segment, the quotes it bootstraps from: their list, t
 - A quote's value is read from the element that holds it, not from a column named after an ORE child element.
 - A segment's quotes are drawn under that segment, in the order the document writes them.
 - A composite quote's rate and spread show, and so does the list a quote belongs to.
-- A quote leaf the contract does not document keeps its name and counts as a gap.
+- A quote that states no words of its own, such as a composite quote, shows its rate and spread rather than an empty row.
+- The page names a quote's parts in its own words, because the contract documents the `Quotes` element and not its parts.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Three facts decided the shape.
+
+A quote is not a leaf. It is the text of a `Quote` element, and the element has no
+name of its own: the contract documents `Quotes`, an element, and carries no row
+for what is inside it. Forcing a quote into the leaf shape would have meant a
+leaf whose xpath no document holds, which is the defect the columns already fix
+for the other way round. So a quote is read as its own shape: its list, its text,
+its optional flag, and the rate and spread pair a composite quote states.
+
+Quotes belong to a segment, not to the curve. The collection rule says which
+column joins a quote to a row, so a segment's quotes are the rows that name it,
+in the position order the document writes them.
+
+What is not drawn: the quotes a section attaches to the curve itself rather than
+to a segment, such as an equity curve's. Those are rows of the same table with no
+segment, and they want the entry's own card.
 
 * Measurements
 
@@ -58,9 +72,24 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Quotes a provisioned document held | 420 | `compass sql -- -c "select count(*) from ores_refdata_curve_quotes_tbl where valid_to = ores_utility_infinity_timestamp_fn()"` | f9144787e5 |
+| Quotes that name a segment | 420 | the same, filtered by `curve_segment_id` | f9144787e5 |
+| Quotes the contract documents the parts of | 0 | `compass sql -- -c "select count(*) from ores_reporting_ore_parameters_tbl where xpath like '%/Segments/%Quote%' and valid_to = ores_utility_infinity_timestamp_fn()"` | f9144787e5 |
+| BFF tests | 1144 | `npm run test` in `packages/bff` | f9144787e5 |
+| Browser tests | 2332 | `npm run test` in `packages/web` | f9144787e5 |
 
 * Notes
+
+- *The contract documents the list, not what is in it.* No contract row names a
+  `Quote`, a `RateQuote` or a `SpreadQuote`, so a quote has no leaf to join and no
+  words to read. The page names its parts itself, which is the one place this
+  screen departs from the leaf standard, and the deviation is the contract's.
+- *A quote is a row, not a leaf.* The element has no name of its own: the text is
+  the element's text. Reading it as a leaf would have meant an xpath no document
+  holds, which is the defect the columns already fixed for the other direction.
+- *The corpus is plain quotes.* All 420 quotes a provisioned document holds carry
+  a text and no list, no rate and no spread, so the composite and named-list paths
+  are covered by the tests and not by the data.
 
 * Test Scenarios
 
@@ -83,6 +112,23 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A quote cannot be a leaf: the contract carries no row for `Quote`, `RateQuote` or `SpreadQuote`, so joining it to the contract would show every part as a gap. | curve-configuration.ts | Accept | The quote is its own shape, with the words the screen states, and the task records the deviation rather than hiding it. |
+| 2 | Quotes a section attaches to the curve rather than to a segment are not drawn. | curve-configuration.ts | Deferred | They are rows of the same table with no segment. Filed as part of the collection work still open, not needed for a segment's quotes. |
+| 3 | The corpus holds no composite quote and no named list, so those two paths are tested and not observed. | ores_refdata_curve_quotes_tbl | No change | Said plainly in the notes and the pull request's limitations. |
 
 * Result
+
+A person reading a curve sees, under each segment, the quotes it bootstraps from:
+the text of each quote, the list it sits in, and a mark on the ones ORE may leave
+out, in the order the document writes them.
+
+The BFF reads a segment's quotes by the column the collection rule states, so a
+quote arrives with the segment that holds it and never with another. The page
+draws them under the segment's leaves.
+
+Not seen in the browser, and why: the environment's database was recreated for
+this checkout, and provisioning then stopped — the workflow published the
+`provision_tenant` step and no service consumed it, leaving the tenant in
+`bootstrapping` and the workflow waiting. That is the workflow defect another
+story owns, and it is recorded in `* Measurements`' commit rather than fixed
+here. The evidence is the suites.

@@ -8,12 +8,12 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/map-the-curve-columns-to-their-leaves
-#+pr:
+#+pr: 4065
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,25 +26,59 @@ A curve configuration value outside the set its leaf names is refused on write, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-27                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-29                               |
 
 * Acceptance
 
-- The map names, for each curve table and column, the leaf it holds by schema and XPath, and it is enough for the existing trigger to check the value. The map exists: =generate_curve_section_parameters.py= writes it for the screen, and this task emits it for the trigger from the same source.
-- The trigger is attached to every curve table that holds a checked leaf, generated rather than hand-written.
-- A pgTAP test writes a value outside its set and sees the refusal, and a value inside it and sees the write.
-- A column with no leaf, or a leaf with no set, admits every value, as it does for a convention term.
+1. Every column the curve projection reads from a family table is mapped to the
+   ORE leaf it holds, in a table rather than in a trigger body.
+2. One trigger function reads that map and refuses a value outside the leaf's
+   value set, naming the leaf, the column and the set.
+3. The trigger is attached to every curve family table, and a table the map names
+   but no trigger guards fails the generation rather than passing silently.
+4. The map is generated from the same projection and schema the page's column
+   wiring is generated from, so the database and the screen cannot disagree.
+5. A write of a value outside the set is refused by the database, and a write of
+   an accepted value passes, both proven against a recreated environment.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Option A, generated from the wiring. =generate_curve_section_parameters.py=
+already derives, from the projection and the ORE schema, every family table and
+every column it reads, each with its leaf's ORE name and xpath; the same output
+draws the page's columns. A second script reads that output and writes:
+
+1. a column-to-leaf map, one row per family column, keyed by the entity the
+   trigger names and the column it reads, carrying the schema and the xpath;
+2. the guard function, which resolves a column's leaf to its value set by xpath
+   and asks =ores_reporting_value_in_set_fn=, exactly as the convention guard
+   does for a term;
+3. one trigger per family table, installed by a block that fails when a table the
+   map names does not exist, so an entity cannot be left unguarded.
+
+The definition table is not guarded: its two leaves are the curve's identifier and
+description, which every section shares and whose set is free text. The map says
+so once rather than the guard special-casing it.
+
+The table name of each entity is the one thing the projection does not state, so
+the generator takes it from the same place codegen does — the model's
+=:tablename:= — and the check fails when a mapped entity has no model. Reading it
+from a second source is what stops the guard drifting from the schema.
+
+Three things follow from that shape:
+
+- The map is emitted for the trigger from the source the screen's wiring already
+  uses, so the database and the page cannot disagree about which leaf a column
+  holds.
+- The trigger is generated and attached to every curve table the projection reads
+  a checked leaf from, rather than hand-written per table.
+- A pgTAP test writes a value outside its set and sees the refusal, and a value
+  inside it and sees the write.
 
 * Measurements
 
@@ -58,18 +92,52 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Curve columns in the map | 212 | =python3 projects/ores.sql/utility/generate_curve_column_guards.py --check= | b47207f585 |
+| Curve family tables guarded | 19 | =compass sql -- -c "select count(distinct table_name) from ores_refdata_curve_configuration_columns_tbl where valid_to = ores_utility_infinity_timestamp_fn()"= | b47207f585 |
+| Mapped columns whose leaf the contract documents | 148 | the same count over the join to =ores_reporting_ore_parameters_tbl= on schema and xpath | b47207f585 |
+| Mapped columns whose leaf the contract does not document | 64 | the same count, inverted | b47207f585 |
+| pgTAP assertions on the guard | 8 | =projects/ores.sql/test/run_tests.sh $PWD/projects/ores.sql/test/refdata_curve_configuration_columns_validate_test.sql= | b47207f585 |
+| Stored curve rows the guard accepts | 35 | an update of every guarded table to itself, in a transaction, rolled back | b47207f585 |
 
 * Notes
+
+- *The guard exists; only the map is missing.* =ores_reporting_value_in_set_fn=
+  is the one rule, used by the pricing parameter guard and the convention term
+  guard. This task adds the curve's map and its trigger, not a second rule.
+- *The write path already refuses at the boundary.* The curve save checks each
+  value against the leaf's choices, bounds and pattern before it writes
+  (task CA40C9B0). That stays: the boundary gives the person a sentence on the
+  field, and the database gives every other writer the same refusal.
+- *What the map cannot cover yet.* A segment's leaves are not drawn and their
+  documentation covers 22 of the forty-odd a segment holds, so the segment,
+  quote and bootstrap columns are mapped only once task 894F3A64 draws them.
+  The map states what the projection reads today; a column added later is a
+  regeneration, and the check fails when the map and the projection disagree.
+- *The map outruns the contract.* 212 columns map to a leaf; 148 of them resolve
+  to a parameter row, and the other 64 name leaves the ORE parameter documentation
+  does not carry yet — =DefaultCurve/DayCounter= and =DefaultCurve/Type= among
+  them. A column whose leaf has no documented set admits every value, which is the
+  same rule a convention term with no set follows. The number is measured in
+  =* Measurements= so the gap cannot close or widen without someone seeing it.
+- *One trigger name for every table.* Naming the table in the trigger made the
+  longest name, =ores_refdata_inflation_cap_floor_volatility_configs_curve_values_trg=,
+  overflow PostgreSQL's 63-byte identifier and be cut down to fit. A trigger name
+  is scoped to its table, so one name serves all of them and never truncates.
+- *The guard reads its map as the table owner.* The function is =security definer=
+  and its owner is the table owner, so the tenant policy does not hide the map
+  from it. If a create tree were ever run by a role that does not own those
+  tables, the guard would find no map rows and admit every value — the same
+  dependency the convention term guard has.
 
 - *The map is already generated.*
   [[id:FCD8EE04-D549-45B2-AE29-8C5FBBC66B74][The page task]] had to join every
   column to its leaf to read a value, so it built
   =generate_curve_section_parameters.py=, which reads
   =curve_configuration_projection.cpp= and checks every element against
-  =curveconfig.xsd=. It maps 250 columns of 22 tables across the 19 sections.
-  This task emits the same map as the trigger's table and attaches the trigger;
-  it does not re-derive the mapping by hand.
+  =curveconfig.xsd=. It derives 250 parameter rows over the 19 sections, which
+  are 214 distinct entity-and-column pairs over 20 entities. This task emits the
+  same derivation as the trigger's table and attaches the trigger; it does not
+  re-derive the mapping by hand.
 
 * Test Scenarios
 
@@ -86,12 +154,47 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4065][#4065]] | [refdata] Guard a curve column with the set its leaf names |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The trigger name repeats the table name inside a scope that is already the table, so the longest name overflows PostgreSQL's 63-byte identifier and is silently truncated. | refdata_curve_configuration_columns_validate_create.sql | Accept | One name, =ores_refdata_curve_values_trg=, serves every table; the create and the drop both read it from one constant. Verified: 19 triggers, no truncation notice on the recreate. |
+| 2 | Two entities that shared a table would leave one of them unguarded, because the trigger carries one entity's name. | generate_curve_column_guards.py | Accept | The generator refuses a table two entities claim. Today the map is 1:1 over 19 tables. |
+| 3 | The guard has no drop, so nothing could take it off again. | refdata_curve_configuration_columns_validate_drop.sql | Accept | The generator writes the drop and the drop tree includes it. Exercised on the environment: install, drop, install, 19 triggers each time. |
+| 4 | Nothing fails when the map, the guard or the drop stops being the projection's. | local_checks.py | Accept | A =curve-column-guards= check runs the generator's =--check=, with every input named so an edit to any of them alone runs it. |
+| 5 | The guard's cursor selects a column it never reads. | refdata_curve_configuration_columns_validate_create.sql | Accept | The select carries the column name and the set code only. |
+| 6 | 64 of the 212 mapped columns name leaves the ORE parameter documentation does not carry, so they pass every value. | ores.parameters | No change | The contract gap is the story's, not this task's: =DefaultCurve/DayCounter= and =DefaultCurve/Type= are undocumented today. A column with no documented leaf admits every value, as a convention term with no set does. The count is a measurement so the gap is visible. |
+| 7 | On a database whose contract is not yet published, the guard finds no parameters and passes everything. | refdata_curve_configuration_columns_validate_create.sql | No change | The contract arrives with provisioning, after the populate that writes curve rows, so failing closed would break the import. The pgTAP test publishes the contract before it asserts anything, which is what makes the assertion mean something. |
+| 8 | The guard reads its map as the definer; if the definer stopped owning those tables, the tenant policy would hide the map and the guard would pass everything. | refdata_curve_configuration_columns_validate_create.sql | No change | The function is =security definer= and its owner is the table owner, so the policy does not apply to it — checked against =pg_proc= and =pg_class= on the environment. The convention term guard has the same dependency, so changing it here alone would make the two disagree. |
+| 9 | No manual QA scenario is recorded for the refusal. | projects/ores.sql | No change | The refusal is a database rule with a pgTAP test, so a person has no separate journey to walk; the screen's own refusal is tested in the page task (CA40C9B0). |
 
 * Result
+
+A curve value outside the set of the ORE leaf its column holds is refused where it
+is written. Every column the curve projection reads from a family table is one row
+in =ores_refdata_curve_configuration_columns_tbl=, naming the entity, the column,
+the table and the leaf's xpath. One trigger function resolves a column's leaf to
+the value set the contract links it to and asks =ores_reporting_value_in_set_fn=,
+the rule a product parameter and a convention term already meet; one trigger per
+family table carries it.
+
+Both files are generated from the derivation that draws the page's columns, so the
+store and the screen cannot disagree, and the generator refuses a table two
+entities claim or an entity with no model. The check runs those three files against
+the projection, and the guard's drop is generated with them.
+
+Against the running environment: 212 columns map to their leaves across 19 family
+tables, and 148 of them resolve to a parameter row. A pgTAP test writes a curve
+with a currency outside the catalogue and sees the refusal naming the column and
+the set, on insert and on update; writes a currency inside it and sees the write;
+writes a column the map does not name and sees it pass. It also holds the two
+directions of the map-and-trigger pairing: every table the map names is guarded,
+and no table is guarded without a row in the map. Every stored curve row — 35
+yield curves — passes the guard when rewritten to itself.
+
+What the guard does not cover, recorded so it is not mistaken for coverage: 64 of
+the mapped columns name leaves the ORE parameter documentation does not carry yet,
+so those admit every value until the contract documents them; the segment, quote
+and bootstrap columns are not in the map at all until task 894F3A64 draws them.

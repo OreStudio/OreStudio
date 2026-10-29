@@ -1,0 +1,185 @@
+:PROPERTIES:
+:ID: 1E035C4E-119B-472E-96FA-310D8B7C7CD8
+:END:
+#+title: Investigation: The book of a structure
+#+description: Must the trades under a structure share one book? What the model, the standards and the vendor systems say, and what the blotter tree should do when they do not.
+#+type: investigation
+#+level: s1
+#+filetags: :trade-blotter-remaining:sprint_29:v0:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into Must the trades under a structure share one book? What the model, the standards and the vendor systems say, and what the blotter tree should do when they do not..
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+The merged blotter draws a portfolio tree on the left and a trade list beside it,
+and its rows are the top-level trades and the structures. A row must sit under the
+book its trades belong to. A trade has a book; a structure does not. The
+[[id:5057B9A6-66F0-4E4E-967F-DF915809DF3E][merge task]] therefore asked whether
+all trades under a structure must share a book.
+
+The question has two halves. The first is whether the rule is true of real
+systems, which decides whether we are matching the market or inventing an
+invariant. The second is what the tree does when the rule does not hold, which
+decides whether the screen can rely on the book at all.
+
+* Methodology
+
+Three bodies of evidence:
+
+- *Our own model.* What the trading tables enforce today, and what the domain
+  pages already say about a trade's book, a book move, and nested trade sets.
+- *The standards.* FpML, which models the commercial act and the account but
+  never a book, and the composition ladder this repository already follows.
+- *The vendor systems.* What Murex and Nasdaq Calypso publish about where a
+  structured product sits and what a book is for.
+
+The population was measured on the provisioned environment with the queries in
+*What the data does*, which also states what the store does not enforce.
+
+* Paths taken
+
+** What our own model says
+
+The trading tables enforce the party of a structure's legs and nothing else about
+them. A trade's book lives on =trade_bookings=, which is a part of the trade, and
+a structure holds no book column at all.
+
+Three pages in the tree already state the rule from the other side:
+
+- [[id:80760020-5896-4C1C-805D-87B93982F0C0][Nested trade sets]]: "A trade is in one
+  book, faces one counterparty, sits in one netting set, and belongs to at most
+  one structure." The book is part of the trade's address; the structure is a set
+  the trade belongs to. Nothing there says two legs of one structure share an
+  address.
+- [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]]: a trade moves between
+  books when the two books share a legal entity, a branch, a regulatory book and
+  an accounting classification. The boundaries that forbid a move are entity,
+  branch, regulatory book and accounting classification. The structure is not one
+  of them, so a single leg of a structure can move to another book without the
+  structure being involved.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]:
+  the structure is the customer's commercial unit; the ledger and the netting
+  engine "need the leaves, not the container".
+
+** What the data does
+
+Every structure in the provisioned population has its legs in one book, and
+nothing required it:
+
+#+begin_src sql
+-- Structures, and how many books their legs span.
+with books as (
+  select s.id, count(distinct b.book_id) as books
+  from ores_trading_structures_tbl s
+  join ores_trading_structure_members_tbl m
+    on m.structure_id = s.id and m.valid_to = ores_utility_infinity_timestamp_fn()
+  join ores_trading_trade_bookings_tbl b
+    on b.trade_id = m.trade_id and b.valid_to = ores_utility_infinity_timestamp_fn()
+  where s.valid_to = ores_utility_infinity_timestamp_fn()
+  group by s.id)
+select books, count(*) from books group by books order by books;
+#+end_src
+
+The answer is one row: 22 structures, each spanning exactly one book. The
+population generator books a structure's legs together, so the data cannot tell a
+rule from a habit.
+
+** What the standards say
+
+FpML, which is the standard this repository follows for the composition ladder,
+has no concept of a book. It carries a =trade=, its party identifiers, its product
+and its allocations. The book is an internal management and accounting dimension,
+so a market-wide rule about a structure's book cannot come from the standard at
+all.
+
+Its two composition mechanisms answer the neighbouring question:
+
+- [[https://cdn.fpml.org/spec/fpml-5-12-4-rec-1/html/confirmation/schemaDocumentation/schemas/fpml-doc-5-12_xsd/elements/strategy.html][=strategy=]] is a *product*: it substitutes for =product= and holds the legs as
+  =product+=. The legs of a strategy are not separate trades with their own books;
+  they are parts of one product inside one trade.
+- [[https://schemas.liquid-technologies.com/FpML/5.10/tradepackage4.html][=tradePackage=]] is "a bundle of trades collected together into a single unit for
+  reporting", and it carries =allocations=: "the key block economics are stated
+  once within the trade structure, and the allocation data is contained in this
+  allocations structure". A package is therefore *designed* to be split across
+  accounts after execution.
+
+That is the strongest evidence against the rule as an invariant. The container
+FpML defines for a bundle of trades has an allocation as a first-class child, and
+an allocation is exactly the act of putting the same economics into several
+accounts or books.
+
+* Conclusions
+
+** The rule is a booking convention, not an invariant
+
+In a front-office system a structure is normally booked into one book at
+execution, because the book is who owns the P&L and the trader's risk, and the
+package is one commercial act. That is a convention about how desks work, not a
+property the economics require, and the systems that support allocation are
+built to break it: a block trade is executed once and allocated to several
+accounts, and FpML puts that allocation inside the package itself.
+
+What the industry does enforce, and what our model already enforces, is the legal
+entity. A trade sits on one entity's balance sheet, and a move across entities is
+a close-out and a rebook. The counterparty and the netting set are the next
+strongest, because credit exposure is measured per counterparty and per netting
+agreement, not per book.
+
+A book is the *accounting and management* unit: [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]] shows that the only
+things that pin a trade to a book are the entity, the branch, the regulatory book
+classification and the accounting classification. A structure spans no such
+boundary by construction, because its legs share a party today.
+
+** So the tree cannot rely on the book to place a structure**
+
+If the blotter's tree must place each structure row under one book, it needs a
+rule. There are three, and only the third is honest:
+
+1. *Enforce one book per structure.* It makes the tree simple and it is wrong: it
+   forbids allocation, it forbids moving one leg, and it states a rule the
+   economics do not have. It is also a booking rule, so it belongs in the store
+   and not in a screen, which would make the same mistake as the party-only
+   counterparty rule in reverse.
+2. *Put the structure in the book of its first leg.* It hides the disagreement
+   and puts a structure in a book that may hold none of its risk.
+3. *Place the structure at the lowest common ancestor of its legs' books.* One
+   book places it under that book, which is the common case and needs no special
+   drawing. Books under one desk place it under that desk. Anything wider places
+   it under the portfolio. The structure row states that it spans, so a reader
+   knows the placement is a summary and not a fact about one book.
+
+The flat option is unaffected: it draws leaves, and every leaf has one book.
+
+* Recommendations
+
+- *Do not enforce one book per structure.* It is not a rule of the market, it is
+  not a rule of our model, and it would forbid allocation and book moves that the
+  rest of the tree already allows.
+- *Place a structure at the lowest common ancestor of its legs' books*, and state
+  on the row that it spans books when it does. The common case is one book and
+  draws exactly as it does today.
+- *Keep the flat option*, which removes the question for a reader who is reading
+  leaves.
+- *Decide the invariant that does matter.* The party is enforced; the counterparty
+  and the netting set are stated but not enforced. If a rule is wanted, it is one
+  of those, and it belongs in the store with a refusal that names it, not in a
+  screen.
+- *Record the durable conclusion* on
+  [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]
+  or [[id:80760020-5896-4C1C-805D-87B93982F0C0][Nested trade sets]] once the
+  blotter's design is settled, because this page is a snapshot.
+
+* See also
+
+- [[id:5057B9A6-66F0-4E4E-967F-DF915809DF3E][Merge the trades and structures screens]] — the task that asked the question.
+- [[id:80760020-5896-4C1C-805D-87B93982F0C0][Nested trade sets]] — membership as identity, and the test that separates the two kinds of set.
+- [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]] — what pins a trade to a book.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the composition ladder, and the ledger's need for leaves.
+- [[https://cdn.fpml.org/spec/fpml-5-12-4-rec-1/html/confirmation/schemaDocumentation/schemas/fpml-doc-5-12_xsd/elements/strategy.html][FpML strategy element]]
+- [[https://schemas.liquid-technologies.com/FpML/5.10/tradepackage4.html][FpML TradePackage, with its allocations]]
+- [[https://www.murex.com/en/solutions/business-solutions/sales-trading][Murex MX.3 sales and trading]] — books and counterparties as perspectives over one position.
+- [[https://calypsoeducation.nasdaq.com/courses/1010-structured-flows][Calypso Structured Flows]]

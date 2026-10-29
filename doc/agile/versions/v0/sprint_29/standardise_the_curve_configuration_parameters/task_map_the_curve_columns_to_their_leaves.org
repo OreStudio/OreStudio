@@ -30,7 +30,7 @@ A curve configuration value outside the set its leaf names is refused on write, 
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Task 894F3A64 draws the segment and quote leaves, so the map can cover them. |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance

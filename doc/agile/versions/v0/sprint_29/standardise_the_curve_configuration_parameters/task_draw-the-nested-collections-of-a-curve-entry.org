@@ -7,41 +7,67 @@
 #+level: s1
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on: Document the curve segment and quote leaves
-#+blocked_since: 2026-10-29
+#+branch: feature/draw-the-nested-collections-of-a-curve-entry
+#+pr: 4073
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A curve that holds segments shows them, each segment with the leaves the contract
+documents for its kind, instead of naming the block and stopping there.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | STARTED                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:F356BCF2-332B-406A-BEAA-036425E5E8C8][Document the curve segment and quote leaves]] |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-27                               |
+| Now          | The segments are drawn; the quotes are the next slice. |
+| Waiting on   | Nothing.                               |
+| Next         | Draw a segment's quotes, whose value is the element itself. |
+| Last touched | 2026-10-29                               |
 
 * Acceptance
 
--
+- A curve that holds segments draws one card per segment, naming the kind the row states, with the leaves the contract documents for that kind.
+- A segment leaf the contract does not document shows its ORE name and is marked as a gap, as the standard requires of an entry's leaf.
+- A leaf's path carries the kind the row states, because the contract keys the same column under a different kind's element.
+- A row that belongs to another curve is not drawn with this one.
+- The block badge row no longer names a block the page draws rows of, so nothing is said twice.
+- Reading a collection holds no table that names a segment's leaves: the contract is the only source of them.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The limit that shaped this. The generated section wiring covers an entry's own
+table, where a column sits at a fixed path. A segment does not: the same column
+is =Segments/Simple/ProjectionCurve= for a simple segment and
+=Segments/AverageOIS/ProjectionCurve= for an average OIS one, so the path depends
+on the kind the row states, and the wiring cannot express it. This task therefore
+states the collection rules in the BFF — the element, the table, the vector, the
+column that joins a row to its entry and the column that names its kind — and
+resolves each leaf's path from the kind. Making the generator derive those rules
+from the projection is the follow-up that removes the last hand-written table.
+
+1. *Read the rows.* The document already carries its segments; the BFF filters
+   them to the entry's and orders them as the document writes them.
+2. *Name each leaf.* The column is the projection's member, and the projection
+   names each element as the member's words in camel case, so the leaf's ORE name
+   follows from the column and its path from the kind. A column the contract has
+   no row for keeps its name on screen and shows as a gap, because a gap in the
+   data must be visible.
+3. *Draw them.* One card per segment under the parameters, its leaves in the same
+   row as an entry's, with the same documentation under them. The block badge row
+   drops a block the cards draw, so the page does not say it twice.
+
+Editing stays out. The standard changes a collection in a dialog per row, and the
+save path already takes the entity, the row and the column a dialog would send.
 
 * Measurements
 
@@ -55,9 +81,22 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Segment leaves the published contract carries | 26 | `compass sql -- -c "select count(*) from ores_reporting_ore_parameters_tbl where xpath like '%/Segments/%' and valid_to = ores_utility_infinity_timestamp_fn()"` | a1b5909d37 |
+| Segment kinds the type table maps | 42 rows, 12 kinds | `compass sql -- -c "select count(*), count(distinct segment_kind) from ores_refdata_curve_segment_types_tbl where valid_to = ores_utility_infinity_timestamp_fn()"` | a1b5909d37 |
+| Browser tests | 2331 | `npm run test` in `packages/web` | 70ee3c0d5d |
+| BFF tests | 1144 | `npm run test` in `packages/bff` | 70ee3c0d5d |
 
 * Notes
+
+- *A collection's path is not an entry's path.* That is the whole reason the
+  wiring stops at the entry: a leaf's xpath depends on the kind the row states.
+  The rules live in the BFF until the generator can read them out of
+  =import_segments=, which reads each kind in its own loop.
+- *Quotes are not leaves of the same shape.* A quote's value is the =Quote=
+  element's own text, not a named child element, and its list element varies by
+  segment kind. Drawing them wants its own decision, so they stay badges for now.
+- *The gap rule holds.* =PillarChoice= is a segment leaf with no contract row, and
+  it draws with its ORE name and counts as a gap, as an entry's leaf does.
 
 * Test Scenarios
 
@@ -74,12 +113,42 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4073][#4073]] | [web] Draw the segments a curve entry holds |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The collection rules are a hand-written table in the BFF, which the repo's own rule says should be generated from the projection. | curve-configuration.ts | Deferred | The generator's wiring has no shape for a leaf whose path depends on the kind the row states, and the element-to-kind map it would read already exists as `segment_kind` on the type table. Filed as the next slice. |
+| 2 | Quotes are not drawn, so a segment shows its scalar leaves and not the instruments it bootstraps from. | curve-configuration.ts | Deferred | A quote's value is the `Quote` element's own text, not a named child, and its list element varies by kind. Drawing them wants a shape of its own. |
+| 3 | The segment's role curves -- `curve_segment_curves`, which carry `IndexCurve` and the rest -- are not drawn. | curve-configuration.ts | Deferred | Same slice as the quotes: they are rows of a collection under a segment, not leaves of it. |
+| 4 | A leaf's ORE name is derived from the column by camel case, which is a convention the generator could disagree with. | curve-configuration.ts | Accept | The BFF test pins the leaves a deposit segment carries, and a name the contract does not hold shows as a gap rather than disappearing, so a drift is visible. Generating the names is the fix the first row names. |
+| 5 | The page draws the segment rows but cannot change them. | CurveConfigurationPage.tsx | No change | The standard changes a collection in a dialog per row. That is a slice of its own; the save path already takes what such a dialog sends. |
+| 6 | The row states its ORE `Type` value (`Deposit`, `Average OIS`), and the collection built the path from it, so every leaf asked for `/Segments/Deposit/...`, which the contract does not hold. | curve-configuration.ts | Accept | The kind is the element the type maps to (`Simple`), read from `curve_segment_type`; the fixture now states `Deposit` and a type table, so the test could not pass on data the system cannot produce. |
+| 7 | Every column of the row's flat table became a leaf, so a simple segment drew the thirty columns of twelve kinds, mostly empty. | curve-configuration.ts | Accept | A column is a leaf of the row's kind when the contract documents it for that kind, or when the row holds a value: nothing a person set is hidden, and another kind's empty column is not drawn. |
+| 8 | A collection the section declares was dropped when it had no rows, against "a collection with no rows says so". | curve-configuration.ts | Accept | A collection is drawn when the section's wiring names it as a block, whether or not it has rows; one the section never declares is not drawn. |
+| 9 | An empty kind built `.../Segments//X`, so every leaf quietly reported undocumented. | curve-configuration.ts | Accept | A row whose type the table does not map has no leaves rather than a path that cannot exist. |
+| 10 | The gap count and the bulk documentation toggle covered the entry's leaves and not its rows'. | CurveConfigurationPage.tsx | Accept | Both cover every leaf the entry draws. |
+| 11 | `'{count} rows'` was interpolated with the singular form, so one row read "1 rows". | locales | Accept | The rows count goes through the plural rules, with `one` and `other` forms in all three locales. |
+| 12 | `collections` was required in the screen's schema, so a screen deployed ahead of the server failed the whole page. | api/curveConfiguration.ts | Accept | The field defaults to no collections. |
+| 13 | The badge row's "not recorded here" lost its only test. | screens.test.tsx | Accept | The fixture carries a block the section declares and the curve does not state, and the test asserts the words again. |
 
 * Result
+
+A curve that holds segments draws them. Each segment is a card under the curve's
+parameters, naming the kind the row states, with the leaves the contract
+documents for that kind in the same row, at the same documentation depth, as the
+curve's own leaves. The badge row no longer repeats a block the cards draw.
+
+What the work turned on: a segment's leaves do not sit at a fixed path. The same
+column is one leaf for a simple segment and another for an average OIS one, so
+the path follows the kind the row states, which the generated wiring cannot
+express. The BFF states the collection rules and resolves each leaf under its
+kind; a leaf the contract does not hold keeps its name and counts as a gap.
+
+Verified by the suites, not by the browser: 1144 BFF tests and 2331 browser
+tests pass, and both packages typecheck. The environment runs the published
+build, so seeing the cards needs a rebuild, which this change does not do.
+
+The rest of the collection work is three slices, recorded in the review: generate
+the rules from the projection, draw a segment's quotes, and draw its role curves.

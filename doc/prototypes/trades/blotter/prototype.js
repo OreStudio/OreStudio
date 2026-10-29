@@ -263,8 +263,6 @@ function renderList() {
         const other = cpty(r.cp);
         const tds = [
             h('td', { class: 'mono' }, h('a', { href: hrefOf(r), 'data-text': r.id }, r.id),
-                r.kind === 'structure' ? h('span', null, ' ', chip(Noun(DEALS[r.id].kind), 'acc')) : null,
-                r.kind === 'structure' ? h('span', null, ' ', chip(r.leaves.length + ' leg' + (r.leaves.length === 1 ? '' : 's'), '', 'The legs it holds. They are inside it, not rows of this list.')) : null,
                 r.spans ? h('span', null, ' ', chip('spans books', 'warn', 'Its legs are booked in more than one book. It sits at the node that holds them all.')) : null),
         ];
         if (flat) tds.push(h('td', { class: 'mono faint' }, r.structure || '—'));

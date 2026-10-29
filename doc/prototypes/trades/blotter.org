@@ -51,8 +51,9 @@ so it sits at the party and carries the chip.
 ** The list
 
 The rows are the top-level trades and the whole structures. A structure's legs are
-never rows of it: they are inside the structure, and the structure row carries a
-chip saying how many legs it holds. The columns are the identifier, what it is, the book, the
+never rows of it: they are inside the structure. The row states the structure's
+kind, and the one chip it carries is *spans books*, when its legs are booked in
+more than one book. The columns are the identifier, what it is, the book, the
 counterparty, the trade date, the state and the external version, and a count of
 legs for a structure. A structure has no state and no external version, and the
 cells say so rather than borrowing one leg's.

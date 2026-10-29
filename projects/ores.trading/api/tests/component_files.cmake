@@ -28,6 +28,7 @@ set(files
     "domain_instrument_tests.cpp"
     "domain_lifecycle_event_tests.cpp"
     "domain_party_role_type_tests.cpp"
+    "domain_rate_instruments_tests.cpp"
     "domain_trade_economic_digest_tests.cpp"
     "domain_trade_id_type_tests.cpp"
     "domain_trade_identifier_tests.cpp"

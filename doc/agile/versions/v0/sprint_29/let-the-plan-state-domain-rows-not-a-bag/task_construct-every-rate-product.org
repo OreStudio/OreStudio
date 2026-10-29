@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: 6B662C92-C3ED-437C-8EDF-68FCF351A86C
+:END:
+#+title: Task: Construct every rate product by name
+#+description: Eight rate products are drawn from one terms bag and translated into a header row plus fact rows by a writer arm several hundred lines long. Give each product a constructor that states its own facts, and let the writer hand over what it is given.
+#+type: task
+#+level: s1
+#+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
+#+owner: marco
+#+branch: feature/construct-every-rate-product
+#+pr: 4044
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every routed rate product the planner draws is constructed by a function that names it, and the writer no longer translates a rate trade.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-29                               |
+
+* Acceptance
+
+- One constructor per rate product the planner draws, with the trade type fixed by it.
+- The terms hold only the facts each product states, and the closed vocabularies are refused at construction.
+- The writer appends the constructed rows and assembles no rate product.
+- A provisioning run books the same eight rate products with the same row counts, and the suites are green.
+
+* Plan
+
+A rates product is a header, two legs and one fact row, and the header states
+no trade type: every code routes to one table, so the fact row is the
+product's own statement. =rate_product= therefore carries a =std::variant= of
+the eight fact rows, and each constructor produces exactly one alternative, so
+the legs and the fact cannot disagree about what the trade is.
+
+The writer keeps the choice of constructor, because something has to read the
+recorded trade type, and loses the leg building, the per-product branches and
+the field-by-field copy.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Rate headers, legs, amounts, rates | 24, 48, 48, 48 | =compass db sql= on the rate and leg tables | =4d23ae5159= |
+| Strikes, swap facts, FRAs, caps, swaptions | 3, 6, 3, 3, 3 | the same | =4d23ae5159= |
+| Products booked | 8, three trades each | the same, grouped by trade type | =4d23ae5159= |
+| =ores.trading.api.tests= | 518 assertions in 138 test cases | the suite binary | =4d23ae5159= |
+| =ores.synthetic.core.tests= | 1741 assertions in 79 test cases | the suite binary | =4d23ae5159= |
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4044][#4044]] | [trading] Construct every rate product by name |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Every rate product the planner draws is constructed by a function that names
+it. The writer no longer builds legs or branches per product: it fills the
+terms, calls the constructor, stamps the audit columns and appends what it is
+given.
+
+Proved by a provisioning run on a recreated database, against a baseline taken
+from the previous build: the population is identical on every count -- 24
+headers, 48 legs, 48 amounts, 48 rates, 3 strikes, 6 vanilla swap facts, 3
+FRAs, 3 caps and 3 swaptions, over the same eight products at three trades
+each.
+
+The suites are green: =ores.trading.api.tests= at 518 assertions in 138 test
+cases with eight new rate cases, and =ores.synthetic.core.tests= at 1741
+assertions in 79.
+
+* What the constructors now refuse that nothing did before
+
+- a leg without a currency, a day count, a business day convention or a
+  payment frequency;
+- a floating leg without an index;
+- a rate product whose legs state no positive notional;
+- a cross currency swap whose legs state the same currency;
+- a cap or floor with no strike, which previously booked and paid nothing;
+- a knock out swap whose barrier type is outside ORE's closed set;
+- a swaption without an expiry, or with an exercise or settlement type the
+  table refuses.

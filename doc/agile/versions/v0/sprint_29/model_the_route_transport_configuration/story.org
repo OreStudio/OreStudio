@@ -8,7 +8,7 @@
 #+filetags: :marketdata:publishers:suppliers:sessions:feeds:configuration:sprint_29:v0:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -24,7 +24,7 @@ session and a production session of one supplier differ without a redeploy.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -49,7 +49,7 @@ session and a production session of one supplier differ without a redeploy.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:D6076124-A427-4DCC-B018-A2992AA13CB3][Prototype the sources and adapters screens]] | BACKLOG | | | The sources list, the adapters list and a source record with its transport, drawn before the entity changes. |
+| [[id:D6076124-A427-4DCC-B018-A2992AA13CB3][Prototype the sources and adapters screens]] | STARTED | 2026-10-29 | | The sources list, the adapters list and a source record with its transport, drawn before the entity changes. |
 
 * Decisions
 

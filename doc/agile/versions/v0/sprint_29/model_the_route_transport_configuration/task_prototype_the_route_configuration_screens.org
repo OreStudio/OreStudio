@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata:publishers:suppliers:sessions:feeds:prototype:model_the_route_transport_configuration:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/run-the-public-sources-from-the-official-rates-screen
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Persist the adapter transport on the source]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,7 +29,7 @@ schedule.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Persist the adapter transport on the source]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

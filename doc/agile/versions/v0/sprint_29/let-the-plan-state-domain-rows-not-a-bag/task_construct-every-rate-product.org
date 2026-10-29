@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Every routed rate product the planner draws is constructed by a function that na
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,15 @@ Every routed rate product the planner draws is constructed by a function that na
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+A rates product is a header, two legs and one fact row, and the header states
+no trade type: every code routes to one table, so the fact row is the
+product's own statement. =rate_product= therefore carries a =std::variant= of
+the eight fact rows, and each constructor produces exactly one alternative, so
+the legs and the fact cannot disagree about what the trade is.
+
+The writer keeps the choice of constructor, because something has to read the
+recorded trade type, and loses the leg building, the per-product branches and
+the field-by-field copy.
 
 * Measurements
 
@@ -58,6 +64,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Rate headers, legs, amounts, rates | 24, 48, 48, 48 | =compass db sql= on the rate and leg tables | =4d23ae5159= |
+| Strikes, swap facts, FRAs, caps, swaptions | 3, 6, 3, 3, 3 | the same | =4d23ae5159= |
+| Products booked | 8, three trades each | the same, grouped by trade type | =4d23ae5159= |
+| =ores.trading.api.tests= | 518 assertions in 138 test cases | the suite binary | =4d23ae5159= |
+| =ores.synthetic.core.tests= | 1741 assertions in 79 test cases | the suite binary | =4d23ae5159= |
 |      |       |         |        |
 
 * Notes
@@ -86,3 +97,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every rate product the planner draws is constructed by a function that names
+it. The writer no longer builds legs or branches per product: it fills the
+terms, calls the constructor, stamps the audit columns and appends what it is
+given.
+
+Proved by a provisioning run on a recreated database, against a baseline taken
+from the previous build: the population is identical on every count -- 24
+headers, 48 legs, 48 amounts, 48 rates, 3 strikes, 6 vanilla swap facts, 3
+FRAs, 3 caps and 3 swaptions, over the same eight products at three trades
+each.
+
+The suites are green: =ores.trading.api.tests= at 518 assertions in 138 test
+cases with eight new rate cases, and =ores.synthetic.core.tests= at 1741
+assertions in 79.
+
+* What the constructors now refuse that nothing did before
+
+- a leg without a currency, a day count, a business day convention or a
+  payment frequency;
+- a floating leg without an index;
+- a rate product whose legs state no positive notional;
+- a cross currency swap whose legs state the same currency;
+- a cap or floor with no strike, which previously booked and paid nothing;
+- a knock out swap whose barrier type is outside ORE's closed set;
+- a swaption without an expiry, or with an exercise or settlement type the
+  table refuses.

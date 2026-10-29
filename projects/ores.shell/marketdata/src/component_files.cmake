@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "app/commands/marketdata/adapter_commands.cpp"
     "app/commands/marketdata/adapter_status_commands.cpp"
     "app/commands/marketdata/composite_commands.cpp"
     "app/commands/marketdata/composite_input_commands.cpp"
@@ -43,10 +44,12 @@ set(files
     "app/commands/marketdata/series_classification_rule_commands.cpp"
     "app/commands/marketdata/subscription_commands.cpp"
     "app/commands/marketdata/subscription_interval_commands.cpp"
+    "app/commands/marketdata/supplier_commands.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/adapter_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/adapter_status_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/composite_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/composite_input_commands.hpp"
@@ -70,5 +73,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/series_classification_rule_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/subscription_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/subscription_interval_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/supplier_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/ores.shell.marketdata.hpp"
 )

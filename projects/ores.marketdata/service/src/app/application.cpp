@@ -38,6 +38,7 @@
 #include "ores.marketdata.service/messaging/adapter_status_handler.hpp"
 #include "ores.marketdata.service/messaging/approval_gated_curve_publish_handler.hpp"
 #include "ores.marketdata.service/messaging/bill_handler.hpp"
+#include "ores.marketdata.service/messaging/adapter_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/composite_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/composite_input_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/crm_handler.hpp"
@@ -58,6 +59,7 @@
 #include "ores.marketdata.service/messaging/series_classification_rule_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/subscription_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/subscription_interval_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/supplier_event_registrar.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.refdata.api/eventing/crm_driver_pair_event.hpp"
@@ -165,6 +167,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // publication: each reads the trigger's channel and publishes the
     // canonical event. Composing them by hand instead left five entities
     // with a mapping no one registered, so nothing they wrote reached NATS.
+    auto adapter_sub = mdsm::register_adapter_event_mapping(event_source, event_bus, nats);
+    auto supplier_sub = mdsm::register_supplier_event_mapping(event_source, event_bus, nats);
     auto provider_sub = mdsm::register_provider_event_mapping(event_source, event_bus, nats);
     auto market_data_source_sub =
         mdsm::register_market_data_source_event_mapping(event_source, event_bus, nats);

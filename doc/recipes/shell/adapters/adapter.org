@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 1B252F1F-0823-508E-B32E-7842399698C3
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the adapters commands from the shell?
+#+description: Every command the adapters submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:adapters:
+
+This file documents the adapters resource at the shell, one section per command. Every command is a subcommand of =adapters=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 04CE9424-B744-5EAD-ADA6-E76EF91B830A
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+adapters list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.adapters.list=.
+
+#+name: adapters-list
+#+begin_src ores-shell :tangle adapters-list.ores :exports none
+adapters list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: B29D95F2-D6B4-59B8-8C80-915CD4203D3F
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+adapters get <code>
+#+end_example
+
+It is addressed at =marketdata.v1.adapters.get=.
+
+#+name: adapters-get
+#+begin_src ores-shell :tangle adapters-get.ores :exports none
+adapters get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 8EB7A96B-4211-54D5-8D69-27EC096C32B6
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+adapters get-many <code>
+#+end_example
+
+It is addressed at =marketdata.v1.adapters.get_many=.
+
+#+name: adapters-get-many
+#+begin_src ores-shell :tangle adapters-get-many.ores :exports none
+adapters get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 3A086AD3-739A-559A-AEA6-DD4391CEB731
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+adapters add <code> <name> <module_version> <description> <process> <asset_classes> <services> <configuration_schema> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.adapters.put=.
+
+#+name: adapters-add
+#+begin_src ores-shell :tangle adapters-add.ores :exports none
+adapters add __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 1AC372AB-A8A6-5D17-A7D9-C8FDE33D2F8C
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+adapters set <code> <name> <module_version> <description> <process> <asset_classes> <services> <configuration_schema> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.adapters.put=.
+
+#+name: adapters-set
+#+begin_src ores-shell :tangle adapters-set.ores :exports none
+adapters set __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: EAD40786-B162-54AA-8584-1055F94926D1
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+adapters put-many --count <n> <code> <name> <module_version> <description> <process> <asset_classes> <services> <configuration_schema> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.adapters.put_many=.
+
+#+name: adapters-put-many
+#+begin_src ores-shell :tangle adapters-put-many.ores :exports none
+adapters put-many --count 1 __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 4CC18F22-8D8E-5FC6-8A7C-A9163AA30D99
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+adapters delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.adapters.delete=.
+
+#+name: adapters-delete
+#+begin_src ores-shell :tangle adapters-delete.ores :exports none
+adapters delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: A355D413-1A87-5C97-9E56-88325878A07B
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+adapters delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.adapters.delete_many=.
+
+#+name: adapters-delete-many
+#+begin_src ores-shell :tangle adapters-delete-many.ores :exports none
+adapters delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: D0E96851-32B8-5ACD-BCF8-3C2EA8D80C5E
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+adapters versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.adapters_versions.list=.
+
+#+name: adapters-versions
+#+begin_src ores-shell :tangle adapters-versions.ores :exports none
+adapters versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: C776F59C-9AB0-5164-B04E-13107050EEA5
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+adapters version <code> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.adapters_versions.get=.
+
+#+name: adapters-version
+#+begin_src ores-shell :tangle adapters-version.ores :exports none
+adapters version __none__ --version 1
+#+end_src
+

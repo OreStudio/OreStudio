@@ -1,0 +1,294 @@
+:PROPERTIES:
+:ID: 5B1E0B49-6C0C-4F0E-9A47-3E0F0B3C6D21
+:END:
+#+title: ores.marketdata.adapter
+#+description: The catalogue of adapter modules the release provides: one code module for each supplier protocol, with its version, the asset classes it serves, the services it offers and the configuration a session must provide.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: adapter
+#+entity_plural: adapters
+#+entity_title: Adapter
+#+brief: A code module that speaks one supplier protocol, with its version, services and configuration schema.
+#+created: 2026-10-29
+#+updated: 2026-10-29
+
+The catalogue of adapter modules. An adapter is code, installed by the release; a
+person configures a session of it and then the feeds that come off the session.
+The catalogue states the module's version, the asset classes it can serve, the
+services it offers, and the configuration a session must provide, so the screen
+can build the session form from data instead of from code.
+
+The system tenant owns the rows. Every tenant reads them and only the system
+tenant writes them.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: marketdata
+:profile:   simple-lookup
+:system_tenant_validation: true
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique adapter code: lower case letters, digits, underscores and hyphens,
+starting with a letter.
+
+Examples: 'frankfurter', 'bloomberg-api', 'simulation'.
+
+#+begin_src cpp :name generator
+std::string("adapter")
+#+end_src
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+The adapter's name as a person knows it.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Adapter"
+#+end_src
+
+** module_version
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The module version the release provides, such as =1.4.0=.
+
+#+begin_src cpp :name generator
+std::string("1.0.0")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the adapter reads, in a sentence or two.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** process
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The process that hosts the adapter, such as =ores.marketdata.official=.
+
+#+begin_src cpp :name generator
+std::string("ores.marketdata.official")
+#+end_src
+
+** asset_classes
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The asset classes the adapter can serve, as a comma-separated list in lower
+case, such as =fx,ir=.
+
+#+begin_src cpp :name generator
+std::string("fx,ir")
+#+end_src
+
+** services
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The services the adapter offers, as a comma-separated list, such as
+=real_time,end_of_day,reference=.
+
+#+begin_src cpp :name generator
+std::string("end_of_day")
+#+end_src
+
+** configuration_schema
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  '{}'
+:default_value: "{}"
+:END:
+
+The fields a session of this adapter must provide, as a JSON object of name to
+type, required flag and default. The session form is built from it.
+
+#+begin_src cpp :name generator
+std::string("{}")
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_marketdata_adapters_tbl
+:rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
+:END:
+
+** Checks
+
+| expression                                                  |
+|-------------------------------------------------------------|
+| "code" ~ '^[a-z][a-z0-9_-]*$'                                |
+| "name" <> ''                                                |
+| "module_version" ~ '^[0-9]+\\.[0-9]+\\.[0-9]+$'                     |
+| "asset_classes" ~ '^[a-z]+(,[a-z]+)*$'                       |
+| "services" ~ '^[a-z_]+(,[a-z_]+)*$'                          |
+| "process" <> ''                                             |
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_marketdata_validate_adapter_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:has_batch_remove:   true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: adapter
+:entity_plural_short:   adapters
+:entity_singular_words: adapter
+:entity_plural_words:   adapters
+:system_tenant_visible: true
+:END:
+
+The adapter catalogue ships under the system tenant, and every tenant reads it.
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: mda
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| code          | Code          |
+| name          | Name          |
+| module_version | Module version |
+| process       | Process       |
+| description   | Description   |
+| display_order | Display Order |
+| modified_by   | Modified By   |
+| module_version | Module version |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.marketdata.api/domain/adapter.hpp
+:domain_class:           marketdata::domain::adapter
+:protocol_include:       ores.marketdata.api/messaging/adapter_protocol.hpp
+:collection_name:        adapters
+:key_field:              code
+:get_request_class:      marketdata::messaging::get_adapters_request
+:get_response_class:     marketdata::messaging::get_adapters_response
+:get_message_type:       get_adapters_request
+:save_request_class:     marketdata::messaging::save_adapter_request
+:save_response_class:    marketdata::messaging::save_adapter_response
+:save_message_type:      save_adapter_request
+:delete_request_class:   marketdata::messaging::delete_adapter_request
+:delete_response_class:  marketdata::messaging::delete_adapter_response
+:delete_message_type:    delete_adapter_request
+:END:
+
+*** Detail fields
+
+| field                | label        | widget               | type      | is_key | is_required | placeholder        |
+|----------------------+--------------+----------------------+-----------+--------+-------------+--------------------|
+| code                 | Code         | codeEdit             | line_edit | true   | true        | Enter adapter code |
+| name                 | Name         | nameEdit             | line_edit |        | true        | Enter name         |
+| module_version       | Module version | moduleVersionEdit  | line_edit |        | true        | 1.0.0              |
+| description          | Description  | descriptionEdit      | text_edit |        | true        | Enter a description |
+| process              | Process      | processEdit          | line_edit |        | true        | ores.marketdata.official |
+| display_order        | Display Order| displayOrderEdit     | spin_box  |        | true        |                    |
+
+*** Columns
+
+| enum_name    | field         | header        | type      | width |
+|--------------+---------------+---------------+-----------+-------|
+| Code         | code          | Code          | string    | auto  |
+| Name         | name          | Name          | string    | auto  |
+| Version      | module_version | Module version | string    | auto  |
+| Description  | description   | Description   | string    | auto  |
+| DisplayOrder | display_order | Display Order | int       | 70    |
+| ModifiedBy   | modified_by   | Modified By   | string    | auto  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the words: adapter, session, feed.

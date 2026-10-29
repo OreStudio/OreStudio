@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 47A5B305-2152-5AAA-9F3E-BFE01CB5D13B
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the suppliers commands from the shell?
+#+description: Every command the suppliers submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:suppliers:
+
+This file documents the suppliers resource at the shell, one section per command. Every command is a subcommand of =suppliers=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 1DE1CC78-8568-5F52-B9D9-91A6495D97FA
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+suppliers list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.suppliers.list=.
+
+#+name: suppliers-list
+#+begin_src ores-shell :tangle suppliers-list.ores :exports none
+suppliers list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: FD50E100-AF63-5A71-B603-032C521A1AB1
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+suppliers get <code>
+#+end_example
+
+It is addressed at =marketdata.v1.suppliers.get=.
+
+#+name: suppliers-get
+#+begin_src ores-shell :tangle suppliers-get.ores :exports none
+suppliers get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 426214E5-7271-54CE-936E-77B6280261C8
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+suppliers get-many <code>
+#+end_example
+
+It is addressed at =marketdata.v1.suppliers.get_many=.
+
+#+name: suppliers-get-many
+#+begin_src ores-shell :tangle suppliers-get-many.ores :exports none
+suppliers get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 1AC0C991-D0DF-5708-B05E-0B4DFE80B357
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+suppliers add <code> <name> <kind> <description> <contract_reference> <support> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.suppliers.put=.
+
+#+name: suppliers-add
+#+begin_src ores-shell :tangle suppliers-add.ores :exports none
+suppliers add __none__ __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: F5974918-5B75-53A1-8562-5EFA16C3F813
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+suppliers set <code> <name> <kind> <description> <contract_reference> <support> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.suppliers.put=.
+
+#+name: suppliers-set
+#+begin_src ores-shell :tangle suppliers-set.ores :exports none
+suppliers set __none__ __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 55F92E69-CAEF-5971-99F4-E35B3ED267FE
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+suppliers put-many --count <n> <code> <name> <kind> <description> <contract_reference> <support> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.suppliers.put_many=.
+
+#+name: suppliers-put-many
+#+begin_src ores-shell :tangle suppliers-put-many.ores :exports none
+suppliers put-many --count 1 __none__ __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 764D30E7-C586-5367-A1BE-4E0EDCDC7EC8
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+suppliers delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.suppliers.delete=.
+
+#+name: suppliers-delete
+#+begin_src ores-shell :tangle suppliers-delete.ores :exports none
+suppliers delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 1089958D-46F3-555C-BB01-5B05442D857D
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+suppliers delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.suppliers.delete_many=.
+
+#+name: suppliers-delete-many
+#+begin_src ores-shell :tangle suppliers-delete-many.ores :exports none
+suppliers delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: C5242B67-4327-5D42-82C4-8C1382EF7266
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+suppliers versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.suppliers_versions.list=.
+
+#+name: suppliers-versions
+#+begin_src ores-shell :tangle suppliers-versions.ores :exports none
+suppliers versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 6948B436-939D-52E4-91E2-641B2154CA13
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+suppliers version <code> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.suppliers_versions.get=.
+
+#+name: suppliers-version
+#+begin_src ores-shell :tangle suppliers-version.ores :exports none
+suppliers version __none__ --version 1
+#+end_src
+

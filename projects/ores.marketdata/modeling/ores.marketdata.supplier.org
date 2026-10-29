@@ -1,0 +1,265 @@
+:PROPERTIES:
+:ID: 0E7C4A52-8B5D-4B1E-9C2F-6A3D5E7F9B10
+:END:
+#+title: ores.marketdata.supplier
+#+description: The catalogue of delivery parties: the vendors, aggregators, authorities and internal services we contract with and connect to. A supplier has sessions; each session is one configured adapter at that supplier.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: supplier
+#+entity_plural: suppliers
+#+entity_title: Supplier
+#+brief: Who we contract with and connect to: a vendor, an aggregator, an authority or an internal service.
+#+created: 2026-10-29
+#+updated: 2026-10-29
+
+The catalogue of delivery parties. A publisher owns the data; a supplier is who we
+connect to for it. Frankfurter is an aggregator that delivers many publishers'
+rates; Bloomberg is a vendor that also publishes its own values; the ECB Data
+Portal is an authority that is both supplier and publisher. A supplier has
+sessions, and a session is one configured adapter at that supplier.
+
+The system tenant owns the rows. Every tenant reads them and only the system
+tenant writes them.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: marketdata
+:profile:   simple-lookup
+:system_tenant_validation: true
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique supplier code: lower case letters, digits, underscores and hyphens,
+starting with a letter.
+
+Examples: 'frankfurter', 'bloomberg', 'ecb-data-portal', 'fred'.
+
+#+begin_src cpp :name generator
+std::string("supplier")
+#+end_src
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+The supplier's name as a person knows it.
+
+#+begin_src cpp :name generator
+std::string(faker::company::companyName())
+#+end_src
+
+** kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What sort of supplier it is: =vendor=, =aggregator=, =authority= or =internal=.
+
+#+begin_src cpp :name generator
+std::string("aggregator")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the supplier delivers, in a sentence or two.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** contract_reference
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       ''
+:default_value: ""
+:END:
+
+Where the contract is kept, such as =vault:contracts/bloomberg=. Empty when the
+service is open and has no contract.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** support
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       ''
+:default_value: ""
+:END:
+
+Where to ask for help, such as a support desk or a team name.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_marketdata_suppliers_tbl
+:rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
+:END:
+
+** Checks
+
+| expression                                                  |
+|-------------------------------------------------------------|
+| "code" ~ '^[a-z][a-z0-9_-]*$'                                |
+| "kind" in ('vendor', 'aggregator', 'authority', 'internal')  |
+| "name" <> ''                                                |
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_marketdata_validate_supplier_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:has_batch_remove:   true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: supplier
+:entity_plural_short:   suppliers
+:entity_singular_words: supplier
+:entity_plural_words:   suppliers
+:system_tenant_visible: true
+:END:
+
+The supplier catalogue ships under the system tenant, and every tenant reads it.
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: mds
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| code          | Code          |
+| name          | Name          |
+| kind          | Kind          |
+| description   | Description   |
+| display_order | Display Order |
+| modified_by   | Modified By   |
+| version       | Version       |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.marketdata.api/domain/supplier.hpp
+:domain_class:           marketdata::domain::supplier
+:protocol_include:       ores.marketdata.api/messaging/supplier_protocol.hpp
+:collection_name:        suppliers
+:key_field:              code
+:get_request_class:      marketdata::messaging::get_suppliers_request
+:get_response_class:     marketdata::messaging::get_suppliers_response
+:get_message_type:       get_suppliers_request
+:save_request_class:     marketdata::messaging::save_supplier_request
+:save_response_class:    marketdata::messaging::save_supplier_response
+:save_message_type:      save_supplier_request
+:delete_request_class:   marketdata::messaging::delete_supplier_request
+:delete_response_class:  marketdata::messaging::delete_supplier_response
+:delete_message_type:    delete_supplier_request
+:END:
+
+*** Detail fields
+
+| field                | label        | widget               | type      | is_key | is_required | placeholder        |
+|----------------------+--------------+----------------------+-----------+--------+-------------+--------------------|
+| code                 | Code         | codeEdit             | line_edit | true   | true        | Enter supplier code |
+| name                 | Name         | nameEdit             | line_edit |        | true        | Enter name         |
+| kind                 | Kind         | kindEdit             | line_edit |        | true        | vendor, aggregator, authority or internal |
+| description          | Description  | descriptionEdit      | text_edit |        | true        | Enter a description |
+| contract_reference   | Contract     | contractReferenceEdit| line_edit |        |             | vault:contracts/... |
+| support              | Support      | supportEdit          | line_edit |        |             | Who to ask          |
+| display_order        | Display Order| displayOrderEdit     | spin_box  |        | true        |                    |
+
+*** Columns
+
+| enum_name    | field         | header        | type      | width |
+|--------------+---------------+---------------+-----------+-------|
+| Code         | code          | Code          | string    | auto  |
+| Name         | name          | Name          | string    | auto  |
+| Kind         | kind          | Kind          | string    | auto  |
+| Description  | description   | Description   | string    | auto  |
+| DisplayOrder | display_order | Display Order | int       | 70    |
+| ModifiedBy   | modified_by   | Modified By   | string    | auto  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the words: publisher, supplier, session, feed.

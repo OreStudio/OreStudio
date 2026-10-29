@@ -26,11 +26,11 @@ No runtime reader, feed or classifier composes an ORE key; the runtime identity 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -85,3 +85,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The runtime no longer spells market data the ORE way; the ORE key lives only at
+the ORE XML boundary.
+
+- The synthetic IR feed builds each quote as a market data model datum through
+  one builder (pillar_quote_datum); pillar_quote_key is deleted.
+- The series classifier keys on (key_kind, instrument, quote); index series read
+  their class from their own schema row; the catalogue migrates from 42 ORE rows
+  to 41 datum rows and 1 index row, and the GENERIC-MD wrapper row is gone.
+- The oresmd codec accepts every datum the model admits; the ORE-key validation
+  is removed in read and write; the ORE import and export keep their keys.
+- The seeded blueprint is the spot-starting USD SOFR ladder reading one named
+  series, because a meeting-dated ladder's series identity depends on the as-of.
+
+Evidence: marketdata core 330, service 203, synthetic 94, shell and refdata
+suites, web 2327, BFF 1137, codegen idempotent, model and docs checks clean.
+Live: the IR feed publishes 12-point batches, no stored series or observation
+carries an ORE spelling, and the migrated catalogue classifies the stored
+series.
+
+Open: no synthetic-provider tick reaches the store in this environment, so the
+compute, check and publish are proved by the suites and not live; the smoke
+aborts at trade generation on a missing handler. The delivery plumbing is the
+next task.

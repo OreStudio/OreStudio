@@ -31,30 +31,57 @@ const DRIVERS = [
     { code: 'frankfurter', name: 'Frankfurter', speaks: 'HTTPS and JSON', needs: 'base URL, publisher key path' },
     { code: 'bloomberg', name: 'Bloomberg', speaks: 'the Bloomberg API', needs: 'endpoint, credential, publisher keys' },
     { code: 'lseg', name: 'LSEG', speaks: 'the LSEG API', needs: 'endpoint, credential, publisher keys' },
+    { code: 'ecb-data', name: 'ECB Data Portal', speaks: 'the ECB data API (SDW)', needs: 'endpoint, series keys' },
+    { code: 'fred', name: 'FRED', speaks: 'the FRED API', needs: 'endpoint, credential, series ids' },
+    { code: 'boe', name: 'Bank of England', speaks: 'the BoE statistics API', needs: 'endpoint, series codes' },
+    { code: 'treasury', name: 'US Treasury', speaks: 'the Treasury data feed', needs: 'endpoint, curve year' },
     { code: 'synthetic', name: 'Synthetic simulator', speaks: 'its own generators', needs: 'nothing: no endpoint, no credential' },
 ];
 
 const CONNECTIONS = [
     { id: 'frankfurter', name: 'Frankfurter', driver: 'frankfurter', endpoint: 'https://api.frankfurter.app',
       credential: 'none', rhythm: 'daily, 16:00 CET', poll: '60 min', backfill: '400 days', state: 'serving',
-      providers: ['ecb', 'boc', 'imf', 'fred', 'tcmb', 'norges', 'boe'], destination: 'System Party', last: '19:24',
+      classes: ['fx'], providers: ['ecb', 'boc', 'imf', 'fred', 'tcmb', 'norges', 'boe'], destination: 'System Party', last: '19:24',
       secrets: [] },
     { id: 'bloomberg-prod', name: 'Bloomberg production', driver: 'bloomberg', endpoint: 'https://api.bloomberg.com',
       credential: 'vault:marketdata/bloomberg/prod', rhythm: 'streaming, always on', poll: 'not polled', backfill: '400 days',
-      state: 'serving', providers: ['ecb'], destination: 'System Party', last: '19:23',
+      classes: ['fx'], state: 'serving', providers: ['ecb'], destination: 'System Party', last: '19:23',
       secrets: [{ name: 'api key', masked: '•••• 7f2a', set: '2026-10-01' }, { name: 'api secret', masked: '•••• c91b', set: '2026-10-01' }] },
     { id: 'bloomberg-test', name: 'Bloomberg test', driver: 'bloomberg', endpoint: 'https://api.test.bloomberg.com',
       credential: 'vault:marketdata/bloomberg/test', rhythm: 'streaming, always on', poll: 'not polled', backfill: '30 days',
-      state: 'not serving', providers: [], destination: 'none', last: '—',
+      classes: ['fx'], state: 'not serving', providers: [], destination: 'none', last: '—',
       secrets: [{ name: 'api key', masked: 'not set', set: '—' }] },
     { id: 'synthetic', name: 'Synthetic feeds', driver: 'synthetic', endpoint: 'none',
       credential: 'none', rhythm: 'continuous, the scheduler drives it', poll: 'not polled', backfill: 'not applicable',
-      state: 'serving', providers: ['lseg (simulated)', 'bloomberg (simulated)'], destination: 'System Party', last: 'now',
+      classes: ['fx', 'ir'], state: 'serving', providers: ['lseg (simulated)', 'bloomberg (simulated)'], destination: 'System Party', last: 'now',
       secrets: [] },
 ];
 
+CONNECTIONS.push(
+    { id: 'ecb-data', name: 'ECB Data Portal', driver: 'ecb-data', endpoint: 'https://data-api.ecb.europa.eu',
+      credential: 'none', rhythm: 'daily, 16:00 CET', poll: '60 min', backfill: '400 days', classes: ['ir'],
+      state: 'serving', providers: ['ecb'], destination: 'System Party', last: '17:02', secrets: [] },
+    { id: 'fred-api', name: 'FRED', driver: 'fred', endpoint: 'https://api.stlouisfed.org',
+      credential: 'vault:marketdata/fred', rhythm: 'daily, 16:15 ET', poll: '60 min', backfill: '400 days', classes: ['fx', 'ir'],
+      state: 'serving', providers: ['fred'], destination: 'System Party', last: '19:22',
+      secrets: [{ name: 'api key', masked: '•••• 4d10', set: '2026-09-12' }] },
+    { id: 'boe-api', name: 'Bank of England statistics', driver: 'boe', endpoint: 'https://www.bankofengland.co.uk/boeapps/database',
+      credential: 'none', rhythm: 'daily, 15:00 GMT', poll: '60 min', backfill: '400 days', classes: ['fx', 'ir'],
+      state: 'serving', providers: ['boe'], destination: 'System Party', last: '15:00', secrets: [] },
+    { id: 'treasury', name: 'US Treasury', driver: 'treasury', endpoint: 'https://home.treasury.gov/resource-center/data-chart-center',
+      credential: 'none', rhythm: 'daily, 18:00 ET', poll: '60 min', backfill: '400 days', classes: ['ir'],
+      state: 'serving', providers: ['ust'], destination: 'System Party', last: '18:05', secrets: [] });
+
+// IR items per publisher: a rate is one value a day; a curve is a set of pillars.
+const IR_ITEMS = {
+    ecb: [{ name: '€STR', kind: 'rate' }, { name: 'EUR AAA spot curve', kind: 'curve' }],
+    fred: [{ name: 'SOFR', kind: 'rate' }, { name: 'US Treasury par curve', kind: 'curve' }],
+    boe: [{ name: 'SONIA', kind: 'rate' }, { name: 'GBP gilt curve', kind: 'curve' }],
+    ust: [{ name: 'US Treasury par curve', kind: 'curve' }],
+};
+
 const PROVIDERS = [
-    { code: 'ecb', connections: ['frankfurter', 'bloomberg-prod'], name: 'European Central Bank', kind: 'reference',
+    { code: 'ecb', classes: ['fx', 'ir'], connections: ['frankfurter', 'bloomberg-prod'], name: 'European Central Bank', kind: 'reference',
       terms: { accepted: true, version: 'v3', who: 'super_admin', at: '2026-01-15 10:22' },
       adapter: { state: 'serving', hb: '19:24', served: 44, refused: 0, unknown: 0 },
       last: { pair: 'EUR/CAD', date: '2026-10-28', received: '19:23', expected: 'today, on time', onTime: true },
@@ -62,38 +89,38 @@ const PROVIDERS = [
       series: { 'EUR/USD': [1.1605, 1.1609, 1.1612, 1.1614, 1.1618, 1.1620, 1.1622, 1.1626, 1.1631, 1.1638],
                 'EUR/CAD': [1.5590, 1.5601, 1.5610, 1.5614, 1.5618, 1.5620, 1.5622, 1.5626, 1.5631, 1.5638],
                 'EUR/GBP': [0.8620, 0.8624, 0.8627, 0.8630, 0.8632, 0.8634, 0.8637, 0.8640, 0.8643, 0.8646] } },
-    { code: 'boc', connections: ['frankfurter'], name: 'Bank of Canada', kind: 'reference',
+    { code: 'boc', classes: ['fx'], connections: ['frankfurter'], name: 'Bank of Canada', kind: 'reference',
       terms: { accepted: true, version: 'v2', who: 'super_admin', at: '2026-10-26 11:20' },
       adapter: { state: 'serving', hb: '19:24', served: 27, refused: 0, unknown: 0 },
       last: { pair: 'CAD/EUR', date: '2026-10-27', received: '19:20', expected: 'today, late', onTime: false },
       credit: 'Source: Bank of Canada', storage: true, credential: 'none', rhythm: 'daily, 16:30 ET',
       series: { 'CAD/USD': [1.3820, 1.3824, 1.3827, 1.3830, 1.3833, 1.3836, 1.3839, 1.3842, 1.3845, 1.3848],
                 'CAD/EUR': [0.6410, 0.6408, 0.6406, 0.6404, 0.6402, 0.6400, 0.6398, 0.6396, 0.6394, 0.6392] } },
-    { code: 'imf', connections: ['frankfurter'], name: 'International Monetary Fund', kind: 'reference',
+    { code: 'imf', classes: ['fx'], connections: ['frankfurter'], name: 'International Monetary Fund', kind: 'reference',
       terms: { accepted: !withdrawn, version: withdrawn ? 'v2' : 'v1', who: 'super_admin', at: '2026-09-01 09:00' },
       adapter: { state: 'serving', hb: '19:24', served: 48, refused: 0, unknown: 0 },
       last: { pair: 'EUR/USD', date: '2026-10-28', received: '19:24', expected: 'today, on time', onTime: true },
       credit: 'Source: IMF', storage: !withdrawn, credential: 'none', rhythm: 'daily, 12:00 ET',
       series: { 'EUR/USD': [1.1598, 1.1601, 1.1606, 1.1607, 1.1611, 1.1614, 1.1616, 1.1620, 1.1624, 1.1630],
                 'USD/CHF': [0.8290, 0.8294, 0.8297, 0.8300, 0.8303, 0.8306, 0.8309, 0.8312, 0.8316, 0.8321] } },
-    { code: 'fred', connections: ['frankfurter'], name: 'Federal Reserve (H.10)', kind: 'reference',
+    { code: 'fred', classes: ['fx', 'ir'], connections: ['frankfurter'], name: 'Federal Reserve (H.10)', kind: 'reference',
       terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-02 14:00' },
       adapter: { state: 'serving', hb: '19:24', served: 31, refused: 0, unknown: 0 },
       last: { pair: 'EUR/USD', date: '2026-10-28', received: '19:22', expected: 'today, on time', onTime: true },
       credit: 'Source: Federal Reserve Board', storage: true, credential: 'none', rhythm: 'daily, 16:15 ET',
       series: { 'EUR/USD': [1.1610, 1.1613, 1.1616, 1.1619, 1.1621, 1.1623, 1.1626, 1.1629, 1.1633, 1.1640],
                 'EUR/GBP': [0.8618, 0.8621, 0.8625, 0.8628, 0.8630, 0.8633, 0.8635, 0.8638, 0.8641, 0.8644] } },
-    { code: 'tcmb', connections: ['frankfurter'], name: 'Central Bank of Turkiye', kind: 'reference',
+    { code: 'tcmb', classes: ['fx'], connections: ['frankfurter'], name: 'Central Bank of Turkiye', kind: 'reference',
       terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-20 08:10' },
       adapter: { state: 'down', hb: '16:02', served: 21, refused: 3, unknown: 0 },
       last: null, credit: 'Source: TCMB', storage: true, credential: 'none', rhythm: 'daily, 15:30 TRT',
       series: { 'TRY/USD': [42.10, 42.18, 42.25, 42.31, 42.38, 42.44, 42.50, 42.57, 42.63, 42.70] } },
-    { code: 'norges', connections: ['frankfurter'], name: 'Norges Bank', kind: 'reference',
+    { code: 'norges', classes: ['fx'], connections: ['frankfurter'], name: 'Norges Bank', kind: 'reference',
       terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-18 09:00' },
       adapter: { state: 'serving', hb: '19:24', served: 12, refused: 0, unknown: 0 },
       last: null, credit: 'Source: Norges Bank', storage: true, credential: 'none', rhythm: 'daily, 14:00 CET',
       series: {} },
-    { code: 'boe', connections: ['frankfurter'], name: 'Bank of England', kind: 'reference',
+    { code: 'boe', classes: ['fx', 'ir'], connections: ['frankfurter'], name: 'Bank of England', kind: 'reference',
       terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-18 14:00' },
       adapter: { state: 'serving', hb: '19:24', served: 34, refused: 0, unknown: 0 },
       paused: true,
@@ -101,6 +128,13 @@ const PROVIDERS = [
       credit: 'Source: Bank of England', storage: true, credential: 'none', rhythm: 'daily, 15:00 GMT',
       series: { 'GBP/USD': [1.3348, 1.3351, 1.3354, 1.3357, 1.3360, 1.3362, 1.3364, 1.3367, 1.3370, 1.3373] } },
 ];
+
+PROVIDERS.push({ code: 'ust', name: 'US Treasury', kind: 'reference', classes: ['ir'], connections: ['treasury'],
+    terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-05 10:00' },
+    adapter: { state: 'serving', hb: '18:05', served: 12, refused: 0, unknown: 0 },
+    last: { pair: 'US Treasury par curve', date: '2026-10-28', received: '18:05', expected: 'today, on time', onTime: true },
+    credit: 'Source: US Department of the Treasury', storage: true, credential: 'none', rhythm: 'daily, 18:00 ET',
+    series: {}, lastClass: 'ir' });
 
 const SENTENCES = {
     live: 'Serving. The last fixing is today\'s and it arrived on time.',
@@ -133,11 +167,16 @@ const fn = {
     holders: (pair) => PROVIDERS.filter((p) => p.series[pair]),
 };
 
+function itemCount(p) {
+    return Object.keys(p.series).length + (IR_ITEMS[p.code]?.length ?? 0);
+}
+
 function listRow(p) {
     const kind = fn.status(p);
     return `<tr>
         <td class="provider">${fn.esc(p.name)}<div class="faint mono">${p.code}</div></td>
-        <td class="num">${Object.keys(p.series).length || '—'}</td>
+        <td>${(p.classes ?? ['fx']).map((c) => `<span class="badge">${c.toUpperCase()}</span>`).join(' ')}</td>
+        <td class="num">${itemCount(p) || '—'}</td>
         <td>${p.terms.accepted ? `<span class="badge ok">${p.terms.version}</span>` : `<span class="badge warn">not accepted</span>`}</td>
         <td>${p.connections.map((c) => CONNECTIONS.find((x) => x.id === c)?.name ?? c).join(', ')}</td>
         <td>${p.last ? `<div class="fresh"><span class="when">${p.last.date}</span><span class="sub">${p.last.pair}</span></div>` : '<span class="faint">no fixing ever</span>'}</td>
@@ -275,12 +314,17 @@ function renderRecord() {
             <span class="k">Underlyings</span><span>${pairs.length} stored</span>
           </div></div></div>`;
     } else if (rtab === 'underlyings') {
-        const rows = pairs.map((x) => `<tr><td class="mono">${x}</td><td class="when">${DATES[0]}</td>
-            <td class="when">${DATES[DATES.length - 1]}</td><td class="num">${p.series[x].length}</td>
-            <td class="num">${p.code === 'ecb' && x === 'EUR/CAD' ? 2 : 0}</td>
+        const fx = Object.keys(p.series).map((x) => `<tr><td class="mono">${x}</td><td>pair</td><td class="when">${DATES[0]}</td>
+            <td class="when">${DATES[DATES.length - 1]}</td><td class="num">${p.series[x].length}</td><td class="num">${p.code === 'ecb' && x === 'EUR/CAD' ? 2 : 0}</td>
             <td class="acts"><a class="act" href="${fn.href({ provider: p.code, rtab: 'fixings', pair: x })}">Open</a></td></tr>`).join('');
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Underlyings</h2><p>${pairs.length} pairs this publisher fixes</p></div>
-          <table class="list"><thead><tr><th>Pair</th><th>First</th><th>Last</th><th>Values</th><th>Gaps</th><th class="acts"></th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="faint">No fixing stored yet.</td></tr>'}</tbody></table></div>`;
+        const ir = (IR_ITEMS[p.code] ?? []).map((it) => `<tr><td class="mono">${it.name}</td><td>${it.kind}</td>
+            <td class="when">2026-01-02</td><td class="when">2026-10-28</td><td class="num">${it.kind === 'curve' ? '10 pillars' : 204}</td>
+            <td class="num">0</td><td class="acts"><span class="faint">IR series</span></td></tr>`).join('');
+        body.innerHTML = `<div class="card"><div class="card-head"><h2>Underlyings</h2><p>${itemCount(p)} items this publisher fixes, by asset class</p></div>
+          <table class="list"><thead><tr><th>Item</th><th>Shape</th><th>First</th><th>Last</th><th>Values</th><th>Gaps</th><th class="acts"></th></tr></thead>
+          <tbody><tr><td colspan="7" class="faint">FX</td></tr>${fx || '<tr><td colspan="7" class="faint">No FX item stored.</td></tr>'}
+          <tr><td colspan="7" class="faint">Interest rates</td></tr>${ir || '<tr><td colspan="7" class="faint">No IR item stored.</td></tr>'}</tbody></table>
+          <div class="faint" style="margin-top:8px;padding:0 14px 12px">A rate is one value a day; a curve is a set of pillars of the same day. Both are read through the same fixings read.</div></div>`;
     } else if (rtab === 'fixings') {
         const values = p.series[pair] ?? p.series[pairs[0]];
         const chosen = p.series[pair] ? pair : pairs[0];
@@ -338,6 +382,7 @@ function renderConnections() {
           <td class="provider">${c.name}<div class="faint mono">${c.id}</div></td>
           <td class="mono">${c.driver}</td>
           <td class="mono faint">${c.endpoint}</td>
+          <td>${(c.classes ?? ['fx']).map((x) => `<span class="badge">${x.toUpperCase()}</span>`).join(' ')}</td>
           <td class="num">${c.providers.length}</td>
           <td>${c.destination}</td>
           <td>${c.state === 'serving' ? fn.badge('live') : fn.badge('down')}</td>
@@ -378,6 +423,7 @@ function renderConnectionRecord() {
         body.innerHTML = `<div class="card"><div class="card-head"><h2>Configuration</h2><p>what the driver needs to run</p></div><div class="card-body">${detail([
             ['Endpoint', `<span class="mono">${c.endpoint}</span>`],
             ['Driver', c.driver],
+            ['Asset classes', (c.classes ?? ['fx']).map((x) => x.toUpperCase()).join(', ')],
             ['Credential reference', `<span class="mono">${c.credential}</span>`],
             ['Expected rhythm', c.rhythm],
             ['Poll interval', c.poll],

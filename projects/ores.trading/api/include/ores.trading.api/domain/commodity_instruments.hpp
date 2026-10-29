@@ -20,6 +20,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_COMMODITY_INSTRUMENTS_HPP
 #define ORES_TRADING_API_DOMAIN_COMMODITY_INSTRUMENTS_HPP
 
+#include "ores.trading.api/domain/commodity_basket_constituent.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <array>
@@ -30,6 +31,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <vector>
 
 /**
  * @brief The commodity family's named constructors.
@@ -165,6 +167,44 @@ struct commodity_average_price_option_terms final {
 };
 
 /**
+ * @brief The facts one member of a commodity basket states.
+ */
+struct commodity_basket_member_terms final {
+    std::string underlying_code;
+    std::optional<double> weight;
+};
+
+/**
+ * @brief An Asian option's own facts.
+ *
+ * The average is what makes it Asian: the window and the average type are
+ * facts of the product, not optional fields a caller may leave out.
+ */
+struct commodity_asian_option_terms final {
+    commodity_common_terms common;
+    std::string option_type;
+    decimal strike_price;
+    std::string average_type;
+    std::optional<std::chrono::year_month_day> averaging_start_date;
+    std::optional<std::chrono::year_month_day> averaging_end_date;
+};
+
+/**
+ * @brief A basket option's own facts.
+ *
+ * A basket option, a rainbow option and a best entry option are one shape in
+ * this family: they state members and the option's own terms, and nothing the
+ * family has tells them apart but the trade type.
+ */
+struct commodity_basket_option_terms final {
+    commodity_common_terms common;
+    std::string option_type;
+    decimal strike_price;
+    std::string exercise_type;
+    std::vector<commodity_basket_member_terms> basket;
+};
+
+/**
  * @brief An option strip's own facts.
  */
 struct commodity_option_strip_terms final {
@@ -230,6 +270,23 @@ struct commodity_swap_terms final {
 };
 
 /**
+ * @brief A worst-of basket swap's own facts.
+ */
+struct commodity_worst_of_basket_swap_terms final {
+    commodity_common_terms common;
+    std::optional<decimal> fixed_price;
+    std::vector<commodity_basket_member_terms> basket;
+};
+
+/**
+ * @brief A commodity product and the rows its children state.
+ */
+struct commodity_basket_product final {
+    commodity_instrument row;
+    std::vector<commodity_basket_constituent> constituents;
+};
+
+/**
  * @brief A swaption's own facts.
  */
 struct commodity_swaption_terms final {
@@ -261,6 +318,32 @@ common_row(std::string_view product, const std::string& trade_type_code,
     row.start_date = common.start_date;
     row.maturity_date = common.maturity_date;
     return row;
+}
+
+/**
+ * @brief Numbers the basket's members in the order they were given.
+ *
+ * A basket of fewer than two members is not a basket.
+ */
+inline std::vector<commodity_basket_constituent>
+basket_rows(std::string_view product, const std::vector<commodity_basket_member_terms>& members) {
+    using namespace commodity_terms;
+    if (members.size() < 2)
+        refuse(product, "at least two members, because one member is not a basket");
+    std::vector<commodity_basket_constituent> rows;
+    rows.reserve(members.size());
+    int ordinal = 1;
+    for (const auto& member : members) {
+        require_text(product, "a code for each of its members", member.underlying_code);
+        if (member.weight.has_value() && !(*member.weight > 0.0 && std::isfinite(*member.weight)))
+            refuse(product, "a positive weight where it states one");
+        commodity_basket_constituent row;
+        row.sequence_number = ordinal++;
+        row.underlying_code = member.underlying_code;
+        row.weight = member.weight;
+        rows.push_back(row);
+    }
+    return rows;
 }
 
 inline commodity_instrument
@@ -330,10 +413,24 @@ construct_commodity_digital_option(const commodity_option_terms& terms) {
 }
 
 [[nodiscard]] inline commodity_instrument
-construct_commodity_asian_option(const commodity_option_terms& terms) {
-    return commodity_builders::option_row("commodity Asian option", "CommodityAsianOption",
-                                          terms.common, terms.option_type, terms.strike_price,
-                                          terms.exercise_type);
+construct_commodity_asian_option(const commodity_asian_option_terms& terms) {
+    using namespace commodity_terms;
+    auto row = commodity_builders::common_row("commodity Asian option", "CommodityAsianOption",
+                                              terms.common);
+    require_one_of("commodity Asian option", "a Call or Put option type", terms.option_type,
+                   option_types);
+    require_amount("commodity Asian option", "a non-negative strike price", terms.strike_price);
+    require_one_of("commodity Asian option", "an Arithmetic or Geometric average",
+                   terms.average_type, average_types);
+    require_date("commodity Asian option", "the start of its averaging",
+                 terms.averaging_start_date);
+    require_date("commodity Asian option", "the end of its averaging", terms.averaging_end_date);
+    row.option_type = terms.option_type;
+    row.strike_price = terms.strike_price;
+    row.average_type = terms.average_type;
+    row.averaging_start_date = terms.averaging_start_date;
+    row.averaging_end_date = terms.averaging_end_date;
+    return row;
 }
 
 [[nodiscard]] inline commodity_instrument
@@ -344,26 +441,36 @@ construct_commodity_strike_resettable_option(const commodity_option_terms& terms
                                           terms.exercise_type);
 }
 
-[[nodiscard]] inline commodity_instrument
-construct_commodity_basket_option(const commodity_option_terms& terms) {
-    return commodity_builders::option_row("commodity basket option", "CommodityBasketOption",
-                                          terms.common, terms.option_type, terms.strike_price,
-                                          terms.exercise_type);
+namespace commodity_builders {
+
+inline commodity_basket_product
+basket_option_product(std::string_view product, const std::string& trade_type_code,
+                      const commodity_basket_option_terms& terms) {
+    commodity_basket_product built;
+    built.row = option_row(product, trade_type_code, terms.common, terms.option_type,
+                           terms.strike_price, terms.exercise_type);
+    built.constituents = basket_rows(product, terms.basket);
+    return built;
 }
 
-[[nodiscard]] inline commodity_instrument
-construct_commodity_rainbow_option(const commodity_option_terms& terms) {
-    return commodity_builders::option_row("commodity rainbow option", "CommodityRainbowOption",
-                                          terms.common, terms.option_type, terms.strike_price,
-                                          terms.exercise_type);
 }
 
-[[nodiscard]] inline commodity_instrument
-construct_commodity_best_entry_option(const commodity_option_terms& terms) {
-    return commodity_builders::option_row("commodity best entry option",
-                                          "CommodityBestEntryOption", terms.common,
-                                          terms.option_type, terms.strike_price,
-                                          terms.exercise_type);
+[[nodiscard]] inline commodity_basket_product
+construct_commodity_basket_option(const commodity_basket_option_terms& terms) {
+    return commodity_builders::basket_option_product("commodity basket option",
+                                                     "CommodityBasketOption", terms);
+}
+
+[[nodiscard]] inline commodity_basket_product
+construct_commodity_rainbow_option(const commodity_basket_option_terms& terms) {
+    return commodity_builders::basket_option_product("commodity rainbow option",
+                                                     "CommodityRainbowOption", terms);
+}
+
+[[nodiscard]] inline commodity_basket_product
+construct_commodity_best_entry_option(const commodity_basket_option_terms& terms) {
+    return commodity_builders::basket_option_product("commodity best entry option",
+                                                     "CommodityBestEntryOption", terms);
 }
 
 namespace commodity_builders {
@@ -545,12 +652,19 @@ construct_commodity_basket_variance_swap(const commodity_variance_swap_terms& te
     return row;
 }
 
-[[nodiscard]] inline commodity_instrument
-construct_commodity_worst_of_basket_swap(const commodity_swap_terms& terms) {
-    auto row = commodity_builders::common_row("commodity worst-of basket swap",
-                                              "CommodityWorstOfBasketSwap", terms.common);
-    row.fixed_price = terms.fixed_price;
-    return row;
+[[nodiscard]] inline commodity_basket_product
+construct_commodity_worst_of_basket_swap(const commodity_worst_of_basket_swap_terms& terms) {
+    using namespace commodity_terms;
+    commodity_basket_product built;
+    built.row = commodity_builders::common_row("commodity worst-of basket swap",
+                                               "CommodityWorstOfBasketSwap", terms.common);
+    if (terms.fixed_price.has_value())
+        require_amount("commodity worst-of basket swap", "a non-negative price",
+                       *terms.fixed_price);
+    built.row.fixed_price = terms.fixed_price;
+    built.constituents = commodity_builders::basket_rows("commodity worst-of basket swap",
+                                                         terms.basket);
+    return built;
 }
 
 [[nodiscard]] inline commodity_instrument

@@ -466,9 +466,7 @@ function CurveWorkbench({
     const visible = parameters.filter((leaf) => !setOnly || leaf.value !== null);
     const gaps = [
         ...parameters,
-        ...entry.collections.flatMap((collection) =>
-            collection.rows.flatMap((row) => row.leaves),
-        ),
+        ...entry.collections.flatMap((collection) => collection.rows.flatMap((row) => row.leaves)),
     ].filter((leaf) => !leaf.documented).length;
     const keyOf = (leaf: CurveParameter): string => `${leaf.entity}.${leaf.column}`;
     const changed =
@@ -523,7 +521,9 @@ function CurveWorkbench({
     const drawable = [
         ...parameters.map((leaf) => documentationKey(entry.id, leaf)),
         ...entry.collections.flatMap((collection) =>
-            collection.rows.flatMap((row) => row.leaves.map((leaf) => documentationKey(row.id, leaf))),
+            collection.rows.flatMap((row) =>
+                row.leaves.map((leaf) => documentationKey(row.id, leaf)),
+            ),
         ),
     ];
     const allOpen = drawable.length > 0 && drawable.every((key) => opened.has(key));
@@ -681,11 +681,7 @@ function CurveWorkbench({
                         <button
                             type="button"
                             className="text-xs text-accent hover:text-accent-bright"
-                            onClick={() =>
-                                setOpened(
-                                    allOpen ? new Set() : new Set(drawable),
-                                )
-                            }
+                            onClick={() => setOpened(allOpen ? new Set() : new Set(drawable))}
                         >
                             {allOpen
                                 ? t('oreParameter.hideAllDocumentation')

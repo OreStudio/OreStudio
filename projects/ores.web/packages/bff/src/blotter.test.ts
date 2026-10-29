@@ -87,9 +87,27 @@ function replies(): Readonly<Record<string, unknown>> {
         [subjects.summaries]: {
             result: ok,
             trade_summaries: [
-                { id: STRUCTURE, row_kind: 'structure', book_id: null, instrument_type: 'Package' },
-                { id: LEG, row_kind: 'trade', book_id: BOOK, instrument_type: 'Swap' },
-                { id: FREE_TRADE, row_kind: 'trade', book_id: BOOK, instrument_type: 'Swap' },
+                {
+                    id: STRUCTURE,
+                    row_kind: 'structure',
+                    book_id: null,
+                    is_leg: false,
+                    structure_id: null,
+                },
+                {
+                    id: LEG,
+                    row_kind: 'trade',
+                    book_id: BOOK,
+                    is_leg: true,
+                    structure_id: STRUCTURE,
+                },
+                {
+                    id: FREE_TRADE,
+                    row_kind: 'trade',
+                    book_id: BOOK,
+                    is_leg: false,
+                    structure_id: null,
+                },
             ],
             total: 3,
         },
@@ -111,7 +129,23 @@ function buildTestServer(): {
             if (!(subject in canned)) {
                 throw new Error(`No canned reply for ${subject}`);
             }
-            return schema.parse(canned[subject]);
+            const reply = canned[subject] as {
+                trade_summaries?: { is_leg: boolean; row_kind: string }[];
+            };
+            const asked = (_body as { filter?: { is_leg?: boolean | null } }).filter?.is_leg;
+            const kind = (_body as { filter?: { row_kind?: string | null } }).filter?.row_kind;
+            if (
+                subject === subjects.summaries &&
+                (typeof asked === 'boolean' || typeof kind === 'string')
+            ) {
+                const rows = (reply.trade_summaries ?? []).filter(
+                    (row) =>
+                        (typeof asked !== 'boolean' || row.is_leg === asked) &&
+                        (typeof kind !== 'string' || row.row_kind === kind),
+                );
+                return schema.parse({ ...reply, trade_summaries: rows, total: rows.length });
+            }
+            return schema.parse(reply);
         },
         async close(): Promise<void> {
             return undefined;

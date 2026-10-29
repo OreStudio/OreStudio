@@ -390,7 +390,8 @@ export function registerBlotterRoutes(
             session,
             {
                 ...nodeFilter,
-                is_leg: query.flat,
+                /* The top list leaves the legs out; the flat list is every trade, legs included. */
+                ...(query.flat ? { row_kind: 'trade' } : { is_leg: false }),
                 ...(query.search === '' ? {} : { search: query.search }),
             },
             order,

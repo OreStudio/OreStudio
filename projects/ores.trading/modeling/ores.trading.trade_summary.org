@@ -174,7 +174,7 @@ The number of trades the row stands for: one for a trade, the member count for a
 ** structure_id
 :PROPERTIES:
 :type:       uuid
-:cpp_type:   boost::uuids::uuid
+:cpp_type:   std::optional<boost::uuids::uuid>
 :nullable:   true
 :filterable: true
 :END:

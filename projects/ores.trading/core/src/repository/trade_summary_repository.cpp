@@ -129,8 +129,10 @@ trade_summary_filter_condition(const std::optional<messaging::trade_summaries_fi
                                               query_builder::filter_value(**filter->trade_date)) :
                         query_builder::is_null("trade_date"));
     if (filter->structure_id)
-        r.push_back(query_builder::equals("structure_id",
-                                          query_builder::filter_value(*filter->structure_id)));
+        r.push_back(*filter->structure_id ?
+                        query_builder::equals("structure_id",
+                                              query_builder::filter_value(**filter->structure_id)) :
+                        query_builder::is_null("structure_id"));
     if (filter->is_leg)
         r.push_back(query_builder::equals("is_leg", query_builder::filter_value(*filter->is_leg)));
     if (filter->id_one_of) {

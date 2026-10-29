@@ -53,7 +53,7 @@ struct trade_summaries_filter {
     std::optional<std::optional<std::string>> status;
     std::optional<std::string> authorisation_status;
     std::optional<std::optional<std::chrono::year_month_day>> trade_date;
-    std::optional<boost::uuids::uuid> structure_id;
+    std::optional<std::optional<boost::uuids::uuid>> structure_id;
     std::optional<bool> is_leg;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<std::string>> row_kind_one_of;

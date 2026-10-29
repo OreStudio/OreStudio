@@ -20,8 +20,74 @@
 
 import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
+import { useFlags } from '../images/flags.js';
+import { RecordPicker, type Choice } from '../refdata/RecordPicker.js';
 import { Input, Select } from '../ui/Primitives.js';
 import type { ControlChoice, ControlModel } from './control.js';
+
+/**
+ * A choice the standard flagged picker draws: the values of a catalogue as the
+ * record screens offer them, each with its flag.
+ *
+ * It is its own component because the flag map is read through the query cache,
+ * and a leaf whose values are a closed list of the contract's own must not need
+ * that read to draw.
+ */
+function FlaggedPicker({
+    source,
+    choices,
+    value,
+    onChange,
+    label,
+    unset,
+}: {
+    readonly source: 'currency' | 'pair';
+    readonly choices: readonly ControlChoice[];
+    readonly value: string;
+    readonly onChange: (value: string) => void;
+    readonly label: string;
+    readonly unset?: string;
+}): ReactNode {
+    const flags = useFlags();
+    /* The code stays in the words, as every record screen writes a flagged
+       value, so a person reads which currency the flag belongs to. */
+    const flagged: readonly Choice[] = choices.map((choice) => ({
+        value: choice.value,
+        label:
+            choice.label === '' || choice.label === choice.value
+                ? choice.value
+                : `${choice.label} (${choice.value})`,
+        image: source === 'pair' ? null : flags.flag(source, choice.value),
+    }));
+    return (
+        <RecordPicker
+            value={value}
+            choices={flagged}
+            onChange={onChange}
+            optional={unset !== undefined}
+            placeholder={unset ?? ''}
+            label={label}
+        />
+    );
+}
+
+/**
+ * The flag a catalogue's values carry, or undefined when its values have none.
+ *
+ * A catalogue says what its values are, and the refdata records that hold a flag
+ * are the currency and the pair. A catalogue with no flag is drawn as a plain
+ * list, because a searchable picker over a dozen values helps nobody.
+ */
+function flagSourceOf(catalogue: string): 'currency' | 'pair' | undefined {
+    switch (catalogue) {
+        case 'refdata.currency':
+            return 'currency';
+        case 'refdata.currency_pair':
+            return 'pair';
+        default:
+            return undefined;
+    }
+}
 
 /**
  * The control one parameter's value needs, drawn for the control its value set
@@ -65,21 +131,38 @@ export function ParameterControl({
         ...(describedBy === undefined ? {} : { 'aria-describedby': describedBy }),
         ...(onFocus === undefined ? {} : { onFocus }),
     };
+    const flagSource = flagSourceOf(model.kind === 'choice' ? (model.catalogue ?? '') : '');
     switch (model.kind) {
-        case 'choice':
+        case 'choice': {
+            const choices = offered(model.choices, value, unset);
+            if (flagSource !== undefined) {
+                /* The standard picker the record screens use: a searchable list
+                   whose every value carries its flag, and the chosen one too. */
+                return (
+                    <FlaggedPicker
+                        source={flagSource}
+                        choices={choices}
+                        value={value}
+                        onChange={onChange}
+                        label={label}
+                        {...(unset === undefined ? {} : { unset })}
+                    />
+                );
+            }
             return (
                 <Select
                     {...shared}
                     value={value}
                     onChange={(event) => onChange(event.target.value)}
                 >
-                    {offered(model.choices, value, unset).map((choice) => (
+                    {choices.map((choice) => (
                         <option key={choice.value} value={choice.value}>
                             {choice.label}
                         </option>
                     ))}
                 </Select>
             );
+        }
         case 'boolean':
             return (
                 <Select

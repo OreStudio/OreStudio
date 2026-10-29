@@ -19,6 +19,7 @@
  *
  */
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { TranslationProvider } from '../i18n/Provider.js';
@@ -52,6 +53,48 @@ function draw(
         </TranslationProvider>,
     );
 }
+
+/** A control drawn where the flag map may be read, as the record screens draw it. */
+function drawWithFlags(model: ControlModel, value: string, unset?: string): string {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryData(['image-map'], { currencies: { GBP: 'gbp.png' }, noFlag: 'none.png' });
+    return renderToStaticMarkup(
+        <QueryClientProvider client={client}>
+            <TranslationProvider>
+                <ParameterControl
+                    model={model}
+                    value={value}
+                    label="Currency"
+                    {...(unset === undefined ? {} : { unset })}
+                    onChange={() => undefined}
+                />
+            </TranslationProvider>
+        </QueryClientProvider>,
+    );
+}
+
+describe('the control a catalogue draws', () => {
+    const CURRENCIES: ControlModel = {
+        kind: 'choice',
+        catalogue: 'refdata.currency',
+        choices: [
+            { value: 'GBP', label: 'Pound Sterling' },
+            { value: 'USD', label: 'US Dollar' },
+        ],
+    };
+
+    it('draws the currency catalogue with the flagged picker the records use', () => {
+        const html = drawWithFlags(CURRENCIES, 'GBP');
+
+        expect(html).toContain('aria-haspopup="listbox"');
+        expect(html).toContain('Pound Sterling (GBP)');
+        expect(html).not.toContain('<select');
+    });
+
+    it('draws a closed list of the contract as a select, whatever the record screens do', () => {
+        expect(draw(CALIBRATION, 'Bootstrap')).toContain('<select');
+    });
+});
 
 describe('the control a choice draws', () => {
     it('states each choice by its label, with the value chosen', () => {

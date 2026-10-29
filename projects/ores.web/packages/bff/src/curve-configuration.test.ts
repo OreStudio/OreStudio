@@ -172,6 +172,11 @@ const LINKS = [
         name: 'InterpolationMethod',
         value_set_code: 'curve_interpolation_method',
     },
+    {
+        scope: 'YieldCurves',
+        name: 'Currency',
+        value_set_code: 'currency',
+    },
 ];
 
 type Replies = Readonly<Record<string, unknown>>;
@@ -179,14 +184,18 @@ type Replies = Readonly<Record<string, unknown>>;
 function buildTestServer(replies: Replies): {
     readonly server: ReturnType<typeof buildServer>;
     readonly sessionId: string;
+    /** Every subject the request reached, with the payload it sent. */
+    readonly calls: readonly { readonly subject: string; readonly payload: unknown }[];
 } {
     const sessions = createSessionStore({ ttlSeconds: 60 });
+    const calls: { subject: string; payload: unknown }[] = [];
     const client = {
         async callAuthenticated(
             subject: string,
             body: unknown,
             schema: { parse: (value: unknown) => unknown },
         ): Promise<unknown> {
+            calls.push({ subject, payload: body });
             if (!(subject in replies)) {
                 throw new Error(`No canned reply for ${subject}`);
             }
@@ -219,6 +228,7 @@ function buildTestServer(replies: Replies): {
             createClient: () => ({ client, connect: async () => undefined }),
         }),
         sessionId: session.id,
+        calls,
     };
 }
 
@@ -268,6 +278,20 @@ function repliesFor(overrides: Replies = {}): Replies {
                     minimum: null,
                     maximum: null,
                 },
+                {
+                    code: 'currency',
+                    source_kind: 'catalogue',
+                    catalogue_code: 'refdata.currency',
+                    minimum: null,
+                    maximum: null,
+                },
+            ],
+        },
+        'refdata.v1.currencies.list': {
+            result: ok,
+            currencies: [
+                { iso_code: 'GBP', name: 'Pound Sterling' },
+                { iso_code: 'USD', name: 'US Dollar' },
             ],
         },
         'reporting.v1.ore_parameter_value_set_values.list': {
@@ -287,7 +311,12 @@ function repliesFor(overrides: Replies = {}): Replies {
                 },
             ],
         },
-        'reporting.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
+        'reporting.v1.ore_parameter_value_set_catalogues.list': {
+            result: ok,
+            catalogues: [
+                { code: 'refdata.currency', relation: 'ores_refdata_currency_catalogue_v' },
+            ],
+        },
         'reporting.v1.ore_parameter_setting_value_sets.list': {
             result: ok,
             setting_value_sets: LINKS,
@@ -307,6 +336,131 @@ async function read(
         cookies: { [SESSION_COOKIE]: sessionId },
     });
 }
+
+/** A save of one leaf, as the page sends it. */
+function amendment(version: number, column: string, value: string | null): Record<string, unknown> {
+    return {
+        version,
+        reasonCode: 'common.correction',
+        commentary: 'The interpolation is wrong.',
+        changes: [{ entity: 'yield_curve_config', entryId: DEFINITION_ID, column, value }],
+    };
+}
+
+async function amend(
+    replies: Replies,
+    body: Record<string, unknown>,
+): Promise<{
+    readonly answer: ReturnType<ReturnType<typeof buildServer>['inject']>;
+    readonly calls: readonly { readonly subject: string; readonly payload: unknown }[];
+}> {
+    const { server, sessionId, calls } = buildTestServer(replies);
+    const answer = await server.inject({
+        method: 'PUT',
+        url: `/api/refdata/curve-configurations/${CONFIGURATION_ID}`,
+        cookies: { [SESSION_COOKIE]: sessionId },
+        payload: body,
+    });
+    return { answer, calls };
+}
+
+describe('changing a curve configuration', () => {
+    it('writes the one row it changed, with the reason, and answers no content', async () => {
+        const { answer, calls } = await amend(
+            repliesFor({
+                'refdata.v1.curve_configuration_documents.put': {
+                    success: true,
+                    message: '',
+                    id: '',
+                },
+            }),
+            amendment(3, 'interpolation_method', 'Cubic'),
+        );
+
+        expect(answer.statusCode).toBe(204);
+        const saved = calls.find(
+            (call) => call.subject === 'refdata.v1.curve_configuration_documents.put',
+        );
+        expect(saved).toBeDefined();
+        const payload = saved?.payload as {
+            document: Record<string, unknown>;
+            reason_code: string;
+            commentary: string;
+        };
+        expect(payload.reason_code).toBe('common.correction');
+        expect(payload.commentary).toBe('The interpolation is wrong.');
+        // Every family is named, empty where nothing changed: the service reads
+        // the document whole, and writes only the rows it is sent.
+        expect(Object.keys(payload.document)).toContain('config');
+        expect(Object.keys(payload.document)).toHaveLength(34);
+        const empty = Object.entries(payload.document).filter(
+            ([family, rows]) => family !== 'config' && family !== 'yield_curves',
+        );
+        expect(empty.every(([, rows]) => Array.isArray(rows) && rows.length === 0)).toBe(true);
+        const rows = payload.document['yield_curves'] as Record<string, unknown>[];
+        expect(rows).toHaveLength(1);
+        expect(rows[0]?.['interpolation_method']).toBe('Cubic');
+        expect(rows[0]?.['currency']).toBe('USD');
+    });
+
+    it("changes the curve's own description, which lives in the definitions", async () => {
+        const { answer, calls } = await amend(
+            repliesFor({
+                'refdata.v1.curve_configuration_documents.put': {
+                    success: true,
+                    message: '',
+                    id: '',
+                },
+            }),
+            {
+                version: 3,
+                reasonCode: 'common.rectification',
+                commentary: '',
+                changes: [
+                    {
+                        entity: 'curve_definition',
+                        entryId: DEFINITION_ID,
+                        column: 'description',
+                        value: 'USD discount curve, six months',
+                    },
+                ],
+            },
+        );
+
+        expect(answer.statusCode).toBe(204);
+        const saved = calls.find(
+            (call) => call.subject === 'refdata.v1.curve_configuration_documents.put',
+        );
+        const document = (saved?.payload as { document: Record<string, unknown> }).document;
+        const definitions = document['definitions'] as Record<string, unknown>[];
+        expect(definitions).toHaveLength(2);
+        expect(definitions[0]?.['description']).toBe('USD discount curve, six months');
+        expect(definitions[1]?.['description']).toBe('ACME forward curve');
+        expect(document['yield_curves']).toEqual([]);
+    });
+
+    it('refuses a value the leaf does not accept', async () => {
+        const { answer } = await amend(
+            repliesFor(),
+            amendment(3, 'interpolation_method', 'Cosine'),
+        );
+        expect(answer.statusCode).toBe(400);
+        expect(answer.json()).toMatchObject({ code: 'invalid-request' });
+        expect(answer.body).toContain('must be one of Linear, Cubic');
+    });
+
+    it('refuses a change to a version that moved on, and writes nothing', async () => {
+        const { answer, calls } = await amend(
+            repliesFor(),
+            amendment(2, 'interpolation_method', 'Cubic'),
+        );
+        expect(answer.statusCode).toBe(409);
+        expect(answer.json()).toMatchObject({ code: 'conflict' });
+        expect(calls.map((call) => call.subject)).not.toContain(
+            'refdata.v1.curve_configuration_documents.put',
+        );
+    });
+});
 
 describe('the curve configuration a report binds', () => {
     it('lists the sections in the order the schema declares them, and a section it does not know last', async () => {
@@ -334,6 +488,10 @@ describe('the curve configuration a report binds', () => {
         expect(currency?.value).toBe('USD');
         expect(currency?.label).toBe('Currency');
         expect(currency?.required).toBe(true);
+        // The leaf says which catalogue it draws on, so the screen draws the
+        // currency list with its flags rather than a bare list of codes.
+        expect(currency?.catalogue).toBe('refdata.currency');
+        expect(currency?.choices.map((choice) => choice.value)).toEqual(['GBP', 'USD']);
 
         const method = entry?.parameters.find((leaf) => leaf.ore === 'InterpolationMethod');
         expect(method?.value).toBe('Linear');

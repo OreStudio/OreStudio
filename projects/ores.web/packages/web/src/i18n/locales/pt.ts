@@ -6915,6 +6915,15 @@ const pt: SourceCatalogue = {
             blockAbsent: 'não declarado',
             blockNotRecorded: 'não registado aqui',
         },
+        edit: {
+            start: 'Editar',
+            title: 'Alterar esta curva',
+            changed: '{count} parâmetros alterados',
+            cancel: 'Cancelar',
+            save: 'Guardar',
+            conflict:
+                'Esta configuração de curva mudou desde que a abriu. Leia-a novamente antes de a alterar.',
+        },
         details: {
             lead: 'O que a configuração é, quem a detém, e quanto dela o contrato de documentação único descreve.',
             decides:

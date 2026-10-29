@@ -6868,6 +6868,15 @@ export const en: SourceCatalogue = {
             blockAbsent: 'not stated',
             blockNotRecorded: 'not recorded here',
         },
+        edit: {
+            start: 'Edit',
+            title: 'Change this curve',
+            changed: '{count} parameters changed',
+            cancel: 'Cancel',
+            save: 'Save',
+            conflict:
+                'This curve configuration changed since you opened it. Read it again before you change it.',
+        },
         details: {
             lead: 'What the configuration is, who holds it, and how much of it the one documentation contract describes.',
             decides:

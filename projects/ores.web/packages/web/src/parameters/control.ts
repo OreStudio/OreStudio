@@ -38,7 +38,16 @@ export interface ControlChoice {
 }
 
 export type ControlModel =
-    | { kind: 'choice'; choices: readonly ControlChoice[] }
+    | {
+          kind: 'choice';
+          choices: readonly ControlChoice[];
+          /**
+           * The catalogue the list draws on, such as =refdata.currency=, or empty
+           * when it is a closed list of the contract's own. A catalogue is drawn
+           * with that record's own control, so a currency carries its flag.
+           */
+          catalogue?: string;
+      }
     | { kind: 'boolean' }
     | { kind: 'number'; minimum: number | null; maximum: number | null; whole: boolean }
     | { kind: 'text'; pattern: string };
@@ -49,6 +58,7 @@ export type ValueSetFields = PricingVocabulary['valueSets'][string];
 /** The fields of a value set that decide its control, as any leaf carries them. */
 export interface ValueSetShape {
     readonly sourceKind: string;
+    readonly catalogue?: string;
     readonly choices: readonly ControlChoice[];
     readonly minimum: number | null;
     readonly maximum: number | null;
@@ -79,7 +89,15 @@ export function controlOfValueSet(fields: ValueSetShape | undefined): ControlMod
         fields.sourceKind === 'catalogue' ||
         fields.choices.length > 0
     ) {
-        return { kind: 'choice', choices: fields.choices };
+        // A list the contract states itself carries no catalogue, so the key is
+        // absent rather than empty: the control is the plain select.
+        return {
+            kind: 'choice',
+            choices: fields.choices,
+            ...(fields.catalogue === undefined || fields.catalogue === ''
+                ? {}
+                : { catalogue: fields.catalogue }),
+        };
     }
     switch (fields.sourceKind) {
         case 'integer':

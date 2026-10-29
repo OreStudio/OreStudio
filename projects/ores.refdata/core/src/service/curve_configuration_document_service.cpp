@@ -52,57 +52,145 @@
 #include "ores.refdata.core/repository/swaption_volatility_config_repository.hpp"
 #include "ores.refdata.core/repository/yield_curve_config_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <cstdint>
 #include <optional>
 #include <set>
+#include <string>
+#include <string_view>
 #include <utility>
+#include <vector>
 
 namespace ores::refdata::service {
 
 using namespace ores::refdata::repository;
 using ores::database::repository::ids_of;
+using ores::database::repository::write_amendment;
 using ores::database::repository::read_one;
 using ores::database::repository::read_where;
 
 curve_configuration_document_service::curve_configuration_document_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-void curve_configuration_document_service::save(messaging::curve_configuration_document v) {
+void curve_configuration_document_service::save(messaging::curve_configuration_document v,
+                                                std::string reason_code,
+                                                std::string commentary) {
     ores::service::messaging::stamp_document(v, ctx_);
-    curve_configuration_repository().write(ctx_, v.config);
-
-    curve_configuration_section_repository().write(ctx_, v.sections);
-    curve_global_report_repository().write(ctx_, v.global_reports);
-    curve_definition_repository().write(ctx_, v.definitions);
-    yield_curve_config_repository().write(ctx_, v.yield_curves);
-    equity_curve_config_repository().write(ctx_, v.equity_curves);
-    default_curve_config_repository().write(ctx_, v.default_curves);
-    default_curve_configuration_repository().write(ctx_, v.default_curve_configurations);
-    inflation_curve_config_repository().write(ctx_, v.inflation_curves);
-    inflation_seasonality_factor_repository().write(ctx_, v.seasonality_factors);
-    curve_security_config_repository().write(ctx_, v.securities);
-    intraday_power_curve_config_repository().write(ctx_, v.intraday_power_curves);
-    fx_volatility_config_repository().write(ctx_, v.fx_volatilities);
-    base_correlation_config_repository().write(ctx_, v.base_correlations);
-    curve_correlation_config_repository().write(ctx_, v.correlations);
-    curve_report_configuration_repository().write(ctx_, v.report_configurations);
-    cds_volatility_config_repository().write(ctx_, v.cds_volatilities);
-    cds_volatility_term_repository().write(ctx_, v.cds_volatility_terms);
-    curve_volatility_config_repository().write(ctx_, v.volatility_configs);
-    inflation_cap_floor_volatility_config_repository().write(ctx_,
-                                                             v.inflation_cap_floor_volatilities);
-    swaption_volatility_config_repository().write(ctx_, v.swaption_volatilities);
-    cap_floor_volatility_config_repository().write(ctx_, v.cap_floor_volatilities);
-    curve_parametric_smile_repository().write(ctx_, v.parametric_smiles);
-    curve_parametric_smile_parameter_repository().write(ctx_, v.parametric_smile_parameters);
-    equity_volatility_config_repository().write(ctx_, v.equity_volatilities);
-    commodity_volatility_config_repository().write(ctx_, v.commodity_volatilities);
-    bond_future_volatility_config_repository().write(ctx_, v.bond_future_volatilities);
-    curve_bootstrap_config_repository().write(ctx_, v.bootstrap_configs);
-    curve_segment_repository().write(ctx_, v.segments);
-    curve_segment_curve_repository().write(ctx_, v.segment_curves);
-    curve_quote_repository().write(ctx_, v.quotes);
+    const auto reason = std::string_view(reason_code);
+    write_amendment(ctx_,
+                    curve_configuration_repository(),
+                    std::vector{std::move(v.config)},
+                    reason,
+                    commentary);
+    write_amendment(
+        ctx_, curve_configuration_section_repository(), std::move(v.sections), reason, commentary);
+    write_amendment(
+        ctx_, curve_global_report_repository(), std::move(v.global_reports), reason, commentary);
+    write_amendment(
+        ctx_, curve_definition_repository(), std::move(v.definitions), reason, commentary);
+    write_amendment(
+        ctx_, yield_curve_config_repository(), std::move(v.yield_curves), reason, commentary);
+    write_amendment(
+        ctx_, equity_curve_config_repository(), std::move(v.equity_curves), reason, commentary);
+    write_amendment(
+        ctx_, default_curve_config_repository(), std::move(v.default_curves), reason, commentary);
+    write_amendment(ctx_,
+                    default_curve_configuration_repository(),
+                    std::move(v.default_curve_configurations),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    inflation_curve_config_repository(),
+                    std::move(v.inflation_curves),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    inflation_seasonality_factor_repository(),
+                    std::move(v.seasonality_factors),
+                    reason,
+                    commentary);
+    write_amendment(
+        ctx_, curve_security_config_repository(), std::move(v.securities), reason, commentary);
+    write_amendment(ctx_,
+                    intraday_power_curve_config_repository(),
+                    std::move(v.intraday_power_curves),
+                    reason,
+                    commentary);
+    write_amendment(
+        ctx_, fx_volatility_config_repository(), std::move(v.fx_volatilities), reason, commentary);
+    write_amendment(ctx_,
+                    base_correlation_config_repository(),
+                    std::move(v.base_correlations),
+                    reason,
+                    commentary);
+    write_amendment(
+        ctx_, curve_correlation_config_repository(), std::move(v.correlations), reason, commentary);
+    write_amendment(ctx_,
+                    curve_report_configuration_repository(),
+                    std::move(v.report_configurations),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    cds_volatility_config_repository(),
+                    std::move(v.cds_volatilities),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    cds_volatility_term_repository(),
+                    std::move(v.cds_volatility_terms),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    curve_volatility_config_repository(),
+                    std::move(v.volatility_configs),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    swaption_volatility_config_repository(),
+                    std::move(v.swaption_volatilities),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    cap_floor_volatility_config_repository(),
+                    std::move(v.cap_floor_volatilities),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    curve_parametric_smile_repository(),
+                    std::move(v.parametric_smiles),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    curve_parametric_smile_parameter_repository(),
+                    std::move(v.parametric_smile_parameters),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    equity_volatility_config_repository(),
+                    std::move(v.equity_volatilities),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    commodity_volatility_config_repository(),
+                    std::move(v.commodity_volatilities),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    bond_future_volatility_config_repository(),
+                    std::move(v.bond_future_volatilities),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    curve_bootstrap_config_repository(),
+                    std::move(v.bootstrap_configs),
+                    reason,
+                    commentary);
+    write_amendment(ctx_, curve_segment_repository(), std::move(v.segments), reason, commentary);
+    write_amendment(
+        ctx_, curve_segment_curve_repository(), std::move(v.segment_curves), reason, commentary);
+    write_amendment(ctx_, curve_quote_repository(), std::move(v.quotes), reason, commentary);
 }
 
 messaging::curve_configuration_document

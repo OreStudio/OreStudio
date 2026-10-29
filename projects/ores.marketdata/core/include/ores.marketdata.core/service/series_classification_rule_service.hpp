@@ -133,23 +133,27 @@ public:
      * @param version The version to fetch.
      * @return The series classification rule at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::series_classification_rule> get_rule_at_version(
-        const std::string& series_type, const std::string& metric, std::uint32_t version);
+    std::optional<domain::series_classification_rule>
+    get_rule_at_version(const std::string& instrument,
+                        const std::string& quote,
+                        const std::string& key_kind,
+                        std::uint32_t version);
 
     /**
      * @brief Retrieves a single series classification rule by its primary key.
      *
      * @return The series classification rule if found, std::nullopt otherwise.
      */
-    std::optional<domain::series_classification_rule> get_rule(const std::string& series_type,
-                                                               const std::string& metric);
+    std::optional<domain::series_classification_rule>
+    get_rule(const std::string& instrument, const std::string& quote, const std::string& key_kind);
 
     /**
      * @brief Retrieves a batch of series classification rules by primary key.
      */
     std::vector<domain::series_classification_rule>
-    get_rules(const std::vector<std::string>& series_types,
-              const std::vector<std::string>& metrics);
+    get_rules(const std::vector<std::string>& instruments,
+              const std::vector<std::string>& quotes,
+              const std::vector<std::string>& key_kinds);
 
     /**
      * @brief Saves a series classification rule (creates or updates).
@@ -172,21 +176,25 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_rule(const std::string& series_type, const std::string& metric);
+    void delete_rule(const std::string& instrument,
+                     const std::string& quote,
+                     const std::string& key_kind);
 
     /**
      * @brief Deletes series classification rules by their primary keys.
      */
-    void delete_rules(const std::vector<std::string>& series_types,
-                      const std::vector<std::string>& metrics);
+    void delete_rules(const std::vector<std::string>& instruments,
+                      const std::vector<std::string>& quotes,
+                      const std::vector<std::string>& key_kinds);
 
     /**
      * @brief Retrieves all historical versions of a series classification rule.
      *
      * Addressed by the entity's key, which is its storage key.
      */
-    std::vector<domain::series_classification_rule> get_rule_history(const std::string& series_type,
-                                                                     const std::string& metric);
+    std::vector<domain::series_classification_rule> get_rule_history(const std::string& instrument,
+                                                                     const std::string& quote,
+                                                                     const std::string& key_kind);
 
 private:
     context ctx_;

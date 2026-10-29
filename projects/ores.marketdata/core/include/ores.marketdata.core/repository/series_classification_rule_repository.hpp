@@ -101,20 +101,25 @@ public:
      */
     /**@{*/
     std::vector<domain::series_classification_rule> read_latest(context ctx);
-    std::vector<domain::series_classification_rule>
-    read_latest(context ctx, const std::string& series_type, const std::string& metric);
+    std::vector<domain::series_classification_rule> read_latest(context ctx,
+                                                                const std::string& instrument,
+                                                                const std::string& quote,
+                                                                const std::string& key_kind);
     std::vector<domain::series_classification_rule>
     read_latest(context ctx,
-                const std::vector<std::string>& series_types,
-                const std::vector<std::string>& metrics);
+                const std::vector<std::string>& instruments,
+                const std::vector<std::string>& quotes,
+                const std::vector<std::string>& key_kinds);
     /**@}*/
 
 
     /**
      * @brief Reads all series classification rules, possibly filtered by primary key.
      */
-    std::vector<domain::series_classification_rule>
-    read_all(context ctx, const std::string& series_type, const std::string& metric);
+    std::vector<domain::series_classification_rule> read_all(context ctx,
+                                                             const std::string& instrument,
+                                                             const std::string& quote,
+                                                             const std::string& key_kind);
 
     /**
      * @brief Reads a single series classification rule as it stood at a specific
@@ -125,11 +130,11 @@ public:
      * @param ctx Repository context with database connection
      * @param version The version to fetch
      */
-    std::optional<domain::series_classification_rule>
-    read_at_version(context ctx,
-                    const std::string& series_type,
-                    const std::string& metric,
-                    std::uint32_t version);
+    std::optional<domain::series_classification_rule> read_at_version(context ctx,
+                                                                      const std::string& instrument,
+                                                                      const std::string& quote,
+                                                                      const std::string& key_kind,
+                                                                      std::uint32_t version);
 
     /**
      * @brief Whether a list of series classification rules can be ordered by a field.
@@ -165,7 +170,10 @@ public:
     /**
      * @brief Deletes a series classification rule by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& series_type, const std::string& metric);
+    void remove(context ctx,
+                const std::string& instrument,
+                const std::string& quote,
+                const std::string& key_kind);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -188,16 +196,18 @@ public:
      * no version asked for.
      */
     remove_status remove(context ctx,
-                         const std::string& series_type,
-                         const std::string& metric,
+                         const std::string& instrument,
+                         const std::string& quote,
+                         const std::string& key_kind,
                          std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes series classification rules by closing their temporal validity.
      */
     void remove(context ctx,
-                const std::vector<std::string>& series_types,
-                const std::vector<std::string>& metrics);
+                const std::vector<std::string>& instruments,
+                const std::vector<std::string>& quotes,
+                const std::vector<std::string>& key_kinds);
 
 
 private:

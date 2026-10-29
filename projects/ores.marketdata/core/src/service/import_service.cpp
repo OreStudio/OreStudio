@@ -220,9 +220,7 @@ import_service::import(const messaging::import_market_data_request& req) {
     // The identity the series is given: the series URI of the datum its key names,
     // or the oresmd URI of its index name. Every caller has one, because a row the
     // codecs cannot name is not imported at all.
-    auto find_or_create_series = [&](const std::string& series_type,
-                                     const std::string& metric,
-                                     const std::string& qualifier,
+    auto find_or_create_series = [&](const core::classification_key& identity,
                                      const std::string& oresmd_uri) -> boost::uuids::uuid {
         // The identity is what the series is, so the cache is keyed by it.
         const auto key = oresmd_uri;
@@ -254,7 +252,7 @@ import_service::import(const messaging::import_market_data_request& req) {
         if (!classifier)
             classifier.emplace(
                 repository::series_classification_rule_repository{}.read_latest(ctx_));
-        const auto cl = classifier->classify(series_type, metric, qualifier);
+        const auto cl = classifier->classify(identity);
         domain::market_series s;
         s.id = gen();
         s.tenant_id = ctx_.tenant_id();
@@ -338,9 +336,8 @@ import_service::import(const messaging::import_market_data_request& req) {
                              "reversed relative to refdata's canonical currency pair." :
                              "not the canonical spelling of this key."));
 
-                const auto ck = core::classification_key_of(named->datum);
                 const auto series = find_or_create_series(
-                    ck.series_type, ck.metric, ck.qualifier, named->series_uri);
+                    core::classification_key_of(named->datum), named->series_uri);
 
                 // The file declares the shape of every series it carries, from
                 // the keys it names. The series datum comes from the first key
@@ -411,10 +408,8 @@ import_service::import(const messaging::import_market_data_request& req) {
                     resp.warnings.push_back(f.qualifier + " skipped: " + uri.error());
                     continue;
                 }
-                const auto series = find_or_create_series(std::string(fixing_series_type),
-                                                          "RATE",
-                                                          datum::ore_index_codec::write(*index),
-                                                          *uri);
+                const auto series =
+                    find_or_create_series(core::classification_key_of(*index), *uri);
 
                 domain::market_fixing fix;
                 fix.id = gen();

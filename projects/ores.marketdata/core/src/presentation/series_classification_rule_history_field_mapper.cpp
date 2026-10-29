@@ -37,7 +37,7 @@ render_series_classification_rule_fields(const domain::series_classification_rul
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back({.name = "Series Type", .value = v.series_type});
+    fields.push_back({.name = "Instrument", .value = v.instrument});
     fields.push_back({.name = "Asset Class Source", .value = v.asset_class_source});
     fields.push_back(
         {.name = "Asset Class Code", .value = v.asset_class_code.value_or(std::string{})});

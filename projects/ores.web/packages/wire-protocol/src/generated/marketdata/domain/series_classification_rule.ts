@@ -33,8 +33,9 @@
 export interface SeriesClassificationRule {
     version: number;
     tenant_id: string;
-    series_type: string;
-    metric: string;
+    instrument: string;
+    quote: string;
+    key_kind: string;
     asset_class_source: string;
     asset_class_code: string | null;
     series_subclass_code: string;

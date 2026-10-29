@@ -73,7 +73,7 @@ std::vector<domain::series_classification_rule>
 series_classification_rule_read_one(repository::series_classification_rule_repository& repo,
                                     const ores::database::context& ctx,
                                     const messaging::series_classification_rule_key& key) {
-    return repo.read_latest(ctx, key.series_type, key.metric);
+    return repo.read_latest(ctx, key.instrument, key.quote, key.key_kind);
 }
 
 /**
@@ -85,8 +85,9 @@ series_classification_rule_read_one(repository::series_classification_rule_repos
 messaging::series_classification_rule_key
 series_classification_rule_key_from(const domain::series_classification_rule& v) {
     messaging::series_classification_rule_key key;
-    key.series_type = v.series_type;
-    key.metric = v.metric;
+    key.instrument = v.instrument;
+    key.quote = v.quote;
+    key.key_kind = v.key_kind;
     return key;
 }
 
@@ -100,8 +101,9 @@ series_classification_rule_key_from(const domain::series_classification_rule& v)
 domain::series_classification_rule
 series_classification_rule_to_domain(const messaging::series_classification_rule_write& write) {
     domain::series_classification_rule v;
-    v.series_type = write.series_type;
-    v.metric = write.metric;
+    v.instrument = write.instrument;
+    v.quote = write.quote;
+    v.key_kind = write.key_kind;
     v.asset_class_source = write.asset_class_source;
     v.asset_class_code = write.asset_class_code;
     v.series_subclass_code = write.series_subclass_code;
@@ -239,8 +241,11 @@ series_classification_rule_service::delete_series_classification_rule(
         }
         expected = request.removal.precondition.version;
     }
-    switch (
-        repo_.remove(ctx_, request.removal.key.series_type, request.removal.key.metric, expected)) {
+    switch (repo_.remove(ctx_,
+                         request.removal.key.instrument,
+                         request.removal.key.quote,
+                         request.removal.key.key_kind,
+                         expected)) {
         case repository::series_classification_rule_repository::remove_status::removed:
             break;
         case repository::series_classification_rule_repository::remove_status::missing:
@@ -255,7 +260,7 @@ series_classification_rule_service::delete_series_classification_rule(
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "series_classification_rule",
-                 .field = "series_type",
+                 .field = "instrument",
                  .expected = expected ? std::to_string(*expected) : std::string{},
                  .current = live.empty() ? std::string{} : std::to_string(live.front().version)});
             break;
@@ -285,15 +290,19 @@ series_classification_rule_service::delete_many_series_classification_rules(
     }
     if (request.removals.empty())
         return response;
-    std::vector<std::string> series_type_keys;
-    series_type_keys.reserve(request.removals.size());
+    std::vector<std::string> instrument_keys;
+    instrument_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        series_type_keys.push_back(removal.key.series_type);
-    std::vector<std::string> metric_keys;
-    metric_keys.reserve(request.removals.size());
+        instrument_keys.push_back(removal.key.instrument);
+    std::vector<std::string> quote_keys;
+    quote_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        metric_keys.push_back(removal.key.metric);
-    repo_.remove(ctx_, series_type_keys, metric_keys);
+        quote_keys.push_back(removal.key.quote);
+    std::vector<std::string> key_kind_keys;
+    key_kind_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        key_kind_keys.push_back(removal.key.key_kind);
+    repo_.remove(ctx_, instrument_keys, quote_keys, key_kind_keys);
     return response;
 }
 
@@ -312,7 +321,8 @@ series_classification_rule_service::list_series_classification_rule_versions(
             refuse(outcome_code::filter_not_supported, {.entity = "series classification rules"});
         return response;
     }
-    auto all = repo_.read_all(ctx_, request.key.series_type, request.key.metric);
+    auto all =
+        repo_.read_all(ctx_, request.key.instrument, request.key.quote, request.key.key_kind);
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
     std::reverse(all.begin(), all.end());
@@ -329,8 +339,9 @@ series_classification_rule_service::get_series_classification_rule_version(
     const messaging::get_series_classification_rule_version_request& request) {
     messaging::get_series_classification_rule_version_response response;
     auto found = repo_.read_at_version(ctx_,
-                                       request.key.series_classification_rule.series_type,
-                                       request.key.series_classification_rule.metric,
+                                       request.key.series_classification_rule.instrument,
+                                       request.key.series_classification_rule.quote,
+                                       request.key.series_classification_rule.key_kind,
                                        request.key.version);
     if (!found) {
         response.result = refuse(outcome_code::not_found, {.entity = "series_classification_rule"});
@@ -354,7 +365,7 @@ ores::utility::domain::result series_classification_rule_service::prepare_change
         case precondition_kind::must_not_exist:
             if (!current.empty())
                 return refuse(outcome_code::already_exists,
-                              {.entity = "series_classification_rule", .field = "series_type"});
+                              {.entity = "series_classification_rule", .field = "instrument"});
             break;
         case precondition_kind::must_match_version:
             if (current.empty())
@@ -366,7 +377,7 @@ ores::utility::domain::result series_classification_rule_service::prepare_change
                     *change.precondition.version) {
                 return refuse(outcome_code::version_conflict,
                               {.entity = "series_classification_rule",
-                               .field = "series_type",
+                               .field = "instrument",
                                .expected = change.precondition.version ?
                                                std::to_string(*change.precondition.version) :
                                                std::string{},
@@ -402,53 +413,61 @@ std::uint32_t series_classification_rule_service::count_rules() {
 
 
 std::optional<domain::series_classification_rule>
-series_classification_rule_service::get_rule_at_version(const std::string& series_type,
-                                                        const std::string& metric,
+series_classification_rule_service::get_rule_at_version(const std::string& instrument,
+                                                        const std::string& quote,
+                                                        const std::string& key_kind,
                                                         std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting series classification rule at version. "
-                               << "series_type: " << series_type << " metric: " << metric
-                               << " version: " << version;
-    return repo_.read_at_version(ctx_, series_type, metric, version);
+                               << "instrument: " << instrument << " quote: " << quote
+                               << " key_kind: " << key_kind << " version: " << version;
+    return repo_.read_at_version(ctx_, instrument, quote, key_kind, version);
 }
 
-std::optional<domain::series_classification_rule>
-series_classification_rule_service::get_rule(const std::string& series_type,
-                                             const std::string& metric) {
+std::optional<domain::series_classification_rule> series_classification_rule_service::get_rule(
+    const std::string& instrument, const std::string& quote, const std::string& key_kind) {
     BOOST_LOG_SEV(lg(), debug) << "Getting series classification rule. "
-                               << "series_type: " << series_type << " metric: " << metric;
-    auto results = repo_.read_latest(ctx_, series_type, metric);
+                               << "instrument: " << instrument << " quote: " << quote
+                               << " key_kind: " << key_kind;
+    auto results = repo_.read_latest(ctx_, instrument, quote, key_kind);
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
 std::vector<domain::series_classification_rule>
-series_classification_rule_service::get_rules(const std::vector<std::string>& series_types,
-                                              const std::vector<std::string>& metrics) {
-    return repo_.read_latest(ctx_, series_types, metrics);
+series_classification_rule_service::get_rules(const std::vector<std::string>& instruments,
+                                              const std::vector<std::string>& quotes,
+                                              const std::vector<std::string>& key_kinds) {
+    return repo_.read_latest(ctx_, instruments, quotes, key_kinds);
 }
 
 void series_classification_rule_service::save_rule(const domain::series_classification_rule& v) {
-    if (v.series_type.empty())
-        throw std::invalid_argument("Series Classification Rule series_type cannot be empty.");
-    if (v.metric.empty())
-        throw std::invalid_argument("Series Classification Rule metric cannot be empty.");
+    if (v.instrument.empty())
+        throw std::invalid_argument("Series Classification Rule instrument cannot be empty.");
+    if (v.quote.empty())
+        throw std::invalid_argument("Series Classification Rule quote cannot be empty.");
+    if (v.key_kind.empty())
+        throw std::invalid_argument("Series Classification Rule key_kind cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving series classification rule. "
-                               << "series_type: " << v.series_type << " metric: " << v.metric;
+                               << "instrument: " << v.instrument << " quote: " << v.quote
+                               << " key_kind: " << v.key_kind;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved series classification rule. "
-                              << "series_type: " << v.series_type << " metric: " << v.metric;
+                              << "instrument: " << v.instrument << " quote: " << v.quote
+                              << " key_kind: " << v.key_kind;
 }
 
 void series_classification_rule_service::save_rules(
     const std::vector<domain::series_classification_rule>& rules) {
     for (const auto& e : rules) {
-        if (e.series_type.empty())
-            throw std::invalid_argument("Series Classification Rule series_type cannot be empty.");
-        if (e.metric.empty())
-            throw std::invalid_argument("Series Classification Rule metric cannot be empty.");
+        if (e.instrument.empty())
+            throw std::invalid_argument("Series Classification Rule instrument cannot be empty.");
+        if (e.quote.empty())
+            throw std::invalid_argument("Series Classification Rule quote cannot be empty.");
+        if (e.key_kind.empty())
+            throw std::invalid_argument("Series Classification Rule key_kind cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << rules.size() << " series classification rules";
     auto ts = rules;
@@ -458,26 +477,32 @@ void series_classification_rule_service::save_rules(
     repo_.write(ctx_, ts);
 }
 
-void series_classification_rule_service::delete_rule(const std::string& series_type,
-                                                     const std::string& metric) {
+void series_classification_rule_service::delete_rule(const std::string& instrument,
+                                                     const std::string& quote,
+                                                     const std::string& key_kind) {
     BOOST_LOG_SEV(lg(), debug) << "Removing series classification rule. "
-                               << "series_type: " << series_type << " metric: " << metric;
-    repo_.remove(ctx_, series_type, metric);
+                               << "instrument: " << instrument << " quote: " << quote
+                               << " key_kind: " << key_kind;
+    repo_.remove(ctx_, instrument, quote, key_kind);
     BOOST_LOG_SEV(lg(), info) << "Removed series classification rule. "
-                              << "series_type: " << series_type << " metric: " << metric;
+                              << "instrument: " << instrument << " quote: " << quote
+                              << " key_kind: " << key_kind;
 }
 
-void series_classification_rule_service::delete_rules(const std::vector<std::string>& series_types,
-                                                      const std::vector<std::string>& metrics) {
-    repo_.remove(ctx_, series_types, metrics);
+void series_classification_rule_service::delete_rules(const std::vector<std::string>& instruments,
+                                                      const std::vector<std::string>& quotes,
+                                                      const std::vector<std::string>& key_kinds) {
+    repo_.remove(ctx_, instruments, quotes, key_kinds);
 }
 
 std::vector<domain::series_classification_rule>
-series_classification_rule_service::get_rule_history(const std::string& series_type,
-                                                     const std::string& metric) {
+series_classification_rule_service::get_rule_history(const std::string& instrument,
+                                                     const std::string& quote,
+                                                     const std::string& key_kind) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for series classification rule. "
-                               << "series_type: " << series_type << " metric: " << metric;
-    return repo_.read_all(ctx_, series_type, metric);
+                               << "instrument: " << instrument << " quote: " << quote
+                               << " key_kind: " << key_kind;
+    return repo_.read_all(ctx_, instrument, quote, key_kind);
 }
 
 }

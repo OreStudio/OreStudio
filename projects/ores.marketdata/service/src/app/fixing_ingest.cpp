@@ -19,7 +19,7 @@
  */
 #include "ores.marketdata.service/app/fixing_ingest.hpp"
 #include "ores.marketdata.api/domain/market_fixing.hpp"
-#include "ores.marketdata.core/datum/ore_index_codec.hpp"
+#include "ores.marketdata.core/classification/series_classifier.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/market_fixing_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
@@ -34,11 +34,6 @@ namespace ores::marketdata::service::app {
 using namespace ores::logging;
 
 namespace {
-
-/// The series type and metric an index series is classified under, as the import of ORE
-/// fixings classifies it.
-constexpr std::string_view fixing_series_type = "FIXING";
-constexpr std::string_view fixing_metric = "RATE";
 
 /// How many fixings the thread takes from the queue at once.
 constexpr std::size_t batch_limit = 2048;
@@ -77,9 +72,7 @@ boost::uuids::uuid fixing_store::series_for(const ores::database::context& tenan
         if (!classifier)
             classifier = std::make_shared<const core::series_classifier>(
                 repository::series_classification_rule_repository{}.read_latest(tenant_ctx));
-        const auto cl = classifier->classify(std::string(fixing_series_type),
-                                             std::string(fixing_metric),
-                                             datum::ore_index_codec::write(*index));
+        const auto cl = classifier->classify(core::classification_key_of(*index));
         BOOST_LOG_SEV(lg(), info) << "Creating fixing series " << index_uri << " for provider "
                                   << owner.provider_code;
         existing.push_back(create_feed_series(

@@ -73,12 +73,14 @@ series_classification_rule_list_order(const ores::utility::domain::order& order,
                                       std::initializer_list<std::string> default_columns,
                                       bool default_descending) {
     if (order.field.empty())
-        return query_builder::make_order(
-            default_columns, default_descending != order.descending, {"series_type", "metric"});
+        return query_builder::make_order(default_columns,
+                                         default_descending != order.descending,
+                                         {"instrument", "quote", "key_kind"});
     if (!series_classification_rule_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of series classification rules cannot be ordered by " +
                                     order.field + ".");
-    return query_builder::make_order({order.field}, order.descending, {"series_type", "metric"});
+    return query_builder::make_order(
+        {order.field}, order.descending, {"instrument", "quote", "key_kind"});
 }
 
 }
@@ -86,7 +88,7 @@ series_classification_rule_list_order(const ores::utility::domain::order& order,
 ores::utility::domain::precondition
 series_classification_rule_repository::replace_claim(context ctx,
                                                      const domain::series_classification_rule& v) {
-    const auto current = read_latest(ctx, v.series_type, v.metric);
+    const auto current = read_latest(ctx, v.instrument, v.quote, v.key_kind);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
@@ -113,7 +115,7 @@ domain::series_classification_rule series_classification_rule_repository::apply_
             // the row is read and its version stated. A row that moved on between
             // this read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, v.series_type, v.metric);
+            const auto current = read_latest(ctx, v.instrument, v.quote, v.key_kind);
             t.version = current.empty() ? 0 : current.front().version;
             break;
         }
@@ -140,7 +142,8 @@ void series_classification_rule_repository::write(
     const domain::series_classification_rule& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing series classification rule. "
-                               << "series_type: " << v.series_type << " metric: " << v.metric;
+                               << "instrument: " << v.instrument << " quote: " << v.quote
+                               << " key_kind: " << v.key_kind;
     const auto t = apply_claim(ctx, v, claim);
     query_builder::execute_write_query(ctx,
                                        series_classification_rule_mapper::map(t),
@@ -169,7 +172,7 @@ series_classification_rule_repository::read_latest(context ctx) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<series_classification_rule_entity>> |
                        query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       query_builder::order_by("series_type"_c, "metric"_c);
+                       query_builder::order_by("instrument"_c, "quote"_c, "key_kind"_c);
 
     return query_builder::execute_read_query<series_classification_rule_entity,
                                              domain::series_classification_rule>(
@@ -180,16 +183,20 @@ series_classification_rule_repository::read_latest(context ctx) {
         "Reading latest series classification rules");
 }
 
-std::vector<domain::series_classification_rule> series_classification_rule_repository::read_latest(
-    context ctx, const std::string& series_type, const std::string& metric) {
+std::vector<domain::series_classification_rule>
+series_classification_rule_repository::read_latest(context ctx,
+                                                   const std::string& instrument,
+                                                   const std::string& quote,
+                                                   const std::string& key_kind) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest series classification rule. "
-                               << "series_type: " << series_type << " metric: " << metric;
+                               << "instrument: " << instrument << " quote: " << quote
+                               << " key_kind: " << key_kind;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<series_classification_rule_entity>> |
-        query_builder::where("tenant_id"_c == tid && "series_type"_c == series_type &&
-                             "metric"_c == metric && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<series_classification_rule_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "instrument"_c == instrument &&
+                                            "quote"_c == quote && "key_kind"_c == key_kind &&
+                                            "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<series_classification_rule_entity,
                                              domain::series_classification_rule>(
@@ -197,20 +204,23 @@ std::vector<domain::series_classification_rule> series_classification_rule_repos
         query,
         [](const auto& entities) { return series_classification_rule_mapper::map(entities); },
         lg(),
-        "Reading latest series classification rule by series_type.");
+        "Reading latest series classification rule by instrument.");
 }
 
 
-std::vector<domain::series_classification_rule> series_classification_rule_repository::read_all(
-    context ctx, const std::string& series_type, const std::string& metric) {
+std::vector<domain::series_classification_rule>
+series_classification_rule_repository::read_all(context ctx,
+                                                const std::string& instrument,
+                                                const std::string& quote,
+                                                const std::string& key_kind) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all series classification rule versions. "
-                               << "series_type: " << series_type << " metric: " << metric;
+                               << "instrument: " << instrument << " quote: " << quote
+                               << " key_kind: " << key_kind;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<series_classification_rule_entity>> |
-        query_builder::where("tenant_id"_c == tid && "series_type"_c == series_type &&
-                             "metric"_c == metric) |
-        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query = query_builder::read<std::vector<series_classification_rule_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "instrument"_c == instrument &&
+                                            "quote"_c == quote && "key_kind"_c == key_kind) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<series_classification_rule_entity,
                                              domain::series_classification_rule>(
@@ -218,23 +228,24 @@ std::vector<domain::series_classification_rule> series_classification_rule_repos
         query,
         [](const auto& entities) { return series_classification_rule_mapper::map(entities); },
         lg(),
-        "Reading all series classification rule versions by series_type.");
+        "Reading all series classification rule versions by instrument.");
 }
 
 std::optional<domain::series_classification_rule>
 series_classification_rule_repository::read_at_version(context ctx,
-                                                       const std::string& series_type,
-                                                       const std::string& metric,
+                                                       const std::string& instrument,
+                                                       const std::string& quote,
+                                                       const std::string& key_kind,
                                                        std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading series classification rule at version. "
-                               << "series_type: " << series_type << " metric: " << metric
-                               << " version: " << version;
+                               << "instrument: " << instrument << " quote: " << quote
+                               << " key_kind: " << key_kind << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<series_classification_rule_entity>> |
-        query_builder::where("tenant_id"_c == tid && "series_type"_c == series_type &&
-                             "metric"_c == metric && "version"_c == version) |
-        query_builder::limit(1);
+    const auto query = query_builder::read<std::vector<series_classification_rule_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "instrument"_c == instrument &&
+                                            "quote"_c == quote && "key_kind"_c == key_kind &&
+                                            "version"_c == version) |
+                       query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<series_classification_rule_entity,
                                                             domain::series_classification_rule>(
@@ -251,12 +262,14 @@ series_classification_rule_repository::read_at_version(context ctx,
 
 series_classification_rule_repository::remove_status
 series_classification_rule_repository::remove(context ctx,
-                                              const std::string& series_type,
-                                              const std::string& metric,
+                                              const std::string& instrument,
+                                              const std::string& quote,
+                                              const std::string& key_kind,
                                               std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing series classification rule. "
-                               << "series_type: " << series_type << " metric: " << metric;
-    const auto current = read_latest(ctx, series_type, metric);
+                               << "instrument: " << instrument << " quote: " << quote
+                               << " key_kind: " << key_kind;
+    const auto current = read_latest(ctx, instrument, quote, key_kind);
     if (current.empty())
         return remove_status::missing;
     // The protocol states the version as a uint32 and the row carries it as an
@@ -269,26 +282,26 @@ series_classification_rule_repository::remove(context ctx,
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::delete_from<series_classification_rule_entity> |
-        query_builder::where("tenant_id"_c == tid && "series_type"_c == series_type &&
-                             "metric"_c == metric && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+    const auto query = query_builder::delete_from<series_classification_rule_entity> |
+                       query_builder::where("tenant_id"_c == tid && "instrument"_c == instrument &&
+                                            "quote"_c == quote && "key_kind"_c == key_kind &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing series classification rule from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
-    if (!read_latest(ctx, series_type, metric).empty())
+    if (!read_latest(ctx, instrument, quote, key_kind).empty())
         return remove_status::conflicting;
     return remove_status::removed;
 }
 
 void series_classification_rule_repository::remove(context ctx,
-                                                   const std::string& series_type,
-                                                   const std::string& metric) {
-    static_cast<void>(remove(ctx, series_type, metric, std::nullopt));
+                                                   const std::string& instrument,
+                                                   const std::string& quote,
+                                                   const std::string& key_kind) {
+    static_cast<void>(remove(ctx, instrument, quote, key_kind, std::nullopt));
 }
 
 std::vector<domain::series_classification_rule>
@@ -308,7 +321,7 @@ series_classification_rule_repository::read_latest(context ctx,
                                                      domain::series_classification_rule>(
         ctx,
         query,
-        series_classification_rule_list_order(order, {"series_type", "metric"}, false),
+        series_classification_rule_list_order(order, {"instrument", "quote", "key_kind"}, false),
         query_builder::narrowed(query_builder::valid_at(as_of), std::nullopt),
         [](const auto& entities) { return series_classification_rule_mapper::map(entities); },
         lg(),
@@ -333,16 +346,18 @@ std::uint32_t series_classification_rule_repository::get_total_rule_count(
 
 std::vector<domain::series_classification_rule>
 series_classification_rule_repository::read_latest(context ctx,
-                                                   const std::vector<std::string>& series_types,
-                                                   const std::vector<std::string>& metrics) {
-    if (series_types.empty() || metrics.empty())
+                                                   const std::vector<std::string>& instruments,
+                                                   const std::vector<std::string>& quotes,
+                                                   const std::vector<std::string>& key_kinds) {
+    if (instruments.empty() || quotes.empty() || key_kinds.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<series_classification_rule_entity>> |
-        query_builder::where("tenant_id"_c == tid && "series_type"_c.in(series_types) &&
-                             "metric"_c.in(metrics) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "instrument"_c.in(instruments) &&
+                             "quote"_c.in(quotes) && "key_kind"_c.in(key_kinds) &&
+                             "valid_to"_c == max.value());
     auto result = query_builder::execute_read_query<series_classification_rule_entity,
                                                     domain::series_classification_rule>(
         ctx,
@@ -353,32 +368,33 @@ series_classification_rule_repository::read_latest(context ctx,
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
-    if (metrics.size() != series_types.size())
+    if (quotes.size() != instruments.size() || key_kinds.size() != instruments.size())
         throw std::invalid_argument("series_classification_rule_repository::read_latest: key "
                                     "column vectors must be the same length");
-    std::set<std::tuple<std::string, std::string>> requested;
-    for (std::size_t i = 0; i < series_types.size(); ++i)
-        requested.emplace(series_types[i], metrics[i]);
+    std::set<std::tuple<std::string, std::string, std::string>> requested;
+    for (std::size_t i = 0; i < instruments.size(); ++i)
+        requested.emplace(instruments[i], quotes[i], key_kinds[i]);
     std::vector<domain::series_classification_rule> filtered;
     filtered.reserve(result.size());
     for (auto& item : result) {
-        if (requested.contains(std::make_tuple(item.series_type, item.metric)))
+        if (requested.contains(std::make_tuple(item.instrument, item.quote, item.key_kind)))
             filtered.push_back(std::move(item));
     }
     return filtered;
 }
 
 void series_classification_rule_repository::remove(context ctx,
-                                                   const std::vector<std::string>& series_types,
-                                                   const std::vector<std::string>& metrics) {
+                                                   const std::vector<std::string>& instruments,
+                                                   const std::vector<std::string>& quotes,
+                                                   const std::vector<std::string>& key_kinds) {
     // Compound key: a per-column .in() DELETE would be a cross-product
     // over-delete (rows outside the requested tuples), and a DELETE can't
     // be filtered after the fact like a read -- remove one tuple at a time.
-    if (metrics.size() != series_types.size())
+    if (quotes.size() != instruments.size() || key_kinds.size() != instruments.size())
         throw std::invalid_argument("series_classification_rule_repository::remove: key column "
                                     "vectors must be the same length");
-    for (std::size_t i = 0; i < series_types.size(); ++i)
-        remove(ctx, series_types[i], metrics[i]);
+    for (std::size_t i = 0; i < instruments.size(); ++i)
+        remove(ctx, instruments[i], quotes[i], key_kinds[i]);
 }
 
 

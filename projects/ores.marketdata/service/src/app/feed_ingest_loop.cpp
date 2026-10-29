@@ -884,9 +884,7 @@ boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context
     auto existing =
         series_repo.read_latest_by_key(tenant_ctx, series_uri, owner.provider_code, party);
     if (existing.empty()) {
-        const auto ck = core::classification_key_of(named.datum);
-        const auto cl =
-            classifier_for(tenant_ctx)->classify(ck.series_type, ck.metric, ck.qualifier);
+        const auto cl = classifier_for(tenant_ctx)->classify(core::classification_key_of(named.datum));
         BOOST_LOG_SEV(lg(), info) << "Creating market series " << series_uri;
 
         auto series = create_feed_series(

@@ -42,8 +42,9 @@ struct series_classification_rule_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_marketdata_series_classification_rules_tbl";
 
-    std::string series_type;
-    std::string metric;
+    std::string instrument;
+    std::string quote;
+    std::string key_kind;
     std::string tenant_id;
     int version = 0;
     std::string asset_class_source;
@@ -63,8 +64,9 @@ struct series_classification_rule_entity {
     static constexpr auto columns() {
         using e = series_classification_rule_entity;
         namespace query_builder = ores::database::query_builder;
-        return query_builder::columns<e>() | query_builder::key("series_type", &e::series_type) |
-               query_builder::key("metric", &e::metric) |
+        return query_builder::columns<e>() | query_builder::key("instrument", &e::instrument) |
+               query_builder::key("quote", &e::quote) |
+               query_builder::key("key_kind", &e::key_kind) |
                query_builder::bind("tenant_id", &e::tenant_id) |
                query_builder::bind("version", &e::version) |
                query_builder::bind("asset_class_source", &e::asset_class_source) |

@@ -128,6 +128,7 @@ set(files
     "intraday_power_load_convention_eventing_integration_tests.cpp"
     "ledger_feed_type_eventing_integration_tests.cpp"
     "leg_type_eventing_integration_tests.cpp"
+    "legal_entity_eventing_integration_tests.cpp"
     "local_jurisdiction_eventing_integration_tests.cpp"
     "main.cpp"
     "messaging_book_proposal_mapping_tests.cpp"

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 82F0BB15-9794-5199-A101-86923D28CADF
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the legal_entities commands from the shell?
+#+description: Every command the legal_entities submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:legal_entities:
+
+This file documents the legal_entities resource at the shell, one section per command. Every command is a subcommand of =legal_entities=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 8961773C-6B21-58F1-9874-318D2B5EB5BA
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+legal_entities list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.legal_entities.list=.
+
+#+name: legal_entities-list
+#+begin_src ores-shell :tangle legal_entities-list.ores :exports none
+legal_entities list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: CEE50AB4-F071-58D8-A9CD-D17D519A060E
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+legal_entities get <lei>
+#+end_example
+
+It is addressed at =refdata.v1.legal_entities.get=.
+
+#+name: legal_entities-get
+#+begin_src ores-shell :tangle legal_entities-get.ores :exports none
+legal_entities get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 8F89AE6C-EB69-5210-8FCA-98D08C6B2D35
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+legal_entities get-many <lei>
+#+end_example
+
+It is addressed at =refdata.v1.legal_entities.get_many=.
+
+#+name: legal_entities-get-many
+#+begin_src ores-shell :tangle legal_entities-get-many.ores :exports none
+legal_entities get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: E5123978-C443-5AFB-932B-B6432730FB60
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+legal_entities add <lei> <legal_name> <jurisdiction> <entity_status> <entity_category> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.legal_entities.put=.
+
+#+name: legal_entities-add
+#+begin_src ores-shell :tangle legal_entities-add.ores :exports none
+legal_entities add __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 2343B188-F95C-5556-B629-B3C2C5982D54
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+legal_entities set <lei> <legal_name> <jurisdiction> <entity_status> <entity_category> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.legal_entities.put=.
+
+#+name: legal_entities-set
+#+begin_src ores-shell :tangle legal_entities-set.ores :exports none
+legal_entities set __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: CF8DEDCD-2FAC-5D80-AD1C-AF6F98E75214
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+legal_entities put-many --count <n> <lei> <legal_name> <jurisdiction> <entity_status> <entity_category> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.legal_entities.put_many=.
+
+#+name: legal_entities-put-many
+#+begin_src ores-shell :tangle legal_entities-put-many.ores :exports none
+legal_entities put-many --count 1 __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 21A14E7C-2A15-53EF-A904-8FD527CD0B32
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+legal_entities delete <lei> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.legal_entities.delete=.
+
+#+name: legal_entities-delete
+#+begin_src ores-shell :tangle legal_entities-delete.ores :exports none
+legal_entities delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 69C2D81D-EF29-5AAB-85B9-4112B6E70AFF
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+legal_entities delete-many <lei> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.legal_entities.delete_many=.
+
+#+name: legal_entities-delete-many
+#+begin_src ores-shell :tangle legal_entities-delete-many.ores :exports none
+legal_entities delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 8CC233DC-3C85-55C6-9E13-9BDA9EFE000C
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+legal_entities versions <lei> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.legal_entities_versions.list=.
+
+#+name: legal_entities-versions
+#+begin_src ores-shell :tangle legal_entities-versions.ores :exports none
+legal_entities versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: A10C9EA0-7FD4-5616-A5A3-598743D6B258
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+legal_entities version <lei> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.legal_entities_versions.get=.
+
+#+name: legal_entities-version
+#+begin_src ores-shell :tangle legal_entities-version.ores :exports none
+legal_entities version __none__ --version 1
+#+end_src
+

@@ -13,6 +13,7 @@
 |---------------+-------|
 | Prototype     | [[file:blotter/][the prototype]] |
 | Gemini review | none |
+| Signed off | the owner, 2026-10-29 |
 | Group         | [[file:index.org][Trades prototypes]] |
 
 * Summary

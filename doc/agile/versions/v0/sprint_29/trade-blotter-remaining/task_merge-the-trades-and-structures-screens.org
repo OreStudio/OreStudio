@@ -206,6 +206,11 @@ the screen is designed, with its command and commit recorded then.
 
 * Notes
 
+- The owner signed the prototypes off on 2026-10-29, and the three pages carry
+  the sign-off in their item tables. The shape, the flat option and the three
+  perspectives are therefore decided; what the task still owes is the read that
+  serves them and the states on it.
+
 - The question came from the owner on 2026-10-29, after the structures screens
   were reviewed: "we created a complete separation between trades and structures
   but to me that is not how a real trading system behaves", and "we need a screen

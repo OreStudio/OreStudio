@@ -67,179 +67,130 @@ namespace ores::refdata::service {
 
 using namespace ores::refdata::repository;
 using ores::database::repository::ids_of;
+using ores::database::repository::write_amendment;
 using ores::database::repository::read_one;
 using ores::database::repository::read_where;
 
 curve_configuration_document_service::curve_configuration_document_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-namespace {
-
-/*
- * The claim one row states: the version it was read at, and none when it is new.
- * A row that moved on since the read is refused by the store's version
- * management, so a stale save is a conflict rather than an overwrite.
- */
-ores::utility::domain::precondition claim_of(int version) {
-    using ores::utility::domain::precondition_kind;
-    if (version == 0)
-        return {precondition_kind::must_not_exist, std::nullopt};
-    return {precondition_kind::must_match_version, static_cast<std::uint32_t>(version)};
-}
-
-/*
- * The rows take the save's reason, because the reason the document was imported
- * with does not describe this version. An empty reason leaves the store's.
- */
-template <typename Row>
-void state_reason(Row& row, std::string_view reason, std::string_view commentary) {
-    if constexpr (requires { row.change_reason_code; }) {
-        if (!reason.empty())
-            row.change_reason_code = std::string(reason);
-        if constexpr (requires { row.change_commentary; })
-            row.change_commentary = std::string(commentary);
-    }
-}
-
-/*
- * Writes the rows the caller sent and nothing else, so the families it did not
- * read keep their versions and their history stays a record of what changed.
- */
-template <typename Repository, typename Row>
-void write_stated(ores::database::context ctx,
-                  Repository repository,
-                  std::vector<Row> rows,
-                  std::string_view reason,
-                  std::string_view commentary) {
-    if (rows.empty())
-        return;
-    std::vector<ores::utility::domain::precondition> claims;
-    claims.reserve(rows.size());
-    for (auto& row : rows) {
-        claims.push_back(claim_of(static_cast<int>(row.version)));
-        state_reason(row, reason, commentary);
-    }
-    repository.write(ctx, rows, claims);
-}
-
-} // namespace
-
 void curve_configuration_document_service::save(messaging::curve_configuration_document v,
                                                 std::string reason_code,
                                                 std::string commentary) {
     ores::service::messaging::stamp_document(v, ctx_);
     const auto reason = std::string_view(reason_code);
-    write_stated(ctx_,
-                 curve_configuration_repository(),
-                 std::vector{std::move(v.config)},
-                 reason,
-                 commentary);
-    write_stated(
+    write_amendment(ctx_,
+                    curve_configuration_repository(),
+                    std::vector{std::move(v.config)},
+                    reason,
+                    commentary);
+    write_amendment(
         ctx_, curve_configuration_section_repository(), std::move(v.sections), reason, commentary);
-    write_stated(
+    write_amendment(
         ctx_, curve_global_report_repository(), std::move(v.global_reports), reason, commentary);
-    write_stated(ctx_, curve_definition_repository(), std::move(v.definitions), reason, commentary);
-    write_stated(
+    write_amendment(
+        ctx_, curve_definition_repository(), std::move(v.definitions), reason, commentary);
+    write_amendment(
         ctx_, yield_curve_config_repository(), std::move(v.yield_curves), reason, commentary);
-    write_stated(
+    write_amendment(
         ctx_, equity_curve_config_repository(), std::move(v.equity_curves), reason, commentary);
-    write_stated(
+    write_amendment(
         ctx_, default_curve_config_repository(), std::move(v.default_curves), reason, commentary);
-    write_stated(ctx_,
-                 default_curve_configuration_repository(),
-                 std::move(v.default_curve_configurations),
-                 reason,
-                 commentary);
-    write_stated(ctx_,
-                 inflation_curve_config_repository(),
-                 std::move(v.inflation_curves),
-                 reason,
-                 commentary);
-    write_stated(ctx_,
-                 inflation_seasonality_factor_repository(),
-                 std::move(v.seasonality_factors),
-                 reason,
-                 commentary);
-    write_stated(
+    write_amendment(ctx_,
+                    default_curve_configuration_repository(),
+                    std::move(v.default_curve_configurations),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    inflation_curve_config_repository(),
+                    std::move(v.inflation_curves),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    inflation_seasonality_factor_repository(),
+                    std::move(v.seasonality_factors),
+                    reason,
+                    commentary);
+    write_amendment(
         ctx_, curve_security_config_repository(), std::move(v.securities), reason, commentary);
-    write_stated(ctx_,
-                 intraday_power_curve_config_repository(),
-                 std::move(v.intraday_power_curves),
-                 reason,
-                 commentary);
-    write_stated(
+    write_amendment(ctx_,
+                    intraday_power_curve_config_repository(),
+                    std::move(v.intraday_power_curves),
+                    reason,
+                    commentary);
+    write_amendment(
         ctx_, fx_volatility_config_repository(), std::move(v.fx_volatilities), reason, commentary);
-    write_stated(ctx_,
-                 base_correlation_config_repository(),
-                 std::move(v.base_correlations),
-                 reason,
-                 commentary);
-    write_stated(
+    write_amendment(ctx_,
+                    base_correlation_config_repository(),
+                    std::move(v.base_correlations),
+                    reason,
+                    commentary);
+    write_amendment(
         ctx_, curve_correlation_config_repository(), std::move(v.correlations), reason, commentary);
-    write_stated(ctx_,
-                 curve_report_configuration_repository(),
-                 std::move(v.report_configurations),
-                 reason,
-                 commentary);
-    write_stated(ctx_,
-                 cds_volatility_config_repository(),
-                 std::move(v.cds_volatilities),
-                 reason,
-                 commentary);
-    write_stated(ctx_,
-                 cds_volatility_term_repository(),
-                 std::move(v.cds_volatility_terms),
-                 reason,
-                 commentary);
-    write_stated(ctx_,
-                 curve_volatility_config_repository(),
-                 std::move(v.volatility_configs),
-                 reason,
-                 commentary);
-    write_stated(ctx_,
-                 swaption_volatility_config_repository(),
-                 std::move(v.swaption_volatilities),
-                 reason,
-                 commentary);
-    write_stated(ctx_,
-                 cap_floor_volatility_config_repository(),
-                 std::move(v.cap_floor_volatilities),
-                 reason,
-                 commentary);
-    write_stated(ctx_,
-                 curve_parametric_smile_repository(),
-                 std::move(v.parametric_smiles),
-                 reason,
-                 commentary);
-    write_stated(ctx_,
-                 curve_parametric_smile_parameter_repository(),
-                 std::move(v.parametric_smile_parameters),
-                 reason,
-                 commentary);
-    write_stated(ctx_,
-                 equity_volatility_config_repository(),
-                 std::move(v.equity_volatilities),
-                 reason,
-                 commentary);
-    write_stated(ctx_,
-                 commodity_volatility_config_repository(),
-                 std::move(v.commodity_volatilities),
-                 reason,
-                 commentary);
-    write_stated(ctx_,
-                 bond_future_volatility_config_repository(),
-                 std::move(v.bond_future_volatilities),
-                 reason,
-                 commentary);
-    write_stated(ctx_,
-                 curve_bootstrap_config_repository(),
-                 std::move(v.bootstrap_configs),
-                 reason,
-                 commentary);
-    write_stated(ctx_, curve_segment_repository(), std::move(v.segments), reason, commentary);
-    write_stated(
+    write_amendment(ctx_,
+                    curve_report_configuration_repository(),
+                    std::move(v.report_configurations),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    cds_volatility_config_repository(),
+                    std::move(v.cds_volatilities),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    cds_volatility_term_repository(),
+                    std::move(v.cds_volatility_terms),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    curve_volatility_config_repository(),
+                    std::move(v.volatility_configs),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    swaption_volatility_config_repository(),
+                    std::move(v.swaption_volatilities),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    cap_floor_volatility_config_repository(),
+                    std::move(v.cap_floor_volatilities),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    curve_parametric_smile_repository(),
+                    std::move(v.parametric_smiles),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    curve_parametric_smile_parameter_repository(),
+                    std::move(v.parametric_smile_parameters),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    equity_volatility_config_repository(),
+                    std::move(v.equity_volatilities),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    commodity_volatility_config_repository(),
+                    std::move(v.commodity_volatilities),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    bond_future_volatility_config_repository(),
+                    std::move(v.bond_future_volatilities),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
+                    curve_bootstrap_config_repository(),
+                    std::move(v.bootstrap_configs),
+                    reason,
+                    commentary);
+    write_amendment(ctx_, curve_segment_repository(), std::move(v.segments), reason, commentary);
+    write_amendment(
         ctx_, curve_segment_curve_repository(), std::move(v.segment_curves), reason, commentary);
-    write_stated(ctx_, curve_quote_repository(), std::move(v.quotes), reason, commentary);
+    write_amendment(ctx_, curve_quote_repository(), std::move(v.quotes), reason, commentary);
 }
 
 messaging::curve_configuration_document

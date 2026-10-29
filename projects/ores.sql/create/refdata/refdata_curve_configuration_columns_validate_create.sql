@@ -41,7 +41,7 @@ declare
     v_value text;
 begin
     for v_column in
-        select k.column_name, k.xpath, l.value_set_code
+        select k.column_name, l.value_set_code
           from ores_refdata_curve_configuration_columns_tbl k
           join ores_reporting_ore_parameters_tbl p
             on p.schema_name = k.schema_name
@@ -77,115 +77,96 @@ begin
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
-        'ores_refdata_curve_values_trg', 'ores_refdata_base_correlation_configs_tbl',
-        'base_correlation_config');
+        'ores_refdata_curve_values_trg', 'ores_refdata_base_correlation_configs_tbl', 'base_correlation_config');
 
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
-        'ores_refdata_curve_values_trg', 'ores_refdata_bond_future_volatility_configs_tbl',
-        'bond_future_volatility_config');
+        'ores_refdata_curve_values_trg', 'ores_refdata_bond_future_volatility_configs_tbl', 'bond_future_volatility_config');
 
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
-        'ores_refdata_curve_values_trg', 'ores_refdata_cap_floor_volatility_configs_tbl',
-        'cap_floor_volatility_config');
+        'ores_refdata_curve_values_trg', 'ores_refdata_cap_floor_volatility_configs_tbl', 'cap_floor_volatility_config');
 
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
-        'ores_refdata_curve_values_trg', 'ores_refdata_cds_volatility_configs_tbl',
-        'cds_volatility_config');
+        'ores_refdata_curve_values_trg', 'ores_refdata_cds_volatility_configs_tbl', 'cds_volatility_config');
 
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
-        'ores_refdata_curve_values_trg', 'ores_refdata_commodity_curve_configs_tbl',
-        'commodity_curve_config');
+        'ores_refdata_curve_values_trg', 'ores_refdata_commodity_curve_configs_tbl', 'commodity_curve_config');
 
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
-        'ores_refdata_curve_values_trg', 'ores_refdata_commodity_volatility_configs_tbl',
-        'commodity_volatility_config');
+        'ores_refdata_curve_values_trg', 'ores_refdata_commodity_volatility_configs_tbl', 'commodity_volatility_config');
 
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
-        'ores_refdata_curve_values_trg', 'ores_refdata_curve_correlation_configs_tbl',
-        'curve_correlation_config');
+        'ores_refdata_curve_values_trg', 'ores_refdata_curve_correlation_configs_tbl', 'curve_correlation_config');
 
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
-        'ores_refdata_curve_values_trg', 'ores_refdata_curve_security_configs_tbl',
-        'curve_security_config');
+        'ores_refdata_curve_values_trg', 'ores_refdata_curve_security_configs_tbl', 'curve_security_config');
 
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
-        'ores_refdata_curve_values_trg', 'ores_refdata_default_curve_configs_tbl',
-        'default_curve_config');
+        'ores_refdata_curve_values_trg', 'ores_refdata_default_curve_configs_tbl', 'default_curve_config');
 
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
-        'ores_refdata_curve_values_trg', 'ores_refdata_default_curve_configurations_tbl',
-        'default_curve_configuration');
+        'ores_refdata_curve_values_trg', 'ores_refdata_default_curve_configurations_tbl', 'default_curve_configuration');
 
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
-        'ores_refdata_curve_values_trg', 'ores_refdata_equity_curve_configs_tbl',
-        'equity_curve_config');
+        'ores_refdata_curve_values_trg', 'ores_refdata_equity_curve_configs_tbl', 'equity_curve_config');
 
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
-        'ores_refdata_curve_values_trg', 'ores_refdata_equity_volatility_configs_tbl',
-        'equity_volatility_config');
+        'ores_refdata_curve_values_trg', 'ores_refdata_equity_volatility_configs_tbl', 'equity_volatility_config');
 
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
-        'ores_refdata_curve_values_trg', 'ores_refdata_fx_volatility_configs_tbl',
-        'fx_volatility_config');
+        'ores_refdata_curve_values_trg', 'ores_refdata_fx_volatility_configs_tbl', 'fx_volatility_config');
 
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
-        'ores_refdata_curve_values_trg', 'ores_refdata_inflation_cap_floor_volatility_configs_tbl',
-        'inflation_cap_floor_volatility_config');
+        'ores_refdata_curve_values_trg', 'ores_refdata_inflation_cap_floor_volatility_configs_tbl', 'inflation_cap_floor_volatility_config');
 
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
-        'ores_refdata_curve_values_trg', 'ores_refdata_inflation_curve_configs_tbl',
-        'inflation_curve_config');
+        'ores_refdata_curve_values_trg', 'ores_refdata_inflation_curve_configs_tbl', 'inflation_curve_config');
 
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
-        'ores_refdata_curve_values_trg', 'ores_refdata_intraday_power_curve_configs_tbl',
-        'intraday_power_curve_config');
+        'ores_refdata_curve_values_trg', 'ores_refdata_intraday_power_curve_configs_tbl', 'intraday_power_curve_config');
 
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
-        'ores_refdata_curve_values_trg', 'ores_refdata_swaption_volatility_configs_tbl',
-        'swaption_volatility_config');
+        'ores_refdata_curve_values_trg', 'ores_refdata_swaption_volatility_configs_tbl', 'swaption_volatility_config');
 
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
-        'ores_refdata_curve_values_trg', 'ores_refdata_yield_curve_configs_tbl',
-        'yield_curve_config');
+        'ores_refdata_curve_values_trg', 'ores_refdata_yield_curve_configs_tbl', 'yield_curve_config');
 
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
-        'ores_refdata_curve_values_trg', 'ores_refdata_yield_volatility_configs_tbl',
-        'yield_volatility_config');
+        'ores_refdata_curve_values_trg', 'ores_refdata_yield_volatility_configs_tbl', 'yield_volatility_config');
 end
 $$;

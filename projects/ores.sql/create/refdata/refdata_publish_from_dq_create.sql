@@ -5956,12 +5956,12 @@ begin
     for r in
         select
             dq.lei,
-            dq.legal_name,
-            dq.jurisdiction,
-            dq.entity_status,
-            dq.entity_category,
-            dq.display_order
-        from ores_dq_legal_entities_artefact_tbl dq
+            dq.entity_legal_name as legal_name,
+            dq.entity_legal_jurisdiction as jurisdiction,
+            dq.entity_entity_status as entity_status,
+            dq.entity_entity_category as entity_category,
+            0 as display_order
+        from ores_dq_lei_entities_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
           and dq.tenant_id = ores_utility_system_tenant_id_fn()
     loop

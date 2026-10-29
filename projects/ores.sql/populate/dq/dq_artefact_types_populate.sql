@@ -233,9 +233,9 @@ values
     -- The publish function dispatches by an explicit kind list, so the
     -- artefact_table and target_table lists are documentation; the graph only
     -- needs target_subject.
-    (ores_utility_system_tenant_id_fn(), 'legal_entities', 0, 'Legal Entities',
+    (ores_utility_system_tenant_id_fn(), 'lei_entities', 0, 'Legal Entities',
      'The legal entities a trade may reference, keyed by LEI',
-     'dq_legal_entities_artefact_tbl', 'refdata_legal_entities_tbl',
+     'dq_lei_entities_artefact_tbl', 'refdata_legal_entities_tbl',
      'refdata.v1.ops.publish_legal_entities_from_dq', 39,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'commodities', 0, 'Commodities',

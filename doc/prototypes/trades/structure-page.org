@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 48277DF0-3F37-4620-8DCB-E904580D399B
 :END:
-#+title: Structure and package page prototype
-#+description: A clickable prototype of the page of a structure or a package, and of the workflow that groups trades.
+#+title: The structure view
+#+description: A clickable prototype of the page a structure row opens: its tree, its identity, its legs, its price and its history, with the workflow that groups trades.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:trading:ui:
@@ -13,6 +13,7 @@
 |---------------+-------|
 | Prototype     | [[file:structure-page/][the prototype]] |
 | Gemini review | none |
+| Signed off | the owner, 2026-10-29 |
 | Group         | [[file:index.org][Trades prototypes]] |
 
 * Summary
@@ -29,12 +30,11 @@ The model nests one level at most. =parent_structure_id= points to a root, and a
 
 ** States
 
-The page opens on the list of trees. The list shows each root with its inner structures indented under it.
+The page opens on a structure. The list it opens from is the [[file:blotter.org][blotter]], which draws the trees and the trades together; this page is what a structure row opens.
 
 #+ATTR_HTML: :class hug-leading
 | Query | What it shows |
 |-------+---------------|
-| (none) | The list: roots, with inner structures indented. The page, size, search, kind and order are in the address (=?offset=, =?limit=, =?search=, =?kind=, =?sort=, =?dir=) |
 | =?deal=STR-0010= | A dynamic structure that is the root of a tree: a strategy, a package and a hedge trade inside it |
 | =?deal=STR-0007= | The strategy inside it, a risk reversal, with its template roles checked |
 | =?deal=PKG-0021= | The package inside it: a bond repo and a bond, each confirming on its own |

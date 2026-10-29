@@ -85,7 +85,10 @@ REACT_PROTOTYPE_DIRS = (
 # the one prototype whose copy may carry its own rules after the shared text, or
 # to None when every copy must be identical.
 SHARED_COPIES: dict[str, dict[str, str | None]] = {
-    "trades": {"common.js": None, "prototype.css": None},
+    # The blotter extends prototype.css: one tree beside a list of eight columns
+    # needs more page width than a record page, and a prototype may add rules
+    # after the shared text without changing it.
+    "trades": {"common.js": None, "prototype.css": "blotter"},
     "conventions": {"management.js": None, "management.css": None},
 }
 

@@ -47,7 +47,6 @@ target_link_libraries(${tests_target_name}
 target_link_libraries(${tests_target_name}
     PRIVATE
         ores.synthetic.api.lib
-        ores.marketdata.core.lib
         ores.utility.lib
         ores.testing.lib
         faker-cxx::faker-cxx

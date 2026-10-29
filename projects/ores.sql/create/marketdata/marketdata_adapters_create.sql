@@ -62,7 +62,7 @@ create table if not exists "ores_marketdata_adapters_tbl" (
     check ("code" <> ''),
     check ("code" ~ '^[a-z][a-z0-9_-]*$'),
     check ("name" <> ''),
-    check ("module_version" ~ '^[0-9]+\\.[0-9]+\\.[0-9]+$'),
+    check ("module_version" ~ '^[0-9]+\.[0-9]+\.[0-9]+$'),
     check ("asset_classes" ~ '^[a-z]+(,[a-z]+)*$'),
     check ("services" ~ '^[a-z_]+(,[a-z_]+)*$'),
     check ("process" <> '')

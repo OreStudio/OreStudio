@@ -46,13 +46,12 @@ credit_simulation_config_mapper::map(const credit_simulation_config_entity& v) {
 
     domain::credit_simulation_config r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
     r.name = v.name;
-    r.configuration_id = v.configuration_id.has_value() ?
-                             boost::lexical_cast<boost::uuids::uuid>(*v.configuration_id) :
-                             boost::uuids::uuid{};
+    r.configuration_id =
+        v.configuration_id.has_value() ? *v.configuration_id : boost::uuids::uuid{};
     r.market = v.market.value_or("");
     r.credit = v.credit.value_or("");
     r.zero_market_pnl = v.zero_market_pnl.value_or(0);
@@ -66,7 +65,7 @@ credit_simulation_config_mapper::map(const credit_simulation_config_entity& v) {
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -77,14 +76,14 @@ credit_simulation_config_mapper::map(const domain::credit_simulation_config& v) 
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     credit_simulation_config_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
+    r.party_id = v.party_id;
     r.name = v.name;
     r.configuration_id = v.configuration_id == boost::uuids::uuid{} ?
                              std::nullopt :
-                             std::optional(boost::uuids::to_string(v.configuration_id));
+                             std::optional(v.configuration_id);
     r.market = v.market.empty() ? std::nullopt : std::optional(v.market);
     r.credit = v.credit.empty() ? std::nullopt : std::optional(v.credit);
     r.zero_market_pnl = v.zero_market_pnl == 0 ? std::nullopt : std::optional(v.zero_market_pnl);

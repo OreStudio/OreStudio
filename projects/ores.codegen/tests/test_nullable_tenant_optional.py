@@ -140,10 +140,10 @@ def test_nullable_tenant_domain_declares_an_optional(tmp_path):
            "utility::uuid::tenant_id::system();" not in domain
 
 
-def test_nullable_tenant_entity_declares_an_optional_string(tmp_path):
+def test_nullable_tenant_entity_declares_an_optional_tenant_id(tmp_path):
     """The repository entity member carries the SQL NULL as an optional."""
     entity = _entity(tmp_path)
-    assert "std::optional<std::string> tenant_id;" in entity
+    assert "std::optional<utility::uuid::tenant_id> tenant_id;" in entity
     assert "    std::string tenant_id;" not in entity
 
 
@@ -155,42 +155,44 @@ def test_non_nullable_tenant_domain_keeps_the_system_default(tmp_path):
     assert "std::optional<utility::uuid::tenant_id> tenant_id;" not in domain
 
 
-def test_non_nullable_tenant_entity_keeps_a_plain_string(tmp_path):
-    """The entity control: without the flag the tenant stays a string."""
+def test_non_nullable_tenant_entity_keeps_the_system_default(tmp_path):
+    """The entity control: without the flag the tenant holds the system tenant."""
     entity = _entity(tmp_path, NON_NULLABLE_TENANT_MODEL)
-    assert "    std::string tenant_id;" in entity
-    assert "std::optional<std::string> tenant_id;" not in entity
+    assert (
+        "    utility::uuid::tenant_id tenant_id = "
+        "utility::uuid::tenant_id::system();" in entity
+    )
+    assert "std::optional<utility::uuid::tenant_id> tenant_id;" not in entity
 
 
-def test_nullable_tenant_mapper_maps_null_to_an_empty_optional(tmp_path):
+def test_nullable_tenant_mapper_copies_the_optional(tmp_path):
     """A null entity tenant must not reach from_string.
 
     The guard is what turns SQL NULL into an empty optional instead of a
     parse throw, and the value branch dereferences the optional it tested.
     """
     mapper = _mapper(tmp_path)
-    assert mapper.count("if (v.tenant_id)") == 2
-    assert "from_string(*v.tenant_id).value()" in mapper
-    assert "from_string(v.tenant_id).value()" not in mapper
-    assert "v.tenant_id->to_string()" in mapper
+    # The read guards on the optional; the write copies it straight across.
+    assert "if (v.tenant_id)" in mapper
+    assert "r.tenant_id = *v.tenant_id;" in mapper
 
 
-def test_nullable_tenant_mapper_maps_an_empty_optional_to_absent(tmp_path):
+def test_nullable_tenant_mapper_writes_the_optional_across(tmp_path):
     """The domain-to-entity direction leaves the member unset for nullopt.
 
     The entity member defaults to std::nullopt and the guarded assignment
     never runs, so the column reaches SQL as NULL.
     """
     mapper = _mapper(tmp_path)
-    assert "r.tenant_id = v.tenant_id->to_string();" in mapper
+    assert "r.tenant_id = v.tenant_id;" in mapper
     assert "r.tenant_id = v.tenant_id.to_string();" not in mapper
 
 
-def test_non_nullable_tenant_mapper_keeps_the_unguarded_conversion(tmp_path):
+def test_non_nullable_tenant_mapper_copies_the_member(tmp_path):
     """The mapper control: without the flag both conversions stay direct."""
     mapper = _mapper(tmp_path, NON_NULLABLE_TENANT_MODEL)
-    assert "from_string(v.tenant_id).value()" in mapper
-    assert "r.tenant_id = v.tenant_id.to_string();" in mapper
+    assert "r.tenant_id = v.tenant_id;" in mapper
+    assert "from_string(v.tenant_id)" not in mapper
     assert "if (v.tenant_id)" not in mapper
 
 

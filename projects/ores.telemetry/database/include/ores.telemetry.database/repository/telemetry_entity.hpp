@@ -108,13 +108,13 @@ struct telemetry_entity {
     static constexpr auto columns() {
         using e = telemetry_entity;
         namespace query_builder = ores::database::query_builder;
-        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
-               query_builder::bind("tenant_id", &e::tenant_id) |
+        return query_builder::columns<e>() | query_builder::key_text("id", &e::id) |
+               query_builder::bind_text("tenant_id", &e::tenant_id) |
                query_builder::key("timestamp", &e::timestamp) |
                query_builder::bind("source", &e::source) |
                query_builder::bind("source_name", &e::source_name) |
-               query_builder::bind("session_id", &e::session_id) |
-               query_builder::bind("account_id", &e::account_id) |
+               query_builder::bind_text("session_id", &e::session_id) |
+               query_builder::bind_text("account_id", &e::account_id) |
                query_builder::bind("level", &e::level) |
                query_builder::bind("component", &e::component) |
                query_builder::bind("message", &e::message) | query_builder::bind("tag", &e::tag) |
@@ -144,7 +144,7 @@ struct telemetry_stats_hourly_entity {
     static constexpr auto columns() {
         using e = telemetry_stats_hourly_entity;
         namespace query_builder = ores::database::query_builder;
-        return query_builder::columns<e>() | query_builder::bind("hour", &e::hour) |
+        return query_builder::columns<e>() | query_builder::bind_text("hour", &e::hour) |
                query_builder::bind("source", &e::source) |
                query_builder::bind("source_name", &e::source_name) |
                query_builder::bind("level", &e::level) |
@@ -177,7 +177,7 @@ struct telemetry_stats_daily_entity {
     static constexpr auto columns() {
         using e = telemetry_stats_daily_entity;
         namespace query_builder = ores::database::query_builder;
-        return query_builder::columns<e>() | query_builder::bind("day", &e::day) |
+        return query_builder::columns<e>() | query_builder::bind_text("day", &e::day) |
                query_builder::bind("source", &e::source) |
                query_builder::bind("source_name", &e::source_name) |
                query_builder::bind("component", &e::component) |
@@ -215,7 +215,7 @@ struct nats_server_sample_entity {
         using e = nats_server_sample_entity;
         namespace query_builder = ores::database::query_builder;
         return query_builder::columns<e>() | query_builder::key("sampled_at", &e::sampled_at) |
-               query_builder::key("tenant_id", &e::tenant_id) |
+               query_builder::key_text("tenant_id", &e::tenant_id) |
                query_builder::bind("in_msgs", &e::in_msgs) |
                query_builder::bind("out_msgs", &e::out_msgs) |
                query_builder::bind("in_bytes", &e::in_bytes) |
@@ -276,7 +276,7 @@ struct nats_stream_sample_entity {
         using e = nats_stream_sample_entity;
         namespace query_builder = ores::database::query_builder;
         return query_builder::columns<e>() | query_builder::key("sampled_at", &e::sampled_at) |
-               query_builder::key("tenant_id", &e::tenant_id) |
+               query_builder::key_text("tenant_id", &e::tenant_id) |
                query_builder::key("stream_name", &e::stream_name) |
                query_builder::bind("messages", &e::messages) |
                query_builder::bind("bytes", &e::bytes) |

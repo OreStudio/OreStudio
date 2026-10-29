@@ -49,12 +49,11 @@ synthetic_cdo_instrument_mapper::map(const synthetic_cdo_instrument_entity& v) {
 
     domain::synthetic_cdo_instrument r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
-    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
+    r.tenant_id = v.tenant_id;
+    r.trade_id = v.trade_id;
+    r.trade_activity_id = v.trade_activity_id;
     r.qualifier = v.qualifier;
-    r.protection_start_date =
-        ores::platform::time::datetime::from_iso8601_date(v.protection_start_date);
+    r.protection_start_date = v.protection_start_date;
     r.attachment_point = v.attachment_point;
     r.detachment_point = v.detachment_point;
     r.recovery_rate = v.recovery_rate;
@@ -62,19 +61,13 @@ synthetic_cdo_instrument_mapper::map(const synthetic_cdo_instrument_entity& v) {
     r.rebates_accrual = v.rebates_accrual;
     r.pays_at_default_time = v.pays_at_default_time;
     r.protection_payment_time = v.protection_payment_time;
-    r.upfront_date =
-        v.upfront_date.has_value() ?
-            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.upfront_date)) :
-            std::nullopt;
-    r.upfront_fee =
-        v.upfront_fee.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.upfront_fee).value()) :
-            std::nullopt;
+    r.upfront_date = v.upfront_date;
+    r.upfront_fee = v.upfront_fee;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -85,13 +78,12 @@ synthetic_cdo_instrument_mapper::map(const domain::synthetic_cdo_instrument& v) 
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     synthetic_cdo_instrument_entity r;
-    r.trade_id = boost::uuids::to_string(v.trade_id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.trade_id = v.trade_id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
+    r.trade_activity_id = v.trade_activity_id;
     r.qualifier = v.qualifier;
-    r.protection_start_date =
-        ores::platform::time::datetime::to_iso8601_date(v.protection_start_date);
+    r.protection_start_date = v.protection_start_date;
     r.attachment_point = v.attachment_point;
     r.detachment_point = v.detachment_point;
     r.recovery_rate = v.recovery_rate;
@@ -99,12 +91,8 @@ synthetic_cdo_instrument_mapper::map(const domain::synthetic_cdo_instrument& v) 
     r.rebates_accrual = v.rebates_accrual;
     r.pays_at_default_time = v.pays_at_default_time;
     r.protection_payment_time = v.protection_payment_time;
-    r.upfront_date =
-        v.upfront_date.has_value() ?
-            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.upfront_date)) :
-            std::nullopt;
-    r.upfront_fee =
-        v.upfront_fee.has_value() ? std::optional(v.upfront_fee->to_string()) : std::nullopt;
+    r.upfront_date = v.upfront_date;
+    r.upfront_fee = v.upfront_fee;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

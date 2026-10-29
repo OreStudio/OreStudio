@@ -181,10 +181,10 @@ void intraday_power_load_convention_repository::write(
 
 std::vector<domain::intraday_power_load_convention>
 intraday_power_load_convention_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<intraday_power_load_convention_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<intraday_power_load_convention_entity,
@@ -199,11 +199,11 @@ intraday_power_load_convention_repository::read_latest(context ctx) {
 std::vector<domain::intraday_power_load_convention>
 intraday_power_load_convention_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest intraday power load convention. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<intraday_power_load_convention_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     auto found = query_builder::execute_read_query<intraday_power_load_convention_entity,
                                                    domain::intraday_power_load_convention>(
@@ -286,7 +286,7 @@ intraday_power_load_convention_repository::remove(context ctx,
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -298,7 +298,7 @@ intraday_power_load_convention_repository::remove(context ctx,
     const auto query =
         query_builder::delete_from<intraday_power_load_convention_entity> |
         query_builder::where("tenant_id"_c == tid && "id"_c == id && "party_id"_c == party &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                             "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing intraday power load convention from database.");
@@ -370,11 +370,11 @@ intraday_power_load_convention_repository::read_latest(context ctx,
                                                        const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<intraday_power_load_convention_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<intraday_power_load_convention_entity,
                                                     domain::intraday_power_load_convention>(
         ctx,
@@ -395,11 +395,11 @@ void intraday_power_load_convention_repository::remove(context ctx,
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<intraday_power_load_convention_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(
         ctx, query, lg(), "Batch removing intraday power load conventions.");
 }

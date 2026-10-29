@@ -46,19 +46,15 @@ ir_curve_bootstrap_config_mapper::map(const ir_curve_bootstrap_config_entity& v)
 
     domain::ir_curve_bootstrap_config r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.output_series_id = boost::lexical_cast<boost::uuids::uuid>(v.output_series_id);
-
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.output_series_id = v.output_series_id;
+    r.party_id = v.party_id;
     r.name = v.name;
     r.currency_code = v.currency_code;
     r.index_tenor = v.index_tenor;
     r.curve_family_role = v.curve_family_role;
-    r.discount_curve_config_id =
-        v.discount_curve_config_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.discount_curve_config_id)) :
-            std::nullopt;
+    r.discount_curve_config_id = v.discount_curve_config_id;
     r.interpolation_method = v.interpolation_method;
     r.day_count_convention = v.day_count_convention;
     r.tenor_convention_code = v.tenor_convention_code;
@@ -67,7 +63,7 @@ ir_curve_bootstrap_config_mapper::map(const ir_curve_bootstrap_config_entity& v)
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -78,20 +74,16 @@ ir_curve_bootstrap_config_mapper::map(const domain::ir_curve_bootstrap_config& v
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     ir_curve_bootstrap_config_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.output_series_id = boost::uuids::to_string(v.output_series_id);
-
-    r.party_id = boost::uuids::to_string(v.party_id);
+    r.output_series_id = v.output_series_id;
+    r.party_id = v.party_id;
     r.name = v.name;
     r.currency_code = v.currency_code;
     r.index_tenor = v.index_tenor;
     r.curve_family_role = v.curve_family_role;
-    r.discount_curve_config_id =
-        v.discount_curve_config_id.has_value() ?
-            std::optional(boost::uuids::to_string(*v.discount_curve_config_id)) :
-            std::nullopt;
+    r.discount_curve_config_id = v.discount_curve_config_id;
     r.interpolation_method = v.interpolation_method;
     r.day_count_convention = v.day_count_convention;
     r.tenor_convention_code = v.tenor_convention_code;

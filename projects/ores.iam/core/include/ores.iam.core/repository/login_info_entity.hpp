@@ -27,6 +27,9 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -37,13 +40,18 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a login info in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct login_info_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_iam_login_info_tbl";
 
-    std::string account_id;
-    std::string tenant_id;
+    boost::uuids::uuid account_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     std::string last_ip;
     std::string last_attempt_ip;
     int failed_logins = 0;
@@ -60,8 +68,8 @@ struct login_info_entity {
         namespace query_builder = ores::database::query_builder;
         return query_builder::columns<e>() | query_builder::key("account_id", &e::account_id) |
                query_builder::bind("tenant_id", &e::tenant_id) |
-               query_builder::bind("last_ip", &e::last_ip) |
-               query_builder::bind("last_attempt_ip", &e::last_attempt_ip) |
+               query_builder::bind_text("last_ip", &e::last_ip) |
+               query_builder::bind_text("last_attempt_ip", &e::last_attempt_ip) |
                query_builder::bind("failed_logins", &e::failed_logins) |
                query_builder::bind("locked", &e::locked) |
                query_builder::bind("last_login", &e::last_login) |

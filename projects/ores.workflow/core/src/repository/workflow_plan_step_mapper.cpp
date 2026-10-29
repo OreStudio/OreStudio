@@ -44,9 +44,9 @@ domain::workflow_plan_step workflow_plan_step_mapper::map(const workflow_plan_st
 
     domain::workflow_plan_step r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.workflow_id = boost::lexical_cast<boost::uuids::uuid>(v.workflow_id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.workflow_id = v.workflow_id;
     r.step_index = v.step_index;
     r.name = v.name;
     r.label = v.label;
@@ -58,7 +58,7 @@ domain::workflow_plan_step workflow_plan_step_mapper::map(const workflow_plan_st
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -68,10 +68,10 @@ workflow_plan_step_entity workflow_plan_step_mapper::map(const domain::workflow_
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     workflow_plan_step_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.workflow_id = boost::uuids::to_string(v.workflow_id);
+    r.workflow_id = v.workflow_id;
     r.step_index = v.step_index;
     r.name = v.name;
     r.label = v.label;

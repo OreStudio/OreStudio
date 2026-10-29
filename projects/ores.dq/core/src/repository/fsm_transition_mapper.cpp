@@ -44,21 +44,18 @@ domain::fsm_transition fsm_transition_mapper::map(const fsm_transition_entity& v
 
     domain::fsm_transition r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.machine_id = boost::lexical_cast<boost::uuids::uuid>(v.machine_id);
-
-    r.from_state_id = boost::lexical_cast<boost::uuids::uuid>(v.from_state_id);
-
-    r.to_state_id = boost::lexical_cast<boost::uuids::uuid>(v.to_state_id);
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.machine_id = v.machine_id;
+    r.from_state_id = v.from_state_id;
+    r.to_state_id = v.to_state_id;
     r.name = v.name;
     r.guard_function = v.guard_function;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -68,17 +65,12 @@ fsm_transition_entity fsm_transition_mapper::map(const domain::fsm_transition& v
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     fsm_transition_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.machine_id = boost::uuids::to_string(v.machine_id);
-
-    if (v.from_state_id) {
-        r.from_state_id = boost::uuids::to_string(*v.from_state_id);
-    }
-
-    r.to_state_id = boost::uuids::to_string(v.to_state_id);
-
+    r.machine_id = v.machine_id;
+    r.from_state_id = v.from_state_id;
+    r.to_state_id = v.to_state_id;
     r.name = v.name;
     r.guard_function = v.guard_function;
     r.modified_by = v.modified_by;

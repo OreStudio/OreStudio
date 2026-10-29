@@ -46,42 +46,29 @@ domain::report_instance report_instance_mapper::map(const report_instance_entity
 
     domain::report_instance r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
     r.name = v.name;
-
     r.description = v.description;
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.definition_id = boost::lexical_cast<boost::uuids::uuid>(v.definition_id);
+    r.party_id = v.party_id;
+    r.definition_id = v.definition_id;
     r.kind = v.kind;
-    r.run_grant_id = v.run_grant_id.has_value() ?
-                         std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.run_grant_id)) :
-                         std::nullopt;
-    r.fsm_state_id = v.fsm_state_id.has_value() ?
-                         std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.fsm_state_id)) :
-                         std::nullopt;
-    r.trigger_id = boost::lexical_cast<boost::uuids::uuid>(v.trigger_id);
+    r.run_grant_id = v.run_grant_id;
+    r.fsm_state_id = v.fsm_state_id;
+    r.trigger_id = v.trigger_id;
     r.output_message = v.output_message;
     r.output_storage_key = v.output_storage_key.value_or("");
-    r.started_at = v.started_at.has_value() ? std::optional(timestamp_to_timepoint(*v.started_at)) :
-                                              std::nullopt;
-    r.completed_at = v.completed_at.has_value() ?
-                         std::optional(timestamp_to_timepoint(*v.completed_at)) :
-                         std::nullopt;
-    r.priced_at = v.priced_at.has_value() ? std::optional(timestamp_to_timepoint(*v.priced_at)) :
-                                            std::nullopt;
+    r.started_at = v.started_at;
+    r.completed_at = v.completed_at;
+    r.priced_at = v.priced_at;
     r.price_note = v.price_note.value_or("");
-    r.engine_settings_id =
-        v.engine_settings_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.engine_settings_id)) :
-            std::nullopt;
+    r.engine_settings_id = v.engine_settings_id;
     r.engine_settings_version = v.engine_settings_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -91,40 +78,25 @@ report_instance_entity report_instance_mapper::map(const domain::report_instance
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     report_instance_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-
     r.name = v.name;
-
     r.description = v.description;
-    r.party_id = boost::uuids::to_string(v.party_id);
-    r.definition_id = boost::uuids::to_string(v.definition_id);
+    r.party_id = v.party_id;
+    r.definition_id = v.definition_id;
     r.kind = v.kind;
-    r.run_grant_id = v.run_grant_id.has_value() ?
-                         std::optional(boost::uuids::to_string(*v.run_grant_id)) :
-                         std::nullopt;
-    r.fsm_state_id = v.fsm_state_id.has_value() ?
-                         std::optional(boost::uuids::to_string(*v.fsm_state_id)) :
-                         std::nullopt;
-    r.trigger_id = boost::uuids::to_string(v.trigger_id);
+    r.run_grant_id = v.run_grant_id;
+    r.fsm_state_id = v.fsm_state_id;
+    r.trigger_id = v.trigger_id;
     r.output_message = v.output_message;
     r.output_storage_key =
         v.output_storage_key.empty() ? std::nullopt : std::optional(v.output_storage_key);
-    r.started_at = v.started_at.has_value() ?
-                       std::optional(ores::platform::time::datetime::to_db_string(*v.started_at)) :
-                       std::nullopt;
-    r.completed_at =
-        v.completed_at.has_value() ?
-            std::optional(ores::platform::time::datetime::to_db_string(*v.completed_at)) :
-            std::nullopt;
-    r.priced_at = v.priced_at.has_value() ?
-                      std::optional(ores::platform::time::datetime::to_db_string(*v.priced_at)) :
-                      std::nullopt;
+    r.started_at = v.started_at;
+    r.completed_at = v.completed_at;
+    r.priced_at = v.priced_at;
     r.price_note = v.price_note.empty() ? std::nullopt : std::optional(v.price_note);
-    r.engine_settings_id = v.engine_settings_id.has_value() ?
-                               std::optional(boost::uuids::to_string(*v.engine_settings_id)) :
-                               std::nullopt;
+    r.engine_settings_id = v.engine_settings_id;
     r.engine_settings_version = v.engine_settings_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

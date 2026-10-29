@@ -128,10 +128,10 @@ void currency_country_repository::write(
 }
 
 std::vector<domain::currency_country> currency_country_repository::read_latest() {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<currency_country_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("currency_iso_code"_c, "country_alpha2_code"_c);
 
     return query_builder::execute_read_query<currency_country_entity, domain::currency_country>(
@@ -146,10 +146,10 @@ std::vector<domain::currency_country>
 currency_country_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency countries with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<currency_country_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("currency_iso_code"_c, "country_alpha2_code"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -167,15 +167,14 @@ currency_country_repository::read_latest(const std::string& currency_iso_code,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency country. " << currency_iso_code << "/"
                                << country_alpha2_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto currency_iso_code_str = currency_iso_code;
     const auto country_alpha2_code_str = country_alpha2_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<currency_country_entity>> |
         query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
-                             "country_alpha2_code"_c == country_alpha2_code &&
-                             "valid_to"_c == max.value());
+                             "country_alpha2_code"_c == country_alpha2_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<currency_country_entity, domain::currency_country>(
         ctx_,
@@ -187,11 +186,11 @@ currency_country_repository::read_latest(const std::string& currency_iso_code,
 
 std::uint32_t currency_country_repository::get_total_currency_country_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency countries count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<currency_country_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<currency_country_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency countries");
@@ -204,12 +203,12 @@ currency_country_repository::read_latest_by_currency(const std::string& currency
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency countries. Currency: "
                                << currency_iso_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<currency_country_entity>> |
         query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("country_alpha2_code"_c);
 
     auto rows =
@@ -228,12 +227,12 @@ currency_country_repository::read_latest_by_country(const std::string& country_a
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency countries. Country: "
                                << country_alpha2_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<currency_country_entity>> |
                        query_builder::where("tenant_id"_c == tid &&
                                             "country_alpha2_code"_c == country_alpha2_code &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("currency_iso_code"_c);
 
     auto rows =
@@ -252,12 +251,12 @@ std::vector<domain::currency_country> currency_country_repository::read_latest_b
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency countries. Currency: "
                                << currency_iso_code << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<currency_country_entity>> |
         query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("country_alpha2_code"_c) | query_builder::offset(offset) |
         query_builder::limit(limit);
 
@@ -276,13 +275,13 @@ std::uint32_t currency_country_repository::get_total_currency_country_count_by_c
     const std::string& currency_iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency countries count. Currency: "
                                << currency_iso_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<currency_country_entity>> |
         query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<currency_country_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency countries");
@@ -294,13 +293,13 @@ std::uint32_t currency_country_repository::get_total_currency_country_count_by_c
     const std::string& country_alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency countries count. Country: "
                                << country_alpha2_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<currency_country_entity>> |
-                       query_builder::where("tenant_id"_c == tid &&
-                                            "country_alpha2_code"_c == country_alpha2_code &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<currency_country_entity>> |
+        query_builder::where("tenant_id"_c == tid &&
+                             "country_alpha2_code"_c == country_alpha2_code && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<currency_country_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency countries");
@@ -373,7 +372,7 @@ currency_country_repository::remove(const std::string& currency_iso_code,
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -385,7 +384,7 @@ currency_country_repository::remove(const std::string& currency_iso_code,
         query_builder::delete_from<currency_country_entity> |
         query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
                              "country_alpha2_code"_c == country_alpha2_code &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                             "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx_, query, lg(), "removing currency country from database");

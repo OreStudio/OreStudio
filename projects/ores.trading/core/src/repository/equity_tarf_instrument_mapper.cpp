@@ -47,25 +47,20 @@ equity_tarf_instrument_mapper::map(const equity_tarf_instrument_entity& v) {
 
     domain::equity_tarf_instrument r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
-    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
+    r.tenant_id = v.tenant_id;
+    r.trade_id = v.trade_id;
+    r.trade_activity_id = v.trade_activity_id;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
-    r.fixing_amount = ores::utility::decimal::decimal::from_string(v.fixing_amount).value();
-    r.target_amount =
-        v.target_amount.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.target_amount).value()) :
-            std::nullopt;
+    r.fixing_amount = v.fixing_amount;
+    r.target_amount = v.target_amount;
     r.target_points = v.target_points;
-    r.strike = v.strike.has_value() ?
-                   std::optional(ores::utility::decimal::decimal::from_string(*v.strike).value()) :
-                   std::nullopt;
+    r.strike = v.strike;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -76,17 +71,16 @@ equity_tarf_instrument_mapper::map(const domain::equity_tarf_instrument& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     equity_tarf_instrument_entity r;
-    r.trade_id = boost::uuids::to_string(v.trade_id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.trade_id = v.trade_id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
+    r.trade_activity_id = v.trade_activity_id;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
-    r.fixing_amount = v.fixing_amount.to_string();
-    r.target_amount =
-        v.target_amount.has_value() ? std::optional(v.target_amount->to_string()) : std::nullopt;
+    r.fixing_amount = v.fixing_amount;
+    r.target_amount = v.target_amount;
     r.target_points = v.target_points;
-    r.strike = v.strike.has_value() ? std::optional(v.strike->to_string()) : std::nullopt;
+    r.strike = v.strike;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

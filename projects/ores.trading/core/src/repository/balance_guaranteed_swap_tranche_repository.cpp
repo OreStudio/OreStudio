@@ -192,10 +192,10 @@ void balance_guaranteed_swap_tranche_repository::write(
 
 std::vector<domain::balance_guaranteed_swap_tranche>
 balance_guaranteed_swap_tranche_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<balance_guaranteed_swap_tranche_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("trade_id"_c, "sequence_number"_c);
 
     return query_builder::execute_read_query<balance_guaranteed_swap_tranche_entity,
@@ -214,12 +214,12 @@ balance_guaranteed_swap_tranche_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest balance guaranteed swap tranche. "
                                << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<balance_guaranteed_swap_tranche_entity>> |
         query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                             "sequence_number"_c == sequence_number && "valid_to"_c == max.value());
+                             "sequence_number"_c == sequence_number && "valid_to"_c == max);
 
     return query_builder::execute_read_query<balance_guaranteed_swap_tranche_entity,
                                              domain::balance_guaranteed_swap_tranche>(
@@ -295,11 +295,11 @@ balance_guaranteed_swap_tranche_repository::read_latest_by_trade_id(
     const std::optional<messaging::balance_guaranteed_swap_tranches_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest balance guaranteed swap tranches. trade_id: "
                                << trade_id << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<balance_guaranteed_swap_tranche_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<balance_guaranteed_swap_tranche_entity,
@@ -320,12 +320,12 @@ std::uint32_t balance_guaranteed_swap_tranche_repository::
         const std::optional<messaging::balance_guaranteed_swap_tranches_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active balance guaranteed swap tranches count. trade_id: " << trade_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<balance_guaranteed_swap_tranche_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_count_query<balance_guaranteed_swap_tranche_entity>(
         ctx,
@@ -351,7 +351,7 @@ balance_guaranteed_swap_tranche_repository::remove(context ctx,
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -360,7 +360,7 @@ balance_guaranteed_swap_tranche_repository::remove(context ctx,
     const auto query = query_builder::delete_from<balance_guaranteed_swap_tranche_entity> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
                                             "sequence_number"_c == sequence_number &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing balance guaranteed swap tranche from database.");
@@ -432,12 +432,12 @@ balance_guaranteed_swap_tranche_repository::read_latest(
     const std::vector<std::string>& sequence_numbers) {
     if (trade_ids.empty() || sequence_numbers.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<balance_guaranteed_swap_tranche_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
-                                            "sequence_number"_c.in(sequence_numbers) &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<balance_guaranteed_swap_tranche_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+                             "sequence_number"_c.in(sequence_numbers) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<balance_guaranteed_swap_tranche_entity,
                                                     domain::balance_guaranteed_swap_tranche>(
         ctx,
@@ -484,11 +484,11 @@ balance_guaranteed_swap_tranche_repository::read_by_instruments_batch(
     context ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<balance_guaranteed_swap_tranche_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("trade_id"_c, "sequence_number"_c);
     return query_builder::execute_read_query<balance_guaranteed_swap_tranche_entity,
                                              domain::balance_guaranteed_swap_tranche>(

@@ -578,7 +578,7 @@ void lock_request(const ores::database::context& ctx, const std::string& request
     // view and a temporary would be gone before it runs.
     const auto sql = "select id from ores_inbox_approval_requests_tbl where id = '" + id +
                      "'::uuid and valid_to = ores_utility_infinity_timestamp_fn() for update";
-    const ores::database::pq::text_statement statement({}, sql);
+    const ores::database::pq::fixed_statement statement({}, sql);
     ores::database::transact(ctx,
                              [&](ores::database::pq::transaction& tx) { tx.run(statement, {}); });
 }

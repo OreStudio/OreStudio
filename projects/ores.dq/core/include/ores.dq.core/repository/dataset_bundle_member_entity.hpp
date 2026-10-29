@@ -27,6 +27,8 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -44,18 +46,26 @@ struct dataset_bundle_member_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_dq_dataset_bundle_members_tbl";
 
+
     std::string bundle_code;
+
     std::string tenant_id;
+
     std::string dataset_code;
+
     int version = 0;
+
     int display_order = 0;
+
+
     bool optional;
+
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = db_timestamp::max();
+    db_timestamp valid_to = db_timestamp::max();
     std::optional<std::string> closed_by;
 
     /**
@@ -65,7 +75,7 @@ struct dataset_bundle_member_entity {
         using e = dataset_bundle_member_entity;
         namespace query_builder = ores::database::query_builder;
         return query_builder::columns<e>() | query_builder::key("bundle_code", &e::bundle_code) |
-               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind_text("tenant_id", &e::tenant_id) |
                query_builder::bind("dataset_code", &e::dataset_code) |
                query_builder::bind("version", &e::version) |
                query_builder::bind("display_order", &e::display_order) |

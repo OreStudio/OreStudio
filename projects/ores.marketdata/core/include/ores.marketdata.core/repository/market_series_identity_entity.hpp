@@ -27,6 +27,9 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -37,14 +40,19 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a market series identity in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct market_series_identity_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_marketdata_market_series_identity_tbl";
 
-    std::string series_id;
-    std::string tenant_id;
-    std::string party_id;
+    boost::uuids::uuid series_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+    boost::uuids::uuid party_id;
     std::string identity_kind;
     std::optional<std::string> asset_class;
     std::optional<std::string> instrument_type;

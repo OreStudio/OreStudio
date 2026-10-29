@@ -125,10 +125,10 @@ void badge_mapping_repository::write(
 }
 
 std::vector<domain::badge_mapping> badge_mapping_repository::read_latest() {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<badge_mapping_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("code_domain_code"_c, "entity_code"_c);
 
     return query_builder::execute_read_query<badge_mapping_entity, domain::badge_mapping>(
@@ -143,10 +143,10 @@ std::vector<domain::badge_mapping> badge_mapping_repository::read_latest(std::ui
                                                                          std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest badge mappings with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<badge_mapping_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("code_domain_code"_c, "entity_code"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -164,14 +164,14 @@ badge_mapping_repository::read_latest(const std::string& code_domain_code,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest badge mapping. " << code_domain_code << "/"
                                << entity_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto code_domain_code_str = code_domain_code;
     const auto entity_code_str = entity_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<badge_mapping_entity>> |
         query_builder::where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code &&
-                             "entity_code"_c == entity_code && "valid_to"_c == max.value());
+                             "entity_code"_c == entity_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<badge_mapping_entity, domain::badge_mapping>(
         ctx_,
@@ -183,11 +183,11 @@ badge_mapping_repository::read_latest(const std::string& code_domain_code,
 
 std::uint32_t badge_mapping_repository::get_total_mapping_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active badge mappings count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<badge_mapping_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<badge_mapping_entity>(
         ctx_, query, std::nullopt, lg(), "Counting badge mappings");
@@ -200,12 +200,12 @@ badge_mapping_repository::read_latest_by_code_domain(const std::string& code_dom
     BOOST_LOG_SEV(lg(), debug) << "Reading latest badge mappings. Code Domain: "
                                << code_domain_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<badge_mapping_entity>> |
         query_builder::where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("entity_code"_c);
 
     auto rows = query_builder::execute_read_query<badge_mapping_entity, domain::badge_mapping>(
@@ -222,13 +222,12 @@ std::vector<domain::badge_mapping>
 badge_mapping_repository::read_latest_by_entity(const std::string& entity_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest badge mappings. Entity Code: " << entity_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<badge_mapping_entity>> |
-        query_builder::where("tenant_id"_c == tid && "entity_code"_c == entity_code &&
-                             "valid_to"_c == max.value()) |
-        query_builder::order_by("code_domain_code"_c);
+    const auto query = query_builder::read<std::vector<badge_mapping_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                                            "entity_code"_c == entity_code && "valid_to"_c == max) |
+                       query_builder::order_by("code_domain_code"_c);
 
     auto rows = query_builder::execute_read_query<badge_mapping_entity, domain::badge_mapping>(
         ctx_,
@@ -245,12 +244,12 @@ std::vector<domain::badge_mapping> badge_mapping_repository::read_latest_by_code
     BOOST_LOG_SEV(lg(), debug) << "Reading latest badge mappings. Code Domain: " << code_domain_code
                                << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<badge_mapping_entity>> |
         query_builder::where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("entity_code"_c) | query_builder::offset(offset) |
         query_builder::limit(limit);
 
@@ -268,13 +267,13 @@ std::uint32_t badge_mapping_repository::get_total_mapping_count_by_code_domain(
     const std::string& code_domain_code) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active badge mappings count. Code Domain: "
                                << code_domain_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<badge_mapping_entity>> |
         query_builder::where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<badge_mapping_entity>(
         ctx_, query, std::nullopt, lg(), "Counting badge mappings");
@@ -286,13 +285,12 @@ std::uint32_t
 badge_mapping_repository::get_total_mapping_count_by_entity(const std::string& entity_code) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active badge mappings count. Entity Code: "
                                << entity_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<badge_mapping_entity>> |
-        query_builder::where("tenant_id"_c == tid && "entity_code"_c == entity_code &&
-                             "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<badge_mapping_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                                            "entity_code"_c == entity_code && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<badge_mapping_entity>(
         ctx_, query, std::nullopt, lg(), "Counting badge mappings");
@@ -364,7 +362,7 @@ badge_mapping_repository::remove(const std::string& code_domain_code,
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -375,7 +373,7 @@ badge_mapping_repository::remove(const std::string& code_domain_code,
     const auto query =
         query_builder::delete_from<badge_mapping_entity> |
         query_builder::where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code &&
-                             "entity_code"_c == entity_code && "valid_to"_c == max.value() &&
+                             "entity_code"_c == entity_code && "valid_to"_c == max &&
                              "version"_c == expected);
 
     query_builder::execute_delete_query(ctx_, query, lg(), "removing badge mapping from database");

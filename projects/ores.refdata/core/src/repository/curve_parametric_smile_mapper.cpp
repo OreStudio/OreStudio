@@ -45,10 +45,10 @@ curve_parametric_smile_mapper::map(const curve_parametric_smile_entity& v) {
 
     domain::curve_parametric_smile r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.curve_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.curve_definition_id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
+    r.curve_definition_id = v.curve_definition_id;
     r.max_calibration_attempts = v.max_calibration_attempts;
     r.exit_early_error_threshold = v.exit_early_error_threshold;
     r.max_acceptable_error = v.max_acceptable_error;
@@ -57,7 +57,7 @@ curve_parametric_smile_mapper::map(const curve_parametric_smile_entity& v) {
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -68,11 +68,11 @@ curve_parametric_smile_mapper::map(const domain::curve_parametric_smile& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     curve_parametric_smile_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
-    r.curve_definition_id = boost::uuids::to_string(v.curve_definition_id);
+    r.party_id = v.party_id;
+    r.curve_definition_id = v.curve_definition_id;
     r.max_calibration_attempts = v.max_calibration_attempts;
     r.exit_early_error_threshold = v.exit_early_error_threshold;
     r.max_acceptable_error = v.max_acceptable_error;

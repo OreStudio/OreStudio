@@ -46,15 +46,15 @@ app_version_platform_mapper::map(const app_version_platform_entity& v) {
     domain::app_version_platform r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.app_version_id = boost::lexical_cast<boost::uuids::uuid>(v.app_version_id);
-    r.platform_id = boost::lexical_cast<boost::uuids::uuid>(v.platform_id);
+    r.app_version_id = v.app_version_id;
+    r.platform_id = v.platform_id;
     r.package_uri = v.package_uri;
     r.sha256 = v.sha256;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -65,9 +65,9 @@ app_version_platform_mapper::map(const domain::app_version_platform& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     app_version_platform_entity r;
-    r.app_version_id = boost::uuids::to_string(v.app_version_id);
+    r.app_version_id = v.app_version_id;
     r.tenant_id = v.tenant_id;
-    r.platform_id = boost::uuids::to_string(v.platform_id);
+    r.platform_id = v.platform_id;
     r.version = v.version;
     r.package_uri = v.package_uri;
     r.sha256 = v.sha256;

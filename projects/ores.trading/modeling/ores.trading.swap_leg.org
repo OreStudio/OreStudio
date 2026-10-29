@@ -404,11 +404,11 @@ swap_leg_repository::read_by_instruments_batch(context ctx,
                                                const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<swap_leg_entity>> |
                        query_builder::where("tenant_id"_c == tid &&
-                             "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+                             "trade_id"_c.in(trade_ids) && "valid_to"_c == max) |
                        query_builder::order_by("trade_id"_c, "leg_number"_c);
     return query_builder::execute_read_query<swap_leg_entity, domain::swap_leg>(
         ctx,

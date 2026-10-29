@@ -27,6 +27,9 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -37,38 +40,43 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a report instance in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct report_instance_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_reporting_report_instances_tbl";
 
-    std::string id;
-    std::string tenant_id;
+    boost::uuids::uuid id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
 
     std::string name;
 
     std::string description;
-    std::string party_id;
-    std::string definition_id;
+    boost::uuids::uuid party_id;
+    boost::uuids::uuid definition_id;
     std::string kind = "production";
-    std::optional<std::string> run_grant_id;
-    std::optional<std::string> fsm_state_id;
-    std::string trigger_id;
+    std::optional<boost::uuids::uuid> run_grant_id;
+    std::optional<boost::uuids::uuid> fsm_state_id;
+    boost::uuids::uuid trigger_id;
     std::string output_message;
     std::optional<std::string> output_storage_key;
     std::optional<db_timestamp> started_at;
     std::optional<db_timestamp> completed_at;
     std::optional<db_timestamp> priced_at;
     std::optional<std::string> price_note;
-    std::optional<std::string> engine_settings_id;
+    std::optional<boost::uuids::uuid> engine_settings_id;
     std::optional<int> engine_settings_version;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = db_timestamp::max();
+    db_timestamp valid_to = db_timestamp::max();
 
     /**
      * @brief The columns of the table, named as the members, with the key.

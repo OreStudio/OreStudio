@@ -45,15 +45,11 @@ ir_curve_template_entry_mapper::map(const ir_curve_template_entry_entity& v) {
 
     domain::ir_curve_template_entry r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-
-    r.ir_curve_config_id = boost::lexical_cast<boost::uuids::uuid>(v.ir_curve_config_id);
-
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
+    r.ir_curve_config_id = v.ir_curve_config_id;
     r.sequence_index = v.sequence_index;
-
     r.start_tenor_code = v.start_tenor_code;
     r.end_tenor_code = v.end_tenor_code;
     r.instrument_code = v.instrument_code;
@@ -61,7 +57,7 @@ ir_curve_template_entry_mapper::map(const ir_curve_template_entry_entity& v) {
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -72,16 +68,12 @@ ir_curve_template_entry_mapper::map(const domain::ir_curve_template_entry& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     ir_curve_template_entry_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
-
-    r.ir_curve_config_id = boost::uuids::to_string(v.ir_curve_config_id);
-
-
+    r.party_id = v.party_id;
+    r.ir_curve_config_id = v.ir_curve_config_id;
     r.sequence_index = v.sequence_index;
-
     r.start_tenor_code = v.start_tenor_code;
     r.end_tenor_code = v.end_tenor_code;
     r.instrument_code = v.instrument_code;

@@ -49,46 +49,28 @@ equity_cliquet_option_instrument_mapper::map(const equity_cliquet_option_instrum
 
     domain::equity_cliquet_option_instrument r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
-    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
+    r.tenant_id = v.tenant_id;
+    r.trade_id = v.trade_id;
+    r.trade_activity_id = v.trade_activity_id;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
-    r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
+    r.notional = v.notional;
     r.long_short = v.long_short;
     r.option_type = v.option_type;
     r.moneyness = v.moneyness;
-    r.local_cap =
-        v.local_cap.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.local_cap).value()) :
-            std::nullopt;
-    r.local_floor =
-        v.local_floor.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.local_floor).value()) :
-            std::nullopt;
-    r.global_cap =
-        v.global_cap.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.global_cap).value()) :
-            std::nullopt;
-    r.global_floor =
-        v.global_floor.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.global_floor).value()) :
-            std::nullopt;
+    r.local_cap = v.local_cap;
+    r.local_floor = v.local_floor;
+    r.global_cap = v.global_cap;
+    r.global_floor = v.global_floor;
     r.settlement_days = v.settlement_days;
-    r.premium =
-        v.premium.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.premium).value()) :
-            std::nullopt;
+    r.premium = v.premium;
     r.premium_currency = v.premium_currency;
-    r.premium_payment_date = v.premium_payment_date.has_value() ?
-                                 std::optional(ores::platform::time::datetime::from_iso8601_date(
-                                     *v.premium_payment_date)) :
-                                 std::nullopt;
+    r.premium_payment_date = v.premium_payment_date;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -99,30 +81,24 @@ equity_cliquet_option_instrument_mapper::map(const domain::equity_cliquet_option
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     equity_cliquet_option_instrument_entity r;
-    r.trade_id = boost::uuids::to_string(v.trade_id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.trade_id = v.trade_id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
+    r.trade_activity_id = v.trade_activity_id;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
-    r.notional = v.notional.to_string();
+    r.notional = v.notional;
     r.long_short = v.long_short;
     r.option_type = v.option_type;
     r.moneyness = v.moneyness;
-    r.local_cap = v.local_cap.has_value() ? std::optional(v.local_cap->to_string()) : std::nullopt;
-    r.local_floor =
-        v.local_floor.has_value() ? std::optional(v.local_floor->to_string()) : std::nullopt;
-    r.global_cap =
-        v.global_cap.has_value() ? std::optional(v.global_cap->to_string()) : std::nullopt;
-    r.global_floor =
-        v.global_floor.has_value() ? std::optional(v.global_floor->to_string()) : std::nullopt;
+    r.local_cap = v.local_cap;
+    r.local_floor = v.local_floor;
+    r.global_cap = v.global_cap;
+    r.global_floor = v.global_floor;
     r.settlement_days = v.settlement_days;
-    r.premium = v.premium.has_value() ? std::optional(v.premium->to_string()) : std::nullopt;
+    r.premium = v.premium;
     r.premium_currency = v.premium_currency;
-    r.premium_payment_date = v.premium_payment_date.has_value() ?
-                                 std::optional(ores::platform::time::datetime::to_iso8601_date(
-                                     *v.premium_payment_date)) :
-                                 std::nullopt;
+    r.premium_payment_date = v.premium_payment_date;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

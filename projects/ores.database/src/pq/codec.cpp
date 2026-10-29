@@ -19,6 +19,8 @@
 #include "ores.database/pq/codec.hpp"
 #include "ores.database/pq/store_error.hpp"
 #include "ores.database/pq/text.hpp"
+#include "ores.database/repository/helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <algorithm>
 #include <charconv>
 #include <limits>
@@ -61,14 +63,45 @@ param to_text(double v) {
     return text_param(std::string(buffer, end));
 }
 
+param to_text(const repository::db_timestamp& v) {
+    if (v == repository::db_timestamp::max())
+        return text_param(repository::MAX_TIMESTAMP);
+    return text_param(platform::time::datetime::to_db_string(v));
+}
+
+repository::db_timestamp parse_timestamp_text(std::string_view text) {
+    // The never sentinel is the last second of the year 9999, which no clock
+    // that counts nanoseconds or microseconds reaches, so it is read as the
+    // clock's maximum before any conversion, as the binary codec reads it. The
+    // date and the time name it, not the year: a real instant in 9999 is an
+    // instant, and reading it as never would make a row current that is not.
+    constexpr std::string_view never = repository::MAX_TIMESTAMP;
+    if (text.starts_with(never.substr(0, never.find('+'))))
+        return repository::db_timestamp::max();
+    return platform::time::datetime::from_db_string(std::string(text));
+}
+
 void wire::expect_size(std::span<const std::byte> in, std::size_t size, std::string_view type) {
     if (in.size() != size)
         refuse("A " + std::string(type) + " value has " + std::to_string(in.size()) +
                " bytes, not " + std::to_string(size));
 }
 
+void wire::expect_min_size(std::span<const std::byte> in,
+                           std::size_t size,
+                           std::string_view type) {
+    if (in.size() < size)
+        refuse("A " + std::string(type) + " value has " + std::to_string(in.size()) +
+               " bytes, fewer than the " + std::to_string(size) + " it states");
+}
+
 void wire::null_element(std::uint32_t index) {
     refuse("Array element " + std::to_string(index) + " is NULL");
+}
+
+void wire::refuse_unsigned(std::uint64_t v, std::string_view type) {
+    refuse(std::to_string(v) + " does not fit " + std::string(type) +
+           ", whose type is signed: it would store as a negative number");
 }
 
 void unexpected_null(int row, int column) {
@@ -89,7 +122,12 @@ void codec<system_clock::time_point>::encode(system_clock::time_point v, std::st
         return;
     }
     constexpr auto earliest = std::numeric_limits<std::int64_t>::min();
-    const auto unix_micros = duration_cast<microseconds>(v.time_since_epoch()).count();
+    // A clock that counts nanoseconds carries more than the column keeps, so
+    // the instant is taken down to the microsecond it falls in. Every path that
+    // writes a timestamp rounds the same way -- this codec and the text form the
+    // hand-written queries pass -- so the same instant written through one of
+    // them is found by a lookup written through the other.
+    const auto unix_micros = floor<microseconds>(v.time_since_epoch()).count();
     if (v == system_clock::time_point::min() || unix_micros < earliest + unix_to_2000_micros) {
         wire::put_u64(out, static_cast<std::uint64_t>(earliest));
         return;
@@ -100,6 +138,15 @@ void codec<system_clock::time_point>::encode(system_clock::time_point v, std::st
 system_clock::time_point codec<system_clock::time_point>::decode(std::span<const std::byte> in) {
     wire::expect_size(in, 8, "timestamptz");
     const auto micros = static_cast<std::int64_t>(wire::get_u64(in));
+    // The database's two infinities are its own sentinels and are read as the
+    // clock's bounds whatever the clock counts. Without this the negative one
+    // depends on the clock's range: a clock that counts microseconds reaches
+    // below the year 2000 by less than the sentinel's own distance and would
+    // decode it as a real instant.
+    if (micros == std::numeric_limits<std::int64_t>::min())
+        return system_clock::time_point::min();
+    if (micros == std::numeric_limits<std::int64_t>::max())
+        return system_clock::time_point::max();
     constexpr auto max_unix = duration_cast<microseconds>(system_clock::duration::max()).count();
     constexpr auto min_unix = duration_cast<microseconds>(system_clock::duration::min()).count();
     // A clock that counts microseconds reaches past the year 9999, so the

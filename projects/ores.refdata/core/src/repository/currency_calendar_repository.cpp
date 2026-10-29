@@ -128,10 +128,10 @@ void currency_calendar_repository::write(
 }
 
 std::vector<domain::currency_calendar> currency_calendar_repository::read_latest() {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<currency_calendar_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("currency_iso_code"_c, "calendar_code"_c);
 
     return query_builder::execute_read_query<currency_calendar_entity, domain::currency_calendar>(
@@ -146,10 +146,10 @@ std::vector<domain::currency_calendar>
 currency_calendar_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency calendars with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<currency_calendar_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("currency_iso_code"_c, "calendar_code"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -167,14 +167,14 @@ currency_calendar_repository::read_latest(const std::string& currency_iso_code,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency calendar. " << currency_iso_code << "/"
                                << calendar_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto currency_iso_code_str = currency_iso_code;
     const auto calendar_code_str = calendar_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<currency_calendar_entity>> |
         query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
-                             "calendar_code"_c == calendar_code && "valid_to"_c == max.value());
+                             "calendar_code"_c == calendar_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<currency_calendar_entity, domain::currency_calendar>(
         ctx_,
@@ -186,11 +186,11 @@ currency_calendar_repository::read_latest(const std::string& currency_iso_code,
 
 std::uint32_t currency_calendar_repository::get_total_currency_calendar_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency calendars count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<currency_calendar_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<currency_calendar_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency calendars");
@@ -203,12 +203,12 @@ currency_calendar_repository::read_latest_by_currency(const std::string& currenc
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency calendars. Currency: "
                                << currency_iso_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<currency_calendar_entity>> |
         query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("calendar_code"_c);
 
     auto rows =
@@ -226,12 +226,12 @@ std::vector<domain::currency_calendar>
 currency_calendar_repository::read_latest_by_calendar(const std::string& calendar_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency calendars. Calendar: " << calendar_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<currency_calendar_entity>> |
         query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("currency_iso_code"_c);
 
     auto rows =
@@ -250,12 +250,12 @@ std::vector<domain::currency_calendar> currency_calendar_repository::read_latest
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency calendars. Currency: "
                                << currency_iso_code << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<currency_calendar_entity>> |
         query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("calendar_code"_c) | query_builder::offset(offset) |
         query_builder::limit(limit);
 
@@ -274,13 +274,13 @@ std::uint32_t currency_calendar_repository::get_total_currency_calendar_count_by
     const std::string& currency_iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency calendars count. Currency: "
                                << currency_iso_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<currency_calendar_entity>> |
         query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<currency_calendar_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency calendars");
@@ -292,13 +292,13 @@ std::uint32_t currency_calendar_repository::get_total_currency_calendar_count_by
     const std::string& calendar_code) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency calendars count. Calendar: "
                                << calendar_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<currency_calendar_entity>> |
         query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<currency_calendar_entity>(
         ctx_, query, std::nullopt, lg(), "Counting currency calendars");
@@ -371,7 +371,7 @@ currency_calendar_repository::remove(const std::string& currency_iso_code,
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -382,7 +382,7 @@ currency_calendar_repository::remove(const std::string& currency_iso_code,
     const auto query =
         query_builder::delete_from<currency_calendar_entity> |
         query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
-                             "calendar_code"_c == calendar_code && "valid_to"_c == max.value() &&
+                             "calendar_code"_c == calendar_code && "valid_to"_c == max &&
                              "version"_c == expected);
 
     query_builder::execute_delete_query(

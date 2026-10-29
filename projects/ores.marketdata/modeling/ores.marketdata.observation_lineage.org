@@ -277,7 +277,7 @@ observation_lineage_repository::read_latest_by_observation(context ctx,
     std::chrono::system_clock::time_point observation_datetime,
     const std::string& oresmd_uri) {
     using ores::platform::time::datetime;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
     const auto odt_str = datetime::to_iso8601_utc(observation_datetime);
@@ -286,7 +286,7 @@ observation_lineage_repository::read_latest_by_observation(context ctx,
                        query_builder::where("tenant_id"_c == tid && "series_id"_c == sid &&
                              "observation_datetime"_c == odt_str &&
                              "oresmd_uri"_c == oresmd_uri &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
     const auto results = query_builder::execute_read_query<observation_lineage_entity, domain::observation_lineage>(
         ctx, query,
@@ -348,7 +348,7 @@ observation_lineage_repository::read_latest_for_points(context ctx,
     using ores::platform::time::datetime;
     if (points.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
 
@@ -371,7 +371,7 @@ observation_lineage_repository::read_latest_for_points(context ctx,
                              "oresmd_uri"_c.in(uris) &&
                              "observation_datetime"_c >= datetime::to_iso8601_utc(first) &&
                              "observation_datetime"_c <= datetime::to_iso8601_utc(last) &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
     const auto rows = query_builder::execute_read_query<observation_lineage_entity, domain::observation_lineage>(
         ctx, query,
@@ -412,14 +412,14 @@ std::vector<domain::observation_lineage> read_manual_for_series(context ctx,
 std::vector<domain::observation_lineage>
 observation_lineage_repository::read_manual_for_series(context ctx,
     const boost::uuids::uuid& series_id) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
 
     const auto query = query_builder::read<std::vector<observation_lineage_entity>> |
                        query_builder::where("tenant_id"_c == tid && "series_id"_c == sid &&
                              "point_source_kind"_c == std::string("manual") &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
     return query_builder::execute_read_query<observation_lineage_entity, domain::observation_lineage>(
         ctx, query,

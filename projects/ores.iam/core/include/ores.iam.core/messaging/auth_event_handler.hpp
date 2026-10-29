@@ -103,15 +103,14 @@ public:
             std::vector<auth_event> events;
             events.reserve(rows.size());
             for (const auto& row : rows) {
-                events.push_back(auth_event{
-                    .id = row.id,
-                    .event_time = ores::platform::time::datetime::from_iso8601_utc(row.event_time),
-                    .account_id = row.account_id,
-                    .event_type = row.event_type,
-                    .username = row.username,
-                    .session_id = row.session_id,
-                    .party_id = row.party_id,
-                    .error_detail = row.error_detail});
+                events.push_back(auth_event{.id = row.id,
+                                            .event_time = row.event_time,
+                                            .account_id = row.account_id,
+                                            .event_type = row.event_type,
+                                            .username = row.username,
+                                            .session_id = row.session_id,
+                                            .party_id = row.party_id,
+                                            .error_detail = row.error_detail});
             }
 
             BOOST_LOG_SEV(auth_event_handler_lg(), debug)

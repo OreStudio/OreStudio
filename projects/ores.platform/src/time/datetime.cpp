@@ -30,12 +30,12 @@ namespace ores::platform::time {
 
 std::string datetime::to_iso8601_utc(const std::chrono::system_clock::time_point& tp) {
 
-    // Split the instant into whole seconds and the microseconds under them. The
-    // fraction is formatted here rather than left to strftime, which has no
-    // sub-second field, so a timestamp written here keeps the microsecond the
-    // database column also keeps.
-    const auto since_epoch =
-        std::chrono::duration_cast<std::chrono::microseconds>(tp.time_since_epoch());
+    // The fraction is formatted here rather than left to strftime, which has no
+    // sub-second field. The clock carries more than the microsecond the column
+    // keeps, so the instant is taken down to the microsecond it falls in --
+    // the rounding the binary codec applies -- so a value that reaches a row
+    // through this text is the value it reaches through the row.
+    const auto since_epoch = std::chrono::floor<std::chrono::microseconds>(tp.time_since_epoch());
     const auto whole = std::chrono::floor<std::chrono::seconds>(since_epoch);
     const auto fraction = since_epoch - whole;
 

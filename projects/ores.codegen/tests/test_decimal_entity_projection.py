@@ -178,38 +178,30 @@ def test_a_money_column_is_a_decimal_in_the_domain_struct(tmp_path):
     assert '#include "ores.utility/decimal/decimal.hpp"' in domain
 
 
-def test_a_money_column_reaches_the_entity_as_an_exact_string(tmp_path):
-    """The entity is the database row type, and its text codec holds no decimal."""
+def test_a_money_column_reaches_the_entity_as_a_decimal(tmp_path):
+    """The row holds the decimal the column has, so its codec binds it."""
     entity = _render_entity(tmp_path)
-    assert "std::string amount;" in entity
-    assert "std::optional<std::string> optional_amount;" in entity
-    assert f"{DECIMAL} amount;" not in entity
-    assert f"std::optional<{DECIMAL}> optional_amount;" not in entity
+    assert f"{DECIMAL} amount;" in entity
+    assert f"std::optional<{DECIMAL}> optional_amount;" in entity
+    assert "std::string amount;" not in entity
+    assert "std::optional<std::string> optional_amount;" not in entity
 
 
-def test_the_mapper_parses_and_renders_a_money_column(tmp_path):
-    """Parse on read, render on write, with the include the conversion needs."""
+def test_the_mapper_copies_a_money_column(tmp_path):
+    """Both sides hold the decimal, so neither direction converts."""
     mapper = _render_mapper(tmp_path)
-    parse = f"r.amount = {DECIMAL}::from_string(v.amount).value();"
-    render = "r.amount = v.amount.to_string();"
-    assert parse in mapper
-    assert render in mapper
-    assert '#include "ores.utility/decimal/decimal.hpp"' in mapper
+    assert "r.amount = v.amount;" in mapper
+    assert mapper.count("r.amount = v.amount;") == 2
+    assert "from_string(v.amount)" not in mapper
+    assert "v.amount.to_string()" not in mapper
 
 
-def test_the_mapper_converts_an_optional_money_column(tmp_path):
-    """The optional form guards on has_value and maps NULL to nullopt."""
+def test_the_mapper_copies_an_optional_money_column(tmp_path):
+    """An empty optional is a NULL on the wire, so the copy is the mapping."""
     mapper = _render_mapper(tmp_path)
-    parse = (
-        "r.optional_amount = v.optional_amount.has_value() ? "
-        f"std::optional({DECIMAL}::from_string(*v.optional_amount).value()) : std::nullopt;"
-    )
-    render = (
-        "r.optional_amount = v.optional_amount.has_value() ? "
-        "std::optional(v.optional_amount->to_string()) : std::nullopt;"
-    )
-    assert parse in mapper
-    assert render in mapper
+    assert "r.optional_amount = v.optional_amount;" in mapper
+    assert mapper.count("r.optional_amount = v.optional_amount;") == 2
+    assert "from_string(*v.optional_amount)" not in mapper
 
 
 def test_the_history_field_mapper_renders_a_money_column(tmp_path):

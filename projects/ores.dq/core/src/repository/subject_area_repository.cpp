@@ -153,9 +153,9 @@ void subject_area_repository::write(
 }
 
 std::vector<domain::subject_area> subject_area_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<subject_area_entity>> |
-                       query_builder::where("valid_to"_c == max.value()) |
+                       query_builder::where("valid_to"_c == max) |
                        query_builder::order_by("name"_c, "domain_name"_c);
 
     return query_builder::execute_read_query<subject_area_entity, domain::subject_area>(
@@ -170,10 +170,10 @@ std::vector<domain::subject_area> subject_area_repository::read_latest(
     context ctx, const std::string& name, const std::string& domain_name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest subject area. " << "name: " << name
                                << " domain_name: " << domain_name;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<subject_area_entity>> |
                        query_builder::where("name"_c == name && "domain_name"_c == domain_name &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_read_query<subject_area_entity, domain::subject_area>(
         ctx,
@@ -236,7 +236,7 @@ subject_area_repository::remove(context ctx,
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -244,8 +244,8 @@ subject_area_repository::remove(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<subject_area_entity> |
                        query_builder::where("tenant_id"_c == tid && "name"_c == name &&
-                                            "domain_name"_c == domain_name &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "domain_name"_c == domain_name && "valid_to"_c == max &&
+                                            "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing subject area from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -304,11 +304,11 @@ subject_area_repository::read_latest(context ctx,
                                      const std::vector<std::string>& domain_names) {
     if (names.empty() || domain_names.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto query =
         query_builder::read<std::vector<subject_area_entity>> |
         query_builder::where("name"_c.in(names) && "domain_name"_c.in(domain_names) &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
     auto result = query_builder::execute_read_query<subject_area_entity, domain::subject_area>(
         ctx,
         query,

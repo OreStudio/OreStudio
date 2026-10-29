@@ -46,9 +46,9 @@ domain::publication publication_mapper::map(const publication_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::publication r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.dataset_id = boost::lexical_cast<boost::uuids::uuid>(v.dataset_id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.dataset_id = v.dataset_id;
     r.dataset_code = v.dataset_code;
     r.mode = v.mode;
     r.target_table = v.target_table;
@@ -57,7 +57,7 @@ domain::publication publication_mapper::map(const publication_entity& v) {
     r.records_skipped = v.records_skipped;
     r.records_deleted = v.records_deleted;
     r.published_by = v.published_by;
-    r.published_at = timestamp_to_timepoint(std::string_view{v.published_at});
+    r.published_at = v.published_at;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -67,9 +67,9 @@ publication_entity publication_mapper::map(const domain::publication& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     publication_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
-    r.dataset_id = boost::uuids::to_string(v.dataset_id);
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
+    r.dataset_id = v.dataset_id;
     r.dataset_code = v.dataset_code;
     r.mode = v.mode;
     r.target_table = v.target_table;
@@ -78,7 +78,7 @@ publication_entity publication_mapper::map(const domain::publication& v) {
     r.records_skipped = v.records_skipped;
     r.records_deleted = v.records_deleted;
     r.published_by = v.published_by;
-    r.published_at = ores::platform::time::datetime::to_iso8601_utc(v.published_at);
+    r.published_at = v.published_at;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

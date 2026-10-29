@@ -46,14 +46,10 @@ domain::job_definition job_definition_mapper::map(const job_definition_entity& v
     domain::job_definition r;
     r.version = v.version;
     if (v.tenant_id)
-        r.tenant_id = utility::uuid::tenant_id::from_string(*v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-
+        r.tenant_id = *v.tenant_id;
+    r.id = v.id;
     r.job_name = v.job_name;
-
-    r.party_id = v.party_id.has_value() ?
-                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.party_id)) :
-                     std::nullopt;
+    r.party_id = v.party_id;
     r.description = v.description;
     r.command = v.command;
     r.schedule_expression = domain::cron_expression::from_string(v.schedule_expression).value();
@@ -64,7 +60,7 @@ domain::job_definition job_definition_mapper::map(const job_definition_entity& v
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -74,15 +70,11 @@ job_definition_entity job_definition_mapper::map(const domain::job_definition& v
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     job_definition_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    if (v.tenant_id)
-        r.tenant_id = v.tenant_id->to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-
     r.job_name = v.job_name;
-
-    r.party_id =
-        v.party_id.has_value() ? std::optional(boost::uuids::to_string(*v.party_id)) : std::nullopt;
+    r.party_id = v.party_id;
     r.description = v.description;
     r.command = v.command;
     r.schedule_expression = v.schedule_expression.to_string();

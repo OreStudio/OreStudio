@@ -45,11 +45,10 @@ tenor_basis_swap_long_short_mapper::map(const tenor_basis_swap_long_short_entity
 
     domain::tenor_basis_swap_long_short r;
     r.identity.version = v.version;
-    r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.identity.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.identity.convention_id = boost::lexical_cast<boost::uuids::uuid>(v.convention_id);
-
-    r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.identity.tenant_id = v.tenant_id;
+    r.identity.id = v.id;
+    r.identity.convention_id = v.convention_id;
+    r.identity.party_id = v.party_id;
     r.long_leg.long_index = v.long_index;
     r.long_leg.long_pay_tenor = v.long_pay_tenor;
     r.short_leg.short_index = v.short_index;
@@ -61,7 +60,7 @@ tenor_basis_swap_long_short_mapper::map(const tenor_basis_swap_long_short_entity
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
     r.audit.change_commentary = v.change_commentary;
-    r.audit.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.audit.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -72,12 +71,11 @@ tenor_basis_swap_long_short_mapper::map(const domain::tenor_basis_swap_long_shor
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     tenor_basis_swap_long_short_entity r;
-    r.id = boost::uuids::to_string(v.identity.id);
-    r.tenant_id = v.identity.tenant_id.to_string();
+    r.id = v.identity.id;
+    r.tenant_id = v.identity.tenant_id;
     r.version = v.identity.version;
-    r.convention_id = boost::uuids::to_string(v.identity.convention_id);
-
-    r.party_id = boost::uuids::to_string(v.identity.party_id);
+    r.convention_id = v.identity.convention_id;
+    r.party_id = v.identity.party_id;
     r.long_index = v.long_leg.long_index;
     r.long_pay_tenor = v.long_leg.long_pay_tenor;
     r.short_index = v.short_leg.short_index;

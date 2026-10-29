@@ -101,11 +101,11 @@ std::vector<bond_leg_amount_entity> read_entities(ores::database::context ctx,
     using namespace ores::database::query_builder::literals;
 
     auto lg = make_logger(test_suite);
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_leg_amount_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("sequence_number"_c);
 
     return query_builder::execute_read_query<bond_leg_amount_entity, bond_leg_amount_entity>(
@@ -145,8 +145,10 @@ TEST_CASE("bond_leg_amount_decimal_round_trips_exactly", "[repository][bond_leg_
     const auto entities = read_entities(ctx, id_str);
     REQUIRE(entities.size() == static_cast<std::size_t>(probe_count));
     for (int i = 0; i < probe_count; ++i) {
-        BOOST_LOG_SEV(lg, info) << "Stored text: " << entities[i].value;
-        CHECK(entities[i].value == probes[i].stored);
+        BOOST_LOG_SEV(lg, info) << "Stored value: " << entities[i].value.to_string();
+        // The row holds the decimal, not its fixed-scale text, so the value is
+        // compared with the one the probe states, not with the column's scale.
+        CHECK(entities[i].value.to_string() == probes[i].canonical);
     }
 
     for (int i = 0; i < probe_count; ++i)

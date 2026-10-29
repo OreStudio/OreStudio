@@ -45,9 +45,9 @@ commodity_forward_convention_mapper::map(const commodity_forward_convention_enti
 
     domain::commodity_forward_convention r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.tenant_id = v.tenant_id;
     r.id = v.id;
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.party_id = v.party_id;
     r.spot_days = v.spot_days;
     r.points_factor = v.points_factor;
     r.advance_calendar = v.advance_calendar;
@@ -60,7 +60,7 @@ commodity_forward_convention_mapper::map(const commodity_forward_convention_enti
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -72,9 +72,9 @@ commodity_forward_convention_mapper::map(const domain::commodity_forward_convent
 
     commodity_forward_convention_entity r;
     r.id = v.id;
-    r.tenant_id = v.tenant_id.to_string();
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
+    r.party_id = v.party_id;
     r.spot_days = v.spot_days;
     r.points_factor = v.points_factor;
     r.advance_calendar = v.advance_calendar;

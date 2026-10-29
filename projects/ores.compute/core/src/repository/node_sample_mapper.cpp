@@ -46,10 +46,10 @@ domain::node_sample node_sample_mapper::map(const node_sample_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::node_sample r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.sampled_at = timestamp_to_timepoint(std::string_view{v.sampled_at});
-    r.host_id = boost::lexical_cast<boost::uuids::uuid>(v.host_id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.sampled_at = v.sampled_at;
+    r.host_id = v.host_id;
     r.machine = v.machine;
     r.tasks_completed = v.tasks_completed;
     r.tasks_failed = v.tasks_failed;
@@ -68,10 +68,10 @@ node_sample_entity node_sample_mapper::map(const domain::node_sample& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     node_sample_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.sampled_at = ores::platform::time::datetime::to_db_string(v.sampled_at);
-    r.tenant_id = v.tenant_id.to_string();
-    r.host_id = boost::uuids::to_string(v.host_id);
+    r.id = v.id;
+    r.sampled_at = v.sampled_at;
+    r.tenant_id = v.tenant_id;
+    r.host_id = v.host_id;
     r.machine = v.machine;
     r.tasks_completed = v.tasks_completed;
     r.tasks_failed = v.tasks_failed;

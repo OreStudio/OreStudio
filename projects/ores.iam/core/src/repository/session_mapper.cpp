@@ -48,13 +48,14 @@ domain::session session_mapper::map(const session_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::session r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.start_time = timestamp_to_timepoint(std::string_view{v.start_time});
-    r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id);
-    r.end_time =
-        v.end_time.has_value() ? std::optional(timestamp_to_timepoint(*v.end_time)) : std::nullopt;
-    r.client_ip = boost::asio::ip::make_address(v.client_ip);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.start_time = v.start_time;
+    r.account_id = v.account_id;
+    r.end_time = v.end_time;
+    // PostgreSQL renders an inet with its netmask, and the domain holds an
+    // address, which has none: the mask is the part this type cannot carry.
+    r.client_ip = boost::asio::ip::make_address(v.client_ip.substr(0, v.client_ip.find('/')));
     r.client_identifier = v.client_identifier;
     r.client_version_major = v.client_version_major;
     r.client_version_minor = v.client_version_minor;
@@ -71,13 +72,11 @@ session_entity session_mapper::map(const domain::session& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     session_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.start_time = ores::platform::time::datetime::to_db_string(v.start_time);
-    r.tenant_id = v.tenant_id.to_string();
-    r.account_id = boost::uuids::to_string(v.account_id);
-    r.end_time = v.end_time.has_value() ?
-                     std::optional(ores::platform::time::datetime::to_db_string(*v.end_time)) :
-                     std::nullopt;
+    r.id = v.id;
+    r.start_time = v.start_time;
+    r.tenant_id = v.tenant_id;
+    r.account_id = v.account_id;
+    r.end_time = v.end_time;
     r.client_ip = v.client_ip.to_string();
     r.client_identifier = v.client_identifier;
     r.client_version_major = v.client_version_major;

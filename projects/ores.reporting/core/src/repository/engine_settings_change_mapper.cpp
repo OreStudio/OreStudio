@@ -45,18 +45,12 @@ engine_settings_change_mapper::map(const engine_settings_change_entity& v) {
 
     domain::engine_settings_change r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.request_id = boost::lexical_cast<boost::uuids::uuid>(v.request_id);
-
-    r.engine_settings_id = boost::lexical_cast<boost::uuids::uuid>(v.engine_settings_id);
-
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.request_id = v.request_id;
+    r.engine_settings_id = v.engine_settings_id;
     r.group_code = v.group_code;
-
-
     r.setting_code = v.setting_code;
-
     r.text_value = v.text_value;
     r.base_version = v.base_version;
     r.applied = v.applied;
@@ -64,7 +58,7 @@ engine_settings_change_mapper::map(const engine_settings_change_entity& v) {
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -75,19 +69,13 @@ engine_settings_change_mapper::map(const domain::engine_settings_change& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     engine_settings_change_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.request_id = boost::uuids::to_string(v.request_id);
-
-    r.engine_settings_id = boost::uuids::to_string(v.engine_settings_id);
-
-
+    r.request_id = v.request_id;
+    r.engine_settings_id = v.engine_settings_id;
     r.group_code = v.group_code;
-
-
     r.setting_code = v.setting_code;
-
     r.text_value = v.text_value;
     r.base_version = v.base_version;
     r.applied = v.applied;

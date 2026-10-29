@@ -171,11 +171,11 @@ std::vector<domain::fsm_state>
 fsm_state_repository::read_latest_by_machine_name(context ctx,
                                                   const std::string& machine_name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm states for machine: " << machine_name;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     // The raw read takes the timestamp as text: MAX_TIMESTAMP is the same
-    // instant make_timestamp parses for the generated reads below, so the two
-    // agree on which row is current.
+    // instant db_timestamp::max() stands for in the generated reads below, so
+    // the two agree on which row is current.
     const auto machine_ids = query_builder::execute_parameterized_string_query(
         ctx,
         "select id::text from ores_dq_fsm_machines_tbl "
@@ -191,7 +191,7 @@ fsm_state_repository::read_latest_by_machine_name(context ctx,
 
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
                        query_builder::where("machine_id"_c == machine_ids.front() &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
                        query_builder::order_by("name"_c);
 
     return execute_read_query<fsm_state_entity, domain::fsm_state>(

@@ -44,25 +44,20 @@ domain::market_series market_series_mapper::map(const market_series_entity& v) {
 
     domain::market_series r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
     r.oresmd_uri = v.oresmd_uri;
-
-
     r.provider_code = v.provider_code;
-
     r.series_subclass = v.series_subclass;
     r.derivation_kind = v.derivation_kind;
-    r.derivation_config_id = boost::lexical_cast<boost::uuids::uuid>(v.derivation_config_id);
+    r.derivation_config_id = v.derivation_config_id;
     r.derivation_config_version = v.derivation_config_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -72,20 +67,15 @@ market_series_entity market_series_mapper::map(const domain::market_series& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     market_series_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
-
-
+    r.party_id = v.party_id;
     r.oresmd_uri = v.oresmd_uri;
-
-
     r.provider_code = v.provider_code;
-
     r.series_subclass = v.series_subclass;
     r.derivation_kind = v.derivation_kind;
-    r.derivation_config_id = boost::uuids::to_string(v.derivation_config_id);
+    r.derivation_config_id = v.derivation_config_id;
     r.derivation_config_version = v.derivation_config_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

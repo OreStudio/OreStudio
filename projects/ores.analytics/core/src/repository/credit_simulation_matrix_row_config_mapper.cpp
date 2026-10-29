@@ -45,10 +45,10 @@ domain::credit_simulation_matrix_row_config credit_simulation_matrix_row_config_
 
     domain::credit_simulation_matrix_row_config r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.transition_matrix_id = boost::lexical_cast<boost::uuids::uuid>(v.transition_matrix_id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
+    r.transition_matrix_id = v.transition_matrix_id;
     r.from_rating = v.from_rating;
     r.p_aaa = v.p_aaa;
     r.p_aa = v.p_aa;
@@ -62,7 +62,7 @@ domain::credit_simulation_matrix_row_config credit_simulation_matrix_row_config_
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -73,11 +73,11 @@ credit_simulation_matrix_row_config_entity credit_simulation_matrix_row_config_m
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     credit_simulation_matrix_row_config_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
-    r.transition_matrix_id = boost::uuids::to_string(v.transition_matrix_id);
+    r.party_id = v.party_id;
+    r.transition_matrix_id = v.transition_matrix_id;
     r.from_rating = v.from_rating;
     r.p_aaa = v.p_aaa;
     r.p_aa = v.p_aa;

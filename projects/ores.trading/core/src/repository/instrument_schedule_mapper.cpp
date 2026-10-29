@@ -48,21 +48,16 @@ domain::instrument_schedule instrument_schedule_mapper::map(const instrument_sch
 
     domain::instrument_schedule r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.tenant_id = v.tenant_id;
+    r.trade_id = v.trade_id;
     r.owner_role = v.owner_role;
-    r.owner_number = boost::lexical_cast<int>(v.owner_number);
+    r.owner_number = v.owner_number;
     r.schedule_role = v.schedule_role;
-    r.sequence_number = boost::lexical_cast<int>(v.sequence_number);
-    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
+    r.sequence_number = v.sequence_number;
+    r.trade_activity_id = v.trade_activity_id;
     r.schedule_kind = v.schedule_kind;
-    r.start_date =
-        v.start_date.has_value() ?
-            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.start_date)) :
-            std::nullopt;
-    r.end_date = v.end_date.has_value() ?
-                     std::optional(ores::platform::time::datetime::from_iso8601_date(*v.end_date)) :
-                     std::nullopt;
+    r.start_date = v.start_date;
+    r.end_date = v.end_date;
     r.adjust_end_date_to_previous_month_end = v.adjust_end_date_to_previous_month_end;
     r.tenor = v.tenor;
     r.calendar = v.calendar;
@@ -71,14 +66,8 @@ domain::instrument_schedule instrument_schedule_mapper::map(const instrument_sch
     r.rule = v.rule;
     r.end_of_month = v.end_of_month;
     r.end_of_month_convention = v.end_of_month_convention;
-    r.first_date =
-        v.first_date.has_value() ?
-            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.first_date)) :
-            std::nullopt;
-    r.last_date =
-        v.last_date.has_value() ?
-            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.last_date)) :
-            std::nullopt;
+    r.first_date = v.first_date;
+    r.last_date = v.last_date;
     r.remove_first_date = v.remove_first_date;
     r.remove_last_date = v.remove_last_date;
     r.include_duplicate_dates = v.include_duplicate_dates;
@@ -86,7 +75,7 @@ domain::instrument_schedule instrument_schedule_mapper::map(const instrument_sch
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -96,22 +85,17 @@ instrument_schedule_entity instrument_schedule_mapper::map(const domain::instrum
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     instrument_schedule_entity r;
-    r.trade_id = boost::uuids::to_string(v.trade_id);
+    r.trade_id = v.trade_id;
     r.owner_role = v.owner_role;
-    r.owner_number = std::to_string(v.owner_number);
+    r.owner_number = v.owner_number;
     r.schedule_role = v.schedule_role;
-    r.sequence_number = std::to_string(v.sequence_number);
-    r.tenant_id = v.tenant_id.to_string();
+    r.sequence_number = v.sequence_number;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
+    r.trade_activity_id = v.trade_activity_id;
     r.schedule_kind = v.schedule_kind;
-    r.start_date =
-        v.start_date.has_value() ?
-            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.start_date)) :
-            std::nullopt;
-    r.end_date = v.end_date.has_value() ?
-                     std::optional(ores::platform::time::datetime::to_iso8601_date(*v.end_date)) :
-                     std::nullopt;
+    r.start_date = v.start_date;
+    r.end_date = v.end_date;
     r.adjust_end_date_to_previous_month_end = v.adjust_end_date_to_previous_month_end;
     r.tenor = v.tenor;
     r.calendar = v.calendar;
@@ -120,13 +104,8 @@ instrument_schedule_entity instrument_schedule_mapper::map(const domain::instrum
     r.rule = v.rule;
     r.end_of_month = v.end_of_month;
     r.end_of_month_convention = v.end_of_month_convention;
-    r.first_date =
-        v.first_date.has_value() ?
-            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.first_date)) :
-            std::nullopt;
-    r.last_date = v.last_date.has_value() ?
-                      std::optional(ores::platform::time::datetime::to_iso8601_date(*v.last_date)) :
-                      std::nullopt;
+    r.first_date = v.first_date;
+    r.last_date = v.last_date;
     r.remove_first_date = v.remove_first_date;
     r.remove_last_date = v.remove_last_date;
     r.include_duplicate_dates = v.include_duplicate_dates;

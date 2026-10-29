@@ -48,18 +48,15 @@ report_trigger_event_mapper::map(const report_trigger_event_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::report_trigger_event r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.report_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.report_definition_id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.report_definition_id = v.report_definition_id;
     r.trigger_type = v.trigger_type;
-    r.scheduler_job_id =
-        v.scheduler_job_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.scheduler_job_id)) :
-            std::nullopt;
+    r.scheduler_job_id = v.scheduler_job_id;
     r.schedule_job_run_id = v.schedule_job_run_id;
     r.triggered_by = v.triggered_by;
-    r.triggered_at = timestamp_to_timepoint(std::string_view{v.triggered_at});
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.triggered_at = v.triggered_at;
+    r.party_id = v.party_id;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -70,17 +67,15 @@ report_trigger_event_mapper::map(const domain::report_trigger_event& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     report_trigger_event_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
-    r.report_definition_id = boost::uuids::to_string(v.report_definition_id);
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
+    r.report_definition_id = v.report_definition_id;
     r.trigger_type = v.trigger_type;
-    r.scheduler_job_id = v.scheduler_job_id.has_value() ?
-                             std::optional(boost::uuids::to_string(*v.scheduler_job_id)) :
-                             std::nullopt;
+    r.scheduler_job_id = v.scheduler_job_id;
     r.schedule_job_run_id = v.schedule_job_run_id;
     r.triggered_by = v.triggered_by;
-    r.triggered_at = ores::platform::time::datetime::to_iso8601_utc(v.triggered_at);
-    r.party_id = boost::uuids::to_string(v.party_id);
+    r.triggered_at = v.triggered_at;
+    r.party_id = v.party_id;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

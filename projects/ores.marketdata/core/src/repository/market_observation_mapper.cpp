@@ -47,20 +47,15 @@ domain::market_observation market_observation_mapper::map(const market_observati
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::market_observation r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-
-    r.series_id = boost::lexical_cast<boost::uuids::uuid>(v.series_id);
-
-    r.observation_datetime = timestamp_to_timepoint(std::string_view{v.observation_datetime});
-
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
+    r.series_id = v.series_id;
+    r.observation_datetime = v.observation_datetime;
     r.oresmd_uri = v.oresmd_uri;
-
     r.value = v.value;
     r.source = v.source.value_or("");
-    r.source_id = boost::lexical_cast<boost::uuids::uuid>(v.source_id);
+    r.source_id = v.source_id;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -70,20 +65,15 @@ market_observation_entity market_observation_mapper::map(const domain::market_ob
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     market_observation_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
-    r.party_id = boost::uuids::to_string(v.party_id);
-
-    r.series_id = boost::uuids::to_string(v.series_id);
-
-    r.observation_datetime = ores::platform::time::datetime::to_iso8601_utc(v.observation_datetime);
-
-
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
+    r.party_id = v.party_id;
+    r.series_id = v.series_id;
+    r.observation_datetime = v.observation_datetime;
     r.oresmd_uri = v.oresmd_uri;
-
     r.value = v.value;
     r.source = v.source.empty() ? std::nullopt : std::optional(v.source);
-    r.source_id = boost::uuids::to_string(v.source_id);
+    r.source_id = v.source_id;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

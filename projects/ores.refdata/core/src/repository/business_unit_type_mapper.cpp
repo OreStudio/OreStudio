@@ -44,14 +44,10 @@ domain::business_unit_type business_unit_type_mapper::map(const business_unit_ty
 
     domain::business_unit_type r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
     r.coding_scheme_code = v.coding_scheme_code;
-
-
     r.code = v.code;
-
     r.name = v.name;
     r.level = v.level;
     r.description = v.description;
@@ -59,7 +55,7 @@ domain::business_unit_type business_unit_type_mapper::map(const business_unit_ty
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -69,15 +65,11 @@ business_unit_type_entity business_unit_type_mapper::map(const domain::business_
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     business_unit_type_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-
     r.coding_scheme_code = v.coding_scheme_code;
-
-
     r.code = v.code;
-
     r.name = v.name;
     r.level = v.level;
     r.description = v.description;

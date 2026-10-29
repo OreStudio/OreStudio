@@ -44,12 +44,11 @@ domain::todays_market_entry todays_market_entry_mapper::map(const todays_market_
 
     domain::todays_market_entry r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.todays_market_config_id = boost::lexical_cast<boost::uuids::uuid>(v.todays_market_config_id);
-    r.todays_market_collection_id =
-        boost::lexical_cast<boost::uuids::uuid>(v.todays_market_collection_id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
+    r.todays_market_config_id = v.todays_market_config_id;
+    r.todays_market_collection_id = v.todays_market_collection_id;
     r.key_value = v.key_value;
     r.key_value_2 = v.key_value_2;
     r.target = v.target;
@@ -59,7 +58,7 @@ domain::todays_market_entry todays_market_entry_mapper::map(const todays_market_
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -69,12 +68,12 @@ todays_market_entry_entity todays_market_entry_mapper::map(const domain::todays_
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     todays_market_entry_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
-    r.todays_market_config_id = boost::uuids::to_string(v.todays_market_config_id);
-    r.todays_market_collection_id = boost::uuids::to_string(v.todays_market_collection_id);
+    r.party_id = v.party_id;
+    r.todays_market_config_id = v.todays_market_config_id;
+    r.todays_market_collection_id = v.todays_market_collection_id;
     r.key_value = v.key_value;
     r.key_value_2 = v.key_value_2;
     r.target = v.target;

@@ -196,7 +196,7 @@ namespace ores #F2F2F2 {
                 +prepares : mutable atomic<uint64_t>
                 +executions : mutable atomic<uint64_t>
             }
-            class text_statement {
+            class fixed_statement {
                 -name_ : string_view
                 -sql_ : string_view
                 -counters_ : statement_counters
@@ -251,10 +251,10 @@ namespace ores #F2F2F2 {
                 +transaction(connection& c, session_context context)
                 +execute(const statement<tuple<Columns...>, Params...>& s, const Args&... args) : uint64_t
                 +execute(const dynamic_statement& s) : uint64_t
-                +run(const text_statement& s, span<const param> params) : result
-                +run_text(const dynamic_statement& s) : result
+                +run(const fixed_statement& s, span<const param> params, int result_format) : result
+                +run(const dynamic_statement& s, int result_format) : result
                 +add(const statement<tuple<Columns...>, Params...>& s, const Args&... args) : batch&
-                +add(const text_statement& s, vector<param> params) : batch&
+                +add(const fixed_statement& s, vector<param> params) : batch&
                 +size() : [[nodiscard]] size_t
                 +run(const batch& b) : vector<uint64_t>
                 +copy_in(string_view table, string_view columns, const vector<tuple<Columns...>>& rows) : uint64_t

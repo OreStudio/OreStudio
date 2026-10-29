@@ -49,47 +49,28 @@ fx_asian_forward_instrument_mapper::map(const fx_asian_forward_instrument_entity
 
     domain::fx_asian_forward_instrument r;
     r.identity.version = v.version;
-    r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.identity.tenant_id = v.tenant_id;
+    r.identity.trade_id = v.trade_id;
     r.identity.trade_type_code = v.trade_type_code;
-    r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.identity.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
+    r.identity.party_id = v.party_id;
+    r.identity.trade_activity_id = v.trade_activity_id;
     r.fx_index = v.fx_index;
     r.reference_currency = v.reference_currency.value_or("");
-    r.reference_notional =
-        v.reference_notional.has_value() ?
-            std::optional(
-                ores::utility::decimal::decimal::from_string(*v.reference_notional).value()) :
-            std::nullopt;
+    r.reference_notional = v.reference_notional;
     r.settlement_currency = v.settlement_currency.value_or("");
-    r.settlement_notional =
-        v.settlement_notional.has_value() ?
-            std::optional(
-                ores::utility::decimal::decimal::from_string(*v.settlement_notional).value()) :
-            std::nullopt;
-    r.payment_date =
-        v.payment_date.has_value() ?
-            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.payment_date)) :
-            std::nullopt;
+    r.settlement_notional = v.settlement_notional;
+    r.payment_date = v.payment_date;
     r.long_short = v.long_short.value_or("");
     r.currency = v.currency.value_or("");
-    r.fixing_amount =
-        v.fixing_amount.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.fixing_amount).value()) :
-            std::nullopt;
-    r.target_amount =
-        v.target_amount.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.target_amount).value()) :
-            std::nullopt;
-    r.strike = v.strike.has_value() ?
-                   std::optional(ores::utility::decimal::decimal::from_string(*v.strike).value()) :
-                   std::nullopt;
+    r.fixing_amount = v.fixing_amount;
+    r.target_amount = v.target_amount;
+    r.strike = v.strike;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
     r.audit.change_commentary = v.change_commentary;
-    r.audit.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.audit.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -100,34 +81,25 @@ fx_asian_forward_instrument_mapper::map(const domain::fx_asian_forward_instrumen
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     fx_asian_forward_instrument_entity r;
-    r.trade_id = boost::uuids::to_string(v.identity.trade_id);
-    r.tenant_id = v.identity.tenant_id.to_string();
+    r.trade_id = v.identity.trade_id;
+    r.tenant_id = v.identity.tenant_id;
     r.version = v.identity.version;
     r.trade_type_code = v.identity.trade_type_code;
-    r.party_id = boost::uuids::to_string(v.identity.party_id);
-    r.trade_activity_id = boost::uuids::to_string(v.identity.trade_activity_id);
+    r.party_id = v.identity.party_id;
+    r.trade_activity_id = v.identity.trade_activity_id;
     r.fx_index = v.fx_index;
     r.reference_currency =
         v.reference_currency.empty() ? std::nullopt : std::optional(v.reference_currency);
-    r.reference_notional = v.reference_notional.has_value() ?
-                               std::optional(v.reference_notional->to_string()) :
-                               std::nullopt;
+    r.reference_notional = v.reference_notional;
     r.settlement_currency =
         v.settlement_currency.empty() ? std::nullopt : std::optional(v.settlement_currency);
-    r.settlement_notional = v.settlement_notional.has_value() ?
-                                std::optional(v.settlement_notional->to_string()) :
-                                std::nullopt;
-    r.payment_date =
-        v.payment_date.has_value() ?
-            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.payment_date)) :
-            std::nullopt;
+    r.settlement_notional = v.settlement_notional;
+    r.payment_date = v.payment_date;
     r.long_short = v.long_short.empty() ? std::nullopt : std::optional(v.long_short);
     r.currency = v.currency.empty() ? std::nullopt : std::optional(v.currency);
-    r.fixing_amount =
-        v.fixing_amount.has_value() ? std::optional(v.fixing_amount->to_string()) : std::nullopt;
-    r.target_amount =
-        v.target_amount.has_value() ? std::optional(v.target_amount->to_string()) : std::nullopt;
-    r.strike = v.strike.has_value() ? std::optional(v.strike->to_string()) : std::nullopt;
+    r.fixing_amount = v.fixing_amount;
+    r.target_amount = v.target_amount;
+    r.strike = v.strike;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

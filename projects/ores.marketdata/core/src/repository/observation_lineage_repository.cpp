@@ -178,10 +178,10 @@ void observation_lineage_repository::write(
 }
 
 std::vector<domain::observation_lineage> observation_lineage_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<observation_lineage_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<observation_lineage_entity,
@@ -196,11 +196,11 @@ std::vector<domain::observation_lineage> observation_lineage_repository::read_la
 std::vector<domain::observation_lineage>
 observation_lineage_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest observation lineage. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<observation_lineage_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<observation_lineage_entity,
                                              domain::observation_lineage>(
@@ -262,7 +262,7 @@ observation_lineage_repository::remove_status observation_lineage_repository::re
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -270,7 +270,7 @@ observation_lineage_repository::remove_status observation_lineage_repository::re
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<observation_lineage_entity> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing observation lineage from database.");
@@ -335,11 +335,11 @@ std::vector<domain::observation_lineage>
 observation_lineage_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<observation_lineage_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result =
         query_builder::execute_read_query<observation_lineage_entity, domain::observation_lineage>(
             ctx,
@@ -359,11 +359,11 @@ void observation_lineage_repository::remove(context ctx, const std::vector<std::
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<observation_lineage_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing observation lineages.");
 }
 
@@ -375,17 +375,16 @@ observation_lineage_repository::read_latest_by_observation(
     std::chrono::system_clock::time_point observation_datetime,
     const std::string& oresmd_uri) {
     using ores::platform::time::datetime;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
     const auto odt_str = datetime::to_iso8601_utc(observation_datetime);
 
-    const auto query =
-        query_builder::read<std::vector<observation_lineage_entity>> |
-        query_builder::where("tenant_id"_c == tid && "series_id"_c == sid &&
-                             "observation_datetime"_c == odt_str && "oresmd_uri"_c == oresmd_uri &&
-                             "valid_to"_c == max.value()) |
-        query_builder::order_by("id"_c);
+    const auto query = query_builder::read<std::vector<observation_lineage_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "series_id"_c == sid &&
+                                            "observation_datetime"_c == odt_str &&
+                                            "oresmd_uri"_c == oresmd_uri && "valid_to"_c == max) |
+                       query_builder::order_by("id"_c);
     const auto results =
         query_builder::execute_read_query<observation_lineage_entity, domain::observation_lineage>(
             ctx,
@@ -403,7 +402,7 @@ std::vector<domain::observation_lineage> observation_lineage_repository::read_la
     using ores::platform::time::datetime;
     if (points.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
 
@@ -423,11 +422,10 @@ std::vector<domain::observation_lineage> observation_lineage_repository::read_la
 
     const auto query =
         query_builder::read<std::vector<observation_lineage_entity>> |
-        query_builder::where("tenant_id"_c == tid && "series_id"_c == sid &&
-                             "oresmd_uri"_c.in(uris) &&
-                             "observation_datetime"_c >= datetime::to_iso8601_utc(first) &&
-                             "observation_datetime"_c <= datetime::to_iso8601_utc(last) &&
-                             "valid_to"_c == max.value()) |
+        query_builder::where(
+            "tenant_id"_c == tid && "series_id"_c == sid && "oresmd_uri"_c.in(uris) &&
+            "observation_datetime"_c >= datetime::to_iso8601_utc(first) &&
+            "observation_datetime"_c <= datetime::to_iso8601_utc(last) && "valid_to"_c == max) |
         query_builder::order_by("id"_c);
     const auto rows =
         query_builder::execute_read_query<observation_lineage_entity, domain::observation_lineage>(
@@ -451,14 +449,14 @@ std::vector<domain::observation_lineage> observation_lineage_repository::read_la
 std::vector<domain::observation_lineage>
 observation_lineage_repository::read_manual_for_series(context ctx,
                                                        const boost::uuids::uuid& series_id) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
 
     const auto query = query_builder::read<std::vector<observation_lineage_entity>> |
                        query_builder::where("tenant_id"_c == tid && "series_id"_c == sid &&
                                             "point_source_kind"_c == std::string("manual") &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
     return query_builder::execute_read_query<observation_lineage_entity,
                                              domain::observation_lineage>(

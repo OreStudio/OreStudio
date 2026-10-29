@@ -193,10 +193,10 @@ void equity_position_option_underlying_repository::write(
 
 std::vector<domain::equity_position_option_underlying>
 equity_position_option_underlying_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<equity_position_option_underlying_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("trade_id"_c, "sequence_number"_c);
 
     return query_builder::execute_read_query<equity_position_option_underlying_entity,
@@ -217,12 +217,12 @@ equity_position_option_underlying_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest equity position option underlying. "
                                << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<equity_position_option_underlying_entity>> |
         query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                             "sequence_number"_c == sequence_number && "valid_to"_c == max.value());
+                             "sequence_number"_c == sequence_number && "valid_to"_c == max);
 
     return query_builder::execute_read_query<equity_position_option_underlying_entity,
                                              domain::equity_position_option_underlying>(
@@ -302,11 +302,11 @@ equity_position_option_underlying_repository::read_latest_by_trade_id(
     const std::optional<messaging::equity_position_option_underlyings_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest equity position option underlyings. trade_id: "
                                << trade_id << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<equity_position_option_underlying_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<equity_position_option_underlying_entity,
@@ -330,12 +330,12 @@ std::uint32_t equity_position_option_underlying_repository::
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active equity position option underlyings count. trade_id: "
         << trade_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<equity_position_option_underlying_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_count_query<equity_position_option_underlying_entity>(
         ctx,
@@ -361,7 +361,7 @@ equity_position_option_underlying_repository::remove(context ctx,
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -370,7 +370,7 @@ equity_position_option_underlying_repository::remove(context ctx,
     const auto query = query_builder::delete_from<equity_position_option_underlying_entity> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
                                             "sequence_number"_c == sequence_number &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing equity position option underlying from database.");
@@ -444,12 +444,12 @@ equity_position_option_underlying_repository::read_latest(
     const std::vector<std::string>& sequence_numbers) {
     if (trade_ids.empty() || sequence_numbers.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<equity_position_option_underlying_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
-                                            "sequence_number"_c.in(sequence_numbers) &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<equity_position_option_underlying_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+                             "sequence_number"_c.in(sequence_numbers) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<equity_position_option_underlying_entity,
                                                     domain::equity_position_option_underlying>(
         ctx,
@@ -498,11 +498,11 @@ equity_position_option_underlying_repository::read_by_instruments_batch(
     context ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<equity_position_option_underlying_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("trade_id"_c, "sequence_number"_c);
     return query_builder::execute_read_query<equity_position_option_underlying_entity,
                                              domain::equity_position_option_underlying>(

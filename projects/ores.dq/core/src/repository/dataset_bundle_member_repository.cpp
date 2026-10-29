@@ -131,10 +131,10 @@ void dataset_bundle_member_repository::write(
 }
 
 std::vector<domain::dataset_bundle_member> dataset_bundle_member_repository::read_latest() {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<dataset_bundle_member_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("bundle_code"_c, "display_order"_c);
 
     return query_builder::execute_read_query<dataset_bundle_member_entity,
@@ -150,10 +150,10 @@ std::vector<domain::dataset_bundle_member>
 dataset_bundle_member_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundle members with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<dataset_bundle_member_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("bundle_code"_c, "display_order"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -172,14 +172,14 @@ dataset_bundle_member_repository::read_latest(const std::string& bundle_code,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundle member. " << bundle_code << "/"
                                << dataset_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto bundle_code_str = bundle_code;
     const auto dataset_code_str = dataset_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<dataset_bundle_member_entity>> |
         query_builder::where("tenant_id"_c == tid && "bundle_code"_c == bundle_code &&
-                             "dataset_code"_c == dataset_code && "valid_to"_c == max.value());
+                             "dataset_code"_c == dataset_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<dataset_bundle_member_entity,
                                              domain::dataset_bundle_member>(
@@ -192,11 +192,11 @@ dataset_bundle_member_repository::read_latest(const std::string& bundle_code,
 
 std::uint32_t dataset_bundle_member_repository::get_total_member_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active dataset bundle members count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<dataset_bundle_member_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<dataset_bundle_member_entity>(
         ctx_, query, std::nullopt, lg(), "Counting dataset bundle members");
@@ -208,13 +208,12 @@ std::vector<domain::dataset_bundle_member>
 dataset_bundle_member_repository::read_latest_by_bundle(const std::string& bundle_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundle members. Bundle: " << bundle_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<dataset_bundle_member_entity>> |
-        query_builder::where("tenant_id"_c == tid && "bundle_code"_c == bundle_code &&
-                             "valid_to"_c == max.value()) |
-        query_builder::order_by("display_order"_c);
+    const auto query = query_builder::read<std::vector<dataset_bundle_member_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                                            "bundle_code"_c == bundle_code && "valid_to"_c == max) |
+                       query_builder::order_by("display_order"_c);
 
     auto rows = query_builder::execute_read_query<dataset_bundle_member_entity,
                                                   domain::dataset_bundle_member>(
@@ -232,12 +231,12 @@ dataset_bundle_member_repository::read_latest_by_dataset(const std::string& data
     BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundle members. Dataset: "
                                << dataset_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<dataset_bundle_member_entity>> |
         query_builder::where("tenant_id"_c == tid && "dataset_code"_c == dataset_code &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("bundle_code"_c);
 
     auto rows = query_builder::execute_read_query<dataset_bundle_member_entity,
@@ -256,14 +255,13 @@ std::vector<domain::dataset_bundle_member> dataset_bundle_member_repository::rea
     BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundle members. Bundle: " << bundle_code
                                << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<dataset_bundle_member_entity>> |
-        query_builder::where("tenant_id"_c == tid && "bundle_code"_c == bundle_code &&
-                             "valid_to"_c == max.value()) |
-        query_builder::order_by("display_order"_c) | query_builder::offset(offset) |
-        query_builder::limit(limit);
+    const auto query = query_builder::read<std::vector<dataset_bundle_member_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                                            "bundle_code"_c == bundle_code && "valid_to"_c == max) |
+                       query_builder::order_by("display_order"_c) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
     auto rows = query_builder::execute_read_query<dataset_bundle_member_entity,
                                                   domain::dataset_bundle_member>(
@@ -280,13 +278,12 @@ std::uint32_t
 dataset_bundle_member_repository::get_total_member_count_by_bundle(const std::string& bundle_code) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active dataset bundle members count. Bundle: "
                                << bundle_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<dataset_bundle_member_entity>> |
-        query_builder::where("tenant_id"_c == tid && "bundle_code"_c == bundle_code &&
-                             "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<dataset_bundle_member_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                                            "bundle_code"_c == bundle_code && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<dataset_bundle_member_entity>(
         ctx_, query, std::nullopt, lg(), "Counting dataset bundle members");
@@ -298,13 +295,13 @@ std::uint32_t dataset_bundle_member_repository::get_total_member_count_by_datase
     const std::string& dataset_code) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active dataset bundle members count. Dataset: "
                                << dataset_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<dataset_bundle_member_entity>> |
         query_builder::where("tenant_id"_c == tid && "dataset_code"_c == dataset_code &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<dataset_bundle_member_entity>(
         ctx_, query, std::nullopt, lg(), "Counting dataset bundle members");
@@ -377,7 +374,7 @@ dataset_bundle_member_repository::remove(const std::string& bundle_code,
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -388,7 +385,7 @@ dataset_bundle_member_repository::remove(const std::string& bundle_code,
     const auto query =
         query_builder::delete_from<dataset_bundle_member_entity> |
         query_builder::where("tenant_id"_c == tid && "bundle_code"_c == bundle_code &&
-                             "dataset_code"_c == dataset_code && "valid_to"_c == max.value() &&
+                             "dataset_code"_c == dataset_code && "valid_to"_c == max &&
                              "version"_c == expected);
 
     query_builder::execute_delete_query(

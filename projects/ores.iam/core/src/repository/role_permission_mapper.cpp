@@ -45,13 +45,13 @@ domain::role_permission role_permission_mapper::map(const role_permission_entity
     domain::role_permission r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.role_id = boost::lexical_cast<boost::uuids::uuid>(v.role_id);
-    r.permission_id = boost::lexical_cast<boost::uuids::uuid>(v.permission_id);
+    r.role_id = v.role_id;
+    r.permission_id = v.permission_id;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -61,9 +61,9 @@ role_permission_entity role_permission_mapper::map(const domain::role_permission
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     role_permission_entity r;
-    r.role_id = boost::uuids::to_string(v.role_id);
+    r.role_id = v.role_id;
     r.tenant_id = v.tenant_id;
-    r.permission_id = boost::uuids::to_string(v.permission_id);
+    r.permission_id = v.permission_id;
     r.version = v.version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

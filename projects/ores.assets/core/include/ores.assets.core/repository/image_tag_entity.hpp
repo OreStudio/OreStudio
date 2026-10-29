@@ -27,6 +27,9 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -44,18 +47,23 @@ struct image_tag_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_assets_image_tags_tbl";
 
-    std::string image_id;
+    boost::uuids::uuid image_id;
+
     std::string tenant_id;
-    std::string tag_id;
+    boost::uuids::uuid tag_id;
+
     int version = 0;
+
     std::string assigned_by;
-    std::string assigned_at;
+
+    db_timestamp assigned_at;
+
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = db_timestamp::max();
+    db_timestamp valid_to = db_timestamp::max();
 
     /**
      * @brief The columns of the table, named as the members, with the key.
@@ -64,7 +72,7 @@ struct image_tag_entity {
         using e = image_tag_entity;
         namespace query_builder = ores::database::query_builder;
         return query_builder::columns<e>() | query_builder::key("image_id", &e::image_id) |
-               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind_text("tenant_id", &e::tenant_id) |
                query_builder::bind("tag_id", &e::tag_id) |
                query_builder::bind("version", &e::version) |
                query_builder::bind("assigned_by", &e::assigned_by) |

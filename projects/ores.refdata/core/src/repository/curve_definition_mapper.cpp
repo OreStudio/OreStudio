@@ -44,10 +44,10 @@ domain::curve_definition curve_definition_mapper::map(const curve_definition_ent
 
     domain::curve_definition r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.curve_configuration_id = boost::lexical_cast<boost::uuids::uuid>(v.curve_configuration_id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
+    r.curve_configuration_id = v.curve_configuration_id;
     r.section_code = v.section_code;
     r.curve_id = v.curve_id;
     r.description = v.description;
@@ -56,7 +56,7 @@ domain::curve_definition curve_definition_mapper::map(const curve_definition_ent
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -66,11 +66,11 @@ curve_definition_entity curve_definition_mapper::map(const domain::curve_definit
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     curve_definition_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
-    r.curve_configuration_id = boost::uuids::to_string(v.curve_configuration_id);
+    r.party_id = v.party_id;
+    r.curve_configuration_id = v.curve_configuration_id;
     r.section_code = v.section_code;
     r.curve_id = v.curve_id;
     r.description = v.description;

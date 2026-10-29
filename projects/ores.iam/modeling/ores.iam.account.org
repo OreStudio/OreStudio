@@ -534,11 +534,11 @@ std::vector<domain::account>
 account_repository::read_latest_by_username(context ctx, const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by username: " << username;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_entity>> |
                        query_builder::where("tenant_id"_c == tid && "username"_c == username &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
                        query_builder::order_by("valid_from"_c.desc());
 
     return query_builder::execute_read_query<account_entity, domain::account>(
@@ -569,11 +569,11 @@ std::vector<domain::account>
 account_repository::read_latest_by_email(context ctx, const std::string& email) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by email: " << email;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_entity>> |
                        query_builder::where("tenant_id"_c == tid && "email"_c == email &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
                        query_builder::order_by("valid_from"_c.desc());
 
     return query_builder::execute_read_query<account_entity, domain::account>(

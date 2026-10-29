@@ -43,7 +43,7 @@ todays_market_collection_kind_mapper::map(const todays_market_collection_kind_en
 
     domain::todays_market_collection_kind r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.tenant_id = v.tenant_id;
     r.code = v.code;
     r.entry_element = v.entry_element;
     r.key_attribute = v.key_attribute;
@@ -53,7 +53,7 @@ todays_market_collection_kind_mapper::map(const todays_market_collection_kind_en
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -65,7 +65,7 @@ todays_market_collection_kind_mapper::map(const domain::todays_market_collection
 
     todays_market_collection_kind_entity r;
     r.code = v.code;
-    r.tenant_id = v.tenant_id.to_string();
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.entry_element = v.entry_element;
     r.key_attribute = v.key_attribute;

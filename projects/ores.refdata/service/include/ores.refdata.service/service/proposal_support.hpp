@@ -51,7 +51,7 @@ inline void in_transaction(const ores::database::context& ctx, const std::string
         throw std::logic_error(
             "A statement for the open transaction needs a context bound to one.");
     try {
-        const ores::database::pq::text_statement statement({}, sql);
+        const ores::database::pq::fixed_statement statement({}, sql);
         ores::database::transact(
             ctx, [&](ores::database::pq::transaction& tx) { tx.run(statement, {}); });
     } catch (const ores::database::pq::store_error& e) {

@@ -47,21 +47,11 @@ domain::market_fixing market_fixing_mapper::map(const market_fixing_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::market_fixing r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-
-    r.series_id = boost::lexical_cast<boost::uuids::uuid>(v.series_id);
-
-    {
-        int yy{}, mm{}, dd{};
-        char s1{}, s2{};
-        std::istringstream ss(v.fixing_date);
-        ss >> yy >> s1 >> mm >> s2 >> dd;
-        r.fixing_date = std::chrono::year{yy} / std::chrono::month{static_cast<unsigned>(mm)} /
-                        std::chrono::day{static_cast<unsigned>(dd)};
-    }
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
+    r.series_id = v.series_id;
+    r.fixing_date = v.fixing_date;
     r.value = v.value;
     r.source = v.source.value_or("");
 
@@ -73,14 +63,11 @@ market_fixing_entity market_fixing_mapper::map(const domain::market_fixing& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     market_fixing_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
-    r.party_id = boost::uuids::to_string(v.party_id);
-
-    r.series_id = boost::uuids::to_string(v.series_id);
-
-    r.fixing_date = std::format("{:%Y-%m-%d}", v.fixing_date);
-
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
+    r.party_id = v.party_id;
+    r.series_id = v.series_id;
+    r.fixing_date = v.fixing_date;
     r.value = v.value;
     r.source = v.source.empty() ? std::nullopt : std::optional(v.source);
 

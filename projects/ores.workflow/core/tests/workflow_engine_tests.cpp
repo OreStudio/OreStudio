@@ -2096,9 +2096,8 @@ TEST_CASE("a finished run carries the times it ran and was last touched", "[engi
     // The completion the poll was missing.
     REQUIRE(finished.front().completed_at.has_value());
     const auto completed_at = *finished.front().completed_at;
-    // Not strict: a case can finish inside the second it started in, and the
-    // store keeps a timestamp to the second. The live check against a real
-    // provision reads the column itself, at full precision.
+    // Not strict: a fast case can finish inside the microsecond it started in,
+    // and both times are kept to the microsecond.
     CHECK(completed_at >= started_at);
     REQUIRE(finished.front().last_event_at.has_value());
     CHECK(*finished.front().last_event_at >= completed_at);
@@ -2122,7 +2121,9 @@ TEST_CASE("a finished run carries the times it ran and was last touched", "[engi
     CHECK(*polled->completed_at == completed_at);
 
     // Every step the run took says when it started and when it stopped, and
-    // both fall inside the run that took them.
+    // both fall inside the run that took them. The start is read against the
+    // run's activity time as it stood when the step went out, so a step that
+    // began before the run said it was touched fails here.
     rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
     REQUIRE(rows.size() == 2);
     for (const auto& r : rows) {

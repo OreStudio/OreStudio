@@ -45,11 +45,9 @@ domain::currency currency_mapper::map(const currency_entity& v) {
 
     domain::currency r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.tenant_id = v.tenant_id;
     r.iso_code = v.iso_code;
-
     r.name = v.name;
-
     r.numeric_code = v.numeric_code;
     r.symbol = v.symbol;
     r.fraction_symbol = v.fraction_symbol;
@@ -60,9 +58,7 @@ domain::currency currency_mapper::map(const currency_entity& v) {
     r.monetary_nature = v.monetary_nature;
     r.market_tier = v.market_tier;
     r.ore_currency_type = v.ore_currency_type;
-    r.image_id = v.image_id.has_value() ?
-                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.image_id)) :
-                     std::nullopt;
+    r.image_id = v.image_id;
     r.spot_days = v.spot_days;
     r.day_basis = v.day_basis;
     r.base_precedence = v.base_precedence;
@@ -70,7 +66,7 @@ domain::currency currency_mapper::map(const currency_entity& v) {
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -81,11 +77,9 @@ currency_entity currency_mapper::map(const domain::currency& v) {
 
     currency_entity r;
     r.iso_code = v.iso_code;
-    r.tenant_id = v.tenant_id.to_string();
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-
     r.name = v.name;
-
     r.numeric_code = v.numeric_code;
     r.symbol = v.symbol;
     r.fraction_symbol = v.fraction_symbol;
@@ -96,8 +90,7 @@ currency_entity currency_mapper::map(const domain::currency& v) {
     r.monetary_nature = v.monetary_nature;
     r.market_tier = v.market_tier;
     r.ore_currency_type = v.ore_currency_type;
-    r.image_id =
-        v.image_id.has_value() ? std::optional(boost::uuids::to_string(*v.image_id)) : std::nullopt;
+    r.image_id = v.image_id;
     r.spot_days = v.spot_days;
     r.day_basis = v.day_basis;
     r.base_precedence = v.base_precedence;

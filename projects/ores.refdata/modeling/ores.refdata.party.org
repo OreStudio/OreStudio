@@ -702,11 +702,11 @@ std::optional<domain::party> read_registration_default(context ctx);
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::optional<domain::party>
 party_repository::read_registration_default(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_entity>> |
                        query_builder::where("tenant_id"_c == tid && "is_registration_default"_c == true &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
                        query_builder::limit(1);
 
     const auto rows = query_builder::execute_read_query<party_entity, domain::party>(

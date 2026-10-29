@@ -45,9 +45,9 @@ market_series_identity_mapper::map(const market_series_identity_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::market_series_identity r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.series_id = boost::lexical_cast<boost::uuids::uuid>(v.series_id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.tenant_id = v.tenant_id;
+    r.series_id = v.series_id;
+    r.party_id = v.party_id;
     r.identity_kind = v.identity_kind;
     r.asset_class = v.asset_class.value_or("");
     r.instrument_type = v.instrument_type.value_or("");
@@ -113,9 +113,9 @@ market_series_identity_mapper::map(const domain::market_series_identity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     market_series_identity_entity r;
-    r.series_id = boost::uuids::to_string(v.series_id);
-    r.tenant_id = v.tenant_id.to_string();
-    r.party_id = boost::uuids::to_string(v.party_id);
+    r.series_id = v.series_id;
+    r.tenant_id = v.tenant_id;
+    r.party_id = v.party_id;
     r.identity_kind = v.identity_kind;
     r.asset_class = v.asset_class.empty() ? std::nullopt : std::optional(v.asset_class);
     r.instrument_type = v.instrument_type.empty() ? std::nullopt : std::optional(v.instrument_type);

@@ -45,11 +45,10 @@ domain::todays_market_configuration_binding todays_market_configuration_binding_
 
     domain::todays_market_configuration_binding r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.todays_market_configuration_id =
-        boost::lexical_cast<boost::uuids::uuid>(v.todays_market_configuration_id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
+    r.todays_market_configuration_id = v.todays_market_configuration_id;
     r.collection = v.collection;
     r.reference = v.reference;
     r.position = v.position;
@@ -57,7 +56,7 @@ domain::todays_market_configuration_binding todays_market_configuration_binding_
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -68,11 +67,11 @@ todays_market_configuration_binding_entity todays_market_configuration_binding_m
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     todays_market_configuration_binding_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
-    r.todays_market_configuration_id = boost::uuids::to_string(v.todays_market_configuration_id);
+    r.party_id = v.party_id;
+    r.todays_market_configuration_id = v.todays_market_configuration_id;
     r.collection = v.collection;
     r.reference = v.reference;
     r.position = v.position;

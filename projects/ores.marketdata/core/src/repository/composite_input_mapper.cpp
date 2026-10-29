@@ -44,22 +44,17 @@ domain::composite_input composite_input_mapper::map(const composite_input_entity
 
     domain::composite_input r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.composite_id = boost::lexical_cast<boost::uuids::uuid>(v.composite_id);
-
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.composite_id = v.composite_id;
     r.provider_code = v.provider_code;
-
-
     r.oresmd_uri = v.oresmd_uri;
-
     r.position = v.position;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -69,17 +64,12 @@ composite_input_entity composite_input_mapper::map(const domain::composite_input
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     composite_input_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.composite_id = boost::uuids::to_string(v.composite_id);
-
-
+    r.composite_id = v.composite_id;
     r.provider_code = v.provider_code;
-
-
     r.oresmd_uri = v.oresmd_uri;
-
     r.position = v.position;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

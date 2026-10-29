@@ -22,13 +22,10 @@
 #include "ores.database/export.hpp"
 #include "ores.database/pq/text.hpp"
 #include "ores.database/query_builder/columns.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <concepts>
 #include <cstdint>
-#include <cstdio>
 #include <initializer_list>
 #include <optional>
 #include <string>
@@ -36,8 +33,9 @@
 #include <vector>
 
 /*
- * The queries a generated repository states, run on the libpq layer. Every
- * value is a text parameter the server types from where it is used. A
+ * The queries a generated repository states, run on the libpq layer. A value
+ * whose type the layer has a codec for travels in the binary format; a string
+ * travels as text, and the server types it from the column it meets. A
  * condition holds its SQL with '?' for each parameter, and the statement
  * numbers them when it is run.
  */
@@ -92,6 +90,54 @@ inline condition compare(const std::string& column, std::string_view op, pq::par
 
 }
 
+/*
+ * A value a filter compares a column with. A value whose type the layer has a
+ * codec for travels in the binary format, so the column is compared with the
+ * thing the row holds and never with its text. A string travels as text, the
+ * server typing it from the column it meets: a code column holds text but a
+ * tenant column holds a uuid, and only the server knows which.
+ */
+
+inline value filter_value(const std::string& v) {
+    return pq::text_param(v);
+}
+
+inline value filter_value(const boost::uuids::uuid& v) {
+    return pq::encode_param(v);
+}
+
+inline value filter_value(const utility::uuid::tenant_id& v) {
+    return pq::encode_param(v);
+}
+
+inline value filter_value(const ores::utility::decimal::decimal& v) {
+    return pq::encode_param(v);
+}
+
+inline value filter_value(bool v) {
+    return pq::text_param(v ? "true" : "false");
+}
+
+template <std::integral T>
+    requires(!std::same_as<T, bool>)
+value filter_value(T v) {
+    return pq::text_param(std::to_string(v));
+}
+
+inline value filter_value(const std::chrono::year_month_day& v) {
+    return pq::encode_param(v);
+}
+
+inline value filter_value(const std::chrono::system_clock::time_point& v) {
+    return pq::encode_param(v);
+}
+
+template <typename E>
+    requires std::is_enum_v<E>
+value filter_value(E v) {
+    return pq::text_param(std::string(to_string(v)));
+}
+
 struct column_ref {
     std::string name;
 
@@ -110,7 +156,7 @@ struct column_ref {
         condition r{name + " in (", {}, true};
         for (std::size_t i = 0; i < values.size(); ++i) {
             r.sql += i == 0 ? "?" : ", ?";
-            r.params.push_back(pq::to_text(values[i]));
+            r.params.push_back(filter_value(values[i]));
         }
         r.sql += ")";
         return r;
@@ -123,7 +169,7 @@ inline pq::param to_param(const char* v) {
 
 template <typename T>
 pq::param to_param(const T& v) {
-    return pq::to_text(v);
+    return filter_value(v);
 }
 
 template <typename T>
@@ -285,45 +331,6 @@ write_query<Entity> insert_or_replace(std::vector<Entity> rows) {
 /*
  * The list-filter vocabulary of the repository templates, as conditions.
  */
-
-inline value filter_value(const std::string& v) {
-    return pq::text_param(v);
-}
-
-inline value filter_value(const boost::uuids::uuid& v) {
-    return pq::text_param(boost::uuids::to_string(v));
-}
-
-inline value filter_value(bool v) {
-    return pq::text_param(v ? "true" : "false");
-}
-
-template <std::integral T>
-    requires(!std::same_as<T, bool>)
-value filter_value(T v) {
-    return pq::text_param(std::to_string(v));
-}
-
-inline value filter_value(const std::chrono::year_month_day& v) {
-    char text[16];
-    std::snprintf(text,
-                  sizeof text,
-                  "%04d-%02u-%02u",
-                  static_cast<int>(v.year()),
-                  static_cast<unsigned>(v.month()),
-                  static_cast<unsigned>(v.day()));
-    return pq::text_param(text);
-}
-
-inline value filter_value(const std::chrono::system_clock::time_point& v) {
-    return pq::text_param(ores::platform::time::datetime::to_db_string(v));
-}
-
-template <typename E>
-    requires std::is_enum_v<E>
-value filter_value(E v) {
-    return pq::text_param(std::string(to_string(v)));
-}
 
 inline condition equals(const std::string& column, value v) {
     return detail::compare(column, "=", std::move(v));

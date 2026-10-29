@@ -48,11 +48,9 @@ domain::dataset dataset_mapper::map(const dataset_entity& v) {
 
     domain::dataset r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
     r.code = v.code;
-
     r.catalog_name = v.catalog_name;
     r.subject_area_name = v.subject_area_name;
     r.domain_name = v.domain_name;
@@ -60,28 +58,22 @@ domain::dataset dataset_mapper::map(const dataset_entity& v) {
     r.origin_code = v.origin_code;
     r.nature_code = v.nature_code;
     r.treatment_code = v.treatment_code;
-    r.methodology_id =
-        v.methodology_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.methodology_id)) :
-            std::nullopt;
+    r.methodology_id = v.methodology_id;
     r.name = v.name;
     r.description = v.description;
     r.source_system_id = v.source_system_id;
     r.business_context = v.business_context;
-    r.upstream_derivation_id =
-        v.upstream_derivation_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.upstream_derivation_id)) :
-            std::nullopt;
+    r.upstream_derivation_id = v.upstream_derivation_id;
     r.lineage_depth = v.lineage_depth;
-    r.as_of_date = timestamp_to_timepoint(std::string_view{v.as_of_date});
-    r.ingestion_timestamp = timestamp_to_timepoint(std::string_view{v.ingestion_timestamp});
+    r.as_of_date = v.as_of_date;
+    r.ingestion_timestamp = v.ingestion_timestamp;
     r.license_info = v.license_info;
     r.artefact_type = v.artefact_type;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -91,12 +83,10 @@ dataset_entity dataset_mapper::map(const domain::dataset& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     dataset_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-
     r.code = v.code;
-
     r.catalog_name = v.catalog_name;
     r.subject_area_name = v.subject_area_name;
     r.domain_name = v.domain_name;
@@ -104,20 +94,15 @@ dataset_entity dataset_mapper::map(const domain::dataset& v) {
     r.origin_code = v.origin_code;
     r.nature_code = v.nature_code;
     r.treatment_code = v.treatment_code;
-    r.methodology_id = v.methodology_id.has_value() ?
-                           std::optional(boost::uuids::to_string(*v.methodology_id)) :
-                           std::nullopt;
+    r.methodology_id = v.methodology_id;
     r.name = v.name;
     r.description = v.description;
     r.source_system_id = v.source_system_id;
     r.business_context = v.business_context;
-    r.upstream_derivation_id =
-        v.upstream_derivation_id.has_value() ?
-            std::optional(boost::uuids::to_string(*v.upstream_derivation_id)) :
-            std::nullopt;
+    r.upstream_derivation_id = v.upstream_derivation_id;
     r.lineage_depth = v.lineage_depth;
-    r.as_of_date = ores::platform::time::datetime::to_iso8601_utc(v.as_of_date);
-    r.ingestion_timestamp = ores::platform::time::datetime::to_iso8601_utc(v.ingestion_timestamp);
+    r.as_of_date = v.as_of_date;
+    r.ingestion_timestamp = v.ingestion_timestamp;
     r.license_info = v.license_info;
     r.artefact_type = v.artefact_type;
     r.modified_by = v.modified_by;

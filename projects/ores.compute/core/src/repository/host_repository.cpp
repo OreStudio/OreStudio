@@ -170,10 +170,10 @@ void host_repository::write(context ctx,
 }
 
 std::vector<domain::host> host_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<host_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<host_entity, domain::host>(
@@ -186,11 +186,11 @@ std::vector<domain::host> host_repository::read_latest(context ctx) {
 
 std::vector<domain::host> host_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest compute host. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<host_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<host_entity, domain::host>(
         ctx,
@@ -203,12 +203,11 @@ std::vector<domain::host> host_repository::read_latest(context ctx, const std::s
 std::vector<domain::host>
 host_repository::read_latest_by_external_id(context ctx, const std::string& external_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest compute host by external_id: " << external_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<host_entity>> |
-        query_builder::where("tenant_id"_c == tid && "external_id"_c == external_id &&
-                             "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<host_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                                            "external_id"_c == external_id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<host_entity, domain::host>(
         ctx,
@@ -283,7 +282,7 @@ host_repository::remove(context ctx, const std::string& id, std::optional<std::u
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -291,7 +290,7 @@ host_repository::remove(context ctx, const std::string& id, std::optional<std::u
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<host_entity> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing compute host from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -352,11 +351,11 @@ std::vector<domain::host> host_repository::read_latest(context ctx,
                                                        const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<host_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<host_entity, domain::host>(
         ctx,
         query,
@@ -375,11 +374,11 @@ void host_repository::remove(context ctx, const std::vector<std::string>& ids) {
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<host_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing compute hosts.");
 }
 

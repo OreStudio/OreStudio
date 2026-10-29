@@ -27,6 +27,9 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -37,27 +40,32 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a market observation in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct market_observation_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_marketdata_market_observations_tbl";
 
-    std::string id;
-    std::string tenant_id;
-    std::string party_id;
+    boost::uuids::uuid id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+    boost::uuids::uuid party_id;
 
-    std::string series_id;
+    boost::uuids::uuid series_id;
 
-    std::string observation_datetime;
+    db_timestamp observation_datetime;
 
 
     std::string oresmd_uri;
 
     std::string value;
     std::optional<std::string> source;
-    std::string source_id;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
+    boost::uuids::uuid source_id;
+    db_timestamp valid_from = db_timestamp::max();
+    db_timestamp valid_to = db_timestamp::max();
 
     /**
      * @brief The columns of the table, named as the members, with the key.

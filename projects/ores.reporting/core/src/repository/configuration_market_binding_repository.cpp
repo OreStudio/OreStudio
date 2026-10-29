@@ -190,10 +190,10 @@ void configuration_market_binding_repository::write(
 
 std::vector<domain::configuration_market_binding>
 configuration_market_binding_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<configuration_market_binding_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<configuration_market_binding_entity,
@@ -208,11 +208,11 @@ configuration_market_binding_repository::read_latest(context ctx) {
 std::vector<domain::configuration_market_binding>
 configuration_market_binding_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest configuration market binding. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<configuration_market_binding_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<configuration_market_binding_entity,
                                              domain::configuration_market_binding>(
@@ -277,12 +277,12 @@ configuration_market_binding_repository::read_latest_by_configuration_id(
     const std::optional<messaging::configuration_market_bindings_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest configuration market bindings. configuration_id: "
                                << configuration_id << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<configuration_market_binding_entity>> |
         query_builder::where("tenant_id"_c == tid && "configuration_id"_c == configuration_id &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<configuration_market_binding_entity,
@@ -303,13 +303,13 @@ std::uint32_t configuration_market_binding_repository::get_total_binding_count_b
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active configuration market bindings count. configuration_id: "
         << configuration_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<configuration_market_binding_entity>> |
         query_builder::where("tenant_id"_c == tid && "configuration_id"_c == configuration_id &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     return query_builder::execute_count_query<configuration_market_binding_entity>(
         ctx,
@@ -332,7 +332,7 @@ configuration_market_binding_repository::remove(context ctx,
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -340,7 +340,7 @@ configuration_market_binding_repository::remove(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<configuration_market_binding_entity> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing configuration market binding from database.");
@@ -407,11 +407,11 @@ configuration_market_binding_repository::read_latest(context ctx,
                                                      const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<configuration_market_binding_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<configuration_market_binding_entity,
                                                     domain::configuration_market_binding>(
         ctx,
@@ -432,11 +432,11 @@ void configuration_market_binding_repository::remove(context ctx,
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<configuration_market_binding_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(
         ctx, query, lg(), "Batch removing configuration market bindings.");
 }

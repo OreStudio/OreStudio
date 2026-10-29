@@ -45,9 +45,9 @@ domain::bond_issue_leg_rate bond_issue_leg_rate_mapper::map(const bond_issue_leg
 
     domain::bond_issue_leg_rate r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.issue_id = boost::lexical_cast<boost::uuids::uuid>(v.issue_id);
-    r.leg_number = boost::lexical_cast<int>(v.leg_number);
+    r.tenant_id = v.tenant_id;
+    r.issue_id = v.issue_id;
+    r.leg_number = v.leg_number;
     r.rate_kind = v.rate_kind;
     r.index = v.index;
     r.is_in_arrears = v.is_in_arrears;
@@ -77,7 +77,7 @@ domain::bond_issue_leg_rate bond_issue_leg_rate_mapper::map(const bond_issue_leg
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -87,9 +87,9 @@ bond_issue_leg_rate_entity bond_issue_leg_rate_mapper::map(const domain::bond_is
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     bond_issue_leg_rate_entity r;
-    r.issue_id = boost::uuids::to_string(v.issue_id);
-    r.leg_number = std::to_string(v.leg_number);
-    r.tenant_id = v.tenant_id.to_string();
+    r.issue_id = v.issue_id;
+    r.leg_number = v.leg_number;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.rate_kind = v.rate_kind;
     r.index = v.index;

@@ -137,10 +137,10 @@ void counterparty_business_centre_repository::write(
 
 std::vector<domain::counterparty_business_centre>
 counterparty_business_centre_repository::read_latest() {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_business_centre_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("counterparty_id"_c, "business_centre_code"_c);
 
     return query_builder::execute_read_query<counterparty_business_centre_entity,
@@ -156,10 +156,10 @@ std::vector<domain::counterparty_business_centre>
 counterparty_business_centre_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty business centres with offset: "
                                << offset << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_business_centre_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("counterparty_id"_c, "business_centre_code"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -178,15 +178,14 @@ counterparty_business_centre_repository::read_latest(const boost::uuids::uuid& c
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty business centre. " << counterparty_id
                                << "/" << business_centre_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
     const auto business_centre_code_str = business_centre_code;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<counterparty_business_centre_entity>> |
-        query_builder::where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
-                             "business_centre_code"_c == business_centre_code &&
-                             "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<counterparty_business_centre_entity>> |
+                       query_builder::where(
+                           "tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
+                           "business_centre_code"_c == business_centre_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<counterparty_business_centre_entity,
                                              domain::counterparty_business_centre>(
@@ -200,11 +199,11 @@ counterparty_business_centre_repository::read_latest(const boost::uuids::uuid& c
 std::uint32_t
 counterparty_business_centre_repository::get_total_counterparty_business_centre_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active counterparty business centres count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_business_centre_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<counterparty_business_centre_entity>(
         ctx_, query, std::nullopt, lg(), "Counting counterparty business centres");
@@ -218,13 +217,13 @@ counterparty_business_centre_repository::read_latest_by_counterparty(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty business centres. Counterparty: "
                                << counterparty_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<counterparty_business_centre_entity>> |
         query_builder::where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("business_centre_code"_c);
 
     auto rows = query_builder::execute_read_query<counterparty_business_centre_entity,
@@ -244,12 +243,12 @@ counterparty_business_centre_repository::read_latest_by_business_centre(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty business centres. Business Centre: "
                                << business_centre_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_business_centre_entity>> |
                        query_builder::where("tenant_id"_c == tid &&
                                             "business_centre_code"_c == business_centre_code &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("counterparty_id"_c);
 
     auto rows = query_builder::execute_read_query<counterparty_business_centre_entity,
@@ -270,12 +269,12 @@ counterparty_business_centre_repository::read_latest_by_counterparty(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty business centres. Counterparty: "
                                << counterparty_id << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<counterparty_business_centre_entity>> |
         query_builder::where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("business_centre_code"_c) | query_builder::offset(offset) |
         query_builder::limit(limit);
 
@@ -297,13 +296,13 @@ std::uint32_t counterparty_business_centre_repository::
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active counterparty business centres count. Counterparty: "
         << counterparty_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<counterparty_business_centre_entity>> |
         query_builder::where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<counterparty_business_centre_entity>(
         ctx_, query, std::nullopt, lg(), "Counting counterparty business centres");
@@ -318,13 +317,13 @@ std::uint32_t counterparty_business_centre_repository::
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active counterparty business centres count. Business Centre: "
         << business_centre_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_business_centre_entity>> |
                        query_builder::where("tenant_id"_c == tid &&
                                             "business_centre_code"_c == business_centre_code &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<counterparty_business_centre_entity>(
         ctx_, query, std::nullopt, lg(), "Counting counterparty business centres");
@@ -402,7 +401,7 @@ counterparty_business_centre_repository::remove(const boost::uuids::uuid& counte
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -414,7 +413,7 @@ counterparty_business_centre_repository::remove(const boost::uuids::uuid& counte
         query_builder::delete_from<counterparty_business_centre_entity> |
         query_builder::where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
                              "business_centre_code"_c == business_centre_code &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                             "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx_, query, lg(), "removing counterparty business centre from database");

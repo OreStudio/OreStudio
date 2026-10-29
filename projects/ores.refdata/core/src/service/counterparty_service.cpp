@@ -616,24 +616,49 @@ counterparty_service::get_counterparties(const std::vector<std::string>& ids) {
     return repo_.read_latest(ctx_, ids);
 }
 
-void counterparty_service::save_counterparty(const domain::counterparty&) {
+void counterparty_service::save_counterparty(const domain::counterparty& v) {
     counterparty_refuse_direct_write();
+    if (v.id.is_nil())
+        throw std::invalid_argument("Counterparty id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving counterparty. " << "id: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved counterparty. " << "id: " << v.id;
 }
 
-void counterparty_service::save_counterparties(const std::vector<domain::counterparty>&) {
+void counterparty_service::save_counterparties(
+    const std::vector<domain::counterparty>& counterparties) {
     counterparty_refuse_direct_write();
+    for (const auto& e : counterparties) {
+        if (e.id.is_nil())
+            throw std::invalid_argument("Counterparty id cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << counterparties.size() << " counterparties";
+    auto ts = counterparties;
+    for (auto& e : ts) {
+        stamp(e, ctx_);
+    }
+    repo_.write(ctx_, ts);
 }
 
-void counterparty_service::delete_counterparty(const boost::uuids::uuid&) {
+void counterparty_service::delete_counterparty(const boost::uuids::uuid& id) {
     counterparty_refuse_direct_write();
+    BOOST_LOG_SEV(lg(), debug) << "Removing counterparty. " << "id: " << id;
+    repo_.remove(ctx_, boost::uuids::to_string(id));
+    BOOST_LOG_SEV(lg(), info) << "Removed counterparty. " << "id: " << id;
 }
 
-void counterparty_service::remove_counterparty(const boost::uuids::uuid&) {
+void counterparty_service::remove_counterparty(const boost::uuids::uuid& id) {
     counterparty_refuse_direct_write();
+    BOOST_LOG_SEV(lg(), debug) << "Removing counterparty. " << "id: " << id;
+    repo_.remove(ctx_, boost::uuids::to_string(id));
+    BOOST_LOG_SEV(lg(), info) << "Removed counterparty. " << "id: " << id;
 }
 
-void counterparty_service::delete_counterparties(const std::vector<std::string>&) {
+void counterparty_service::delete_counterparties(const std::vector<std::string>& ids) {
     counterparty_refuse_direct_write();
+    repo_.remove(ctx_, ids);
 }
 
 std::vector<domain::counterparty>

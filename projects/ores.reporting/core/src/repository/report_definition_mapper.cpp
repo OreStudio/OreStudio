@@ -45,27 +45,17 @@ domain::report_definition report_definition_mapper::map(const report_definition_
 
     domain::report_definition r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
     r.name = v.name;
-
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-
+    r.party_id = v.party_id;
     r.description = v.description;
     r.report_type = v.report_type;
-    r.fsm_state_id = v.fsm_state_id.has_value() ?
-                         std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.fsm_state_id)) :
-                         std::nullopt;
+    r.fsm_state_id = v.fsm_state_id;
     r.schedule_expression = v.schedule_expression;
     r.concurrency_policy = v.concurrency_policy;
-    r.scheduler_job_id =
-        v.scheduler_job_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.scheduler_job_id)) :
-            std::nullopt;
-    r.run_grant_id = v.run_grant_id.has_value() ?
-                         std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.run_grant_id)) :
-                         std::nullopt;
+    r.scheduler_job_id = v.scheduler_job_id;
+    r.run_grant_id = v.run_grant_id;
     r.pre_processing = v.pre_processing;
     r.prepared_input_key = v.prepared_input_key.value_or("");
     r.post_processing = v.post_processing;
@@ -75,7 +65,7 @@ domain::report_definition report_definition_mapper::map(const report_definition_
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -85,27 +75,18 @@ report_definition_entity report_definition_mapper::map(const domain::report_defi
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     report_definition_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-
     r.name = v.name;
-
-    r.party_id = boost::uuids::to_string(v.party_id);
-
+    r.party_id = v.party_id;
     r.description = v.description;
     r.report_type = v.report_type;
-    r.fsm_state_id = v.fsm_state_id.has_value() ?
-                         std::optional(boost::uuids::to_string(*v.fsm_state_id)) :
-                         std::nullopt;
+    r.fsm_state_id = v.fsm_state_id;
     r.schedule_expression = v.schedule_expression;
     r.concurrency_policy = v.concurrency_policy;
-    r.scheduler_job_id = v.scheduler_job_id.has_value() ?
-                             std::optional(boost::uuids::to_string(*v.scheduler_job_id)) :
-                             std::nullopt;
-    r.run_grant_id = v.run_grant_id.has_value() ?
-                         std::optional(boost::uuids::to_string(*v.run_grant_id)) :
-                         std::nullopt;
+    r.scheduler_job_id = v.scheduler_job_id;
+    r.run_grant_id = v.run_grant_id;
     r.pre_processing = v.pre_processing;
     r.prepared_input_key =
         v.prepared_input_key.empty() ? std::nullopt : std::optional(v.prepared_input_key);

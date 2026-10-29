@@ -29,15 +29,22 @@
 #include <string_view>
 
 /*
- * The text form of the values a repository entity holds: what a generated
- * repository binds as text parameters and reads from text results. An entity
- * holds strings, booleans, integers, floating point and db_timestamp; a
- * column of any other type is held as its string, and the mapper converts it.
+ * The text form of a value: the SQL an entity model does not generate passes
+ * and reads it, where the server types the value from where it is used. A
+ * generated repository holds the type its column has and binds and reads it in
+ * the binary format (see codec.hpp), except for a column it keeps as text,
+ * which this header's to_text and from_text also serve.
  */
 namespace ores::database::pq {
 
 [[noreturn]] ORES_DATABASE_EXPORT void unreadable_text(std::string_view text,
                                                        std::string_view type);
+
+/**
+ * @brief Reads a timestamptz in the text format, the bitemporal never as the
+ * clock's maximum.
+ */
+ORES_DATABASE_EXPORT repository::db_timestamp parse_timestamp_text(std::string_view text);
 
 inline param text_param(std::string text) {
     return {.bytes = std::move(text), .text = true};
@@ -59,9 +66,11 @@ param to_text(T v) {
 
 ORES_DATABASE_EXPORT param to_text(double v);
 
-inline param to_text(const repository::db_timestamp& v) {
-    return text_param(v.str());
-}
+/**
+ * @brief The instant in the text format, the clock's maximum as the
+ * bitemporal never the database stores.
+ */
+ORES_DATABASE_EXPORT param to_text(const repository::db_timestamp& v);
 
 template <typename T>
 param to_text(const std::optional<T>& v) {
@@ -95,7 +104,7 @@ T parse_text(std::string_view text) {
             unreadable_text(text, "number");
         return v;
     } else if constexpr (std::same_as<T, repository::db_timestamp>) {
-        return repository::db_timestamp(std::string(text));
+        return parse_timestamp_text(text);
     } else {
         static_assert(sizeof(T) == 0, "No text form for this entity type");
     }

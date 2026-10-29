@@ -188,10 +188,10 @@ void csa_eligible_currency_repository::write(
 
 std::vector<domain::csa_eligible_currency>
 csa_eligible_currency_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<csa_eligible_currency_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<csa_eligible_currency_entity,
@@ -206,11 +206,11 @@ csa_eligible_currency_repository::read_latest(context ctx) {
 std::vector<domain::csa_eligible_currency>
 csa_eligible_currency_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest CSA eligible currency. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<csa_eligible_currency_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<csa_eligible_currency_entity,
                                              domain::csa_eligible_currency>(
@@ -226,12 +226,12 @@ csa_eligible_currency_repository::read_latest_by_currency_code(context ctx,
                                                                const std::string& currency_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest CSA eligible currency by currency_code: "
                                << currency_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<csa_eligible_currency_entity>> |
         query_builder::where("tenant_id"_c == tid && "currency_code"_c == currency_code &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     return query_builder::execute_read_query<csa_eligible_currency_entity,
                                              domain::csa_eligible_currency>(
@@ -312,12 +312,12 @@ std::vector<domain::csa_eligible_currency> csa_eligible_currency_repository::rea
     const std::optional<messaging::csa_eligible_currencies_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest CSA eligible currencies. csa_id: " << csa_id
                                << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<csa_eligible_currency_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "csa_id"_c == csa_id &&
-                                            "valid_to"_c == max.value()) |
-                       query_builder::offset(offset) | query_builder::limit(limit);
+    const auto query =
+        query_builder::read<std::vector<csa_eligible_currency_entity>> |
+        query_builder::where("tenant_id"_c == tid && "csa_id"_c == csa_id && "valid_to"_c == max) |
+        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<csa_eligible_currency_entity,
                                                      domain::csa_eligible_currency>(
@@ -336,12 +336,12 @@ std::uint32_t csa_eligible_currency_repository::get_total_csa_eligible_currency_
     const std::optional<messaging::csa_eligible_currencies_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active CSA eligible currencies count. csa_id: "
                                << csa_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<csa_eligible_currency_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "csa_id"_c == csa_id &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<csa_eligible_currency_entity>> |
+        query_builder::where("tenant_id"_c == tid && "csa_id"_c == csa_id && "valid_to"_c == max);
 
     return query_builder::execute_count_query<csa_eligible_currency_entity>(
         ctx,
@@ -362,7 +362,7 @@ csa_eligible_currency_repository::remove_status csa_eligible_currency_repository
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -370,7 +370,7 @@ csa_eligible_currency_repository::remove_status csa_eligible_currency_repository
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<csa_eligible_currency_entity> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing CSA eligible currency from database.");
@@ -435,11 +435,11 @@ std::vector<domain::csa_eligible_currency>
 csa_eligible_currency_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<csa_eligible_currency_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<csa_eligible_currency_entity,
                                                     domain::csa_eligible_currency>(
         ctx,
@@ -459,11 +459,11 @@ void csa_eligible_currency_repository::remove(context ctx, const std::vector<std
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<csa_eligible_currency_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(
         ctx, query, lg(), "Batch removing CSA eligible currencies.");
 }

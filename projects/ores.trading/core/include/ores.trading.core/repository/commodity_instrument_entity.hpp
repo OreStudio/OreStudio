@@ -27,6 +27,10 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/decimal/decimal.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -37,49 +41,54 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a commodity instrument in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct commodity_instrument_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_commodity_instruments_tbl";
 
-    std::string trade_id;
-    std::string tenant_id;
+    boost::uuids::uuid trade_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     std::string trade_type_code;
-    std::string party_id;
-    std::string trade_activity_id;
+    boost::uuids::uuid party_id;
+    boost::uuids::uuid trade_activity_id;
     std::string commodity_code;
     std::string currency;
     double quantity = 0.0;
     std::string unit;
-    std::optional<std::string> start_date;
-    std::optional<std::string> maturity_date;
-    std::optional<std::string> fixed_price;
+    std::optional<std::chrono::year_month_day> start_date;
+    std::optional<std::chrono::year_month_day> maturity_date;
+    std::optional<ores::utility::decimal::decimal> fixed_price;
     std::optional<std::string> option_type;
-    std::optional<std::string> strike_price;
+    std::optional<ores::utility::decimal::decimal> strike_price;
     std::optional<std::string> exercise_type;
     std::optional<std::string> average_type;
-    std::optional<std::string> averaging_start_date;
-    std::optional<std::string> averaging_end_date;
+    std::optional<std::chrono::year_month_day> averaging_start_date;
+    std::optional<std::chrono::year_month_day> averaging_end_date;
     std::optional<std::string> spread_commodity_code;
-    std::optional<std::string> spread_amount;
+    std::optional<ores::utility::decimal::decimal> spread_amount;
     std::optional<std::string> strip_frequency_code;
     std::optional<double> variance_strike;
-    std::optional<std::string> accumulation_amount;
-    std::optional<std::string> knock_out_barrier;
+    std::optional<ores::utility::decimal::decimal> accumulation_amount;
+    std::optional<ores::utility::decimal::decimal> knock_out_barrier;
     std::optional<std::string> barrier_type;
-    std::optional<std::string> lower_barrier;
-    std::optional<std::string> upper_barrier;
+    std::optional<ores::utility::decimal::decimal> lower_barrier;
+    std::optional<ores::utility::decimal::decimal> upper_barrier;
     std::optional<std::string> day_count_fraction_code;
     std::optional<std::string> payment_frequency_code;
-    std::optional<std::string> swaption_expiry_date;
+    std::optional<std::chrono::year_month_day> swaption_expiry_date;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = db_timestamp::max();
+    db_timestamp valid_to = db_timestamp::max();
 
     /**
      * @brief The columns of the table, named as the members, with the key.

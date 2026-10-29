@@ -128,10 +128,10 @@ void party_currency_repository::write(
 }
 
 std::vector<domain::party_currency> party_currency_repository::read_latest() {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_currency_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("party_id"_c, "currency_iso_code"_c);
 
     return query_builder::execute_read_query<party_currency_entity, domain::party_currency>(
@@ -146,10 +146,10 @@ std::vector<domain::party_currency> party_currency_repository::read_latest(std::
                                                                            std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party currencies with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_currency_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("party_id"_c, "currency_iso_code"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -167,14 +167,14 @@ party_currency_repository::read_latest(const boost::uuids::uuid& party_id,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party currency. " << party_id << "/"
                                << currency_iso_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto currency_iso_code_str = currency_iso_code;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<party_currency_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
-                                            "currency_iso_code"_c == currency_iso_code &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<party_currency_entity>> |
+        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
+                             "currency_iso_code"_c == currency_iso_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<party_currency_entity, domain::party_currency>(
         ctx_,
@@ -186,11 +186,11 @@ party_currency_repository::read_latest(const boost::uuids::uuid& party_id,
 
 std::uint32_t party_currency_repository::get_total_party_currency_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party currencies count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_currency_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<party_currency_entity>(
         ctx_, query, std::nullopt, lg(), "Counting party currencies");
@@ -202,12 +202,12 @@ std::vector<domain::party_currency>
 party_currency_repository::read_latest_by_party(const boost::uuids::uuid& party_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party currencies. Party: " << party_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_currency_entity>> |
                        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("currency_iso_code"_c);
 
     auto rows = query_builder::execute_read_query<party_currency_entity, domain::party_currency>(
@@ -225,12 +225,12 @@ party_currency_repository::read_latest_by_currency(const std::string& currency_i
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party currencies. Currency: "
                                << currency_iso_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<party_currency_entity>> |
         query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("party_id"_c);
 
     auto rows = query_builder::execute_read_query<party_currency_entity, domain::party_currency>(
@@ -249,11 +249,11 @@ std::vector<domain::party_currency> party_currency_repository::read_latest_by_pa
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party currencies. Party: " << party_id
                                << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_currency_entity>> |
                        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("currency_iso_code"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -272,12 +272,12 @@ std::uint32_t party_currency_repository::get_total_party_currency_count_by_party
     const auto party_id_str = boost::uuids::to_string(party_id);
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party currencies count. Party: "
                                << party_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_currency_entity>> |
                        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<party_currency_entity>(
         ctx_, query, std::nullopt, lg(), "Counting party currencies");
@@ -289,13 +289,13 @@ std::uint32_t party_currency_repository::get_total_party_currency_count_by_curre
     const std::string& currency_iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party currencies count. Currency: "
                                << currency_iso_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<party_currency_entity>> |
         query_builder::where("tenant_id"_c == tid && "currency_iso_code"_c == currency_iso_code &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<party_currency_entity>(
         ctx_, query, std::nullopt, lg(), "Counting party currencies");
@@ -368,7 +368,7 @@ party_currency_repository::remove(const boost::uuids::uuid& party_id,
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -379,7 +379,7 @@ party_currency_repository::remove(const boost::uuids::uuid& party_id,
     const auto query = query_builder::delete_from<party_currency_entity> |
                        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
                                             "currency_iso_code"_c == currency_iso_code &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx_, query, lg(), "removing party currency from database");
     // The delete reports no affected-row count, so the row is read back: a row

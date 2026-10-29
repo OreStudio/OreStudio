@@ -194,10 +194,10 @@ void tenor_schedule_repository::write(
 }
 
 std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tenor_schedule_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<tenor_schedule_entity, domain::tenor_schedule>(
@@ -211,11 +211,11 @@ std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest(conte
 std::vector<domain::tenor_schedule>
 tenor_schedule_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor schedule. " << "code: " << code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<tenor_schedule_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<tenor_schedule_entity>> |
+        query_builder::where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<tenor_schedule_entity, domain::tenor_schedule>(
         ctx,
@@ -274,12 +274,12 @@ std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest_by_ca
     const std::optional<messaging::tenor_schedules_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor schedules. calendar_code: " << calendar_code
                                << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<tenor_schedule_entity>> |
         query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<tenor_schedule_entity, domain::tenor_schedule>(
@@ -298,13 +298,13 @@ std::uint32_t tenor_schedule_repository::get_total_schedule_count_by_calendar_co
     const std::optional<messaging::tenor_schedules_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tenor schedules count. calendar_code: "
                                << calendar_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<tenor_schedule_entity>> |
         query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     return query_builder::execute_count_query<tenor_schedule_entity>(
         ctx,
@@ -324,12 +324,12 @@ std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest_by_di
     const std::optional<messaging::tenor_schedules_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor schedules. diary_entry_type: "
                                << diary_entry_type << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<tenor_schedule_entity>> |
         query_builder::where("tenant_id"_c == tid && "diary_entry_type"_c == diary_entry_type &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<tenor_schedule_entity, domain::tenor_schedule>(
@@ -348,13 +348,13 @@ std::uint32_t tenor_schedule_repository::get_total_schedule_count_by_diary_entry
     const std::optional<messaging::tenor_schedules_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active tenor schedules count. diary_entry_type: " << diary_entry_type;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<tenor_schedule_entity>> |
         query_builder::where("tenant_id"_c == tid && "diary_entry_type"_c == diary_entry_type &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     return query_builder::execute_count_query<tenor_schedule_entity>(
         ctx,
@@ -375,7 +375,7 @@ tenor_schedule_repository::remove_status tenor_schedule_repository::remove(
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -383,7 +383,7 @@ tenor_schedule_repository::remove_status tenor_schedule_repository::remove(
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<tenor_schedule_entity> |
                        query_builder::where("tenant_id"_c == tid && "code"_c == code &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing tenor schedule from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -446,11 +446,11 @@ std::vector<domain::tenor_schedule>
 tenor_schedule_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<tenor_schedule_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<tenor_schedule_entity>> |
+        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<tenor_schedule_entity, domain::tenor_schedule>(
         ctx,
         query,
@@ -469,11 +469,11 @@ void tenor_schedule_repository::remove(context ctx, const std::vector<std::strin
     // asymmetric pair.
     if (codes.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::delete_from<tenor_schedule_entity> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::delete_from<tenor_schedule_entity> |
+        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing tenor schedules.");
 }
 

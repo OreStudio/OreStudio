@@ -57,6 +57,8 @@ The page [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the inf
 
 * See also
 
+
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][The market data path: a public fixing, a curve, a report]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
 - [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]] — the three owners and the four mechanisms.
 - [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]] — the building blocks of a read across tenants.

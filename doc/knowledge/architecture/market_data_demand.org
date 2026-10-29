@@ -46,6 +46,8 @@ fact.
 
 * See also
 
+
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][The market data path: a public fixing, a curve, a report]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
 - [[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]] — completes: the message that carries the set.
 - [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]] — completes: the input that decides which adapter a party uses.

@@ -1,0 +1,222 @@
+:PROPERTIES:
+:ID: 7AE57098-08D4-4D4A-83D6-918FE520B68E
+:END:
+#+title: A pillar names the market series it reads
+#+description: A curve pillar names its input series, and no runtime identity is an ORE key: an oresmd URI is the identity and an ORE key lives only at the ORE XML boundary.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:curves:bootstrap:architecture:decision:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+* Summary
+
+A curve blueprint is a recipe. Its pillars are its inputs, and today a pillar
+does not name the market series it reads. It carries a start tenor, an end tenor
+and a curve role, and the bootstrap composes the series identity from the
+blueprint's currency, its index tenor and those tenors, in the ORE corpus's
+vocabulary.
+
+The decision has two parts. A pillar names the market series it reads, as a soft
+reference to the party's series. And no runtime identity is an ORE key: an
+oresmd URI is the one internal identity, and an ORE key exists only at the ORE
+XML boundary, where market data is read from and written to ORE's own files.
+
+The second part matters because the first would otherwise only move the
+composition. Today four runtime paths speak the ORE vocabulary as if it were the
+identity. Naming the pillar's series settles one of them. The rule settles all
+four.
+
+* The question
+
+Should a pillar state its input series, or keep deriving it? And, underneath
+that: which spelling is a market datum's identity inside the system?
+
+The blueprint already names its output series, as =output_series_id=. A reader
+can say which series the curve is written to. The reader cannot say which series
+the curve is read from. A pillar is the one place the input belongs, because a
+pillar is one quote, and one quote lives in one series.
+
+* Today
+
+The blueprint carries =currency_code=, =index_tenor= and =output_series_id=. A
+pillar carries =start_tenor_code=, =end_tenor_code= and =curve_role_code=, and
+no series.
+
+=curve_pillar_reader.cpp= reads a pillar by composing a key from the blueprint's
+currency, its index tenor and the pillar's tenors:
+
+#+begin_example
+make_pillar_quote_key(ccy, index_tenor, start_tenor_code, start_date, end_date, point_tenor_code)
+#+end_example
+
+The key's vocabulary is ORE's: =IR_SWAP/RATE/<CCY>/<start>/<index tenor>/<end>=.
+=pillar_series_uri= and =pillar_datum_uri= project that key onto the oresmd
+identity, and the observations table stores the datum URI. So nothing is stored
+under the ORE key. The key is a spelling the reader uses to construct the
+identity it then reads.
+
+The same spelling is used in four places in the runtime.
+
+1. *The curve read.* =curve_pillar_reader.cpp= composes the pillar's series and
+   datum through =make_pillar_quote_key=, and =curve_republish_service.cpp=
+   validates the output datum by asking =ore_key_codec::write= for its ORE
+   spelling.
+2. *The feed.* =ir_curve_feed.cpp= derives the series it publishes the same way,
+   one key per entry. That shared function is what makes a synthetic quote and a
+   bootstrap read meet.
+3. *The classifier.* =series_classifier.cpp= keys a series by an ORE series key,
+   as =(series type token, metric name, qualifier)=, and the rules table it reads
+   is keyed the same way. The runtime ingest paths call it, in
+   =feed_ingest_loop.cpp= and =fixing_ingest.cpp=, so every series a feed creates
+   is classified through the ORE vocabulary.
+4. *The codec.* =oresmd_uri_codec.cpp= refuses a datum that has no ORE key
+   spelling, by calling =ore_key_codec::write= as a validation. That makes oresmd
+   subordinate to ORE: a datum ORE cannot name is not a datum.
+
+Three costs follow from the pillar's derivation, and each is a cost a person can
+meet on a screen.
+
+- A blueprint reader cannot tell which series a pillar reads without running the
+  composition in their head, with the blueprint's currency and index tenor to
+  hand.
+- A pillar can read only a series that some feed named the same way. A series a
+  person seeded, imported, or took from a vendor under another spelling cannot
+  feed the curve, even when it holds exactly the quote the pillar needs.
+- A change to the feed's spelling, or to the conventions behind the dates, moves
+  the read to another series or to none, and no record says the input moved.
+
+The other three costs are structural. The ORE vocabulary reaches the ingest path
+and the identity codec, so ORE's spelling decides which series exist and which
+data are valid. ORE is one consumer of this platform and one boundary format, and
+it should not name the things the platform stores.
+
+* The options
+
+** Keep deriving
+
+The pillar keeps its three fields and the bootstrap keeps composing the key.
+
+The good part is that a pillar stays small and a desk never types a URI. The bad
+part is the three costs above. It also leaves the identity rule unsaid, so the
+classifier and the codec keep treating an ORE key as the truth.
+
+** Name the series on the pillar, and keep ORE at the boundary (decided)
+
+The pillar gains a =market_series_id=, a soft reference to =market_series= in
+=ores.marketdata=. A person chooses it in the Add and Edit pillar dialogs, using
+the standard record picker, and the row is drawn by its oresmd URI. The bootstrap
+reads the observations of that series at the as-of.
+
+The datum coordinate is still derived. A pillar's term comes from its end tenor
+through the reference conventions, because the tenor and the conventions are
+what say where the point falls. Only the series identity stops being derived.
+
+Alongside it, the rule: an oresmd URI is the runtime identity, and an ORE key is
+a boundary format used only by the ORE XML import and export.
+
+** Name a catalogue instrument
+
+The pillar names a vendor instrument, and the party's provider and route resolve
+the series.
+
+The good part is that a desk picks the instrument it trades, not a storage
+identity. The bad part is that resolution depends on the party's subscription and
+route, so one blueprint reads differently at two parties, and a demonstration
+cannot point a curve at a hand-seeded series. This stays open; see /What this
+does not settle/.
+
+* The decision and why
+
+A pillar names the market series it reads. And no runtime identity is an ORE
+key: an internal identity is an oresmd URI and nothing else, and a boundary
+format is an ORE key and lives only in the ORE XML import and export.
+
+The derivation hides a dependency. A curve's input is a fact a person must be
+able to read, and today it is a computation. Naming the series makes the
+provenance explicit: the blueprint states its input, the lineage continues to
+record the series each point was built from, and the two can be compared.
+
+Naming the series also lets a pillar read any series the party holds: a synthetic
+feed's, a vendor's, an official fixing series, a hand-seeded series for a
+scenario, or an imported one.
+
+The identity rule is the general form of the same argument. Two spellings of one
+datum means two places to keep in step, and the failure is silent: a datum ORE
+does not name becomes invalid, and a series ORE names differently becomes another
+series. One identity removes the second spelling from every path that decides
+what is stored. The ORE key keeps its job at the edge, where a file in ORE's
+format must be read or written.
+
+* Consequences
+
+The runtime loses the ORE vocabulary in five places, and each is a unit of work.
+
+- =ir_curve_bootstrap_pillar= gains =market_series_id=, a soft reference to
+  =ores.marketdata.market_series=, required on a new row.
+- =curve_pillar_reader.cpp= reads the observations of the named series at the
+  as-of, and derives the datum's term from the pillar's end tenor as it does
+  today. =curve_republish_service.cpp= stops asking the ORE codec to validate the
+  output datum.
+- =ir_curve_feed.cpp= builds the series it publishes as oresmd datums natively.
+  The ORE key text is not the identity, so the feed and the bootstrap no longer
+  meet through a shared spelling; they meet because the pillar names the series.
+- =series_classifier.cpp= and its rules table move to the oresmd identity, so a
+  series is classified by the datum it is, not by the ORE key it would have had.
+  The ingest paths in =feed_ingest_loop.cpp= and =fixing_ingest.cpp= change with
+  it. This is the largest unit, because the rules are seeded data and every
+  series a feed creates passes through them.
+- =oresmd_uri_codec.cpp= stops validating a datum by its ORE spelling.
+  =ore_key_codec= itself stays, used only by =import_service.cpp= and
+  =ore_export_service.cpp= and their tests, which are the ORE XML boundary.
+- The pillar model, the C++ domain type, the protocol, the SQL table, the seed,
+  the tests and the screens are regenerated or updated together.
+- No backwards compatibility is kept. The demonstration tenant is recreated and
+  reseeded.
+
+* The migration
+
+The follow-up task [[id:EAD9F02F-3B4B-495E-B37D-71BF766F7970][Name a curve
+pillar's market series]] implements this decision. It carries the pillar's named
+series first, then the feed building native datums, then the classifier and its
+rules moving to the oresmd identity, then the codec's validation removed, then
+the seeds and tests, and finally the tenant recreation.
+
+The order matters. The pillar's named series can land first and the system works
+while the classifier still speaks ORE. The classifier is last because it is the
+unit that changes stored classification rules, and a mistake there misclassifies
+every series a feed creates.
+
+Until the task lands, the bootstrap derives the series and this page describes
+the target.
+
+* What this does not settle
+
+1. *Whether the datum term should be named too.* The decision leaves the term
+   derived from the end tenor. Whether a person may point a pillar at a datum
+   whose coordinate differs from its end tenor stays open.
+2. *Whether a person picks an instrument instead of a series.* The catalogue
+   option above remains available, and it would make the pillar read through the
+   party's provider and route. It is a different question, and it would change
+   what a blueprint means at two parties.
+3. *What a missing series does to a build.* The check tab already reports a
+   pillar no series could answer. Whether a missing or removed series fails the
+   save, or fails the check, is not decided here.
+4. *How a named series is kept in step with the pillar's tenors.* A person may
+   choose a series whose span does not cover the pillar's term. Whether the save
+   refuses it, or the build reports it, is not decided here.
+5. *What the ORE XML boundary guarantees.* The import and export keep the codec.
+   Whether an ORE file that names a datum the platform cannot express is refused
+   at the boundary, or converted with a stated loss, is not decided here.
+
+* See also
+
+
+
+- [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][The market data path: a public fixing, a curve, a report]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] — answers: the build this page changes the input of.
+- [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][ores.refdata.ir_curve_bootstrap_config]] — exemplifies: the blueprint whose output series is already named.
+- [[id:5DC8A225-A2FD-4ECC-8284-C1D333F0EB3A][ores.refdata.ir_curve_bootstrap_pillar]] — exemplifies: the row this decision adds a field to.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — completes: how a series is stored and identified.
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — completes: the identity a named series carries.

@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: EAD9F02F-3B4B-495E-B37D-71BF766F7970
+:END:
+#+title: Task: Name a curve pillar's market series
+#+description: Implement the decision that a pillar names its market series: model, reader, picker, seed and tests.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Implement [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the
+market series it reads]]: a curve pillar states the market series its quote
+comes from, so the bootstrap no longer derives the series from the ORE
+vocabulary. A person can then read a blueprint's inputs, and a curve can be
+built from any series the party holds.
+
+The task carries the model change, the reader change, the pillar picker, the
+seed, the tests, and the recreation of the demonstration tenant.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- =ir_curve_bootstrap_pillar= carries =market_series_id=, a soft reference to
+  =ores.marketdata.market_series=, required on a new row.
+- The Add and Edit pillar dialogs offer the party's series through the standard
+  record picker and draw the chosen one by its oresmd URI.
+- =curve_pillar_reader= reads the observations of the named series at the as-of,
+  and derives the datum's term from the pillar's end tenor as it does today.
+- The bootstrap's read path calls neither =make_pillar_quote_key= nor its
+  projections, and =curve_republish_service= no longer validates an output datum
+  through =ore_key_codec::write=.
+- =ir_curve_feed= builds the series it publishes as oresmd datums natively. It
+  composes no ORE key.
+- =series_classifier= and its seeded rules are keyed by the oresmd identity, and
+  the ingest paths in =feed_ingest_loop= and =fixing_ingest= classify by it. This
+  is the largest unit: the rules are data, and every series a feed creates passes
+  through them.
+- =oresmd_uri_codec= accepts a datum with no ORE spelling.
+- =ore_key_codec= is called only by =import_service=, =ore_export_service= and
+  their tests.
+- The test suite proves no runtime path outside the ORE XML boundary calls the
+  codec, and a curve builds from a hand-seeded series that no feed publishes.
+- The demonstration tenant is recreated and reseeded, and the scenario walks a
+  curve to publication against the named series.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* See also
+
+
+- [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][The market data path: a public fixing, a curve, a report]] — the structure note that orders this cluster, and where to read this page in it.

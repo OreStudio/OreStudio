@@ -54,6 +54,8 @@ change the route if the permission allows. See [[id:FA280E9B-7E00-4747-8D29-42B3
 
 * See also
 
+
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][The market data path: a public fixing, a curve, a report]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
 - [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]] — completes: the entitlement the route serves.
 - [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][A source switch changes one route and nothing else]] — completes: the change of a route in motion.

@@ -85,6 +85,10 @@ cannot read the reply.
 
 * In ORE Studio
 
+The curve construction, [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]], is a request-reply: the compute reads the quotes and answers the solved points.
+
+The market data path, [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][a public fixing, a curve and a report]], is a chain of it: each hop calls a service and waits for the answer before the next.
+
 The default timeout is 30 seconds, set once in =ores.nats/service/timeouts.hpp= for every overload.
 
 - [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — every service operation is a request with an inbox; a refusal is an empty reply with =X-Error=.

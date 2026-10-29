@@ -110,6 +110,8 @@ small, deliberately-curated set rather than a continuum.
 
 * See also
 
+
+- [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:FA45D3D1-C3D9-4FDB-B03B-8AB724D71092][Interest Rate Curves]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:29F0F3B1-91A6-42BD-A53F-97F1E72A4FB9][Interest Rate Curve Families]] — the hub.
 - [[id:A1BA9EE6-313E-4802-8F63-FEE6BFB63A69][Driver and derived rates]] — the CRM's similar-sounding but mechanically different split.

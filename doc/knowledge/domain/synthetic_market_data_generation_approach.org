@@ -885,6 +885,8 @@ by this document.
 * See also
 
 
+
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][The market data path: a public fixing, a curve, a report]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — full 49-type ORE quote-key taxonomy; source for all quote-key notation in this document.
 - [[id:8AF6B7C5-4E09-4361-A00A-21C5A61B7F27][Intermediate analysis: technique-to-asset-class mapping]] — the analysis document this supersedes; contains the full coverage table, gap analysis with proper solutions, and the reasoning behind the generation stack order.

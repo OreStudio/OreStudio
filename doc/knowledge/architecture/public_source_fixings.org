@@ -222,6 +222,8 @@ key.
 
 * See also
 
+
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][The market data path: a public fixing, a curve, a report]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
 - [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]] — the publishers and their terms.
 - [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline]] — the durable tier the fixings use.

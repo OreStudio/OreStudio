@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/use-oresmd-on-the-generation-path
-#+pr:
+#+pr: 4060
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4060][#4060]] | [marketdata] Use oresmd on the runtime's market data path |
 
 * Review
 

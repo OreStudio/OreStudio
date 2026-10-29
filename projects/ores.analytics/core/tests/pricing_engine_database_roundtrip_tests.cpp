@@ -25,10 +25,10 @@
 #include "ores.ore.core/xml/generated/pricing_engines.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.testing/party_database_fixture.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "party_fixture.hpp"
-#include "test_helpers.hpp"
+#include "ores.testing/test_files.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <algorithm>
@@ -39,6 +39,7 @@
 #include <vector>
 
 
+using ores::testing::ore_path;
 using ores::analytics::repository::pricing_model_config_repository;
 using ores::ore::domain::pricing_engine_projection;
 using ores::platform::filesystem::file;
@@ -100,7 +101,7 @@ TEST_CASE("pricing_engines_roundtrip_through_the_database",
 TEST_CASE("a party sees only its own pricing engine configuration",
           "[pricingengines][database][roundtrip]") {
     scoped_database_helper h;
-    auto parties = ores::ore::tests::make_two_parties(h);
+    auto parties = ores::testing::make_two_parties(h);
     const auto original = pricing_engine_projection::read(file::read_content(
         ore_path("examples/InitialMargin/Input/DimValidation/pricingengine.xml")));
     auto mapped = pricing_engine_projection::map(original);

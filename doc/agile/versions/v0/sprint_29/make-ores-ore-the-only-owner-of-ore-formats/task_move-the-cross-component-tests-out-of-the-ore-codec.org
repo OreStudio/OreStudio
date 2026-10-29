@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/move-the-cross-component-tests-out-of-the-ore-codec
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The ORE codec's suite proves the codec; the roundtrips that cross a component ru
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-27                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-29                               |
 
 * Acceptance
 
@@ -41,9 +41,22 @@ The ORE codec's suite proves the codec; the roundtrips that cross a component ru
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Each roundtrip goes to the suite of the component whose tables it writes:
+
+| Test | Suite |
+|------+-------|
+| credit simulation, pricing engine, today's market | ores.analytics.core.tests |
+| conventions per party, curve configuration | ores.refdata.core.tests |
+| run document, pooled session | ores.reporting.core.tests |
+
+The configuration type seed check stays, because it guards the codec's format
+coverage and not a component's rows, and a comment says so.
+
+The fixtures they shared move to =ores.testing=, where the suites that now use
+them can reach them: the two parties and their contexts, the conventions rows,
+and the two ORE corpus helpers. The helper that seeds the system analytic
+parameters leaves the party fixture, because only the run document needs it and
+the analytics suite must not be made to link reporting for it.
 
 * Measurements
 
@@ -57,7 +70,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Test files in the codec's suite that open a session | 1 (the seed check) | =grep -rln "scoped_database_helper" projects/ores.ore/core/tests/*.cpp= | (this branch) |
+| Test files moved | 7 | =git diff --stat -M origin/main -- '*tests*'= | (this branch) |
+| =ores.ore.core.tests= | passed, 16.79s | =compass test run -- -R ores.ore.core.tests= | (this branch) |
+| =ores.analytics.core.tests= | passed, 14.75s | =compass test run -- -R ores.analytics.core.tests= | (this branch) |
+| =ores.refdata.core.tests= | passed, 134.56s | =compass test run -- -R ores.refdata.core.tests= | (this branch) |
+| =ores.reporting.core.tests= | passed, 49.36s | =compass test run -- -R ores.reporting.core.tests= | (this branch) |
 
 * Notes
 
@@ -85,3 +103,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The codec's suite proves the codec. Seven test files left it for the suite of the
+component whose tables they write, and the one file that still opens a session
+says why: the configuration type seed guards the ORE format coverage, so it
+belongs where the codec is.
+
+The fixtures they shared moved to =ores.testing=: the two parties and their
+contexts, the conventions rows, and the ORE corpus helpers. Nothing is copied,
+so the suites cannot drift from each other.
+
+Moving them found a fault that had been invisible: three of the moved cases wrote
+a reporting configuration without the audit fields the schema requires, so they
+failed with "modified_by cannot be null or empty". The codec's suite had not run
+them in a state where that showed. They now state their actor, and run.

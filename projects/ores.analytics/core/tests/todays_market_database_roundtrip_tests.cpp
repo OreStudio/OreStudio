@@ -25,10 +25,10 @@
 #include "ores.ore.core/domain/todays_market_projection.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.testing/party_database_fixture.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "party_fixture.hpp"
-#include "test_helpers.hpp"
+#include "ores.testing/test_files.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <algorithm>
@@ -39,6 +39,7 @@
 #include <vector>
 
 
+using ores::testing::ore_path;
 using ores::analytics::repository::todays_market_collection_repository;
 using ores::analytics::repository::todays_market_config_repository;
 using ores::ore::domain::todays_market_projection;
@@ -131,7 +132,7 @@ TEST_CASE("a collection naming a kind ORE does not have is refused",
 TEST_CASE("a party sees only its own today's market configuration",
           "[todaysmarket][database][roundtrip]") {
     scoped_database_helper h;
-    auto parties = ores::ore::tests::make_two_parties(h);
+    auto parties = ores::testing::make_two_parties(h);
     auto mapped = todays_market_projection::map(todays_market_projection::read(
         file::read_content(ore_path("examples/Products/Input/todaysmarket.xml"))));
     ores::database::domain::assign_party(mapped, parties.a);

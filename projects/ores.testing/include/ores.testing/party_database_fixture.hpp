@@ -17,26 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ORE_CORE_TESTS_PARTY_FIXTURE_HPP
-#define ORES_ORE_CORE_TESTS_PARTY_FIXTURE_HPP
+#ifndef ORES_TESTING_PARTY_DATABASE_FIXTURE_HPP
+#define ORES_TESTING_PARTY_DATABASE_FIXTURE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
-#include "ores.testing/ore_parameter_fixture.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <stdexcept>
 
-namespace ores::ore::tests {
+namespace ores::testing {
 
 /**
  * @brief Two operational parties of the test tenant, and a context for each.
  *
- * A configuration document belongs to a party, and row level security shows
- * a session only the rows of the parties it may see. Each context sees its own
+ * A configuration document belongs to a party, and row level security shows a
+ * session only the rows of the parties it may see. Each context sees its own
  * party alone, so a row one writes is invisible to the other.
+ *
+ * It lives here rather than in one suite because the roundtrips that need it
+ * run in the suites of the components they exercise.
  */
 struct two_parties {
     boost::uuids::uuid a;
@@ -68,8 +70,6 @@ inline two_parties make_two_parties(testing::scoped_database_helper& h) {
     };
     const auto a = make_party();
     const auto b = make_party();
-    // A run document names its parameters, and the system tenant describes them.
-    testing::seed_system_analytic_parameters(ctx, h.db_user(), gen_ctx);
     return {a, b, ctx.with_party(tid, a, {a}, ""), ctx.with_party(tid, b, {b}, "")};
 }
 

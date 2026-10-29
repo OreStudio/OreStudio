@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "conventions_rows.hpp"
 #include "ores.database/domain/party_scope.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
@@ -37,9 +36,10 @@
 #include "ores.refdata.core/repository/ois_convention_repository.hpp"
 #include "ores.refdata.core/repository/yield_curve_config_repository.hpp"
 #include "ores.refdata.core/service/curve_configuration_document_service.hpp"
+#include "ores.testing/conventions_rows.hpp"
+#include "ores.testing/party_database_fixture.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "party_fixture.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -57,7 +57,7 @@
  * says it must: a convention, a day counter or a segment type it does not hold.
  */
 
-using ores::ore::tests::rows_of;
+using ores::testing::rows_of;
 
 namespace {
 
@@ -455,7 +455,7 @@ TEST_CASE("an equity curve naming a joined calendar ORE accepts is stored",
 
 TEST_CASE("a party sees only its own curve configuration", "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
-    auto parties = ores::ore::tests::make_two_parties(h);
+    auto parties = ores::testing::make_two_parties(h);
     auto mapped = curve_configuration_projection::map(equity_and_securities());
     ores::database::domain::assign_party(mapped, parties.a);
 

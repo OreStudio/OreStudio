@@ -17,21 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "conventions_rows.hpp"
 #include "ores.database/domain/party_scope.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.refdata.core/repository/deposit_convention_repository.hpp"
+#include "ores.testing/conventions_rows.hpp"
+#include "ores.testing/party_database_fixture.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "party_fixture.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <set>
 #include <string>
 
-using ores::ore::tests::rows_of;
+using ores::testing::rows_of;
 
 namespace {
 
@@ -39,7 +39,7 @@ std::vector<ores::refdata::domain::deposit_convention> corpus_deposits() {
     const auto c = ores::ore::domain::conventions_mapper::read(
         ores::platform::filesystem::file::read_content(ores::testing::project_root::resolve(
             "external/ore/examples/Legacy/Example_62/Input/conventions.xml")));
-    return ores::ore::tests::rows_of<ores::refdata::domain::deposit_convention>(
+    return ores::testing::rows_of<ores::refdata::domain::deposit_convention>(
         ores::ore::domain::split_conventions(c), "deposit");
 }
 
@@ -56,7 +56,7 @@ std::set<std::string> ids_of(const std::vector<ores::refdata::domain::deposit_co
 
 TEST_CASE("two parties each hold conventions with the same ids", "[ore][conventions][party]") {
     ores::testing::scoped_database_helper h;
-    auto parties = ores::ore::tests::make_two_parties(h);
+    auto parties = ores::testing::make_two_parties(h);
 
     auto for_a = corpus_deposits();
     REQUIRE_FALSE(for_a.empty());

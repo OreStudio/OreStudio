@@ -26,10 +26,10 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/credit_simulation_projection.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.testing/party_database_fixture.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "party_fixture.hpp"
-#include "test_helpers.hpp"
+#include "ores.testing/test_files.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -40,6 +40,7 @@
 #include <string>
 
 
+using ores::testing::ore_path;
 using ores::analytics::domain::credit_simulation_matrix_row_config;
 using ores::analytics::repository::credit_simulation_config_repository;
 using ores::analytics::repository::credit_simulation_entity_config_repository;
@@ -139,7 +140,7 @@ TEST_CASE("credit_simulation_roundtrip_through_the_database",
 TEST_CASE("a party sees only its own credit simulation configuration",
           "[creditsimulation][database][roundtrip]") {
     scoped_database_helper h;
-    auto parties = ores::ore::tests::make_two_parties(h);
+    auto parties = ores::testing::make_two_parties(h);
     const auto original =
         credit_simulation_projection::read(ores::platform::filesystem::file::read_content(
             ore_path("examples/CreditRisk/Input/CreditPortfolioModel/creditsimulation.xml")));

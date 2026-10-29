@@ -16,11 +16,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "conventions_rows.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/xml/record.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
+#include "ores.testing/conventions_rows.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.utility/crypto/sha256.hpp"
 #include "test_helpers.hpp"
@@ -46,7 +46,7 @@
  * are and how many files each one costs.
  */
 
-using ores::ore::tests::rows_of;
+using ores::testing::rows_of;
 
 namespace {
 

@@ -206,3 +206,11 @@ table.list td.num, table.list td.when { font-family: var(--mono); font-variant-n
 .timeline .row { display: grid; grid-template-columns: 150px 1fr; gap: 10px; font-size: .82rem; }
 .timeline .at { font-family: var(--mono); color: var(--ink-faint); }
 .timeline .what b { font-weight: 600; }
+
+/* --- Record page -------------------------------------------------------- */
+.record-header { display: flex; align-items: flex-start; gap: 12px; padding: 12px 24px 0; flex-wrap: wrap; }
+.record-header h1 { font-size: 1.2rem; font-weight: 600; margin: 0; }
+.record-meta { font-size: .8rem; color: var(--ink-muted); margin-top: 2px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.record-header .actions { margin-left: auto; display: flex; gap: 6px; }
+#record .tabs { margin: 12px 24px 0; }
+#rec-body { padding: 14px 24px 32px; display: grid; gap: 12px; }

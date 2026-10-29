@@ -33,12 +33,21 @@ about the underlying it fixes.
 #+ATTR_HTML: :class hug-leading
 | Surface | Question | Reads |
 |---------+----------+-------|
-| Providers | Who is arriving? | providers, adapter status, latest fixing per item |
-| Publisher | What did this one publish for this pair, over time? | fixings by series, the feed start read |
-| Availability | Who holds this underlying, and with what gaps? | fixings by series |
-| Compare | How far apart are the publishers? | fixings by series, arithmetic in the page |
-| Fetch | Fetch now, for this scope | the refresh request the adapter contract does not carry yet |
-| Configuration | What does this provider's record say, and who changed it? | provider, provider history |
+| Providers (list) | Who is arriving? | providers, adapter status, latest fixing per item |
+| Provider record · Overview | What does this provider's record say? | provider |
+| Provider record · Underlyings | Which pairs does it fix, and how far back? | fixings by series |
+| Provider record · Fixings | What did it publish for this pair, over time? | fixings by series, feed start |
+| Provider record · Health | Is its adapter serving? | adapter status |
+| Provider record · History | Who changed it, and when? | provider history |
+| Availability (area tab) | Which publishers hold this pair? | fixings by series |
+| Compare (area tab) | How far apart are their values? | fixings by series, arithmetic in the page |
+| Fetch (area tab) | Ask for data now | the refresh request, not yet on the contract |
+
+The list carries the count of underlyings, never the pairs themselves: a
+publisher fixes tens or hundreds of pairs, and the record's Underlyings tab is
+where they are read. The record page is the standard shape: a breadcrumb, a
+header with the version and a state tag, the acts, and tabs. The configuration
+is the Overview tab, and its history is the History tab.
 
 The publisher and the availability surfaces do not need a new read: a fixings
 read answers a window of up to twelve series, and the coverage and the distances
@@ -60,26 +69,21 @@ and a provider's expected rhythm, which the record does not carry yet.
 
 * States and addresses
 
-Every surface and variant is an address.
-
 #+ATTR_HTML: :class hug-leading
 | State | Address | What it shows |
 |-------+---------+---------------|
-| Providers | =?tab=providers= | Seven publishers, the KPI strip, the filters, the state legend |
-| Late | =?tab=providers&filter=late= | The Bank of Canada alone |
-| Not serving | =?tab=providers&filter=down= | The Central Bank of Turkiye: heartbeat stopped |
-| Never fixed | =?tab=providers&filter=never= | Norges Bank: accepted, serving, no value stored |
-| Paused, kept | =?tab=providers&paused=muted= | The paused publisher stays, dimmed, with Resume |
-| Paused, hidden | =?tab=providers&paused=hidden= | The paused publisher leaves the list |
-| Withdrawn terms | =?tab=providers&terms=withdraw= | The fund's v2 withdraws storage and the deletion is offered where it is accepted |
-| Publisher | =?tab=publisher&provider=ecb&pair=EUR/CAD= | One publisher, one pair, over ten dates, and where a feed started |
-| Publisher paused | =?tab=publisher&provider=boe&pair=GBP/USD= | A paused publisher's stored fixings still drawn |
-| Availability | =?tab=availability&pair=EUR/USD= | Publishers against months, with counts and gaps |
-| Compare | =?tab=compare&pair=EUR/USD= | Three publishers on one chart, bps against the base, the spread, and the outlier named |
-| Fetch at rest | =?tab=fetch= | The scope: when, publishers, underlyings, and what will be asked |
-| Fetch running | =?tab=fetch&fetch=progress= | A progress over the days, oldest first |
-| Fetch done | =?tab=fetch&fetch=done= | What was stored and what the store skipped |
-| Configuration | =?tab=config&provider=ecb= | The record's fields and the history timeline |
+| Providers | =?tab=providers= | The list, the counts, the filters and the state legend |
+| Late, not serving, never | =?tab=providers&filter=late= (and =down=, =never=) | One state alone |
+| Paused, kept or hidden | =?tab=providers&paused=muted=, =&paused=hidden= | The paused publisher kept, or removed |
+| Withdrawn terms | =?tab=providers&terms=withdraw= | The deletion offered where v2 is accepted |
+| Record, configuration | =?provider=ecb&rtab=overview= | The provider's Details |
+| Record, underlyings | =?provider=ecb&rtab=underlyings= | Its pairs, first and last, values and gaps |
+| Record, fixings | =?provider=ecb&rtab=fixings&pair=EUR/CAD= | One pair over time, and where a feed started |
+| Record, health | =?provider=ecb&rtab=health= | The adapter's state and counts for its ids |
+| Record, history | =?provider=ecb&rtab=history= | The shared timeline |
+| Availability | =?tab=availability&pair=EUR/USD= | Every publisher that holds the pair |
+| Compare | =?tab=compare&pair=EUR/USD= | The publishers together, in basis points |
+| Fetch | =?tab=fetch=, =&fetch=progress=, =&fetch=done= | The scope, running, done |
 
 * What it argues
 

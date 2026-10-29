@@ -21,6 +21,7 @@
 #define ORES_SYNTHETIC_API_DOMAIN_TRADE_POPULATION_PLAN_HPP
 
 #include "ores.synthetic.api/export.hpp"
+#include "ores.trading.api/domain/instrument_batch.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
@@ -566,6 +567,14 @@ struct trade_population_slot final {
     bool intra_group = false;
     /// The facts that belong to this slot's own family, and to no other.
     trade_terms terms;
+    /**
+     * @brief The domain rows this slot states, when its family has been flipped.
+     *
+     * A family that has flipped fills this and leaves =terms= empty; the writer
+     * persists what it is given instead of translating a bag. The two coexist
+     * until the last family moves.
+     */
+    ores::trading::domain::instrument_batch instruments;
     /// The structure this trade is a leg of, when the population groups one.
     std::optional<boost::uuids::uuid> structure_id;
     /// The role it takes in that structure, and its place among the legs.

@@ -37,6 +37,7 @@
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
+#include "ores.trading.api/domain/bond_instruments.hpp"
 #include "ores.trading.api/domain/commodity_instruments.hpp"
 #include "ores.trading.api/domain/credit_instruments.hpp"
 #include "ores.trading.api/domain/rate_instruments.hpp"
@@ -589,7 +590,18 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
     identifier.change_commentary = "Generated trade population.";
     book_req.identifiers.push_back(identifier);
 
-    if (const auto* bond = std::get_if<domain::bond_terms>(&slot.terms)) {
+    /*
+     * A family that has flipped states its rows and the writer persists them.
+     * Bond leads: it draws one product, so the seam is proved where there is
+     * least to change.
+     */
+    if (!slot.instruments.bond_instruments.empty()) {
+        for (auto row : slot.instruments.bond_instruments) {
+            row.instrument.audit.change_reason_code = std::string(population_reason);
+            row.instrument.audit.change_commentary = "Generated trade population.";
+            book_req.instruments.bond_instruments.push_back(row);
+        }
+    } else     if (const auto* bond = std::get_if<domain::bond_terms>(&slot.terms)) {
         ores::trading::domain::bond_instrument_data row;
         row.instrument.issue_id = bond->issue_id;
         row.instrument.notional =

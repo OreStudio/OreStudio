@@ -8,7 +8,7 @@
 #+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
 #+owner: marco
 #+branch: feature/flip-bond-onto-its-rows
-#+pr:
+#+pr: 4077
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4077][#4077]] | [synthetic,trading] Let a bond state its row instead of its bag |
 
 * Review
 

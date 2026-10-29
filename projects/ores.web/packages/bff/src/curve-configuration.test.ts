@@ -134,6 +134,35 @@ function document(): Record<string, unknown> {
                 position: 0,
             },
         ],
+        quotes: [
+            {
+                id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+                curve_definition_id: DEFINITION_ID,
+                curve_segment_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+                quote_list: '',
+                quote_text: 'USD/3M/1Y',
+                optional_flag: null,
+                position: 1,
+            },
+            {
+                id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+                curve_definition_id: DEFINITION_ID,
+                curve_segment_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+                quote_list: '',
+                quote_text: 'USD/3M/2Y',
+                optional_flag: 'true',
+                position: 0,
+            },
+            {
+                id: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
+                curve_definition_id: EQUITY_DEFINITION_ID,
+                curve_segment_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+                quote_list: '',
+                quote_text: 'ACME/1Y',
+                optional_flag: null,
+                position: 0,
+            },
+        ],
         equity_curves: [
             {
                 id: '88888888-8888-4888-8888-888888888888',
@@ -595,6 +624,12 @@ describe('the curve configuration a report binds', () => {
         const pillar = row?.leaves.find((leaf) => leaf.ore === 'PillarChoice');
         expect(pillar?.value).toBe('MaturityDate');
         expect(pillar?.documented).toBe(false);
+
+        // The quotes the segment holds, in the order the document writes them, and
+        // none of another segment's.
+        expect(row?.quotes.map((quote) => quote.text)).toEqual(['USD/3M/2Y', 'USD/3M/1Y']);
+        expect(row?.quotes[0]?.optional).toBe('true');
+        expect(row?.quotes[1]?.optional).toBe('');
     });
 
     it('names the block an entry holds and whether the entry states it', async () => {

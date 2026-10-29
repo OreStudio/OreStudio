@@ -197,6 +197,24 @@ const CURVE: CurveConfiguration = {
                                             },
                                         ),
                                     ],
+                                    quotes: [
+                                        {
+                                            id: 'quote-1',
+                                            list: '',
+                                            text: 'USD/3M/1Y',
+                                            optional: '',
+                                            rateQuote: '',
+                                            spreadQuote: '',
+                                        },
+                                        {
+                                            id: 'quote-2',
+                                            list: '',
+                                            text: 'USD/3M/2Y',
+                                            optional: 'true',
+                                            rateQuote: '',
+                                            spreadQuote: '',
+                                        },
+                                    ],
                                 },
                             ],
                         },
@@ -346,6 +364,14 @@ describe('the curve configuration page', () => {
         // as a gap, as an entry's leaf does.
         expect(words).toContain('MaturityDate');
         expect(words).toContain('2 without documentation');
+    });
+
+    it('draws the quotes a segment holds, and marks the ones ORE may leave out', () => {
+        const words = textOf(page('curves'));
+        expect(words).toContain('2 quotes');
+        expect(words).toContain('USD/3M/1Y');
+        expect(words).toContain('USD/3M/2Y');
+        expect(words).toContain('optional');
     });
 
     it('names the child elements a curve holds, and says once the ones it draws rows of', () => {

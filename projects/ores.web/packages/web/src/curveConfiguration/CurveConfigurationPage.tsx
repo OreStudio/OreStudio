@@ -736,6 +736,42 @@ function CurveWorkbench({
                                 <ul className="divide-y divide-line-subtle">
                                     {row.leaves.map(leafOfRow(row.id))}
                                 </ul>
+                                {row.quotes.length > 0 && (
+                                    <div className="mt-2 space-y-1 border-t border-line-subtle pt-2">
+                                        <p className="text-xs text-ink-faint">
+                                            {plural(
+                                                'curveConfiguration.curves.quotes',
+                                                row.quotes.length,
+                                            )}
+                                        </p>
+                                        <ul className="space-y-1">
+                                            {row.quotes.map((quote) => (
+                                                <li
+                                                    key={quote.id}
+                                                    className="flex flex-wrap items-baseline gap-2 text-xs"
+                                                >
+                                                    <span className="font-mono">
+                                                        {quote.text === ''
+                                                            ? `${quote.rateQuote} / ${quote.spreadQuote}`
+                                                            : quote.text}
+                                                    </span>
+                                                    {quote.list === '' ? null : (
+                                                        <span className="text-ink-faint">
+                                                            {quote.list}
+                                                        </span>
+                                                    )}
+                                                    {quote.optional === '' ? null : (
+                                                        <Tag small>
+                                                            {t(
+                                                                'curveConfiguration.curves.optionalQuote',
+                                                            )}
+                                                        </Tag>
+                                                    )}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
                             </li>
                         ))}
                     </ul>

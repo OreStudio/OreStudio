@@ -147,12 +147,32 @@ export interface CurveBlockView {
     readonly present: boolean | null;
 }
 
+/**
+ * One quote a segment holds.
+ *
+ * A quote is not a leaf with a name of its own: it is the text of a `Quote`
+ * element, or a pair of `RateQuote` and `SpreadQuote` elements, inside the list
+ * its `quote_list` names. The contract documents the `Quotes` element and not its
+ * parts, so the screen names the parts in its own words.
+ */
+export interface CurveQuoteView {
+    readonly id: string;
+    /** The list element the quote sits in, or empty for `Quotes` itself. */
+    readonly list: string;
+    readonly text: string;
+    /** Whether ORE may carry the quote as absent, which the element states. */
+    readonly optional: string;
+    readonly rateQuote: string;
+    readonly spreadQuote: string;
+}
+
 /** One row of a child collection, with the leaves the contract names for it. */
 export interface CurveCollectionRowView {
     readonly id: string;
     /** The element the row is written as, such as a segment's kind, or empty. */
     readonly kind: string;
     readonly leaves: readonly CurveParameterView[];
+    readonly quotes: readonly CurveQuoteView[];
 }
 
 /** A child collection an entry holds rows of, such as its segments. */
@@ -299,6 +319,8 @@ interface CurveCollectionRule {
     readonly kindColumn: string;
     /** The path from the entry to the leaves that kind holds, the entry left off. */
     readonly pathOf: (kind: string) => string;
+    /** The column a quote of one row joins back to, or empty for no quotes. */
+    readonly quoteParent: string;
 }
 
 /**
@@ -320,6 +342,7 @@ const CURVE_COLLECTIONS: readonly CurveCollectionRule[] = [
         parentKey: 'curve_definition_id',
         kindColumn: 'segment_type',
         pathOf: (kind: string) => `Segments/${kind}`,
+        quoteParent: 'curve_segment_id',
     },
 ];
 
@@ -402,6 +425,28 @@ function collectionLeaves(
     return found;
 }
 
+/** The quotes a segment holds, in the order the document writes them. */
+function quotesOf(
+    document: Readonly<Record<string, unknown>>,
+    segmentId: string,
+    rule: CurveCollectionRule,
+): readonly CurveQuoteView[] {
+    if (rule.quoteParent === '') {
+        return [];
+    }
+    return vectorOf(document, 'quotes')
+        .filter((row) => text(row[rule.quoteParent]) === segmentId)
+        .sort((left, right) => numberOf(left['position']) - numberOf(right['position']))
+        .map((row) => ({
+            id: text(row['id']),
+            list: text(row['quote_list']),
+            text: text(row['quote_text']),
+            optional: text(row['optional_flag']),
+            rateQuote: text(row['rate_quote']),
+            spreadQuote: text(row['spread_quote']),
+        }));
+}
+
 /** The rows of every child collection an entry holds, in document order. */
 function collectionsOf(
     document: Readonly<Record<string, unknown>>,
@@ -432,6 +477,7 @@ function collectionsOf(
                         contract,
                         valueSetOf,
                     ),
+                    quotes: quotesOf(document, text(candidate['id']), rule),
                 };
             });
         return { element: rule.element, rows };

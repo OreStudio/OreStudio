@@ -635,6 +635,30 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Run projects/ores.sql/utility/generate_value_sets.py and commit the populate script.",
     ),
     Check(
+        id="parameter-value-sets-only",
+        title="A parameter's control and rule come only from its value set",
+        argv=("python3", "build/scripts/check_parameter_value_sets.py"),
+        classes=("sql", "modeling", "web", "cpp"),
+        paths=(
+            "projects/ores.sql/populate/reporting/reporting_ore_parameter_value_sets_populate.sql",
+            "projects/ores.sql/utility/generate_value_sets.py",
+            "projects/ores.sql/utility/setup_value_sets.py",
+            "projects/ores.sql/utility/convention_value_sets.py",
+            "projects/ores.sql/utility/curve_value_sets.py",
+            "projects/ores.seeder/datasets/ore_pricing_engines/curation/*",
+            "projects/ores.seeder/datasets/ore_pricing_engines/pricing_vocabulary.json",
+            "projects/ores.sql/create/analytics/analytics_pricing_pair_settings_create.sql",
+            "projects/ores.analytics/modeling/ores.analytics.pricing_pair_setting.org",
+            "projects/ores.sql/create/reporting/reporting_engine_settings_group_settings_create.sql",
+            "projects/ores.reporting/modeling/ores.reporting.engine_settings_group_setting.org",
+            "projects/ores.web/packages/bff/src/pricing-engines.ts",
+            "projects/ores.web/packages/web/src/api/pricingEngines.ts",
+        ),
+        fix="State the rule in the setting's value set and run"
+            " projects/ores.sql/utility/generate_value_sets.py, then commit the seed."
+            " A per-pair column has no place here: the set states the rule once.",
+    ),
+    Check(
         id="convention-kind-terms",
         title="The convention kind terms match the mapper and the ORE terms",
         argv=("python3", "projects/ores.sql/utility/generate_convention_kind_terms.py", "--check"),

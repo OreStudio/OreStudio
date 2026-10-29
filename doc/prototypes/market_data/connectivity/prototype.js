@@ -156,7 +156,7 @@ function renderConnectionRecord() {
               <td>${p.classes.map((x) => `<span class="badge">${x.toUpperCase()}</span>`).join(' ')}</td>
               <td class="num">${p.items}</td>
               <td>${p.last ?? '<span class="faint">none</span>'}</td><td>${fn.badge(p.state)}</td>
-              <td class="acts"><a class="act" href="../official-rates/index.html?provider=${p.code}&rtab=overview">Open <span class="faint">· in Rates</span></a></td></tr>`;
+              <td class="acts"><a class="act" href="../public-rates/index.html?provider=${p.code}&rtab=overview">Open <span class="faint">· in Public rates</span></a></td></tr>`;
         }).join('') || '<tr><td colspan="6" class="faint">No provider is mapped to this connection yet.</td></tr>'}</tbody></table>
           <div class="faint" style="margin-top:8px;padding:0 14px 12px">A provider belongs to the connection that delivers it. A publisher reached two ways is two connections over one provider.</div></div>`;
     } else if (ctab === 'routing') {

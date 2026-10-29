@@ -42,7 +42,7 @@ and the person looks for the cause. A pair or a provider is new, and the person
 checks that its data arrives before anyone builds on it. A bill or a coverage
 review says a provider is not worth its cost, and the person pauses it.
 
-The journey starts at *Market data*, then *Official rates*, and ends when the
+The journey starts at *Market data*, then *Public rates*, and ends when the
 person leaves the screen. A person who came from a synthetic feed's page
 returns there, because that page carries the value a run started from.
 
@@ -124,7 +124,7 @@ moves between them without losing the provider they were reading.
 #+ATTR_HTML: :class hug-leading
 | Surface | The question it answers | Where it sits |
 |---------+-------------------------+---------------|
-| Providers | Which publishers are there, what are their terms, and is their data arriving? | The Official rates list, the home of the journey |
+| Providers | Which publishers are there, what are their terms, and is their data arriving? | The Public rates list, the home of the journey |
 | Publisher | What did this one publisher publish for this pair, over time, and where did a feed start from it? | A provider's page |
 | Availability | For one underlying, what does each publisher hold, and what gaps does it have? | A tab, read by underlying first |
 | Compare | For one underlying, how far apart are the publishers' values, and which one is off? | A tab, read by underlying first |
@@ -173,7 +173,7 @@ answers today.
 
 * Prototype
 
-- Directory :: [[file:../../../prototypes/market_data/official-rates/][doc/prototypes/market_data/official-rates/]]
+- Directory :: [[file:../../../prototypes/market_data/official-rates/][doc/prototypes/market_data/public-rates/]]
 - Note :: [[file:../../../prototypes/market_data/official-rates.org][the design note]]
 - Surfaces :: =?tab=providers|publisher|availability|compare|fetch|config=
 - Providers :: =?tab=providers&filter=live|late|down|never|paused|terms=,

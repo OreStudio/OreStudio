@@ -51,5 +51,5 @@ nothing is stored, set or rotated. No request leaves the page.
 * Verdict
 
 The split is the design: Connectivity owns the plumbing, and
-[[file:official-rates.org][Official rates]] owns the rates. A person reading a
+[[file:public-rates.org][Public rates]] owns the rates. A person reading a
 rate follows a link here only to see where it came from.

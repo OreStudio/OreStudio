@@ -1,6 +1,7 @@
 /*
- * Static prototype of the Official rates screens: the provider list, the
- * provider record and its tabs, and the area's availability, compare and fetch.
+ * Static prototype of the Public rates screen: the provider list, the provider
+ * record and its tabs, and the area's availability, compare and fetch. It shows only
+ * real observed market data; the simulator is not part of this screen.
  * Every state is a query string, so a reviewer opens it by address. Mock data only.
  *
  *   ?tab=providers|availability|compare|fetch
@@ -99,8 +100,8 @@ PROVIDERS.push({ code: 'ust', name: 'US Treasury', kind: 'reference', classes: [
 
 const SENTENCES = {
     live: 'Serving. The last fixing is today\'s and it arrived on time.',
-    late: 'Late. The publication day has passed with no fixing. Read the adapter\'s heartbeat, then ask for a fetch of the missing days.',
-    down: 'Not serving. The adapter\'s heartbeat stopped, so nothing is fetched. Restart it, or find out whether its terms were withdrawn.',
+    late: 'Late. The publication day has passed with no fixing. Read the connection\'s health, then ask for a fetch of the missing days.',
+    down: 'Not serving. The connection stopped delivering, so nothing is fetched. Restart it, or find out whether its terms were withdrawn.',
     never: 'Never fixed. The terms are accepted and the adapter serves, but no value of this publisher is stored yet.',
     paused: 'Paused by a person. The publisher is not fetched. Its stored fixings and every feed that started from one stay.',
     terms: 'Terms not accepted. The publisher is not fetched until a person accepts the version shown.',

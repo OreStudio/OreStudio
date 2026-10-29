@@ -40,6 +40,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <array>
 #include <charconv>
 #include <map>
 #include <stdexcept>
@@ -201,176 +202,281 @@ void validate(const domain::engine_settings_group_setting& setting,
 }
 
 /**
+ * @brief One group's part as the store holds it.
+ *
+ * The identity, the version and the party are what a write inherits, so the
+ * write is the next version of the section and not a second one. The values are
+ * the part's columns as the screen reads them, keyed by the column's name.
+ */
+struct group_row {
+    boost::uuids::uuid id{};
+    int version = 0;
+    boost::uuids::uuid party_id{};
+    value_map values;
+};
+
+/**
+ * @brief How one group is read from, and written to, the part that holds it.
+ *
+ * A group's part is a table of its own, with columns named and typed for that
+ * group, so the mapping from a column name to a member belongs to the group and
+ * cannot be shared with another. What is shared is the shape: every group reads
+ * the one row in force, as text by column, and writes the next version of it
+ * carrying the values a proposal holds. A new group of settings is a reader, a
+ * writer and one line in the table below; the caller never names a group's
+ * columns.
+ */
+struct group_part {
+    std::string_view code;
+    /** Reads the row in force, or nothing when the group has no row. */
+    std::optional<group_row> (*read)(const ores::database::context&,
+                                     const std::string& engine_settings_id);
+    /** Writes the values as the next version of the row in force. */
+    void (*write)(const ores::database::context&,
+                  const boost::uuids::uuid& engine_settings_id,
+                  const boost::uuids::uuid& party_id,
+                  const std::optional<group_row>& row_in_force,
+                  const value_map&,
+                  const std::string& reason);
+};
+
+namespace {
+
+/** The one row in force of a part: the table holds one per configuration. */
+constexpr std::uint32_t row_offset = 0;
+constexpr std::uint32_t row_limit = 1;
+
+std::optional<group_row> read_fixings(const ores::database::context& ctx,
+                                      const std::string& engine_settings_id) {
+    const auto rows =
+        repository::engine_settings_fixings_repository{}.read_latest_by_engine_settings_id(
+            ctx, engine_settings_id, row_offset, row_limit);
+    if (rows.empty())
+        return std::nullopt;
+    const auto& r = rows.front();
+    return group_row{.id = r.id,
+                     .version = r.version,
+                     .party_id = r.party_id,
+                     .values = {{"imply_todays_fixings", text_of(r.imply_todays_fixings)},
+                                {"include_todays_cash_flows", text_of(r.include_todays_cash_flows)},
+                                {"include_reference_date_events",
+                                 text_of(r.include_reference_date_events)},
+                                {"enrich_index_fixings", text_of(r.enrich_index_fixings)},
+                                {"ignore_fixing_lag", text_of(r.ignore_fixing_lag)},
+                                {"ignore_fixing_lead", text_of(r.ignore_fixing_lead)}}};
+}
+
+std::optional<group_row> read_building(const ores::database::context& ctx,
+                                       const std::string& engine_settings_id) {
+    const auto rows =
+        repository::engine_settings_building_repository{}.read_latest_by_engine_settings_id(
+            ctx, engine_settings_id, row_offset, row_limit);
+    if (rows.empty())
+        return std::nullopt;
+    const auto& r = rows.front();
+    return group_row{.id = r.id,
+                     .version = r.version,
+                     .party_id = r.party_id,
+                     .values = {{"observation_model", text_of(r.observation_model)},
+                                {"lazy_market_building", text_of(r.lazy_market_building)},
+                                {"build_failed_trades", text_of(r.build_failed_trades)},
+                                {"continue_on_error", text_of(r.continue_on_error)},
+                                {"use_at_par_coupons_curves",
+                                 text_of(r.use_at_par_coupons_curves)},
+                                {"use_at_par_coupons_trades",
+                                 text_of(r.use_at_par_coupons_trades)}}};
+}
+
+std::optional<group_row> read_execution(const ores::database::context& ctx,
+                                        const std::string& engine_settings_id) {
+    const auto rows =
+        repository::engine_settings_execution_repository{}.read_latest_by_engine_settings_id(
+            ctx, engine_settings_id, row_offset, row_limit);
+    if (rows.empty())
+        return std::nullopt;
+    const auto& r = rows.front();
+    return group_row{.id = r.id,
+                     .version = r.version,
+                     .party_id = r.party_id,
+                     .values = {{"n_threads", text_of(r.n_threads)},
+                                {"log_mask", text_of(r.log_mask)},
+                                {"gzip_compression_level",
+                                 text_of(r.gzip_compression_level)}}};
+}
+
+void write_fixings(const ores::database::context& ctx,
+                   const boost::uuids::uuid& engine_settings_id,
+                   const boost::uuids::uuid& party_id,
+                   const std::optional<group_row>& row_in_force,
+                   const value_map& values,
+                   const std::string& reason) {
+    domain::engine_settings_fixings row;
+    if (row_in_force) {
+        row.id = row_in_force->id;
+        row.version = row_in_force->version;
+        row.engine_settings_id = engine_settings_id;
+        row.party_id = row_in_force->party_id;
+    } else {
+        row.id = ores::utility::uuid::uuid_v7_generator{}();
+        row.version = 0;
+        row.engine_settings_id = engine_settings_id;
+        row.party_id = party_id;
+    }
+    row.imply_todays_fixings = as_flag(values.at("imply_todays_fixings"));
+    row.include_todays_cash_flows = as_flag(values.at("include_todays_cash_flows"));
+    row.include_reference_date_events = as_flag(values.at("include_reference_date_events"));
+    row.enrich_index_fixings = as_flag(values.at("enrich_index_fixings"));
+    row.ignore_fixing_lag = as_whole(values.at("ignore_fixing_lag"));
+    row.ignore_fixing_lead = as_whole(values.at("ignore_fixing_lead"));
+    row.change_reason_code = "system.update";
+    row.change_commentary = reason;
+    engine_settings_fixings_service(ctx).save_engine_settings_fixings(row);
+}
+
+void write_building(const ores::database::context& ctx,
+                    const boost::uuids::uuid& engine_settings_id,
+                    const boost::uuids::uuid& party_id,
+                    const std::optional<group_row>& row_in_force,
+                    const value_map& values,
+                    const std::string& reason) {
+    domain::engine_settings_building row;
+    if (row_in_force) {
+        row.id = row_in_force->id;
+        row.version = row_in_force->version;
+        row.engine_settings_id = engine_settings_id;
+        row.party_id = row_in_force->party_id;
+    } else {
+        row.id = ores::utility::uuid::uuid_v7_generator{}();
+        row.version = 0;
+        row.engine_settings_id = engine_settings_id;
+        row.party_id = party_id;
+    }
+    row.observation_model = as_choice(values.at("observation_model"));
+    row.lazy_market_building = as_flag(values.at("lazy_market_building"));
+    row.build_failed_trades = as_flag(values.at("build_failed_trades"));
+    row.continue_on_error = as_flag(values.at("continue_on_error"));
+    row.use_at_par_coupons_curves = as_flag(values.at("use_at_par_coupons_curves"));
+    row.use_at_par_coupons_trades = as_flag(values.at("use_at_par_coupons_trades"));
+    row.change_reason_code = "system.update";
+    row.change_commentary = reason;
+    engine_settings_building_service(ctx).save_engine_settings_building(row);
+}
+
+void write_execution(const ores::database::context& ctx,
+                     const boost::uuids::uuid& engine_settings_id,
+                     const boost::uuids::uuid& party_id,
+                     const std::optional<group_row>& row_in_force,
+                     const value_map& values,
+                     const std::string& reason) {
+    domain::engine_settings_execution row;
+    if (row_in_force) {
+        row.id = row_in_force->id;
+        row.version = row_in_force->version;
+        row.engine_settings_id = engine_settings_id;
+        row.party_id = row_in_force->party_id;
+    } else {
+        row.id = ores::utility::uuid::uuid_v7_generator{}();
+        row.version = 0;
+        row.engine_settings_id = engine_settings_id;
+        row.party_id = party_id;
+    }
+    row.n_threads = as_whole(values.at("n_threads"));
+    row.log_mask = as_whole(values.at("log_mask"));
+    row.gzip_compression_level = as_whole(values.at("gzip_compression_level"));
+    row.change_reason_code = "system.update";
+    row.change_commentary = reason;
+    engine_settings_execution_service(ctx).save_engine_settings_execution(row);
+}
+
+}
+
+/**
+ * @brief Every group the service can read and write, one line each.
+ *
+ * The data states the groups the screen draws; this states which of them this
+ * service knows how to hold. A group the data names and this does not is a group
+ * whose proposal could not be written, which the service refuses by name.
+ */
+const std::array<group_part, 3> group_parts{{
+    {fixings_code, &read_fixings, &write_fixings},
+    {building_code, &read_building, &write_building},
+    {execution_code, &read_execution, &write_execution},
+}};
+
+/** The part that holds this group, or nothing when the service does not know it. */
+const group_part* find_part(const std::string& group_code) {
+    for (const auto& part : group_parts) {
+        if (part.code == group_code)
+            return &part;
+    }
+    return nullptr;
+}
+
+/** The part that holds this group, or a refusal naming the group. */
+const group_part& part_of(const std::string& group_code) {
+    if (const auto* part = find_part(group_code))
+        return *part;
+    throw std::invalid_argument("No group of engine settings is called " + group_code + ".");
+}
+
+/**
+ * @brief The group's row in force, or nothing when the group has no row.
+ *
+ * A group the service does not know reads as no row, which is what a held line
+ * naming a group the data no longer carries meets here: the raise and the apply
+ * refuse such a group by name before they get this far, and the two reads a
+ * decider opens must still answer.
+ */
+std::optional<group_row> row_at(const ores::database::context& ctx,
+                                const std::string& group_code,
+                                const boost::uuids::uuid& engine_settings_id) {
+    const auto* part = find_part(group_code);
+    if (part == nullptr)
+        return std::nullopt;
+    return part->read(ctx, boost::uuids::to_string(engine_settings_id));
+}
+
+/**
  * @brief The value in force of each setting of one group, by column.
  *
  * A group with no row answers every column empty, which is the engine default
- * for every setting in it.
+ * for every setting in it. The row is the caller's read, so the values a
+ * proposal compares against and the version it claims come from one read of one
+ * row.
  */
-value_map values_in_force(const ores::database::context& ctx,
-                          const std::string& group_code,
-                          const boost::uuids::uuid& engine_settings_id,
-                          const settings_group& group) {
+value_map values_in_force(const settings_group& group, const std::optional<group_row>& row) {
     value_map values;
     for (const auto& setting : group.settings)
         values[setting.column_name] = std::nullopt;
-
-    const auto id = boost::uuids::to_string(engine_settings_id);
-    if (group_code == fixings_code) {
-        const auto rows =
-            repository::engine_settings_fixings_repository{}.read_latest_by_engine_settings_id(
-                ctx, id, 0, 1000);
-        if (rows.empty())
-            return values;
-        const auto& r = rows.front();
-        values["imply_todays_fixings"] = text_of(r.imply_todays_fixings);
-        values["include_todays_cash_flows"] = text_of(r.include_todays_cash_flows);
-        values["include_reference_date_events"] = text_of(r.include_reference_date_events);
-        values["enrich_index_fixings"] = text_of(r.enrich_index_fixings);
-        values["ignore_fixing_lag"] = text_of(r.ignore_fixing_lag);
-        values["ignore_fixing_lead"] = text_of(r.ignore_fixing_lead);
-        return values;
-    }
-    if (group_code == building_code) {
-        const auto rows =
-            repository::engine_settings_building_repository{}.read_latest_by_engine_settings_id(
-                ctx, id, 0, 1000);
-        if (rows.empty())
-            return values;
-        const auto& r = rows.front();
-        values["observation_model"] = text_of(r.observation_model);
-        values["lazy_market_building"] = text_of(r.lazy_market_building);
-        values["build_failed_trades"] = text_of(r.build_failed_trades);
-        values["continue_on_error"] = text_of(r.continue_on_error);
-        values["use_at_par_coupons_curves"] = text_of(r.use_at_par_coupons_curves);
-        values["use_at_par_coupons_trades"] = text_of(r.use_at_par_coupons_trades);
-        return values;
-    }
-    if (group_code == execution_code) {
-        const auto rows =
-            repository::engine_settings_execution_repository{}.read_latest_by_engine_settings_id(
-                ctx, id, 0, 1000);
-        if (rows.empty())
-            return values;
-        const auto& r = rows.front();
-        values["n_threads"] = text_of(r.n_threads);
-        values["log_mask"] = text_of(r.log_mask);
-        values["gzip_compression_level"] = text_of(r.gzip_compression_level);
-        return values;
+    if (row) {
+        for (const auto& [column, value] : row->values)
+            values[column] = value;
     }
     return values;
 }
 
-/** The version of the group's row in force, or zero when the group has no row. */
-int version_in_force(const ores::database::context& ctx,
-                     const std::string& group_code,
-                     const boost::uuids::uuid& engine_settings_id) {
-    const auto id = boost::uuids::to_string(engine_settings_id);
-    if (group_code == fixings_code) {
-        const auto rows =
-            repository::engine_settings_fixings_repository{}.read_latest_by_engine_settings_id(
-                ctx, id, 0, 1000);
-        return rows.empty() ? 0 : rows.front().version;
-    }
-    if (group_code == building_code) {
-        const auto rows =
-            repository::engine_settings_building_repository{}.read_latest_by_engine_settings_id(
-                ctx, id, 0, 1000);
-        return rows.empty() ? 0 : rows.front().version;
-    }
-    if (group_code == execution_code) {
-        const auto rows =
-            repository::engine_settings_execution_repository{}.read_latest_by_engine_settings_id(
-                ctx, id, 0, 1000);
-        return rows.empty() ? 0 : rows.front().version;
-    }
-    return 0;
+/** The version in force of a group, or zero when the group has no row. */
+int version_of(const std::optional<group_row>& row) {
+    return row ? row->version : 0;
 }
 
 /**
  * @brief Writes one group's part with the values a proposal holds.
  *
- * The row keeps the identity and the party of the row in force, so the write is
- * the next version of the section and not a second section. A group with no row
- * takes a new identity, which is the write that sets the group for the first
- * time.
+ * The row the caller read is the row this writes the next version of, so the
+ * values and the version a proposal claims come from one read of one row. A
+ * group with no row takes a new identity, which is the write that sets the group
+ * for the first time.
  */
 void write_group(const ores::database::context& ctx,
                  const std::string& group_code,
                  const boost::uuids::uuid& engine_settings_id,
                  const boost::uuids::uuid& party_id,
+                 const std::optional<group_row>& row_in_force,
                  const value_map& values,
                  const std::string& reason) {
-    const auto id = boost::uuids::to_string(engine_settings_id);
-    if (group_code == fixings_code) {
-        const auto rows =
-            repository::engine_settings_fixings_repository{}.read_latest_by_engine_settings_id(
-                ctx, id, 0, 1000);
-        domain::engine_settings_fixings row;
-        if (!rows.empty()) {
-            row = rows.front();
-        } else {
-            row.id = ores::utility::uuid::uuid_v7_generator{}();
-            row.engine_settings_id = engine_settings_id;
-            row.party_id = party_id;
-            row.version = 0;
-        }
-        row.imply_todays_fixings = as_flag(values.at("imply_todays_fixings"));
-        row.include_todays_cash_flows = as_flag(values.at("include_todays_cash_flows"));
-        row.include_reference_date_events = as_flag(values.at("include_reference_date_events"));
-        row.enrich_index_fixings = as_flag(values.at("enrich_index_fixings"));
-        row.ignore_fixing_lag = as_whole(values.at("ignore_fixing_lag"));
-        row.ignore_fixing_lead = as_whole(values.at("ignore_fixing_lead"));
-        row.change_reason_code = "system.update";
-        row.change_commentary = reason;
-        engine_settings_fixings_service(ctx).save_engine_settings_fixings(row);
-        return;
-    }
-    if (group_code == building_code) {
-        const auto rows =
-            repository::engine_settings_building_repository{}.read_latest_by_engine_settings_id(
-                ctx, id, 0, 1000);
-        domain::engine_settings_building row;
-        if (!rows.empty()) {
-            row = rows.front();
-        } else {
-            row.id = ores::utility::uuid::uuid_v7_generator{}();
-            row.engine_settings_id = engine_settings_id;
-            row.party_id = party_id;
-            row.version = 0;
-        }
-        row.observation_model = as_choice(values.at("observation_model"));
-        row.lazy_market_building = as_flag(values.at("lazy_market_building"));
-        row.build_failed_trades = as_flag(values.at("build_failed_trades"));
-        row.continue_on_error = as_flag(values.at("continue_on_error"));
-        row.use_at_par_coupons_curves = as_flag(values.at("use_at_par_coupons_curves"));
-        row.use_at_par_coupons_trades = as_flag(values.at("use_at_par_coupons_trades"));
-        row.change_reason_code = "system.update";
-        row.change_commentary = reason;
-        engine_settings_building_service(ctx).save_engine_settings_building(row);
-        return;
-    }
-    if (group_code == execution_code) {
-        const auto rows =
-            repository::engine_settings_execution_repository{}.read_latest_by_engine_settings_id(
-                ctx, id, 0, 1000);
-        domain::engine_settings_execution row;
-        if (!rows.empty()) {
-            row = rows.front();
-        } else {
-            row.id = ores::utility::uuid::uuid_v7_generator{}();
-            row.engine_settings_id = engine_settings_id;
-            row.party_id = party_id;
-            row.version = 0;
-        }
-        row.n_threads = as_whole(values.at("n_threads"));
-        row.log_mask = as_whole(values.at("log_mask"));
-        row.gzip_compression_level = as_whole(values.at("gzip_compression_level"));
-        row.change_reason_code = "system.update";
-        row.change_commentary = reason;
-        engine_settings_execution_service(ctx).save_engine_settings_execution(row);
-        return;
-    }
-    throw std::invalid_argument("No group of engine settings is called " + group_code + ".");
+    part_of(group_code).write(
+        ctx, engine_settings_id, party_id, row_in_force, values, reason);
 }
 
 /**
@@ -598,9 +704,9 @@ engine_settings_proposal_service::raise(
         // the one in force in this transaction. A client that read another
         // version is answered as stale, in the words the screen shows, before
         // anything is held.
-        const auto in_force =
-            values_in_force(ctx, request.group_code, request.engine_settings_id, *asked);
-        const auto claimed = version_in_force(ctx, request.group_code, request.engine_settings_id);
+        const auto row_in_force = row_at(ctx, request.group_code, request.engine_settings_id);
+        const auto in_force = values_in_force(*asked, row_in_force);
+        const auto claimed = version_of(row_in_force);
         if (request.base_version != claimed) {
             response.result = refusal_of(outcome::conflict, std::string(stale_words));
             return response;
@@ -709,7 +815,8 @@ engine_settings_proposal_service::lines(const std::string& request_id) {
         line.applied = std::ranges::all_of(group_rows, [](const auto& r) { return r.applied; });
 
         if (settings) {
-            const auto in_force = values_in_force(ctx_, code, first.engine_settings_id, *settings);
+            const auto in_force =
+                values_in_force(*settings, row_at(ctx_, code, first.engine_settings_id));
             for (const auto& setting : settings->settings) {
                 ores::reporting::messaging::engine_settings_value_change field;
                 field.column_name = setting.column_name;
@@ -737,7 +844,8 @@ std::vector<std::string> engine_settings_proposal_service::refusals(const std::s
         const auto group_rows = rows_of_group(rows, code);
         if (group_rows.empty())
             continue;
-        const auto in_force = version_in_force(ctx_, code, group_rows.front().engine_settings_id);
+        const auto in_force =
+            version_of(row_at(ctx_, code, group_rows.front().engine_settings_id));
         if (in_force != group_rows.front().base_version) {
             out.push_back("The " + code +
                           " group has moved since the proposal was raised: it is "
@@ -787,7 +895,10 @@ engine_settings_apply engine_settings_proposal_service::apply(const std::string&
                 continue;
 
             const auto& first = pending.front();
-            const auto in_force = version_in_force(ctx, code, first.engine_settings_id);
+            // The row in force is read once: it states the version the proposal
+            // must still claim, and it is the row the write replaces.
+            const auto row_in_force = row_at(ctx, code, first.engine_settings_id);
+            const auto in_force = version_of(row_in_force);
             if (in_force != first.base_version) {
                 out.refusal = "The " + code + " group has moved since the proposal was raised.";
                 break;
@@ -811,6 +922,7 @@ engine_settings_apply engine_settings_proposal_service::apply(const std::string&
                         code,
                         first.engine_settings_id,
                         engine_settings.front().party_id,
+                        row_in_force,
                         values_of(pending, *settings),
                         "Applied approval request " + request_id);
             ++out.groups_applied;

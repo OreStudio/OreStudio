@@ -33,6 +33,7 @@ set(files
     "engine_settings_execution_eventing_integration_tests.cpp"
     "engine_settings_fixings_eventing_integration_tests.cpp"
     "engine_settings_group_eventing_integration_tests.cpp"
+    "engine_settings_group_parts_tests.cpp"
     "engine_settings_group_setting_eventing_integration_tests.cpp"
     "engine_settings_proposal_tests.cpp"
     "file_type_eventing_integration_tests.cpp"

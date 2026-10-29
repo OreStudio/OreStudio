@@ -83,6 +83,28 @@ TEST_CASE("an array of uuids is an array of the same strings", "[codec][msgpack]
     CHECK(wire_msgpack::read<std::vector<boost::uuids::uuid>>(wire_msgpack::write(ids)) == ids);
 }
 
+TEST_CASE("a tenant id, a date and a decimal are the strings reflect-cpp writes",
+          "[codec][msgpack]") {
+    const auto tenant =
+        *ores::utility::uuid::tenant_id::from_string("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
+    const auto date = std::chrono::year{2025} / std::chrono::January / 15;
+    const auto absent_date = std::chrono::year_month_day{};
+    const auto amount = *ores::utility::decimal::decimal::from_string("-1234.567890123456");
+
+    CHECK(wire_msgpack::write(tenant) == rfl_msgpack(tenant));
+    CHECK(wire_msgpack::write(date) == rfl_msgpack(date));
+    CHECK(wire_msgpack::write(absent_date) == rfl_msgpack(absent_date));
+    CHECK(wire_msgpack::write(amount) == rfl_msgpack(amount));
+
+    CHECK(wire_msgpack::read<ores::utility::uuid::tenant_id>(wire_msgpack::write(tenant)) ==
+          tenant);
+    CHECK(wire_msgpack::read<std::chrono::year_month_day>(wire_msgpack::write(date)) == date);
+    CHECK(wire_msgpack::read<std::chrono::year_month_day>(wire_msgpack::write(absent_date)) ==
+          absent_date);
+    CHECK(wire_msgpack::read<ores::utility::decimal::decimal>(wire_msgpack::write(amount)) ==
+          amount);
+}
+
 TEST_CASE("a string is its own MessagePack form", "[codec][msgpack]") {
     const auto text = std::string("zürich's \"quote\"");
     const auto theirs = rfl_msgpack(text);

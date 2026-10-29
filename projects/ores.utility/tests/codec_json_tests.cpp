@@ -79,6 +79,25 @@ TEST_CASE("an array of uuids is an array of the same strings", "[codec][json]") 
     CHECK(wire_json::read<std::vector<boost::uuids::uuid>>(wire_json::write(ids)) == ids);
 }
 
+TEST_CASE("a tenant id, a date and a decimal are the strings reflect-cpp writes", "[codec][json]") {
+    const auto tenant =
+        *ores::utility::uuid::tenant_id::from_string("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
+    const auto date = std::chrono::year{2025} / std::chrono::January / 15;
+    const auto absent_date = std::chrono::year_month_day{};
+    const auto amount = *ores::utility::decimal::decimal::from_string("-1234.567890123456");
+
+    CHECK(wire_json::write(tenant) == rfl::json::write(tenant));
+    CHECK(wire_json::write(date) == rfl::json::write(date));
+    CHECK(wire_json::write(absent_date) == rfl::json::write(absent_date));
+    CHECK(wire_json::write(amount) == rfl::json::write(amount));
+
+    CHECK(wire_json::read<ores::utility::uuid::tenant_id>(wire_json::write(tenant)) == tenant);
+    CHECK(wire_json::read<std::chrono::year_month_day>(wire_json::write(date)) == date);
+    CHECK(wire_json::read<std::chrono::year_month_day>(wire_json::write(absent_date)) ==
+          absent_date);
+    CHECK(wire_json::read<ores::utility::decimal::decimal>(wire_json::write(amount)) == amount);
+}
+
 TEST_CASE("a string is its own JSON form", "[codec][json]") {
     CHECK(wire_json::write(std::string("zürich's \"quote\"")) ==
           rfl::json::write(std::string("zürich's \"quote\"")));

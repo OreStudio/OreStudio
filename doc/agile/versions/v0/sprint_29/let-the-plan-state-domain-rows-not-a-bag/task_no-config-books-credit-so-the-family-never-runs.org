@@ -2,31 +2,43 @@
 :ID: 196C254E-7632-4F8B-93FF-33B3A4E0C9D4
 :END:
 #+title: Task: No config books credit, so the family never runs
-#+description: The credit writer and its routing exist and the credit catalogue is seeded, but no ACME party has a credit generation config, so a provisioned tenant holds no credit trades at all. Measured on a recreated database: zero rows in the credit instrument table, and the demo profile seeds bond, commodity, equity, fx and interest_rates only. Unlike commodities, which were chartered in the same sprint, credit has neither a book nor a config.
+#+description: The capture this task was promoted from said the credit writer existed and only a config was missing. It was wrong, and this is the correction.
+
+The credit family is unimplemented in ores.synthetic. There is no credit trade planner and no credit writer: the planner registry holds bond, commodity, equity, fx and interest_rates, and grep finds no credit_terms, no credit_instrument and no credit_trade_planner anywhere in the project. The routed table, the trade type catalogue rows and the permission vocabulary exist; nothing writes them.
+
+Measured on a recreated database: zero credit instrument rows, and the demo profile seeds bond, commodity, equity, fx and interest_rates only. The book is the one thing that does exist -- four credit books are seeded, including IG CDS EMEA in EUR.
+
+The reference entity is the open question. credit_instruments.reference_entity is free text, the tenant has no legal entity table of its own, and the 38,213 LEI entities a provisioned tenant holds sit in the DQ artefact table, which the synthetic service has no read path to. Drawing a credit population therefore needs a decision about where a reference entity comes from before it needs code.
 #+type: task
 #+level: s1
 #+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/no-config-books-credit-so-the-family-never-runs
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The credit writer and its routing exist and the credit catalogue is seeded, but no ACME party has a credit generation config, so a provisioned tenant holds no credit trades at all. Measured on a recreated database: zero rows in the credit instrument table, and the demo profile seeds bond, commodity, equity, fx and interest_rates only. Unlike commodities, which were chartered in the same sprint, credit has neither a book nor a config.
+The capture this task was promoted from said the credit writer existed and only a config was missing. It was wrong, and this is the correction.
+
+The credit family is unimplemented in ores.synthetic. There is no credit trade planner and no credit writer: the planner registry holds bond, commodity, equity, fx and interest_rates, and grep finds no credit_terms, no credit_instrument and no credit_trade_planner anywhere in the project. The routed table, the trade type catalogue rows and the permission vocabulary exist; nothing writes them.
+
+Measured on a recreated database: zero credit instrument rows, and the demo profile seeds bond, commodity, equity, fx and interest_rates only. The book is the one thing that does exist -- four credit books are seeded, including IG CDS EMEA in EUR.
+
+The reference entity is the open question. credit_instruments.reference_entity is free text, the tenant has no legal entity table of its own, and the 38,213 LEI entities a provisioned tenant holds sit in the DQ artefact table, which the synthetic service has no read path to. Drawing a credit population therefore needs a decision about where a reference entity comes from before it needs code.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

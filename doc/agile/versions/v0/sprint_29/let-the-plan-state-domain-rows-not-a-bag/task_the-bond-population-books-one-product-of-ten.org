@@ -82,4 +82,13 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
-* Result
+* Scope, before any code
+
+Making the other nine products book needs, in order: a decision about which of
+them a population should draw, what each one's economics should say (a bond
+option's strike, a repo's rate and haircut, a convertible's conversion
+targets), a planner change, and fact-row construction. The tables for those
+facts exist and are empty.
+
+None of that is a constructor's job, and the decisions are not the
+constructor's either: they say what ACME's bond trades are.

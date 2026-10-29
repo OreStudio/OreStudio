@@ -18,6 +18,7 @@
  *
  */
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
+#include "ores.trading.api/domain/bond_instruments.hpp"
 #include <boost/uuid/name_generator_sha1.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -293,6 +294,20 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         auto entry = common_slot(scope, slot);
         entry.trade_type_code = std::string(bond_trade_type_code);
         entry.notional = notional_from(scope, draw(name, 1));
+        /*
+         * The bond family states its row and not a bag: the instrument holds the
+         * security's issue and the amount this trade is for, and the writer
+         * persists what it is given.
+         */
+        ores::trading::domain::bond_terms row;
+        row.issue_id = terms.issue_id;
+        row.notional = ores::utility::decimal::decimal::from_double(entry.notional).value();
+        entry.instruments.bond_instruments.push_back(ores::trading::domain::construct_bond(row));
+        /*
+         * The security itself is still written from the bag: the run creates the
+         * issue before it books the trade, and the issue's terms are its own.
+         * Flipping the security is the next slice, not this one.
+         */
         entry.terms = terms;
 
         plan.slots.push_back(std::move(entry));

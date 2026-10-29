@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: D6076124-A427-4DCC-B018-A2992AA13CB3
 :END:
-#+title: Task: Prototype the route configuration screens
-#+description: The route record, its Details and its History, drawn before the entity is built.
+#+title: Task: Prototype the sources and adapters screens
+#+description: The sources list, the adapters list and a source record with its transport, drawn before the entity changes.
 #+type: task
 #+level: s1
-#+filetags: :marketdata:routes:configuration:prototype:model_the_route_transport_configuration:sprint_29:v0:
+#+filetags: :marketdata:sources:adapters:prototype:model_the_route_transport_configuration:sprint_29:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,18 +16,20 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model the route transport configuration]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Persist the adapter transport on the source]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The sources list, the adapters list and a source record, drawn in the code's
+words: provider, source, adapter, kind, route. The Adapter tab shows the
+transport the story will persist, and marks it not persisted today.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model the route transport configuration]] |
+| Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Persist the adapter transport on the source]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -35,7 +37,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The screen lists sources with provider, kind, default flag, classes, state and
+  last delivery.
+- The adapters list shows state, heartbeat, served, refused, unknown and last
+  tick per adapter id.
+- A source record has Overview, Adapter, Routes and History, and the Adapter tab
+  shows the transport with a *not persisted yet* marker.
+- The screen uses no "driver" or "connection".
 
 * Plan
 

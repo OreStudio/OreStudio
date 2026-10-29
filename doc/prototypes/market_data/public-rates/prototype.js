@@ -1,5 +1,5 @@
 /*
- * Static prototype of the Public rates screen: the provider list, the provider
+ * Static prototype of the Public rates screen (provider, fixing, source): the provider list, the provider
  * record and its tabs, and the area's availability, compare and fetch. It shows only
  * real observed market data; the simulator is not part of this screen.
  * Every state is a query string, so a reviewer opens it by address. Mock data only.
@@ -26,13 +26,15 @@ const DATES = ['2026-10-15', '2026-10-16', '2026-10-19', '2026-10-20', '2026-10-
     '2026-10-22', '2026-10-23', '2026-10-26', '2026-10-27', '2026-10-28'];
 
 
-const CONNECTIONS = [
-    { id: 'frankfurter', name: 'Frankfurter', driver: 'frankfurter', state: 'serving', last: '19:24' },
-    { id: 'bloomberg-prod', name: 'Bloomberg production', driver: 'bloomberg', state: 'serving', last: '19:23' },
-    { id: 'ecb-data', name: 'ECB Data Portal', driver: 'ecb-data', state: 'serving', last: '17:02' },
-    { id: 'fred-api', name: 'FRED', driver: 'fred', state: 'serving', last: '19:22' },
-    { id: 'boe-api', name: 'Bank of England statistics', driver: 'boe', state: 'serving', last: '15:00' },
-    { id: 'treasury', name: 'US Treasury', driver: 'treasury', state: 'serving', last: '18:05' },
+const SOURCES = [
+    { id: 'ecb-frankfurter', provider: 'ecb', kind: 'live', state: 'serving', last: '19:24' },
+    { id: 'imf-frankfurter', provider: 'imf', kind: 'live', state: 'serving', last: '19:24' },
+    { id: 'boc-frankfurter', provider: 'boc', kind: 'live', state: 'serving', last: '19:20' },
+    { id: 'tcmb-frankfurter', provider: 'tcmb', kind: 'live', state: 'not serving', last: '2026-10-27' },
+    { id: 'norges-frankfurter', provider: 'norges', kind: 'live', state: 'serving', last: '19:24' },
+    { id: 'boe-frankfurter', provider: 'boe', kind: 'live', state: 'serving', last: '15:00' },
+    { id: 'fred-frankfurter', provider: 'fred', kind: 'live', state: 'serving', last: '19:22' },
+    { id: 'ust-treasury', provider: 'ust', kind: 'live', state: 'serving', last: '18:05' },
 ];
 
 const IR_ITEMS = {
@@ -43,7 +45,7 @@ const IR_ITEMS = {
 };
 
 const PROVIDERS = [
-    { code: 'ecb', classes: ['fx', 'ir'], connections: ['frankfurter', 'bloomberg-prod'], name: 'European Central Bank', kind: 'reference',
+    { code: 'ecb', classes: ['fx', 'ir'], sources: ['ecb-frankfurter'], name: 'European Central Bank', kind: 'reference',
       terms: { accepted: true, version: 'v3', who: 'super_admin', at: '2026-01-15 10:22' },
       adapter: { state: 'serving', hb: '19:24', served: 44, refused: 0, unknown: 0 },
       last: { pair: 'EUR/CAD', date: '2026-10-28', received: '19:23', expected: 'today, on time', onTime: true },
@@ -51,38 +53,38 @@ const PROVIDERS = [
       series: { 'EUR/USD': [1.1605, 1.1609, 1.1612, 1.1614, 1.1618, 1.1620, 1.1622, 1.1626, 1.1631, 1.1638],
                 'EUR/CAD': [1.5590, 1.5601, 1.5610, 1.5614, 1.5618, 1.5620, 1.5622, 1.5626, 1.5631, 1.5638],
                 'EUR/GBP': [0.8620, 0.8624, 0.8627, 0.8630, 0.8632, 0.8634, 0.8637, 0.8640, 0.8643, 0.8646] } },
-    { code: 'boc', classes: ['fx'], connections: ['frankfurter'], name: 'Bank of Canada', kind: 'reference',
+    { code: 'boc', classes: ['fx'], sources: ['boc-frankfurter'], name: 'Bank of Canada', kind: 'reference',
       terms: { accepted: true, version: 'v2', who: 'super_admin', at: '2026-10-26 11:20' },
       adapter: { state: 'serving', hb: '19:24', served: 27, refused: 0, unknown: 0 },
       last: { pair: 'CAD/EUR', date: '2026-10-27', received: '19:20', expected: 'today, late', onTime: false },
       credit: 'Source: Bank of Canada', storage: true, credential: 'none', rhythm: 'daily, 16:30 ET',
       series: { 'CAD/USD': [1.3820, 1.3824, 1.3827, 1.3830, 1.3833, 1.3836, 1.3839, 1.3842, 1.3845, 1.3848],
                 'CAD/EUR': [0.6410, 0.6408, 0.6406, 0.6404, 0.6402, 0.6400, 0.6398, 0.6396, 0.6394, 0.6392] } },
-    { code: 'imf', classes: ['fx'], connections: ['frankfurter'], name: 'International Monetary Fund', kind: 'reference',
+    { code: 'imf', classes: ['fx'], sources: ['imf-frankfurter'], name: 'International Monetary Fund', kind: 'reference',
       terms: { accepted: !withdrawn, version: withdrawn ? 'v2' : 'v1', who: 'super_admin', at: '2026-09-01 09:00' },
       adapter: { state: 'serving', hb: '19:24', served: 48, refused: 0, unknown: 0 },
       last: { pair: 'EUR/USD', date: '2026-10-28', received: '19:24', expected: 'today, on time', onTime: true },
       credit: 'Source: IMF', storage: !withdrawn, credential: 'none', rhythm: 'daily, 12:00 ET',
       series: { 'EUR/USD': [1.1598, 1.1601, 1.1606, 1.1607, 1.1611, 1.1614, 1.1616, 1.1620, 1.1624, 1.1630],
                 'USD/CHF': [0.8290, 0.8294, 0.8297, 0.8300, 0.8303, 0.8306, 0.8309, 0.8312, 0.8316, 0.8321] } },
-    { code: 'fred', classes: ['fx', 'ir'], connections: ['frankfurter'], name: 'Federal Reserve (H.10)', kind: 'reference',
+    { code: 'fred', classes: ['fx', 'ir'], sources: ['fred-frankfurter'], name: 'Federal Reserve (H.10)', kind: 'reference',
       terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-02 14:00' },
       adapter: { state: 'serving', hb: '19:24', served: 31, refused: 0, unknown: 0 },
       last: { pair: 'EUR/USD', date: '2026-10-28', received: '19:22', expected: 'today, on time', onTime: true },
       credit: 'Source: Federal Reserve Board', storage: true, credential: 'none', rhythm: 'daily, 16:15 ET',
       series: { 'EUR/USD': [1.1610, 1.1613, 1.1616, 1.1619, 1.1621, 1.1623, 1.1626, 1.1629, 1.1633, 1.1640],
                 'EUR/GBP': [0.8618, 0.8621, 0.8625, 0.8628, 0.8630, 0.8633, 0.8635, 0.8638, 0.8641, 0.8644] } },
-    { code: 'tcmb', classes: ['fx'], connections: ['frankfurter'], name: 'Central Bank of Turkiye', kind: 'reference',
+    { code: 'tcmb', classes: ['fx'], sources: ['tcmb-frankfurter'], name: 'Central Bank of Turkiye', kind: 'reference',
       terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-20 08:10' },
       adapter: { state: 'down', hb: '16:02', served: 21, refused: 3, unknown: 0 },
       last: null, credit: 'Source: TCMB', storage: true, credential: 'none', rhythm: 'daily, 15:30 TRT',
       series: { 'TRY/USD': [42.10, 42.18, 42.25, 42.31, 42.38, 42.44, 42.50, 42.57, 42.63, 42.70] } },
-    { code: 'norges', classes: ['fx'], connections: ['frankfurter'], name: 'Norges Bank', kind: 'reference',
+    { code: 'norges', classes: ['fx'], sources: ['norges-frankfurter'], name: 'Norges Bank', kind: 'reference',
       terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-18 09:00' },
       adapter: { state: 'serving', hb: '19:24', served: 12, refused: 0, unknown: 0 },
       last: null, credit: 'Source: Norges Bank', storage: true, credential: 'none', rhythm: 'daily, 14:00 CET',
       series: {} },
-    { code: 'boe', classes: ['fx', 'ir'], connections: ['frankfurter'], name: 'Bank of England', kind: 'reference',
+    { code: 'boe', classes: ['fx', 'ir'], sources: ['boe-frankfurter'], name: 'Bank of England', kind: 'reference',
       terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-18 14:00' },
       adapter: { state: 'serving', hb: '19:24', served: 34, refused: 0, unknown: 0 },
       paused: true,
@@ -91,7 +93,7 @@ const PROVIDERS = [
       series: { 'GBP/USD': [1.3348, 1.3351, 1.3354, 1.3357, 1.3360, 1.3362, 1.3364, 1.3367, 1.3370, 1.3373] } },
 ];
 
-PROVIDERS.push({ code: 'ust', name: 'US Treasury', kind: 'reference', classes: ['ir'], connections: ['treasury'],
+PROVIDERS.push({ code: 'ust', name: 'US Treasury', kind: 'reference', classes: ['ir'], sources: ['ust-treasury'],
     terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-05 10:00' },
     adapter: { state: 'serving', hb: '18:05', served: 12, refused: 0, unknown: 0 },
     last: { pair: 'US Treasury par curve', date: '2026-10-28', received: '18:05', expected: 'today, on time', onTime: true },
@@ -100,11 +102,11 @@ PROVIDERS.push({ code: 'ust', name: 'US Treasury', kind: 'reference', classes: [
 
 const SENTENCES = {
     live: 'Serving. The last fixing is today\'s and it arrived on time.',
-    late: 'Late. The publication day has passed with no fixing. Read the connection\'s health, then ask for a fetch of the missing days.',
-    down: 'Not serving. The connection stopped delivering, so nothing is fetched. Restart it, or find out whether its terms were withdrawn.',
-    never: 'Never fixed. The terms are accepted and the adapter serves, but no value of this publisher is stored yet.',
-    paused: 'Paused by a person. The publisher is not fetched. Its stored fixings and every feed that started from one stay.',
-    terms: 'Terms not accepted. The publisher is not fetched until a person accepts the version shown.',
+    late: 'Late. The publication day has passed with no fixing. Read the source\'s health, then ask for a fetch of the missing days.',
+    down: 'Not serving. The source stopped delivering, so nothing is fetched. Restart it, or find out whether its terms were withdrawn.',
+    never: 'Never fixed. The terms are accepted and the adapter serves, but no value of this provider is stored yet.',
+    paused: 'Paused by a person. The provider is not fetched. Its stored fixings and every feed that started from one stay.',
+    terms: 'Terms not accepted. The provider is not fetched until a person accepts the version shown.',
 };
 const TONE = { live: ['ok', 'serving'], late: ['warn', 'late'], down: ['bad', 'not serving'],
     never: ['never', 'never fixed'], paused: ['off', 'paused'], terms: ['warn', 'not accepted'] };
@@ -140,7 +142,7 @@ function listRow(p) {
         <td>${(p.classes ?? ['fx']).map((c) => `<span class="badge">${c.toUpperCase()}</span>`).join(' ')}</td>
         <td class="num">${itemCount(p) || '—'}</td>
         <td>${p.terms.accepted ? `<span class="badge ok">${p.terms.version}</span>` : `<span class="badge warn">not accepted</span>`}</td>
-        <td>${p.connections.map((c) => CONNECTIONS.find((x) => x.id === c)?.name ?? c).join(', ')}</td>
+        <td>${(p.sources ?? []).map((id) => `<span class="mono">${id}</span>`).join(' ')}</td>
         <td>${p.last ? `<div class="fresh"><span class="when">${p.last.date}</span><span class="sub">${p.last.pair}</span></div>` : '<span class="faint">no fixing ever</span>'}</td>
         <td>${fn.badge(kind)}</td>
         <td class="when">${p.last ? p.last.received : '—'}</td>
@@ -187,7 +189,7 @@ function renderAvailability() {
             <td>${fn.badge(fn.status(p))}</td></tr>`;
     }).join('');
     document.querySelector('#av-body').innerHTML = `<table class="list"><thead><tr><th>Publisher</th><th>First</th><th>Last</th><th>Values</th><th>Gaps</th><th>State</th></tr></thead><tbody>${rows}</tbody></table>
-        <div class="faint" style="margin-top:8px">A publisher whose terms are not accepted is a row with no data and the reason. Coverage and gaps come from the same fixings read the publisher page uses.</div>`;
+        <div class="faint" style="margin-top:8px">A provider whose terms are not accepted is a row with no data and the reason. Coverage and gaps come from the same fixings read the provider page uses.</div>`;
 }
 
 function chart(values) {
@@ -212,7 +214,7 @@ function renderCompare() {
         const v = p.series[pair][i];
         return `<td class="num">${v.toFixed(4)} <span class="faint">${k === 0 ? 'base' : `${bps(v, base[i]) >= 0 ? '+' : ''}${bps(v, base[i]).toFixed(1)} bps`}</span></td>`;
     }).join('')}<td class="num">${(bps(Math.max(...holders.map((p) => p.series[pair][i])), Math.min(...holders.map((p) => p.series[pair][i])))).toFixed(1)}</td></tr>`).join('');
-    document.querySelector('#cmp-sub').textContent = `${holders.length} publishers · the base is ${holders[0].code.toUpperCase()}`;
+    document.querySelector('#cmp-sub').textContent = `${holders.length} providers · the base is ${holders[0].code.toUpperCase()}`;
     document.querySelector('#cmp-body').innerHTML = chart(base) +
         `<table class="list" style="margin-top:10px"><thead><tr><th>Date</th>${holders.map((p) => `<th>${p.code.toUpperCase()}</th>`).join('')}<th>Spread bps</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
@@ -237,10 +239,10 @@ function renderFetch() {
         <div class="fields">
           <label>When<select><option>Today</option><option>Yesterday</option><option selected>Range</option></select></label>
           <label>From<input value="2026-10-01"></label><label>To<input value="2026-10-28"></label>
-          <label>Publishers<select><option>Every publisher</option><option>One publisher</option></select></label>
+          <label>Publishers<select><option>Every provider</option><option>One provider</option></select></label>
           <label>Underlyings<select><option>Every pair</option><option>One pair</option></select></label>
         </div>
-        <div class="faint">Only an accepted publisher is asked. The refresh request is not on the adapter contract yet; the design task names it.</div>
+        <div class="faint">Only an accepted provider is asked. The refresh request is not on the adapter contract yet; the design task names it.</div>
         <div class="foot"><a class="act primary" href="${fn.href({ tab: 'fetch', fetch: 'progress' })}">Fetch</a></div></div>`;
 }
 
@@ -282,7 +284,7 @@ function renderRecord() {
         const ir = (IR_ITEMS[p.code] ?? []).map((it) => `<tr><td class="mono">${it.name}</td><td>${it.kind}</td>
             <td class="when">2026-01-02</td><td class="when">2026-10-28</td><td class="num">${it.kind === 'curve' ? '10 pillars' : 204}</td>
             <td class="num">0</td><td class="acts"><span class="faint">IR series</span></td></tr>`).join('');
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Underlyings</h2><p>${itemCount(p)} items this publisher fixes, by asset class</p></div>
+        body.innerHTML = `<div class="card"><div class="card-head"><h2>Underlyings</h2><p>${itemCount(p)} items this provider fixes, by asset class</p></div>
           <table class="list"><thead><tr><th>Item</th><th>Shape</th><th>First</th><th>Last</th><th>Values</th><th>Gaps</th><th class="acts"></th></tr></thead>
           <tbody><tr><td colspan="7" class="faint">FX</td></tr>${fx || '<tr><td colspan="7" class="faint">No FX item stored.</td></tr>'}
           <tr><td colspan="7" class="faint">Interest rates</td></tr>${ir || '<tr><td colspan="7" class="faint">No IR item stored.</td></tr>'}</tbody></table>
@@ -290,7 +292,7 @@ function renderRecord() {
     } else if (rtab === 'fixings') {
         const values = p.series[pair] ?? p.series[pairs[0]];
         const chosen = p.series[pair] ? pair : pairs[0];
-        if (!values) { body.innerHTML = '<div class="card"><div class="card-body"><div class="notice">No fixing stored for this publisher yet.</div></div></div>'; return; }
+        if (!values) { body.innerHTML = '<div class="card"><div class="card-body"><div class="notice">No fixing stored for this provider yet.</div></div></div>'; return; }
         const table = DATES.map((d, i) => `<tr><td class="when">${d}</td><td class="num">${values[i].toFixed(4)}</td><td class="mono faint">oresmd://fx/${chosen.split('/')[0]}?type=fixing&amp;index=fx&amp;source=${p.code.toUpperCase()}&amp;ccy=${chosen.split('/')[1]}</td></tr>`).reverse().join('');
         body.innerHTML = `<div class="card"><div class="card-head"><h2>${chosen}</h2><p>${values.length} fixings in the window</p>
             <span class="filters"><select>${pairs.map((x) => `<option ${x === chosen ? 'selected' : ''}>${x}</option>`).join('')}</select></span></div>
@@ -298,21 +300,21 @@ function renderRecord() {
           <table class="list" style="margin-top:10px"><thead><tr><th>Date</th><th>Value</th><th>Item</th></tr></thead><tbody>${table}</tbody></table></div></div>
           <div class="card" style="margin-top:12px"><div class="card-head"><h2>Where a feed started</h2></div><div class="card-body">
           <div class="notice"><div class="title">Started from the ${p.code.toUpperCase()} fixing of ${values[values.length - 1].toFixed(4)} on ${DATES[DATES.length - 1]}</div>
-          <div class="faint">the value this publisher's last run took</div></div></div></div>`;
-    } else if (rtab === 'connections') {
-        const ids = p.connections ?? [];
+          <div class="faint">the value this provider's last run took</div></div></div></div>`;
+    } else if (rtab === 'sources') {
+        const ids = p.sources ?? [];
         const rows = ids.map((id) => {
-            const c = CONNECTIONS.find((x) => x.id === id);
-            return `<tr><td>${c.name}<div class="faint mono">${c.id}</div></td><td class="mono">${c.driver}</td>
+            const c = SOURCES.find((x) => x.id === id);
+            return `<tr><td class="mono">${c.id}</td><td>${c.kind}</td>
                 <td>${c.state === 'serving' ? fn.badge('live') : fn.badge('down')}</td>
                 <td class="when">${c.last}</td>
-                <td class="acts"><a class="act" href="../connectivity/index.html?connection=${c.id}&ctab=overview">Open <span class="faint">· in Connectivity</span></a></td></tr>`;
+                <td class="acts"><a class="act" href="../sources/index.html?source=${c.id}&stab=overview">Open <span class="faint">· in Sources</span></a></td></tr>`;
         }).join('');
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Connections</h2><p>every configured driver that delivers this publisher</p></div>
-          <table class="list"><thead><tr><th>Connection</th><th>Driver</th><th>State</th><th>Last delivery</th><th class="acts"></th></tr></thead><tbody>${rows}</tbody></table>
-          <div class="faint" style="margin-top:8px;padding:0 14px 12px">A publisher's value keeps its identity; the connection that delivered it is provenance. A second connection is another way to the same fixing. The endpoint, the credential and the rhythm are configured in Connectivity, not here.</div></div>`;
+        body.innerHTML = `<div class="card"><div class="card-head"><h2>Source</h2><p>the source the party routes for this provider</p></div>
+          <table class="list"><thead><tr><th>Source</th><th>Kind</th><th>State</th><th>Last delivery</th><th class="acts"></th></tr></thead><tbody>${rows}</tbody></table>
+          <div class="faint" style="margin-top:8px;padding:0 14px 12px">A provider's value keeps its identity; the source that delivered it is provenance. A second source of the same provider is another way to the same fixing. Its kind, its provider and the transport it runs with are in Sources, not here.</div></div>`;
     } else if (rtab === 'health') {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Adapter</h2><p>the official adapter, serving every publisher</p></div>
+        body.innerHTML = `<div class="card"><div class="card-head"><h2>Adapter</h2><p>the official adapter, serving every provider</p></div>
           <div class="card-body"><div class="kv">
             <span class="k">State</span><span>${p.adapter.state}</span>
             <span class="k">Heartbeat</span><span class="mono">${p.adapter.hb}</span>
@@ -320,7 +322,7 @@ function renderRecord() {
             <span class="k">Ids refused</span><span class="num">${p.adapter.refused}</span>
             <span class="k">Ids unknown</span><span class="num">${p.adapter.unknown}</span>
             <span class="k">Last fixing</span><span>${p.last ? `${p.last.date} · received ${p.last.received}` : 'none stored'}</span>
-          </div><div class="faint" style="margin-top:8px">The adapter read answers per adapter, not per publisher; this view filters it to the ids this publisher owns.</div></div></div>`;
+          </div><div class="faint" style="margin-top:8px">The adapter read answers per adapter, not per provider; this view filters it to the ids this provider owns.</div></div></div>`;
     } else {
         const events = [['v1', p.terms.at, 'Terms accepted', p.terms.who], ['v2', '2026-10-26 11:20', 'Terms accepted', 'super_admin'],
             ['v3', '2026-10-28 09:00', 'Terms accepted', 'super_admin'], ['—', '2026-10-28 09:12', 'Provider changed: credit updated', 'super_admin']];

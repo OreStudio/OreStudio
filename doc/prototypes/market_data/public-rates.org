@@ -2,7 +2,7 @@
 :ID: 5C1B7E42-9A3D-4F60-B1E8-2D7A4C6F0E93
 :END:
 #+title: Public rates, prototype
-#+description: The public sources as one screen a person runs: each provider's terms, freshness and connection state on one row, the three failures told apart, and the paused and backfill variants drawn before either is built.
+#+description: The public sources as one screen a person runs: each provider's terms, freshness and source state on one row, the three failures told apart, and the paused and backfill variants drawn before either is built.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:market_data:official_rates:
@@ -33,41 +33,32 @@ about the underlying it fixes.
 #+ATTR_HTML: :class hug-leading
 | Surface | Question | Reads |
 |---------+----------+-------|
-| Providers (list) | Who is arriving? | providers, connection status, latest fixing per item |
+| Providers (list) | Who is arriving? | providers, source state, latest fixing per item |
 | Provider record · Overview | What does this provider's record say? | provider |
 | Provider record · Underlyings | Which pairs does it fix, and how far back? | fixings by series |
 | Provider record · Fixings | What did it publish for this pair, over time? | fixings by series, feed start |
-| Provider record · Health | Is its connection serving? | connection status |
+| Provider record · Health | Is its source serving? | source and adapter state |
 | Provider record · History | Who changed it, and when? | provider history |
-| Availability (area tab) | Which publishers hold this pair? | fixings by series |
+| Availability (area tab) | Which providers hold this pair? | fixings by series |
 | Compare (area tab) | How far apart are their values? | fixings by series, arithmetic in the page |
 | Fetch (area tab) | Ask for data now | the refresh request, not yet on the contract |
 
-* Two things, two words: the publisher and the route
+* A provider, a source and a route
 
-A rate belongs to its publisher; a route is how the value reaches us.
-Frankfurter is a route today, and so are Bloomberg and LSEG. The list carries a
-Route column and the record a Routes tab, because the question "what happens if
-we take the ECB's rates through Bloomberg instead" is a question about a route,
-not about a publisher.
+A value belongs to its provider. The source is the adapter instance that
+delivers it, and the route is the party's choice of one source for one provider.
+A second source of the same provider is another way to the same fixing, not a
+second fixing: the item keeps its identity, and the source is provenance.
 
-A second route is a way to the same fixing, not a second fixing. The publisher's
-item keeps its identity, and the tick's source names the route that delivered
-it. When two routes deliver one publisher's item, the store holds one series:
-the same value on a stored date is a duplicate, and a different value is a
-correction with its source. This is the decision to settle before a vendor route
-is added; the prototype draws the routes so the decision has a shape.
+The list carries the count of underlyings, never the pairs themselves: a provider
+fixes tens or hundreds of pairs, and the record's Underlyings tab is where they
+are read. The record page is the standard shape: a breadcrumb, a header with the
+version and a state tag, the acts, and tabs.
 
-The list carries the count of underlyings, never the pairs themselves: a
-publisher fixes tens or hundreds of pairs, and the record's Underlyings tab is
-where they are read. The record page is the standard shape: a breadcrumb, a
-header with the version and a state tag, the acts, and tabs. The configuration
-is the Overview tab, and its history is the History tab.
-
-The publisher and the availability surfaces do not need a new read: a fixings
-read answers a window of up to twelve series, and the coverage and the distances
-are arithmetic over it. Fetch needs the refresh request the design task names,
-and a provider's expected rhythm, which the record does not carry yet.
+The provider and the availability surfaces do not need a new read: a fixings read
+answers a window of up to twelve series, and the coverage and the distances are
+arithmetic over it. Fetch needs the refresh request the design task names, and a
+provider's expected rhythm, which the record does not carry yet.
 
 * What it asks
 
@@ -75,7 +66,7 @@ and a provider's expected rhythm, which the record does not carry yet.
    chart and its pair on the comparison while it is paused?
 2. While a backfill of a chosen range runs, what does the person see: a
    progress, the table filling day by day, or nothing until it ends?
-3. How does a late fixing read differently from an connection that is down, and
+3. How does a late fixing read differently from a source that is down, and
    how does a provider that never had a fixing read, without three colours
    meaning the same thing?
 4. Does accepting terms that withdraw permission to store show deleting the
@@ -89,15 +80,15 @@ and a provider's expected rhythm, which the record does not carry yet.
 |-------+---------+---------------|
 | Providers | =?tab=providers= | The list, the counts, the filters and the state legend |
 | Late, not serving, never | =?tab=providers&filter=late= (and =down=, =never=) | One state alone |
-| Paused, kept or hidden | =?tab=providers&paused=muted=, =&paused=hidden= | The paused publisher kept, or removed |
+| Paused, kept or hidden | =?tab=providers&paused=muted=, =&paused=hidden= | The paused provider kept, or removed |
 | Withdrawn terms | =?tab=providers&terms=withdraw= | The deletion offered where v2 is accepted |
 | Record, configuration | =?provider=ecb&rtab=overview= | The provider's Details |
 | Record, underlyings | =?provider=ecb&rtab=underlyings= | Its pairs, first and last, values and gaps |
 | Record, fixings | =?provider=ecb&rtab=fixings&pair=EUR/CAD= | One pair over time, and where a feed started |
-| Record, health | =?provider=ecb&rtab=health= | The connection's state and counts for its ids |
+| Record, health | =?provider=ecb&rtab=health= | The source's adapter state and counts for its ids |
 | Record, history | =?provider=ecb&rtab=history= | The shared timeline |
-| Availability | =?tab=availability&pair=EUR/USD= | Every publisher that holds the pair |
-| Compare | =?tab=compare&pair=EUR/USD= | The publishers together, in basis points |
+| Availability | =?tab=availability&pair=EUR/USD= | Every provider that holds the pair |
+| Compare | =?tab=compare&pair=EUR/USD= | The providers together, in basis points |
 | Fetch | =?tab=fetch=, =&fetch=progress=, =&fetch=done= | The scope, running, done |
 
 * What it argues
@@ -107,10 +98,10 @@ and a provider's expected rhythm, which the record does not carry yet.
   badges that follow from those questions are mutually exclusive: accepted terms
   and no fixing yet is =never fixed=; accepted, serving and no value today is
   =late=; a stopped heartbeat is =not serving=; a person's pause is =paused=.
-- *Freshness is not tick age.* The connection read's last-tick age is useless for a
+- *Freshness is not tick age.* The adapter read's last-tick age is useless for a
   source that publishes once a day, so the row states the last fixing's date,
   the time it was received, and whether the next publication is late. The
-  connection's heartbeat stays in its own column, where a stopped source reads as
+  adapter's heartbeat stays in its own column, where a stopped source reads as
   one.
 - *The paused row stays.* A paused provider keeps its fixings and the feed that
   started from one, so hiding it from the list loses the reason a feed's start
@@ -118,7 +109,7 @@ and a provider's expected rhythm, which the record does not carry yet.
   it for comparison: the hidden variant needs a count and a way back, and it
   makes the pair comparison lose a column silently.
 - *A backfill is a request, and the screen says whose.* The dialog names the
-  connection as the only party that can answer it, and says that until the contract
+  adapter as the only party that can answer it, and says that until the contract
   carries the request the screen offers only the window the service fetches
   itself. The done state says what the store did: asked for 300 days, stored
   280, skipped 20 it already held.
@@ -132,8 +123,8 @@ and a provider's expected rhythm, which the record does not carry yet.
 - Every provider, item, fixing, date and time is invented.
 - The monthly coverage matrix is invented for EUR/USD only; every other pair
   falls back to empty month cells, which is the shape, not a measurement.
-- The connection's state and heartbeat are written into the mock data; the real
-  read answers them per connection, with the ids it serves and refuses.
+- The adapter's state and heartbeat are written into the mock data; the real
+  read answers them per adapter id, with the ids it serves and refuses.
 - The fetch progress and the counts in its done state are fixed numbers.
 - The expected rhythm on the configuration surface is the answer the record
   cannot give yet, and the =not modelled yet= chip says so.
@@ -152,7 +143,7 @@ and a provider's expected rhythm, which the record does not carry yet.
   tokens copied from =projects/ores.web/packages/web/src/styles.css=, and the
   handful of classes the page needs.
 - =doc/prototypes/market_data/official-rates/prototype.js= — the mock data, the
-  state derived from terms, connection and fixings, and the query string as the
+  state derived from terms, source and fixings, and the query string as the
   only state.
 
 The page adds nothing of its own beyond those three files, and the site adds
@@ -161,38 +152,43 @@ nothing to it.
 * Verdict
 
 The shape is agreed for review: the row carries terms, freshness, next
-publication, the connection and the acts; the three failures have three sentences;
+publication, the source and the acts; the three failures have three sentences;
 the paused row stays unless the hidden variant's count and the lost comparison
-column are wanted; the backfill is a dialog that says the connection answers it.
+column are wanted; the backfill is a dialog that says the source answers it.
 
 The paused row stays, and the hidden variant's only gain is a shorter list
 whose pair comparison silently loses a column. The withdrawn-terms state draws
 the deletion where the person accepts the new version, never as a row command.
-The availability and compare surfaces read the same fixings the publisher page
+The availability and compare surfaces read the same fixings the provider page
 reads; neither needs a new operation.
 
 What the prototype cannot settle is what this story's two decision tasks own:
 whether the pause is a demand fact or a provider state, and what form the
-backfill request takes on the connection contract. The prototype's choices are the
+backfill request takes on the adapter contract. The prototype's choices are the
 input to those decisions, not their substitute.
 
-* Four words, and where each is drawn
+* The words of the code, with examples
 
-A *driver* is code that speaks an external language. A *connection* is a driver
-configured as one instance: Bloomberg production, Bloomberg test, Frankfurter,
-A
-*provider* is a publisher a connection reaches. A *destination* is the party and
-the store the values land in.
+This screen uses the words of the code. The definition of each is in the
+architecture hub; the example is the one this screen draws.
 
-The Connections tab lists the configured instances; a connection's record draws
-its configuration, its masked credentials, the providers it reaches, its
-routing, its health and its history. The Drivers tab is a read-only catalogue of
-what can be configured. The provider list states the connections that deliver
-each publisher, and the provider record's Connections tab names them.
+#+ATTR_HTML: :class hug-leading
+| Word | Meaning here | Example on this screen |
+|------+--------------+------------------------|
+| /Provider/ | Whoever owns the ids, the terms and the licence. | =ecb=, =ust=, =bloomberg= |
+| /Source/ | One adapter instance of a provider. A party reads one source for each provider. | =ecb-frankfurter=, =boe-frankfurter= |
+| /Adapter/ | The runtime behind a source, known by its adapter id. | adapter =ecb-frankfurter= in the Health tab |
+| /Kind/ | How a source gets its values. | =live= for =ecb-frankfurter= |
+| /Route/ | The party's choice of one source for one provider. | System Party routes =ecb-frankfurter= for =ecb= |
+| /Item/ | The internal identity a value is stored under. | =FX-ECB-EUR-USD= |
+| /Fixing/ | The daily value a public source publishes for one item. | ECB EUR/CAD 1.5638 on 2026-10-28 |
 
-* The plumbing is a screen of its own
+"Driver" and "connection" are not words of the code and this screen does not use
+them. A source is a row; the adapter is the runtime that serves it.
 
-The connections, drivers and credentials moved to
-[[file:connectivity.org][Connectivity]]. This prototype reads the rates; it
-names the connections that delivered each provider and links to their record,
-but it configures none of them.
+* The setup is a screen of its own
+
+The providers, sources, routes and adapters are configured in
+[[file:sources.org][Market data sources]]. This prototype reads the values; it
+names the source that serves each provider, and links to its record, but it
+configures none of it.

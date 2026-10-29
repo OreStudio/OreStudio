@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: 9E70A684-203C-472B-88E0-3E913B822EF7
 :END:
-#+title: Story: Model the route transport configuration
-#+description: A route's HTTP address, publisher key path, credential reference, expected rhythm, poll interval and backfill window are rows the adapter reads, not service command-line flags; secrets stay references.
+#+title: Story: Persist the adapter transport on the source
+#+description: A source's endpoint, path, poll interval and backfill window are rows the adapter reads, not service command-line flags; the provider keeps the credential reference, and no read returns a secret.
 #+type: story
 #+level: s2
-#+filetags: :marketdata:routes:configuration:adapter:sprint_29:v0:
+#+filetags: :marketdata:sources:adapters:routes:configuration:sprint_29:v0:
 #+created: 2026-10-29
 #+updated: 2026-10-29
 #+environment:
@@ -15,7 +15,10 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+A system administrator edits a source's transport in the screen, and the
+adapter runs with those values instead of command-line flags. The provider keeps
+the credential reference, so a test source and a production source of one
+provider can differ in endpoint and secret without a redeploy.
 
 * Status
 
@@ -30,13 +33,21 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Acceptance
 
--
+- The source record carries the endpoint, the path, the poll interval and the
+  backfill window. The provider keeps the credential reference.
+- The adapter reads the transport of each source and reports the values it uses;
+  no endpoint or interval comes from a service flag.
+- A secret is a reference. A read never returns its value, and a write sets or
+  rotates it.
+- The source is the configured instance: =ecb-frankfurter= and =bloomberg-b= are
+  two sources, and a test environment is a source of kind =test=.
+- The prototype's *not persisted yet* marker disappears from the Adapter tab.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:D6076124-A427-4DCC-B018-A2992AA13CB3][Prototype the route configuration screens]] | BACKLOG | | | The route record, its Details and its History, drawn before the entity is built. |
+| [[id:D6076124-A427-4DCC-B018-A2992AA13CB3][Prototype the sources and adapters screens]] | BACKLOG | | | The sources list, the adapters list and a source record with its transport, drawn before the entity changes. |
 
 * Decisions
 
@@ -44,23 +55,35 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 -
 
-* Naming and model
+* Decisions
 
-Two concepts, two names. A *driver* is the code that speaks an external
-interface's language: Bloomberg's or LSEG's API, or, for Frankfurter, the code
-inside the synthetic service. Nobody outside engineering needs the word. A
-*connection* is a driver configured as one instance a person knows: Bloomberg
-test, Bloomberg production, Frankfurter. It carries the endpoint, the expected
-rhythm, the poll interval and the backfill window, and its secrets are encrypted
-at rest and write-only on the wire.
+- The entity is the *source*, not a "connection". The code already has
+  =market_data_source= as one adapter instance of a provider; a new entity would
+  duplicate it.
+- The *adapter* is the runtime, known by its adapter id, and the adapter id is
+  the source name. There is no "driver": the kind of code is not a row.
+- The *provider* is whoever owns the ids and the terms: a central bank, a
+  treasury, or a data vendor. The credential reference stays on the provider.
+- A party routes one source for each provider. A provider may have several
+  sources, and one is the default.
+- The ECB has an FX source (=ecb-frankfurter=) and an IR source
+  (=ecb-ecb-data=). Under the current route rule a party cannot read both. This
+  story does not change the rule; the IR story settles whether a source serves
+  every asset class or the rule changes.
 
-A connection reaches *providers*: the ECB, the NY Fed, the publishers whose
-values it delivers. A provider belongs to the connection that delivers it, so a
-publisher reached two ways is two connections over one provider, and the item
-keeps its identity with the connection as provenance.
+* The words, with examples
 
-The last piece is where the values land. A *destination* points the stream at
-the party and the store it fills, so a connection may deliver to the system
-party, or to a tenant, or to both. The prototype covers only the provider and
-its data today; the connection and its destination are the two screens this
-story adds.
+These are the code's words. The story uses no other words for these rows.
+
+#+ATTR_HTML: :class hug-leading
+| Word | Meaning | Example |
+|------+---------+---------|
+| /Provider/ | Whoever owns the ids, the terms and the licence. | =ecb=, =ust=, =bloomberg= |
+| /Source/ | One adapter instance of a provider, with a name and a kind. | =ecb-frankfurter=, =bloomberg-b=, =lseg-simulated= |
+| /Adapter/ | The runtime that meets the service at four messages; its id is the source name. | adapter =ecb-frankfurter= |
+| /Kind/ | How a source gets its values. | =live=, =test=, =simulated= |
+| /Route/ | The party's one source for one provider. | System Party routes =ecb-frankfurter= for =ecb= |
+| /Item/ | The internal identity of a value. | =FX-ECB-EUR-USD= |
+| /Vendor instrument/ | An id scheme, an id and a field in the vendor's notation. | =iso4217/USD/rate= |
+
+"Driver" and "connection" are not words of this story: the code has neither row.

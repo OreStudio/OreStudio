@@ -2,7 +2,7 @@
 :ID: 3888BB1A-F216-46E0-92FA-6C0E6A0CD33C
 :END:
 #+title: User Journey: Run the public sources
-#+description: A system administrator sees whether each public provider's fixings are arriving, accepts or declines its terms, pauses or resumes it, asks for a backfill, and reads where each synthetic feed started.
+#+description: A system administrator sees whether each public provider's fixings are arriving, accepts or declines its terms, pauses or resumes it, asks for a backfill, and reads where each feed started.
 #+type: user_journey
 #+level: cross
 #+filetags: :user_journey:marketdata:official_rates:operations:
@@ -10,7 +10,7 @@
 #+updated: 2026-10-28
 #+startup: inlineimages
 
-This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator sees whether each public provider's fixings are arriving, accepts or declines its terms, pauses or resumes it, asks for a backfill, and reads where each synthetic feed started.
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator sees whether each public provider's fixings are arriving, accepts or declines its terms, pauses or resumes it, asks for a backfill, and reads where each feed started.
 
 A user journey describes what one person is trying to do, before anything is
 built. It is a design document that outlives any sprint, so it names the
@@ -20,7 +20,7 @@ each step needs.
 * Goal
 
 "I want to know whether the rates we use are actually arriving, and to do
-something about it when they are not — accept a publisher's terms, pause one
+something about it when they are not — accept a provider's terms, pause one
 that costs too much, fetch a range we missed — without asking someone to run a
 command." The journey is done when the person has read the state of every
 public provider, has acted on each one that needed it, and knows which feeds
@@ -36,14 +36,14 @@ providers and the fixings needs =marketdata::providers:read= and
 need a permission the server does not define yet, and deleting a provider's
 fixings needs a delete permission the server does not define yet.
 
-The trigger is one of four events. A publisher's terms change, and the person
+The trigger is one of four events. A provider's terms change, and the person
 must accept them again or stop using its data. A fixing a desk needs is late,
 and the person looks for the cause. A pair or a provider is new, and the person
 checks that its data arrives before anyone builds on it. A bill or a coverage
 review says a provider is not worth its cost, and the person pauses it.
 
 The journey starts at *Market data*, then *Public rates*, and ends when the
-person leaves the screen. A person who came from a synthetic feed's page
+person leaves the screen. A person who came from a feed's page
 returns there, because that page carries the value a run started from.
 
 * Steps
@@ -74,7 +74,7 @@ acts the architecture can carry.
    says so. The service fetches a provider only after someone accepts its terms.
 5. *Read a provider's fixings.* The person opens the provider and reads its
    series as a table and a chart over a window, one item at a time. Each value
-   keeps the publisher's own id of the item and the time it was received.
+   keeps the provider's own id of the item and the time it was received.
 6. *Compare a pair.* The person compares one pair across every provider, as
    published, inverted, or crossed through the provider's base, and the screen
    names the route of each value.
@@ -98,16 +98,16 @@ acts the architecture can carry.
     acceptances and declines, pauses and resumes, backfills and deletions, each
     with its actor and its reason.
 12. *Read the availability of one underlying.* The person opens the Availability
-    tab and picks a pair. The system lists each publisher that fixes the pair,
+    tab and picks a pair. The system lists each provider that fixes the pair,
     with the first and last date it holds, the count, and the gaps. A publisher
     whose terms are not accepted shows as a row with no data and the reason.
-13. *Compare the publishers.* The person opens the Compare tab for the same
-    pair. The system draws each publisher's fixing over the window on one axis,
+13. *Compare the providers.* The person opens the Compare tab for the same
+    pair. The system draws each provider's fixing over the window on one axis,
     the difference of each against the others in basis points, and the largest
-    disagreement. It names the publisher whose value is furthest from the rest.
-14. *Read one publisher's history for one underlying.* The person opens the
+    disagreement. It names the provider whose value is furthest from the rest.
+14. *Read one provider's history for one underlying.* The person opens the
     publisher and picks the pair. The system shows the fixings over the window,
-    the corrections, the days with no value, and the synthetic feeds that started
+    the corrections, the days with no value, and the feeds that started
     from a value, with the value each took.
 15. *Read a provider's configuration.* The person opens the provider's record
     page. The Details tab shows its name, kind, terms page, credit, credential
@@ -115,41 +115,55 @@ acts the architecture can carry.
     timeline: every version and every acceptance, with the person and the time.
 16. *Leave.* The person returns to *Market data*.
 
-* The screen is five surfaces, not one
+* Two screens, and the words they use
 
-The review of this journey and the prototype it produced made one thing clear:
-the screen carries several jobs, and each deserves its own surface. A person
-moves between them without losing the provider they were reading.
+Setup and reading are two jobs for two people. *Market data sources* configures
+where values come from. *Public rates* reads the values and says whether they
+are arriving. A person moves between them through a link on the provider's page
+and on the source's page.
+
+The journey uses the words of the code. Each word has one meaning and one
+example.
 
 #+ATTR_HTML: :class hug-leading
-| Surface | The question it answers | Where it sits |
-|---------+-------------------------+---------------|
-| Providers | Which publishers are there, what are their terms, and is their data arriving? | The Public rates list, the home of the journey |
-| Publisher | What did this one publisher publish for this pair, over time, and where did a feed start from it? | A provider's page |
-| Availability | For one underlying, what does each publisher hold, and what gaps does it have? | A tab, read by underlying first |
-| Compare | For one underlying, how far apart are the publishers' values, and which one is off? | A tab, read by underlying first |
-| Fetch | Ask for data now: a day or a range, one publisher or all, one pair or every pair | A tab, the only place a person starts a fetch |
-| Configuration | What does this publisher's record say, and who changed it? | The provider's record page, Details and History |
+| Word | Meaning | Example |
+|------+---------+---------|
+| /Provider/ | Whoever owns the ids, the terms and the licence: a central bank, a treasury, or a data vendor. | =ecb=, =ust=, =bloomberg= |
+| /Source/ | One adapter instance of a provider. A provider may have several. | =ecb-frankfurter=, =boe-frankfurter=, =bloomberg-b=, =lseg-simulated= |
+| /Adapter/ | The runtime that meets the service at four messages. Its identity is the source's name. | adapter =ecb-frankfurter= |
+| /Kind/ | How a source gets its values: data a person reads, never a branch. | =live=, =replay=, =test=, =simulated=, =derived= |
+| /Route/ | The party's one source for one provider. | the System Party routes =ecb-frankfurter= for provider =ecb= |
+| /Item/ | The internal identity a value is stored under. | =FX-ECB-EUR-CAD= |
+| /Fixing/ | The daily value a public provider publishes for one item. | the ECB EUR/CAD fixing, 1.5638 on 2026-10-28 |
 
-The hierarchy the words must follow is three levels deep. An *access route* is
-how the platform reaches a publisher, such as Frankfurter. A *publisher* is the
-central bank or public body whose terms apply, such as the ECB. An *item*, or
-underlying, is one pair from one publisher, such as =FX-ECB-EUR-CAD=. The
-provider entity is the publisher, and Frankfurter is a route, not a provider; the
-screen groups publishers by route only to show the adapter's health.
+This journey has no *driver* and no *connection*: the code has neither row. A
+test environment is a source of kind =test=.
 
-The schedule is not this screen's. The platform's scheduler runs a job that asks
-the adapters to refresh on each publisher's publication rhythm. The Fetch tab
-sends the same request on demand, so one request serves the schedule and the
-person, and the screen owns neither the poll nor the interval.
+#+ATTR_HTML: :class hug-leading
+| Screen | Surface | The question it answers |
+|--------+---------+-------------------------|
+| Market data sources | Sources | Which sources exist, of which provider, of which kind, and is each serving? |
+| | Adapters | What does the service see for each adapter id: state, heartbeat, served, refused, last tick? |
+| | Source record | What does this source say, what transport does it run with, and which party routes it? |
+| Public rates | Providers | Which providers are there, what are their terms, and is their data arriving? |
+| | Provider record | What did it publish, over time, where did a feed start, and which source serves it? |
+| | Availability | For one underlying, what does each provider hold, and what gaps does it have? |
+| | Compare | For one underlying, how far apart are the providers' values, and which one is off? |
+| | Fetch | Ask for data now: a day or a range, one provider or all, one pair or every pair |
+
+The schedule is not the reading screen's. The platform's scheduler runs a job
+that asks the adapters to refresh on each provider's publication rhythm. The
+Fetch tab sends the same request on demand, so one request serves the schedule
+and the person, and the screen owns neither the poll nor the interval.
 
 * Screens and wireframes
 
-The list and the provider page of the standard, with a freshness line and an
-adapter badge on each row, a backfill range dialog, and a pause dialog that
-names what stops and what stays.
+Two screens. *Market data sources* draws the sources with the adapter behind
+each one and the transport it runs with. *Public rates* draws the providers with
+a freshness line and a source name on each row, the provider page, the fetch
+range dialog, and a pause dialog that names what stops and what stays.
 
-#+caption: The provider list with terms state, freshness and adapter state, and one provider's page with its fixings, pair comparison and the backfill range.
+#+caption: The sources screen with its adapter view, and the Public rates screen with the provider list, one provider's fixings, the comparison and the fetch range.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/market_data/wireframe_run-the-public-sources.png]]
 
@@ -173,22 +187,31 @@ answers today.
 
 * Prototype
 
-- Directory :: [[file:../../../prototypes/market_data/official-rates/][doc/prototypes/market_data/public-rates/]]
-- Note :: [[file:../../../prototypes/market_data/official-rates.org][the design note]]
-- Surfaces :: =?tab=providers|publisher|availability|compare|fetch|config=
+** Market data sources
+
+- Directory :: [[file:../../../prototypes/market_data/sources/][doc/prototypes/market_data/sources/]]
+- Note :: [[file:../../../prototypes/market_data/sources.org][the design note]]
+- Sources :: =index.html=, =?tab=adapters=
+- A source :: =?source=ecb-frankfurter&stab=overview|adapter|routes|history=
+- Two sources of one provider :: =?source=ecb-ecb-data&stab=routes=
+
+** Public rates
+
+- Directory :: [[file:../../../prototypes/market_data/public-rates/][doc/prototypes/market_data/public-rates/]]
+- Note :: [[file:../../../prototypes/market_data/public-rates.org][the design note]]
+- Surfaces :: =?tab=providers|availability|compare|fetch=
 - Providers :: =?tab=providers&filter=live|late|down|never|paused|terms=,
   =?paused=muted|hidden=, =?terms=withdraw=
-- Publisher :: =?tab=publisher&provider=<code>&pair=<PAIR>=
+- Provider record :: =?provider=ecb&rtab=overview|underlyings|fixings|sources|health|history=
 - Availability :: =?tab=availability&pair=<PAIR>=
 - Compare :: =?tab=compare&pair=<PAIR>=
 - Fetch :: =?tab=fetch=, =&fetch=progress=, =&fetch=done=
-- Configuration :: =?tab=config&provider=<code>=
 
-The prototype draws the six surfaces: the providers with their states, one
-publisher over time, availability across publishers for one underlying, the
-compare view with the distance between them, the fetch scope and its progress,
-and a provider's configuration with its history. It is a static page: no build,
-no server, no session.
+Both are static pages: no build, no server, no session. Market data sources
+draws the providers, the sources, the adapter per source, the routes and the
+transport, marked not persisted. Public rates draws the providers with their
+states, the record, availability, compare and fetch, and it names the source
+that serves each provider.
 
 * Entities composed
 
@@ -197,9 +220,12 @@ no server, no session.
 |--------+---------------------+-------|
 | =provider= | The name, the kind and the terms state | =projects/ores.marketdata/modeling/ores.marketdata.provider.org= |
 | =provider terms= | The terms page, the credit, whether storage is allowed, and who accepted which version | the same model |
-| =market_fixing= | The values of a provider's item, with the publisher's time and the time received | =projects/ores.marketdata/modeling/ores.marketdata.market_fixing.org= |
+| =market_data_source= | The source name, provider, kind, default flag and description | =projects/ores.marketdata/modeling/ores.marketdata.market_data_source.org= |
+| =route= | The party, the provider and the one source it reads | =projects/ores.marketdata/modeling/ores.marketdata.route.org= |
+| =adapter= | The runtime identity, its state and the ids it serves and refuses | =projects/ores.marketdata/modeling/ores.marketdata.adapter_operations.org= |
+| =market_fixing= | The values of a provider's item, with the provider's publication time and the time received | =projects/ores.marketdata/modeling/ores.marketdata.market_fixing.org= |
 | =market_series= | The series an item is stored under, per party | =projects/ores.marketdata/modeling/ores.marketdata.market_series.org= |
-| =market_data_mapping=, =market_data_vendor_instrument= | The publisher's own id of an item | the marketdata vendor models |
+| =market_data_mapping=, =market_data_vendor_instrument= | The provider's own vendor id of an item | the marketdata vendor models |
 | adapter status | The state, the heartbeat and the ids an adapter serves or refuses; a read, not an entity | =marketdata.v1.ops.list_adapter_status= |
 | =fx_spot_fixing_item= | The ranked items a synthetic feed may start from | =projects/ores.synthetic/modeling/ores.synthetic.fx_spot_fixing_item.org= |
 

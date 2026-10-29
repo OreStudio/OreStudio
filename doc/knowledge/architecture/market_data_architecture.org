@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:marketdata:nats:synthetic:adapters:structure_note:
 #+created: 2026-06-28
-#+updated: 2026-10-28
+#+updated: 2026-10-29
 
 * Summary
 
@@ -37,6 +37,29 @@ Two boundaries hold. This page does not carry the process mathematics, which is
 in [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]]. It does not
 carry the resolution path from a logical requirement to a concrete identifier,
 which is [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]].
+
+* Words
+
+These are the words of the model. The screens, the journeys and the names in the
+code use them. Each word has one meaning, taken from the page that owns it, and
+an example that is a real row or a real id.
+
+#+ATTR_HTML: :class hug-leading
+| Word | Meaning | Example | Owner |
+|------+---------+---------+-------|
+| /Provider/ | Whoever owns the ids, the terms and the licence: a central bank, a treasury, an exchange or a data vendor. | =ecb= (reference), =ust= (reference), =bloomberg= (data vendor) | [[id:68CE1E1D-7568-4911-BB71-CCF5A9E07BB7][Every source belongs to a provider]] |
+| /Source/ | One adapter instance of a provider. It has a name, a kind and a default flag. A provider may have several sources. | =ecb-frankfurter= (live), =bloomberg-a= (live), =bloomberg-b= (test) | [[id:C6D75337-0EA6-40F0-8E8B-52737558851D][The source kind]] |
+| /Adapter/ | The runtime that meets the service at four messages. Its identity is its source's name, so an adapter id and a source name are one string. | the process =ores.marketdata.official= hosting =ecb-frankfurter=; the simulator hosting =lseg-simulated= | [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity an adapter runs as]] |
+| /Kind/ | How a source gets its values. The kind is data a person reads, and no code path branches on it. | =live=, =replay=, =test=, =simulated=, =derived= | [[id:C6D75337-0EA6-40F0-8E8B-52737558851D][The source kind]] |
+| /Route/ | A party's choice of one source for one provider. A party has at most one route for each provider. | the System Party routes =ecb-frankfurter= for provider =ecb= | [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]] |
+| /Vendor instrument/ | An id scheme, an id and a field, in the vendor's own notation. | =iso4217= / =USD= / =rate=; Bloomberg =EURUSD Curncy= / =PX_LAST= | [[id:5297997A-5175-43E9-861B-2A11D003CD35][A vendor instrument is an id scheme, an id and a field]] |
+| /Item/ | The internal identity a vendor instrument maps to. | =FX-ECB-EUR-USD=, =IR-ECB-ESTR= | [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][The mapping belongs to the provider]] |
+| /Subscription/ | A party's entitlement to a provider. | the System Party subscribes to provider =ecb= | [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]] |
+| /Tick/ | What an adapter sends on the wire and what a party receives. | one value of =iso4217/USD/rate=, stamped 16:00 | [[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]] |
+
+This model has no *driver* and no *connection*. A connection, in the sense of an
+endpoint with credentials, is a *source*. The code that speaks an external
+language is the *adapter*. A test environment is a source of kind =test=.
 
 * Why one service and one rule
 

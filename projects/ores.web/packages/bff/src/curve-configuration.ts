@@ -21,6 +21,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as documentSubjects } from '@ores/wire-protocol/generated/refdata/protocol/configuration_document_protocol';
+import { subjects as segmentTypeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/curve_segment_type_protocol';
 import { subjects as sectionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/curve_section_protocol';
 import { subjects as configurationSubjects } from '@ores/wire-protocol/generated/refdata/protocol/curve_configuration_protocol';
 import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/curve_definition_protocol';
@@ -157,7 +158,6 @@ export interface CurveCollectionRowView {
 /** A child collection an entry holds rows of, such as its segments. */
 export interface CurveCollectionView {
     readonly element: string;
-    readonly entity: string;
     readonly rows: readonly CurveCollectionRowView[];
 }
 
@@ -278,6 +278,16 @@ function orderedSections(
     });
 }
 
+/**
+ * The segment kind each segment type code is written as.
+ *
+ * A segment row states its =Type=, which is the value the document gives, such as
+ * =Deposit= or =Average OIS=. The ORE element it is written as is the kind, such
+ * as =Simple= or =AverageOIS=, and the contract keys a leaf under the kind and not
+ * the value. The kinds are the rows of =curve_segment_type= and not a table here.
+ */
+type KindOf = (segmentType: string) => string;
+
 /** A nested table a curve entry holds rows of, and where its leaves sit. */
 interface CurveCollectionRule {
     readonly element: string;
@@ -357,46 +367,66 @@ function collectionLeaves(
     contract: ReadonlyMap<string, Readonly<Record<string, unknown>>>,
     valueSetOf: ValueSetOf,
 ): readonly CurveParameterView[] {
+    if (kind === '') {
+        return [];
+    }
     const path = rule.pathOf(kind);
-    return Object.keys(row)
-        .filter((column) => !NOT_A_LEAF.has(column) && column !== rule.kindColumn)
-        .map((column) => {
-            const ore = oreNameOf(column);
-            return leafView(
-                {
-                    entity: rule.entity,
-                    column,
-                    ore,
-                    xpath: `/${ROOT_ELEMENT}/${section}/${entryElement}/${path}/${ore}`,
-                    value: valueText(row[column]),
-                },
-                contract,
-                valueSetOf,
-            );
-        });
+    const found: CurveParameterView[] = [];
+    for (const column of Object.keys(row)) {
+        if (NOT_A_LEAF.has(column) || column === rule.kindColumn) {
+            continue;
+        }
+        const ore = oreNameOf(column);
+        const leaf = leafView(
+            {
+                entity: rule.entity,
+                column,
+                ore,
+                xpath: `/${ROOT_ELEMENT}/${section}/${entryElement}/${path}/${ore}`,
+                value: valueText(row[column]),
+            },
+            contract,
+            valueSetOf,
+        );
+        /*
+         * The row's table is one flat table for every kind, so most of its columns
+         * are another kind's leaves. A column belongs to this row's kind when the
+         * contract documents it for the kind, or when the row holds a value in it:
+         * the first is a leaf of the kind, the second is one somebody set, and
+         * neither may be hidden.
+         */
+        if (leaf.documented || leaf.value !== null) {
+            found.push(leaf);
+        }
+    }
+    return found;
 }
 
 /** The rows of every child collection an entry holds, in document order. */
 function collectionsOf(
     document: Readonly<Record<string, unknown>>,
-    section: string,
-    entryElement: string,
+    wiring: CurveSectionWiring,
     entryId: string,
     contract: ReadonlyMap<string, Readonly<Record<string, unknown>>>,
     valueSetOf: ValueSetOf,
+    kindOf: KindOf,
 ): readonly CurveCollectionView[] {
-    return CURVE_COLLECTIONS.map((rule) => {
+    const declared = new Set(wiring.blocks.map((block) => block.element));
+    return CURVE_COLLECTIONS.filter(
+        (rule) =>
+            declared.has(rule.element) || vectorOf(document, rule.vector).length > 0,
+    ).map((rule) => {
         const rows = vectorOf(document, rule.vector)
             .filter((candidate) => text(candidate[rule.parentKey]) === entryId)
             .map((candidate) => {
-                const kind = text(candidate[rule.kindColumn]);
+                const kind = kindOf(text(candidate[rule.kindColumn]));
                 return {
                     id: text(candidate['id']),
                     kind,
                     leaves: collectionLeaves(
                         candidate,
-                        section,
-                        entryElement,
+                        wiring.section,
+                        wiring.entryElement,
                         rule,
                         kind,
                         contract,
@@ -404,8 +434,23 @@ function collectionsOf(
                     ),
                 };
             });
-        return { element: rule.element, entity: rule.entity, rows };
-    }).filter((collection) => collection.rows.length > 0);
+        return { element: rule.element, rows };
+    });
+}
+
+/**
+ * Every leaf an entry draws: the ones of its own table, and the ones its
+ * collection rows hold. A segment's leaf is a parameter of the curve as much as
+ * the curve's own currency is, so the count of documented parameters is over all
+ * of them.
+ */
+function leavesOfEntry(entry: CurveEntryView): readonly CurveParameterView[] {
+    return [
+        ...entry.parameters,
+        ...entry.collections.flatMap((collection) =>
+            collection.rows.flatMap((row) => row.leaves),
+        ),
+    ];
 }
 
 /** One entry's row of each of the section's tables, by the table's entity name. */
@@ -426,18 +471,9 @@ function rowsOfEntry(
     return found;
 }
 
-/**
- * One entry's parameters: every column the projection reads for the section, in
- * the order the projection reads them, each joined to its leaf in the contract.
- */
+/** One row's leaf, joined to what the contract says about it and the values it accepts. */
 function leafView(
-    where: {
-        readonly entity: string;
-        readonly column: string;
-        readonly ore: string;
-        readonly xpath: string;
-        readonly value: string | null;
-    },
+    where: Pick<CurveParameterView, 'entity' | 'column' | 'ore' | 'xpath' | 'value'>,
     contract: ReadonlyMap<string, Readonly<Record<string, unknown>>>,
     valueSetOf: ValueSetOf,
 ): CurveParameterView {
@@ -463,6 +499,10 @@ function leafView(
     };
 }
 
+/**
+ * One entry's parameters: every column the projection reads for the section, in
+ * the order the projection reads them, each joined to its leaf in the contract.
+ */
 function parametersOf(
     definition: Readonly<Record<string, unknown>>,
     rows: ReadonlyMap<string, Readonly<Record<string, unknown>>>,
@@ -511,6 +551,7 @@ function entryOf(
     wiring: CurveSectionWiring | undefined,
     contract: ReadonlyMap<string, Readonly<Record<string, unknown>>>,
     valueSetOf: ValueSetOf,
+    kindOf: KindOf,
 ): CurveEntryView {
     const id = text(definition['id']);
     if (wiring === undefined) {
@@ -534,14 +575,7 @@ function entryOf(
         position: numberOf(definition['position']),
         parameters: parametersOf(definition, rows, wiring, contract, valueSetOf),
         blocks: blocksOf(rows, wiring),
-        collections: collectionsOf(
-            document,
-            wiring.section,
-            wiring.entryElement,
-            id,
-            contract,
-            valueSetOf,
-        ),
+        collections: collectionsOf(document, wiring, id, contract, valueSetOf, kindOf),
     };
 }
 
@@ -728,7 +762,8 @@ export function registerCurveConfigurationRoutes(
         const document = await readDocument(session, configurationId, party);
         const header = z.looseObject({}).parse(document['config']);
         const definitions = vectorOf(document, 'definitions');
-        const [sectionRows, parameters, sets, values, catalogues, links] = await Promise.all([
+        const [sectionRows, parameters, sets, values, catalogues, links, segmentTypes] =
+            await Promise.all([
             readAll(session, sectionSubjects.list_curve_sections_request, 'sections', {
                 filter: null,
                 as_of: null,
@@ -762,6 +797,10 @@ export function registerCurveConfigurationRoutes(
                 'setting_value_sets',
                 { filter: null, as_of: null },
             ),
+            readAll(session, segmentTypeSubjects.list_curve_segment_types_request, 'segment_types', {
+                filter: null,
+                as_of: null,
+            }),
         ]);
         const contract = new Map(
             parameters
@@ -769,12 +808,18 @@ export function registerCurveConfigurationRoutes(
                 .map((entry) => [text(entry['xpath']), entry]),
         );
         const valueSetOf = await readValueSets(session, { sets, values, catalogues, links });
+        const kinds = new Map(
+            segmentTypes.map((row) => [text(row['code']), text(row['segment_kind'])]),
+        );
+        const kindOf: KindOf = (segmentType) => kinds.get(segmentType) ?? '';
         const sections = orderedSections(sectionRows).map((section) => {
             const wiring = CURVE_SECTIONS.find((candidate) => candidate.section === section.code);
             const entries = definitions
                 .filter((definition) => text(definition['section_code']) === section.code)
                 .sort((left, right) => numberOf(left['position']) - numberOf(right['position']))
-                .map((definition) => entryOf(definition, document, wiring, contract, valueSetOf));
+                .map((definition) =>
+                    entryOf(definition, document, wiring, contract, valueSetOf, kindOf),
+                );
             return {
                 code: section.code,
                 entryElement: section.entry === '' ? (wiring?.entryElement ?? '') : section.entry,
@@ -785,14 +830,16 @@ export function registerCurveConfigurationRoutes(
         });
         const total = sections.reduce(
             (count, section) =>
-                count + section.entries.reduce((sum, entry) => sum + entry.parameters.length, 0),
+                count +
+                section.entries.reduce((sum, entry) => sum + leavesOfEntry(entry).length, 0),
             0,
         );
         const documented = sections.reduce(
             (count, section) =>
                 count +
                 section.entries.reduce(
-                    (sum, entry) => sum + entry.parameters.filter((leaf) => leaf.documented).length,
+                    (sum, entry) =>
+                        sum + leavesOfEntry(entry).filter((leaf) => leaf.documented).length,
                     0,
                 ),
             0,

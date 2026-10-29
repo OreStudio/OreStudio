@@ -81,9 +81,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Segment leaves the contract documents for the yield curve | 26 | a count over the published contract, `/Segments/` | see =* Result= |
-| Browser tests | 2331 | `npm run test` in `packages/web` | see =* Result= |
-| BFF tests | 1144 | `npm run test` in `packages/bff` | see =* Result= |
+| Segment leaves the published contract carries | 26 | `compass sql -- -c "select count(*) from ores_reporting_ore_parameters_tbl where xpath like '%/Segments/%' and valid_to = ores_utility_infinity_timestamp_fn()"` | a1b5909d37 |
+| Segment kinds the type table maps | 42 rows, 12 kinds | `compass sql -- -c "select count(*), count(distinct segment_kind) from ores_refdata_curve_segment_types_tbl where valid_to = ores_utility_infinity_timestamp_fn()"` | a1b5909d37 |
+| Browser tests | 2331 | `npm run test` in `packages/web` | 70ee3c0d5d |
+| BFF tests | 1144 | `npm run test` in `packages/bff` | 70ee3c0d5d |
 
 * Notes
 
@@ -118,13 +119,19 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | The collection rules are a hand-written table in the BFF, which the repo's own rule says should be generated from the projection. | curve-configuration.ts | Deferred | It cannot be generated yet: a leaf's path depends on the kind the row states, and the generator's wiring has no shape for that. Filed as the next slice, together with the quotes. |
+| 1 | The collection rules are a hand-written table in the BFF, which the repo's own rule says should be generated from the projection. | curve-configuration.ts | Deferred | The generator's wiring has no shape for a leaf whose path depends on the kind the row states, and the element-to-kind map it would read already exists as `segment_kind` on the type table. Filed as the next slice. |
 | 2 | Quotes are not drawn, so a segment shows its scalar leaves and not the instruments it bootstraps from. | curve-configuration.ts | Deferred | A quote's value is the `Quote` element's own text, not a named child, and its list element varies by kind. Drawing them wants a shape of its own. |
 | 3 | The segment's role curves -- `curve_segment_curves`, which carry `IndexCurve` and the rest -- are not drawn. | curve-configuration.ts | Deferred | Same slice as the quotes: they are rows of a collection under a segment, not leaves of it. |
-| 4 | A leaf's ORE name is derived from the column by camel case, which is a convention the generator could disagree with. | curve-configuration.ts | Accept | The BFF test asserts the three leaves the yield curve segment carries, and the gap rule shows a name the contract does not hold, so a drift is visible rather than silent. Generating the names is the fix the first row names. |
+| 4 | A leaf's ORE name is derived from the column by camel case, which is a convention the generator could disagree with. | curve-configuration.ts | Accept | The BFF test pins the leaves a deposit segment carries, and a name the contract does not hold shows as a gap rather than disappearing, so a drift is visible. Generating the names is the fix the first row names. |
 | 5 | The page draws the segment rows but cannot change them. | CurveConfigurationPage.tsx | No change | The standard changes a collection in a dialog per row. That is a slice of its own; the save path already takes what such a dialog sends. |
-
-* Result
+| 6 | The row states its ORE `Type` value (`Deposit`, `Average OIS`), and the collection built the path from it, so every leaf asked for `/Segments/Deposit/...`, which the contract does not hold. | curve-configuration.ts | Accept | The kind is the element the type maps to (`Simple`), read from `curve_segment_type`; the fixture now states `Deposit` and a type table, so the test could not pass on data the system cannot produce. |
+| 7 | Every column of the row's flat table became a leaf, so a simple segment drew the thirty columns of twelve kinds, mostly empty. | curve-configuration.ts | Accept | A column is a leaf of the row's kind when the contract documents it for that kind, or when the row holds a value: nothing a person set is hidden, and another kind's empty column is not drawn. |
+| 8 | A collection the section declares was dropped when it had no rows, against "a collection with no rows says so". | curve-configuration.ts | Accept | A collection is drawn when the section's wiring names it as a block, whether or not it has rows; one the section never declares is not drawn. |
+| 9 | An empty kind built `.../Segments//X`, so every leaf quietly reported undocumented. | curve-configuration.ts | Accept | A row whose type the table does not map has no leaves rather than a path that cannot exist. |
+| 10 | The gap count and the bulk documentation toggle covered the entry's leaves and not its rows'. | CurveConfigurationPage.tsx | Accept | Both cover every leaf the entry draws. |
+| 11 | `'{count} rows'` was interpolated with the singular form, so one row read "1 rows". | locales | Accept | The rows count goes through the plural rules, with `one` and `other` forms in all three locales. |
+| 12 | `collections` was required in the screen's schema, so a screen deployed ahead of the server failed the whole page. | api/curveConfiguration.ts | Accept | The field defaults to no collections. |
+| 13 | The badge row's "not recorded here" lost its only test. | screens.test.tsx | Accept | The fixture carries a block the section declares and the curve does not state, and the test asserts the words again. |
 
 * Result
 

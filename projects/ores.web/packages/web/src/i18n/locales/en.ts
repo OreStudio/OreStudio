@@ -6865,6 +6865,8 @@ export const en: SourceCatalogue = {
             parametersTitle: 'Its parameters',
             collection: 'Its {element}',
             collectionRows: '{count} rows',
+            'collectionRows.one': '{count} row',
+            'collectionRows.other': '{count} rows',
             collectionRow: 'row {id}',
             blocks: 'Held as its own element:',
             blockStated: 'stated',

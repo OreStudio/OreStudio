@@ -82,7 +82,6 @@ export type CurveCollectionRow = z.infer<typeof collectionRowSchema>;
 /** A child collection an entry holds rows of, such as its segments. */
 const collectionSchema = z.object({
     element: z.string(),
-    entity: z.string(),
     rows: z.array(collectionRowSchema),
 });
 
@@ -97,7 +96,9 @@ const entrySchema = z.object({
     position: z.number(),
     parameters: z.array(parameterSchema),
     blocks: z.array(blockSchema),
-    collections: z.array(collectionSchema),
+    // A server that predates the collections draws no rows rather than failing
+    // the whole page: the field is an addition, not a promise.
+    collections: z.array(collectionSchema).default([]),
 });
 
 export type CurveEntry = z.infer<typeof entrySchema>;

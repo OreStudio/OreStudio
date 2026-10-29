@@ -120,7 +120,7 @@ function document(): Record<string, unknown> {
             {
                 id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
                 curve_definition_id: DEFINITION_ID,
-                segment_type: 'Simple',
+                segment_type: 'Deposit',
                 position: 0,
                 conventions: 'USD-6M',
                 projection_curve: 'USD-3M',
@@ -130,7 +130,7 @@ function document(): Record<string, unknown> {
             {
                 id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
                 curve_definition_id: EQUITY_DEFINITION_ID,
-                segment_type: 'Direct',
+                segment_type: 'Zero',
                 position: 0,
             },
         ],
@@ -312,6 +312,15 @@ function repliesFor(overrides: Replies = {}): Replies {
                 { code: 'EquityCurves', entry_element: 'EquityCurve', description: 'Equity.' },
                 { code: 'YieldCurves', entry_element: 'YieldCurve', description: 'Rates.' },
                 { code: 'CurveSettings', entry_element: 'CurveSetting', description: 'New.' },
+            ],
+        },
+        // A segment states its Type, which is a value; the ORE element it is
+        // written as is the kind the type maps to.
+        'refdata.v1.curve_segment_types.list': {
+            result: ok,
+            segment_types: [
+                { code: 'Deposit', segment_kind: 'Simple', description: 'Deposits.' },
+                { code: 'Zero', segment_kind: 'Direct', description: 'Discount factors.' },
             ],
         },
         'reporting.v1.ore_parameters.list': { result: ok, parameters: PARAMETERS },
@@ -563,11 +572,12 @@ describe('the curve configuration a report binds', () => {
         expect(segments?.rows).toHaveLength(1);
         const row = segments?.rows[0];
         expect(row?.kind).toBe('Simple');
+        // The row's table is one table for every kind, so a column that belongs to
+        // another kind and holds nothing is not a leaf of this row.
         expect(row?.leaves.map((leaf) => leaf.ore)).toEqual([
             'Conventions',
             'ProjectionCurve',
             'PillarChoice',
-            'MinDistance',
         ]);
         const conventions = row?.leaves.find((leaf) => leaf.ore === 'Conventions');
         expect(conventions?.value).toBe('USD-6M');
@@ -578,7 +588,8 @@ describe('the curve configuration a report binds', () => {
             '/CurveConfiguration/YieldCurves/YieldCurve/Segments/Simple/Conventions',
         );
         // The value the document leaves out is no value, not an empty string.
-        expect(row?.leaves.find((leaf) => leaf.ore === 'MinDistance')?.value).toBeNull();
+        expect(row?.leaves.find((leaf) => leaf.ore === 'ProjectionCurve')?.value).toBe('USD-3M');
+        expect(row?.leaves.some((leaf) => leaf.ore === 'MinDistance')).toBe(false);
 
         // A segment leaf the contract does not hold is still a leaf of the row: the gap shows.
         const pillar = row?.leaves.find((leaf) => leaf.ore === 'PillarChoice');
@@ -615,8 +626,10 @@ describe('the curve configuration a report binds', () => {
             'ExtrapolationMethod',
             'ExcludeT0FromInterpolation',
         ]);
-        expect(body.documented).toBe(2);
-        expect(body.total).toBe(12 + 11);
+        // The entry's own parameters and the ones its segment row holds, which are
+        // parameters of the curve too.
+        expect(body.documented).toBe(2 + 2);
+        expect(body.total).toBe(12 + 11 + 3);
     });
 
     it('opens a configuration whose id the ORE import minted, which is not an RFC uuid', async () => {

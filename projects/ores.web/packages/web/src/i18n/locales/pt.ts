@@ -6912,6 +6912,8 @@ const pt: SourceCatalogue = {
             parametersTitle: 'Os seus parâmetros',
             collection: 'Os seus {element}',
             collectionRows: '{count} linhas',
+            'collectionRows.one': '{count} linha',
+            'collectionRows.other': '{count} linhas',
             collectionRow: 'linha {id}',
             blocks: 'Mantido como elemento próprio:',
             blockStated: 'declarado',

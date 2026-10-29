@@ -6969,6 +6969,8 @@ const fr: SourceCatalogue = {
             parametersTitle: 'Ses paramètres',
             collection: 'Ses {element}',
             collectionRows: '{count} lignes',
+            'collectionRows.one': '{count} ligne',
+            'collectionRows.other': '{count} lignes',
             collectionRow: 'ligne {id}',
             blocks: 'Détenu comme élément propre :',
             blockStated: 'déclaré',

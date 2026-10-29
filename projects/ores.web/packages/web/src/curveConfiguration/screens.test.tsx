@@ -151,12 +151,12 @@ const CURVE: CurveConfiguration = {
                     ],
                     blocks: [
                         { element: 'Report', present: true },
+                        { element: 'BootstrapConfig', present: null },
                         { element: 'Segments', present: null },
                     ],
                     collections: [
                         {
                             element: 'Segments',
-                            entity: 'curve_segment',
                             rows: [
                                 {
                                     id: 'segment-1',
@@ -171,6 +171,18 @@ const CURVE: CurveConfiguration = {
                                                 value: 'USD-6M',
                                                 documented: true,
                                                 label: 'Conventions',
+                                            },
+                                        ),
+                                        leaf(
+                                            'PillarChoice',
+                                            '/CurveConfiguration/YieldCurves/YieldCurve/Segments/Simple/PillarChoice',
+                                            {
+                                                entity: 'curve_segment',
+                                                column: 'pillar_choice',
+                                                value: 'MaturityDate',
+                                                documented: false,
+                                                label: '',
+                                                description: '',
                                             },
                                         ),
                                         leaf(
@@ -306,7 +318,8 @@ describe('the curve configuration page', () => {
         const words = textOf(page('curves'));
         expect(words).toContain('Tolerance');
         expect(words).toContain('0.0001');
-        expect(words).toContain('1 without documentation');
+        // The curve's own gap and the one its segment row holds.
+        expect(words).toContain('2 without documentation');
     });
 
     it("states a curve's documentation once, under the panel it is collapsed in", () => {
@@ -325,19 +338,26 @@ describe('the curve configuration page', () => {
     it('draws the rows of the collection a curve holds, with their leaves read', () => {
         const words = textOf(page('curves'));
         expect(words).toContain('Its Segments');
-        expect(words).toContain('1 rows');
+        expect(words).toContain('1 row');
         expect(words).toContain('Simple');
         expect(words).toContain('Projection curve');
         expect(words).toContain('USD-3M');
+        // A segment leaf the contract does not hold is a leaf of the row and counts
+        // as a gap, as an entry's leaf does.
+        expect(words).toContain('MaturityDate');
+        expect(words).toContain('2 without documentation');
     });
 
     it('names the child elements a curve holds, and says once the ones it draws rows of', () => {
         const words = textOf(page('curves'));
         expect(words).toContain('Report');
         expect(words).toContain('stated');
+        // A block the section declares and this curve does not state says so.
+        expect(words).toContain('BootstrapConfig');
+        expect(words).toContain('not recorded here');
         // Segments are drawn as their rows, so the badge row does not name them again.
         expect(words).toContain('Its Segments');
-        expect(words).not.toContain('not recorded here');
+        expect(words.match(/Segments/g)).toHaveLength(1);
     });
 
     it('names the reports that bind the configuration', () => {

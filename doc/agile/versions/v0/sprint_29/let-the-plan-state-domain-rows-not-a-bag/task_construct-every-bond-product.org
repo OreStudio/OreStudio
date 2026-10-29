@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Every routed bond code is constructed by a function that names it, the writer tr
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -86,3 +86,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned, because the measurement changed the task. Nine of the ten routed
+bond codes are never drawn: the planner states one product, =Bond=, for every
+slot. Measured on a recreated database at =0f0533fc7a=, the bond instrument
+table holds 24 rows and all 24 are =Bond=; the family's own fact rows are
+empty, because the writer fills only the instrument header.
+
+Constructing nine products nothing draws would have been dead code with a
+test attached, and constructing the tenth would have fixed a trade type the
+planner already hardcodes. So the work is not a constructor's: the population
+has to draw the products before a constructor can state them.
+
+Recorded as captures:
+- [[file:../../../../product_backlog/inbox/the-bond-population-books-one-product-of-ten.org][The bond population books one product of ten]]
+- [[file:../../../../product_backlog/inbox/no-config-books-credit-so-the-family-never-runs.org][No config books credit, so the family never runs]]
+
+The rates family is where constructors pay next: eight of its ten codes are
+drawn, across a header table and its fact tables.

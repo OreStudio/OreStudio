@@ -1,0 +1,153 @@
+{
+  "description": "Component cores that link another component's core or service, accepted until each edge is removed.",
+  "edges": [
+    {
+      "core": "ores.analytics.core.lib",
+      "links": "ores.history.core.lib"
+    },
+    {
+      "core": "ores.assets.core.lib",
+      "links": "ores.history.core.lib"
+    },
+    {
+      "core": "ores.assets.core.lib",
+      "links": "ores.telemetry.core.lib"
+    },
+    {
+      "core": "ores.compute.core.lib",
+      "links": "ores.history.core.lib"
+    },
+    {
+      "core": "ores.dq.core.lib",
+      "links": "ores.history.core.lib"
+    },
+    {
+      "core": "ores.http.core.lib",
+      "links": "ores.compute.core.lib"
+    },
+    {
+      "core": "ores.http.core.lib",
+      "links": "ores.iam.core.lib"
+    },
+    {
+      "core": "ores.http.core.lib",
+      "links": "ores.storage.core.lib"
+    },
+    {
+      "core": "ores.http.core.lib",
+      "links": "ores.variability.core.lib"
+    },
+    {
+      "core": "ores.iam.core.lib",
+      "links": "ores.eventing.core.lib"
+    },
+    {
+      "core": "ores.iam.core.lib",
+      "links": "ores.history.core.lib"
+    },
+    {
+      "core": "ores.iam.core.lib",
+      "links": "ores.marketdata.core.lib"
+    },
+    {
+      "core": "ores.iam.core.lib",
+      "links": "ores.refdata.core.lib"
+    },
+    {
+      "core": "ores.iam.core.lib",
+      "links": "ores.synthetic.core.lib"
+    },
+    {
+      "core": "ores.iam.core.lib",
+      "links": "ores.variability.core.lib"
+    },
+    {
+      "core": "ores.inbox.core.lib",
+      "links": "ores.history.core.lib"
+    },
+    {
+      "core": "ores.inbox.core.lib",
+      "links": "ores.iam.core.lib"
+    },
+    {
+      "core": "ores.marketdata.core.lib",
+      "links": "ores.history.core.lib"
+    },
+    {
+      "core": "ores.marketdata.core.lib",
+      "links": "ores.ore.core.lib"
+    },
+    {
+      "core": "ores.marketdata.core.lib",
+      "links": "ores.refdata.core.lib"
+    },
+    {
+      "core": "ores.marketdata.core.lib",
+      "links": "ores.storage.core.lib"
+    },
+    {
+      "core": "ores.refdata.core.lib",
+      "links": "ores.history.core.lib"
+    },
+    {
+      "core": "ores.refdata.core.lib",
+      "links": "ores.variability.core.lib"
+    },
+    {
+      "core": "ores.reporting.core.lib",
+      "links": "ores.history.core.lib"
+    },
+    {
+      "core": "ores.reporting.core.lib",
+      "links": "ores.storage.core.lib"
+    },
+    {
+      "core": "ores.reporting.core.lib",
+      "links": "ores.workflow.core.lib"
+    },
+    {
+      "core": "ores.scheduler.core.lib",
+      "links": "ores.history.core.lib"
+    },
+    {
+      "core": "ores.synthetic.core.lib",
+      "links": "ores.history.core.lib"
+    },
+    {
+      "core": "ores.synthetic.core.lib",
+      "links": "ores.refdata.core.lib"
+    },
+    {
+      "core": "ores.trading.core.lib",
+      "links": "ores.history.core.lib"
+    },
+    {
+      "core": "ores.trading.core.lib",
+      "links": "ores.inbox.core.lib"
+    },
+    {
+      "core": "ores.trading.core.lib",
+      "links": "ores.storage.core.lib"
+    },
+    {
+      "core": "ores.variability.core.lib",
+      "links": "ores.eventing.core.lib"
+    },
+    {
+      "core": "ores.variability.core.lib",
+      "links": "ores.history.core.lib"
+    },
+    {
+      "core": "ores.workflow.core.lib",
+      "links": "ores.dq.core.lib"
+    },
+    {
+      "core": "ores.workflow.core.lib",
+      "links": "ores.history.core.lib"
+    },
+    {
+      "core": "ores.workflow.core.lib",
+      "links": "ores.telemetry.core.lib"
+    }
+  ]
+}

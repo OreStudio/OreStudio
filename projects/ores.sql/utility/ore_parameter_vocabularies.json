@@ -6,7 +6,8 @@
   "name": "Currencies",
   "source": "ore_xsd",
   "source_ref": "share/ore/xsd/curveconfig.xsd",
-  "reason": "ORE spells the element Currency, and a currency is one of the currencies reference data holds. The rule is the element's own name, which the schema states, so every section that declares a Currency leaf takes the same catalogue."
+  "reason": "ORE spells the element Currency, and a currency is one of the currencies reference data holds. The rule is the element's own name, which the schema states, so every section that declares a Currency leaf takes the same catalogue.",
+  "catalogue": "refdata.currency"
  },
  "curveconfig.xsd|DayCounter": {
   "schema": "curveconfig.xsd",
@@ -15,7 +16,8 @@
   "name": "Day counters",
   "source": "ore_xsd",
   "source_ref": "share/ore/xsd/curveconfig.xsd",
-  "reason": "ORE spells the element DayCounter, and a day counter is one of the day counters reference data holds."
+  "reason": "ORE spells the element DayCounter, and a day counter is one of the day counters reference data holds.",
+  "catalogue": "refdata.day_counter"
  },
  "curveconfig.xsd|YieldCurveDayCounter": {
   "schema": "curveconfig.xsd",
@@ -24,7 +26,8 @@
   "name": "Day counters",
   "source": "ore_xsd",
   "source_ref": "share/ore/xsd/curveconfig.xsd",
-  "reason": "The yield curve names its day counter with an element of its own, and its values are the day counters reference data holds."
+  "reason": "The yield curve names its day counter with an element of its own, and its values are the day counters reference data holds.",
+  "catalogue": "refdata.day_counter"
  },
  "curveconfig.xsd|BusinessDayConvention": {
   "schema": "curveconfig.xsd",
@@ -33,6 +36,7 @@
   "name": "Business day conventions",
   "source": "ore_xsd",
   "source_ref": "share/ore/xsd/curveconfig.xsd",
-  "reason": "ORE spells the element BusinessDayConvention, and a convention is one of the business day conventions reference data holds."
+  "reason": "ORE spells the element BusinessDayConvention, and a convention is one of the business day conventions reference data holds.",
+  "catalogue": "refdata.business_day_convention"
  }
 }

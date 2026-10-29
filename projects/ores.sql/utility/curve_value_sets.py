@@ -45,12 +45,11 @@ import os
 import re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(os.path.dirname(HERE))
 TERMS = os.path.join(HERE, "curve_terms.json")
 CURATION = os.path.join(HERE, "curve_value_set_curation.json")
 
 CURATION_KEYS = ("link", "reason", "source", "source_ref", "curator", "date")
-SOURCES = ("ore_guide", "ore_code", "authored", "seed")
+SOURCES = ("ore_guide", "ore_code", "ore_xsd", "authored", "seed")
 
 CATALOGUES = {
     "refdata.business_day_convention": {
@@ -77,27 +76,45 @@ VOCABULARIES = os.path.join(HERE, "ore_parameter_vocabularies.json")
 SCHEMA = "curveconfig.xsd"
 
 
-def vocabularies():
-    """The element names this schema declares, and the value set each takes."""
+def declared_vocabularies():
+    """The declared vocabularies, by code, as the declaration file states them."""
     with open(VOCABULARIES) as f:
-        declared = json.load(f)
-    return {
-        entry["element"]: entry["value_set"]
-        for entry in declared.values()
-        if entry["schema"] == SCHEMA
-    }
+        return json.load(f)
 
 
-def catalogue_of_set(value_set):
-    """The catalogue a curve value set draws on, from the set's own name."""
-    suffix = value_set.split(".", 1)[1]
-    for catalogue in CATALOGUES:
-        if catalogue.endswith("." + suffix):
-            return catalogue
-    raise ValueError(f"{value_set}: the declaration names a set no catalogue backs")
+def vocabularies(schema=SCHEMA):
+    """The element names one schema declares, and the value set each takes.
+
+    A declaration for a schema this generator does not apply is a loud failure
+    rather than a silently dropped row: the rows are the declaration, and a row
+    nothing applies is a rule the repository believes and the tree does not.
+    """
+    declared = declared_vocabularies()
+    other = {code for code, entry in declared.items() if entry["schema"] != schema}
+    if other:
+        raise ValueError(
+            f"ore_parameter_vocabularies.json declares {', '.join(sorted(other))} "
+            f"for a schema no generator applies; add the rule that applies it or "
+            f"drop the row")
+    return {entry["element"]: entry["value_set"] for entry in declared.values()}
 
 
-CATALOGUE_OF = vocabularies()
+def catalogue_of(value_set):
+    """The catalogue a declared value set draws on, as the declaration states it."""
+    for entry in declared_vocabularies().values():
+        if entry["value_set"] != value_set:
+            continue
+        catalogue = entry["catalogue"]
+        if catalogue not in CATALOGUES:
+            raise ValueError(f"{value_set}: the declaration names {catalogue}, "
+                             "which is not a catalogue this generator knows")
+        return catalogue
+    raise ValueError(f"{value_set}: the declaration names a set no row backs")
+
+
+# The element names the schema declares, and the value set each takes. The name
+# says what the map holds: a value set, not a catalogue.
+VALUE_SET_OF = vocabularies()
 
 TYPE_SETS = {
     "boolean": "curve.flag",
@@ -231,8 +248,8 @@ def set_of(term, curated, parsers, section):
             raise ValueError(f"{name}: the curation links to {link}, which no ORE source "
                              "states a list for; correct the entry or drop it")
         return parser_set_code(link), link
-    if name in CATALOGUE_OF:
-        return CATALOGUE_OF[name], None
+    if name in VALUE_SET_OF:
+        return VALUE_SET_OF[name], None
     if term["type"] in TYPE_SETS:
         return TYPE_SETS[term["type"]], None
     return "curve.text", None
@@ -247,8 +264,8 @@ def data():
     import curve_parameter_rows
     documented = {(r["scope"], r["name"]) for r in curve_parameter_rows.rows()}
     sets = dict(OWN_SETS)
-    for value_set in set(CATALOGUE_OF.values()):
-        catalogue = catalogue_of_set(value_set)
+    for value_set in set(VALUE_SET_OF.values()):
+        catalogue = catalogue_of(value_set)
         sets[value_set] = {
             "name": CATALOGUES[catalogue]["name"],
             "description": f"One of the {CATALOGUES[catalogue]['name'].lower()} "
@@ -289,7 +306,7 @@ def catalogue_scopes():
     scopes = {}
     for section, body in extracted["sections"].items():
         for term in body["terms"]:
-            if term["name"] in CATALOGUE_OF:
+            if term["name"] in VALUE_SET_OF:
                 scopes.setdefault(term["name"], set()).add(section)
     return {name: sorted(found) for name, found in sorted(scopes.items())}
 

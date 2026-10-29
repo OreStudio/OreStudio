@@ -18,7 +18,7 @@
 """Write the populate script of the ORE parameter value sets.
 
 The curated data lives in the seeder's curation file, one entry per set and one
-per link, with the catalogues a set may draw on. This writes the four tables'
+per link, with the catalogues a set may draw on. This writes two scripts: the four tables'
 rows: the catalogues, the sets, the values and the setting links.
 
     generate_value_sets.py          write the populate script
@@ -102,11 +102,12 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 
 def vocabulary_rows():
     """One insert row per declared vocabulary, from the declaration file."""
-    import curve_value_sets
-    with open(curve_value_sets.VOCABULARIES) as handle:
-        declared = json.load(handle)
+    declared = curve_value_sets.declared_vocabularies()
     rows = []
     for code, entry in sorted(declared.items()):
+        if entry["source"] not in curve_value_sets.SOURCES:
+            raise ValueError(f"{code}: source {entry['source']} is not one of "
+                             f"{', '.join(curve_value_sets.SOURCES)}")
         rows.append([
             q(code), TENANT, "0",
             q(entry["schema"]), q(entry["element"]), q(entry["value_set"]),

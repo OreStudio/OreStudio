@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists ore_parameter_vocabularies_tbl_tenant_isolation_policy on "ores_reporting_ore_parameter_vocabularies_tbl";
 drop rule if exists ores_reporting_ore_parameter_vocabularies_delete_rule on "ores_reporting_ore_parameter_vocabularies_tbl";
 drop trigger if exists ores_reporting_ore_parameter_vocabularies_insert_trg on "ores_reporting_ore_parameter_vocabularies_tbl";
 drop function if exists ores_reporting_ore_parameter_vocabularies_insert_fn;

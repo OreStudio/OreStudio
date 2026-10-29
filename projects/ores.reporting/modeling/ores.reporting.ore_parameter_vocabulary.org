@@ -20,8 +20,10 @@ is stated once here rather than inferred from the name inside a generator.
 
 A row says which element name, in which schema, takes which value set, and where
 the rule comes from: the ORE source that reads the element, or the curator who
-decided it. The generator that links a curve's leaves to their sets reads these
-rows, so adding a vocabulary is a seed row and not a change to a generator.
+decided it. These rows are seeded from =ore_parameter_vocabularies.json=, and
+the generator that links a curve's leaves to their sets reads that same
+declaration, so a vocabulary added to it is a row here and needs no change to
+a generator.
 
 * Flags
 :PROPERTIES:
@@ -31,6 +33,13 @@ rows, so adding a vocabulary is a seed row and not a change to a generator.
 :profile:                   simple-lookup
 :sql_only:                  true
 :system_tenant_validation:  true
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:rls_tenant_isolation:      true
 :tablename: ores_reporting_ore_parameter_vocabularies_tbl
 :END:
 

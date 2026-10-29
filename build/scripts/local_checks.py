@@ -648,7 +648,13 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("sql",),
         paths=(
             "projects/ores.sql/populate/reporting/reporting_ore_parameter_value_sets_populate.sql",
+            "projects/ores.sql/populate/reporting/reporting_ore_parameter_vocabularies_populate.sql",
             "projects/ores.sql/utility/generate_value_sets.py",
+            "projects/ores.sql/utility/curve_value_sets.py",
+            "projects/ores.sql/utility/curve_parameter_rows.py",
+            "projects/ores.sql/utility/curve_terms.json",
+            "projects/ores.sql/utility/curve_value_set_curation.json",
+            "projects/ores.sql/utility/ore_parameter_vocabularies.json",
             "projects/ores.sql/utility/convention_value_sets.py",
             "projects/ores.sql/utility/convention_parameter_rows.py",
             "projects/ores.sql/utility/convention_terms.json",

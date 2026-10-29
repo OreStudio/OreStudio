@@ -31,8 +31,10 @@
  *
  * A row says which element name, in which schema, takes which value set, and where
  * the rule comes from: the ORE source that reads the element, or the curator who
- * decided it. The generator that links a curve's leaves to their sets reads these
- * rows, so adding a vocabulary is a seed row and not a change to a generator.
+ * decided it. These rows are seeded from ore_parameter_vocabularies.json, and
+ * the generator that links a curve's leaves to their sets reads that same
+ * declaration, so a vocabulary added to it is a row here and needs no change to
+ * a generator.
  */
 
 create table if not exists "ores_reporting_ore_parameter_vocabularies_tbl" (
@@ -154,4 +156,21 @@ on delete to "ores_reporting_ore_parameter_vocabularies_tbl" do instead (
     where tenant_id = OLD.tenant_id
       and code = OLD.code
       and valid_to = ores_utility_infinity_timestamp_fn();
+);
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Ore Parameter Vocabulary
+-- =============================================================================
+alter table ores_reporting_ore_parameter_vocabularies_tbl enable row level security;
+
+drop policy if exists ore_parameter_vocabularies_tbl_tenant_isolation_policy
+    on ores_reporting_ore_parameter_vocabularies_tbl;
+
+create policy ore_parameter_vocabularies_tbl_tenant_isolation_policy
+on ores_reporting_ore_parameter_vocabularies_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
 );

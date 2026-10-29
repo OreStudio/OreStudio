@@ -27,14 +27,6 @@ on:  # yamllint disable-line rule:truthy
       - "projects/ores.codegen/scripts/core_link_edges_baseline.json"
       - ".github/workflows/core-link-edges.yml"
 
-  pull_request:
-    branches: ["main"]
-    paths:
-      - "projects/**/CMakeLists.txt"
-      - "projects/ores.codegen/scripts/check_core_link_edges.py"
-      - "projects/ores.codegen/scripts/core_link_edges_baseline.json"
-      - ".github/workflows/core-link-edges.yml"
-
   workflow_dispatch:
 
 permissions:

@@ -93,6 +93,10 @@
 \ir ./refdata_floating_index_types_populate.sql
 
 \echo ''
+\echo '--- Curve Configuration Columns ---'
+\ir ./refdata_curve_configuration_columns_populate.sql
+
+\echo ''
 \ir ./refdata_leg_types_populate.sql
 
 \echo ''

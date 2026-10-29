@@ -127,6 +127,8 @@
 \ir ./refdata_yield_curve_configs_notify_trigger_drop.sql
 \ir ./refdata_yield_curve_configs_drop.sql
 \ir ./refdata_curve_definitions_notify_trigger_drop.sql
+\ir ./refdata_curve_configuration_columns_notify_trigger_drop.sql
+\ir ./refdata_curve_configuration_columns_drop.sql
 \ir ./refdata_curve_definitions_drop.sql
 \ir ./refdata_curve_configuration_sections_notify_trigger_drop.sql
 \ir ./refdata_curve_configuration_sections_drop.sql

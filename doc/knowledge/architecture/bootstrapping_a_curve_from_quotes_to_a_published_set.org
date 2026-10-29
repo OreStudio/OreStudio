@@ -1,0 +1,242 @@
+:PROPERTIES:
+:ID: 446F28DF-155A-47EC-8D66-FDB90A8FBFA7
+:END:
+#+title: Bootstrapping a curve: from quotes to a published set
+#+description: The target state of curve construction: a blueprint and its pillars, the quotes they read, the solve that turns quotes into discount factors, the checks, the candidate and its publication.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:curves:bootstrap:publish:oresmd:structure_note:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+* Abstract
+
+This document describes the target state of curve construction in ORE Studio. A
+curve is not observed in the market; the market quotes instruments, and a
+bootstrap inverts those quotes into the discount factors a valuation needs. The
+document follows that construction from the blueprint that states the recipe, to
+the pillars that name the market series they read, to the solve that produces the
+discount factors, to the candidate it writes, and to the publication that makes
+the set authoritative. It states what the identification system and the lineage
+records have to hold at each step, and it names the changes that reach the
+target. The companion document, [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]],
+follows the data before and after this construction.
+
+* The problem: a curve is not observed
+
+A valuation needs a discount factor for each future date it discounts. The market
+does not quote those factors. It quotes instruments, each with a rate and a
+maturity, and a curve is the set of factors implied by those quotes under a
+method and a set of conventions. The construction is therefore an inference, and
+it is a decision: which instruments, which day count, which interpolation, which
+split between the short end and the long end.
+
+Two consequences follow, and the rest of the document depends on them. The curve
+is derived, so its identity must say so: a bootstrap point is a datum of a
+discount series with a curve identity, not an observation of the quote it came
+from. And the inference must be recorded, so a point can be traced to the quotes
+it inverted and to the version of the recipe that inverted them.
+
+* The recipe: the blueprint and its pillars
+
+A blueprint is a named recipe. It states the party, the currency, the index tenor
+of the index the curve stands for, the family role (FUNDING or PROJECTION), the
+interpolation method, the day-count convention, the tenor convention, the split
+tenor, and the output series the curve will be written to. The record is
+[[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][IR Curve Bootstrap Config]].
+
+Its pillars are the instruments the inference uses. A pillar states a start
+tenor, an end tenor and an instrument role: DEPOSIT, FRA or SWAP. The order of
+the pillars is the fixed-leg schedule of the curve, so a swap pillar's fixed-leg
+dates are the end dates of the pillars before it together with its own. The
+record is [[id:5DC8A225-A2FD-4ECC-8284-C1D333F0EB3A][IR Curve Bootstrap Pillar]]; the
+concepts are in [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]],
+[[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]] and
+[[id:29F0F3B1-91A6-42BD-A53F-97F1E72A4FB9][Interest Rate Curve Families]].
+
+Two rules belong to the recipe rather than to the engine. A funding curve
+discounts itself; a projection curve discounts off a funding curve, and the
+blueprint names that curve. The split tenor states where the interpolation
+method changes between the short end and the long end. Both are part of what the
+blueprint decides, and both are checked before any quote is read.
+
+* The inputs: named series, the as-of and the dates
+
+In the target state a pillar names the market series its quote comes from. The
+series is an observed quote series, an oresmd URI such as
+=oresmd://ir/USD?...instrument=ir_swap&quote=rate...=, and the pillar holds a soft
+reference to it. The decision is
+[[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]]; the migration is
+[[id:EAD9F02F-3B4B-495E-B37D-71BF766F7970][Name a curve pillar's market series]]. The identity of the
+input is deliberately not the identity of the output: the quote is observed and
+the curve point is inferred, and the two must remain distinguishable.
+
+At an as-of, the compute reads the observation of each named series at that
+instant. The pillar's end tenor is the datum's coordinate: the term of the point
+in the series' identity. The end tenor is resolved to a date through the
+reference data: a tenor is an anchor, a calendar offset and a number of steps
+along a named schedule axis, which is why a meeting-dated pillar and a period
+pillar resolve through the same machinery. The model is stated in
+[[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]; the
+series identity in [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]].
+
+A missing observation is a refusal, not a zero. The compute names the pillar and
+the series it could not read, so the person sees what the recipe expected and the
+market did not supply. The same rigidity applies to the dates: a pillar whose end
+tenor cannot be resolved is refused before the solve begins.
+
+* The solve: from quotes to discount factors
+
+The engine solves the factors from the short end outwards, one pillar at a time,
+so that each quote is reproduced exactly by the factors already solved and the
+factor at the pillar's end. The three instrument roles give three relationships.
+
+A DEPOSIT fixes its factor directly: the factor at its end is one divided by one
+plus the rate times the year fraction from spot to the end. A FRA fixes the factor
+at its end from the factor at its start, by the same relationship over the FRA's
+own period. A SWAP fixes the factor at its end from the par condition: the fixed
+leg's annuity, valued with the factors already solved, equals the floating leg's
+value, and the only unknown is the factor at the swap's end. This is the textbook
+bootstrap, and it is what makes the sequence of pillars a ladder rather than a
+set of independent quotes.
+
+Between the pillars the method interpolates. Under LOG_LINEAR_DISCOUNT the factors
+are log-linear between adjacent knots; under FLAT_FORWARD_THEN_LOG_LINEAR the short
+end holds the forward flat and the long end interpolates log-linearly, with the
+split tenor naming the boundary. The engine's own documentation notes that the two
+methods are mathematically identical for pillar-to-pillar interpolation; the
+difference the person sees is the name of the method and the split-tenor rule the
+checks enforce. CUBIC_SPLINE is recognised and is not implemented; the target
+state implements it or removes it from the vocabulary, and that change is named
+below.
+
+The day count is applied before the solve: every year fraction is computed under
+the blueprint's convention, so the factor a pillar implies depends on the
+convention as much as on the rate. The engine is at
+=projects/ores.analytics/quant=.
+
+* The checks
+
+Six checks run before the quotes are read, because each is a property of the
+recipe and none needs the market. They are implemented once, in
+=projects/ores.web/packages/web/src/marketdata/curveBlueprintCheck.ts=, and the Check tab draws them.
+
+1. At least one pillar exists, since a recipe with no instrument infers nothing.
+2. The pillars are in strictly increasing maturity order, so the ladder has no
+   crossing or repeated knot.
+3. A DEPOSIT starts at spot, because a deposit is a spot-starting instrument and a
+   later start makes it a different one.
+4. The split tenor closes the ladder as the method requires: for a single-segment
+   method it is the last pillar's end, and for the two-segment method it sits at
+   or after the first pillar's end and at or before the last.
+5. A PROJECTION names a FUNDING curve, not itself, in the same currency, because a
+   projection discounts off a funding curve and the two-tier rule is strict.
+6. The curve a projection names is not itself a projection, for the same rule.
+
+The checks are a refusal by the screen, not by the service: the compute will read
+the quotes and solve whatever the recipe says. The target state moves the checks to
+a validation operation the service owns, so a caller that is not the screen is
+held to the same rule. Until then the Check tab is the authority for a person, and
+the target says so.
+
+* The candidate
+
+The solve produces one discount factor per pillar. The compute writes them as
+observations of the blueprint's output series, dated at the as-of, with the term
+of each point in the datum identity. The output series is a discount series, so
+the identity says the points are inferred rather than observed; the blueprint is
+the only writer of that series.
+
+Every point carries a lineage record naming the source series the pillar read and
+the version of the blueprint that produced it, so the inference is recorded, not
+merely performed. The result is the candidate: it exists, it is traceable, and it
+is not authoritative. A candidate is not consumable by a report; the published
+state is what makes a set authoritative, and the next section is that act.
+
+* The hand-off to publication
+
+The candidate becomes authoritative in three acts. The maker raises a publish
+naming the blueprint and the as-of; a second person decides under the kind's maker
+and checker permissions and the record's four-eyes rule; the publish applies the
+approved request once, stamps the publisher and the instant, ends the set it
+replaces and sends the notice. The record is the publish record, and the set's
+state is published, superseded or withdrawn.
+
+The published set is what the rest of the system consumes. The report references
+it through its market binding, as
+[[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]]
+describes; the screens read it; a candidate never reaches either. The journeys are
+[[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]],
+[[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]],
+[[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] and
+[[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]].
+
+* The changes that reach the target
+
+Four changes remain, and each is a change to a named part of the system.
+
+The first is the named series. The pillar names the market series it reads, the
+reader reads that series rather than composing its identity, and the synthetic
+feed publishes into series it names the same way. This is
+[[id:EAD9F02F-3B4B-495E-B37D-71BF766F7970][Name a curve pillar's market series]] and the decision in
+[[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]].
+
+The second is the validation operation. The six checks move from the screen to a
+service operation, and the result is held against the blueprint's version, so a
+candidate states the version it was checked under.
+
+The third is the cubic spline. CUBIC_SPLINE is recognised and not implemented; the
+target either implements it as a third interpolation method or removes it from the
+vocabulary, so no recipe names a method the engine refuses.
+
+The fourth is the creation of the output series. A blueprint's output series is
+created as part of the blueprint's lifecycle, so a person does not have to find
+one that already exists. This change is shared with the identity document.
+
+The schedule-resolved pillar is not a change to this construction: the engine
+accepts the dates it is given, and the FOMC-dated short end is a configuration of
+the tenor machinery rather than new engine code. The open item there is the
+build's refusal of a schedule-resolved pillar, recorded in the check journey,
+which is a defect of the reader rather than of the bootstrap.
+
+* Conclusion
+
+In the target state a curve is constructed, not observed, and the construction is
+recorded rather than merely performed. The blueprint states the recipe, the
+pillars name the series they read, the solve infers the factors under the
+conventions, the checks hold the recipe to its own rules, the candidate names the
+source series and the version that produced it, and the publication makes the set
+authoritative for the report. The identity system distinguishes the quote from
+the point; the lineage records connect them; and the published set is the single
+object the rest of the system consumes.
+
+* References
+
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]]
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]
+- [[id:29F0F3B1-91A6-42BD-A53F-97F1E72A4FB9][Interest Rate Curve Families]]
+- [[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]]
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
+- [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]]
+- [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][IR Curve Bootstrap Config]]
+- [[id:5DC8A225-A2FD-4ECC-8284-C1D333F0EB3A][IR Curve Bootstrap Pillar]]
+- [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]]
+- [[id:EAD9F02F-3B4B-495E-B37D-71BF766F7970][Name a curve pillar's market series]]
+- [[id:FBD32402-C71F-4730-A3D2-70BA1D5F3868][Maintain the curve blueprints]]
+- [[id:62728AF9-01AD-4FBF-B022-83DCD64204A9][Check that a curve blueprint builds]]
+- [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]]
+- [[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][Check a curve's fit]]
+- [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]]
+- [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]]
+- [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]]
+- [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]]
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]]
+
+* Patterns used
+
+- [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] -- the compute is a call that reads the quotes and answers the solved points.
+- [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] -- a republish over the same series and as-of converges on the same natural key rather than duplicating the points.
+- [[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per Service]] -- the bootstrap reads refdata's recipe and market data's observations, and each component owns its own store.

@@ -211,6 +211,8 @@ register history providers.
 
 * See also
 
+
+- [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]]
 - [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] — the approver reads a similar picture before deciding.
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

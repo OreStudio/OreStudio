@@ -216,6 +216,8 @@ journey draws it.
 * See also
 
 
+
+- [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][The market data path: a public fixing, a curve, a report]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]] — the group hub
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

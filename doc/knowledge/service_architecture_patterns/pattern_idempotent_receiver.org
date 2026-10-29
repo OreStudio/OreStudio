@@ -80,6 +80,8 @@ No security consequence: the identity decides repetition, not access.
 
 * In ORE Studio
 
+The curve construction, [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]], relies on it: a republish over the same series and as-of converges on the same natural key.
+
 The market data path, [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][a public fixing, a curve and a report]], relies on it at the publish gate, which applies one approved request once, and at the ingest, which tolerates a repeated tick.
 
 - [[id:183361A9-31B8-4066-A13D-94CA35270F42][Idempotency in a workflow step]] — the replay guard and the converging write.

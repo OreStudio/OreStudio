@@ -277,6 +277,7 @@ output series within the blueprint lifecycle.
 - [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]]
 - [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]]
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]
+- [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]]
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]]
 
 * Patterns used

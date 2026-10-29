@@ -100,9 +100,7 @@ export function valueOfText(setting: EngineSetting, text: string): SettingValue 
             return Number.isFinite(Number(trimmed)) ? Number(trimmed) : 'invalid';
         case 'enumerated':
         case 'catalogue':
-            return setting.choices.some((choice) => choice.value === trimmed)
-                ? trimmed
-                : 'invalid';
+            return setting.choices.some((choice) => choice.value === trimmed) ? trimmed : 'invalid';
         default:
             return trimmed;
     }

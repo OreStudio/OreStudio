@@ -232,9 +232,14 @@ async function readSetupValueSets(session: LiveSession): Promise<(ore: string) =
     const [sets, values, catalogues, links] = await Promise.all([
         rows(valueSetSubjects.list_ore_parameter_value_sets_request, 'sets'),
         rows(valueSetValueSubjects.list_ore_parameter_value_set_values_request, 'values'),
-        rows(valueSetCatalogueSubjects.list_ore_parameter_value_set_catalogues_request, 'catalogues'),
-        rows(settingValueSetSubjects.list_ore_parameter_setting_value_sets_request,
-            'setting_value_sets'),
+        rows(
+            valueSetCatalogueSubjects.list_ore_parameter_value_set_catalogues_request,
+            'catalogues',
+        ),
+        rows(
+            settingValueSetSubjects.list_ore_parameter_setting_value_sets_request,
+            'setting_value_sets',
+        ),
     ]);
     const fieldsOf = await readValueSets(session, { sets, values, catalogues, links });
     return (ore) => fieldsOf(SETUP_SCOPE, ore);

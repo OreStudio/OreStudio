@@ -575,8 +575,11 @@ describe('engine settings routes', () => {
             ...valueSetsOf(
                 [
                     { code: 'setup.n_threads', source_kind: 'integer', minimum: 2, maximum: 8 },
-                    { code: 'setup.observation_model', source_kind: 'enumerated',
-                      values: ['None', 'Simple'] },
+                    {
+                        code: 'setup.observation_model',
+                        source_kind: 'enumerated',
+                        values: ['None', 'Simple'],
+                    },
                 ],
                 { nThreads: 'setup.n_threads', observationModel: 'setup.observation_model' },
             ),

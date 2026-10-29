@@ -42,7 +42,7 @@ namespace ores::shell::app::commands {
  * is up with routes and no demand is the shape of a silent feed, so the
  * command is the first place to look when no tick arrives.
  *
- *   marketdata adapters status
+ *   marketdata adapter-status show
  */
 class adapter_status_commands {
 public:

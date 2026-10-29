@@ -58,7 +58,6 @@
 #include "ores.refdata.core/messaging/calendar_type_registrar.hpp"
 #include "ores.refdata.core/messaging/cds_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/commodity_registrar.hpp"
-#include "ores.refdata.core/messaging/legal_entity_registrar.hpp"
 #include "ores.refdata.core/messaging/configuration_document_registrar.hpp"
 #include "ores.refdata.core/messaging/contact_type_registrar.hpp"
 #include "ores.refdata.core/messaging/convention_kind_registrar.hpp"
@@ -99,6 +98,7 @@
 #include "ores.refdata.core/messaging/ir_curve_bootstrap_pillar_registrar.hpp"
 #include "ores.refdata.core/messaging/ledger_feed_type_registrar.hpp"
 #include "ores.refdata.core/messaging/leg_type_registrar.hpp"
+#include "ores.refdata.core/messaging/legal_entity_registrar.hpp"
 #include "ores.refdata.core/messaging/monetary_nature_registrar.hpp"
 #include "ores.refdata.core/messaging/netting_agreement_registrar.hpp"
 #include "ores.refdata.core/messaging/netting_set_identifier_registrar.hpp"
@@ -598,7 +598,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
             publish_calendar_types_from_dq_request::nats_subject,
             publish_calendars_from_dq_request::nats_subject,
             publish_commodities_from_dq_request::nats_subject,
-            publish_legal_entities_from_dq_request::nats_subject,
             publish_equity_underlyings_from_dq_request::nats_subject,
             publish_cashflow_types_from_dq_request::nats_subject,
             publish_conventions_from_dq_request::nats_subject,

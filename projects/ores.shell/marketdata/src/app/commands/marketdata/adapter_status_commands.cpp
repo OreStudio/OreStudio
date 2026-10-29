@@ -32,9 +32,9 @@ using ores::nats::service::nats_client;
 namespace messaging = ores::marketdata::messaging;
 
 void adapter_status_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
-    auto menu = std::make_unique<cli::Menu>("adapters");
+    auto menu = std::make_unique<cli::Menu>("adapter-status");
     menu->Insert(
-        "status",
+        "show",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_status(std::ref(out), std::ref(session), std::move(args));
         },

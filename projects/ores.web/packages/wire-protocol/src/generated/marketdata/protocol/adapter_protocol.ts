@@ -23,35 +23,11 @@
  * To modify, update the template and regenerate.
  */
 import type { Adapter } from '../domain/adapter.js';
-import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
-import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
 
 export interface AdapterKey {
     code: string;
-}
-
-export interface AdapterWrite {
-    code: string;
-    name: string;
-    module_version: string;
-    description: string;
-    process: string;
-    asset_classes: string;
-    services: string;
-    configuration_schema: string;
-    display_order: number;
-}
-
-export interface AdapterChange {
-    write: AdapterWrite;
-    precondition: Precondition;
-}
-
-export interface AdapterRemoval {
-    key: AdapterKey;
-    precondition: Precondition;
 }
 
 export interface AdapterLookup {
@@ -115,44 +91,6 @@ export interface GetManyAdaptersResponse {
     entries: AdapterLookup[];
 }
 
-export interface PutAdapterRequest {
-    change: AdapterChange;
-    intent: ChangeIntent;
-}
-
-export interface PutAdapterResponse {
-    result: Result;
-    adapter: Adapter | null;
-}
-
-export interface PutManyAdaptersRequest {
-    changes: AdapterChange[];
-    intent: ChangeIntent;
-}
-
-export interface PutManyAdaptersResponse {
-    result: Result;
-    adapters: Adapter[];
-}
-
-export interface DeleteAdapterRequest {
-    removal: AdapterRemoval;
-    intent: ChangeIntent;
-}
-
-export interface DeleteAdapterResponse {
-    result: Result;
-}
-
-export interface DeleteManyAdaptersRequest {
-    removals: AdapterRemoval[];
-    intent: ChangeIntent;
-}
-
-export interface DeleteManyAdaptersResponse {
-    result: Result;
-}
-
 export interface ListAdapterVersionsRequest {
     key: AdapterKey;
     offset: number;
@@ -180,10 +118,6 @@ export const subjects = {
     list_adapters_request: 'marketdata.v1.adapters.list',
     get_adapter_request: 'marketdata.v1.adapters.get',
     get_many_adapters_request: 'marketdata.v1.adapters.get_many',
-    put_adapter_request: 'marketdata.v1.adapters.put',
-    put_many_adapters_request: 'marketdata.v1.adapters.put_many',
-    delete_adapter_request: 'marketdata.v1.adapters.delete',
-    delete_many_adapters_request: 'marketdata.v1.adapters.delete_many',
     list_adapter_versions_request: 'marketdata.v1.adapters_versions.list',
     get_adapter_version_request: 'marketdata.v1.adapters_versions.get',
 } as const;
@@ -196,10 +130,6 @@ export const requiresSession = {
     list_adapters_request: true,
     get_adapter_request: true,
     get_many_adapters_request: true,
-    put_adapter_request: true,
-    put_many_adapters_request: true,
-    delete_adapter_request: true,
-    delete_many_adapters_request: true,
     list_adapter_versions_request: true,
     get_adapter_version_request: true,
 } as const;

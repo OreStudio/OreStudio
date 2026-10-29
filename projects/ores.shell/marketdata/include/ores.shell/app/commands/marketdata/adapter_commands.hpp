@@ -87,44 +87,6 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <code> <name> <module_version> <description> <process> <asset_classes> <services>
-     * <configuration_schema> <display_order> <reason> <commentary>
-     */
-    static void process_add(std::ostream& out,
-                            ores::nats::service::nats_client& session,
-                            const std::vector<std::string>& args);
-
-    /**
-     * @brief set <code> <name> <module_version> <description> <process> <asset_classes> <services>
-     * <configuration_schema> <display_order> <reason> <commentary> [--version <n>]
-     */
-    static void process_set(std::ostream& out,
-                            ores::nats::service::nats_client& session,
-                            const std::vector<std::string>& args);
-
-    /**
-     * @brief put-many --count <n> <code> <name> <module_version> <description> <process>
-     * <asset_classes> <services> <configuration_schema> <display_order> <reason> <commentary>
-     */
-    static void process_put_many(std::ostream& out,
-                                 ores::nats::service::nats_client& session,
-                                 const std::vector<std::string>& args);
-
-    /**
-     * @brief delete <code> <reason> <commentary> [--version <n>]
-     */
-    static void process_delete(std::ostream& out,
-                               ores::nats::service::nats_client& session,
-                               const std::vector<std::string>& args);
-
-    /**
-     * @brief delete-many <code> <reason> <commentary>
-     */
-    static void process_delete_many(std::ostream& out,
-                                    ores::nats::service::nats_client& session,
-                                    const std::vector<std::string>& args);
-
-    /**
      * @brief versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
      */
     static void process_versions(std::ostream& out,

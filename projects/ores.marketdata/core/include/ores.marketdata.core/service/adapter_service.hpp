@@ -81,14 +81,6 @@ public:
     get_adapter(const ::ores::marketdata::messaging::get_adapter_request& request);
     ::ores::marketdata::messaging::get_many_adapters_response
     get_many_adapters(const ::ores::marketdata::messaging::get_many_adapters_request& request);
-    ::ores::marketdata::messaging::put_adapter_response
-    put_adapter(const ::ores::marketdata::messaging::put_adapter_request& request);
-    ::ores::marketdata::messaging::put_many_adapters_response
-    put_many_adapters(const ::ores::marketdata::messaging::put_many_adapters_request& request);
-    ::ores::marketdata::messaging::delete_adapter_response
-    delete_adapter(const ::ores::marketdata::messaging::delete_adapter_request& request);
-    ::ores::marketdata::messaging::delete_many_adapters_response delete_many_adapters(
-        const ::ores::marketdata::messaging::delete_many_adapters_request& request);
     ::ores::marketdata::messaging::list_adapter_versions_response list_adapter_versions(
         const ::ores::marketdata::messaging::list_adapter_versions_request& request);
     ::ores::marketdata::messaging::get_adapter_version_response
@@ -172,24 +164,6 @@ public:
 private:
     context ctx_;
     repository::adapter_repository repo_;
-
-    /**
-     * @brief Checks one change against the row it names, and stamps it.
-     *
-     * A single write and a batch state the same claim, so the check, the
-     * server-derived provenance and the version the store must match are one
-     * decision made in one place. A batch that made the decision per element
-     * would eventually make it differently from the single write.
-     *
-     * @param change The change as the caller stated it.
-     * @param intent The reason and commentary the caller gave.
-     * @param out The stamped domain object, written only when the result is ok.
-     * @return ok, or why the change was refused.
-     */
-    ores::utility::domain::result
-    prepare_change(const ::ores::marketdata::messaging::adapter_change& change,
-                   const ores::utility::domain::change_intent& intent,
-                   domain::adapter& out);
 };
 
 }

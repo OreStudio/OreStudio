@@ -25,10 +25,10 @@
  * Supplier Table
  *
  * The catalogue of delivery parties. A publisher owns the data; a supplier is who we
- * connect to for it. Frankfurter is an aggregator that delivers many publishers'
- * rates; Bloomberg is a vendor that also publishes its own values; the ECB Data
- * Portal is an authority that is both supplier and publisher. A supplier has
- * sessions, and a session is one configured adapter at that supplier.
+ * connect to for it. The release holds two: Frankfurter, an aggregator that delivers
+ * many publishers' rates over one endpoint, and the synthetic simulator the platform
+ * runs itself. A supplier has sessions, and a session is one configured adapter at
+ * that supplier.
  *
  * The system tenant owns the rows. Every tenant reads them and only the system
  * tenant writes them.

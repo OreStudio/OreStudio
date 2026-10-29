@@ -24,8 +24,11 @@
  *
  * Adapter Table
  *
- * The catalogue of adapter modules. An adapter is code, installed by the release; a
+ * The catalogue of adapter modules. An adapter is a class the release defines; a
  * person configures a session of it and then the feeds that come off the session.
+ * The class announces itself when it comes up, and that announce is what marks the
+ * module installed on this installation, so an installation that never runs a
+ * module never claims it.
  * The catalogue states the module's version, the asset classes it can serve, the
  * services it offers, and the configuration a session must provide, so the screen
  * can build the session form from data instead of from code.

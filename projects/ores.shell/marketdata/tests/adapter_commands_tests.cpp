@@ -75,17 +75,12 @@ TEST_CASE("adapter_commands_registers_every_derived_verb", "[commands]") {
              std::string{"adapters list"},
              std::string{"adapters get"},
              std::string{"adapters get-many"},
-             std::string{"adapters add"},
-             std::string{"adapters set"},
-             std::string{"adapters put-many"},
-             std::string{"adapters delete"},
-             std::string{"adapters delete-many"},
              std::string{"adapters versions"},
              std::string{"adapters version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 10 command(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 5 command(s).";
 }
 
 TEST_CASE("adapter_commands_process_list_requires_a_session", "[commands]") {
@@ -144,136 +139,6 @@ TEST_CASE("adapter_commands_process_get_many_requires_a_session", "[commands]") 
 
     command_feedback::reset();
     adapter_commands::process_get_many(out, session, adapter_tokens(1));
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
-    CHECK(out.str().find("You must be logged in") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("adapter_commands_process_add_requires_a_session", "[commands]") {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    std::ostringstream out;
-
-    command_feedback::reset();
-    adapter_commands::process_add(out, session, adapter_tokens(9));
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
-    CHECK(out.str().find("You must be logged in") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("adapter_commands_process_add_reports_the_expected_count", "[commands]") {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    adapter_log_in(session);
-    std::ostringstream out;
-
-    command_feedback::reset();
-    adapter_commands::process_add(out, session, {});
-
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
-    // The arity guard names both the count it expects and the count it
-    // received. The expected count is shape-specific in the command (a write
-    // also reads its intent), so the case pins the wording and the received
-    // count rather than restating that arithmetic.
-    CHECK(out.str().find("Expected ") != std::string::npos);
-    CHECK(out.str().find("got 0.") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("adapter_commands_process_set_requires_a_session", "[commands]") {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    std::ostringstream out;
-
-    command_feedback::reset();
-    adapter_commands::process_set(out, session, adapter_tokens(9));
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
-    CHECK(out.str().find("You must be logged in") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("adapter_commands_process_set_reports_the_expected_count", "[commands]") {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    adapter_log_in(session);
-    std::ostringstream out;
-
-    command_feedback::reset();
-    adapter_commands::process_set(out, session, {});
-
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
-    // The arity guard names both the count it expects and the count it
-    // received. The expected count is shape-specific in the command (a write
-    // also reads its intent), so the case pins the wording and the received
-    // count rather than restating that arithmetic.
-    CHECK(out.str().find("Expected ") != std::string::npos);
-    CHECK(out.str().find("got 0.") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("adapter_commands_process_put_many_requires_a_session", "[commands]") {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    std::ostringstream out;
-
-    command_feedback::reset();
-    adapter_commands::process_put_many(out, session, adapter_tokens(9));
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
-    CHECK(out.str().find("You must be logged in") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("adapter_commands_process_delete_requires_a_session", "[commands]") {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    std::ostringstream out;
-
-    command_feedback::reset();
-    adapter_commands::process_delete(out, session, adapter_tokens(1));
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
-    CHECK(out.str().find("You must be logged in") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("adapter_commands_process_delete_reports_the_expected_count", "[commands]") {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    adapter_log_in(session);
-    std::ostringstream out;
-
-    command_feedback::reset();
-    adapter_commands::process_delete(out, session, {});
-
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
-    // The arity guard names both the count it expects and the count it
-    // received. The expected count is shape-specific in the command (a write
-    // also reads its intent), so the case pins the wording and the received
-    // count rather than restating that arithmetic.
-    CHECK(out.str().find("Expected ") != std::string::npos);
-    CHECK(out.str().find("got 0.") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("adapter_commands_process_delete_many_requires_a_session", "[commands]") {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    std::ostringstream out;
-
-    command_feedback::reset();
-    adapter_commands::process_delete_many(out, session, adapter_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

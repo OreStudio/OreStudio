@@ -23,33 +23,11 @@
  * To modify, update the template and regenerate.
  */
 import type { Supplier } from '../domain/supplier.js';
-import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
-import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
 
 export interface SupplierKey {
     code: string;
-}
-
-export interface SupplierWrite {
-    code: string;
-    name: string;
-    kind: string;
-    description: string;
-    contract_reference: string;
-    support: string;
-    display_order: number;
-}
-
-export interface SupplierChange {
-    write: SupplierWrite;
-    precondition: Precondition;
-}
-
-export interface SupplierRemoval {
-    key: SupplierKey;
-    precondition: Precondition;
 }
 
 export interface SupplierLookup {
@@ -113,44 +91,6 @@ export interface GetManySuppliersResponse {
     entries: SupplierLookup[];
 }
 
-export interface PutSupplierRequest {
-    change: SupplierChange;
-    intent: ChangeIntent;
-}
-
-export interface PutSupplierResponse {
-    result: Result;
-    supplier: Supplier | null;
-}
-
-export interface PutManySuppliersRequest {
-    changes: SupplierChange[];
-    intent: ChangeIntent;
-}
-
-export interface PutManySuppliersResponse {
-    result: Result;
-    suppliers: Supplier[];
-}
-
-export interface DeleteSupplierRequest {
-    removal: SupplierRemoval;
-    intent: ChangeIntent;
-}
-
-export interface DeleteSupplierResponse {
-    result: Result;
-}
-
-export interface DeleteManySuppliersRequest {
-    removals: SupplierRemoval[];
-    intent: ChangeIntent;
-}
-
-export interface DeleteManySuppliersResponse {
-    result: Result;
-}
-
 export interface ListSupplierVersionsRequest {
     key: SupplierKey;
     offset: number;
@@ -178,10 +118,6 @@ export const subjects = {
     list_suppliers_request: 'marketdata.v1.suppliers.list',
     get_supplier_request: 'marketdata.v1.suppliers.get',
     get_many_suppliers_request: 'marketdata.v1.suppliers.get_many',
-    put_supplier_request: 'marketdata.v1.suppliers.put',
-    put_many_suppliers_request: 'marketdata.v1.suppliers.put_many',
-    delete_supplier_request: 'marketdata.v1.suppliers.delete',
-    delete_many_suppliers_request: 'marketdata.v1.suppliers.delete_many',
     list_supplier_versions_request: 'marketdata.v1.suppliers_versions.list',
     get_supplier_version_request: 'marketdata.v1.suppliers_versions.get',
 } as const;
@@ -194,10 +130,6 @@ export const requiresSession = {
     list_suppliers_request: true,
     get_supplier_request: true,
     get_many_suppliers_request: true,
-    put_supplier_request: true,
-    put_many_suppliers_request: true,
-    delete_supplier_request: true,
-    delete_many_suppliers_request: true,
     list_supplier_versions_request: true,
     get_supplier_version_request: true,
 } as const;

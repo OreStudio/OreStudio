@@ -81,14 +81,6 @@ public:
     get_supplier(const ::ores::marketdata::messaging::get_supplier_request& request);
     ::ores::marketdata::messaging::get_many_suppliers_response
     get_many_suppliers(const ::ores::marketdata::messaging::get_many_suppliers_request& request);
-    ::ores::marketdata::messaging::put_supplier_response
-    put_supplier(const ::ores::marketdata::messaging::put_supplier_request& request);
-    ::ores::marketdata::messaging::put_many_suppliers_response
-    put_many_suppliers(const ::ores::marketdata::messaging::put_many_suppliers_request& request);
-    ::ores::marketdata::messaging::delete_supplier_response
-    delete_supplier(const ::ores::marketdata::messaging::delete_supplier_request& request);
-    ::ores::marketdata::messaging::delete_many_suppliers_response delete_many_suppliers(
-        const ::ores::marketdata::messaging::delete_many_suppliers_request& request);
     ::ores::marketdata::messaging::list_supplier_versions_response list_supplier_versions(
         const ::ores::marketdata::messaging::list_supplier_versions_request& request);
     ::ores::marketdata::messaging::get_supplier_version_response get_supplier_version(
@@ -172,24 +164,6 @@ public:
 private:
     context ctx_;
     repository::supplier_repository repo_;
-
-    /**
-     * @brief Checks one change against the row it names, and stamps it.
-     *
-     * A single write and a batch state the same claim, so the check, the
-     * server-derived provenance and the version the store must match are one
-     * decision made in one place. A batch that made the decision per element
-     * would eventually make it differently from the single write.
-     *
-     * @param change The change as the caller stated it.
-     * @param intent The reason and commentary the caller gave.
-     * @param out The stamped domain object, written only when the result is ok.
-     * @return ok, or why the change was refused.
-     */
-    ores::utility::domain::result
-    prepare_change(const ::ores::marketdata::messaging::supplier_change& change,
-                   const ores::utility::domain::change_intent& intent,
-                   domain::supplier& out);
 };
 
 }

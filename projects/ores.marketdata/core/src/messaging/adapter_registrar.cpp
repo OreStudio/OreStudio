@@ -61,22 +61,6 @@ register_adapter_handlers(ores::nats::service::client& nats,
             h->get_many_adapters(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_adapter_request::nats_subject, adapter_queue_group, [h](ores::nats::message msg) {
-            h->put_adapter(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        put_many_adapters_request::nats_subject, adapter_queue_group, [h](ores::nats::message msg) {
-            h->put_many_adapters(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_adapter_request::nats_subject, adapter_queue_group, [h](ores::nats::message msg) {
-            h->delete_adapter(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_many_adapters_request::nats_subject,
-        adapter_queue_group,
-        [h](ores::nats::message msg) { h->delete_many_adapters(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
         list_adapter_versions_request::nats_subject,
         adapter_queue_group,
         [h](ores::nats::message msg) { h->list_adapter_versions(std::move(msg)); }));

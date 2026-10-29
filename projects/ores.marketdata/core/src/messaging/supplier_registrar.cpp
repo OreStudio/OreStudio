@@ -61,22 +61,6 @@ register_supplier_handlers(ores::nats::service::client& nats,
         supplier_queue_group,
         [h](ores::nats::message msg) { h->get_many_suppliers(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_supplier_request::nats_subject, supplier_queue_group, [h](ores::nats::message msg) {
-            h->put_supplier(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        put_many_suppliers_request::nats_subject,
-        supplier_queue_group,
-        [h](ores::nats::message msg) { h->put_many_suppliers(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        delete_supplier_request::nats_subject, supplier_queue_group, [h](ores::nats::message msg) {
-            h->delete_supplier(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_many_suppliers_request::nats_subject,
-        supplier_queue_group,
-        [h](ores::nats::message msg) { h->delete_many_suppliers(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
         list_supplier_versions_request::nats_subject,
         supplier_queue_group,
         [h](ores::nats::message msg) { h->list_supplier_versions(std::move(msg)); }));

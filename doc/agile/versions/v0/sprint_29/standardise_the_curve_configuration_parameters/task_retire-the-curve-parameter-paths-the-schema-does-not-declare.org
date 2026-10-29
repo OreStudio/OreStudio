@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: FC161D8C-90E2-4EB2-B9C9-01638F3C0581
+:END:
+#+title: Task: Retire the curve parameter paths the schema does not declare
+#+description: The parameter contract keys a curve leaf by its XPath, and every reader resolves that path against the document. Five paths name an element their parent does not declare: four from a block the extractor attributes to the wrong sibling class, and one the ORE schema omits where the ORE code reads it. A path that matches nothing describes a leaf no document holds.
+#+type: task
+#+level: s1
+#+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
+#+owner: marco
+#+branch: feature/retire-the-curve-parameter-paths-the-schema-does-not-declare
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every curve parameter's path is a path the ORE schema declares, or one the ORE code reads where the schema omits it, stated with the reason.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-29                               |
+
+* Acceptance
+
+- The extractor attributes a block to the class of the call that follows its read, bounded by the next block, rather than the last call that names its variable.
+- The four ParametricSmileConfiguration paths under Parameters and Calibration are gone from the published artefact, and the ResidualCorrection path remains.
+- The one path the schema omits but the ORE code reads is recorded where the schema check reads it, with the ORE source line, so it fails the check no more.
+- A check walks every curve parameter path through the schema from CurveConfiguration and fails on a path a parent does not declare, wired into the local checks.
+- The check is run against the committed artefact, and against the artefact of the commit before the fix, where it fails.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- *What makes a path wrong.* The contract keys a leaf by an XPath and every
+  reader resolves it against the document. A path that no document holds
+  describes a leaf that cannot be drawn and cannot be guarded: the store and the
+  page both do nothing with it, without an error.
+- *Five paths fail today*, found by walking the published artefact through
+  `curveconfig.xsd` from `CurveConfiguration`, where a path may only continue
+  through a complex type:
+  - `/CurveConfiguration/FXVolatilities/FXVolatility/ParametricSmileConfiguration/Parameters/Dimension`
+  - `/CurveConfiguration/FXVolatilities/FXVolatility/ParametricSmileConfiguration/Calibration/Dimension`
+  - `/CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/ParametricSmileConfiguration/Parameters/Dimension`
+  - `/CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/ParametricSmileConfiguration/Calibration/Dimension`
+  - `/CurveConfiguration/YieldVolatilities/YieldVolatility/Interpolation`
+- *The four smile paths are one cause.* `ParametricSmileConfiguration::fromXML`
+  reads its three blocks into the same variable name, `n`, and the extractor
+  keys the block's parser by that variable, so the last call wins and every
+  block is walked as `ResidualCorrection`, whose single read is `Dimension`. The
+  real `Parameters` block holds repeated `Parameter` nodes and the real
+  `Calibration` block holds three leaves, so the sibling attribution wants the
+  call that follows the block's own read, bounded by the next block. A repeated
+  child is a collection the extractor does not model yet, which is why the
+  `Parameters` block may end up recorded as unresolved rather than wrong.
+- *`Interpolation` is the schema's gap, not the code's.*
+  `genericyieldvolcurveconfig.cpp:236` reads `Interpolation` for a yield
+  volatility, and `yieldVolatility` in `curveconfig.xsd` declares no such
+  element. The path is real, so the check needs the statement that the ORE code
+  reads it, with that source line, rather than an exemption a reader cannot
+  verify.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: Document the curve segment and quote leaves
+#+blocked_since: 2026-10-29
 #+created: 2026-10-27
 #+updated: 2026-10-27
 #+environment:
@@ -26,10 +26,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | [[id:F356BCF2-332B-406A-BEAA-036425E5E8C8][Document the curve segment and quote leaves]] |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-27                               |
 

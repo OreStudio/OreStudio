@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-637 tables in 21 groups.
+641 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -141,6 +141,7 @@ entity "refdata" as refdata {
   ores_refdata_currency_pair_conventions_tbl
   ores_refdata_currency_pairs_tbl
   ores_refdata_curve_bootstrap_configs_tbl
+  ores_refdata_curve_configuration_columns_tbl
   ores_refdata_curve_configuration_sections_tbl
   ores_refdata_curve_configurations_tbl
   ores_refdata_curve_correlation_configs_tbl
@@ -185,6 +186,7 @@ entity "refdata" as refdata {
   ores_refdata_ir_curve_bootstrap_pillars_tbl
   ores_refdata_ledger_feed_types_tbl
   ores_refdata_leg_types_tbl
+  ores_refdata_legal_entities_tbl
   ores_refdata_local_jurisdictions_tbl
   ores_refdata_monetary_natures_tbl
   ores_refdata_netting_agreements_tbl
@@ -243,7 +245,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-168 tables — ores_schema.refdata.puml
+170 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {
@@ -341,6 +343,7 @@ entity "dq_staging" as dq_staging {
   ores_dq_ip2country_artefact_tbl
   ores_dq_ir_curve_generation_configs_artefact_tbl
   ores_dq_ir_curve_template_entries_artefact_tbl
+  ores_dq_legal_entities_artefact_tbl
   ores_dq_lei_bic_artefact_tbl
   ores_dq_lei_entities_artefact_tbl
   ores_dq_lei_relationships_artefact_tbl
@@ -392,7 +395,7 @@ entity "dq_staging" as dq_staging {
 }
 note bottom of dq_staging
 Data Staging
-142 tables — ores_schema.dq_staging.puml
+143 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {
@@ -639,6 +642,7 @@ entity "reporting" as reporting {
   ores_reporting_ore_parameter_value_set_catalogues_tbl
   ores_reporting_ore_parameter_value_set_values_tbl
   ores_reporting_ore_parameter_value_sets_tbl
+  ores_reporting_ore_parameter_vocabularies_tbl
   ores_reporting_ore_parameters_tbl
   ores_reporting_report_configurations_tbl
   ores_reporting_report_definitions_tbl
@@ -658,7 +662,7 @@ entity "reporting" as reporting {
 }
 note bottom of reporting
 Reporting & Analytics
-37 tables — ores_schema.reporting.puml
+38 tables — ores_schema.reporting.puml
 end note
 
 entity "compute" as compute {

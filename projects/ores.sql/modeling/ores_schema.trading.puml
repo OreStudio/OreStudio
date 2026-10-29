@@ -1615,7 +1615,8 @@ package "trading" #E8F5E9 {
         * trade_type_code : text
         * party_id : uuid <<FK>>
         * trade_activity_id : uuid <<FK>>
-        * reference_entity : text
+        * reference_entity_id_type : text
+        * reference_entity_id : text <<FK>>
           start_date : date
           maturity_date : date
           description : text

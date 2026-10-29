@@ -8,7 +8,7 @@
 #+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
 #+owner: marco
 #+branch: feature/construct-every-rate-product
-#+pr:
+#+pr: 4044
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4044][#4044]] | [trading] Construct every rate product by name |
 
 * Review
 

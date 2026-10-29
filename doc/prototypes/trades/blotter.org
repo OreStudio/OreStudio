@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 5C1D6A0B-5A0C-4E8C-9F58-2F0B7C7A1D31
+:END:
+#+title: Trade blotter prototype
+#+description: A clickable prototype of one screen for trades and structures: a portfolio tree on the left, the trade list beside it, a flat option, and the perspectives the same rows are read through.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:trading:ui:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+
+| Item          | Where |
+|---------------+-------|
+| Prototype     | [[file:blotter/][the prototype]] |
+| Gemini review | none |
+| Group         | [[file:index.org][Trades prototypes]] |
+
+* Summary
+
+The arc built two screens: a blotter of trades and a list of structures with a
+page of its own. Neither can answer a question that spans them. "What does this
+book hold?" needs the trades *and* the structures, and "what have we done with
+this counterparty?" needs both again under a different order.
+
+This prototype argues for one screen, as the owner shaped it on 2026-10-29: a
+portfolio tree on the left, the trade list beside it, and rows that are the
+top-level trades and the structures. A structure is one row and its legs are
+inside it, so a click opens the structure view; a trade that belongs to no
+structure opens the trade view. A *flat* option reads the same list as leaves.
+
+The screens it replaces are [[file:structure-page.org][the structure page]] and the
+structures list inside it. The trade view it opens is
+[[file:trade-page.org][the trade list and page]].
+
+* Detail
+
+** The tree, and where a structure sits
+
+The tree is the portfolio: the party, its desks and their books, from the mock
+book table. A row's book is the book it was booked in. A structure has no book of
+its own, so it takes the book its legs share; when its legs span books it sits at
+the node that holds them all — the desk when they share one, the party when they
+do not — and the row says *spans books*. The investigation
+[[id:1E035C4E-119B-472E-96FA-310D8B7C7CD8][The book of a structure]] records why
+the rule is not enforced.
+
+The mock data has both cases. =PKG-0004=, =STR-0009= and =STR-0007= sit in one
+book each. =STR-0010= spans =EMEA-FX= and =EMEA-CREDIT= through its inner package,
+so it sits at the party and carries the chip.
+
+** The list
+
+The rows are the top-level trades and the whole structures. A structure's legs are
+never rows of it: they are inside the structure, and the structure row carries a
+chip saying how many legs it holds. The columns are the identifier, what it is, the book, the
+counterparty, the trade date, the state and the external version, and a count of
+legs for a structure. A structure has no state and no external version, and the
+cells say so rather than borrowing one leg's.
+
+** Flat
+
+=Flat= expands every structure into its legs, so every row is a trade and the
+structure a leg belongs to becomes a column of its own. The flat list is what a
+reader uses to see risk trade by trade; it loses the commercial unit, which is why
+it is an option and not the default.
+
+** Perspectives
+
+The toolbar holds three: *Portfolio*, *Counterparty* and *Asset class*. The first
+is the default and the one that ships first. A perspective is a topology over the
+same rows and not a different read: the rail changes, the rows narrow, and the
+columns stay the ones a trade has. The task
+[[id:5057B9A6-66F0-4E4E-967F-DF915809DF3E][Merge the trades and structures screens]]
+carries the exploration of the word itself.
+
+** States
+
+#+ATTR_HTML: :class hug-leading
+| Query | What it shows |
+|-------+---------------|
+| (none) | The portfolio tree, with the party open and every row under it |
+| =?flat=1= | The same list as leaves, one row per trade, with the structure in its own column |
+| =?view=counterparty&= | The counterparty topology: one counterparty at a time |
+| =?view=counterparty&sel=MRDN= | One counterparty's rows, which at the top level is the structure it is party to |
+| =?view=instrument&= | The asset-class topology: one family at a time |
+| =?view=instrument&sel=fx= | Every FX row, with the structures that mix families listed under each family they touch |
+| =?sel=EMEA-FX= | One book's rows, in the portfolio perspective |
+
+* What is fake
+
+Every number and row is the shared mock data of the prototypes; nothing is read
+from a server. A row's link opens the trade page or the structure page prototype
+rather than a record page of this screen. Paging is stated and not drawn: the
+list is one page of 32 top-level rows, which is small enough to show whole. The
+"spans books" chip is real for the mock data and would be computed from the legs
+in the product.
+
+* Where the code lives
+
+=doc/prototypes/trades/blotter/=.
+
+* See also
+
+- [[id:5057B9A6-66F0-4E4E-967F-DF915809DF3E][Merge the trades and structures screens]] — the task this prototype answers to.
+- [[id:1E035C4E-119B-472E-96FA-310D8B7C7CD8][The book of a structure]] — why a spanning structure is not refused.
+- [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the grid's columns and its structure view.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the composition ladder and the row kinds.
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]

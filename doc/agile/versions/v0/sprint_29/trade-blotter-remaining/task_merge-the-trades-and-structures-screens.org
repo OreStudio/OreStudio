@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trading:web:ux:analysis:trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/merge-the-trades-and-structures-screens
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -39,7 +39,7 @@ follows the decision, and the screen follows the prototype.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -137,6 +137,16 @@ opens. The existing blotter's structure view — a mini-blotter of the selected
 structure's legs, tabbed by product type — is the same idea at a smaller scale and
 is folded in with it.
 
+** Where a structure sits, decided
+
+The book question is settled by
+[[id:1E035C4E-119B-472E-96FA-310D8B7C7CD8][The book of a structure]] and adopted
+here: one book per structure is a booking convention and not an invariant, so it is
+not enforced. The blotter places a structure under the book its legs share when
+they share one, and otherwise at the lowest common ancestor of their books — the
+desk when they share one, the party when they do not — and the row says *spans
+books*. The prototype draws both cases.
+
 ** Perspectives, and why the word needs exploring
 
 The owner's framing: a trade set has two or three topologies it can be read
@@ -156,9 +166,16 @@ different grouping and column set over the same read, a separate screen, or a
 different read — and states the test that tells them apart. *Perspective* is
 therefore a working word in this task, not a decided concept.
 
-Two things follow and are answered here rather than assumed: whether the tree on
-the left changes with the perspective or stays the portfolio tree, and whether a
-perspective is chosen by a control on the screen or by the address.
+The prototype settles the first reading of the word: a perspective is a *topology
+over the same rows and not a different read*. The rail changes — the party's desks
+and books, the counterparties, the asset classes — the rows narrow, and the
+columns stay the ones a trade has. It is chosen by a control on the screen and
+carried in the address, so a perspective is shareable.
+
+Two things follow and are answered by the prototype rather than assumed: the left
+rail changes with the perspective (it *is* the perspective), and the control and
+the address both name it — a control that is not in the address is not shareable,
+and an address that the control does not show is not discoverable.
 
 ** The read
 
@@ -171,10 +188,10 @@ it does not add a route per perspective.
 
 ** The prototype
 
-A clickable prototype beside =doc/prototypes/trades/= with the chosen shape: the
-list with its row kinds, the disclosure of a structure, the perspective switch,
-and the trade page and deal page reached from a row. The prototype is the
-artefact the screen is built from, as with the pages this arc already built.
+[[id:5C1D6A0B-5A0C-4E8C-9F58-2F0B7C7A1D31][Trade blotter prototype]] is the
+artefact: a portfolio tree beside the list, the row kinds, the flat option, the
+three perspectives, and the trade view and structure view reached from a row. It
+is the shape the screen is built from, as with the pages this arc already built.
 
 ** What this task does not do
 

@@ -187,7 +187,7 @@ void validate_scope(const domain::trade_generation_scope& scope) {
 
 std::vector<std::string_view> planned_asset_classes() {
     static const std::vector<std::string_view> codes{
-        "bond", "commodity", "equity", "fx", "interest_rates"};
+        "bond", "commodity", "credit", "equity", "fx", "interest_rates"};
     return codes;
 }
 
@@ -196,9 +196,11 @@ const trade_planner& planner_for(const std::string& asset_class_code) {
     static const commodity_trade_planner commodity;
     static const rate_trade_planner rates;
     static const fx_trade_planner fx;
+    static const credit_trade_planner credit;
     static const equity_trade_planner equity;
     static const std::map<std::string, const trade_planner*> planners{{"bond", &bond},
                                                                       {"commodity", &commodity},
+                                                                      {"credit", &credit},
                                                                       {"equity", &equity},
                                                                       {"fx", &fx},
                                                                       {"interest_rates", &rates}};
@@ -932,6 +934,66 @@ fx_trade_planner::plan(const domain::trade_generation_scope& scope) const {
 
 std::string_view equity_trade_planner::asset_class_code() const {
     return "equity";
+}
+
+/*
+ * The credit codes a population draws. A synthetic CDO needs a qualifier the
+ * family has nowhere to state, so it stays out; the five here each state a
+ * reference entity, the dates and nothing else.
+ */
+constexpr std::string_view credit_types[] = {"CreditDefaultSwap",
+                                             "IndexCreditDefaultSwap",
+                                             "IndexCreditDefaultSwapOption",
+                                             "CreditLinkedSwap",
+                                             "RiskParticipationAgreement"};
+
+constexpr std::size_t credit_type_count = std::size(credit_types);
+
+std::string_view credit_trade_planner::asset_class_code() const {
+    return "credit";
+}
+
+domain::trade_population_plan
+credit_trade_planner::plan(const domain::trade_generation_scope& scope) const {
+    validate_scope(scope);
+
+    if (scope.credit_reference_entities.empty())
+        throw trade_population_error(
+            "The tenant holds no legal entity, so no credit trade can state a reference "
+            "entity. Publish the LEI dataset first.");
+
+    const auto min_years = tenor_years_of(scope.min_tenor_code);
+    const auto max_years = tenor_years_of(scope.max_tenor_code);
+
+    domain::trade_population_plan plan;
+    plan.config_id = scope.config_id;
+    plan.party_id = scope.party_id;
+    plan.as_of_date = scope.as_of_date;
+
+    for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
+        const auto name = slot_name(scope, slot);
+
+        const auto span = max_years - min_years + 1;
+        const auto drawn =
+            min_years + static_cast<std::uint32_t>(draw(name, 0) * static_cast<double>(span));
+
+        domain::credit_terms terms;
+        terms.reference_entity_id_type = "LEI";
+        terms.reference_entity_id =
+            scope.credit_reference_entities[slot % scope.credit_reference_entities.size()];
+        terms.start_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
+        terms.maturity_date =
+            add_years(terms.start_date, static_cast<int>(std::clamp(drawn, min_years, max_years)));
+
+        auto entry = common_slot(scope, slot);
+        entry.trade_type_code = std::string(credit_types[slot % credit_type_count]);
+        entry.notional = notional_from(scope, draw(name, 1));
+        entry.terms = terms;
+
+        plan.slots.push_back(std::move(entry));
+    }
+
+    return plan;
 }
 
 namespace {

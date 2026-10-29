@@ -159,6 +159,8 @@ struct trade_generation_scope final {
      * constituent it writes resolves against the catalogue that holds it.
      */
     std::vector<equity_underlying_reference> equity_underlyings;
+    /// The LEIs the credit family draws its reference entities from.
+    std::vector<std::string> credit_reference_entities;
     std::vector<boost::uuids::uuid> book_ids;
     std::vector<boost::uuids::uuid> counterparty_ids;
     /**
@@ -238,6 +240,22 @@ struct equity_range_bound final {
     std::optional<double> leverage;
 };
 
+/**
+ * @brief The facts a credit trade states.
+ *
+ * The reference is typed, so a plan states whether it names a legal entity or
+ * an identifier of the system's own data.
+ */
+struct credit_terms final {
+    std::string reference_entity_id_type;
+    std::string reference_entity_id;
+    std::chrono::year_month_day start_date;
+    std::chrono::year_month_day maturity_date;
+};
+
+/**
+ * @brief The facts a bond trade states.
+ */
 struct bond_terms final {
     std::string security_id;
     boost::uuids::uuid issue_id;
@@ -519,7 +537,8 @@ struct equity_terms final {
     std::vector<equity_range_bound> range_bounds;
 };
 
-using trade_terms = std::variant<bond_terms, commodity_terms, rate_terms, fx_terms, equity_terms>;
+using trade_terms =
+    std::variant<bond_terms, commodity_terms, credit_terms, rate_terms, fx_terms, equity_terms>;
 
 /**
  * @brief One trade the population states, with every reference already

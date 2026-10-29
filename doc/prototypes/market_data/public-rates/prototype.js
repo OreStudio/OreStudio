@@ -1,13 +1,12 @@
 /*
- * Static prototype of the Public rates screen (provider, fixing, source): the provider list, the provider
- * record and its tabs, and the area's availability, compare and fetch. It shows only
- * real observed market data; the simulator is not part of this screen.
- * Every state is a query string, so a reviewer opens it by address. Mock data only.
+ * Static prototype of Public rates: the real observed values, the provider that
+ * publishes them and the source that delivered them. Mock data only; no request
+ * leaves the page. Every state is a query string.
  *
  *   ?tab=providers|availability|compare|fetch
- *   ?provider=<code>&rtab=overview|underlyings|fixings|health|history
- *   ?pair=<PAIR>  ?filter=live|late|down|never|paused|terms
- *   ?paused=muted|hidden|resumed   ?terms=withdraw
+ *   ?provider=<code>&rtab=overview|underlyings|fixings|history
+ *   ?class=fx|ir  ?pair=<PAIR>  ?item=<IR item>  ?filter=...
+ *   ?paused=muted|hidden  ?terms=withdraw
  *   ?fetch=at|progress|done
  */
 
@@ -20,96 +19,76 @@ const withdrawn = q.get('terms') === 'withdraw';
 const fetchState = q.get('fetch') ?? 'at';
 const filter = q.get('filter') ?? 'all';
 const search = (q.get('find') ?? '').toLowerCase();
+let klass = q.get('class') ?? 'fx';
 let pair = q.get('pair') ?? 'EUR/USD';
+let irItem = q.get('item') ?? '€STR';
 
 const DATES = ['2026-10-15', '2026-10-16', '2026-10-19', '2026-10-20', '2026-10-21',
     '2026-10-22', '2026-10-23', '2026-10-26', '2026-10-27', '2026-10-28'];
 
-
-const SOURCES = [
-    { id: 'ecb-frankfurter', provider: 'ecb', kind: 'live', state: 'serving', last: '19:24' },
-    { id: 'imf-frankfurter', provider: 'imf', kind: 'live', state: 'serving', last: '19:24' },
-    { id: 'boc-frankfurter', provider: 'boc', kind: 'live', state: 'serving', last: '19:20' },
-    { id: 'tcmb-frankfurter', provider: 'tcmb', kind: 'live', state: 'not serving', last: '2026-10-27' },
-    { id: 'norges-frankfurter', provider: 'norges', kind: 'live', state: 'serving', last: '19:24' },
-    { id: 'boe-frankfurter', provider: 'boe', kind: 'live', state: 'serving', last: '15:00' },
-    { id: 'fred-frankfurter', provider: 'fred', kind: 'live', state: 'serving', last: '19:22' },
-    { id: 'ust-treasury', provider: 'ust', kind: 'live', state: 'serving', last: '18:05' },
-];
-
-const IR_ITEMS = {
-    ecb: [{ name: '€STR', kind: 'rate' }, { name: 'EUR AAA spot curve', kind: 'curve' }],
-    fred: [{ name: 'SOFR', kind: 'rate' }, { name: 'US Treasury par curve', kind: 'curve' }],
-    boe: [{ name: 'SONIA', kind: 'rate' }, { name: 'GBP gilt curve', kind: 'curve' }],
-    ust: [{ name: 'US Treasury par curve', kind: 'curve' }],
+/* The sources, as Connectivity configures them: one per (provider, class). */
+const SOURCES = {
+    'ecb-frankfurter': { provider: 'ecb', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'serving', last: '19:24' },
+    'ecb-ecb-data': { provider: 'ecb', class: 'ir', adapter: 'ecb-sdw', kind: 'live', state: 'serving', last: '17:02' },
+    'imf-frankfurter': { provider: 'imf', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'serving', last: '19:24' },
+    'boc-frankfurter': { provider: 'boc', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'serving', last: '19:20' },
+    'tcmb-frankfurter': { provider: 'tcmb', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'not serving', last: '2026-10-27' },
+    'norges-frankfurter': { provider: 'norges', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'serving', last: null },
+    'boe-frankfurter': { provider: 'boe', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'serving', last: '15:00' },
+    'boe-boe': { provider: 'boe', class: 'ir', adapter: 'boe-stats', kind: 'live', state: 'serving', last: '15:00' },
+    'fred-frankfurter': { provider: 'fred', class: 'fx', adapter: 'frankfurter', kind: 'live', state: 'serving', last: '19:22' },
+    'fred-api': { provider: 'fred', class: 'ir', adapter: 'fred-api', kind: 'live', state: 'serving', last: '19:22' },
+    'ust-treasury': { provider: 'ust', class: 'ir', adapter: 'treasury-feed', kind: 'live', state: 'serving', last: '18:05' },
 };
+
+const FIXING = { 'EUR/USD': 1.1638, 'EUR/CAD': 1.5638, 'EUR/GBP': 0.8646, 'CAD/EUR': 0.6392, 'CAD/USD': 1.3848,
+    'USD/CHF': 0.8321, 'USD/JPY': 0.8360, 'TRY/USD': 42.70, 'TRY/EUR': 49.55, 'NOK/EUR': 11.62, 'NOK/USD': 10.82,
+    'GBP/USD': 1.3373, 'GBP/EUR': 1.1734 };
 
 const PROVIDERS = [
-    { code: 'ecb', classes: ['fx', 'ir'], sources: ['ecb-frankfurter'], name: 'European Central Bank', kind: 'reference',
+    { code: 'ecb', name: 'European Central Bank', kind: 'reference', classes: ['fx', 'ir'],
       terms: { accepted: true, version: 'v3', who: 'super_admin', at: '2026-01-15 10:22' },
-      adapter: { state: 'serving', hb: '19:24', served: 44, refused: 0, unknown: 0 },
-      last: { pair: 'EUR/CAD', date: '2026-10-28', received: '19:23', expected: 'today, on time', onTime: true },
-      credit: 'Source: ECB statistics', storage: true, credential: 'none', rhythm: 'daily, 16:00 CET',
+      sources: { fx: 'ecb-frankfurter', ir: 'ecb-ecb-data' },
       series: { 'EUR/USD': [1.1605, 1.1609, 1.1612, 1.1614, 1.1618, 1.1620, 1.1622, 1.1626, 1.1631, 1.1638],
                 'EUR/CAD': [1.5590, 1.5601, 1.5610, 1.5614, 1.5618, 1.5620, 1.5622, 1.5626, 1.5631, 1.5638],
-                'EUR/GBP': [0.8620, 0.8624, 0.8627, 0.8630, 0.8632, 0.8634, 0.8637, 0.8640, 0.8643, 0.8646] } },
-    { code: 'boc', classes: ['fx'], sources: ['boc-frankfurter'], name: 'Bank of Canada', kind: 'reference',
+                'EUR/GBP': [0.8620, 0.8624, 0.8627, 0.8630, 0.8632, 0.8634, 0.8637, 0.8640, 0.8643, 0.8646] },
+      ir: [{ name: '€STR', kind: 'rate' }, { name: 'EUR AAA spot curve', kind: 'curve' }] },
+    { code: 'imf', name: 'International Monetary Fund', kind: 'reference', classes: ['fx'],
+      terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-09-01 09:00' },
+      sources: { fx: 'imf-frankfurter' },
+      series: { 'USD/EUR': [0.8616, 0.8613, 0.8611, 0.8609, 0.8607, 0.8606, 0.8604, 0.8602, 0.8600, 0.8597],
+                'USD/CHF': [0.8290, 0.8294, 0.8297, 0.8300, 0.8303, 0.8306, 0.8309, 0.8312, 0.8316, 0.8321] } },
+    { code: 'boc', name: 'Bank of Canada', kind: 'reference', classes: ['fx'],
       terms: { accepted: true, version: 'v2', who: 'super_admin', at: '2026-10-26 11:20' },
-      adapter: { state: 'serving', hb: '19:24', served: 27, refused: 0, unknown: 0 },
-      last: { pair: 'CAD/EUR', date: '2026-10-27', received: '19:20', expected: 'today, late', onTime: false },
-      credit: 'Source: Bank of Canada', storage: true, credential: 'none', rhythm: 'daily, 16:30 ET',
+      sources: { fx: 'boc-frankfurter' },
       series: { 'CAD/USD': [1.3820, 1.3824, 1.3827, 1.3830, 1.3833, 1.3836, 1.3839, 1.3842, 1.3845, 1.3848],
                 'CAD/EUR': [0.6410, 0.6408, 0.6406, 0.6404, 0.6402, 0.6400, 0.6398, 0.6396, 0.6394, 0.6392] } },
-    { code: 'imf', classes: ['fx'], sources: ['imf-frankfurter'], name: 'International Monetary Fund', kind: 'reference',
-      terms: { accepted: !withdrawn, version: withdrawn ? 'v2' : 'v1', who: 'super_admin', at: '2026-09-01 09:00' },
-      adapter: { state: 'serving', hb: '19:24', served: 48, refused: 0, unknown: 0 },
-      last: { pair: 'EUR/USD', date: '2026-10-28', received: '19:24', expected: 'today, on time', onTime: true },
-      credit: 'Source: IMF', storage: !withdrawn, credential: 'none', rhythm: 'daily, 12:00 ET',
-      series: { 'EUR/USD': [1.1598, 1.1601, 1.1606, 1.1607, 1.1611, 1.1614, 1.1616, 1.1620, 1.1624, 1.1630],
-                'USD/CHF': [0.8290, 0.8294, 0.8297, 0.8300, 0.8303, 0.8306, 0.8309, 0.8312, 0.8316, 0.8321] } },
-    { code: 'fred', classes: ['fx', 'ir'], sources: ['fred-frankfurter'], name: 'Federal Reserve (H.10)', kind: 'reference',
-      terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-02 14:00' },
-      adapter: { state: 'serving', hb: '19:24', served: 31, refused: 0, unknown: 0 },
-      last: { pair: 'EUR/USD', date: '2026-10-28', received: '19:22', expected: 'today, on time', onTime: true },
-      credit: 'Source: Federal Reserve Board', storage: true, credential: 'none', rhythm: 'daily, 16:15 ET',
-      series: { 'EUR/USD': [1.1610, 1.1613, 1.1616, 1.1619, 1.1621, 1.1623, 1.1626, 1.1629, 1.1633, 1.1640],
-                'EUR/GBP': [0.8618, 0.8621, 0.8625, 0.8628, 0.8630, 0.8633, 0.8635, 0.8638, 0.8641, 0.8644] } },
-    { code: 'tcmb', classes: ['fx'], sources: ['tcmb-frankfurter'], name: 'Central Bank of Turkiye', kind: 'reference',
+    { code: 'tcmb', name: 'Central Bank of Turkiye', kind: 'reference', classes: ['fx'],
       terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-20 08:10' },
-      adapter: { state: 'down', hb: '16:02', served: 21, refused: 3, unknown: 0 },
-      last: null, credit: 'Source: TCMB', storage: true, credential: 'none', rhythm: 'daily, 15:30 TRT',
+      sources: { fx: 'tcmb-frankfurter' },
       series: { 'TRY/USD': [42.10, 42.18, 42.25, 42.31, 42.38, 42.44, 42.50, 42.57, 42.63, 42.70] } },
-    { code: 'norges', classes: ['fx'], sources: ['norges-frankfurter'], name: 'Norges Bank', kind: 'reference',
+    { code: 'norges', name: 'Norges Bank', kind: 'reference', classes: ['fx'],
       terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-18 09:00' },
-      adapter: { state: 'serving', hb: '19:24', served: 12, refused: 0, unknown: 0 },
-      last: null, credit: 'Source: Norges Bank', storage: true, credential: 'none', rhythm: 'daily, 14:00 CET',
-      series: {} },
-    { code: 'boe', classes: ['fx', 'ir'], sources: ['boe-frankfurter'], name: 'Bank of England', kind: 'reference',
+      sources: { fx: 'norges-frankfurter' }, series: {} },
+    { code: 'boe', name: 'Bank of England', kind: 'reference', classes: ['fx', 'ir'],
       terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-18 14:00' },
-      adapter: { state: 'serving', hb: '19:24', served: 34, refused: 0, unknown: 0 },
-      paused: true,
-      last: { pair: 'GBP/USD', date: '2026-10-28', received: '15:00', expected: 'today, on time', onTime: true },
-      credit: 'Source: Bank of England', storage: true, credential: 'none', rhythm: 'daily, 15:00 GMT',
-      series: { 'GBP/USD': [1.3348, 1.3351, 1.3354, 1.3357, 1.3360, 1.3362, 1.3364, 1.3367, 1.3370, 1.3373] } },
+      sources: { fx: 'boe-frankfurter', ir: 'boe-boe' },
+      series: { 'GBP/USD': [1.3348, 1.3351, 1.3354, 1.3357, 1.3360, 1.3362, 1.3364, 1.3367, 1.3370, 1.3373],
+                'GBP/EUR': [1.1730, 1.1731, 1.1732, 1.1732, 1.1733, 1.1733, 1.1734, 1.1734, 1.1734, 1.1734] },
+      ir: [{ name: 'SONIA', kind: 'rate' }, { name: 'GBP gilt curve', kind: 'curve' }] },
+    { code: 'fred', name: 'Federal Reserve (H.10)', kind: 'reference', classes: ['fx', 'ir'],
+      terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-02 14:00' },
+      sources: { fx: 'fred-frankfurter', ir: 'fred-api' },
+      series: { 'EUR/USD': [1.1610, 1.1613, 1.1616, 1.1619, 1.1621, 1.1623, 1.1626, 1.1629, 1.1633, 1.1640],
+                'USD/JPY': [0.8325, 0.8330, 0.8334, 0.8338, 0.8341, 0.8345, 0.8348, 0.8352, 0.8356, 0.8360] },
+      ir: [{ name: 'SOFR', kind: 'rate' }, { name: 'H.15 Treasury par curve', kind: 'curve' }] },
+    { code: 'ust', name: 'US Treasury', kind: 'reference', classes: ['ir'],
+      terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-05 10:00' },
+      sources: { ir: 'ust-treasury' }, series: {},
+      ir: [{ name: 'US Treasury par curve', kind: 'curve' }] },
 ];
 
-PROVIDERS.push({ code: 'ust', name: 'US Treasury', kind: 'reference', classes: ['ir'], sources: ['ust-treasury'],
-    terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-05 10:00' },
-    adapter: { state: 'serving', hb: '18:05', served: 12, refused: 0, unknown: 0 },
-    last: { pair: 'US Treasury par curve', date: '2026-10-28', received: '18:05', expected: 'today, on time', onTime: true },
-    credit: 'Source: US Department of the Treasury', storage: true, credential: 'none', rhythm: 'daily, 18:00 ET',
-    series: {}, lastClass: 'ir' });
-
-const SENTENCES = {
-    live: 'Serving. The last fixing is today\'s and it arrived on time.',
-    late: 'Late. The publication day has passed with no fixing. Read the source\'s health, then ask for a fetch of the missing days.',
-    down: 'Not serving. The source stopped delivering, so nothing is fetched. Restart it, or find out whether its terms were withdrawn.',
-    never: 'Never fixed. The terms are accepted and the adapter serves, but no value of this provider is stored yet.',
-    paused: 'Paused by a person. The provider is not fetched. Its stored fixings and every feed that started from one stay.',
-    terms: 'Terms not accepted. The provider is not fetched until a person accepts the version shown.',
-};
-const TONE = { live: ['ok', 'serving'], late: ['warn', 'late'], down: ['bad', 'not serving'],
-    never: ['never', 'never fixed'], paused: ['off', 'paused'], terms: ['warn', 'not accepted'] };
+const STATES = { serving: ['ok', 'serving'], 'not serving': ['bad', 'not serving'] };
 
 const fn = {
     esc: (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])),
@@ -118,78 +97,36 @@ const fn = {
         for (const [k, v] of Object.entries(changes)) { if (v === null) next.delete(k); else next.set(k, v); }
         return `?${next.toString()}`;
     },
-    badge: (kind) => `<span class="badge ${TONE[kind][0]}"><i class="dot"></i>${TONE[kind][1]}</span>`,
-    status: (p) => {
-        if (!p.terms.accepted) return 'terms';
-        if (p.paused && pausedVariant !== 'resumed') return 'paused';
-        if (p.adapter.state !== 'serving') return 'down';
-        if (!p.last) return 'never';
-        return p.last.onTime ? 'live' : 'late';
+    at: (code) => PROVIDERS.find((p) => p.code === code),
+    sourceState: (name) => {
+        const s = SOURCES[name];
+        return `<span class="badge ${STATES[s.state]?.[0] ?? 'never'}"><i class="dot"></i>${STATES[s.state]?.[1] ?? s.state}</span>`;
     },
-    at: (p) => PROVIDERS.find((x) => x.code === p) ?? null,
-    pairs: () => [...new Set(PROVIDERS.flatMap((p) => Object.keys(p.series)))].sort(),
-    holders: (pair) => PROVIDERS.filter((p) => p.series[pair]),
+    sourceCell: (p) => Object.entries(p.sources).map(([cls, name]) =>
+        `<div><span class="badge">${cls.toUpperCase()}</span> <a class="mono" href="../connectivity/index.html?source=${name}&stab=overview">${name}</a> ${fn.sourceState(name)}</div>`).join(''),
+    items: (p) => Object.keys(p.series).length + (p.ir?.length ?? 0),
+    sourceOf: (p, cls) => p.sources[cls] ?? null,
 };
 
-function itemCount(p) {
-    return Object.keys(p.series).length + (IR_ITEMS[p.code]?.length ?? 0);
-}
-
-function listRow(p) {
-    const kind = fn.status(p);
-    return `<tr>
-        <td class="provider">${fn.esc(p.name)}<div class="faint mono">${p.code}</div></td>
-        <td>${(p.classes ?? ['fx']).map((c) => `<span class="badge">${c.toUpperCase()}</span>`).join(' ')}</td>
-        <td class="num">${itemCount(p) || '—'}</td>
-        <td>${p.terms.accepted ? `<span class="badge ok">${p.terms.version}</span>` : `<span class="badge warn">not accepted</span>`}</td>
-        <td>${(p.sources ?? []).map((id) => `<span class="mono">${id}</span>`).join(' ')}</td>
-        <td>${p.last ? `<div class="fresh"><span class="when">${p.last.date}</span><span class="sub">${p.last.pair}</span></div>` : '<span class="faint">no fixing ever</span>'}</td>
-        <td>${fn.badge(kind)}</td>
-        <td class="when">${p.last ? p.last.received : '—'}</td>
-        <td class="acts"><a class="act" href="${fn.href({ tab: null, provider: p.code, rtab: 'overview' })}">Open</a></td>
-    </tr>`;
-}
-
 function renderList() {
-    document.querySelector('#list-header').hidden = false;
-    document.querySelector('#record').hidden = true;
-    document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
-
-    const kinds = ['live', 'late', 'down', 'never', 'paused', 'terms'];
+    hidePanels('tab-providers');
+    const kinds = ['serving', 'not serving', 'terms'];
     document.querySelector('#filters').innerHTML = ['all', ...kinds].map((k) =>
-        `<a class="act" href="${fn.href({ tab: 'providers', filter: k === 'all' ? null : k })}">${k === 'all' ? 'All' : TONE[k][1]}</a>`).join('');
-    const counts = Object.fromEntries(kinds.map((k) => [k, 0]));
-    PROVIDERS.forEach((p) => counts[fn.status(p)]++);
-    document.querySelector('#k-total').textContent = PROVIDERS.length;
-    document.querySelector('#k-serving').textContent = counts.live;
-    document.querySelector('#k-late').textContent = counts.late;
-    document.querySelector('#k-down').textContent = counts.down;
-    document.querySelector('#k-paused').textContent = counts.paused;
-
-    let shown = PROVIDERS.filter((p) => filter === 'all' || fn.status(p) === filter);
+        `<a class="act" href="${fn.href({ tab: 'providers', filter: k === 'all' ? null : k })}">${k}</a>`).join('');
+    let shown = PROVIDERS.filter((p) => filter === 'all' || !p.terms.accepted && filter === 'terms'
+        || filter !== 'terms' && Object.values(p.sources).some((s) => SOURCES[s].state === filter));
     if (search) shown = shown.filter((p) => (p.name + p.code).toLowerCase().includes(search));
-    if (pausedVariant === 'hidden') shown = shown.filter((p) => fn.status(p) !== 'paused');
-    document.querySelector('#providers tbody').innerHTML = shown.map(listRow).join('');
-    document.querySelector('#providers-sub').textContent = `${PROVIDERS.length} providers · ${counts.paused} paused`;
-    document.querySelector('#legend').innerHTML = kinds.map((k) => `<div>${fn.badge(k)}<span>${SENTENCES[k]}</span></div>`).join('');
-}
-
-function renderAvailability() {
-    document.querySelector('#list-header').hidden = false;
-    document.querySelector('#record').hidden = true;
-    document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
-    const pairs = fn.pairs();
-    if (!pairs.includes(pair)) pair = pairs[0];
-    document.querySelector('#av-pair').innerHTML = pairs.map((x) => `<option ${x === pair ? 'selected' : ''}>${x}</option>`).join('');
-    const rows = fn.holders(pair).map((p) => {
-        const values = p.series[pair];
-        return `<tr><td class="provider">${fn.esc(p.name)}<div class="faint mono">${p.code}</div></td>
-            <td class="when">${DATES[0]}</td><td class="when">${DATES[DATES.length - 1]}</td>
-            <td class="num">${values.length}</td><td class="num">${p.code === 'ecb' ? 2 : 0}</td>
-            <td>${fn.badge(fn.status(p))}</td></tr>`;
-    }).join('');
-    document.querySelector('#av-body').innerHTML = `<table class="list"><thead><tr><th>Publisher</th><th>First</th><th>Last</th><th>Values</th><th>Gaps</th><th>State</th></tr></thead><tbody>${rows}</tbody></table>
-        <div class="faint" style="margin-top:8px">A provider whose terms are not accepted is a row with no data and the reason. Coverage and gaps come from the same fixings read the provider page uses.</div>`;
+    document.querySelector('#providers tbody').innerHTML = shown.map((p) => `
+        <tr>
+          <td class="provider">${fn.esc(p.name)}<div class="faint mono">${p.code} · ${p.kind}</div></td>
+          <td class="num">${fn.items(p)}</td>
+          <td>${p.terms.accepted ? `<span class="badge ok">${p.terms.version}</span>` : '<span class="badge warn">not accepted</span>'}</td>
+          <td>${fn.sourceCell(p)}</td>
+          <td class="when">${Object.keys(p.series).length ? DATES[DATES.length - 1] : (p.ir?.length ? '2026-10-28' : '—')}</td>
+          <td class="when">${Object.values(p.sources).map((s) => SOURCES[s].last ?? '—').join(' · ')}</td>
+          <td class="acts"><a class="act" href="${fn.href({ tab: null, provider: p.code, rtab: 'overview' })}">Open</a></td>
+        </tr>`).join('');
+    document.querySelector('#providers-sub').textContent = `${PROVIDERS.length} providers`;
 }
 
 function chart(values) {
@@ -200,29 +137,116 @@ function chart(values) {
     return `<svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><line class="axis" x1="${pad}" y1="${h - pad}" x2="${w - pad}" y2="${h - pad}"></line><polyline class="line s0" points="${pts}"></polyline></svg>`;
 }
 
+function renderProviderRecord() {
+    const p = fn.at(providerCode);
+    if (!p) { location.search = fn.href({ tab: 'providers', provider: null }); return; }
+    hidePanels(null);
+    document.querySelector('#record').hidden = false;
+    document.querySelector('#rec-crumb').textContent = p.name;
+    document.querySelector('#rec-title').textContent = p.name;
+    document.querySelector('#rec-meta').innerHTML = `<span class="mono faint">${p.code}</span> · ${p.kind} · ${p.classes.map((c) => c.toUpperCase()).join(', ')} · ${p.terms.accepted ? `terms ${p.terms.version}` : '<span class="badge warn">not accepted</span>'}`;
+    document.querySelector('#rec-acts').innerHTML = `<a class="act" href="#">Accept terms <span class="faint">· design pending</span></a>
+        <a class="act" href="?tab=fetch&provider=${p.code}">Fetch</a>`;
+    document.querySelectorAll('[data-rtab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.rtab === rtab)));
+    const body = document.querySelector('#rec-body');
+    const detail = (rows) => `<div class="kv">${rows.map(([k, v]) => `<span class="k">${k}</span><span>${v}</span>`).join('')}</div>`;
+    const sourcesTable = `<table class="list"><thead><tr><th>Class</th><th>Source</th><th>Adapter</th><th>Kind</th><th>State</th><th>Last delivery</th><th class="acts"></th></tr></thead><tbody>${Object.entries(p.sources).map(([cls, name]) => {
+        const s = SOURCES[name];
+        return `<tr><td>${cls.toUpperCase()}</td><td class="mono">${name}</td><td class="mono">${s.adapter}</td><td>${s.kind}</td>
+            <td>${fn.sourceState(name)}</td><td class="when">${s.last ?? '—'}</td>
+            <td class="acts"><a class="act" href="../connectivity/index.html?source=${name}&stab=overview">Configure <span class="faint">· in Connectivity</span></a></td></tr>`;
+    }).join('')}</tbody></table>`;
+
+    if (rtab === 'overview') {
+        body.innerHTML = `<div class="card"><div class="card-head"><h2>Provider</h2><p>the terms, and the source that serves each class</p></div><div class="card-body">${detail([
+            ['Code', `<span class="mono">${p.code}</span>`],
+            ['Kind', p.kind],
+            ['Asset classes', p.classes.map((c) => c.toUpperCase()).join(', ')],
+            ['Terms', p.terms.accepted ? `accepted ${p.terms.version} by ${p.terms.who} · ${p.terms.at}` : 'not accepted'],
+            ['Underlyings', String(fn.items(p))],
+        ])}</div></div>
+        <div class="card" style="margin-top:12px"><div class="card-head"><h2>Sources</h2><p>one source for each class; a party routes one source per class</p></div>${sourcesTable}</div>`;
+    } else if (rtab === 'underlyings') {
+        const fx = Object.keys(p.series).map((x) => `<tr><td class="mono">${x}</td><td>pair</td><td class="mono">${p.sources.fx}</td>
+            <td class="when">${DATES[0]}</td><td class="when">${DATES[DATES.length - 1]}</td><td class="num">${p.series[x].length}</td>
+            <td class="num">${p.code === 'ecb' && x === 'EUR/CAD' ? 2 : 0}</td><td class="acts"><a class="act" href="${fn.href({ provider: p.code, rtab: 'fixings', pair: x })}">Open</a></td></tr>`).join('');
+        const ir = (p.ir ?? []).map((it) => `<tr><td class="mono">${it.name}</td><td>${it.kind}</td><td class="mono">${p.sources.ir}</td>
+            <td class="when">2026-01-02</td><td class="when">2026-10-28</td><td class="num">${it.kind === 'curve' ? '10 pillars' : 204}</td>
+            <td class="num">0</td><td class="acts"><span class="faint">IR series</span></td></tr>`).join('');
+        body.innerHTML = `<div class="card"><div class="card-head"><h2>Underlyings</h2><p>${fn.items(p)} items, by class, each with its source</p></div>
+          <table class="list"><thead><tr><th>Item</th><th>Shape</th><th>Source</th><th>First</th><th>Last</th><th>Values</th><th>Gaps</th><th class="acts"></th></tr></thead>
+          <tbody><tr><td colspan="8" class="faint">FX</td></tr>${fx || '<tr><td colspan="8" class="faint">No FX item.</td></tr>'}
+          <tr><td colspan="8" class="faint">Interest rates</td></tr>${ir || '<tr><td colspan="8" class="faint">No IR item.</td></tr>'}</tbody></table>
+          <div class="faint" style="margin-top:8px;padding:0 14px 12px">The source is provenance: the same provider's FX and IR arrive through different sources, and the values keep the provider's identity.</div></div>`;
+    } else if (rtab === 'fixings') {
+        const values = p.series[pair] ?? p.series[Object.keys(p.series)[0]];
+        const chosen = p.series[pair] ? pair : Object.keys(p.series)[0];
+        if (!values) { body.innerHTML = '<div class="card"><div class="card-body"><div class="notice">No fixing stored for this provider yet.</div></div></div>'; return; }
+        const table = DATES.map((d, i) => `<tr><td class="when">${d}</td><td class="num">${values[i].toFixed(4)}</td>
+            <td class="mono faint">${p.sources.fx}</td><td class="mono faint">oresmd://fx/${chosen.split('/')[0]}?type=fixing&amp;index=fx&amp;source=${p.code.toUpperCase()}&amp;ccy=${chosen.split('/')[1]}</td></tr>`).reverse().join('');
+        body.innerHTML = `<div class="card"><div class="card-head"><h2>${chosen}</h2><p>${values.length} fixings, delivered by ${p.sources.fx}</p>
+            <span class="filters"><select>${Object.keys(p.series).map((x) => `<option ${x === chosen ? 'selected' : ''}>${x}</option>`).join('')}</select></span></div>
+          <div class="card-body">${chart(values)}
+          <table class="list" style="margin-top:10px"><thead><tr><th>Date</th><th>Value</th><th>Source</th><th>Item</th></tr></thead><tbody>${table}</tbody></table></div></div>`;
+    } else {
+        body.innerHTML = `<div class="card"><div class="card-head"><h2>History</h2><p>the provider and its sources</p></div><div class="card-body"><div class="timeline">
+          <div class="row"><span class="at">2026-10-01 09:00</span><span class="what"><b>Provider created</b> · v1 · by super_admin</span></div>
+          <div class="row"><span class="at">2026-10-28 17:02</span><span class="what"><b>Source routed</b> · ${p.sources.ir ?? p.sources.fx} · by super_admin</span></div>
+        </div></div></div>`;
+    }
+}
+
+function renderAvailability() {
+    hidePanels('tab-availability');
+    const irItems = [...new Set(PROVIDERS.flatMap((p) => (p.ir ?? []).map((i) => i.name)))];
+    if (klass === 'ir') {
+        if (!irItems.includes(irItem)) irItem = irItems[0];
+        document.querySelector('#av-pair').innerHTML = irItems.map((x) => `<option ${x === irItem ? 'selected' : ''}>${x}</option>`).join('');
+        document.querySelector('#av-pair-label').textContent = irItem;
+        const rows = PROVIDERS.filter((p) => (p.ir ?? []).some((i) => i.name === irItem)).map((p) => {
+            const it = p.ir.find((i) => i.name === irItem);
+            const s = p.sources.ir;
+            return `<tr><td class="provider">${fn.esc(p.name)}<div class="faint mono">${p.code}</div></td><td>${it.kind}</td>
+              <td class="mono">${s ?? '—'}</td><td>${s ? fn.sourceState(s) : ''}</td><td class="when">2026-01-02</td>
+              <td class="when">2026-10-28</td><td class="num">${it.kind === 'curve' ? '10 pillars' : 204}</td></tr>`;
+        }).join('');
+        document.querySelector('#av-body').innerHTML = `<table class="list"><thead><tr><th>Provider</th><th>Shape</th><th>Source</th><th>State</th><th>First</th><th>Last</th><th>Values</th></tr></thead><tbody>${rows}</tbody></table>`;
+        return;
+    }
+    const pairs = [...new Set(PROVIDERS.flatMap((p) => Object.keys(p.series)))].sort();
+    if (!pairs.includes(pair)) pair = pairs[0];
+    document.querySelector('#av-pair').innerHTML = pairs.map((x) => `<option ${x === pair ? 'selected' : ''}>${x}</option>`).join('');
+    document.querySelector('#av-pair-label').textContent = pair;
+    const rows = PROVIDERS.filter((p) => p.series[pair]).map((p) => {
+        const s = p.sources.fx;
+        return `<tr><td class="provider">${fn.esc(p.name)}<div class="faint mono">${p.code}</div></td><td class="mono">${s}</td>
+          <td>${fn.sourceState(s)}</td><td class="when">${DATES[0]}</td><td class="when">${DATES[DATES.length - 1]}</td>
+          <td class="num">${p.series[pair].length}</td><td class="num">0</td></tr>`;
+    }).join('');
+    document.querySelector('#av-body').innerHTML = `<table class="list"><thead><tr><th>Provider</th><th>Source</th><th>State</th><th>First</th><th>Last</th><th>Values</th><th>Gaps</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
 function renderCompare() {
-    document.querySelector('#list-header').hidden = false;
-    document.querySelector('#record').hidden = true;
-    document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
-    const pairs = fn.pairs().filter((p) => fn.holders(p).filter((x) => x.series[p]).length > 1);
+    hidePanels('tab-compare');
+    const pairs = [...new Set(PROVIDERS.flatMap((p) => Object.keys(p.series)))].filter((x) =>
+        PROVIDERS.filter((p) => p.series[x]).length > 1).sort();
     if (!pairs.includes(pair)) pair = pairs[0];
     document.querySelector('#cmp-pair').innerHTML = pairs.map((x) => `<option ${x === pair ? 'selected' : ''}>${x}</option>`).join('');
-    const holders = fn.holders(pair);
+    const holders = PROVIDERS.filter((p) => p.series[pair]);
     const bps = (a, b) => ((a - b) / b) * 10000;
     const base = holders[0].series[pair];
     const rows = DATES.map((d, i) => `<tr><td class="when">${d}</td>${holders.map((p, k) => {
         const v = p.series[pair][i];
         return `<td class="num">${v.toFixed(4)} <span class="faint">${k === 0 ? 'base' : `${bps(v, base[i]) >= 0 ? '+' : ''}${bps(v, base[i]).toFixed(1)} bps`}</span></td>`;
-    }).join('')}<td class="num">${(bps(Math.max(...holders.map((p) => p.series[pair][i])), Math.min(...holders.map((p) => p.series[pair][i])))).toFixed(1)}</td></tr>`).join('');
+    }).join('')}<td class="num">${bps(Math.max(...holders.map((p) => p.series[pair][i])), Math.min(...holders.map((p) => p.series[pair][i]))).toFixed(1)}</td></tr>`).join('');
     document.querySelector('#cmp-sub').textContent = `${holders.length} providers · the base is ${holders[0].code.toUpperCase()}`;
     document.querySelector('#cmp-body').innerHTML = chart(base) +
-        `<table class="list" style="margin-top:10px"><thead><tr><th>Date</th>${holders.map((p) => `<th>${p.code.toUpperCase()}</th>`).join('')}<th>Spread bps</th></tr></thead><tbody>${rows}</tbody></table>`;
+        `<table class="list" style="margin-top:10px"><thead><tr><th>Date</th>${holders.map((p) => `<th>${p.code.toUpperCase()}</th>`).join('')}<th>Spread bps</th></tr></thead><tbody>${rows}</tbody></table>
+        <div class="faint" style="margin-top:8px">Each provider's value comes from the source its class routes. A comparison is across providers, never across sources of one provider.</div>`;
 }
 
 function renderFetch() {
-    document.querySelector('#list-header').hidden = false;
-    document.querySelector('#record').hidden = true;
-    document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
+    hidePanels('tab-fetch');
     const box = document.querySelector('#fetch-body');
     if (fetchState === 'progress') {
         box.innerHTML = `<div class="dialog"><h2>Fetch in progress</h2><div class="progress"><i style="width:72.6%"></i></div>
@@ -239,99 +263,13 @@ function renderFetch() {
         <div class="fields">
           <label>When<select><option>Today</option><option>Yesterday</option><option selected>Range</option></select></label>
           <label>From<input value="2026-10-01"></label><label>To<input value="2026-10-28"></label>
-          <label>Publishers<select><option>Every provider</option><option>One provider</option></select></label>
-          <label>Underlyings<select><option>Every pair</option><option>One pair</option></select></label>
+          <label>Provider<select><option>Every provider</option>${PROVIDERS.map((p) => `<option>${p.name}</option>`).join('')}</select></label>
+          <label>Class<select><option>FX</option><option>IR</option></select></label>
+          <label>Underlyings<select><option>Every item</option><option>One item</option></select></label>
         </div>
-        <div class="faint">Only an accepted provider is asked. The refresh request is not on the adapter contract yet; the design task names it.</div>
+        <div class="faint">The fetch asks the source that serves the class. It does not change the source's scope: that is configured in Connectivity.</div>
         <div class="foot"><a class="act primary" href="${fn.href({ tab: 'fetch', fetch: 'progress' })}">Fetch</a></div></div>`;
 }
-
-function renderRecord() {
-    const p = fn.at(providerCode);
-    if (!p) { location.search = fn.href({ tab: 'providers', provider: null }); return; }
-    document.querySelector('#list-header').hidden = true;
-    document.querySelectorAll('[role="tabpanel"]').forEach((s) => { s.hidden = true; });
-    document.querySelector('#record').hidden = false;
-    const kind = fn.status(p);
-    document.querySelector('#rec-crumb').textContent = p.name;
-    document.querySelector('#rec-title').textContent = p.name;
-    document.querySelector('#rec-meta').innerHTML = `<span class="mono faint">${p.code}</span> · ${p.kind} · version ${p.terms.version} · ${fn.badge(kind)}`;
-    document.querySelector('#rec-acts').innerHTML = `
-        ${p.terms.accepted ? '' : '<a class="act primary" href="#">Accept terms</a>'}
-        <a class="act" href="#">Pause <span class="faint">· design pending</span></a>
-        <a class="act" href="?tab=fetch">Fetch</a>`;
-    document.querySelectorAll('[data-rtab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.rtab === rtab)));
-
-    const pairs = Object.keys(p.series);
-    const body = document.querySelector('#rec-body');
-    if (rtab === 'overview') {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Details</h2><p>the provider record</p></div>
-          <div class="card-body"><div class="kv">
-            <span class="k">Code</span><span class="mono">${p.code}</span>
-            <span class="k">Kind</span><span>${p.kind}</span>
-            <span class="k">Terms version</span><span>${p.terms.version} ${p.terms.accepted ? fn.badge('live') : fn.badge('terms')}</span>
-            <span class="k">Terms credit</span><span>${fn.esc(p.credit)}</span>
-            <span class="k">Allows storage</span><span>${p.storage ? 'yes' : 'no'}</span>
-            <span class="k">Credential</span><span class="mono">${fn.esc(p.credential)}</span>
-            <span class="k">Expected rhythm</span><span>${fn.esc(p.rhythm)} <span class="badge warn">not modelled yet</span></span>
-            <span class="k">Accepted by</span><span>${p.terms.accepted ? `${p.terms.who} · ${p.terms.at}` : 'nobody'}</span>
-            <span class="k">Underlyings</span><span>${pairs.length} stored</span>
-          </div></div></div>`;
-    } else if (rtab === 'underlyings') {
-        const fx = Object.keys(p.series).map((x) => `<tr><td class="mono">${x}</td><td>pair</td><td class="when">${DATES[0]}</td>
-            <td class="when">${DATES[DATES.length - 1]}</td><td class="num">${p.series[x].length}</td><td class="num">${p.code === 'ecb' && x === 'EUR/CAD' ? 2 : 0}</td>
-            <td class="acts"><a class="act" href="${fn.href({ provider: p.code, rtab: 'fixings', pair: x })}">Open</a></td></tr>`).join('');
-        const ir = (IR_ITEMS[p.code] ?? []).map((it) => `<tr><td class="mono">${it.name}</td><td>${it.kind}</td>
-            <td class="when">2026-01-02</td><td class="when">2026-10-28</td><td class="num">${it.kind === 'curve' ? '10 pillars' : 204}</td>
-            <td class="num">0</td><td class="acts"><span class="faint">IR series</span></td></tr>`).join('');
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Underlyings</h2><p>${itemCount(p)} items this provider fixes, by asset class</p></div>
-          <table class="list"><thead><tr><th>Item</th><th>Shape</th><th>First</th><th>Last</th><th>Values</th><th>Gaps</th><th class="acts"></th></tr></thead>
-          <tbody><tr><td colspan="7" class="faint">FX</td></tr>${fx || '<tr><td colspan="7" class="faint">No FX item stored.</td></tr>'}
-          <tr><td colspan="7" class="faint">Interest rates</td></tr>${ir || '<tr><td colspan="7" class="faint">No IR item stored.</td></tr>'}</tbody></table>
-          <div class="faint" style="margin-top:8px;padding:0 14px 12px">A rate is one value a day; a curve is a set of pillars of the same day. Both are read through the same fixings read.</div></div>`;
-    } else if (rtab === 'fixings') {
-        const values = p.series[pair] ?? p.series[pairs[0]];
-        const chosen = p.series[pair] ? pair : pairs[0];
-        if (!values) { body.innerHTML = '<div class="card"><div class="card-body"><div class="notice">No fixing stored for this provider yet.</div></div></div>'; return; }
-        const table = DATES.map((d, i) => `<tr><td class="when">${d}</td><td class="num">${values[i].toFixed(4)}</td><td class="mono faint">oresmd://fx/${chosen.split('/')[0]}?type=fixing&amp;index=fx&amp;source=${p.code.toUpperCase()}&amp;ccy=${chosen.split('/')[1]}</td></tr>`).reverse().join('');
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>${chosen}</h2><p>${values.length} fixings in the window</p>
-            <span class="filters"><select>${pairs.map((x) => `<option ${x === chosen ? 'selected' : ''}>${x}</option>`).join('')}</select></span></div>
-          <div class="card-body">${chart(values)}
-          <table class="list" style="margin-top:10px"><thead><tr><th>Date</th><th>Value</th><th>Item</th></tr></thead><tbody>${table}</tbody></table></div></div>
-          <div class="card" style="margin-top:12px"><div class="card-head"><h2>Where a feed started</h2></div><div class="card-body">
-          <div class="notice"><div class="title">Started from the ${p.code.toUpperCase()} fixing of ${values[values.length - 1].toFixed(4)} on ${DATES[DATES.length - 1]}</div>
-          <div class="faint">the value this provider's last run took</div></div></div></div>`;
-    } else if (rtab === 'sources') {
-        const ids = p.sources ?? [];
-        const rows = ids.map((id) => {
-            const c = SOURCES.find((x) => x.id === id);
-            return `<tr><td class="mono">${c.id}</td><td>${c.kind}</td>
-                <td>${c.state === 'serving' ? fn.badge('live') : fn.badge('down')}</td>
-                <td class="when">${c.last}</td>
-                <td class="acts"><a class="act" href="../sources/index.html?source=${c.id}&stab=overview">Open <span class="faint">· in Sources</span></a></td></tr>`;
-        }).join('');
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Source</h2><p>the source the party routes for this provider</p></div>
-          <table class="list"><thead><tr><th>Source</th><th>Kind</th><th>State</th><th>Last delivery</th><th class="acts"></th></tr></thead><tbody>${rows}</tbody></table>
-          <div class="faint" style="margin-top:8px;padding:0 14px 12px">A provider's value keeps its identity; the source that delivered it is provenance. A second source of the same provider is another way to the same fixing. Its kind, its provider and the transport it runs with are in Sources, not here.</div></div>`;
-    } else if (rtab === 'health') {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Adapter</h2><p>the official adapter, serving every provider</p></div>
-          <div class="card-body"><div class="kv">
-            <span class="k">State</span><span>${p.adapter.state}</span>
-            <span class="k">Heartbeat</span><span class="mono">${p.adapter.hb}</span>
-            <span class="k">Ids served</span><span class="num">${p.adapter.served}</span>
-            <span class="k">Ids refused</span><span class="num">${p.adapter.refused}</span>
-            <span class="k">Ids unknown</span><span class="num">${p.adapter.unknown}</span>
-            <span class="k">Last fixing</span><span>${p.last ? `${p.last.date} · received ${p.last.received}` : 'none stored'}</span>
-          </div><div class="faint" style="margin-top:8px">The adapter read answers per adapter, not per provider; this view filters it to the ids this provider owns.</div></div></div>`;
-    } else {
-        const events = [['v1', p.terms.at, 'Terms accepted', p.terms.who], ['v2', '2026-10-26 11:20', 'Terms accepted', 'super_admin'],
-            ['v3', '2026-10-28 09:00', 'Terms accepted', 'super_admin'], ['—', '2026-10-28 09:12', 'Provider changed: credit updated', 'super_admin']];
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>History</h2><p>the shared timeline</p></div>
-          <div class="card-body"><div class="timeline">${events.map(([v, at, what, who]) =>
-            `<div class="row"><span class="at">${at}</span><span class="what"><b>${what}</b> · ${v} · by ${who}</span></div>`).join('')}</div></div></div>`;
-    }
-}
-
 
 function hidePanels(except) {
     document.querySelectorAll('[role="tabpanel"]').forEach((x) => { x.hidden = x.id !== except; });
@@ -345,17 +283,20 @@ function wire() {
     document.querySelectorAll('[data-rtab]').forEach((b) => b.addEventListener('click', () => {
         location.search = fn.href({ provider: providerCode, rtab: b.dataset.rtab, tab: null });
     }));
-    document.querySelector('#av-pair').addEventListener('change', (e) => { location.search = fn.href({ tab: 'availability', pair: e.target.value }); });
+    document.querySelector('#av-class').value = klass;
+    document.querySelector('#av-class').addEventListener('change', (e) => { location.search = fn.href({ tab: 'availability', class: e.target.value }); });
+    document.querySelector('#av-pair').addEventListener('change', (e) => {
+        const key = klass === 'ir' ? 'item' : 'pair';
+        location.search = fn.href({ tab: 'availability', [key]: e.target.value });
+    });
     document.querySelector('#cmp-pair').addEventListener('change', (e) => { location.search = fn.href({ tab: 'compare', pair: e.target.value }); });
     document.querySelector('#search').addEventListener('change', (e) => { location.search = fn.href({ tab: 'providers', find: e.target.value || null }); });
     document.querySelector('#search').value = q.get('find') ?? '';
     document.querySelector('#refresh').addEventListener('click', () => location.reload());
 }
 
-if (providerCode) {
-    renderRecord();
-} else {
-    hidePanels('tab-' + tab);
+if (providerCode) renderProviderRecord();
+else {
     if (tab === 'availability') renderAvailability();
     else if (tab === 'compare') renderCompare();
     else if (tab === 'fetch') renderFetch();

@@ -12,7 +12,7 @@
   <span><b>Prototype</b> · throwaway · mock data, no server</span>
   <a href="../public-rates.org">the design note</a>
   <a href="../index.org">market data prototypes</a>
-  <a href="../sources/">Market data sources</a>
+  <a href="../connectivity/">Connectivity</a>
 </div>
 
 <header class="page" id="list-header">
@@ -32,13 +32,6 @@
 
 <main>
   <section id="tab-providers" role="tabpanel">
-    <div class="strip" aria-label="The providers now">
-      <div class="metric"><span class="label">Providers</span><div class="v" id="k-total">—</div></div>
-      <div class="metric"><span class="label">Serving</span><div class="v up" id="k-serving">—</div></div>
-      <div class="metric"><span class="label">Late</span><div class="v warn" id="k-late">—</div></div>
-      <div class="metric"><span class="label">Not serving</span><div class="v down" id="k-down">—</div></div>
-      <div class="metric"><span class="label">Paused</span><div class="v" id="k-paused">—</div></div>
-    </div>
     <div class="card">
       <div class="card-head">
         <h2>Providers</h2><p id="providers-sub"></p>
@@ -46,8 +39,8 @@
         <input id="search" placeholder="Find a provider">
       </div>
       <table class="list" id="providers">
-        <thead><tr><th>Provider</th><th>Underlyings</th><th>Terms</th><th>Source</th><th>Last fixing</th>
-          <th>State</th><th>Last delivery</th><th class="acts"></th></tr></thead>
+        <thead><tr><th>Provider</th><th>Underlyings</th><th>Terms</th><th>Sources</th><th>Last fixing</th>
+          <th>Last delivery</th><th class="acts"></th></tr></thead>
         <tbody></tbody>
       </table>
       <div class="card-body legend" id="legend"></div>
@@ -57,8 +50,8 @@
   <section id="tab-availability" role="tabpanel" hidden>
     <div class="card">
       <div class="card-head">
-        <h2>Who holds an underlying</h2><p>one pair, every publisher that fixes it</p>
-        <span class="filters"><select id="av-pair"></select></span>
+        <h2>Who holds an underlying</h2><p>one item, every provider that fixes it</p>
+        <span class="filters"><select id="av-class"><option value="fx">FX</option><option value="ir">IR</option></select><select id="av-pair"></select></span>
       </div>
       <div class="card-body" id="av-body"></div>
     </div>
@@ -67,7 +60,7 @@
   <section id="tab-compare" role="tabpanel" hidden>
     <div class="card">
       <div class="card-head">
-        <h2>How far apart the publishers are</h2><p id="cmp-sub"></p>
+        <h2>How far apart the providers are</h2><p id="cmp-sub"></p>
         <span class="filters"><select id="cmp-pair"></select></span>
       </div>
       <div class="card-body" id="cmp-body"></div>
@@ -95,8 +88,6 @@
       <button role="tab" data-rtab="overview">Overview</button>
       <button role="tab" data-rtab="underlyings">Underlyings</button>
       <button role="tab" data-rtab="fixings">Fixings</button>
-      <button role="tab" data-rtab="sources">Source</button>
-      <button role="tab" data-rtab="health">Health</button>
       <button role="tab" data-rtab="history">History</button>
     </nav>
     <div id="rec-body"></div>

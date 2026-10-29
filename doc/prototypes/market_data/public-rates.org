@@ -83,11 +83,11 @@ provider's expected rhythm, which the record does not carry yet.
 | Paused, kept or hidden | =?tab=providers&paused=muted=, =&paused=hidden= | The paused provider kept, or removed |
 | Withdrawn terms | =?tab=providers&terms=withdraw= | The deletion offered where v2 is accepted |
 | Record, configuration | =?provider=ecb&rtab=overview= | The provider's Details |
-| Record, underlyings | =?provider=ecb&rtab=underlyings= | Its pairs, first and last, values and gaps |
+| Record, underlyings | =?provider=ecb&rtab=underlyings= | Its items by class, each with its source, first and last, values and gaps |
 | Record, fixings | =?provider=ecb&rtab=fixings&pair=EUR/CAD= | One pair over time, and where a feed started |
-| Record, health | =?provider=ecb&rtab=health= | The source's adapter state and counts for its ids |
+| Record, overview | =?provider=ecb&rtab=overview= | The terms, and the source that serves each class |
 | Record, history | =?provider=ecb&rtab=history= | The shared timeline |
-| Availability | =?tab=availability&pair=EUR/USD= | Every provider that holds the pair |
+| Availability | =?tab=availability&class=fx&pair=EUR/USD=, =?tab=availability&class=ir&item=€STR= | Every provider that holds the item, and the source that serves it |
 | Compare | =?tab=compare&pair=EUR/USD= | The providers together, in basis points |
 | Fetch | =?tab=fetch=, =&fetch=progress=, =&fetch=done= | The scope, running, done |
 
@@ -188,7 +188,7 @@ the terms and the credential reference.
 
 * The setup is a screen of its own
 
-The providers, sources, routes and adapters are configured in
-[[file:sources.org][Market data sources]]. This prototype reads the values; it
+The providers, adapters, sources, scopes, schedules and routes are configured in
+[[file:connectivity.org][Connectivity]]. This prototype reads the values; it
 names the source that serves each provider, and links to its record, but it
 configures none of it.

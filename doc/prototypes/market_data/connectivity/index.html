@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connectivity — providers, adapters and sources</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+<div class="proto-bar">
+  <span><b>Prototype</b> · throwaway · mock data, no server</span>
+  <a href="../connectivity.org">the design note</a>
+  <a href="../index.org">market data prototypes</a>
+  <a href="../public-rates/">Public rates</a>
+</div>
+
+<header class="page" id="list-header">
+  <div class="crumbs"><a href="#">Market data</a> / Connectivity</div>
+  <div class="title-row">
+    <h1>Connectivity</h1>
+    <span class="lead">the configured providers, the adapters the code provides, and the sources that join them</span>
+    <span class="actions"><button class="act" id="refresh">Refresh</button></span>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Connectivity">
+    <button role="tab" data-tab="providers">Providers <span class="q">who owns the terms</span></button>
+    <button role="tab" data-tab="adapters">Adapters <span class="q">what the code provides</span></button>
+    <button role="tab" data-tab="sources">Sources <span class="q">what we configured</span></button>
+  </nav>
+</header>
+
+<main>
+  <section id="tab-providers" role="tabpanel" hidden>
+    <div class="card">
+      <div class="card-head"><h2>Providers</h2><p>whoever owns the ids, the terms and the licence</p>
+        <span class="filters"><input id="search-provider" placeholder="Find a provider"></span></div>
+      <table class="list" id="providers">
+        <thead><tr><th>Provider</th><th>Kind</th><th>Classes</th><th>Terms</th><th>Sources</th><th>Credential</th><th class="acts"></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="card-body faint" id="providers-note"></div>
+    </div>
+  </section>
+
+  <section id="tab-adapters" role="tabpanel" hidden>
+    <div class="card">
+      <div class="card-head"><h2>Adapters</h2><p>the code modules this release provides; nobody adds one from a screen</p></div>
+      <table class="list" id="adapters">
+        <thead><tr><th>Adapter</th><th>Version</th><th>Description</th><th>Classes</th><th>What a source must say</th><th>Sources</th><th>Providers</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="card-body faint" id="adapters-note"></div>
+    </div>
+  </section>
+
+  <section id="tab-sources" role="tabpanel" hidden>
+    <div class="card">
+      <div class="card-head"><h2>Sources</h2><p>one adapter instance of a provider, with its own transport, scope and schedule</p>
+        <span class="filters"><a class="act primary" href="?add=1&provider=ecb">New source <span class="faint">· design pending</span></a></span></div>
+      <table class="list" id="sources">
+        <thead><tr><th>Source</th><th>Provider</th><th>Adapter</th><th>Kind</th><th>Classes</th><th>Scope</th><th>Schedule</th><th>State</th><th class="acts"></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="card-body faint" id="sources-note"></div>
+    </div>
+  </section>
+
+  <section id="provider-record" hidden>
+    <div class="crumbs"><a href="?tab=providers">Market data</a> / <a href="?tab=providers">Connectivity</a> / <span id="prv-crumb"></span></div>
+    <div class="record-header">
+      <div><h1 id="prv-title"></h1><div class="record-meta" id="prv-meta"></div></div>
+      <span class="actions" id="prv-acts"></span>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Provider" id="prv-tabs">
+      <button role="tab" data-ptab="overview">Overview</button>
+      <button role="tab" data-ptab="sources">Sources</button>
+      <button role="tab" data-ptab="history">History</button>
+    </nav>
+    <div id="prv-body"></div>
+  </section>
+
+  <section id="source-record" hidden>
+    <div class="crumbs"><a href="?tab=sources">Market data</a> / <a href="?tab=sources">Connectivity</a> / <span id="src-crumb"></span></div>
+    <div class="record-header">
+      <div><h1 id="src-title"></h1><div class="record-meta" id="src-meta"></div></div>
+      <span class="actions" id="src-acts"></span>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Source" id="src-tabs">
+      <button role="tab" data-stab="overview">Overview</button>
+      <button role="tab" data-stab="transport">Transport</button>
+      <button role="tab" data-stab="underlyings">Underlyings</button>
+      <button role="tab" data-stab="schedule">Schedule</button>
+      <button role="tab" data-stab="runtime">Runtime</button>
+      <button role="tab" data-stab="routes">Routes</button>
+      <button role="tab" data-stab="history">History</button>
+    </nav>
+    <div id="src-body"></div>
+  </section>
+
+  <section id="add-source" hidden>
+    <div class="crumbs"><a href="?tab=sources">Market data</a> / <a href="?tab=sources">Connectivity</a> / New source</div>
+    <div class="record-header">
+      <div><h1>New source</h1><div class="record-meta">pick the provider, the adapter, what it fetches, and when</div></div>
+      <span class="actions"><a class="act" href="?tab=sources">Cancel</a></span>
+    </div>
+    <div id="add-body"></div>
+  </section>
+</main>
+<script src="prototype.js"></script>
+</body>
+</html>

@@ -187,13 +187,14 @@ answers today.
 
 * Prototype
 
-** Market data sources
+** Connectivity
 
-- Directory :: [[file:../../../prototypes/market_data/sources/][doc/prototypes/market_data/sources/]]
-- Note :: [[file:../../../prototypes/market_data/sources.org][the design note]]
-- Sources :: =index.html=, =?tab=adapters=
-- A source :: =?source=ecb-frankfurter&stab=overview|adapter|routes|history=
-- Two sources of one provider :: =?source=ecb-ecb-data&stab=routes=
+- Directory :: [[file:../../../prototypes/market_data/connectivity/][doc/prototypes/market_data/connectivity/]]
+- Note :: [[file:../../../prototypes/market_data/connectivity.org][the design note]]
+- Tabs :: =index.html=, =?tab=adapters=, =?tab=sources=
+- A source :: =?source=ecb-frankfurter&stab=overview|transport|underlyings|schedule|runtime|routes|history=
+- A provider :: =?provider=ecb&ptab=overview|sources|history=
+- A new source :: =?add=1&provider=ecb=
 
 ** Public rates
 

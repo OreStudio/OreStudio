@@ -98,9 +98,15 @@ async function summaries(
     offset: number,
     limit: number,
 ): Promise<{ readonly rows: readonly Summary[]; readonly total: number }> {
+    /*
+     * The filter is built before the call so the static check of the wire
+     * requests can tell a variable from a literal, as it does for the other
+     * reads: every member of the filter is stated here, absent or not.
+     */
+    const filterBody = { ...NO_FILTER, ...filter };
     const reply = await session.client.callAuthenticated(
         summarySubjects.list_trade_summaries_request,
-        { offset, limit, order, filter: { ...NO_FILTER, ...filter }, as_of: null },
+        { offset, limit, order, filter: filterBody, as_of: null },
         z.looseObject({
             result: resultSchema,
             trade_summaries: z.array(z.record(z.string(), z.unknown())).default([]),

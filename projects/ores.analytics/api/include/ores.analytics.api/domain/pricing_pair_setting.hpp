@@ -33,10 +33,15 @@
 namespace ores::analytics::domain {
 
 /**
- * @brief A setting a model and engine pair takes, with its kind and usual value.
+ * @brief A setting a model and engine pair takes, with its usual value.
  *
- * The settings a pair of model and engine takes. The pricing engine screens draw a select where
- * this table knows the options and a text field where it does not know the setting.
+ * The settings a pair of model and engine takes. The table states which settings a
+ * pair accepts, the value ORE's examples use and whether ORE needs the setting. The
+ * control the screen draws and the values it accepts belong to the value set of the
+ * setting, which
+ * ores_reporting_ore_parameter_setting_value_sets_tbl links by scope and name,
+ * so the same rule serves every pair that takes the setting and the write path
+ * that refuses a value outside it.
  */
 struct pricing_pair_setting final {
     /**
@@ -87,19 +92,9 @@ struct pricing_pair_setting final {
     std::string name;
 
     /**
-     * @brief How the screen draws the setting: select, number, tenor, reference or text.
-     */
-    std::string kind;
-
-    /**
      * @brief The value ORE's examples use.
      */
     std::string usual_value;
-
-    /**
-     * @brief The allowed values of a select setting, separated by commas.
-     */
-    std::string options;
 
     /**
      * @brief Whether ORE needs the setting. The guide marks a setting optional when ORE has a

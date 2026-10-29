@@ -39,9 +39,7 @@ export interface PricingPairSetting {
     pricing_engine_type_code: string;
     scope: string;
     name: string;
-    kind: string;
     usual_value: string;
-    options: string;
     is_required: boolean;
     note: string;
     modified_by: string;

@@ -285,6 +285,23 @@ function linkScope(scope: string): string {
     return scope;
 }
 
+/**
+ * Whether a setting's values are the codes of a sensitivity template.
+ *
+ * The value set names the catalogue its values come from, so the screen reads
+ * the answer from the set instead of from a per-pair kind.
+ */
+export function namesSensitivityTemplate(
+    vocabulary: PricingVocabulary,
+    scope: string,
+    name: string,
+): boolean {
+    return (
+        vocabulary.valueSets[`${linkScope(scope)}|${name}`]?.catalogue ===
+        'analytics.sensitivity_template'
+    );
+}
+
 export function SettingValue({
     vocabulary,
     typeCode,
@@ -318,8 +335,9 @@ export function SettingValue({
         ) ??
         vocabulary.settings.find((candidate) => candidate.name === name);
     const allowed = vocabulary.valueSets[`${linkScope(scope)}|${name}`];
-    const kind = setting?.kind ?? 'text';
-    const template = kind === 'reference' ? templateInfo(vocabulary, value) : undefined;
+    const template = namesSensitivityTemplate(vocabulary, scope, name)
+        ? templateInfo(vocabulary, value)
+        : undefined;
     /*
      * A trade-level template names no class, so the words stand as the method
      * and the description rather than an empty space before a separator.

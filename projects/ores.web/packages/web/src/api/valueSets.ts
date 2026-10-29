@@ -30,6 +30,7 @@ import { z } from 'zod';
 export const valueSetFields = {
     valueSet: z.string().default(''),
     sourceKind: z.string().default(''),
+    catalogue: z.string().default(''),
     choices: z.array(z.object({ value: z.string(), label: z.string() })).default([]),
     minimum: z.number().nullable().default(null),
     maximum: z.number().nullable().default(null),

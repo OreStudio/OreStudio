@@ -24,7 +24,13 @@
  *
  * Pricing Pair Setting Table
  *
- * The settings a pair of model and engine takes. The pricing engine screens draw a select where this table knows the options and a text field where it does not know the setting.
+ * The settings a pair of model and engine takes. The table states which settings a
+ * pair accepts, the value ORE's examples use and whether ORE needs the setting. The
+ * control the screen draws and the values it accepts belong to the value set of the
+ * setting, which
+ * ores_reporting_ore_parameter_setting_value_sets_tbl links by scope and name,
+ * so the same rule serves every pair that takes the setting and the write path
+ * that refuses a value outside it.
  */
 
 create table if not exists "ores_analytics_pricing_pair_settings_tbl" (
@@ -36,9 +42,7 @@ create table if not exists "ores_analytics_pricing_pair_settings_tbl" (
     "pricing_engine_type_code" text not null,
     "scope" text not null,
     "name" text not null,
-    "kind" text not null,
     "usual_value" text null,
-    "options" text null,
     "is_required" boolean not null,
     "note" text null,
     "modified_by" text not null,

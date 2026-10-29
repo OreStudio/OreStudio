@@ -332,9 +332,7 @@ function vocabularyReads(): Record<string, unknown> {
                     engine: 'Grid',
                     scope: 'model',
                     name: 'Calibration',
-                    kind: 'select',
                     usual_value: 'Bootstrap',
-                    options: 'Bootstrap,BestFit,None',
                     is_required: true,
                     note: 'How the model is fitted.',
                 },
@@ -344,9 +342,7 @@ function vocabularyReads(): Record<string, unknown> {
                     engine: 'Grid',
                     scope: 'engine',
                     name: 'SensitivityTemplate',
-                    kind: 'reference',
                     usual_value: 'IR_FD',
-                    options: '',
                     is_required: false,
                     note: 'The sensitivity template of the product.',
                 },
@@ -649,7 +645,6 @@ describe('pricing engine routes', () => {
             engine: 'Grid',
             usual: true,
         });
-        expect(response.json().settings[0].options).toEqual(['Bootstrap', 'BestFit', 'None']);
         expect(response.json().settings[0]).toMatchObject({
             valueSet: 'calibration',
             sourceKind: 'enumerated',

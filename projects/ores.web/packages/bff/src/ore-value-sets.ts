@@ -45,6 +45,8 @@ export interface Choice {
 export interface ValueFields {
     readonly valueSet: string;
     readonly sourceKind: string;
+    /** The catalogue the set draws on, or empty for a set that states its own values. */
+    readonly catalogue: string;
     readonly choices: readonly Choice[];
     readonly minimum: number | null;
     readonly maximum: number | null;
@@ -56,6 +58,7 @@ export interface ValueFields {
 export const NO_VALUE_SET: ValueFields = {
     valueSet: '',
     sourceKind: '',
+    catalogue: '',
     choices: [],
     minimum: null,
     maximum: null,
@@ -276,6 +279,7 @@ export async function readValueSets(
                 : {
                       valueSet: code,
                       sourceKind: text(row['source_kind']),
+                      catalogue: text(row['catalogue_code']),
                       choices: choicesFor(code, text(row['source_kind'])),
                       minimum: optionalNumber(row['minimum']),
                       maximum: optionalNumber(row['maximum']),

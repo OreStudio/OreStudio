@@ -105,9 +105,7 @@ pricing_pair_setting_to_domain(const messaging::pricing_pair_setting_write& writ
     v.pricing_engine_type_code = write.pricing_engine_type_code;
     v.scope = write.scope;
     v.name = write.name;
-    v.kind = write.kind;
     v.usual_value = write.usual_value;
-    v.options = write.options;
     v.is_required = write.is_required;
     v.note = write.note;
     return v;

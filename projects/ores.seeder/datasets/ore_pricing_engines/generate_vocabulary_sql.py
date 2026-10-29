@@ -19,6 +19,11 @@ checkout.
 Usage:
     python3 generate_vocabulary_sql.py <ore-checkout>
     python3 generate_vocabulary_sql.py --templates
+    python3 generate_vocabulary_sql.py --from-json
+
+The checkout is read to extract the guide. --from-json writes the scripts from
+the committed pricing_vocabulary.json instead, so a change to a script needs no
+ORE checkout.
 """
 import json
 import os
@@ -168,7 +173,8 @@ def write_templates():
 
 
 def main(ore):
-    vocabulary = extract.main_result(ore)
+    vocabulary = (extract.main_result(ore) if ore is not None
+                  else json.load(open(VOCABULARY, encoding="utf-8")))
     with open(os.path.join(HERE, "pricing_vocabulary.json"), "w", encoding="utf-8") as handle:
         json.dump(vocabulary, handle, indent=1, ensure_ascii=False)
         handle.write("\n")
@@ -192,17 +198,17 @@ def main(ore):
             for s in pair["settings"]:
                 setting_rows.append([
                     q(f"{t}:{m}:{e}:{s['scope']}:{s['name']}"), TENANT, "0", q(m), q(e), q(t),
-                    q(s["scope"]), q(s["name"]), q(s["kind"]), q(s["usual"]),
-                    q(",".join(s["options"])), "true" if s["required"] else "false", q(s["text"]),
+                    q(s["scope"]), q(s["name"]), q(s["usual"]),
+                    "true" if s["required"] else "false", q(s["text"]),
                     ACTOR, q(SEED)])
     write("analytics_pricing_model_engine_pairs_populate.sql",
           "Pricing Model Engine Pairs Population Script\n *\n * The pairs of model and engine that ORE can use for each product type. The first pair\n * the guide lists for a type is marked usual.",
           "ores_analytics_pricing_model_engine_pairs_tbl",
           "model, engine, pricing_engine_type_code, is_usual, note", pair_rows, "Pricing Model Engine Pairs")
     write("analytics_pricing_pair_settings_populate.sql",
-          "Pricing Pair Settings Population Script\n *\n * The settings each pair of model and engine takes, with the kind of each setting, its\n * allowed values, its usual value and its meaning.",
+          "Pricing Pair Settings Population Script\n *\n * The settings each pair of model and engine takes, with\n * the value ORE's examples use and its meaning. The allowed values of a setting\n * belong to its value set, which the reporting seed states once for every pair.",
           "ores_analytics_pricing_pair_settings_tbl",
-          "model, engine, pricing_engine_type_code, scope, name, kind, usual_value, options, is_required, note",
+          "model, engine, pricing_engine_type_code, scope, name, usual_value, is_required, note",
           setting_rows, "Pricing Pair Settings")
 
     missing_models = sorted(models - set(CURATED.models))
@@ -220,8 +226,13 @@ def main(ore):
     write_templates()
 
 
+VOCABULARY = os.path.join(HERE, "pricing_vocabulary.json")
+
+
 if __name__ == "__main__":
     if sys.argv[1:] == ["--templates"]:
         write_templates()
+    elif sys.argv[1:] == ["--from-json"]:
+        main(None)
     else:
         main(sys.argv[1])

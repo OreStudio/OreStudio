@@ -52,7 +52,6 @@ generate_synthetic_pricing_pair_setting(utility::generation::generation_context&
     r.pricing_engine_type_code = std::string("BermudanSwaption");
     r.scope = std::string("model");
     r.name = std::string("Calibration");
-    r.kind = std::string("text");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

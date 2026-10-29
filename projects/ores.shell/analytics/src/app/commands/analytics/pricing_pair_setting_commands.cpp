@@ -141,16 +141,16 @@ void pricing_pair_setting_commands::register_commands(cli::Menu& root_menu, nats
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <code> <model> <engine> <pricing_engine_type_code> <scope> <name> <kind> "
-        "<usual_value> <options> <is_required> <note> <reason> <commentary>");
+        "add <code> <model> <engine> <pricing_engine_type_code> <scope> <name> <usual_value> "
+        "<is_required> <note> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <code> <model> <engine> <pricing_engine_type_code> <scope> <name> <kind> "
-        "<usual_value> <options> <is_required> <note> <reason> <commentary> [--version <n>]");
+        "set <code> <model> <engine> <pricing_engine_type_code> <scope> <name> <usual_value> "
+        "<is_required> <note> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -158,7 +158,7 @@ void pricing_pair_setting_commands::register_commands(cli::Menu& root_menu, nats
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <code> <model> <engine> <pricing_engine_type_code> <scope> <name> "
-        "<kind> <usual_value> <options> <is_required> <note> <reason> <commentary>");
+        "<usual_value> <is_required> <note> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -353,8 +353,8 @@ void pricing_pair_setting_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -369,11 +369,8 @@ void pricing_pair_setting_commands::process_add(std::ostream& out,
         pricing_pair_setting_read_token(
             req.change.write.scope, parsed->positionals[next++], "scope");
         pricing_pair_setting_read_token(req.change.write.name, parsed->positionals[next++], "name");
-        pricing_pair_setting_read_token(req.change.write.kind, parsed->positionals[next++], "kind");
         pricing_pair_setting_read_token(
             req.change.write.usual_value, parsed->positionals[next++], "usual_value");
-        pricing_pair_setting_read_token(
-            req.change.write.options, parsed->positionals[next++], "options");
         pricing_pair_setting_read_token(
             req.change.write.is_required, parsed->positionals[next++], "is_required");
         pricing_pair_setting_read_token(req.change.write.note, parsed->positionals[next++], "note");
@@ -419,8 +416,8 @@ void pricing_pair_setting_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -435,11 +432,8 @@ void pricing_pair_setting_commands::process_set(std::ostream& out,
         pricing_pair_setting_read_token(
             req.change.write.scope, parsed->positionals[next++], "scope");
         pricing_pair_setting_read_token(req.change.write.name, parsed->positionals[next++], "name");
-        pricing_pair_setting_read_token(req.change.write.kind, parsed->positionals[next++], "kind");
         pricing_pair_setting_read_token(
             req.change.write.usual_value, parsed->positionals[next++], "usual_value");
-        pricing_pair_setting_read_token(
-            req.change.write.options, parsed->positionals[next++], "options");
         pricing_pair_setting_read_token(
             req.change.write.is_required, parsed->positionals[next++], "is_required");
         pricing_pair_setting_read_token(req.change.write.note, parsed->positionals[next++], "note");
@@ -497,8 +491,8 @@ void pricing_pair_setting_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 11 + 2) {
-            fail(out) << "Expected " << (change_count * 11 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 9 + 2) {
+            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -515,11 +509,8 @@ void pricing_pair_setting_commands::process_put_many(std::ostream& out,
             pricing_pair_setting_read_token(
                 change.write.scope, parsed->positionals[next++], "scope");
             pricing_pair_setting_read_token(change.write.name, parsed->positionals[next++], "name");
-            pricing_pair_setting_read_token(change.write.kind, parsed->positionals[next++], "kind");
             pricing_pair_setting_read_token(
                 change.write.usual_value, parsed->positionals[next++], "usual_value");
-            pricing_pair_setting_read_token(
-                change.write.options, parsed->positionals[next++], "options");
             pricing_pair_setting_read_token(
                 change.write.is_required, parsed->positionals[next++], "is_required");
             pricing_pair_setting_read_token(change.write.note, parsed->positionals[next++], "note");

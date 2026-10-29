@@ -70,7 +70,7 @@ import {
     type ParameterDocumentation,
 } from '../ui/OreParameter.js';
 import { PRICING_ENGINES_EVENTS } from './PricingEnginesPage.js';
-import { ChoiceSelect, ModelEnginePanels, SettingValue } from './parts.js';
+import { ChoiceSelect, ModelEnginePanels, namesSensitivityTemplate, SettingValue } from './parts.js';
 import { typeName } from './model.js';
 import { SaveDialog } from './SaveDialog.js';
 import {
@@ -1404,7 +1404,11 @@ function ProductEditor({
                                             />
                                         </div>
                                     </div>
-                                    {doc?.kind === 'reference' &&
+                                    {namesSensitivityTemplate(
+                                        vocabulary,
+                                        parameter.scope,
+                                        parameter.name,
+                                    ) &&
                                         templateInfo(vocabulary, parameter.value) !== undefined && (
                                             <p className="text-xs text-ink-faint">
                                                 {
@@ -1502,7 +1506,11 @@ function ProductEditor({
                                             />
                                         </div>
                                     </div>
-                                    {doc?.kind === 'reference' &&
+                                    {namesSensitivityTemplate(
+                                        vocabulary,
+                                        parameter.scope,
+                                        parameter.name,
+                                    ) &&
                                         templateInfo(vocabulary, parameter.value) !== undefined && (
                                             <p className="text-xs text-ink-faint">
                                                 {

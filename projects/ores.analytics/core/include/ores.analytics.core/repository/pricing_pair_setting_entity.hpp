@@ -50,9 +50,7 @@ struct pricing_pair_setting_entity {
     std::string pricing_engine_type_code;
     std::string scope;
     std::string name;
-    std::string kind;
     std::optional<std::string> usual_value;
-    std::optional<std::string> options;
     bool is_required = false;
     std::optional<std::string> note;
     std::string modified_by;
@@ -74,9 +72,7 @@ struct pricing_pair_setting_entity {
                query_builder::bind("model", &e::model) | query_builder::bind("engine", &e::engine) |
                query_builder::bind("pricing_engine_type_code", &e::pricing_engine_type_code) |
                query_builder::bind("scope", &e::scope) | query_builder::bind("name", &e::name) |
-               query_builder::bind("kind", &e::kind) |
                query_builder::bind("usual_value", &e::usual_value) |
-               query_builder::bind("options", &e::options) |
                query_builder::bind("is_required", &e::is_required) |
                query_builder::bind("note", &e::note) |
                query_builder::bind("modified_by", &e::modified_by) |

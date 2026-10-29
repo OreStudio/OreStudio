@@ -42,8 +42,10 @@ struct ip2country_probe {
     static constexpr auto columns() {
         using e = ip2country_probe;
         namespace query_builder = ores::database::query_builder;
-        return query_builder::columns<e>() | query_builder::bind("ip_range", &e::ip_range) |
-               query_builder::bind("tenant_id", &e::tenant_id) |
+        // ip_range and tenant_id are columns the row keeps as text: an
+        // inet and a uuid, neither of which the layer has a codec for.
+        return query_builder::columns<e>() | query_builder::bind_text("ip_range", &e::ip_range) |
+               query_builder::bind_text("tenant_id", &e::tenant_id) |
                query_builder::bind("country_code", &e::country_code);
     }
 };
@@ -85,7 +87,7 @@ std::string committed_count(const std::string& code) {
 }
 
 void pq_execute(const ores::database::context& ctx, const std::string& sql) {
-    const ores::database::pq::text_statement s({}, sql);
+    const ores::database::pq::fixed_statement s({}, sql);
     ores::database::transact(ctx, [&](ores::database::pq::transaction& tx) { tx.run(s, {}); });
 }
 
@@ -303,7 +305,7 @@ TEST_CASE("a libpq read inside a unit of work sees its uncommitted write", "[uni
     pq_execute(ctx, probe_insert(ctx, code));
 
     const auto sql = probe_count(code);
-    const ores::database::pq::text_statement count({}, sql);
+    const ores::database::pq::fixed_statement count({}, sql);
     const auto seen = ores::database::transact(ctx, [&](ores::database::pq::transaction& tx) {
         return std::string(tx.run(count, {}).text(0, 0));
     });
@@ -315,7 +317,7 @@ TEST_CASE("a libpq read inside a unit of work sees its uncommitted write", "[uni
 TEST_CASE("a named libpq statement runs in every call that joins a unit of work",
           "[unit_of_work]") {
     ores::testing::scoped_database_helper h;
-    const ores::database::pq::text_statement probe("ores_uow_join_probe", "select 1");
+    const ores::database::pq::fixed_statement probe("ores_uow_join_probe", "select 1");
 
     unit_of_work uow(h.context());
     for (int i = 0; i < 2; ++i) {

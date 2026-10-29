@@ -23,6 +23,7 @@
 #include "ores.database/pq/unit_of_work.hpp"
 #include "ores.database/pq/where.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -185,6 +186,69 @@ TEST_CASE("a time point's bounds survive the codec whatever the clock counts", "
     CHECK(round_trip(system_clock::time_point::min()) == system_clock::time_point::min());
     const auto instant = system_clock::time_point(std::chrono::microseconds(1'761'652'800'123'456));
     CHECK(round_trip(instant) == instant);
+
+    // The database's two infinities are its own byte patterns, and both read as
+    // the clock's bounds whatever the clock counts -- a clock that counts
+    // microseconds reaches below the year 2000 by less than the negative
+    // sentinel's own distance, so it cannot be recognised by comparison.
+    const auto from_bits = [](std::uint64_t bits) {
+        std::string bytes;
+        wire::put_u64(bytes, bits);
+        return codec<system_clock::time_point>::decode(std::as_bytes(std::span(bytes)));
+    };
+    CHECK(from_bits(0x8000'0000'0000'0000ULL) == system_clock::time_point::min());
+    CHECK(from_bits(0x7FFF'FFFF'FFFF'FFFFULL) == system_clock::time_point::max());
+    std::string encoded;
+    codec<system_clock::time_point>::encode(system_clock::time_point::min(), encoded);
+    CHECK(wire::get_u64(std::as_bytes(std::span(encoded))) == 0x8000'0000'0000'0000ULL);
+}
+
+TEST_CASE("the text form and the codec keep the same microsecond", "[pq]") {
+    // A clock that counts nanoseconds lands between two microseconds. The
+    // instant is taken down to the one it falls in, so the row a codec writes
+    // and the text a hand-written query passes name the same value.
+    const auto base = system_clock::time_point(std::chrono::microseconds(1'761'652'800'123'456));
+    const auto round_trip = [](system_clock::time_point v) {
+        std::string bytes;
+        codec<system_clock::time_point>::encode(v, bytes);
+        return codec<system_clock::time_point>::decode(std::as_bytes(std::span(bytes)));
+    };
+    for (const auto below : {0, 1, 499, 999}) {
+        const auto instant = base + std::chrono::nanoseconds(below);
+        CAPTURE(below);
+        CHECK(round_trip(instant) == base);
+        CHECK(ores::platform::time::datetime::to_iso8601_utc(instant) ==
+              "2025-10-28 12:00:00.123456Z");
+    }
+    // Before the epoch the same instant falls in the microsecond below it.
+    const auto before = system_clock::time_point(std::chrono::nanoseconds(-500));
+    CHECK(ores::platform::time::datetime::to_iso8601_utc(before) == "1969-12-31 23:59:59.999999Z");
+    CHECK(round_trip(before) == system_clock::time_point(std::chrono::microseconds(-1)));
+}
+
+TEST_CASE("the never sentinel is the last second of 9999 alone", "[pq]") {
+    // The sentinel names one second, not a year: a value in 9999 that is not
+    // that second is a value, and reading it as never would make a row that is
+    // not current read as current. A clock that counts nanoseconds cannot hold
+    // a year-9999 instant at all, so the case asserts what it can: the value is
+    // not the sentinel.
+    CHECK(parse_timestamp_text(ores::database::repository::MAX_TIMESTAMP) ==
+          system_clock::time_point::max());
+    CHECK(to_text(system_clock::time_point::max()).bytes ==
+          ores::database::repository::MAX_TIMESTAMP);
+    CHECK(parse_timestamp_text("9999-01-01 00:00:00.000000") != system_clock::time_point::max());
+    CHECK(parse_timestamp_text("9999-12-31 23:59:58.000000") != system_clock::time_point::max());
+}
+
+TEST_CASE("an unsigned value the column cannot hold is refused", "[pq]") {
+    // The column's type is signed, so the top bit is the sign: a value past the
+    // signed maximum would be stored as a negative number rather than fail.
+    CHECK_THROWS_AS(encode_param(std::numeric_limits<std::uint16_t>::max()), store_error);
+    CHECK_THROWS_AS(encode_param(std::numeric_limits<std::uint64_t>::max()), store_error);
+    CHECK(encode_param(std::numeric_limits<std::int16_t>::max()).bytes == "\x7f\xff");
+    CHECK(encode_param(static_cast<std::uint16_t>(32767)).bytes == "\x7f\xff");
+    CHECK(encode_param(static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()))
+              .bytes.size() == 8);
 }
 
 TEST_CASE("a statement is prepared once on a connection and run many times", "[pq]") {
@@ -418,22 +482,23 @@ TEST_CASE("a text statement fills an entity's text fields", "[pq]") {
     pool p(options_of(h), 1);
     const auto ctx = context_of(h);
     using ores::database::repository::db_timestamp;
-    const text_statement create{"pq_text_create",
-                                "create temp table if not exists pq_text (id uuid not null,"
-                                " n integer not null, big bigint not null, flag boolean not null,"
-                                " at timestamptz not null, note text)"};
-    const text_statement insert{"pq_text_insert",
-                                "insert into pq_text values ($1, $2, $3, $4, $5, $6)"};
-    const text_statement read{"pq_text_read",
-                              "select id, n, big, flag, at, note from pq_text where n = $1"};
+    const fixed_statement create{"pq_text_create",
+                                 "create temp table if not exists pq_text (id uuid not null,"
+                                 " n integer not null, big bigint not null, flag boolean not null,"
+                                 " at timestamptz not null, note text)"};
+    const fixed_statement insert{"pq_text_insert",
+                                 "insert into pq_text values ($1, $2, $3, $4, $5, $6)"};
+    const fixed_statement read{"pq_text_read",
+                               "select id, n, big, flag, at, note from pq_text where n = $1"};
     const std::string id = "3f2504e0-4f89-11d3-9a0c-0305e82c3301";
+    const auto at = ores::platform::time::datetime::from_iso8601_utc("2026-10-27 18:30:00+00");
     const auto rows = transact(p, ctx, [&](transaction& tx) {
         tx.run(create, {});
         const std::vector<param> values{to_text(id),
                                         to_text(42),
                                         to_text(std::int64_t{9'000'000'000}),
                                         to_text(true),
-                                        to_text(db_timestamp("2026-10-27 18:30:00")),
+                                        to_text(at),
                                         to_text(std::optional<std::string>())};
         tx.run(insert, values);
         const std::vector<param> key{to_text(42)};
@@ -445,8 +510,22 @@ TEST_CASE("a text statement fills an entity's text fields", "[pq]") {
     CHECK(from_text<std::int64_t>(rows, 0, 2) == 9'000'000'000);
     CHECK(from_text<bool>(rows, 0, 3));
     CHECK(std::string(rows.text(0, 4)).ends_with("+00"));
-    CHECK(from_text<db_timestamp>(rows, 0, 4).str() == "2026-10-27 18:30:00");
+    CHECK(from_text<db_timestamp>(rows, 0, 4) == at);
     CHECK_FALSE(from_text<std::optional<std::string>>(rows, 0, 5).has_value());
+}
+
+TEST_CASE("a text statement reads the store's never back as never", "[pq]") {
+    ores::testing::scoped_database_helper h;
+    pool p(options_of(h), 1);
+    const auto ctx = context_of(h);
+    using ores::database::repository::db_timestamp;
+    // The store renders its infinity in the text form the layer parses, so the
+    // sentinel survives the text path and not only the binary one.
+    const fixed_statement read{"pq_text_never",
+                               "select ores_utility_infinity_timestamp_fn()::text"};
+    const auto rows = transact(p, ctx, [&](transaction& tx) { return tx.run(read, {}); });
+    REQUIRE(rows.rows() == 1);
+    CHECK(from_text<db_timestamp>(rows, 0, 0) == db_timestamp::max());
 }
 
 TEST_CASE("a list read's conditions bind their values and order by the key", "[pq]") {

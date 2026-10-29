@@ -75,7 +75,8 @@ void configuration_document_handler::save_curve_configuration_document(ores::nat
     }
     try {
         require_party(*ctx);
-        service::curve_configuration_document_service(*ctx).save(req->document);
+        service::curve_configuration_document_service(*ctx).save(
+            req->document, req->reason_code, req->commentary);
         reply(nats_,
               msg,
               save_curve_configuration_document_response{

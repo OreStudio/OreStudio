@@ -46,11 +46,11 @@ domain::swap_leg swap_leg_mapper::map(const swap_leg_entity& v) {
 
     domain::swap_leg r;
     r.identity.version = v.version;
-    r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
-    r.identity.leg_number = boost::lexical_cast<int>(v.leg_number);
-    r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.identity.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
+    r.identity.tenant_id = v.tenant_id;
+    r.identity.trade_id = v.trade_id;
+    r.identity.leg_number = v.leg_number;
+    r.identity.party_id = v.party_id;
+    r.identity.trade_activity_id = v.trade_activity_id;
     r.payer = v.payer;
     r.leg_type_code = v.leg_type_code;
     r.day_count_fraction_code = v.day_count_fraction_code;
@@ -63,7 +63,7 @@ domain::swap_leg swap_leg_mapper::map(const swap_leg_entity& v) {
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
     r.audit.change_commentary = v.change_commentary;
-    r.audit.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.audit.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -73,12 +73,12 @@ swap_leg_entity swap_leg_mapper::map(const domain::swap_leg& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     swap_leg_entity r;
-    r.trade_id = boost::uuids::to_string(v.identity.trade_id);
-    r.leg_number = std::to_string(v.identity.leg_number);
-    r.tenant_id = v.identity.tenant_id.to_string();
+    r.trade_id = v.identity.trade_id;
+    r.leg_number = v.identity.leg_number;
+    r.tenant_id = v.identity.tenant_id;
     r.version = v.identity.version;
-    r.party_id = boost::uuids::to_string(v.identity.party_id);
-    r.trade_activity_id = boost::uuids::to_string(v.identity.trade_activity_id);
+    r.party_id = v.identity.party_id;
+    r.trade_activity_id = v.identity.trade_activity_id;
     r.payer = v.payer;
     r.leg_type_code = v.leg_type_code;
     r.day_count_fraction_code = v.day_count_fraction_code;

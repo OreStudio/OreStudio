@@ -27,6 +27,9 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -37,15 +40,20 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a session in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct session_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_iam_sessions_tbl";
 
-    std::string id;
-    std::string start_time;
-    std::string tenant_id;
-    std::string account_id;
+    boost::uuids::uuid id;
+    db_timestamp start_time;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+    boost::uuids::uuid account_id;
     std::optional<db_timestamp> end_time;
     std::string client_ip;
     std::string client_identifier = "";

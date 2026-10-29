@@ -27,6 +27,8 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -37,13 +39,18 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a lei entity in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct lei_entity_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_dq_lei_entities_artefact_tbl";
 
     std::string lei;
-    std::string tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     std::string entity_legal_name;
     std::string entity_entity_category;
     std::optional<std::string> entity_entity_sub_category;

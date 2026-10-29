@@ -43,11 +43,9 @@ domain::permission permission_mapper::map(const permission_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::permission r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
     r.code = v.code;
-
     r.description = v.description;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
@@ -58,11 +56,9 @@ permission_entity permission_mapper::map(const domain::permission& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     permission_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
-
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.code = v.code;
-
     r.description = v.description;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

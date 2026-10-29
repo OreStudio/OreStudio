@@ -48,20 +48,19 @@ domain::approval_request approval_request_mapper::map(const approval_request_ent
 
     domain::approval_request r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
     r.kind_code = v.kind_code;
     r.state_code = v.state_code;
-    r.requested_by = boost::lexical_cast<boost::uuids::uuid>(v.requested_by);
-    r.requested_at = timestamp_to_timepoint(std::string_view{v.requested_at});
+    r.requested_by = v.requested_by;
+    r.requested_at = v.requested_at;
     r.reason = v.reason;
-    r.expires_at = v.expires_at.has_value() ? std::optional(timestamp_to_timepoint(*v.expires_at)) :
-                                              std::nullopt;
+    r.expires_at = v.expires_at;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -71,17 +70,15 @@ approval_request_entity approval_request_mapper::map(const domain::approval_requ
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     approval_request_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.kind_code = v.kind_code;
     r.state_code = v.state_code;
-    r.requested_by = boost::uuids::to_string(v.requested_by);
-    r.requested_at = ores::platform::time::datetime::to_iso8601_utc(v.requested_at);
+    r.requested_by = v.requested_by;
+    r.requested_at = v.requested_at;
     r.reason = v.reason;
-    r.expires_at = v.expires_at.has_value() ?
-                       std::optional(ores::platform::time::datetime::to_db_string(*v.expires_at)) :
-                       std::nullopt;
+    r.expires_at = v.expires_at;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

@@ -32,9 +32,11 @@
 \ir ./refdata_calendar_types_create.sql
 \ir ./refdata_calendar_types_notify_trigger_create.sql
 \ir ./refdata_commodities_create.sql
+\ir ./refdata_legal_entities_create.sql
 \ir ./refdata_equity_underlyings_create.sql
 \ir ./refdata_equity_underlyings_notify_trigger_create.sql
 \ir ./refdata_commodities_notify_trigger_create.sql
+\ir ./refdata_legal_entities_notify_trigger_create.sql
 
 -- Core reference data tables
 \ir ./refdata_currencies_create.sql
@@ -369,6 +371,8 @@
 \ir ./refdata_curve_configuration_sections_create.sql
 \ir ./refdata_curve_configuration_sections_notify_trigger_create.sql
 \ir ./refdata_curve_definitions_create.sql
+\ir ./refdata_curve_configuration_columns_create.sql
+\ir ./refdata_curve_configuration_columns_notify_trigger_create.sql
 \ir ./refdata_curve_definitions_notify_trigger_create.sql
 \ir ./refdata_yield_curve_configs_create.sql
 \ir ./refdata_yield_curve_configs_notify_trigger_create.sql
@@ -441,3 +445,6 @@
 
 -- Convention term validation, after every convention table it guards
 \ir ./refdata_convention_terms_validate_create.sql
+
+\echo '--- Curve Configuration Value Guard ---'
+\ir ./refdata_curve_configuration_columns_validate_create.sql

@@ -49,26 +49,19 @@ index_credit_default_swap_option_instrument_mapper::map(
 
     domain::index_credit_default_swap_option_instrument r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
-    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
+    r.tenant_id = v.tenant_id;
+    r.trade_id = v.trade_id;
+    r.trade_activity_id = v.trade_activity_id;
     r.knock_out = v.knock_out;
     r.index_term = v.index_term;
     r.strike_type = v.strike_type;
-    r.trade_date =
-        v.trade_date.has_value() ?
-            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.trade_date)) :
-            std::nullopt;
-    r.front_end_protection_start_date =
-        v.front_end_protection_start_date.has_value() ?
-            std::optional(ores::platform::time::datetime::from_iso8601_date(
-                *v.front_end_protection_start_date)) :
-            std::nullopt;
+    r.trade_date = v.trade_date;
+    r.front_end_protection_start_date = v.front_end_protection_start_date;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -80,22 +73,15 @@ index_credit_default_swap_option_instrument_mapper::map(
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     index_credit_default_swap_option_instrument_entity r;
-    r.trade_id = boost::uuids::to_string(v.trade_id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.trade_id = v.trade_id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
+    r.trade_activity_id = v.trade_activity_id;
     r.knock_out = v.knock_out;
     r.index_term = v.index_term;
     r.strike_type = v.strike_type;
-    r.trade_date =
-        v.trade_date.has_value() ?
-            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.trade_date)) :
-            std::nullopt;
-    r.front_end_protection_start_date =
-        v.front_end_protection_start_date.has_value() ?
-            std::optional(ores::platform::time::datetime::to_iso8601_date(
-                *v.front_end_protection_start_date)) :
-            std::nullopt;
+    r.trade_date = v.trade_date;
+    r.front_end_protection_start_date = v.front_end_protection_start_date;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

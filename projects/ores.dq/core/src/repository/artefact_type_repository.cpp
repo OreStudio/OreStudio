@@ -169,9 +169,9 @@ void artefact_type_repository::write(
 }
 
 std::vector<domain::artefact_type> artefact_type_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<artefact_type_entity>> |
-                       query_builder::where("valid_to"_c == max.value()) |
+                       query_builder::where("valid_to"_c == max) |
                        query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<artefact_type_entity, domain::artefact_type>(
@@ -185,9 +185,9 @@ std::vector<domain::artefact_type> artefact_type_repository::read_latest(context
 std::vector<domain::artefact_type> artefact_type_repository::read_latest(context ctx,
                                                                          const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest artefact type. " << "code: " << code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<artefact_type_entity>> |
-                       query_builder::where("code"_c == code && "valid_to"_c == max.value());
+                       query_builder::where("code"_c == code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<artefact_type_entity, domain::artefact_type>(
         ctx,
@@ -244,7 +244,7 @@ artefact_type_repository::remove_status artefact_type_repository::remove(
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -252,7 +252,7 @@ artefact_type_repository::remove_status artefact_type_repository::remove(
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<artefact_type_entity> |
                        query_builder::where("tenant_id"_c == tid && "code"_c == code &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing artefact type from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -311,9 +311,9 @@ std::vector<domain::artefact_type>
 artefact_type_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<artefact_type_entity>> |
-                       query_builder::where("code"_c.in(codes) && "valid_to"_c == max.value());
+                       query_builder::where("code"_c.in(codes) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<artefact_type_entity, domain::artefact_type>(
         ctx,
         query,
@@ -332,11 +332,11 @@ void artefact_type_repository::remove(context ctx, const std::vector<std::string
     // asymmetric pair.
     if (codes.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::delete_from<artefact_type_entity> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::delete_from<artefact_type_entity> |
+        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing artefact types.");
 }
 

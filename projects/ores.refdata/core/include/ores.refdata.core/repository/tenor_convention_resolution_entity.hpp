@@ -27,6 +27,8 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -44,21 +46,35 @@ struct tenor_convention_resolution_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_refdata_tenor_convention_resolutions_tbl";
 
+
     std::string convention_code;
+
     std::string tenant_id;
+
     std::string tenor_code;
+
     int version = 0;
+
     std::optional<std::string> anchor_override;
+
+
     std::optional<std::string> offset_unit;
+
+
     std::optional<int> offset_multiplier;
+
+
     std::optional<std::string> schedule_code;
+
+
     std::optional<int> schedule_step_count;
+
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = db_timestamp::max();
+    db_timestamp valid_to = db_timestamp::max();
     std::optional<std::string> closed_by;
 
     /**
@@ -69,7 +85,7 @@ struct tenor_convention_resolution_entity {
         namespace query_builder = ores::database::query_builder;
         return query_builder::columns<e>() |
                query_builder::key("convention_code", &e::convention_code) |
-               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind_text("tenant_id", &e::tenant_id) |
                query_builder::bind("tenor_code", &e::tenor_code) |
                query_builder::bind("version", &e::version) |
                query_builder::bind("anchor_override", &e::anchor_override) |

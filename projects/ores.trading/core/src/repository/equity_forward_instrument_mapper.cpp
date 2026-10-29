@@ -49,19 +49,16 @@ equity_forward_instrument_mapper::map(const equity_forward_instrument_entity& v)
 
     domain::equity_forward_instrument r;
     r.identity.version = v.version;
-    r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.identity.tenant_id = v.tenant_id;
+    r.identity.trade_id = v.trade_id;
     r.identity.trade_type_code = v.trade_type_code;
-    r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.identity.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
+    r.identity.party_id = v.party_id;
+    r.identity.trade_activity_id = v.trade_activity_id;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
     r.quantity = v.quantity;
-    r.forward_price =
-        v.forward_price.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.forward_price).value()) :
-            std::nullopt;
-    r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
+    r.forward_price = v.forward_price;
+    r.expiry_date = v.expiry_date;
     r.long_short = v.long_short;
     r.settlement_type = v.settlement_type.value_or("");
     r.description = v.description.value_or("");
@@ -69,7 +66,7 @@ equity_forward_instrument_mapper::map(const equity_forward_instrument_entity& v)
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
     r.audit.change_commentary = v.change_commentary;
-    r.audit.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.audit.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -80,18 +77,17 @@ equity_forward_instrument_mapper::map(const domain::equity_forward_instrument& v
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     equity_forward_instrument_entity r;
-    r.trade_id = boost::uuids::to_string(v.identity.trade_id);
-    r.tenant_id = v.identity.tenant_id.to_string();
+    r.trade_id = v.identity.trade_id;
+    r.tenant_id = v.identity.tenant_id;
     r.version = v.identity.version;
     r.trade_type_code = v.identity.trade_type_code;
-    r.party_id = boost::uuids::to_string(v.identity.party_id);
-    r.trade_activity_id = boost::uuids::to_string(v.identity.trade_activity_id);
+    r.party_id = v.identity.party_id;
+    r.trade_activity_id = v.identity.trade_activity_id;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
     r.quantity = v.quantity;
-    r.forward_price =
-        v.forward_price.has_value() ? std::optional(v.forward_price->to_string()) : std::nullopt;
-    r.expiry_date = ores::platform::time::datetime::to_iso8601_date(v.expiry_date);
+    r.forward_price = v.forward_price;
+    r.expiry_date = v.expiry_date;
     r.long_short = v.long_short;
     r.settlement_type = v.settlement_type.empty() ? std::nullopt : std::optional(v.settlement_type);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);

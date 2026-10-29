@@ -46,55 +46,25 @@ domain::csa csa_mapper::map(const csa_entity& v) {
 
     domain::csa r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.netting_set_id = boost::lexical_cast<boost::uuids::uuid>(v.netting_set_id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.netting_set_id = v.netting_set_id;
+    r.party_id = v.party_id;
     r.is_active = v.is_active;
     r.bilateral = v.bilateral;
     r.csa_currency = v.csa_currency;
     r.index_name = v.index_name;
-    r.threshold_pay =
-        v.threshold_pay.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.threshold_pay).value()) :
-            std::nullopt;
-    r.threshold_receive =
-        v.threshold_receive.has_value() ?
-            std::optional(
-                ores::utility::decimal::decimal::from_string(*v.threshold_receive).value()) :
-            std::nullopt;
-    r.minimum_transfer_amount_pay = v.minimum_transfer_amount_pay.has_value() ?
-                                        std::optional(ores::utility::decimal::decimal::from_string(
-                                                          *v.minimum_transfer_amount_pay)
-                                                          .value()) :
-                                        std::nullopt;
-    r.minimum_transfer_amount_receive =
-        v.minimum_transfer_amount_receive.has_value() ?
-            std::optional(
-                ores::utility::decimal::decimal::from_string(*v.minimum_transfer_amount_receive)
-                    .value()) :
-            std::nullopt;
-    r.independent_amount_held =
-        v.independent_amount_held.has_value() ?
-            std::optional(
-                ores::utility::decimal::decimal::from_string(*v.independent_amount_held).value()) :
-            std::nullopt;
+    r.threshold_pay = v.threshold_pay;
+    r.threshold_receive = v.threshold_receive;
+    r.minimum_transfer_amount_pay = v.minimum_transfer_amount_pay;
+    r.minimum_transfer_amount_receive = v.minimum_transfer_amount_receive;
+    r.independent_amount_held = v.independent_amount_held;
     r.independent_amount_type = v.independent_amount_type;
     r.call_frequency = v.call_frequency;
     r.post_frequency = v.post_frequency;
     r.margin_period_of_risk = v.margin_period_of_risk;
-    r.collateral_compounding_spread_receive =
-        v.collateral_compounding_spread_receive.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(
-                              *v.collateral_compounding_spread_receive)
-                              .value()) :
-            std::nullopt;
-    r.collateral_compounding_spread_pay =
-        v.collateral_compounding_spread_pay.has_value() ?
-            std::optional(
-                ores::utility::decimal::decimal::from_string(*v.collateral_compounding_spread_pay)
-                    .value()) :
-            std::nullopt;
+    r.collateral_compounding_spread_receive = v.collateral_compounding_spread_receive;
+    r.collateral_compounding_spread_pay = v.collateral_compounding_spread_pay;
     r.apply_initial_margin = v.apply_initial_margin;
     r.initial_margin_type = v.initial_margin_type;
     r.calculate_im_amount = v.calculate_im_amount;
@@ -104,7 +74,7 @@ domain::csa csa_mapper::map(const csa_entity& v) {
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -114,42 +84,26 @@ csa_entity csa_mapper::map(const domain::csa& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     csa_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.netting_set_id = boost::uuids::to_string(v.netting_set_id);
-    r.party_id = boost::uuids::to_string(v.party_id);
+    r.netting_set_id = v.netting_set_id;
+    r.party_id = v.party_id;
     r.is_active = v.is_active;
     r.bilateral = v.bilateral;
     r.csa_currency = v.csa_currency;
     r.index_name = v.index_name;
-    r.threshold_pay =
-        v.threshold_pay.has_value() ? std::optional(v.threshold_pay->to_string()) : std::nullopt;
-    r.threshold_receive = v.threshold_receive.has_value() ?
-                              std::optional(v.threshold_receive->to_string()) :
-                              std::nullopt;
-    r.minimum_transfer_amount_pay = v.minimum_transfer_amount_pay.has_value() ?
-                                        std::optional(v.minimum_transfer_amount_pay->to_string()) :
-                                        std::nullopt;
-    r.minimum_transfer_amount_receive =
-        v.minimum_transfer_amount_receive.has_value() ?
-            std::optional(v.minimum_transfer_amount_receive->to_string()) :
-            std::nullopt;
-    r.independent_amount_held = v.independent_amount_held.has_value() ?
-                                    std::optional(v.independent_amount_held->to_string()) :
-                                    std::nullopt;
+    r.threshold_pay = v.threshold_pay;
+    r.threshold_receive = v.threshold_receive;
+    r.minimum_transfer_amount_pay = v.minimum_transfer_amount_pay;
+    r.minimum_transfer_amount_receive = v.minimum_transfer_amount_receive;
+    r.independent_amount_held = v.independent_amount_held;
     r.independent_amount_type = v.independent_amount_type;
     r.call_frequency = v.call_frequency;
     r.post_frequency = v.post_frequency;
     r.margin_period_of_risk = v.margin_period_of_risk;
-    r.collateral_compounding_spread_receive =
-        v.collateral_compounding_spread_receive.has_value() ?
-            std::optional(v.collateral_compounding_spread_receive->to_string()) :
-            std::nullopt;
-    r.collateral_compounding_spread_pay =
-        v.collateral_compounding_spread_pay.has_value() ?
-            std::optional(v.collateral_compounding_spread_pay->to_string()) :
-            std::nullopt;
+    r.collateral_compounding_spread_receive = v.collateral_compounding_spread_receive;
+    r.collateral_compounding_spread_pay = v.collateral_compounding_spread_pay;
     r.apply_initial_margin = v.apply_initial_margin;
     r.initial_margin_type = v.initial_margin_type;
     r.calculate_im_amount = v.calculate_im_amount;

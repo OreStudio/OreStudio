@@ -24,40 +24,55 @@
  *
  * Series Classification Rule Table
  *
- * The taxonomy rule for an ORE market data series, one row per series
- * type and metric. An import reads the whole table once, builds a
- * classifier from it, and asks that classifier for the asset classes and
- * the series subclass of every key it meets.
+ * The taxonomy rule for a market series, one row per identity the runtime
+ * classifies. The runtime reads the whole table once, builds a classifier from it,
+ * and asks that classifier for the asset classes and the series subclass of every
+ * series it creates.
  *
- * The table replaces a compiled C++ map, so the taxonomy is now managed
- * like every other catalogue: a type ORE adds later, or one a user
- * brings, is an inserted row rather than a rebuild. This matters because
- * an import aborts on a type it cannot classify, so a compiled table
- * makes every new ORE type a code change.
+ * The table replaces a compiled C++ map, so the taxonomy is managed like every
+ * other catalogue: an instrument a corpus adds later, or one a user brings, is an
+ * inserted row rather than a rebuild. This matters because an ingest that cannot
+ * classify a series it must create aborts on it, so a compiled table makes every
+ * new instrument a code change.
  *
- * The class codes name rows in refdata.asset_class_code and the
- * subclass codes name rows in refdata.series_subclass_code, and the
- * insert trigger checks both against those catalogues.
+ * The key is the oresmd identity and not an ORE key. Two kinds of identity reach
+ * this table, and key_kind says which a row is keyed by:
  *
- * Two things a single class column could not hold, and how this table
- * holds them:
+ * - datum, keyed by instrument -- the text the URI writes under
+ *   instrument, such as ir_swap or discount -- and by quote, the text it
+ *   writes under quote, or the empty string for a rule that applies to every
+ *   quote of its instrument. Most instruments classify the same way whatever their
+ *   quote carries, so their row holds the empty string; a lookup tries the exact
+ *   quote first and falls back to the empty one.
+ * - index, keyed by instrument too, which for this kind holds the index
+ *   family's oresmd name or the empty string for every family. A fixing series is
+ *   an index and not a datum, so it is keyed by the index's own vocabulary.
  *
- * - A pairwise correlation relates two classes and belongs to both, so
- *   neither is a property of the type. Its row names no class at all and
- *   its classes are read from the two operands of the key, which is what
- *   asset_class_source records.
- * - GENERIC-MD is a wrapper whose metric slot names the instrument
- *   inside it, so its rule is keyed by the metric rather than by the type
- *   alone.
+ * asset_class_source says where a row's classes come from:
  *
- * The reader rejects an empty table, because an empty table aborts the
- * first import that reads it and the message should name the table rather
- * than the first series it met.
+ * - literal names its class in asset_class_code.
+ * - correlation_operands reads the classes from the two operand fields of a
+ *   correlation datum, because a pairwise correlation belongs to the two classes
+ *   it relates and to no class of its own.
+ * - index_authority reads the class from the index family's schema row, whose
+ *   asset authority names the market-data namespace the index is written in, and
+ *   ores.refdata.asset_class_catalogue maps that authority onto a refdata class.
+ *   One row serves every index family, and a family the catalogue maps to no class
+ *   leaves the class list empty rather than mis-classing the series.
+ *
+ * The class codes name rows in refdata.asset_class_code and the subclass codes
+ * name rows in refdata.series_subclass_code, and the insert trigger checks both
+ * against those catalogues.
+ *
+ * The reader rejects an empty table, because an empty table aborts the first
+ * ingest that reads it and the message should name the table rather than the first
+ * series it met.
  */
 
 create table if not exists "ores_marketdata_series_classification_rules_tbl" (
-    "series_type" text not null,
-    "metric" text not null default '',
+    "instrument" text not null,
+    "quote" text not null default '',
+    "key_kind" text not null,
     "tenant_id" uuid not null,
     "version" integer not null,
     "asset_class_source" text not null default 'literal',
@@ -70,27 +85,29 @@ create table if not exists "ores_marketdata_series_classification_rules_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, series_type, metric, valid_from, valid_to),
+    primary key (tenant_id, instrument, quote, key_kind, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
-        series_type WITH =,
-        metric WITH =,
+        instrument WITH =,
+        quote WITH =,
+        key_kind WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("series_type" <> ''),
-    check ("asset_class_source" in ('literal', 'correlation_operands', 'index_name')),
+    check ("key_kind" <> ''),
+    check ("key_kind" in ('datum', 'index')),
+    check ("asset_class_source" in ('literal', 'correlation_operands', 'index_authority')),
     check (("asset_class_source" <> 'literal') or ("asset_class_code" is not null)),
     check (("asset_class_source" = 'literal') or ("asset_class_code" is null))
 );
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists series_classification_rules_version_uniq_idx
-on "ores_marketdata_series_classification_rules_tbl" (tenant_id, series_type, metric, version)
+on "ores_marketdata_series_classification_rules_tbl" (tenant_id, instrument, quote, key_kind, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists series_classification_rules_series_type_metric_uniq_idx
-on "ores_marketdata_series_classification_rules_tbl" (tenant_id, series_type, metric)
+create unique index if not exists series_classification_rules_instrument_quote_key_kind_uniq_idx
+on "ores_marketdata_series_classification_rules_tbl" (tenant_id, instrument, quote, key_kind)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists series_classification_rules_tenant_idx
@@ -125,7 +142,7 @@ begin
     select version into current_version
     from "ores_marketdata_series_classification_rules_tbl"
     where tenant_id = NEW.tenant_id
-      and series_type = NEW.series_type and metric = NEW.metric
+      and instrument = NEW.instrument and quote = NEW.quote and key_kind = NEW.key_kind
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -139,13 +156,13 @@ begin
                 perform ores_outcome_raise_fn(
                     'already_exists',
                     'series_classification_rule',
-                    'series_type');
+                    'instrument');
             end if;
         elsif NEW.version != current_version then
             perform ores_outcome_raise_fn(
                 'version_conflict',
                 'series_classification_rule',
-                'series_type',
+                'instrument',
                 NEW.version::text,
                 current_version::text);
         end if;
@@ -158,7 +175,7 @@ begin
         update "ores_marketdata_series_classification_rules_tbl"
         set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
-          and series_type = NEW.series_type and metric = NEW.metric
+          and instrument = NEW.instrument and quote = NEW.quote and key_kind = NEW.key_kind
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < clock_timestamp();
     else
@@ -182,7 +199,7 @@ on delete to "ores_marketdata_series_classification_rules_tbl" do instead (
     update "ores_marketdata_series_classification_rules_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
-      and series_type = OLD.series_type and metric = OLD.metric
+      and instrument = OLD.instrument and quote = OLD.quote and key_kind = OLD.key_kind
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
 

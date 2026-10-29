@@ -52,8 +52,9 @@ struct connection_options final {
 /**
  * @brief One result of a statement, cleared when it goes out of scope.
  *
- * Values are read in the format the statement asked for: binary for every
- * statement of the layer.
+ * Values are read in the format the statement asked for: binary for a
+ * generated repository's row, text for the SQL an entity model does not
+ * generate.
  */
 class ORES_DATABASE_EXPORT result final {
 public:

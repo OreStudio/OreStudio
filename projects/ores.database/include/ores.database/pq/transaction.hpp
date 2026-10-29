@@ -122,21 +122,27 @@ public:
     }
 
     /**
-     * @brief Runs a text statement and returns its result, in text.
+     * @brief Runs a statement whose SQL is fixed and returns its result.
+     *
+     * @param result_format =binary_result= for a generated repository, whose
+     * values the column's own codec reads, =text_result= for a hand-written
+     * query.
      */
-    result run(const text_statement& s, std::span<const param> params) {
+    result
+    run(const fixed_statement& s, std::span<const param> params, int result_format = text_result) {
         result r;
-        const sent_statement one{s.name(), s.sql(), {}, params, &s.counters(), &r, 0};
+        const sent_statement one{s.name(), s.sql(), {}, params, &s.counters(), &r, result_format};
         round_trip(std::span(&one, 1));
         return r;
     }
 
     /**
-     * @brief Runs a statement built at run time and returns its result, in text.
+     * @brief Runs a statement built at run time and returns its result, in the
+     * stated format.
      */
-    result run_text(const dynamic_statement& s) {
+    result run(const dynamic_statement& s, int result_format = text_result) {
         result r;
-        const sent_statement one{{}, s.sql(), s.oids(), s.params(), nullptr, &r, 0};
+        const sent_statement one{{}, s.sql(), s.oids(), s.params(), nullptr, &r, result_format};
         round_trip(std::span(&one, 1));
         return r;
     }
@@ -155,7 +161,7 @@ public:
             return *this;
         }
 
-        batch& add(const text_statement& s, std::vector<param> params) {
+        batch& add(const fixed_statement& s, std::vector<param> params) {
             entries_.push_back(entry{s.name(), s.sql(), {}, std::move(params), &s.counters()});
             return *this;
         }

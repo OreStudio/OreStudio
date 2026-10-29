@@ -3888,6 +3888,23 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     and not col['is_base64']
                     and not col['is_value_type']
                 )
+                # A column the row holds as its text, because the layer has no
+                # binary codec for the type the row keeps it in: jsonb and inet,
+                # a date the domain keeps as a string, and a numeric the domain
+                # keeps as a double. The statement asks the server for the column
+                # cast to text and binds it as text, and the row reads it through
+                # the text form, so these columns need no codec and no hand
+                # written workaround.
+                _sql_type = str(col.get('type', '')).strip().lower()
+                _is_date_member = _domain_cpp_type in (
+                    'std::chrono::year_month_day',
+                    'std::optional<std::chrono::year_month_day>',
+                )
+                col['is_text_stored'] = bool(
+                    _sql_type in ('jsonb', 'inet')
+                    or (_sql_type == 'date' and not _is_date_member)
+                    or (_sql_type.startswith('numeric') and not is_decimal_domain)
+                )
                 # Non-nullable plain std::string columns without an explicit
                 # generator_expr have no safe struct-level default (unlike
                 # bool/int below) — an empty string often fails a `<> ''`
@@ -4409,6 +4426,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                                        key.get('type', '') in ('timestamp', 'timestamptz', 'timestamp with time zone'))
                 key['is_date'] = (key.get('cpp_type', '') == 'std::chrono::year_month_day' or
                                   key.get('type', '') == 'date')
+                # A nullable natural key holds an optional member, so a NULL
+                # reads as nothing rather than as the nil uuid or the epoch.
+                key['is_optional_uuid'] = bool(key['is_uuid'] and key.get('nullable', False))
+                key['is_optional_timestamp'] = bool(
+                    key['is_timestamp'] and key.get('nullable', False)
+                )
                 key['render_label'] = ' '.join(
                     word.upper() if word.lower() in ('id', 'iso', 'fx')
                     else word.capitalize()
@@ -5219,7 +5242,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # (valid_to = infinity); a current-state table has no such column and
         # reads the row itself, so the fragment is empty.
         domain_entity['temporal_filter'] = (
-            '' if current_state else ' && "valid_to"_c == max.value()')
+            '' if current_state else ' && "valid_to"_c == max')
         # The paged list and its count of an entity with a point-in-time read
         # leave the window out of their typed where(): the window joins as a
         # run-time condition, the current row or the row valid at the

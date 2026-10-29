@@ -21,6 +21,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as documentSubjects } from '@ores/wire-protocol/generated/refdata/protocol/configuration_document_protocol';
+import { subjects as segmentTypeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/curve_segment_type_protocol';
 import { subjects as sectionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/curve_section_protocol';
 import { subjects as configurationSubjects } from '@ores/wire-protocol/generated/refdata/protocol/curve_configuration_protocol';
 import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/curve_definition_protocol';
@@ -35,16 +36,16 @@ import {
     type CurveSectionWiring,
 } from './curve-sections.generated.js';
 import { NO_VALUE_SET, readValueSets } from './ore-value-sets.js';
-import { notFound } from './errors.js';
+import { HttpFailure, invalidRequest, notFound } from './errors.js';
 import { input, readAll, row, text, valueText } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
 /*
  * One curve configuration, as the ORE element and leaf screen standard draws it.
  *
- * The section list, the each section's entry element and the order the sections
- * are read in come from =curve_section=, so the screen holds no table that names
- * a family. What a column holds is the projection's fact, and it reaches here
+ * The section list, each section's entry element and the order the sections are
+ * read in come from =curve_section=, so the screen holds no table that names a
+ * family. What a column holds is the projection's fact, and it reaches here
  * through =curve-sections.generated.ts=, which the generator reads out of the
  * projection. What a leaf means, and the values it accepts, come from the ORE
  * parameter contract and the value set tables, so the screen holds no ORE text.
@@ -53,10 +54,18 @@ import type { LiveSession } from './sessions.js';
  * the section the entry's definition names. An entry is one =curve_definition=
  * row -- the identifier and the description every family shares -- plus the rows
  * of its own family table, which are joined back to it by =curve_definition_id=.
+ *
+ * A change names leaves, never the document: the route reads the stored document,
+ * changes those leaves, and writes back the families they reach, so the rows a
+ * screen does not draw keep their versions and a save from a stale page is a
+ * conflict rather than an overwrite.
  */
 
 /** The schema the curve configuration's leaves are documented under. */
 const SCHEMA_NAME = 'curveconfig.xsd';
+
+/** The document element every curve leaf's path starts at. */
+const ROOT_ELEMENT = 'CurveConfiguration';
 
 /** The table every entry's identifier and description live in. */
 const DEFINITION_ENTITY = 'curve_definition';
@@ -76,6 +85,24 @@ const NO_PARTY = '';
 const idSchema = z.guid();
 
 const documentQuerySchema = z.object({ party: idSchema.optional() });
+
+/** One leaf of one row, as a screen changes it: the column and the value it takes. */
+const changeSchema = z.object({
+    entity: z.string().min(1).max(80),
+    /** The curve definition the entry is: every family row joins back to it. */
+    entryId: z.string().min(1).max(80),
+    column: z.string().min(1).max(80),
+    /** The value to hold, or null to unset the leaf and let ORE apply its default. */
+    value: z.string().nullable(),
+});
+
+/** The changes a screen asks for, and the version it read before it asks. */
+const amendSchema = z.object({
+    version: z.number().int().nonnegative(),
+    reasonCode: z.string().min(1).max(120),
+    commentary: z.string().max(4000).default(''),
+    changes: z.array(changeSchema).min(1).max(200),
+});
 
 /** The value set fields of one leaf, as the contract and the set tables state them. */
 type ValueSetOf = (
@@ -120,6 +147,20 @@ export interface CurveBlockView {
     readonly present: boolean | null;
 }
 
+/** One row of a child collection, with the leaves the contract names for it. */
+export interface CurveCollectionRowView {
+    readonly id: string;
+    /** The element the row is written as, such as a segment's kind, or empty. */
+    readonly kind: string;
+    readonly leaves: readonly CurveParameterView[];
+}
+
+/** A child collection an entry holds rows of, such as its segments. */
+export interface CurveCollectionView {
+    readonly element: string;
+    readonly rows: readonly CurveCollectionRowView[];
+}
+
 /** One curve entry: the definition every family shares, and its own parameters. */
 export interface CurveEntryView {
     readonly id: string;
@@ -129,6 +170,7 @@ export interface CurveEntryView {
     readonly position: number;
     readonly parameters: readonly CurveParameterView[];
     readonly blocks: readonly CurveBlockView[];
+    readonly collections: readonly CurveCollectionView[];
 }
 
 /** One section of the document, its entries, and whether the columns are known. */
@@ -236,6 +278,181 @@ function orderedSections(
     });
 }
 
+/**
+ * The segment kind each segment type code is written as.
+ *
+ * A segment row states its =Type=, which is the value the document gives, such as
+ * =Deposit= or =Average OIS=. The ORE element it is written as is the kind, such
+ * as =Simple= or =AverageOIS=, and the contract keys a leaf under the kind and not
+ * the value. The kinds are the rows of =curve_segment_type= and not a table here.
+ */
+type KindOf = (segmentType: string) => string;
+
+/** A nested table a curve entry holds rows of, and where its leaves sit. */
+interface CurveCollectionRule {
+    readonly element: string;
+    readonly entity: string;
+    readonly vector: string;
+    /** The column that joins a row back to the entry it belongs to. */
+    readonly parentKey: string;
+    /** The column that names the element a row is written as, or empty for none. */
+    readonly kindColumn: string;
+    /** The path from the entry to the leaves that kind holds, the entry left off. */
+    readonly pathOf: (kind: string) => string;
+}
+
+/**
+ * The child collections a curve entry holds, and the document element each leaf
+ * of one sits under.
+ *
+ * A segment's leaves do not sit at a fixed path: the same column is
+ * `Segments/Simple/ProjectionCurve` for a simple segment and
+ * `Segments/AverageOIS/ProjectionCurve` for an average OIS one, so the path
+ * depends on the kind the row states. That is why the generated section wiring
+ * covers only an entry's own table, and why the collection states its path here
+ * until the generator can derive it from the projection.
+ */
+const CURVE_COLLECTIONS: readonly CurveCollectionRule[] = [
+    {
+        element: 'Segments',
+        entity: 'curve_segment',
+        vector: 'segments',
+        parentKey: 'curve_definition_id',
+        kindColumn: 'segment_type',
+        pathOf: (kind: string) => `Segments/${kind}`,
+    },
+];
+
+/** The columns a nested row carries that are not leaves of the document. */
+const NOT_A_LEAF: ReadonlySet<string> = new Set([
+    'id',
+    'tenant_id',
+    'version',
+    'party_id',
+    'modified_by',
+    'performed_by',
+    'change_reason_code',
+    'change_commentary',
+    'valid_from',
+    'valid_to',
+    'curve_definition_id',
+    'curve_segment_id',
+    'curve_configuration_id',
+    'position',
+]);
+
+/**
+ * The ORE element a column holds, which is its name in camel case.
+ *
+ * The column names are the projection's members, and the projection names each
+ * element as its own member's words: =projection_curve= is =ProjectionCurve=,
+ * =reference_curve_2= is =ReferenceCurve2=. A column whose leaf the contract
+ * does not carry keeps its name on screen and is marked as a gap.
+ */
+function oreNameOf(column: string): string {
+    return column
+        .split('_')
+        .filter((part) => part !== '')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('');
+}
+
+/** The leaves of one row of a collection, in the order the row states them. */
+function collectionLeaves(
+    row: Readonly<Record<string, unknown>>,
+    section: string,
+    entryElement: string,
+    rule: CurveCollectionRule,
+    kind: string,
+    contract: ReadonlyMap<string, Readonly<Record<string, unknown>>>,
+    valueSetOf: ValueSetOf,
+): readonly CurveParameterView[] {
+    if (kind === '') {
+        return [];
+    }
+    const path = rule.pathOf(kind);
+    const found: CurveParameterView[] = [];
+    for (const column of Object.keys(row)) {
+        if (NOT_A_LEAF.has(column) || column === rule.kindColumn) {
+            continue;
+        }
+        const ore = oreNameOf(column);
+        const leaf = leafView(
+            {
+                entity: rule.entity,
+                column,
+                ore,
+                xpath: `/${ROOT_ELEMENT}/${section}/${entryElement}/${path}/${ore}`,
+                value: valueText(row[column]),
+            },
+            contract,
+            valueSetOf,
+        );
+        /*
+         * The row's table is one flat table for every kind, so most of its columns
+         * are another kind's leaves. A column belongs to this row's kind when the
+         * contract documents it for the kind, or when the row holds a value in it:
+         * the first is a leaf of the kind, the second is one somebody set, and
+         * neither may be hidden.
+         */
+        if (leaf.documented || leaf.value !== null) {
+            found.push(leaf);
+        }
+    }
+    return found;
+}
+
+/** The rows of every child collection an entry holds, in document order. */
+function collectionsOf(
+    document: Readonly<Record<string, unknown>>,
+    wiring: CurveSectionWiring,
+    entryId: string,
+    contract: ReadonlyMap<string, Readonly<Record<string, unknown>>>,
+    valueSetOf: ValueSetOf,
+    kindOf: KindOf,
+): readonly CurveCollectionView[] {
+    const declared = new Set(wiring.blocks.map((block) => block.element));
+    return CURVE_COLLECTIONS.filter(
+        (rule) =>
+            declared.has(rule.element) || vectorOf(document, rule.vector).length > 0,
+    ).map((rule) => {
+        const rows = vectorOf(document, rule.vector)
+            .filter((candidate) => text(candidate[rule.parentKey]) === entryId)
+            .map((candidate) => {
+                const kind = kindOf(text(candidate[rule.kindColumn]));
+                return {
+                    id: text(candidate['id']),
+                    kind,
+                    leaves: collectionLeaves(
+                        candidate,
+                        wiring.section,
+                        wiring.entryElement,
+                        rule,
+                        kind,
+                        contract,
+                        valueSetOf,
+                    ),
+                };
+            });
+        return { element: rule.element, rows };
+    });
+}
+
+/**
+ * Every leaf an entry draws: the ones of its own table, and the ones its
+ * collection rows hold. A segment's leaf is a parameter of the curve as much as
+ * the curve's own currency is, so the count of documented parameters is over all
+ * of them.
+ */
+function leavesOfEntry(entry: CurveEntryView): readonly CurveParameterView[] {
+    return [
+        ...entry.parameters,
+        ...entry.collections.flatMap((collection) =>
+            collection.rows.flatMap((row) => row.leaves),
+        ),
+    ];
+}
+
 /** One entry's row of each of the section's tables, by the table's entity name. */
 function rowsOfEntry(
     document: Readonly<Record<string, unknown>>,
@@ -254,6 +471,34 @@ function rowsOfEntry(
     return found;
 }
 
+/** One row's leaf, joined to what the contract says about it and the values it accepts. */
+function leafView(
+    where: Pick<CurveParameterView, 'entity' | 'column' | 'ore' | 'xpath' | 'value'>,
+    contract: ReadonlyMap<string, Readonly<Record<string, unknown>>>,
+    valueSetOf: ValueSetOf,
+): CurveParameterView {
+    const entry = contract.get(where.xpath);
+    const scope = text(entry?.['scope']);
+    const name = text(entry?.['name']);
+    return {
+        entity: where.entity,
+        column: where.column,
+        ore: where.ore,
+        xpath: where.xpath,
+        value: where.value,
+        documented: entry !== undefined,
+        required: entry?.['is_required'] === true,
+        label: text(entry?.['label']),
+        help: text(entry?.['help']),
+        description: text(entry?.['description']),
+        defaultText: text(entry?.['default_text']),
+        format: text(entry?.['format']),
+        introducedIn: text(entry?.['introduced_in']),
+        removedIn: text(entry?.['removed_in']),
+        ...(entry === undefined ? NO_VALUE_SET : valueSetOf(scope, name)),
+    };
+}
+
 /**
  * One entry's parameters: every column the projection reads for the section, in
  * the order the projection reads them, each joined to its leaf in the contract.
@@ -266,29 +511,19 @@ function parametersOf(
     valueSetOf: ValueSetOf,
 ): readonly CurveParameterView[] {
     return wiring.parameters.map((parameter) => {
-        const xpath = `/${parameter.xpath}`;
-        const entry = contract.get(xpath);
         const source =
             parameter.entity === DEFINITION_ENTITY ? definition : rows.get(parameter.entity);
-        const scope = text(entry?.['scope']);
-        const name = text(entry?.['name']);
-        return {
-            entity: parameter.entity,
-            column: parameter.column,
-            ore: parameter.ore,
-            xpath,
-            value: valueText(source?.[parameter.column]),
-            documented: entry !== undefined,
-            required: entry?.['is_required'] === true,
-            label: text(entry?.['label']),
-            help: text(entry?.['help']),
-            description: text(entry?.['description']),
-            defaultText: text(entry?.['default_text']),
-            format: text(entry?.['format']),
-            introducedIn: text(entry?.['introduced_in']),
-            removedIn: text(entry?.['removed_in']),
-            ...(entry === undefined ? NO_VALUE_SET : valueSetOf(scope, name)),
-        };
+        return leafView(
+            {
+                entity: parameter.entity,
+                column: parameter.column,
+                ore: parameter.ore,
+                xpath: `/${parameter.xpath}`,
+                value: valueText(source?.[parameter.column]),
+            },
+            contract,
+            valueSetOf,
+        );
     });
 }
 
@@ -316,6 +551,7 @@ function entryOf(
     wiring: CurveSectionWiring | undefined,
     contract: ReadonlyMap<string, Readonly<Record<string, unknown>>>,
     valueSetOf: ValueSetOf,
+    kindOf: KindOf,
 ): CurveEntryView {
     const id = text(definition['id']);
     if (wiring === undefined) {
@@ -327,6 +563,7 @@ function entryOf(
             position: numberOf(definition['position']),
             parameters: [],
             blocks: [],
+            collections: [],
         };
     }
     const rows = rowsOfEntry(document, wiring, id);
@@ -338,7 +575,129 @@ function entryOf(
         position: numberOf(definition['position']),
         parameters: parametersOf(definition, rows, wiring, contract, valueSetOf),
         blocks: blocksOf(rows, wiring),
+        collections: collectionsOf(document, wiring, id, contract, valueSetOf, kindOf),
     };
+}
+
+/**
+ * Every family a curve configuration document carries.
+ *
+ * A save states each one, empty where the screen changed nothing: the service
+ * reads the document as a whole, so a family it does not name is a document it
+ * cannot read. The families left empty are not written, so their rows keep their
+ * versions.
+ */
+const DOCUMENT_FAMILIES = [
+    'sections',
+    'definitions',
+    'yield_curves',
+    'equity_curves',
+    'inflation_curves',
+    'default_curves',
+    'commodity_curves',
+    'fx_volatilities',
+    'yield_volatilities',
+    'base_correlations',
+    'correlations',
+    'report_configurations',
+    'cds_volatilities',
+    'cds_volatility_terms',
+    'volatility_configs',
+    'inflation_cap_floor_volatilities',
+    'swaption_volatilities',
+    'cap_floor_volatilities',
+    'parametric_smiles',
+    'parametric_smile_parameters',
+    'equity_volatilities',
+    'commodity_volatilities',
+    'bond_future_volatilities',
+    'global_reports',
+    'commodity_price_segments',
+    'default_curve_configurations',
+    'seasonality_factors',
+    'securities',
+    'intraday_power_curves',
+    'bootstrap_configs',
+    'segments',
+    'segment_curves',
+    'quotes',
+] as const;
+
+/**
+ * The document vector each entity's rows are read from, or the empty name.
+ *
+ * The definition is not one of a section's family tables: every section's
+ * entries are definition rows, and the wiring names the definition only among the
+ * leaves, so its vector is stated here.
+ */
+function vectorByEntity(): ReadonlyMap<string, string> {
+    const found = new Map<string, string>([[DEFINITION_ENTITY, 'definitions']]);
+    for (const wiring of CURVE_SECTIONS)
+        for (const entity of wiring.entities) found.set(entity.entity, entity.vector);
+    return found;
+}
+
+/** A leaf as a change is checked against: its words, and the values it accepts. */
+interface LeafRule {
+    readonly label: string;
+    readonly required: boolean;
+    readonly choices: readonly { readonly value: string; readonly label: string }[];
+    readonly minimum: number | null;
+    readonly maximum: number | null;
+    readonly pattern: string;
+}
+
+/**
+ * Why the leaf would not take the value, or null when it would.
+ *
+ * The value set tables are the ORE parser's own lists, so a value outside them
+ * is one ORE refuses to read. The store's guard does not cover the curve tables
+ * yet, so the boundary is where the refusal happens.
+ */
+function refusalOf(rule: LeafRule, value: string | null): string | null {
+    if (value === null || value === '') {
+        return rule.required ? `${rule.label} is required.` : null;
+    }
+    if (rule.choices.length > 0 && !rule.choices.some((choice) => choice.value === value)) {
+        const accepted = rule.choices.map((choice) => choice.value).join(', ');
+        return `${rule.label} must be one of ${accepted}, and "${value}" is not.`;
+    }
+    if (rule.minimum !== null || rule.maximum !== null) {
+        const number = Number(value);
+        if (Number.isNaN(number)) return `${rule.label} must be a number.`;
+        if (rule.minimum !== null && number < rule.minimum)
+            return `${rule.label} must be at least ${String(rule.minimum)}.`;
+        if (rule.maximum !== null && number > rule.maximum)
+            return `${rule.label} must be at most ${String(rule.maximum)}.`;
+    }
+    if (rule.pattern !== '' && !new RegExp(rule.pattern).test(value))
+        return `${rule.label} must match ${rule.pattern}.`;
+    return null;
+}
+
+/** Writes the rows the caller sends, with the reason that says why they changed. */
+async function saveDocument(
+    session: LiveSession,
+    document: Readonly<Record<string, unknown>>,
+    reasonCode: string,
+    commentary: string,
+): Promise<void> {
+    const reply = await session.client.callAuthenticated(
+        documentSubjects.save_curve_configuration_document_request,
+        { document, reason_code: reasonCode, commentary },
+        z.looseObject({
+            success: z.boolean().default(false),
+            message: z.string().default(''),
+            id: z.string().default(''),
+        }),
+    );
+    if (!reply.success) {
+        const stale = /version[_ ]conflict|does not match/i.test(reply.message);
+        throw new HttpFailure(stale ? 409 : 400, {
+            code: stale ? 'conflict' : 'invalid-request',
+            message: reply.message === '' ? 'The change was refused.' : reply.message,
+        });
+    }
 }
 
 /** The curve configuration a reporting configuration is filled by, as a screen reads it. */
@@ -403,7 +762,8 @@ export function registerCurveConfigurationRoutes(
         const document = await readDocument(session, configurationId, party);
         const header = z.looseObject({}).parse(document['config']);
         const definitions = vectorOf(document, 'definitions');
-        const [sectionRows, parameters, sets, values, catalogues, links] = await Promise.all([
+        const [sectionRows, parameters, sets, values, catalogues, links, segmentTypes] =
+            await Promise.all([
             readAll(session, sectionSubjects.list_curve_sections_request, 'sections', {
                 filter: null,
                 as_of: null,
@@ -437,6 +797,10 @@ export function registerCurveConfigurationRoutes(
                 'setting_value_sets',
                 { filter: null, as_of: null },
             ),
+            readAll(session, segmentTypeSubjects.list_curve_segment_types_request, 'segment_types', {
+                filter: null,
+                as_of: null,
+            }),
         ]);
         const contract = new Map(
             parameters
@@ -444,12 +808,18 @@ export function registerCurveConfigurationRoutes(
                 .map((entry) => [text(entry['xpath']), entry]),
         );
         const valueSetOf = await readValueSets(session, { sets, values, catalogues, links });
+        const kinds = new Map(
+            segmentTypes.map((row) => [text(row['code']), text(row['segment_kind'])]),
+        );
+        const kindOf: KindOf = (segmentType) => kinds.get(segmentType) ?? '';
         const sections = orderedSections(sectionRows).map((section) => {
             const wiring = CURVE_SECTIONS.find((candidate) => candidate.section === section.code);
             const entries = definitions
                 .filter((definition) => text(definition['section_code']) === section.code)
                 .sort((left, right) => numberOf(left['position']) - numberOf(right['position']))
-                .map((definition) => entryOf(definition, document, wiring, contract, valueSetOf));
+                .map((definition) =>
+                    entryOf(definition, document, wiring, contract, valueSetOf, kindOf),
+                );
             return {
                 code: section.code,
                 entryElement: section.entry === '' ? (wiring?.entryElement ?? '') : section.entry,
@@ -460,14 +830,16 @@ export function registerCurveConfigurationRoutes(
         });
         const total = sections.reduce(
             (count, section) =>
-                count + section.entries.reduce((sum, entry) => sum + entry.parameters.length, 0),
+                count +
+                section.entries.reduce((sum, entry) => sum + leavesOfEntry(entry).length, 0),
             0,
         );
         const documented = sections.reduce(
             (count, section) =>
                 count +
                 section.entries.reduce(
-                    (sum, entry) => sum + entry.parameters.filter((leaf) => leaf.documented).length,
+                    (sum, entry) =>
+                        sum + leavesOfEntry(entry).filter((leaf) => leaf.documented).length,
                     0,
                 ),
             0,
@@ -486,5 +858,122 @@ export function registerCurveConfigurationRoutes(
             sections,
         };
         return view;
+    });
+
+    /**
+     * Changes leaves of one curve configuration.
+     *
+     * A save writes every family the document carries, and the screen draws one
+     * entry at a time. So the route reads the stored document whole, changes the
+     * leaves the caller names, and writes back only the families it touched: the
+     * rows the screen does not draw keep their versions and their history stays
+     * a record of what changed. Each row states the version it was read at, so a
+     * row that moved on since the read is refused as a conflict rather than
+     * overwritten.
+     */
+    server.put('/api/refdata/curve-configurations/:id', async (request, reply) => {
+        const session = requireSession(request);
+        const configurationId = input(idSchema, (request.params as { id: string }).id);
+        const { party } = input(documentQuerySchema, request.query);
+        const body = input(amendSchema, request.body);
+        const document = await readDocument(session, configurationId, party);
+        const header = z.looseObject({}).parse(document['config']);
+        if (numberOf(header['version']) !== body.version) {
+            throw new HttpFailure(409, {
+                code: 'conflict',
+                message:
+                    'This curve configuration changed since you opened it. Read it again before you change it.',
+            });
+        }
+        const [parameters, sets, values, catalogues, links] = await Promise.all([
+            readAll(session, parameterSubjects.list_ore_parameters_request, 'parameters', {
+                filter: null,
+                as_of: null,
+            }),
+            readAll(session, valueSetSubjects.list_ore_parameter_value_sets_request, 'sets', {
+                filter: null,
+                as_of: null,
+            }),
+            readAll(
+                session,
+                valueSetValueSubjects.list_ore_parameter_value_set_values_request,
+                'values',
+                { filter: null, as_of: null },
+            ),
+            readAll(
+                session,
+                valueSetCatalogueSubjects.list_ore_parameter_value_set_catalogues_request,
+                'catalogues',
+                { filter: null, as_of: null },
+            ),
+            readAll(
+                session,
+                settingValueSetSubjects.list_ore_parameter_setting_value_sets_request,
+                'setting_value_sets',
+                { filter: null, as_of: null },
+            ),
+        ]);
+        const contract = new Map(
+            parameters
+                .filter((entry) => text(entry['schema_name']) === SCHEMA_NAME)
+                .map((entry) => [text(entry['xpath']), entry]),
+        );
+        const valueSetOf = await readValueSets(session, { sets, values, catalogues, links });
+        const vectors = vectorByEntity();
+        const touched = new Map<string, Readonly<Record<string, unknown>>[]>();
+        for (const change of body.changes) {
+            const parameter = CURVE_SECTIONS.flatMap((wiring) => wiring.parameters).find(
+                (candidate) =>
+                    candidate.entity === change.entity && candidate.column === change.column,
+            );
+            if (parameter === undefined) {
+                throw invalidRequest(
+                    `${change.entity}.${change.column} is not a leaf of a curve configuration.`,
+                );
+            }
+            const leaf = contract.get(`/${parameter.xpath}`);
+            const scope = text(leaf?.['scope']);
+            const name = text(leaf?.['name']);
+            const set = leaf === undefined ? NO_VALUE_SET : valueSetOf(scope, name);
+            const refusal = refusalOf(
+                {
+                    label: text(leaf?.['label']) || parameter.ore,
+                    required: leaf?.['is_required'] === true,
+                    choices: set.choices,
+                    minimum: set.minimum,
+                    maximum: set.maximum,
+                    pattern: text(leaf?.['pattern']),
+                },
+                change.value,
+            );
+            if (refusal !== null) throw invalidRequest(refusal);
+            const vector = vectors.get(change.entity);
+            if (vector === undefined) {
+                throw invalidRequest(`${change.entity} has no table in a curve configuration.`);
+            }
+            const rows = touched.get(vector) ?? vectorOf(document, vector);
+            const key =
+                change.entity === DEFINITION_ENTITY
+                    ? 'id'
+                    : (CURVE_SECTIONS.find((wiring) =>
+                          wiring.entities.some((entity) => entity.entity === change.entity),
+                      )?.definitionKey ?? '');
+            const row = rows.find((candidate) => text(candidate[key]) === change.entryId);
+            if (row === undefined) {
+                throw invalidRequest(
+                    `No ${change.entity} row of the curve entry ${change.entryId} is stored.`,
+                );
+            }
+            const changed = { ...row, [change.column]: change.value };
+            touched.set(
+                vector,
+                rows.map((candidate) => (candidate === row ? changed : candidate)),
+            );
+        }
+        const partial: Record<string, unknown> = { config: header };
+        for (const family of DOCUMENT_FAMILIES) partial[family] = [];
+        for (const [vector, rows] of touched) partial[vector] = rows;
+        await saveDocument(session, partial, body.reasonCode, body.commentary);
+        return reply.code(204).send();
     });
 }

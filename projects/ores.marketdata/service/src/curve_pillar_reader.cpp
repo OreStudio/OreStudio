@@ -19,13 +19,15 @@
  */
 #include "curve_pillar_reader.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.api/domain/catalogue_ids.hpp"
-#include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
+#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.core/oresmd/pillar_quote.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <stdexcept>
+#include <string>
 
 namespace ores::marketdata::service {
 
@@ -49,50 +51,48 @@ double observation_value(const domain::market_observation& obs) {
 
 pillar_read
 read_pillar_rates(ores::database::context ctx,
-                  const ores::refdata::domain::ir_curve_bootstrap_config& config,
                   const std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar>& pillars,
                   const curve_republish_refdata_context& refctx,
                   std::chrono::system_clock::time_point as_of) {
-    namespace core = ores::marketdata::core;
+    namespace datum = ores::marketdata::datum;
 
     repository::market_series_repository series_repo;
     repository::market_observation_repository obs_repo;
 
     pillar_read out;
     for (const auto& p : pillars) {
-        const auto key = core::make_pillar_quote_key(config.currency_code,
-                                                     config.index_tenor,
-                                                     p.start_tenor_code,
-                                                     resolve_tenor_date(refctx, p.start_tenor_code),
-                                                     resolve_tenor_date(refctx, p.end_tenor_code),
-                                                     p.end_tenor_code);
-        // The config's own party, as the ingest loop scopes the series it writes:
-        // the curve is bootstrapped for that party, so its quotes come from it.
-        // The curve configuration names no provider yet, so the quotes are the
-        // ones the ingest loop stores for the default provider of its bindings.
-        const auto series = series_repo.read_latest_by_key(
-            ctx,
-            core::pillar_series_uri(key),
-            std::string(ores::marketdata::domain::catalogue_ids::ore_provider),
-            boost::uuids::to_string(config.party_id));
+        const auto series =
+            series_repo.read_latest(ctx, boost::uuids::to_string(p.market_series_id));
         if (series.empty()) {
             BOOST_LOG_SEV(lg(), ores::logging::warn)
-                << "No series of provider " << ores::marketdata::domain::catalogue_ids::ore_provider
-                << " holds the pillar " << p.end_tenor_code << " of curve config " << config.id;
+                << "No market series " << boost::uuids::to_string(p.market_series_id)
+                << " holds the pillar " << p.end_tenor_code << " of curve config "
+                << boost::uuids::to_string(p.bootstrap_config_id);
             continue;
         }
 
-        // The row stores the datum's URI, so the pillar is found by the same
-        // string the writer wrote.
-        const auto datum_uri = core::pillar_datum_uri(key);
+        // The series says which ladder the pillar reads; its end tenor, resolved
+        // through the config's convention, says which rung of it.
+        const auto term = core::pillar_term_text(p.start_tenor_code,
+                                                 p.end_tenor_code,
+                                                 resolve_tenor_date(refctx, p.start_tenor_code),
+                                                 resolve_tenor_date(refctx, p.end_tenor_code));
         bool found = false;
-        for (const auto& obs : obs_repo.read_as_of(ctx, series.front().id, as_of))
-            if (obs.oresmd_uri == datum_uri) {
-                out.rates_by_point_id.emplace(p.end_tenor_code, observation_value(obs));
-                found = true;
-            }
-        if (found)
-            out.series_ids.push_back(boost::uuids::to_string(series.front().id));
+        for (const auto& obs : obs_repo.read_as_of(ctx, series.front().id, as_of)) {
+            const auto named = datum::oresmd_uri_codec::read(obs.oresmd_uri);
+            if (!named || named->is_series() || !named->holds(datum::field::term))
+                continue;
+            if (datum::text_of(named->at(datum::field::term)) != term)
+                continue;
+            out.rates_by_point_id.insert_or_assign(p.end_tenor_code, observation_value(obs));
+            found = true;
+        }
+        // One series answers every rung of a ladder, so a list that repeated it
+        // would say less than one that names it once: this is the set of series the
+        // curve read, and it is what the lineage records.
+        const auto series_id = boost::uuids::to_string(series.front().id);
+        if (found && std::ranges::find(out.series_ids, series_id) == out.series_ids.end())
+            out.series_ids.push_back(series_id);
     }
 
     return out;

@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: C06B0512-AA7D-44A8-8CC9-D98F073839C6
+:END:
+#+title: Story: Split the types that carry too many columns
+#+description: The persisted types hold 30 to 60 flat columns, which the data-oriented model forbids. Inventory them, decide which are one aggregate over several components, and split those into components of their own.
+#+type: story
+#+level: s2
+#+filetags: :data-oriented-design:modeling:refdata:sprint_29:v0:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A persisted type holds one component's fields. Many of ours do not: a generated entity carries 30 to 60 flat columns, and the count is a symptom rather than a limit. The compiler symptoms come from that shape -- MSVC runs out of instantiation depth building the query builder's tuple of column bindings, and the first C1202 seen in months is in that tuple, with no reflection involved.
+
+So the work is modelling, not compilers. Find the types whose shape the data-oriented model would not write, decide for each whether it is one component or several, and split the several into components with their own key, codec and repository. A split is judged by the model it produces, never by whether it makes a build pass.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-29                               |
+
+* Acceptance
+
+- Every generated persistent type is classified against the data-oriented model's criteria, with its member count, its column count and the reason for its verdict, at a named commit.
+- Every type the inventory calls one aggregate over several components is split, each part with its own key, codec, repository and row, and the model, SQL, C++, TypeScript twins and fixtures move in one change.
+- No split is made to satisfy a compiler, and no type is split that the inventory clears.
+- The wire stays one typed array per component joined by key, and each split states its wire change explicitly.
+- The rule a new model is checked against is recorded on the data-oriented design page, so the inventory does not have to be redone by hand.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:066BEB24-5BFB-4D30-85E2-723E90C75712][Inventory the types that carry too many columns]] | BACKLOG | | | A reproducible inventory of every generated persistent type: member count, column count, the blocks that cluster, and a verdict of what each type should become. |
+| [[id:9844D039-9694-4290-9A97-3A755770911B][Split the types the inventory names]] | BACKLOG | | | Split, worst first, the persisted types the inventory calls one aggregate over several components, so that each type holds one component. |
+
+* Decisions
+
+* Notes
+
+The trigger. On 2026-10-29 the MSVC job of the Windows nightly stopped on C1202
+for the first time in months: `std::tuple` of `column_binding`s in
+`ores.database/query_builder/columns.hpp`, instantiated for a generated
+entity with 46 persisted columns. Nothing in that failure involves reflection,
+and it is not the configuration document the earlier work was looking at. The
+compiler is reporting the shape of the model, which is the thing to fix.
+
+The counts, at `1dab64c857`: `commodity_future_convention` 60 persisted
+bindings, `cap_floor_volatility_config` 46, `curve_segment` 40. Those are three
+types in one component, and the same shape recurs across the tree.
+
+Why this is not the compiler's problem. A type with 60 columns costs a reader
+more than it costs a compiler: it says six things at once, and a screen, a job
+and a report each read a different subset. The fix is to say one thing per type,
+which is what the data-oriented model asks for anyway.
+
+* Out of scope
+
+-

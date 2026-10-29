@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 778147AF-0784-4E66-A4E4-56A5171493D6
+:END:
+#+title: Task: Use oresmd on the market data generation path
+#+description: The synthetic IR feed, the series classifier and the oresmd codec still spell data the ORE way at runtime.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/use-oresmd-on-the-generation-path
+#+pr: 4060
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No runtime reader, feed or classifier composes an ORE key; the runtime identity is the oresmd URI, and ORE keys live only at the ORE XML boundary.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-29                               |
+
+* Acceptance
+
+- The synthetic IR feed builds native oresmd datums and publishes the same series the bootstrap reads.
+- The series classifier keys its rules on the oresmd identity, with the rule catalogue migrated.
+- The oresmd codec accepts a valid datum that has no ORE spelling; ORE import and export keep their keys.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4060][#4060]] | [marketdata] Use oresmd on the runtime's market data path |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The runtime no longer spells market data the ORE way; the ORE key lives only at
+the ORE XML boundary.
+
+- The synthetic IR feed builds each quote as a market data model datum through
+  one builder (pillar_quote_datum); pillar_quote_key is deleted.
+- The series classifier keys on (key_kind, instrument, quote); index series read
+  their class from their own schema row; the catalogue migrates from 42 ORE rows
+  to 41 datum rows and 1 index row, and the GENERIC-MD wrapper row is gone.
+- The oresmd codec accepts every datum the model admits; the ORE-key validation
+  is removed in read and write; the ORE import and export keep their keys.
+- The seeded blueprint is the spot-starting USD SOFR ladder reading one named
+  series, because a meeting-dated ladder's series identity depends on the as-of.
+
+Evidence: marketdata core 330, service 203, synthetic 94, shell and refdata
+suites, web 2327, BFF 1137, codegen idempotent, model and docs checks clean.
+Live: the IR feed publishes 12-point batches, no stored series or observation
+carries an ORE spelling, and the migrated catalogue classifies the stored
+series.
+
+Open: no synthetic-provider tick reaches the store in this environment, so the
+compute, check and publish are proved by the suites and not live; the smoke
+aborts at trade generation on a missing handler. The delivery plumbing is the
+next task.

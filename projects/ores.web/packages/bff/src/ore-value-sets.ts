@@ -45,7 +45,11 @@ export interface Choice {
 export interface ValueFields {
     readonly valueSet: string;
     readonly sourceKind: string;
-    /** The catalogue the set draws on, or empty for a set that states its own values. */
+    /**
+     * The catalogue a set draws on, by the code the catalogue table gives it,
+     * such as =refdata.currency=, or empty when the set names none. A screen
+     * reads it to draw the list's own control rather than a bare list of codes.
+     */
     readonly catalogue: string;
     readonly choices: readonly Choice[];
     readonly minimum: number | null;

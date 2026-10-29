@@ -186,10 +186,10 @@ void bond_issue_leg_schedule_date_repository::write(
 
 std::vector<domain::bond_issue_leg_schedule_date>
 bond_issue_leg_schedule_date_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_issue_leg_schedule_date_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("issue_id"_c,
                                                "leg_number"_c,
                                                "schedule_role"_c,
@@ -217,14 +217,14 @@ bond_issue_leg_schedule_date_repository::read_latest(context ctx,
                                << " schedule_role: " << schedule_role
                                << " schedule_sequence_number: " << schedule_sequence_number
                                << " sequence_number: " << sequence_number;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<bond_issue_leg_schedule_date_entity>> |
         query_builder::where("tenant_id"_c == tid && "issue_id"_c == issue_id &&
                              "leg_number"_c == leg_number && "schedule_role"_c == schedule_role &&
                              "schedule_sequence_number"_c == schedule_sequence_number &&
-                             "sequence_number"_c == sequence_number && "valid_to"_c == max.value());
+                             "sequence_number"_c == sequence_number && "valid_to"_c == max);
 
     return query_builder::execute_read_query<bond_issue_leg_schedule_date_entity,
                                              domain::bond_issue_leg_schedule_date>(
@@ -325,7 +325,7 @@ bond_issue_leg_schedule_date_repository::remove(context ctx,
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -336,8 +336,8 @@ bond_issue_leg_schedule_date_repository::remove(context ctx,
         query_builder::where("tenant_id"_c == tid && "issue_id"_c == issue_id &&
                              "leg_number"_c == leg_number && "schedule_role"_c == schedule_role &&
                              "schedule_sequence_number"_c == schedule_sequence_number &&
-                             "sequence_number"_c == sequence_number &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                             "sequence_number"_c == sequence_number && "valid_to"_c == max &&
+                             "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing bond issue leg schedule date from database.");
@@ -423,14 +423,14 @@ bond_issue_leg_schedule_date_repository::read_latest(
     if (issue_ids.empty() || leg_numbers.empty() || schedule_roles.empty() ||
         schedule_sequence_numbers.empty() || sequence_numbers.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_issue_leg_schedule_date_entity>> |
                        query_builder::where(
                            "tenant_id"_c == tid && "issue_id"_c.in(issue_ids) &&
                            "leg_number"_c.in(leg_numbers) && "schedule_role"_c.in(schedule_roles) &&
                            "schedule_sequence_number"_c.in(schedule_sequence_numbers) &&
-                           "sequence_number"_c.in(sequence_numbers) && "valid_to"_c == max.value());
+                           "sequence_number"_c.in(sequence_numbers) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<bond_issue_leg_schedule_date_entity,
                                                     domain::bond_issue_leg_schedule_date>(
         ctx,

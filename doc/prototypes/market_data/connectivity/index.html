@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connectivity — publishers, suppliers, sessions and feeds</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+<div class="proto-bar">
+  <span><b>Prototype</b> · throwaway · mock data, no server</span>
+  <a href="../connectivity.org">the design note</a>
+  <a href="../index.org">market data prototypes</a>
+  <a href="../public-rates/">Public rates</a>
+</div>
+
+<header class="page">
+  <div class="crumbs"><a href="#">Market data</a> / Connectivity</div>
+  <div class="title-row">
+    <h1>Connectivity</h1>
+    <span class="lead">who publishes, who supplies, the sessions we configure, and the feeds that come off them</span>
+    <span class="actions"><button class="act" id="refresh">Refresh</button></span>
+  </div>
+</header>
+
+<main class="split">
+  <aside class="rail" aria-label="Delivery tree">
+    <input id="find" placeholder="Find a supplier, publisher, session or feed">
+    <section class="rail-section">
+      <h2>Delivery</h2>
+      <div id="tree"></div>
+    </section>
+    <section class="rail-section">
+      <h2>Publishers</h2>
+      <div id="pubtree"></div>
+    </section>
+    <a class="rail-link" href="?view=adapters">Adapters catalogue →</a>
+  </aside>
+
+  <section class="pane" id="pane" aria-live="polite"></section>
+</main>
+
+<script src="prototype.js"></script>
+</body>
+</html>

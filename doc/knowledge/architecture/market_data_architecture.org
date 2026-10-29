@@ -2,22 +2,25 @@
 :ID: DF2B616F-E112-4C57-A73B-69F85BE96EF4
 :END:
 #+title: Market Data Architecture
-#+description: The one structure note for market data. It argues why one service stands between vendors and parties, then orders the model, the pipeline, the real and simulated sources, the governance of cost, and the stored data.
+#+description: The one structure note for market data. It argues why one service stands between suppliers and parties, then orders the model, the pipeline, real and simulated feeds, the governance of cost, and the stored data.
 #+type: knowledge
 #+level: cross
 #+filetags: :architecture:marketdata:nats:synthetic:adapters:structure_note:
 #+created: 2026-06-28
-#+updated: 2026-10-28
+#+updated: 2026-10-30
 
 * Summary
 
-One service, =ores.marketdata=, stands between the sources of market data and the
-parties that consume it. Sources are adapters. A live Bloomberg adapter, a replay
-adapter and the simulator all meet the service at the same four messages. The
-service maps vendor ids to internal items, checks them, stores each tick once
-for its source, delivers the ticks to each subscribed party, and records what each party used so the
-platform can share the vendor cost. Nothing past the adapter seam knows whether a
-source is live or simulated, and a person can always find out.
+One service, =ores.marketdata=, stands between the suppliers of market data and the
+parties that consume it. A *supplier* is who we contract with and connect to. A
+*publisher* is whose data it is. A *session* is one configured adapter at a
+supplier, and a *feed* binds a publisher to a session and a service. A live
+Bloomberg session, a replay session and the simulator all meet the service at the
+same four messages. The service maps supplier ids to internal items, checks them,
+stores each tick once for its feed, delivers the ticks to each subscribed party,
+and records what each party used so the platform can share the supplier cost.
+Nothing past the adapter seam knows whether a feed is live or simulated, and a
+person can always find out.
 
 This page is the structure note for the whole subject. It gists and links and it
 carries no content its cluster already carries. It argues a reading order and says
@@ -37,6 +40,32 @@ Two boundaries hold. This page does not carry the process mathematics, which is
 in [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]]. It does not
 carry the resolution path from a logical requirement to a concrete identifier,
 which is [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]].
+
+* Words
+
+These are the words of the model. The screens, the journeys and the names in the
+code use them. Each word has one meaning and one example.
+
+#+ATTR_HTML: :class hug-leading
+| Word | Meaning | Example |
+|------+---------+---------|
+| /Publisher/ | Owns the ids, the credit and the terms. It may be a central bank, a treasury, an exchange or a data vendor. | =ecb=, =imf=, =ust=, =bloomberg= for its own data |
+| /Supplier/ | Who we contract with and connect to. A supplier may also be a publisher. | =frankfurter=, =bloomberg=, =lseg=, =ecb-data-portal=, =fred= |
+| /Adapter/ | A code module that speaks one supplier protocol. The release installs it with a version, a description and a configuration schema. | =frankfurter= 1.4.0, =bloomberg-api= 3.2.0 |
+| /Session/ | One configured adapter: supplier, environment, endpoint, credential and the schema's settings. | =frankfurter-eu= (production), =bloomberg-test= (test) |
+| /Environment/ | Where a session runs. | =production=, =test=, =dr=, =simulated= |
+| /Service/ | What a session offers. It decides the shape of the feed and its schedule. | =real_time=, =delayed=, =end_of_day=, =reference=, =historical= |
+| /Feed/ | One publisher's data, on one service, through one session, with a provider key, a scope and a schedule. | =ecb-frankfurter=, =ecb-bloomberg= |
+| /Scope/ | The items a feed fetches. No item belongs to two feeds of one publisher. | =ecb-frankfurter= fetches the ECB's FX items |
+| /Route/ | A party's one feed for one publisher and one asset class. | the System Party routes =ecb-frankfurter= for =ecb= and FX |
+| /Vendor instrument/ | A supplier's id scheme, an id and a field. | =iso4217= / =USD= / =rate=; Bloomberg =EURUSD Curncy= / =PX_LAST= |
+| /Item/ | The internal identity a vendor instrument maps to. | =FX-ECB-EUR-USD=, =IR-ECB-ESTR= |
+| /Subscription/ | A party's entitlement to a publisher. | the System Party subscribes to =ecb= |
+| /Tick/ | What an adapter sends on the wire and what a party receives. | one value of =iso4217/USD/rate=, stamped 16:00 |
+
+The delivery layers nest: a supplier has sessions, a session offers services, a
+feed picks one service and one publisher on one session, and a party routes to a
+feed. The publisher is the other axis: a source of values, not a delivery path.
 
 * Why one service and one rule
 

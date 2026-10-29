@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/read-and-write-typed-binary-rows-in-the-generated-repositories
+#+pr: 4046
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,12 +29,12 @@ mapper's string conversions go.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-27                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
 
 * Acceptance
 
@@ -53,11 +53,43 @@ mapper's string conversions go.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+*Why now.* sqlgen is gone, so nothing outside the layer decides what a column
+is any more. Until this task the row entity was the text shape sqlgen filled,
+and the mapper parsed that text back into the domain type. The layer has held
+binary codecs for =uuid=, =tenant_id=, =timestamptz=, =date= and =numeric=
+since the libpq layer was built, so the row can hold the type the column has
+and the mapper can stop converting.
 
-* Measurements
+*What stays text, and why.* A column keeps its text member when the layer has
+no binary codec for it, or when the domain member is not the column: =inet=, a
+base64 column, an enum held as its text and a value type such as
+=cron_expression=. The mapper converts those, as it does today. String columns
+are text in both formats, so nothing changes for them.
+
+*The move, in three steps.* Each one ends in a build and a suite run:
+
+1. *The layer binds and reads the typed row.* =query_builder::execute= binds
+   each column through =pq::encode_param= and reads it through =pq::read=, and
+   a generated statement asks for binary results. =db_timestamp= becomes
+   =std::chrono::system_clock::time_point=, and the bitemporal never is
+   =time_point::max()= in both formats, as the binary codec already reads it.
+   The text forms stay in =pq::text= for hand-written SQL.
+2. *The generator emits the typed row.* The entity template gives each column
+   the type its column has; the mapper template copies those members across.
+   =is_optional_uuid=, =is_required_timestamp= and their siblings no longer
+   mean "the row holds text", so the flags that only existed to bridge the two
+   shapes go with them.
+3. *Regenerate and measure.* Every component regenerates through the
+   =ores.cpp.repository= profile, then the suites run and the repository
+   benchmark is measured on the old and the new path.
+
+*What the benchmark compares.* The text path stays in the layer for
+hand-written SQL, so one benchmark binary reads the same table through the
+text forms and through the typed statement. That is the comparison the task
+asks for: the cost the generated repositories paid at =954babc48b= against
+the cost they pay now, on one tree and one machine.
+
+*Measurements
 
 Every number this task claims about a tree, with the command that produced it
 and the commit it was measured at. A number without both is not a measurement,
@@ -69,7 +101,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Generated row entity headers | 476 | =find projects -path '*/repository/*_entity.hpp' \| wc -l= | 954babc48b |
+| Generated repository implementations | 486 | =find projects -path '*/repository/*_repository.cpp' \| wc -l= | 954babc48b |
+| Generated mappers | 475 | =find projects -path '*/repository/*_mapper.cpp' \| wc -l= | 954babc48b |
+| Files that include a reflect-cpp header | 2,459 | =grep -rl 'rfl/' projects --include=*.hpp --include=*.cpp \| wc -l= | 954babc48b |
+| Hand-written files that name =db_timestamp= | 30 | =for f in $(grep -rln db_timestamp projects); do head -35 "$f" \| grep -q 'AUTO-GENERATED FILE' \|\| echo "$f"; done \| wc -l= | 954babc48b |
 
 * Notes
 
@@ -88,12 +124,50 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4046][#4046]] | [database] Read and write typed binary rows in the repositories |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The option block's payment lag is a 64-bit integer on an `integer` column; the bond instrument reader fails every option write with incorrect binary data format in bind parameter 28 | ores.trading.instrument_option.org | Accepted | The member is `std::optional<int>`, the type its column and 233 other integer columns have. The history view gained the field the mapper had skipped. |
+| 2 | A step's started_at precedes the run's activity time, because the engine writes the steps and touches the run afterwards | workflow_engine.cpp | Accepted | The run is touched before its steps go out. That also stops the touch from writing back a row it read before a completion arrived. |
+| 3 | The codec rounds an instant up while every text path rounds it down, so an exact lookup written as text finds nothing a row wrote | pq/codec.cpp, platform/time/datetime.cpp | Accepted | Both take the instant down to the microsecond it falls in; truncation is monotonic, so the ordering the workflow case needs survives. |
+| 4 | Nothing compares the type a generated row holds with the type its column has, and the compiler cannot | check_entity_binary_types.py | Accepted | A new check compares 7,289 binary columns against the tables the SQL creates and names the column, the member type and the column type. |
+| 5 | The new check skips a column declared with no constraint and drops a type it cannot place without a word | check_entity_binary_types.py | Accepted | The trailing comma is stripped, sized character types and arrays are read as their element types, and an unknown type is a mismatch unless the row keeps it as text. |
+| 6 | The negative infinity is recognised by the clock's own range, which a clock that counts microseconds does not reach | pq/codec.cpp | Accepted | Both infinities are their own byte patterns and read as the clock's bounds whatever it counts. Pinned by the sentinel cases. |
+| 7 | The text form calls any year-9999 value the never sentinel | pq/codec.cpp | Accepted | It is the sentinel's own second; a value elsewhere in 9999 is a value. |
+| 8 | An unsigned member past the signed maximum is stored as a negative number, and no constraint stops it | pq/codec.hpp | Accepted | The codecs for `std::uint16_t` and `std::uint64_t` refuse it and name the value. |
+| 9 | The rounding case asserts that two paths agree rather than what the microsecond is, so it passes if both move the same wrong way | pq_layer_tests.cpp | Accepted | It asserts the base microsecond and the literal ISO text, and adds an instant before the epoch. |
+| 10 | The validity-end case asserts that the function returns the value it was given | mapper_helpers_tests.cpp | Accepted | The instant a microsecond before never now states the boundary; the GPL year the branch moved backwards is restored. |
+| 11 | The array decoder reads its header and its elements without checking the value's length, and `detail::is_vector` has no user | pq/codec.hpp | Accepted | The header and each element are checked, with `wire::expect_min_size`; the dead trait is gone. |
+| 12 | The template's narrative says every uuid column and junction side is rendered as `std::string`, which the template no longer does | ores.cpp.repository.entity_header.org | Accepted | Corrected: the uuid include comes from `has_uuid_columns`, which counts a junction's sides too. |
+| 13 | The inet mapper drops the netmask without saying why, and the old code threw instead | ores.cpp.repository.mapper_impl.org | Declined | The domain member is a `boost::asio::ip::address`, which has no mask, and the column is text, so the write path never states one; the template now says so at the conversion. |
+| 14 | A junction entity keeps its tenant_id as a string and binds it as text while the column is a uuid, over 24 models | ores.cpp.repository.entity_header.org | Declined | It works, because the server parses the text, and it is the same shape as the uuid columns the branch typed. Changing it moves the junction domain class and its protocol as well, so it is a follow-up rather than this branch's work. |
+| 15 | A `key_text` is never emitted for a primary key, though `bind_text` is emitted for a natural key, so a text-stored key would bind binary | codegen/core.py | Declined | No model states a text-stored primary key, the new check compares every binary column against its table and would name one, and a jsonb or inet key is not a shape the models allow. |
+| 16 | An optional timestamp or uuid maps NULL to the epoch or a nil uuid and back, so those two values cannot round-trip | ores.cpp.repository.mapper_impl.org | Declined | The pre-existing shape, and moving it to `std::optional` changes the domain of every entity. Recorded here rather than changed. |
+| 17 | A text-stored column's read has no targeted integration test | query_builder_tests.cpp | Declined | The generated repositories read and write them on every suite in the tree, and the binding is compiler-checked; a targeted case would restate what those suites already exercise. |
+| 18 | The database check rebuilds while the fleet is up, so a service that reconnects inside the half second the connection count waits refuses the rebuild | local_checks.py | Accepted | The check stops the fleet first, and the checks that use the database state the rebuild as a dependency. |
+| 19 | The check does not run for a change to the generator or its templates, which are what decide whether a column binds binary or as text | local_checks.py | Accepted | Those paths are in its pattern now. |
+| 20 | Comments the branch made false: the run's text result, the connection's binary claim, the text header's scope | execute.hpp, connection.hpp, text.hpp | Accepted | Corrected. The `fixed_statement` lifetime requirement is documented too. |
+| 21 | The ores.diff.diff_span model declares `integer` with `std::size_t` | ores.diff.diff_span.org | Declined | The model is table-less and never bound, so no row carries the mismatch; the new check skips it because it has no table. |
 
 * Result
+
+The generated repositories read and write their rows in the binary format. Each
+entity member holds the type its column has, the mapper copies it and converts
+nothing through text, and the 40 columns the layer has no codec for state
+`bind_text` and travel as the text the server renders. `db_timestamp` is the
+clock's `time_point`, so one type runs from the column to the domain, and the
+store's infinities are read as the clock's bounds.
+
+Measured on the committed head: a full build; the database rebuilt from the
+schema and the populate scripts; ctest 98 of 98 suites; the pgTAP suites, the
+tick smoke and the step-consumer check; codegen pytest 1,659 passed. The local
+check gate reports 53 of 54, the one failure being an RLS warning for a table
+that comes from `main` and whose diagrams are current.
+
+Follow-ups recorded, not done here: the junction entity's `tenant_id` is still a
+string bound as text; the row's entity `operator<<` still uses reflect-cpp,
+which is the next step of the story; and the round trip's cost was not measured
+against the text layer it replaces.

@@ -48,18 +48,12 @@ domain::bond_issue bond_issue_mapper::map(const bond_issue_entity& v) {
 
     domain::bond_issue r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.issue_id = boost::lexical_cast<boost::uuids::uuid>(v.issue_id);
+    r.tenant_id = v.tenant_id;
+    r.issue_id = v.issue_id;
     r.security_id = v.security_id;
     r.issuer = v.issuer.value_or("");
-    r.face_value =
-        v.face_value.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.face_value).value()) :
-            std::nullopt;
-    r.issue_date =
-        v.issue_date.has_value() ?
-            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.issue_date)) :
-            std::nullopt;
+    r.face_value = v.face_value;
+    r.issue_date = v.issue_date;
     r.settlement_days = v.settlement_days.value_or(0);
     r.calendar = v.calendar;
     r.credit_curve_id = v.credit_curve_id;
@@ -68,11 +62,7 @@ domain::bond_issue bond_issue_mapper::map(const bond_issue_entity& v) {
     r.credit_group = v.credit_group;
     r.volatility_curve_id = v.volatility_curve_id;
     r.price_quote_method = v.price_quote_method;
-    r.price_quote_base_value =
-        v.price_quote_base_value.has_value() ?
-            std::optional(
-                ores::utility::decimal::decimal::from_string(*v.price_quote_base_value).value()) :
-            std::nullopt;
+    r.price_quote_base_value = v.price_quote_base_value;
     r.sub_type = v.sub_type;
     r.price_type = v.price_type;
     r.payer = v.payer;
@@ -81,7 +71,7 @@ domain::bond_issue bond_issue_mapper::map(const bond_issue_entity& v) {
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -91,17 +81,13 @@ bond_issue_entity bond_issue_mapper::map(const domain::bond_issue& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     bond_issue_entity r;
-    r.issue_id = boost::uuids::to_string(v.issue_id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.issue_id = v.issue_id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.security_id = v.security_id;
     r.issuer = v.issuer.empty() ? std::nullopt : std::optional(v.issuer);
-    r.face_value =
-        v.face_value.has_value() ? std::optional(v.face_value->to_string()) : std::nullopt;
-    r.issue_date =
-        v.issue_date.has_value() ?
-            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.issue_date)) :
-            std::nullopt;
+    r.face_value = v.face_value;
+    r.issue_date = v.issue_date;
     r.settlement_days = v.settlement_days == 0 ? std::nullopt : std::optional(v.settlement_days);
     r.calendar = v.calendar;
     r.credit_curve_id = v.credit_curve_id;
@@ -110,9 +96,7 @@ bond_issue_entity bond_issue_mapper::map(const domain::bond_issue& v) {
     r.credit_group = v.credit_group;
     r.volatility_curve_id = v.volatility_curve_id;
     r.price_quote_method = v.price_quote_method;
-    r.price_quote_base_value = v.price_quote_base_value.has_value() ?
-                                   std::optional(v.price_quote_base_value->to_string()) :
-                                   std::nullopt;
+    r.price_quote_base_value = v.price_quote_base_value;
     r.sub_type = v.sub_type;
     r.price_type = v.price_type;
     r.payer = v.payer;

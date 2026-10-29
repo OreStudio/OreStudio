@@ -1114,13 +1114,13 @@ begin
     -- empty table, so a tenant without these rows cannot import market data
     -- at all.
     insert into ores_marketdata_series_classification_rules_tbl (
-        series_type, metric, tenant_id, version, asset_class_source, asset_class_code,
-        series_subclass_code, description,
+        instrument, quote, key_kind, tenant_id, version, asset_class_source,
+        asset_class_code, series_subclass_code, description,
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        t.series_type, t.metric, v_tenant_id, 0, t.asset_class_source, t.asset_class_code,
-        t.series_subclass_code, t.description,
+        t.instrument, t.quote, t.key_kind, v_tenant_id, 0, t.asset_class_source,
+        t.asset_class_code, t.series_subclass_code, t.description,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_marketdata_series_classification_rules_tbl t

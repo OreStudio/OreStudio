@@ -47,22 +47,20 @@ domain::report_error_event report_error_event_mapper::map(const report_error_eve
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::report_error_event r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.report_instance_id = boost::lexical_cast<boost::uuids::uuid>(v.report_instance_id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.report_instance_id = v.report_instance_id;
+    r.party_id = v.party_id;
     r.scope_code = v.scope_code;
     r.severity = v.severity;
     r.message = v.message;
     r.subject = v.subject;
     r.subject_id = v.subject_id;
     r.subject_version = v.subject_version;
-    r.subject_as_of = v.subject_as_of.has_value() ?
-                          std::optional(timestamp_to_timepoint(*v.subject_as_of)) :
-                          std::nullopt;
+    r.subject_as_of = v.subject_as_of;
     r.cause = v.cause;
     r.detail = v.detail.value_or("");
-    r.event_time = timestamp_to_timepoint(std::string_view{v.event_time});
+    r.event_time = v.event_time;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -72,23 +70,20 @@ report_error_event_entity report_error_event_mapper::map(const domain::report_er
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     report_error_event_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
-    r.report_instance_id = boost::uuids::to_string(v.report_instance_id);
-    r.party_id = boost::uuids::to_string(v.party_id);
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
+    r.report_instance_id = v.report_instance_id;
+    r.party_id = v.party_id;
     r.scope_code = v.scope_code;
     r.severity = v.severity;
     r.message = v.message;
     r.subject = v.subject;
     r.subject_id = v.subject_id;
     r.subject_version = v.subject_version;
-    r.subject_as_of =
-        v.subject_as_of.has_value() ?
-            std::optional(ores::platform::time::datetime::to_db_string(*v.subject_as_of)) :
-            std::nullopt;
+    r.subject_as_of = v.subject_as_of;
     r.cause = v.cause;
     r.detail = v.detail.empty() ? std::nullopt : std::optional(v.detail);
-    r.event_time = ores::platform::time::datetime::to_iso8601_utc(v.event_time);
+    r.event_time = v.event_time;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

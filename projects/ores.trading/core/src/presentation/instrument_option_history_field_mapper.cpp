@@ -83,6 +83,8 @@ render_instrument_option_fields(const domain::instrument_option& v) {
     fields.push_back({.name = "Exercise Price",
                       .value = v.exercise_price ? v.exercise_price->to_string() : std::string{}});
     fields.push_back({.name = "Has Payment Data", .value = v.has_payment_data ? "true" : "false"});
+    fields.push_back({.name = "Payment Lag",
+                      .value = v.payment_lag ? std::to_string(*v.payment_lag) : std::string{}});
     fields.push_back(
         {.name = "Payment Calendar", .value = v.payment_calendar.value_or(std::string{})});
     fields.push_back(

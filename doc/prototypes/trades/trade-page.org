@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 1D348CB0-B7BD-4AA8-B61A-34A17AC3BA20
 :END:
-#+title: Trade list and page prototype
-#+description: A clickable prototype of the trade list and the trade page: review, amendment, lifecycle events, and the doors to booking, ORE import and export, and structures.
+#+title: The trade view
+#+description: A clickable prototype of the page a trade row opens: review, amendment, lifecycle events and the history of the trade.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:trading:ui:
@@ -13,6 +13,7 @@
 |---------------+-------|
 | Prototype     | [[file:trade-page/][the prototype]] |
 | Gemini review | none |
+| Signed off | the owner, 2026-10-29 |
 | Group         | [[file:index.org][Trades prototypes]] |
 
 * Summary
@@ -28,7 +29,6 @@ The prototype is throwaway. Everything on it is mock data: 38 trades, 7 of them 
 #+ATTR_HTML: :class hug-leading
 | Query | What it shows |
 |-------+---------------|
-| (none) | The list, 15 rows a page. It holds trades and structures as rows of the same level; =?show=trades= or =?show=structures= narrows it. A structure row has no state or version of its own, so those cells say how many trades it holds or stay empty. The prototype matches a structure when one of its trades matches, which the read model does not: a structure row there carries no state, book or date, so a filter on one leaves it out. The list follows the view in the first PR and the refinement waits, as the task records. A Book a trade button, sortable headers, a trade date range, and the request line under the table, in the form of the standard entity protocol: a page, a stated order and a filter record on the trade summary read model. The page, the size, the search, the filters and the order are in the address (=offset=, =limit=, =search=, =portfolio=, =status=, =book=, =cp=, =type=, =from=, =to=, =sort=, =dir=) |
 | =?party=, =?portfolio= or =?book= | The list narrowed to the chosen party, portfolio, or book, with everything under the chosen row. The tree marks the choice, and choosing it again clears the filter |
 | =?state=stale= | The list or page after a change reached the browser: Refresh is gold and a row pulses |
 | =?state=loading=, =empty=, =error= | The in-place states of the list, and of the page. =empty= says there are no trades and points to Book a trade |

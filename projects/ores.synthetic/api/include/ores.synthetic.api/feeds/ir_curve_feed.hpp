@@ -117,6 +117,18 @@ public:
     }
 
     /**
+     * @brief The oresmd datum of each pillar, in the same order: the quote the feed publishes
+     * for that entry, one rung of the series above.
+     *
+     * The tick loop publishes these verbatim, so what this names is what the market receives.
+     * A reader that finds a pillar's observation by its term reads one of these, and the
+     * agreement between the two is a property of the datum and not of a spelling.
+     */
+    const std::vector<std::string>& datum_uris() const {
+        return datum_uris_;
+    }
+
+    /**
      * @brief The use this curve is built for (discount, projection or both). The oresmd grammar
      * holds no role, so it is the config's own data and plays no part in which series the feed
      * owns.

@@ -232,7 +232,7 @@ struct instrument_option final {
     /**
      * @brief Number of days the payment dates are derived forward by.
      */
-    std::optional<std::int64_t> payment_lag;
+    std::optional<int> payment_lag;
 
     /**
      * @brief Calendar the payment dates roll against.

@@ -46,35 +46,25 @@ domain::bond_forward bond_forward_mapper::map(const bond_forward_entity& v) {
 
     domain::bond_forward r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
-    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
+    r.tenant_id = v.tenant_id;
+    r.trade_id = v.trade_id;
+    r.trade_activity_id = v.trade_activity_id;
     r.long_in_forward = v.long_in_forward;
     r.forward_maturity_date = v.forward_maturity_date;
     r.forward_settlement_date = v.forward_settlement_date;
     r.settlement = v.settlement;
-    r.amount = v.amount.has_value() ?
-                   std::optional(ores::utility::decimal::decimal::from_string(*v.amount).value()) :
-                   std::nullopt;
-    r.lock_rate =
-        v.lock_rate.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.lock_rate).value()) :
-            std::nullopt;
-    r.dv01 = v.dv01.has_value() ?
-                 std::optional(ores::utility::decimal::decimal::from_string(*v.dv01).value()) :
-                 std::nullopt;
+    r.amount = v.amount;
+    r.lock_rate = v.lock_rate;
+    r.dv01 = v.dv01;
     r.lock_rate_day_counter = v.lock_rate_day_counter;
     r.settlement_dirty = v.settlement_dirty;
-    r.premium_amount =
-        v.premium_amount.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.premium_amount).value()) :
-            std::nullopt;
+    r.premium_amount = v.premium_amount;
     r.premium_date = v.premium_date;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -84,21 +74,20 @@ bond_forward_entity bond_forward_mapper::map(const domain::bond_forward& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     bond_forward_entity r;
-    r.trade_id = boost::uuids::to_string(v.trade_id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.trade_id = v.trade_id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
+    r.trade_activity_id = v.trade_activity_id;
     r.long_in_forward = v.long_in_forward;
     r.forward_maturity_date = v.forward_maturity_date;
     r.forward_settlement_date = v.forward_settlement_date;
     r.settlement = v.settlement;
-    r.amount = v.amount.has_value() ? std::optional(v.amount->to_string()) : std::nullopt;
-    r.lock_rate = v.lock_rate.has_value() ? std::optional(v.lock_rate->to_string()) : std::nullopt;
-    r.dv01 = v.dv01.has_value() ? std::optional(v.dv01->to_string()) : std::nullopt;
+    r.amount = v.amount;
+    r.lock_rate = v.lock_rate;
+    r.dv01 = v.dv01;
     r.lock_rate_day_counter = v.lock_rate_day_counter;
     r.settlement_dirty = v.settlement_dirty;
-    r.premium_amount =
-        v.premium_amount.has_value() ? std::optional(v.premium_amount->to_string()) : std::nullopt;
+    r.premium_amount = v.premium_amount;
     r.premium_date = v.premium_date;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

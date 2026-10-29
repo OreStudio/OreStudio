@@ -248,10 +248,9 @@ TEST_CASE("as_of_read_reports_the_legs_current_at_each_parent_version",
     const auto after_leg = read_trade_versions(ctx, id_str);
     REQUIRE(after_leg.size() == before_leg.size() + 1);
 
-    using ores::database::repository::timestamp_to_timepoint;
     const auto second = std::chrono::seconds(1);
     const auto opens_at = [](const auto& v) {
-        return timestamp_to_timepoint(v.valid_from);
+        return v.valid_from;
     };
 
     bond_leg_repository leg_repo;

@@ -47,29 +47,17 @@ domain::report_result_row report_result_row_mapper::map(const report_result_row_
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::report_result_row r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-
-    r.report_instance_id = boost::lexical_cast<boost::uuids::uuid>(v.report_instance_id);
-
-    r.as_of = timestamp_to_timepoint(std::string_view{v.as_of});
-
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
+    r.report_instance_id = v.report_instance_id;
+    r.as_of = v.as_of;
     r.subject_type = v.subject_type;
-
-    r.subject_id = boost::lexical_cast<boost::uuids::uuid>(v.subject_id);
-
-
+    r.subject_id = v.subject_id;
     r.measure = v.measure;
-
-
     r.currency = v.currency;
-
-    r.report_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.report_definition_id);
-    r.counterparty_id = v.counterparty_id.has_value() ?
-                            boost::lexical_cast<boost::uuids::uuid>(*v.counterparty_id) :
-                            boost::uuids::uuid{};
+    r.report_definition_id = v.report_definition_id;
+    r.counterparty_id = v.counterparty_id.has_value() ? *v.counterparty_id : boost::uuids::uuid{};
     r.figure = v.figure;
     r.source = v.source;
 
@@ -81,29 +69,18 @@ report_result_row_entity report_result_row_mapper::map(const domain::report_resu
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     report_result_row_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
-    r.party_id = boost::uuids::to_string(v.party_id);
-
-    r.report_instance_id = boost::uuids::to_string(v.report_instance_id);
-
-    r.as_of = ores::platform::time::datetime::to_iso8601_utc(v.as_of);
-
-
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
+    r.party_id = v.party_id;
+    r.report_instance_id = v.report_instance_id;
+    r.as_of = v.as_of;
     r.subject_type = v.subject_type;
-
-    r.subject_id = boost::uuids::to_string(v.subject_id);
-
-
+    r.subject_id = v.subject_id;
     r.measure = v.measure;
-
-
     r.currency = v.currency;
-
-    r.report_definition_id = boost::uuids::to_string(v.report_definition_id);
-    r.counterparty_id = v.counterparty_id == boost::uuids::uuid{} ?
-                            std::nullopt :
-                            std::optional(boost::uuids::to_string(v.counterparty_id));
+    r.report_definition_id = v.report_definition_id;
+    r.counterparty_id =
+        v.counterparty_id == boost::uuids::uuid{} ? std::nullopt : std::optional(v.counterparty_id);
     r.figure = v.figure;
     r.source = v.source;
 

@@ -45,7 +45,7 @@ domain::activity_type activity_type_mapper::map(const activity_type_entity& v) {
 
     domain::activity_type r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.tenant_id = v.tenant_id;
     r.code = v.code;
     r.category = v.category;
     r.requires_confirmation = v.requires_confirmation;
@@ -54,15 +54,12 @@ domain::activity_type activity_type_mapper::map(const activity_type_entity& v) {
     r.priority = v.priority;
     r.description = v.description.value_or("");
     r.fpml_event_type_code = v.fpml_event_type_code.value_or("");
-    r.fsm_transition_id =
-        v.fsm_transition_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.fsm_transition_id)) :
-            std::nullopt;
+    r.fsm_transition_id = v.fsm_transition_id;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -73,7 +70,7 @@ activity_type_entity activity_type_mapper::map(const domain::activity_type& v) {
 
     activity_type_entity r;
     r.code = v.code;
-    r.tenant_id = v.tenant_id.to_string();
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.category = v.category;
     r.requires_confirmation = v.requires_confirmation;
@@ -83,9 +80,7 @@ activity_type_entity activity_type_mapper::map(const domain::activity_type& v) {
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.fpml_event_type_code =
         v.fpml_event_type_code.empty() ? std::nullopt : std::optional(v.fpml_event_type_code);
-    r.fsm_transition_id = v.fsm_transition_id.has_value() ?
-                              std::optional(boost::uuids::to_string(*v.fsm_transition_id)) :
-                              std::nullopt;
+    r.fsm_transition_id = v.fsm_transition_id;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

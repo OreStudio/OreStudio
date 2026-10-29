@@ -207,10 +207,10 @@ void report_configuration_repository::write(
 
 std::vector<domain::report_configuration>
 report_configuration_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_configuration_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<report_configuration_entity,
@@ -225,11 +225,11 @@ report_configuration_repository::read_latest(context ctx) {
 std::vector<domain::report_configuration>
 report_configuration_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report configuration. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<report_configuration_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<report_configuration_entity,
                                              domain::report_configuration>(
@@ -245,13 +245,13 @@ report_configuration_repository::read_latest_by_configuration_type_code(
     context ctx, const std::string& configuration_type_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report configuration by configuration_type_code: "
                                << configuration_type_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<report_configuration_entity>> |
         query_builder::where("tenant_id"_c == tid &&
                              "configuration_type_code"_c == configuration_type_code &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
@@ -350,12 +350,12 @@ report_configuration_repository::read_latest_by_report_definition_id(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report configurations. report_definition_id: "
                                << report_definition_id << " offset: " << offset
                                << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_configuration_entity>> |
                        query_builder::where("tenant_id"_c == tid &&
                                             "report_definition_id"_c == report_definition_id &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<report_configuration_entity,
@@ -377,13 +377,13 @@ report_configuration_repository::get_total_report_configuration_count_by_report_
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active report configurations count. report_definition_id: "
         << report_definition_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_configuration_entity>> |
                        query_builder::where("tenant_id"_c == tid &&
                                             "report_definition_id"_c == report_definition_id &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_count_query<report_configuration_entity>(
         ctx,
@@ -405,13 +405,13 @@ report_configuration_repository::read_latest_by_configuration_type_code(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report configurations. configuration_type_code: "
                                << configuration_type_code << " offset: " << offset
                                << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<report_configuration_entity>> |
         query_builder::where("tenant_id"_c == tid &&
                              "configuration_type_code"_c == configuration_type_code &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<report_configuration_entity,
@@ -433,14 +433,14 @@ report_configuration_repository::get_total_report_configuration_count_by_configu
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active report configurations count. configuration_type_code: "
         << configuration_type_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<report_configuration_entity>> |
         query_builder::where("tenant_id"_c == tid &&
                              "configuration_type_code"_c == configuration_type_code &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     return query_builder::execute_count_query<report_configuration_entity>(
         ctx,
@@ -461,12 +461,12 @@ report_configuration_repository::read_latest_by_configuration_id(
     const std::optional<messaging::report_configurations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report configurations. configuration_id: "
                                << configuration_id << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<report_configuration_entity>> |
         query_builder::where("tenant_id"_c == tid && "configuration_id"_c == configuration_id &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<report_configuration_entity,
@@ -488,13 +488,13 @@ report_configuration_repository::get_total_report_configuration_count_by_configu
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active report configurations count. configuration_id: "
         << configuration_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<report_configuration_entity>> |
         query_builder::where("tenant_id"_c == tid && "configuration_id"_c == configuration_id &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     return query_builder::execute_count_query<report_configuration_entity>(
         ctx,
@@ -515,7 +515,7 @@ report_configuration_repository::remove_status report_configuration_repository::
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -523,7 +523,7 @@ report_configuration_repository::remove_status report_configuration_repository::
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<report_configuration_entity> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing report configuration from database.");
@@ -588,11 +588,11 @@ std::vector<domain::report_configuration>
 report_configuration_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<report_configuration_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<report_configuration_entity,
                                                     domain::report_configuration>(
         ctx,
@@ -612,11 +612,11 @@ void report_configuration_repository::remove(context ctx, const std::vector<std:
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<report_configuration_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing report configurations.");
 }
 

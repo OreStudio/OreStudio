@@ -20,7 +20,9 @@
 #include "ores.marketdata.api/domain/asset_class_authorities.hpp"
 #include "ores.marketdata.api/domain/series_classification_rule.hpp"
 #include "ores.marketdata.core/classification/series_classifier.hpp"
+#include "ores.marketdata.core/datum/ore_index_codec.hpp"
 #include "ores.marketdata.core/datum/ore_key_codec.hpp"
+#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.ore.core/market/market_data_parser.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
@@ -33,6 +35,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -49,16 +52,19 @@
  * The census counts the union of the two readers, because both feed an import.
  * The file name decides which reader a file feeds, as it does for an import:
  * import_service takes market data and fixings as two separately named
- * payloads, and this corpus names its fixing payloads `fixings*`. A fixing is
- * not a market datum, and import_service composes its series as
- * FIXING/RATE/<index name>, which is the key this walk gives it too. A file
- * that is neither, which is most of the corpus, parses into nothing.
+ * payloads, and this corpus names its fixing payloads `fixings*`. A fixing is an
+ * index and not a market datum, so the import names its series by the index and
+ * this walk gives it the same identity. A file that is neither, which is most of
+ * the corpus, parses into nothing.
  *
  * Classification only. The ORE-to-oresmd round trip is a separate concern.
  */
 
 namespace {
 
+using ores::marketdata::core::classification_key;
+using ores::marketdata::core::classification_key_of;
+using ores::marketdata::core::key_kind;
 using ores::marketdata::core::series_classification;
 using ores::marketdata::core::series_classifier;
 using ores::marketdata::domain::series_classification_rule;
@@ -67,21 +73,19 @@ const std::string unit_tags("[marketdata][classification]");
 
 /**
  * Anti-vacuity floors, set under the census a run measured over the corpus:
- * 108,105 distinct keys across 42 series types, from 107,947 market data keys
- * in 91 files and 158 fixing keys in 54 files, out of 3,528 walked, none
- * unreadable. A walk that silently stops finding files must fail rather than
- * pass, and a walk that finds a little less than the last run must not.
+ * 108,215 distinct series identities from 108,057 market data keys in 100 files
+ * and 158 fixing keys in 55 files, out of 3,528 walked, none unreadable. A walk
+ * that silently stops finding files must fail rather than pass, and a walk that
+ * finds a little less than the last run must not.
  */
 constexpr std::size_t min_distinct_keys = 100000;
-constexpr std::size_t min_distinct_types = 40;
+constexpr std::size_t min_distinct_instruments = 35;
 constexpr std::size_t min_parsed_files = 130;
 
-/// One distinct market data key, with the classification key the import gives it.
+/// One distinct series, with the classification key the ingest gives it.
 struct corpus_entry {
     std::string key;
-    std::string series_type;
-    std::string metric;
-    std::string qualifier;
+    classification_key identity;
 };
 
 /// One file under the corpus, read once. The read error is kept rather than
@@ -95,7 +99,7 @@ struct corpus_file {
 
 struct corpus_survey {
     /// Every distinct series the two readers produce, keyed by the verbatim
-    /// market data key or, for a fixing, the key the import composes for it.
+    /// market data key or, for a fixing, the index URI the import composes.
     /// A key both readers reach collapses into one entry.
     std::map<std::string, corpus_entry> entries;
     /// The files each reader took, and the distinct keys each supplied, so the
@@ -105,8 +109,6 @@ struct corpus_survey {
     std::set<std::string> market_data_keys;
     std::set<std::string> fixing_keys;
     /// Files the walk reached, could not read, and the first such error.
-    /// Without these a walk that reads nothing reports the same empty census
-    /// as a corpus that carries nothing.
     std::size_t files_seen = 0;
     std::size_t unreadable_files = 0;
     std::string first_read_error;
@@ -136,24 +138,14 @@ const std::vector<corpus_file>& corpus_files() {
 }
 
 /// A file the corpus names as fixings, because the name is the only thing that
-/// says which reader a file feeds. import_service never asks either reader to
-/// guess: market data and fixings arrive as two separately named payloads.
-/// Handing every file the market data reader rejects to the fixing reader
-/// instead would take the corpus's exposure reports for fixings, since
-/// parse_fixings checks the date and stores the two fields after it without
-/// reading them.
-///
-/// This census covers every file in the tree, ORE's own expected outputs
-/// included, which is why it does not share corpus_files.hpp's
-/// is_fixing_payload(): that one selects the payloads a reader feeds, and a
-/// record of ORE's outputs is not an input.
+/// says which reader a file feeds.
 bool named_as_fixings(const std::string& path) {
     return std::filesystem::path(path).filename().string().rfind("fixings", 0) == 0;
 }
 
-/// One pass of the corpus, naming each market data key as the import does: the
-/// ORE key codec reads it, and a key the codec refuses is skipped, because the
-/// import skips it too.
+/// One pass of the corpus, naming each market datum as the import does: the ORE
+/// key codec reads the key, and a key the codec refuses is skipped, because the
+/// import skips it too. A fixing is named by the index its name projects to.
 corpus_survey walk() {
     corpus_survey s;
     s.files_seen = corpus_files().size();
@@ -168,14 +160,17 @@ corpus_survey walk() {
 
         std::set<std::string> from_this_file;
         if (named_as_fixings(file.path)) {
-            // A fixing series is the one import_service builds for it, so the
-            // census counts series and not file lines.
             std::istringstream fixings{file.content};
             try {
                 for (const auto& f : ores::ore::market::parse_fixings(fixings)) {
-                    const auto key = "FIXING/RATE/" + f.qualifier;
-                    s.entries[key] = corpus_entry{key, "FIXING", "RATE", f.qualifier};
-                    from_this_file.insert(key);
+                    const auto index = ores::marketdata::datum::ore_index_codec::read(f.qualifier);
+                    if (!index)
+                        continue;
+                    const auto uri = ores::marketdata::datum::oresmd_uri_codec::write_index(*index);
+                    if (!uri)
+                        continue;
+                    s.entries[*uri] = corpus_entry{*uri, classification_key_of(*index)};
+                    from_this_file.insert(*uri);
                 }
             } catch (const std::invalid_argument&) {
                 // Named as fixings, but not readable as them.
@@ -192,8 +187,7 @@ corpus_survey walk() {
                 const auto datum = ores::marketdata::datum::ore_key_codec::read(d.key);
                 if (!datum)
                     continue;
-                const auto ck = ores::marketdata::core::classification_key_of(*datum);
-                s.entries[d.key] = corpus_entry{d.key, ck.series_type, ck.metric, ck.qualifier};
+                s.entries[d.key] = corpus_entry{d.key, classification_key_of(*datum)};
                 from_this_file.insert(d.key);
             }
         } catch (const std::invalid_argument&) {
@@ -213,59 +207,84 @@ const corpus_survey& survey() {
 }
 
 /// The classifier every case in this file shares, built from the classification
-/// rule seed the way import_service builds it from the table.
+/// rule seed the way the ingest builds it from the table.
 const series_classifier& seed_classifier() {
     static const auto result = series_classifier(ores::testing::seed_classification_rules());
     return result;
 }
 
-std::set<std::string> distinct_types() {
-    std::set<std::string> types;
+std::set<std::string> distinct_instruments() {
+    std::set<std::string> instruments;
     for (const auto& [key, entry] : survey().entries)
-        types.insert(entry.series_type);
-    return types;
+        instruments.insert(entry.identity.instrument);
+    return instruments;
 }
 
-series_classification_rule make_literal_rule(const std::string& series_type,
-                                             const std::string& metric,
+series_classification_rule make_literal_rule(const std::string& instrument,
+                                             const std::string& quote,
                                              const std::string& asset_class_code,
                                              const std::string& series_subclass_code) {
     series_classification_rule rule;
-    rule.series_type = series_type;
-    rule.metric = metric;
+    rule.key_kind = "datum";
+    rule.instrument = instrument;
+    rule.quote = quote;
     rule.asset_class_source = "literal";
     rule.asset_class_code = asset_class_code;
     rule.series_subclass_code = series_subclass_code;
     return rule;
 }
 
-series_classification_rule make_correlation_rule(const std::string& series_type,
-                                                 const std::string& series_subclass_code) {
+series_classification_rule make_correlation_rule(const std::string& series_subclass_code) {
     series_classification_rule rule;
-    rule.series_type = series_type;
+    rule.key_kind = "datum";
+    rule.instrument = "correlation";
     rule.asset_class_source = "correlation_operands";
     rule.series_subclass_code = series_subclass_code;
     return rule;
 }
 
-series_classification_rule make_index_name_rule(const std::string& series_type,
-                                                const std::string& series_subclass_code) {
+series_classification_rule make_index_rule(const std::string& instrument,
+                                           const std::string& series_subclass_code) {
     series_classification_rule rule;
-    rule.series_type = series_type;
-    rule.asset_class_source = "index_name";
+    rule.key_kind = "index";
+    rule.instrument = instrument;
+    rule.asset_class_source = "index_authority";
     rule.series_subclass_code = series_subclass_code;
     return rule;
 }
 
-/// Covers each branch the classifier takes: a row keyed by its type alone, a
-/// pair of rows where the metric decides, and the row whose classes come from
-/// the operands in the key.
+/// A datum key, with the operands a correlation carries and nothing else.
+classification_key datum_key(const std::string& instrument, const std::string& quote) {
+    classification_key key;
+    key.kind = key_kind::datum;
+    key.instrument = instrument;
+    key.quote = quote;
+    return key;
+}
+
+classification_key correlation_key(const std::vector<std::string>& operands) {
+    auto key = datum_key("correlation", "rate");
+    key.operands = operands;
+    return key;
+}
+
+classification_key index_key(const std::string& family) {
+    classification_key key;
+    key.kind = key_kind::index;
+    key.instrument = family;
+    return key;
+}
+
+/// Covers each branch the classifier takes: a row keyed by its instrument alone,
+/// a pair of rows where the quote decides, the row whose classes come from a
+/// correlation's operands, and the row keyed by an index.
 std::vector<series_classification_rule> fixture() {
     return {
-        make_literal_rule("DISCOUNT", "", "interest_rates", "yield"),
-        make_literal_rule("GENERIC-MD", "EQUITY_OPTION", "equity", "volatility"),
-        make_literal_rule("GENERIC-MD", "", "commodity", "forward"),
-        make_correlation_rule("CORRELATION", "correlation"),
+        make_literal_rule("discount", "", "interest_rates", "yield"),
+        make_literal_rule("equity_option", "price", "equity", "volatility"),
+        make_literal_rule("equity_option", "", "equity", "forward"),
+        make_correlation_rule("correlation"),
+        make_index_rule("", "index_fixing"),
     };
 }
 
@@ -281,7 +300,7 @@ void check_code_is_in_catalogue(const std::string& code, const std::string& rel_
 
 }
 
-TEST_CASE("every_distinct_series_key_in_the_ore_corpus_classifies",
+TEST_CASE("every_distinct_series_identity_in_the_ore_corpus_classifies",
           "[marketdata][classification][corpus]") {
     const auto& entries = survey().entries;
     const auto parsed_files = survey().market_data_files.size() + survey().fixing_files.size();
@@ -289,15 +308,12 @@ TEST_CASE("every_distinct_series_key_in_the_ore_corpus_classifies",
     // Reported on a passing run too, so the census is visible to whoever
     // tightens the floors above.
     std::ostringstream census;
-    census << "corpus census: " << entries.size() << " distinct series keys ("
-           << distinct_types().size() << " types) from " << survey().market_data_keys.size()
-           << " market data keys in " << survey().market_data_files.size() << " files and "
-           << survey().fixing_keys.size() << " fixing keys in " << survey().fixing_files.size()
-           << " files, of " << survey().files_seen << " seen, " << survey().unreadable_files
-           << " unreadable";
-    // Named only when the walk found nothing. A healthy walk parses the XML
-    // majority into nothing by design, and those messages would drown the
-    // census; an empty walk is the case where one of them is the answer.
+    census << "corpus census: " << entries.size() << " distinct series identities ("
+           << distinct_instruments().size() << " instruments) from "
+           << survey().market_data_keys.size() << " market data keys in "
+           << survey().market_data_files.size() << " files and " << survey().fixing_keys.size()
+           << " fixing keys in " << survey().fixing_files.size() << " files, of "
+           << survey().files_seen << " seen, " << survey().unreadable_files << " unreadable";
     if (entries.empty() && !survey().first_read_error.empty())
         census << "; first read error: " << survey().first_read_error;
     WARN(census.str());
@@ -306,32 +322,34 @@ TEST_CASE("every_distinct_series_key_in_the_ore_corpus_classifies",
 
     std::vector<std::string> unclassified;
     for (const auto& [key, entry] : entries) {
-        if (!seed_classifier().try_classify(entry.series_type, entry.metric, entry.qualifier))
+        if (!seed_classifier().try_classify(entry.identity))
             unclassified.push_back(key);
     }
 
     for (const auto& key : unclassified)
-        INFO("unclassified key: " << key);
+        INFO("unclassified identity: " << key);
     CHECK(unclassified.empty());
 }
 
-TEST_CASE("every_series_type_the_ore_corpus_carries_is_known_to_the_classifier",
+TEST_CASE("every_instrument_the_ore_corpus_carries_is_known_to_the_classifier",
           "[marketdata][classification][corpus]") {
-    const auto types = distinct_types();
-    const auto known = seed_classifier().known_series_types();
-    const std::set<std::string> known_set(known.begin(), known.end());
+    const auto instruments = distinct_instruments();
+    REQUIRE(instruments.size() >= min_distinct_instruments);
 
-    INFO("distinct types: " << types.size());
-    REQUIRE(types.size() >= min_distinct_types);
+    std::set<std::string> known;
+    for (const auto kind : {key_kind::datum, key_kind::index})
+        for (const auto& instrument : seed_classifier().known_instruments(kind))
+            known.insert(instrument);
 
     std::vector<std::string> unknown;
-    for (const auto& type : types) {
-        if (!known_set.count(type))
-            unknown.push_back(type);
+    for (const auto& instrument : instruments) {
+        // An index rule keyed by the empty instrument speaks for every family.
+        if (!known.count(instrument) && !known.count(std::string{}))
+            unknown.push_back(instrument);
     }
 
-    for (const auto& type : unknown)
-        INFO("type the corpus carries but the vocabulary lacks: " << type);
+    for (const auto& instrument : unknown)
+        INFO("instrument the corpus carries but the vocabulary lacks: " << instrument);
     CHECK(unknown.empty());
 }
 
@@ -346,19 +364,22 @@ TEST_CASE("every_classification_code_the_classifier_can_emit_exists_in_its_catal
     };
 
     // Swept over the vocabulary rather than over the corpus, because a code
-    // only an unused rule emits would otherwise go unnoticed until an import
-    // wrote a row and the insert failed. The metric is ignored for every type
-    // but the two handled below.
-    for (const auto& type : seed_classifier().known_series_types()) {
-        if (type == "CORRELATION" || type == "GENERIC-MD")
-            continue;
-        record(seed_classifier().classify(type, "PROBE", "PROBE"));
+    // only an unused rule emits would otherwise go unnoticed until an ingest
+    // wrote a row and the insert failed.
+    for (const auto kind : {key_kind::datum, key_kind::index}) {
+        for (const auto& instrument : seed_classifier().known_instruments(kind)) {
+            if (instrument == "correlation") {
+                record(seed_classifier().classify(
+                    correlation_key({"EQ-RIC:.SPX", "FX-GENERIC-USD-EUR"})));
+                continue;
+            }
+            classification_key key;
+            key.kind = kind;
+            key.instrument = instrument;
+            key.quote = "probe";
+            record(seed_classifier().classify(key));
+        }
     }
-
-    record(
-        seed_classifier().classify("CORRELATION", "RATE", "EQ-RIC:.SPX/FX-GENERIC-USD-EUR/1Y/ATM"));
-    record(seed_classifier().classify(
-        "GENERIC-MD", "EQUITY_OPTION", "PRICE/RIC:.SPX/USD/2025-10-03/3300/C"));
 
     REQUIRE(!asset_classes.empty());
     REQUIRE(!subclasses.empty());
@@ -373,21 +394,16 @@ TEST_CASE("every_classification_code_the_classifier_can_emit_exists_in_its_catal
                                    "refdata_series_subclass_codes_populate.sql");
 }
 
-TEST_CASE("a_correlation_takes_its_classes_from_the_two_operands_in_its_key",
+TEST_CASE("a_correlation_takes_its_classes_from_its_two_operands",
           "[marketdata][classification][corpus]") {
     std::map<std::pair<std::string, std::string>, series_classification> by_operands;
     for (const auto& [key, entry] : survey().entries) {
-        if (entry.series_type != "CORRELATION")
+        if (entry.identity.instrument != "correlation")
             continue;
-        const auto c =
-            seed_classifier().try_classify(entry.series_type, entry.metric, entry.qualifier);
+        REQUIRE(entry.identity.operands.size() == 2);
+        const auto c = seed_classifier().try_classify(entry.identity);
         REQUIRE(c);
-        const auto slash = entry.qualifier.find('/');
-        REQUIRE(slash != std::string::npos);
-        const auto first = entry.qualifier.substr(0, slash);
-        const auto rest = entry.qualifier.substr(slash + 1);
-        const auto second = rest.substr(0, rest.find('/'));
-        by_operands[{first, second}] = *c;
+        by_operands[{entry.identity.operands[0], entry.identity.operands[1]}] = *c;
     }
 
     REQUIRE(!by_operands.empty());
@@ -417,13 +433,14 @@ TEST_CASE("the_classification_rule_seed_is_well_formed", "[marketdata][classific
     // seed that parses into nothing is the failure this catches first.
     REQUIRE(!rules.empty());
 
-    std::set<std::pair<std::string, std::string>> seen;
+    std::set<std::tuple<std::string, std::string, std::string>> seen;
     for (const auto& rule : rules) {
-        INFO("rule: " << rule.series_type << "/" << rule.metric);
+        INFO("rule: " << rule.key_kind << "/" << rule.instrument << "/" << rule.quote);
+        CHECK((rule.key_kind == "datum" || rule.key_kind == "index"));
         CHECK((rule.asset_class_source == "literal" ||
                rule.asset_class_source == "correlation_operands" ||
-               rule.asset_class_source == "index_name"));
-        CHECK(seen.insert({rule.series_type, rule.metric}).second);
+               rule.asset_class_source == "index_authority"));
+        CHECK(seen.insert({rule.key_kind, rule.instrument, rule.quote}).second);
         CHECK(!rule.series_subclass_code.empty());
         CHECK(!rule.description.empty());
 
@@ -436,60 +453,74 @@ TEST_CASE("the_classification_rule_seed_is_well_formed", "[marketdata][classific
             CHECK(!rule.asset_class_code.has_value());
     }
 
-    // The one rule whose classes come from its key, and the one keyed by its
-    // metric rather than by its type alone.
+    // The rule whose classes come from its operands.
     const auto correlation = std::find_if(rules.begin(), rules.end(), [](const auto& rule) {
-        return rule.series_type == "CORRELATION";
+        return rule.asset_class_source == "correlation_operands";
     });
     REQUIRE(correlation != rules.end());
-    CHECK(correlation->asset_class_source == "correlation_operands");
+    CHECK(correlation->instrument == "correlation");
     CHECK(correlation->series_subclass_code == "correlation");
 
-    const auto generic = std::find_if(rules.begin(), rules.end(), [](const auto& rule) {
-        return rule.series_type == "GENERIC-MD";
+    // One index rule serves every family, so the taxonomy has a single row that
+    // is not a datum, and no row for ORE's wrapper that nothing can reach.
+    const auto indexes = std::count_if(rules.begin(), rules.end(), [](const auto& rule) {
+        return rule.key_kind == "index";
     });
-    REQUIRE(generic != rules.end());
-    CHECK(generic->metric == "EQUITY_OPTION");
-    CHECK(generic->asset_class_code == "equity");
+    CHECK(indexes == 1);
+
+    // Every instrument is keyed by the spelling a URI writes: lower case, with
+    // underscores, never an ORE key token.
+    for (const auto& rule : rules)
+        CHECK(rule.instrument.find('-') == std::string::npos);
 }
 
 // =============================================================================
-// series_classifier — a value built from rows, with no database
+// series_classifier -- a value built from rows, with no database
 // =============================================================================
 
 TEST_CASE("classifier_answers_from_its_rows_and_not_a_compiled_table", unit_tags) {
     const series_classifier classifier(fixture());
 
-    const auto discount = classifier.classify("DISCOUNT", "RATE", "EUR/EUR1D");
+    const auto discount = classifier.classify(datum_key("discount", "rate"));
     CHECK(discount.asset_classes == std::vector<std::string>{"interest_rates"});
     CHECK(discount.series_subclass == "yield");
 
-    // IR_SWAP has no row in this fixture, so a classifier built from rows has
+    // ir_swap has no row in this fixture, so a classifier built from rows has
     // nothing to answer with: there is no compiled fallback behind it.
-    CHECK_FALSE(classifier.try_classify("IR_SWAP", "RATE", "EUR/1Y"));
-    CHECK_THROWS_AS(classifier.classify("IR_SWAP", "RATE", "EUR/1Y"), std::invalid_argument);
+    CHECK_FALSE(classifier.try_classify(datum_key("ir_swap", "rate")));
+    CHECK_THROWS_AS(classifier.classify(datum_key("ir_swap", "rate")), std::invalid_argument);
 }
 
-TEST_CASE("classifier_prefers_the_metric_row_and_falls_back_to_the_empty_one", unit_tags) {
+TEST_CASE("classifier_prefers_the_quote_row_and_falls_back_to_the_empty_one", unit_tags) {
     const series_classifier classifier(fixture());
 
-    const auto exact = classifier.try_classify("GENERIC-MD", "EQUITY_OPTION", "PRICE/RIC:.SPX");
+    const auto exact = classifier.try_classify(datum_key("equity_option", "price"));
     REQUIRE(exact);
     CHECK(exact->asset_classes == std::vector<std::string>{"equity"});
     CHECK(exact->series_subclass == "volatility");
 
-    // A metric with no row of its own takes the type's row for the empty
-    // metric, which is what the column's documented lookup rule says it does.
-    const auto fallback = classifier.try_classify("GENERIC-MD", "SHAPE_FACTOR", "PRICE");
+    // A quote with no row of its own takes the instrument's row for the empty
+    // quote, which is what the column's documented lookup rule says it does.
+    const auto fallback = classifier.try_classify(datum_key("equity_option", "shape_factor"));
     REQUIRE(fallback);
-    CHECK(fallback->asset_classes == std::vector<std::string>{"commodity"});
+    CHECK(fallback->asset_classes == std::vector<std::string>{"equity"});
     CHECK(fallback->series_subclass == "forward");
+}
+
+TEST_CASE("classifier_keeps_the_two_kinds_of_identity_apart", unit_tags) {
+    const series_classifier classifier(fixture());
+
+    // An instrument name is a datum; the same text as a family is an index.
+    CHECK_FALSE(classifier.try_classify(datum_key("", "rate")).has_value());
+    const auto index = classifier.try_classify(index_key("equity"));
+    REQUIRE(index);
+    CHECK(index->series_subclass == "index_fixing");
 }
 
 TEST_CASE("the_catalogue_mapping_answers_for_every_authority", unit_tags) {
     using ores::marketdata::domain::asset_class_for_authority;
 
-    // The mapping the index_name branch reads, exercised directly so the
+    // The mapping the index_authority branch reads, exercised directly so the
     // generated table cannot drift from the catalogue unnoticed.
     CHECK(asset_class_for_authority("ir") == std::optional<std::string_view>{"interest_rates"});
     CHECK(asset_class_for_authority("security") == std::optional<std::string_view>{"bond"});
@@ -503,39 +534,38 @@ TEST_CASE("the_catalogue_mapping_answers_for_every_authority", unit_tags) {
     CHECK_FALSE(asset_class_for_authority("ghost").has_value());
 }
 
-TEST_CASE("classifier_reads_a_fixings_class_from_its_index_name", unit_tags) {
-    const std::vector<series_classification_rule> rules{
-        make_literal_rule("DISCOUNT", "", "interest_rates", "yield"),
-        make_index_name_rule("FIXING", "index_fixing")};
-    const series_classifier classifier(rules);
+TEST_CASE("classifier_reads_a_fixings_class_from_its_index_family", unit_tags) {
+    const series_classifier classifier(fixture());
 
-    // One FIXING rule serves every index name, and the class follows the name
+    // One index rule serves every family, and the class follows the family
     // rather than one literal all fixings would share.
-    const auto rates = classifier.classify("FIXING", "RATE", "USD-SOFR");
+    const auto rates = classifier.classify(index_key("ibor"));
     CHECK(rates.asset_classes == std::vector<std::string>{"interest_rates"});
     CHECK(rates.series_subclass == "index_fixing");
 
-    // A name no class can name leaves the class list empty rather than
-    // guessing a class or blocking the import.
-    const auto unknown = classifier.classify("FIXING", "RATE", "NOT-AN-INDEX");
+    const auto power = classifier.classify(index_key("power"));
+    CHECK(power.asset_classes == std::vector<std::string>{"commodity"});
+
+    // A family the catalogue maps to no class leaves the class list empty
+    // rather than guessing a class or blocking the ingest.
+    const auto unknown = classifier.classify(index_key("generic"));
     CHECK(unknown.asset_classes.empty());
     CHECK(unknown.series_subclass == "index_fixing");
 }
 
-TEST_CASE("classifier_rejects_an_index_name_row_that_also_names_a_class", unit_tags) {
+TEST_CASE("classifier_rejects_an_index_rule_that_names_a_datum_source", unit_tags) {
     auto rules = fixture();
-    auto rule = make_index_name_rule("FIXING", "index_fixing");
-    rule.asset_class_code = "interest_rates";
+    auto rule = make_literal_rule("ibor", "", "interest_rates", "index_fixing");
+    rule.key_kind = "index";
     rules.push_back(rule);
 
     try {
         const series_classifier classifier(rules);
-        FAIL("accepted a contradictory row, known types: "
-             << classifier.known_series_types().size());
+        FAIL("accepted a contradictory row, index instruments: "
+             << classifier.known_instruments(key_kind::index).size());
     } catch (const std::invalid_argument& ex) {
         const std::string msg{ex.what()};
-        CHECK(msg.find("FIXING") != std::string::npos);
-        CHECK(msg.find("interest_rates") != std::string::npos);
+        CHECK(msg.find("index") != std::string::npos);
     }
 }
 
@@ -543,41 +573,45 @@ TEST_CASE("classifier_takes_a_correlations_classes_from_its_operands", unit_tags
     const series_classifier classifier(fixture());
 
     const auto cross =
-        classifier.classify("CORRELATION", "RATE", "EQ-RIC:.SPX/FX-GENERIC-USD-EUR/1Y/ATM");
+        classifier.classify(correlation_key({"EQ-RIC:.SPX", "FX-GENERIC-USD-EUR"}));
     CHECK(cross.asset_classes == std::vector<std::string>{"equity", "fx"});
     CHECK(cross.series_subclass == "correlation");
 
     // The same class on both sides is one class, not two.
-    const auto same = classifier.classify("CORRELATION", "RATE", "EQ-RIC:.SPX/EQ-RIC:.NDX/1Y/ATM");
+    const auto same = classifier.classify(correlation_key({"EQ-RIC:.SPX", "EQ-RIC:.NDX"}));
     CHECK(same.asset_classes == std::vector<std::string>{"equity"});
 
     // An operand the convention does not name contributes no class, which the
     // junction allows and a not-null column would not.
-    const auto unknown = classifier.classify("CORRELATION", "RATE", "SOMETHING/A-NOTHER");
+    const auto unknown = classifier.classify(correlation_key({"SOMETHING", "A-NOTHER"}));
     CHECK(unknown.asset_classes.empty());
 }
 
-TEST_CASE("classifier_known_series_types_is_sorted", unit_tags) {
+TEST_CASE("classifier_known_instruments_is_sorted", unit_tags) {
     const series_classifier classifier(fixture());
-    const std::vector<std::string> expected{"CORRELATION", "DISCOUNT", "GENERIC-MD"};
-    CHECK(classifier.known_series_types() == expected);
+    const std::vector<std::string> datum_expected{"correlation", "discount", "equity_option"};
+    CHECK(classifier.known_instruments(key_kind::datum) == datum_expected);
+    // The index row is keyed by the empty instrument, which speaks for every
+    // family, so the index vocabulary is that one entry.
+    CHECK(classifier.known_instruments(key_kind::index) == std::vector<std::string>{""});
 }
 
-TEST_CASE("classifier_takes_the_last_row_when_a_type_and_metric_repeat", unit_tags) {
+TEST_CASE("classifier_takes_the_last_row_when_a_key_repeats", unit_tags) {
     auto rules = fixture();
-    rules.push_back(make_literal_rule("DISCOUNT", "", "inflation", "capfloor"));
+    rules.push_back(make_literal_rule("discount", "", "inflation", "capfloor"));
 
     const series_classifier classifier(rules);
-    const auto discount = classifier.classify("DISCOUNT", "RATE", "EUR/EUR1D");
+    const auto discount = classifier.classify(datum_key("discount", "rate"));
     CHECK(discount.asset_classes == std::vector<std::string>{"inflation"});
     CHECK(discount.series_subclass == "capfloor");
-    CHECK(classifier.known_series_types().size() == 3);
+    CHECK(classifier.known_instruments(key_kind::datum).size() == 3);
 }
 
 TEST_CASE("classifier_rejects_an_unseeded_table", unit_tags) {
     try {
         const series_classifier classifier(std::vector<series_classification_rule>{});
-        FAIL("accepted an empty table, known types: " << classifier.known_series_types().size());
+        FAIL("accepted an empty table, instruments: "
+             << classifier.known_instruments(key_kind::datum).size());
     } catch (const std::invalid_argument& ex) {
         const std::string msg{ex.what()};
         CHECK(msg.find("ores_marketdata_series_classification_rules_tbl") != std::string::npos);
@@ -588,8 +622,8 @@ TEST_CASE("classifier_rejects_an_unseeded_table", unit_tags) {
 TEST_CASE("classifier_rejects_a_literal_row_with_no_asset_class_code", unit_tags) {
     // The helper always sets the column, and an empty string engages the
     // optional, so the null column a reader must reject is stated by clearing
-    // it — the way the mapper carries a null through.
-    auto unclassified = make_literal_rule("OI_FUTURE", "", "commodity", "forward");
+    // it -- the way the mapper carries a null through.
+    auto unclassified = make_literal_rule("oi_future", "", "commodity", "forward");
     unclassified.asset_class_code.reset();
 
     auto rules = fixture();
@@ -597,24 +631,25 @@ TEST_CASE("classifier_rejects_a_literal_row_with_no_asset_class_code", unit_tags
 
     try {
         const series_classifier classifier(rules);
-        FAIL("accepted a literal row with no class, known types: "
-             << classifier.known_series_types().size());
+        FAIL("accepted a literal row with no class, instruments: "
+             << classifier.known_instruments(key_kind::datum).size());
     } catch (const std::invalid_argument& ex) {
         const std::string msg{ex.what()};
-        CHECK(msg.find("OI_FUTURE") != std::string::npos);
+        CHECK(msg.find("oi_future") != std::string::npos);
         CHECK(msg.find("no asset class code") != std::string::npos);
     }
 }
 
 TEST_CASE("classifier_rejects_an_asset_class_source_it_does_not_know", unit_tags) {
     auto rules = fixture();
-    auto rule = make_literal_rule("OI_FUTURE", "", "commodity", "forward");
+    auto rule = make_literal_rule("oi_future", "", "commodity", "forward");
     rule.asset_class_source = "magic";
     rules.push_back(rule);
 
     try {
         const series_classifier classifier(rules);
-        FAIL("accepted an unknown source, known types: " << classifier.known_series_types().size());
+        FAIL("accepted an unknown source, instruments: "
+             << classifier.known_instruments(key_kind::datum).size());
     } catch (const std::invalid_argument& ex) {
         const std::string msg{ex.what()};
         CHECK(msg.find("magic") != std::string::npos);
@@ -622,19 +657,37 @@ TEST_CASE("classifier_rejects_an_asset_class_source_it_does_not_know", unit_tags
     }
 }
 
+TEST_CASE("classifier_rejects_a_key_kind_it_does_not_know", unit_tags) {
+    auto rules = fixture();
+    auto rule = make_literal_rule("oi_future", "", "commodity", "forward");
+    rule.key_kind = "ore_key";
+    rules.push_back(rule);
+
+    try {
+        const series_classifier classifier(rules);
+        FAIL("accepted an unknown key kind, instruments: "
+             << classifier.known_instruments(key_kind::datum).size());
+    } catch (const std::invalid_argument& ex) {
+        const std::string msg{ex.what()};
+        CHECK(msg.find("ore_key") != std::string::npos);
+        CHECK(msg.find("datum") != std::string::npos);
+    }
+}
+
 TEST_CASE("classifier_rejects_a_correlation_row_that_also_names_a_class", unit_tags) {
     auto rules = fixture();
-    auto rule = make_correlation_rule("INDEX_CDS_TRANCHE", "correlation");
+    auto rule = make_correlation_rule("correlation");
+    rule.instrument = "index_cds_tranche";
     rule.asset_class_code = "credit";
     rules.push_back(rule);
 
     try {
         const series_classifier classifier(rules);
-        FAIL("accepted a contradictory row, known types: "
-             << classifier.known_series_types().size());
+        FAIL("accepted a contradictory row, instruments: "
+             << classifier.known_instruments(key_kind::datum).size());
     } catch (const std::invalid_argument& ex) {
         const std::string msg{ex.what()};
-        CHECK(msg.find("INDEX_CDS_TRANCHE") != std::string::npos);
+        CHECK(msg.find("index_cds_tranche") != std::string::npos);
         CHECK(msg.find("credit") != std::string::npos);
     }
 }

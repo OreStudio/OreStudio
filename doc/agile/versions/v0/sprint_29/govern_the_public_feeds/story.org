@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 7AB2C9A4-BFFF-4206-90A5-CA275EF8B1C2
+:END:
+#+title: Story: Govern the public feeds
+#+description: Terms acceptance in Connectivity, a defined pause, and a route switch with history, with the old acts removed from Public rates.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:implementation:sprint_29:v0:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Terms acceptance moves to Connectivity, pause is defined, and a supplier switch is one route with history. Public rates becomes read-only for these acts.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-29                               |
+
+* Acceptance
+
+- Terms acceptance is on the publisher record in Connectivity, at the version shown.
+- Pause has one meaning, chosen and built.
+- A route switch is a new route with a reason and the old one stays in history.
+- Public rates offers no accept, pause or enable act.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AECB52F6-4886-4685-B5FB-551894B58F99][Accept terms in Connectivity]] | BACKLOG | | | Terms acceptance moves to the publisher record in Connectivity, with the version shown. |
+| [[id:E2EF9B20-B8DD-4DA6-ABE8-7BA124CC352F][Decide and build the pause]] | BACKLOG | | | Settle whether pause disables a feed's schedule, a session, or a route, and build the chosen one. |
+| [[id:869BE553-47B6-4D18-AD6D-D49E67B277DB][Switch a route with history]] | BACKLOG | | | A supplier switch is one new route with a reason; the old route stays in history. |
+
+* Decisions
+
+- A route switch is one new route, not an edit of the old one.
+- Pause is a configuration act, so it lives in Connectivity.
+- The publisher keeps its terms; the supplier keeps the contract.
+
+* Out of scope
+
+-

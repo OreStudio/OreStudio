@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Public rates — the publishers we read</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<div class="proto-bar">
+  <span><b>Prototype</b> · throwaway · mock data, no server</span>
+  <a href="../public-rates.org">the design note</a>
+  <a href="../index.org">market data prototypes</a>
+  <a href="../connectivity/">Connectivity</a>
+</div>
+
+<header class="page" id="list-header">
+  <div class="crumbs"><a href="#">Market data</a> / Public rates</div>
+  <div class="title-row">
+    <h1>Public rates</h1>
+    <span class="lead">the real rates and curves public bodies publish, what we hold, and whether it is arriving</span>
+    <span class="actions"><button class="act" id="refresh">Refresh</button></span>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="The screen">
+    <button role="tab" data-tab="providers">Publishers <span class="q">who is arriving</span></button>
+    <button role="tab" data-tab="availability">Availability <span class="q">who holds this underlying</span></button>
+    <button role="tab" data-tab="compare">Compare <span class="q">how far apart they are</span></button>
+    <button role="tab" data-tab="fetch">Fetch <span class="q">ask for data now</span></button>
+  </nav>
+</header>
+
+<main>
+  <section id="tab-providers" role="tabpanel">
+    <div class="card">
+      <div class="card-head">
+        <h2>Publishers</h2><p id="providers-sub"></p>
+        <span class="filters" id="filters"></span>
+        <input id="search" placeholder="Find a publisher or feed">
+      </div>
+      <table class="list" id="providers">
+        <thead><tr><th>Publisher</th><th>Class</th><th>Underlyings</th><th>Reads</th>
+          <th>Supplier</th><th>Service</th><th>Last fixing</th><th>Freshness</th><th>State</th><th class="acts"></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="card-body legend" id="legend"></div>
+    </div>
+  </section>
+
+  <section id="tab-availability" role="tabpanel" hidden>
+    <div class="card">
+      <div class="card-head">
+        <h2>Who holds an underlying</h2><p>one item, every publisher that fixes it, and the feed it reads</p>
+        <span class="filters"><select id="av-class"><option value="fx">FX</option><option value="ir">IR</option></select><select id="av-pair"></select></span>
+      </div>
+      <div class="card-body" id="av-body"></div>
+    </div>
+  </section>
+
+  <section id="tab-compare" role="tabpanel" hidden>
+    <div class="card">
+      <div class="card-head">
+        <h2>How far apart the publishers are</h2><p id="cmp-sub"></p>
+        <span class="filters"><select id="cmp-pair"></select></span>
+      </div>
+      <div class="card-body" id="cmp-body"></div>
+    </div>
+  </section>
+
+  <section id="tab-fetch" role="tabpanel" hidden>
+    <div class="card">
+      <div class="card-head"><h2>Fetch now</h2>
+        <p>the schedule is the scheduler's; this is the on-demand trigger, and it sends the same request</p></div>
+      <div class="card-body" id="fetch-body"></div>
+    </div>
+  </section>
+
+  <section id="record" hidden>
+    <div class="crumbs"><a href="?tab=providers">Market data</a> / <a href="?tab=providers">Public rates</a> / <span id="rec-crumb"></span></div>
+    <div class="record-header">
+      <div>
+        <h1 id="rec-title"></h1>
+        <div class="record-meta" id="rec-meta"></div>
+      </div>
+      <span class="actions" id="rec-acts"></span>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Publisher" id="rec-tabs">
+      <button role="tab" data-rtab="overview">Overview</button>
+      <button role="tab" data-rtab="underlyings">Underlyings</button>
+      <button role="tab" data-rtab="fixings">Fixings</button>
+      <button role="tab" data-rtab="history">History</button>
+    </nav>
+    <div id="rec-body"></div>
+  </section>
+</main>
+
+<script src="prototype.js"></script>
+</body>
+</html>

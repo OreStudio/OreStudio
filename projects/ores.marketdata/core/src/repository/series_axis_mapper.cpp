@@ -43,10 +43,10 @@ domain::series_axis series_axis_mapper::map(const series_axis_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::series_axis r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.series_id = boost::lexical_cast<boost::uuids::uuid>(v.series_id);
+    r.tenant_id = v.tenant_id;
+    r.series_id = v.series_id;
     r.axis_field = v.axis_field;
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.party_id = v.party_id;
     r.sequence = v.sequence;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
@@ -57,10 +57,10 @@ series_axis_entity series_axis_mapper::map(const domain::series_axis& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     series_axis_entity r;
-    r.series_id = boost::uuids::to_string(v.series_id);
+    r.series_id = v.series_id;
     r.axis_field = v.axis_field;
-    r.tenant_id = v.tenant_id.to_string();
-    r.party_id = boost::uuids::to_string(v.party_id);
+    r.tenant_id = v.tenant_id;
+    r.party_id = v.party_id;
     r.sequence = v.sequence;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

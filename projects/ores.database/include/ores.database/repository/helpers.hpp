@@ -30,31 +30,17 @@
 namespace ores::database::repository {
 
 /**
- * @brief Naive maximum timestamp for C++ entity default values.
+ * @brief The bitemporal maximum timestamp, as the text a hand-written query
+ * states.
  *
- * Database entities use this as the default value for valid_from and valid_to
- * fields before the database trigger overwrites them. The db_timestamp format
- * ("%Y-%m-%d %H:%M:%S") does not include timezone information, so this must
- * be the naive version without the +00 offset. The database will convert this
- * to the UTC-aware version when inserting.
+ * A row whose =valid_to= holds this instant is the row still current. In the
+ * binary format the sentinel is =db_timestamp::max()=, which the layer's codecs
+ * read and write as this instant, so generated code names the maximum and never
+ * the text. This constant is what SQL that an entity model does not generate
+ * carries, where a value is compared as text.
  *
- * Use in: entity field defaults, fallback values in raw query results.
- * Must stay synchronized with MAX_TIMESTAMP: same date/time, no timezone offset.
- */
-inline constexpr const char* MAX_TIMESTAMP_NAIVE = "9999-12-31 23:59:59";
-
-/**
- * @brief Maximum timestamp used for bitemporal records (represents "infinity").
- *
- * This constant is used in SQL queries to mark records that are currently valid.
- * In bitemporal databases, a record with valid_to = MAX_TIMESTAMP indicates
- * that the record is still current and has not been superseded or deleted.
- * Includes explicit UTC offset (+00) to match ores_utility_infinity_timestamp_fn()
- * and remain timezone-independent across all session timezones.
- *
- * Use in: SQL WHERE clauses, make_timestamp() calls, comparison queries.
- * IMPORTANT: Must stay synchronized with MAX_TIMESTAMP_NAIVE (same date/time,
- * with "+00" offset appended). If sentinel date ever changes, update both.
+ * The explicit UTC offset matches =ores_utility_infinity_timestamp_fn()= and
+ * keeps the comparison independent of the session timezone.
  */
 inline constexpr const char* MAX_TIMESTAMP = "9999-12-31 23:59:59+00";
 
@@ -83,34 +69,6 @@ void ensure_success(const T& result, logging::logger_t& lg) {
             repository_exception(std::format("Repository error: {}", result.error().what())));
     }
 }
-
-/**
- * @brief Converts a string to a db_timestamp, throwing an exception if conversion fails.
- *
- * This helper parses a timestamp string in the db_timestamp format
- * and returns a db_timestamp. If parsing fails, it logs the error
- * and throws a repository_exception.
- *
- * @param s The timestamp string to convert (format: "YYYY-MM-DD HH:MM:SS")
- * @return Expected<Timestamp> on success
- * @throws repository_exception if timestamp parsing fails
- *
- * @example
- * auto ts = make_timestamp("2025-11-25 12:30:45");
- */
-inline auto make_timestamp(const std::string& s, logging::logger_t& lg) {
-    using namespace ores::logging;
-
-    const auto r = db_timestamp::from_string(s);
-    if (!r) {
-        BOOST_LOG_SEV(lg, error) << "Error converting timestamp: '" << s
-                                 << "'. Error: " << r.error().what();
-        BOOST_THROW_EXCEPTION(
-            repository_exception(std::format("Timestamp conversion error: {}", s)));
-    }
-    return r;
-}
-
 
 }
 

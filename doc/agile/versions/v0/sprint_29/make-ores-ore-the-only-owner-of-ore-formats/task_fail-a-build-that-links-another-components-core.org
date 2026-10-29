@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fail-a-build-that-links-another-components-core
+#+pr: 4059
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A build fails, and names the offending edge, when a component's core library dep
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-27                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-29                               |
 
 * Acceptance
 
@@ -42,9 +42,24 @@ A build fails, and names the offending edge, when a component's core library dep
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The rule lives in one table in the check, because the check is what enforces it:
+
+| Kind a core links | Allowed |
+|-------------------+---------|
+| another component's =core= | no |
+| another component's =service= | no |
+| an =api= contract, or its own libraries | yes |
+| anything that is not a component library | yes |
+
+The check reads the =target_link_libraries= calls of every component's core
+file, so it needs no configure step and no toolchain. It is a ratchet, like the
+entity-write gate: the 37 edges that predate the rule are accepted in a baseline,
+a new edge fails, and a baseline entry that no longer links also fails, so the
+list can only shrink.
+
+The codec must pass it, and did not: its core still declared
+=ores.history.core.lib=, which no source used. The declaration was stale, and it
+leaves the model rather than the generated file.
 
 * Measurements
 
@@ -58,9 +73,16 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Forbidden edges in the tree | 37, accepted in the baseline | =python3 projects/ores.codegen/scripts/check_core_link_edges.py --list= | (this branch) |
+| Forbidden edges in =ores.ore.core= | 0 | =python3 projects/ores.codegen/scripts/check_core_link_edges.py --list | grep "ores.ore.core.lib links"= | (this branch) |
+| Tests of the gate | 13 passed | =pytest projects/ores.codegen/tests/test_core_link_edges.py= | (this branch) |
 
 * Notes
+
+The gate reads the CMake tree, so its blind spot is a link it cannot see: a
+dependency that names a variable the templates do not use, and a core file that
+states no name, are both failures rather than silence. Today every core is
+scanned and every dependency is literal.
 
 * Test Scenarios
 
@@ -77,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4059][#4059]] | [codegen] Fail a build whose core links another component's core |
 
 * Review
 
@@ -86,3 +108,35 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A build fails, and names the edge, when a component's core links another
+component's core or service. The gate is
+=projects/ores.codegen/scripts/check_core_link_edges.py=, its ratchet is
+=core_link_edges_baseline.json=, and =.github/workflows/core-link-edges.yml= runs
+it on every change to a component's CMakeLists, to the check, or to its
+baseline.
+
+It reads the CMake tree rather than the build, so it costs a fraction of a second
+and needs no toolchain: the =target_link_libraries= calls are the declaration of
+what a library links.
+
+37 edges predate the rule and are accepted. The codec is not one of them: its
+core still declared =ores.history.core.lib=, which nothing in its sources used.
+That declaration left the component model, and the check now passes for
+=ores.ore.core=.
+
+The deliberate violation the acceptance asks for:
+
+#+begin_example
+ores.ore.core.lib: links ores.reporting.core.lib, which is reporting's core library.
+A core may link another component's api contract, not its core.
+1 core link edge(s) failed the check.
+#+end_example
+
+The gate's suite states what the parser must find and what it must not: another
+component's core, another component's service, an api contract or its own
+libraries, the shared =ores.service.lib= (which is not a component), a link named
+only in a comment, a new edge, an accepted edge, a baseline entry whose edge is
+gone, and an edge whose dependency names a variable the check cannot resolve.
+The message names the component the dependency belongs to, not the one that
+links it, and a case pins that too.

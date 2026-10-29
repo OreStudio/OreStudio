@@ -188,11 +188,11 @@ std::vector<domain::role> read_latest_by_name(context ctx, const std::string& na
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::role>
 role_repository::read_latest_by_name(context ctx, const std::string& name) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_entity>> |
                        query_builder::where("tenant_id"_c == tid && "name"_c == name &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     return query_builder::execute_read_query<role_entity, domain::role>(
         ctx,
@@ -220,11 +220,11 @@ std::optional<domain::role> read_registration_default(context ctx);
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::optional<domain::role>
 role_repository::read_registration_default(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_entity>> |
                        query_builder::where("tenant_id"_c == tid && "is_registration_default"_c == true &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
                        query_builder::limit(1);
 
     const auto rows = query_builder::execute_read_query<role_entity, domain::role>(

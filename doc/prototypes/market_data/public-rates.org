@@ -1,0 +1,220 @@
+:PROPERTIES:
+:ID: 5C1B7E42-9A3D-4F60-B1E8-2D7A4C6F0E93
+:END:
+#+title: Public rates, prototype
+#+description: The public publishers as one screen a person runs: one row per publisher and class, the routed feed and the supplier named, freshness told apart from session state, and availability, comparison and a service-aware fetch.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:public_rates:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+| Item          | Where                                              |
+|---------------+----------------------------------------------------|
+| Prototype     | [[file:official-rates/][the prototype page]]          |
+| Design note   | this page                                          |
+| Group         | [[file:index.org][Market data prototypes]]           |
+| Journey       | [[file:../../knowledge/journeys/market_data/journey_run-the-public-feeds.org][Run the public feeds]] |
+| Review        | [[file:official-rates/review/][Gemini's alternative]] |
+
+* Summary
+
+The Public rates screen does governance today: it lists the public publishers,
+their terms and their stored fixings, and it lets a person accept the terms at
+the version shown. It does not answer the operational question a system
+administrator asks next: is the data actually arriving, and what do I do when
+it is not.
+
+This prototype argues the shape of that answer before any control is built, and
+it is the shape the story will implement: six surfaces under one title. The
+publisher is the object over time, and each tab answers one question about it or
+about the underlying it fixes.
+
+#+ATTR_HTML: :class hug-leading
+| Surface | Question | Reads |
+|---------+----------+-------|
+| Publishers (list) | Is each publisher and class arriving? | one row per publisher and class, the routed feed, supplier, service, last fixing and freshness |
+| Publisher record · Overview | What does this publisher read, per class? | publisher terms and the routed feed for each class |
+| Publisher record · Underlyings | Which pairs does it fix, and how far back? | fixings by series |
+| Publisher record · Fixings | What did it publish for this pair, over time? | fixings by series, feed start |
+| Publisher record · History | Who changed it, and when? | publisher history |
+
+| Availability (area tab) | Which publishers hold this item? | fixings by series |
+| Compare (area tab) | How far apart are their values? | fixings by series, arithmetic in the page |
+| Fetch (area tab) | Ask for data now | the refresh request, not yet on the contract |
+
+* A publisher, a class, a feed and a route
+
+A value belongs to its publisher. A feed is one publisher on one service through
+one session, and the route is the party's choice of one feed for one publisher
+and one asset class. A second feed of the same publisher is another way to the
+same fixing, not a second fixing: the item keeps its identity, and the feed is
+provenance.
+
+The row grain is *publisher and class*, because that is the route's grain and the
+freshness grain. ECB FX and ECB IR are two rows, with two feeds, two suppliers
+and two independent freshness facts. Only the *routed* feed is read; the others
+are alternatives for a supplier switch, and the screen says so.
+
+Freshness is not session state. A feed can read `serving` in Connectivity while
+its last fixing is days old: the session is up and the publisher has not
+published. Public rates shows *fresh*, *late*, *no data* or *no route*, derived
+from the last fixing and the feed's expected rhythm. Session health stays in
+Connectivity, behind a link.
+
+The list carries the count of underlyings, never the pairs themselves: a
+publisher fixes tens or hundreds of pairs, and the record's Underlyings tab is
+where they are read. The record page is the standard shape: a breadcrumb, a
+header with the terms and the state, the acts, and tabs.
+
+The words, with examples.
+
+#+ATTR_HTML: :class hug-leading
+| Word | Meaning | Example |
+|------+---------+---------|
+| /Publisher/ | Owns the ids, the credit and the terms. | =ecb=, =ust=, =bloomberg= for its own data |
+| /Supplier/ | Who we contract with and connect to. | =frankfurter=, =bloomberg=, =ecb-data-portal= |
+| /Session/ | One configured adapter: supplier, environment, endpoint, credential. | =frankfurter-eu= |
+| /Service/ | What the session offers. | =end_of_day=, =real_time= |
+| /Feed/ | Publisher + session + service + key + scope + schedule. | =ecb-frankfurter= |
+| /Route/ | The party's feed for one publisher and class. | System Party, =ecb=, FX → =ecb-frankfurter= |
+| /Item/ | The internal identity of a value. | =FX-ECB-EUR-USD= |
+| /Fixing/ | The daily value a public publisher publishes for one item. | ECB EUR/CAD 1.5638 on 2026-10-28 |
+
+The publisher and the availability surfaces do not need a new read: a fixings
+read answers a window of up to twelve series, and the coverage and the distances
+are arithmetic over it. Fetch needs the refresh request the design task names,
+and a publisher's expected rhythm, which the record does not carry yet.
+
+* What it asks
+
+1. What does a paused publisher look like, and what happens to its fixings, its
+   chart and its pair on the comparison while it is paused?
+2. While a backfill of a chosen range runs, what does the person see: a
+   progress, the table filling day by day, or nothing until it ends?
+3. How does a late fixing read differently from a feed that is down, and
+   how does a publisher that never had a fixing read, without three colours
+   meaning the same thing?
+4. Does accepting terms that withdraw permission to store show deleting the
+   publisher's fixings as a consequence, or as a command the person must
+   remember?
+
+* States and addresses
+
+#+ATTR_HTML: :class hug-leading
+| State | Address | What it shows |
+|-------+---------+---------------|
+| Publishers | =?tab=publishers= | The list, the filters and the state legend |
+| Serving, not serving, terms | =?tab=publishers&filter=serving= (and =not serving=, =terms=) | One state alone |
+| Paused, kept or hidden | =?tab=publishers&paused=muted=, =&paused=hidden= | The paused publisher kept, or removed |
+| Withdrawn terms | =?tab=publishers&terms=withdraw= | The deletion offered where v2 is accepted |
+| Record, configuration | =?publisher=ecb&rtab=overview= | The publisher's Details |
+| Record, underlyings | =?publisher=ecb&rtab=underlyings= | Its items by class, each with its feed, first and last, values and gaps |
+| Record, fixings | =?publisher=ecb&rtab=fixings&pair=EUR/CAD= | One pair over time, and where a feed started |
+| Record, overview | =?publisher=ecb&rtab=overview= | The terms, and the feed that serves each class |
+| Record, history | =?publisher=ecb&rtab=history= | The shared timeline |
+| Availability | =?tab=availability&class=fx&pair=EUR/USD=, =?tab=availability&class=ir&item=€STR= | Every publisher that holds the item, and the feed that serves it |
+| Compare | =?tab=compare&pair=EUR/USD= | The publishers together, in basis points |
+| Fetch | =?tab=fetch=, =&fetch=progress=, =&fetch=done= | The scope, running, done |
+
+* What it argues
+
+- *One row, four questions.* The row answers who the publisher is, whether we may
+  fetch it, whether it is arriving, and what a person may do about it. The five
+  badges that follow from those questions are mutually exclusive: accepted terms
+  and no fixing yet is =never fixed=; accepted, serving and no value today is
+  =late=; a stopped heartbeat is =not serving=; a person's pause is =paused=.
+- *Freshness is not tick age.* The session read's last-tick age is useless for a
+  publisher that publishes once a day, so the row states the last fixing's date,
+  the time it was received, and whether the next publication is late. The
+  session's heartbeat stays in its own column, where a stopped feed reads as
+  one.
+- *The paused row stays.* A paused publisher keeps its fixings and the feed that
+  started from one, so hiding it from the list loses the reason a feed's start
+  names it. The prototype keeps it, dimmed, and draws the hidden variant beside
+  it for comparison: the hidden variant needs a count and a way back, and it
+  makes the pair comparison lose a column silently.
+- *A backfill is a request, and the screen says whose.* The dialog names the
+  session as the only party that can answer it, and says that until the contract
+  carries the request the screen offers only the window the service fetches
+  itself. The done state says what the store did: asked for 300 days, stored
+  280, skipped 20 it already held.
+- *Deleting fixings is a consequence, not a command.* The prototype does not
+  draw it as a row action. It is offered after a terms version withdraws
+  storage, in the same place the person accepts the new version, and it names
+  the feeds that started from a value that goes.
+
+* What is fake
+
+- Every publisher, item, fixing, date and time is invented.
+- The monthly coverage matrix is invented for EUR/USD only; every other pair
+  falls back to empty month cells, which is the shape, not a measurement.
+- The session's state and heartbeat are written into the mock data; the real
+  read answers them per session id, with the ids it serves and refuses.
+- The fetch progress and the counts in its done state are fixed numbers.
+- The expected rhythm on the configuration surface is the answer the record
+  cannot give yet, and the =not modelled yet= chip says so.
+- Nothing is written. Accepting terms and deleting fixings are inert buttons.
+  Pause and resume move the query string. Fetch moves the address to the running
+  state and no request leaves the page.
+- The Pause act carries a =design pending= note: the pause is a demand decision
+  the story has not taken yet.
+
+* Where the code lives
+
+- =doc/prototypes/market_data/official-rates/index.html= — the shell: the bar
+  with the variant selectors, the publisher table, the publisher page, and the
+  backfill card.
+- =doc/prototypes/market_data/official-rates/prototype.css= — the product's
+  tokens copied from =projects/ores.web/packages/web/src/styles.css=, and the
+  handful of classes the page needs.
+- =doc/prototypes/market_data/official-rates/prototype.js= — the mock data, the
+  state derived from terms, feed and fixings, and the query string as the
+  only state.
+
+The page adds nothing of its own beyond those three files, and the site adds
+nothing to it.
+
+* Verdict
+
+The shape is agreed for review: the row carries terms, freshness, next
+publication, the feed and the acts; the three failures have three sentences;
+the paused row stays unless the hidden variant's count and the lost comparison
+column are wanted; the backfill is a dialog that says the feed answers it.
+
+The paused row stays, and the hidden variant's only gain is a shorter list
+whose pair comparison silently loses a column. The withdrawn-terms state draws
+the deletion where the person accepts the new version, never as a row command.
+The availability and compare surfaces read the same fixings the publisher page
+reads; neither needs a new operation.
+
+What the prototype cannot settle is what this story's two decision tasks own:
+whether the pause is a demand fact or a publisher state, and what form the
+backfill request takes on the session contract. The prototype's choices are the
+input to those decisions, not their substitute.
+
+* The words of the code, with examples
+
+This screen uses the words of the code. The definition of each is in the
+architecture hub; the example is the one this screen draws.
+
+#+ATTR_HTML: :class hug-leading
+| Word | Meaning here | Example on this screen |
+|------+--------------+------------------------|
+| /Publisher/ | Whoever owns the ids, the terms and the licence. | =ecb=, =ust=, =bloomberg= |
+| /Feed/ | One session instance of a publisher. A party reads one feed for each publisher. | =ecb-frankfurter=, =boe-frankfurter= |
+| /Adapter/ | The runtime behind a feed, known by its session id. | session =ecb-frankfurter= in the Health tab |
+| /Kind/ | How a feed gets its values. | =live= for =ecb-frankfurter= |
+| /Route/ | The party's choice of one feed for one publisher. | System Party routes =ecb-frankfurter= for =ecb= |
+| /Item/ | The internal identity a value is stored under. | =FX-ECB-EUR-USD= |
+| /Fixing/ | The daily value a public feed publishes for one item. | ECB EUR/CAD 1.5638 on 2026-10-28 |
+
+A feed is a row; the session is the runtime that serves it. The publisher owns
+the terms and the credential reference.
+
+* The setup is a screen of its own
+
+The publishers, sessions, feeds, scopes, schedules and routes are configured in
+[[file:connectivity.org][Connectivity]]. This prototype reads the values; it
+names the feed that serves each publisher, and links to its record, but it
+configures none of it.

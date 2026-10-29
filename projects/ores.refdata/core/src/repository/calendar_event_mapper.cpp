@@ -47,23 +47,11 @@ domain::calendar_event calendar_event_mapper::map(const calendar_event_entity& v
 
     domain::calendar_event r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
     r.calendar_code = v.calendar_code;
-
-    {
-        int yy{}, mm{}, dd{};
-        char s1{}, s2{};
-        std::istringstream ss(v.event_date);
-        ss >> yy >> s1 >> mm >> s2 >> dd;
-        r.event_date = std::chrono::year{yy} / std::chrono::month{static_cast<unsigned>(mm)} /
-                       std::chrono::day{static_cast<unsigned>(dd)};
-    }
-
-
+    r.event_date = v.event_date;
     r.diary_entry_type = v.diary_entry_type;
-
     r.name = v.name;
     r.description = v.description;
     r.source = v.source;
@@ -71,7 +59,7 @@ domain::calendar_event calendar_event_mapper::map(const calendar_event_entity& v
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -81,17 +69,12 @@ calendar_event_entity calendar_event_mapper::map(const domain::calendar_event& v
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     calendar_event_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-
     r.calendar_code = v.calendar_code;
-
-    r.event_date = std::format("{:%Y-%m-%d}", v.event_date);
-
-
+    r.event_date = v.event_date;
     r.diary_entry_type = v.diary_entry_type;
-
     r.name = v.name;
     r.description = v.description;
     r.source = v.source;

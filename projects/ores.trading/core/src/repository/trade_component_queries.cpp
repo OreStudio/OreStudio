@@ -55,11 +55,11 @@ std::vector<domain::trade_additional_field>
 read_additional_fields_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, trade_component_queries_lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_additional_field_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("trade_id"_c, "sequence_number"_c);
 
     return query_builder::execute_read_query<trade_additional_field_entity,
@@ -75,11 +75,11 @@ std::vector<domain::trade_identifier>
 read_identifiers_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, trade_component_queries_lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_identifier_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("trade_id"_c, "id_type"_c);
 
     return query_builder::execute_read_query<trade_identifier_entity, domain::trade_identifier>(
@@ -94,11 +94,11 @@ std::vector<domain::trade_portfolio>
 read_portfolios_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, trade_component_queries_lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_portfolio_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("trade_id"_c, "sequence_number"_c);
 
     return query_builder::execute_read_query<trade_portfolio_entity, domain::trade_portfolio>(
@@ -113,11 +113,11 @@ std::vector<domain::trade_party_role>
 read_party_roles_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, trade_component_queries_lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_party_role_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("trade_id"_c, "role"_c);
 
     return query_builder::execute_read_query<trade_party_role_entity, domain::trade_party_role>(

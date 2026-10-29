@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: F6EA17E9-761E-452B-9ABF-7551B3612383
+:END:
+#+title: Story: Build the Public rates screens
+#+description: Publisher and class rows, the routed feed and supplier, freshness derived from the feed schedule, availability and compare, and a service-aware fetch.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:implementation:sprint_29:v0:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Public rates reads the model: publisher and class rows, the routed feed and supplier, freshness from the feed schedule, availability and compare, and a service-aware fetch.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-29                               |
+
+* Acceptance
+
+- The list is one row per publisher and class, with the routed feed, supplier, service, last fixing and freshness.
+- Freshness is fresh, late, no data or no route, from the last fixing and the rhythm.
+- The record carries the class; availability and compare name the routed feed.
+- Fetch is service-aware.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FEAFA12C-B251-48C2-9E41-1DD5640BA05E][Serve the publisher and class rows]] | BACKLOG | | | The read behind the list: publisher, class, routed feed, supplier, service, last fixing. |
+| [[id:07C46238-A877-4F20-972B-6028FE0D8665][Derive freshness from the feed schedule]] | BACKLOG | | | Fresh, late, no data and no route, from the last fixing and the feed's rhythm. |
+| [[id:DBCFB382-4116-4E97-80AF-F774B27A7754][Draw the publisher list and record]] | BACKLOG | | | Publisher and class rows, the class on the record, and the routed feed per class. |
+| [[id:22C9796E-4B60-4EB8-B46F-A3B5E9F92024][Draw availability and compare]] | BACKLOG | | | Availability by item and compare by publisher, each naming the routed feed. |
+| [[id:A56E86ED-4655-4C73-8007-BD887478D523][Make fetch service-aware]] | BACKLOG | | | A range fetch for end_of_day and historical, and a refusal with a health link for real_time. |
+| [[id:4FF957B8-0B6F-4002-B438-20D929F306B6][Prove the Public rates screens]] | BACKLOG | | | A late publisher, a no-data publisher and a supplier alternative read correctly. |
+
+* Decisions
+
+- The row grain is publisher and class, the route grain.
+- Only the routed feed is read; others are alternatives.
+- Session health stays in Connectivity.
+
+* Out of scope
+
+-

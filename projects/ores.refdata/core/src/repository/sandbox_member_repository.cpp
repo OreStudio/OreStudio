@@ -190,10 +190,10 @@ void sandbox_member_repository::write(
 }
 
 std::vector<domain::sandbox_member> sandbox_member_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sandbox_member_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<sandbox_member_entity, domain::sandbox_member>(
@@ -207,11 +207,11 @@ std::vector<domain::sandbox_member> sandbox_member_repository::read_latest(conte
 std::vector<domain::sandbox_member> sandbox_member_repository::read_latest(context ctx,
                                                                            const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest sandbox member. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<sandbox_member_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<sandbox_member_entity, domain::sandbox_member>(
         ctx,
@@ -270,11 +270,11 @@ std::vector<domain::sandbox_member> sandbox_member_repository::read_latest_by_sa
     const std::optional<messaging::sandbox_members_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest sandbox members. sandbox_id: " << sandbox_id
                                << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sandbox_member_entity>> |
                        query_builder::where("tenant_id"_c == tid && "sandbox_id"_c == sandbox_id &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<sandbox_member_entity, domain::sandbox_member>(
@@ -293,12 +293,12 @@ std::uint32_t sandbox_member_repository::get_total_sandbox_member_count_by_sandb
     const std::optional<messaging::sandbox_members_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sandbox members count. sandbox_id: "
                                << sandbox_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sandbox_member_entity>> |
                        query_builder::where("tenant_id"_c == tid && "sandbox_id"_c == sandbox_id &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_count_query<sandbox_member_entity>(
         ctx,
@@ -318,11 +318,11 @@ std::vector<domain::sandbox_member> sandbox_member_repository::read_latest_by_ac
     const std::optional<messaging::sandbox_members_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest sandbox members. account_id: " << account_id
                                << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sandbox_member_entity>> |
                        query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<sandbox_member_entity, domain::sandbox_member>(
@@ -341,12 +341,12 @@ std::uint32_t sandbox_member_repository::get_total_sandbox_member_count_by_accou
     const std::optional<messaging::sandbox_members_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sandbox members count. account_id: "
                                << account_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sandbox_member_entity>> |
                        query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_count_query<sandbox_member_entity>(
         ctx,
@@ -367,7 +367,7 @@ sandbox_member_repository::remove_status sandbox_member_repository::remove(
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -375,7 +375,7 @@ sandbox_member_repository::remove_status sandbox_member_repository::remove(
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<sandbox_member_entity> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing sandbox member from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -438,11 +438,11 @@ std::vector<domain::sandbox_member>
 sandbox_member_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<sandbox_member_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<sandbox_member_entity, domain::sandbox_member>(
         ctx,
         query,
@@ -461,11 +461,11 @@ void sandbox_member_repository::remove(context ctx, const std::vector<std::strin
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<sandbox_member_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing sandbox members.");
 }
 

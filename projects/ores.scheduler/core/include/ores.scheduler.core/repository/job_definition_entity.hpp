@@ -27,6 +27,9 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -37,18 +40,23 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a job definition in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct job_definition_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_scheduler_job_definitions_tbl";
 
-    std::string id;
-    std::optional<std::string> tenant_id;
+    boost::uuids::uuid id;
+    std::optional<utility::uuid::tenant_id> tenant_id;
     int version = 0;
 
     std::string job_name;
 
-    std::optional<std::string> party_id;
+    std::optional<boost::uuids::uuid> party_id;
     std::string description;
     std::string command;
     std::string schedule_expression;
@@ -59,8 +67,8 @@ struct job_definition_entity {
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = db_timestamp::max();
+    db_timestamp valid_to = db_timestamp::max();
 
     /**
      * @brief The columns of the table, named as the members, with the key.
@@ -77,7 +85,7 @@ struct job_definition_entity {
                query_builder::bind("command", &e::command) |
                query_builder::bind("schedule_expression", &e::schedule_expression) |
                query_builder::bind("action_type", &e::action_type) |
-               query_builder::bind("action_payload", &e::action_payload) |
+               query_builder::bind_text("action_payload", &e::action_payload) |
                query_builder::bind("is_active", &e::is_active) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

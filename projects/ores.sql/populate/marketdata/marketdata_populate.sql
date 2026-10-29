@@ -47,7 +47,7 @@
 
 \echo ''
 \echo '--- FOMC Segment Market Series Seed Data ---'
-\ir ./marketdata_market_series_fomc_populate.sql
+\ir ./marketdata_market_series_ir_curve_populate.sql
 
 \echo ''
 \echo '--- Series Classification Rules ---'

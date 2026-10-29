@@ -169,10 +169,9 @@ void fsm_state_repository::write(context ctx,
 }
 
 std::vector<domain::fsm_state> fsm_state_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
-                       query_builder::where("valid_to"_c == max.value()) |
-                       query_builder::order_by("id"_c);
+                       query_builder::where("valid_to"_c == max) | query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<fsm_state_entity, domain::fsm_state>(
         ctx,
@@ -185,9 +184,9 @@ std::vector<domain::fsm_state> fsm_state_repository::read_latest(context ctx) {
 std::vector<domain::fsm_state> fsm_state_repository::read_latest(context ctx,
                                                                  const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm state. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
-                       query_builder::where("id"_c == id && "valid_to"_c == max.value());
+                       query_builder::where("id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<fsm_state_entity, domain::fsm_state>(
         ctx,
@@ -200,9 +199,9 @@ std::vector<domain::fsm_state> fsm_state_repository::read_latest(context ctx,
 std::vector<domain::fsm_state> fsm_state_repository::read_latest_by_name(context ctx,
                                                                          const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm state by name: " << name;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
-                       query_builder::where("name"_c == name && "valid_to"_c == max.value());
+                       query_builder::where("name"_c == name && "valid_to"_c == max);
 
     return query_builder::execute_read_query<fsm_state_entity, domain::fsm_state>(
         ctx,
@@ -272,7 +271,7 @@ fsm_state_repository::remove_status fsm_state_repository::remove(
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -280,7 +279,7 @@ fsm_state_repository::remove_status fsm_state_repository::remove(
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<fsm_state_entity> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing fsm state from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -337,9 +336,9 @@ std::vector<domain::fsm_state>
 fsm_state_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
-                       query_builder::where("id"_c.in(ids) && "valid_to"_c == max.value());
+                       query_builder::where("id"_c.in(ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<fsm_state_entity, domain::fsm_state>(
         ctx,
         query,
@@ -358,11 +357,11 @@ void fsm_state_repository::remove(context ctx, const std::vector<std::string>& i
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<fsm_state_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing fsm states.");
 }
 
@@ -370,11 +369,11 @@ void fsm_state_repository::remove(context ctx, const std::vector<std::string>& i
 std::vector<domain::fsm_state>
 fsm_state_repository::read_latest_by_machine_name(context ctx, const std::string& machine_name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm states for machine: " << machine_name;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     // The raw read takes the timestamp as text: MAX_TIMESTAMP is the same
-    // instant make_timestamp parses for the generated reads below, so the two
-    // agree on which row is current.
+    // instant db_timestamp::max() stands for in the generated reads below, so
+    // the two agree on which row is current.
     const auto machine_ids = query_builder::execute_parameterized_string_query(
         ctx,
         "select id::text from ores_dq_fsm_machines_tbl "
@@ -390,7 +389,7 @@ fsm_state_repository::read_latest_by_machine_name(context ctx, const std::string
 
     const auto query =
         query_builder::read<std::vector<fsm_state_entity>> |
-        query_builder::where("machine_id"_c == machine_ids.front() && "valid_to"_c == max.value()) |
+        query_builder::where("machine_id"_c == machine_ids.front() && "valid_to"_c == max) |
         query_builder::order_by("name"_c);
 
     return execute_read_query<fsm_state_entity, domain::fsm_state>(

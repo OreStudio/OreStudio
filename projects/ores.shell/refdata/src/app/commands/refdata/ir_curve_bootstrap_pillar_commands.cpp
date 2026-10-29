@@ -145,7 +145,7 @@ void ir_curve_bootstrap_pillar_commands::register_commands(cli::Menu& root_menu,
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <party_id> <bootstrap_config_id> <sequence_index> <start_tenor_code> <end_tenor_code> "
-        "<curve_role_code> <reason> <commentary>");
+        "<curve_role_code> <market_series_id> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -153,7 +153,8 @@ void ir_curve_bootstrap_pillar_commands::register_commands(cli::Menu& root_menu,
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <party_id> <bootstrap_config_id> <sequence_index> <start_tenor_code> "
-        "<end_tenor_code> <curve_role_code> <reason> <commentary> [--version <n>]");
+        "<end_tenor_code> <curve_role_code> <market_series_id> <reason> <commentary> [--version "
+        "<n>]");
 
     menu->Insert(
         "put-many",
@@ -161,7 +162,8 @@ void ir_curve_bootstrap_pillar_commands::register_commands(cli::Menu& root_menu,
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <party_id> <bootstrap_config_id> <sequence_index> "
-        "<start_tenor_code> <end_tenor_code> <curve_role_code> <reason> <commentary>");
+        "<start_tenor_code> <end_tenor_code> <curve_role_code> <market_series_id> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -356,8 +358,8 @@ void ir_curve_bootstrap_pillar_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 6 + 2) {
-            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -375,6 +377,8 @@ void ir_curve_bootstrap_pillar_commands::process_add(std::ostream& out,
             req.change.write.end_tenor_code, parsed->positionals[next++], "end_tenor_code");
         ir_curve_bootstrap_pillar_read_token(
             req.change.write.curve_role_code, parsed->positionals[next++], "curve_role_code");
+        ir_curve_bootstrap_pillar_read_token(
+            req.change.write.market_series_id, parsed->positionals[next++], "market_series_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -417,8 +421,8 @@ void ir_curve_bootstrap_pillar_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -437,6 +441,8 @@ void ir_curve_bootstrap_pillar_commands::process_set(std::ostream& out,
             req.change.write.end_tenor_code, parsed->positionals[next++], "end_tenor_code");
         ir_curve_bootstrap_pillar_read_token(
             req.change.write.curve_role_code, parsed->positionals[next++], "curve_role_code");
+        ir_curve_bootstrap_pillar_read_token(
+            req.change.write.market_series_id, parsed->positionals[next++], "market_series_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -491,8 +497,8 @@ void ir_curve_bootstrap_pillar_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 7 + 2) {
-            fail(out) << "Expected " << (change_count * 7 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 8 + 2) {
+            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -513,6 +519,8 @@ void ir_curve_bootstrap_pillar_commands::process_put_many(std::ostream& out,
                 change.write.end_tenor_code, parsed->positionals[next++], "end_tenor_code");
             ir_curve_bootstrap_pillar_read_token(
                 change.write.curve_role_code, parsed->positionals[next++], "curve_role_code");
+            ir_curve_bootstrap_pillar_read_token(
+                change.write.market_series_id, parsed->positionals[next++], "market_series_id");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

@@ -26,7 +26,7 @@ The decision names the object the pause lives on, the effect on the adapter's de
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State         | ABANDONED                              |
 | Parent story | [[id:3D0DECE4-B91C-4855-96E9-A302A6B99E19][Run the public sources from the Official rates screen]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -86,3 +86,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Superseded by the supplier, session and feed stories.

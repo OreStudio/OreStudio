@@ -188,10 +188,10 @@ void todays_market_config_repository::write(
 
 std::vector<domain::todays_market_config>
 todays_market_config_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<todays_market_config_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<todays_market_config_entity,
@@ -206,11 +206,11 @@ todays_market_config_repository::read_latest(context ctx) {
 std::vector<domain::todays_market_config>
 todays_market_config_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest today's market configuration. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<todays_market_config_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<todays_market_config_entity,
                                              domain::todays_market_config>(
@@ -224,11 +224,11 @@ todays_market_config_repository::read_latest(context ctx, const std::string& id)
 std::vector<domain::todays_market_config>
 todays_market_config_repository::read_latest_by_code(context ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest today's market configuration by name: " << name;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<todays_market_config_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "name"_c == name &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<todays_market_config_entity>> |
+        query_builder::where("tenant_id"_c == tid && "name"_c == name && "valid_to"_c == max);
 
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
@@ -247,11 +247,11 @@ todays_market_config_repository::read_latest_by_code(context ctx, const std::str
 std::vector<domain::todays_market_config>
 todays_market_config_repository::read_latest_by_name(context ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest today's market configuration by name: " << name;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<todays_market_config_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "name"_c == name &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<todays_market_config_entity>> |
+        query_builder::where("tenant_id"_c == tid && "name"_c == name && "valid_to"_c == max);
 
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
@@ -347,12 +347,12 @@ todays_market_config_repository::read_latest_by_configuration_id(
     const std::optional<messaging::todays_market_configs_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest today's market configurations. configuration_id: "
                                << configuration_id << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<todays_market_config_entity>> |
         query_builder::where("tenant_id"_c == tid && "configuration_id"_c == configuration_id &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<todays_market_config_entity,
@@ -373,13 +373,13 @@ std::uint32_t todays_market_config_repository::get_total_config_count_by_configu
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active today's market configurations count. configuration_id: "
         << configuration_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<todays_market_config_entity>> |
         query_builder::where("tenant_id"_c == tid && "configuration_id"_c == configuration_id &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     return query_builder::execute_count_query<todays_market_config_entity>(
         ctx,
@@ -400,7 +400,7 @@ todays_market_config_repository::remove_status todays_market_config_repository::
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -408,7 +408,7 @@ todays_market_config_repository::remove_status todays_market_config_repository::
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<todays_market_config_entity> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing today's market configuration from database.");
@@ -473,11 +473,11 @@ std::vector<domain::todays_market_config>
 todays_market_config_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<todays_market_config_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<todays_market_config_entity,
                                                     domain::todays_market_config>(
         ctx,
@@ -497,11 +497,11 @@ void todays_market_config_repository::remove(context ctx, const std::vector<std:
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<todays_market_config_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(
         ctx, query, lg(), "Batch removing today's market configurations.");
 }

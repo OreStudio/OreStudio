@@ -320,7 +320,7 @@ void {{entity_singular}}_repository::write(
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_latest(context ctx) {
 {{^current_state}}
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 {{/current_state}}
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
@@ -331,7 +331,7 @@ std::vector<domain::{{entity_singular}}>
 {{^read_tenant_filtered}}
     const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
 {{^current_state}}
-        query_builder::where("valid_to"_c == max.value()) |
+        query_builder::where("valid_to"_c == max) |
 {{/current_state}}
         query_builder::order_by({{{primary_key.order_by_cols}}});
 {{/read_tenant_filtered}}
@@ -346,7 +346,7 @@ std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_latest(context ctx, {{{primary_key.params}}}) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
 {{^current_state}}
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 {{/current_state}}
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
@@ -392,7 +392,7 @@ std::vector<domain::{{entity_singular}}>
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_singular_words}} by {{log_label}}: "
                                << {{{log_fields}}};
 {{^current_state}}
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 {{/current_state}}
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
@@ -574,7 +574,7 @@ std::vector<domain::{{entity_singular}}>
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_plural_words}}. {{column}}: " << {{column}}
                                << " offset: " << offset << " limit: " << limit;
 {{^current_state}}
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 {{/current_state}}
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
@@ -585,7 +585,7 @@ std::vector<domain::{{entity_singular}}>
 {{^read_tenant_filtered}}
     const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
 {{^current_state}}
-        query_builder::where("{{column}}"_c == {{column}} && "valid_to"_c == max.value()) |
+        query_builder::where("{{column}}"_c == {{column}} && "valid_to"_c == max) |
 {{/current_state}}
 {{#current_state}}
         query_builder::where("{{column}}"_c == {{column}}) |
@@ -606,7 +606,7 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
     const std::optional<{{domain_entity.filter_type}}>& filter{{/domain_entity.has_filter_record}}) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{entity_plural_words}} count. {{column}}: " << {{column}};
 {{^current_state}}
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 {{/current_state}}
 
 {{#read_tenant_filtered}}
@@ -617,7 +617,7 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
 {{^read_tenant_filtered}}
     const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
 {{^current_state}}
-                       query_builder::where("{{column}}"_c == {{column}} && "valid_to"_c == max.value());
+                       query_builder::where("{{column}}"_c == {{column}} && "valid_to"_c == max);
 {{/current_state}}
 {{#current_state}}
                        query_builder::where("{{column}}"_c == {{column}});
@@ -638,19 +638,19 @@ std::vector<domain::{{entity_singular}}>
     std::chrono::system_clock::time_point valid_to_bound) {
     BOOST_LOG_SEV(lg(), debug) << "Reading {{entity_plural_words}} as of window. {{column}}: " << {{column}};
 
-    const auto vf(make_timestamp(ores::platform::time::datetime::to_db_string(valid_from_bound), lg()));
-    const auto vt(make_timestamp(ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
+    const auto vf(valid_from_bound);
+    const auto vt(valid_to_bound);
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
     const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
         query_builder::where({{{tenant_where}}} && "{{column}}"_c == {{column}} &&
-              "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
+              "valid_from"_c < vt && "valid_to"_c > vf) |
         query_builder::order_by({{{primary_key.order_by_cols}}});
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
     const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
         query_builder::where("{{column}}"_c == {{column}} &&
-              "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
+              "valid_from"_c < vt && "valid_to"_c > vf) |
         query_builder::order_by({{{primary_key.order_by_cols}}});
 {{/read_tenant_filtered}}
 
@@ -682,7 +682,7 @@ std::vector<domain::{{entity_singular}}>
         return remove_status::conflicting;
 {{/has_audit_columns}}
 {{^current_state}}
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 {{/current_state}}
 {{#has_audit_columns}}
     // The row is named by its version as well as by its key, so the removal
@@ -740,7 +740,7 @@ std::vector<domain::{{entity_singular}}>
                                << " and limit: " << limit;
 {{^current_state}}
 {{^domain_entity.has_as_of_lookup}}
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 {{/domain_entity.has_as_of_lookup}}
 {{/current_state}}
 {{#read_tenant_filtered}}
@@ -753,7 +753,7 @@ std::vector<domain::{{entity_singular}}>
     const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
 {{^domain_entity.current_state}}
 {{^domain_entity.has_as_of_lookup}}
-                       query_builder::where("valid_to"_c == max.value()) |
+                       query_builder::where("valid_to"_c == max) |
 {{/domain_entity.has_as_of_lookup}}
 {{/domain_entity.current_state}}
                        query_builder::offset(offset) | query_builder::limit(limit);
@@ -797,7 +797,7 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{entity_singular_words}} count";
 {{^current_state}}
 {{^domain_entity.has_as_of_lookup}}
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 {{/domain_entity.has_as_of_lookup}}
 {{/current_state}}
 
@@ -810,7 +810,7 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
 {{^domain_entity.current_state}}
 {{^domain_entity.has_as_of_lookup}}
     const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
-                       query_builder::where("valid_to"_c == max.value());
+                       query_builder::where("valid_to"_c == max);
 {{/domain_entity.has_as_of_lookup}}
 {{#domain_entity.has_as_of_lookup}}
     const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>>;
@@ -830,7 +830,7 @@ std::vector<domain::{{entity_singular}}>
     context ctx, {{{primary_key.batch_params}}}) {
     if ({{{primary_key.batch_empty_check}}}) return {};
 {{^current_state}}
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 {{/current_state}}
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
@@ -890,7 +890,7 @@ void {{entity_singular}}_repository::remove(
     // asymmetric pair.
     if ({{{primary_key.batch_empty_check}}}) return;
 {{^current_state}}
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 {{/current_state}}
 {{#has_tenant_id}}
     const auto tid = ctx.tenant_id().to_string();
@@ -1084,16 +1084,16 @@ void {{name_singular}}_repository::write(
 {{/read_only}}
 std::vector<domain::{{name_singular}}>
 {{name_singular}}_repository::read_latest() {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
-        query_builder::where({{{tenant_where}}} && "valid_to"_c == max.value()) |
+        query_builder::where({{{tenant_where}}} && "valid_to"_c == max) |
         query_builder::order_by("{{left.column}}"_c, "{{order_column}}"_c);
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
-        query_builder::where("valid_to"_c == max.value()) |
+        query_builder::where("valid_to"_c == max) |
         query_builder::order_by("{{left.column}}"_c, "{{order_column}}"_c);
 {{/has_tenant_id}}
 
@@ -1107,17 +1107,17 @@ std::vector<domain::{{name_singular}}>
 {{name_singular}}_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}} with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
-        query_builder::where({{{tenant_where}}} && "valid_to"_c == max.value()) |
+        query_builder::where({{{tenant_where}}} && "valid_to"_c == max) |
         query_builder::order_by("{{left.column}}"_c, "{{order_column}}"_c) |
         query_builder::offset(offset) | query_builder::limit(limit);
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
-        query_builder::where("valid_to"_c == max.value()) |
+        query_builder::where("valid_to"_c == max) |
         query_builder::order_by("{{left.column}}"_c, "{{order_column}}"_c) |
         query_builder::offset(offset) | query_builder::limit(limit);
 {{/has_tenant_id}}
@@ -1135,7 +1135,7 @@ std::vector<domain::{{name_singular}}>
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_singular_words}}. "
                                << {{left.column}} << "/" << {{right.column}};
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto {{left.column}}_str = {{#left.is_uuid}}boost::uuids::to_string({{left.column}}){{/left.is_uuid}}{{#left.is_date}}ores::platform::time::datetime::to_iso8601_date({{left.column}}){{/left.is_date}}{{#left.is_timestamp}}ores::platform::time::datetime::to_iso8601({{left.column}}){{/left.is_timestamp}}{{^left.query_needs_str}}{{left.column}}{{/left.query_needs_str}};
     const auto {{right.column}}_str = {{#right.is_uuid}}boost::uuids::to_string({{right.column}}){{/right.is_uuid}}{{#right.is_date}}ores::platform::time::datetime::to_iso8601_date({{right.column}}){{/right.is_date}}{{#right.is_timestamp}}ores::platform::time::datetime::to_iso8601({{right.column}}){{/right.is_timestamp}}{{^right.query_needs_str}}{{right.column}}{{/right.query_needs_str}};
 {{#has_tenant_id}}
@@ -1154,7 +1154,7 @@ std::vector<domain::{{name_singular}}>
 {{^right.query_needs_str}}
               "{{right.column}}"_c == {{right.column}} &&
 {{/right.query_needs_str}}
-              "valid_to"_c == max.value());
+              "valid_to"_c == max);
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
@@ -1171,7 +1171,7 @@ std::vector<domain::{{name_singular}}>
 {{^right.query_needs_str}}
               "{{right.column}}"_c == {{right.column}} &&
 {{/right.query_needs_str}}
-              "valid_to"_c == max.value());
+              "valid_to"_c == max);
 {{/has_tenant_id}}
 
     return query_builder::execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
@@ -1182,16 +1182,16 @@ std::vector<domain::{{name_singular}}>
 
 std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{name_words}} count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
-                       query_builder::where({{{tenant_where}}} && "valid_to"_c == max.value());
+                       query_builder::where({{{tenant_where}}} && "valid_to"_c == max);
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
-                       query_builder::where("valid_to"_c == max.value());
+                       query_builder::where("valid_to"_c == max);
 {{/has_tenant_id}}
 
     const auto count = query_builder::execute_count_query<{{name_singular}}_entity>(
@@ -1206,28 +1206,28 @@ std::vector<domain::{{name_singular}}>
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{left.column_title}}: "
                                << {{left.column}};
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 {{#left.query_needs_str}}
     const auto {{left.column}}_str = {{#left.is_uuid}}boost::uuids::to_string({{left.column}}){{/left.is_uuid}}{{#left.is_date}}ores::platform::time::datetime::to_iso8601_date({{left.column}}){{/left.is_date}}{{#left.is_timestamp}}ores::platform::time::datetime::to_iso8601({{left.column}}){{/left.is_timestamp}}{{^left.query_needs_str}}{{left.column}}{{/left.query_needs_str}};
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
-        query_builder::where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+        query_builder::where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max) |
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
-        query_builder::where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+        query_builder::where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max) |
 {{/has_tenant_id}}
 {{/left.query_needs_str}}
 {{^left.query_needs_str}}
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
-        query_builder::where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+        query_builder::where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max) |
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
-        query_builder::where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+        query_builder::where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max) |
 {{/has_tenant_id}}
 {{/left.query_needs_str}}
         query_builder::order_by("{{order_column}}"_c);
@@ -1276,28 +1276,28 @@ std::vector<domain::{{name_singular}}>
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{right.column_title}}: "
                                << {{right.column}};
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 {{#right.query_needs_str}}
     const auto {{right.column}}_str = {{#right.is_uuid}}boost::uuids::to_string({{right.column}}){{/right.is_uuid}}{{#right.is_date}}ores::platform::time::datetime::to_iso8601_date({{right.column}}){{/right.is_date}}{{#right.is_timestamp}}ores::platform::time::datetime::to_iso8601({{right.column}}){{/right.is_timestamp}}{{^right.query_needs_str}}{{right.column}}{{/right.query_needs_str}};
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
-        query_builder::where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+        query_builder::where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max) |
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
-        query_builder::where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+        query_builder::where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max) |
 {{/has_tenant_id}}
 {{/right.query_needs_str}}
 {{^right.query_needs_str}}
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
-        query_builder::where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+        query_builder::where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max) |
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
-        query_builder::where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+        query_builder::where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max) |
 {{/has_tenant_id}}
 {{/right.query_needs_str}}
         query_builder::order_by("{{left.column}}"_c);
@@ -1353,25 +1353,25 @@ std::vector<domain::{{name_singular}}>
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{left.column_title}}: "
                                << {{left.column}} << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
 {{#left.query_needs_str}}
-        query_builder::where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+        query_builder::where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max) |
 {{/left.query_needs_str}}
 {{^left.query_needs_str}}
-        query_builder::where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+        query_builder::where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max) |
 {{/left.query_needs_str}}
         query_builder::order_by("{{order_column}}"_c) | query_builder::offset(offset) | query_builder::limit(limit);
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
 {{#left.query_needs_str}}
-        query_builder::where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+        query_builder::where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max) |
 {{/left.query_needs_str}}
 {{^left.query_needs_str}}
-        query_builder::where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+        query_builder::where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max) |
 {{/left.query_needs_str}}
         query_builder::order_by("{{order_column}}"_c) | query_builder::offset(offset) | query_builder::limit(limit);
 {{/has_tenant_id}}
@@ -1424,25 +1424,25 @@ std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_co
     const std::string& {{left.column}}) {
 {{/left.query_needs_str}}
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{name_words}} count. {{left.column_title}}: " << {{left.column}};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
 {{#left.query_needs_str}}
-                       query_builder::where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value());
+                       query_builder::where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max);
 {{/left.query_needs_str}}
 {{^left.query_needs_str}}
-                       query_builder::where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value());
+                       query_builder::where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max);
 {{/left.query_needs_str}}
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
 {{#left.query_needs_str}}
-                       query_builder::where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value());
+                       query_builder::where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max);
 {{/left.query_needs_str}}
 {{^left.query_needs_str}}
-                       query_builder::where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value());
+                       query_builder::where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max);
 {{/left.query_needs_str}}
 {{/has_tenant_id}}
 
@@ -1465,25 +1465,25 @@ std::vector<domain::{{name_singular}}>
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{right.column_title}}: "
                                << {{right.column}} << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
 {{#right.query_needs_str}}
-        query_builder::where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+        query_builder::where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max) |
 {{/right.query_needs_str}}
 {{^right.query_needs_str}}
-        query_builder::where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+        query_builder::where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max) |
 {{/right.query_needs_str}}
         query_builder::order_by("{{left.column}}"_c) | query_builder::offset(offset) | query_builder::limit(limit);
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
 {{#right.query_needs_str}}
-        query_builder::where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+        query_builder::where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max) |
 {{/right.query_needs_str}}
 {{^right.query_needs_str}}
-        query_builder::where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+        query_builder::where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max) |
 {{/right.query_needs_str}}
         query_builder::order_by("{{left.column}}"_c) | query_builder::offset(offset) | query_builder::limit(limit);
 {{/has_tenant_id}}
@@ -1536,25 +1536,25 @@ std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_co
     const std::string& {{right.column}}) {
 {{/right.query_needs_str}}
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{name_words}} count. {{right.column_title}}: " << {{right.column}};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
 {{#right.query_needs_str}}
-                       query_builder::where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value());
+                       query_builder::where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max);
 {{/right.query_needs_str}}
 {{^right.query_needs_str}}
-                       query_builder::where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value());
+                       query_builder::where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max);
 {{/right.query_needs_str}}
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
 {{#right.query_needs_str}}
-                       query_builder::where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value());
+                       query_builder::where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max);
 {{/right.query_needs_str}}
 {{^right.query_needs_str}}
-                       query_builder::where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value());
+                       query_builder::where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max);
 {{/right.query_needs_str}}
 {{/has_tenant_id}}
 
@@ -1641,7 +1641,7 @@ void {{name_singular}}_repository::remove(
     if (version && static_cast<std::uint32_t>(current.front().{{domain_entity.scaffold_prefix}}version) != *version)
         return remove_status::conflicting;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -1674,7 +1674,7 @@ void {{name_singular}}_repository::remove(
               "{{right.column}}"_c == {{right.column}} &&
 {{/right.query_needs_str}}
 {{/left.query_needs_str}}
-              "valid_to"_c == max.value() &&
+              "valid_to"_c == max &&
               "version"_c == expected);
 {{/has_tenant_id}}
 {{^has_tenant_id}}
@@ -1698,7 +1698,7 @@ void {{name_singular}}_repository::remove(
               "{{right.column}}"_c == {{right.column}} &&
 {{/right.query_needs_str}}
 {{/left.query_needs_str}}
-              "valid_to"_c == max.value() &&
+              "valid_to"_c == max &&
               "version"_c == expected);
 {{/has_tenant_id}}
 

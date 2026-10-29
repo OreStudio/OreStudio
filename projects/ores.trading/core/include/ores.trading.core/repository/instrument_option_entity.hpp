@@ -27,6 +27,10 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/decimal/decimal.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -37,15 +41,20 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a instrument option in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct instrument_option_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_instrument_options_tbl";
 
-    std::string trade_id;
-    std::string tenant_id;
+    boost::uuids::uuid trade_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
-    std::string trade_activity_id;
+    boost::uuids::uuid trade_activity_id;
     std::string long_short;
     std::optional<std::string> option_type;
     std::optional<std::string> payoff_type;
@@ -58,31 +67,31 @@ struct instrument_option_entity {
     std::optional<std::string> settlement;
     std::optional<std::string> settlement_method;
     std::optional<std::string> pay_off_at_expiry;
-    std::optional<std::string> premium_amount;
+    std::optional<ores::utility::decimal::decimal> premium_amount;
     std::optional<std::string> premium_currency;
-    std::optional<std::string> premium_pay_date;
+    std::optional<std::chrono::year_month_day> premium_pay_date;
     std::optional<std::string> exercise_fee_settlement_period;
     std::optional<std::string> exercise_fee_settlement_calendar;
     std::optional<std::string> exercise_fee_settlement_convention;
     std::optional<std::string> automatic_exercise;
     bool has_exercise_data = false;
-    std::optional<std::string> exercise_date;
-    std::optional<std::string> exercise_price;
+    std::optional<std::chrono::year_month_day> exercise_date;
+    std::optional<ores::utility::decimal::decimal> exercise_price;
     bool has_payment_data = false;
-    std::optional<std::int64_t> payment_lag;
+    std::optional<int> payment_lag;
     std::optional<std::string> payment_calendar;
     std::optional<std::string> payment_convention;
     std::optional<std::string> payment_relative_to;
     bool has_settlement_data = false;
     std::optional<std::string> settlement_pay_currency;
     std::optional<std::string> settlement_fx_index;
-    std::optional<std::string> settlement_fixing_date;
+    std::optional<std::chrono::year_month_day> settlement_fixing_date;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = db_timestamp::max();
+    db_timestamp valid_to = db_timestamp::max();
 
     /**
      * @brief The columns of the table, named as the members, with the key.

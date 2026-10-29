@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 9E70A684-203C-472B-88E0-3E913B822EF7
+:END:
+#+title: Story: Model suppliers, sessions and feeds
+#+description: A supplier has sessions, a session is one configured adapter with its endpoint, environment and credentials, and a feed binds a publisher to a session and a service; the adapter reads the transport instead of service flags.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:publishers:suppliers:sessions:feeds:configuration:sprint_29:v0:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A system administrator configures a supplier session once, with its endpoint,
+environment, credential and settings, and adds the publisher feeds that come off
+it. The adapter runs with those values instead of command-line flags, so a test
+session and a production session of one supplier differ without a redeploy.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-29                               |
+
+* Acceptance
+
+- A supplier has sessions; a session names one adapter, one environment, one
+  endpoint, one credential reference and the adapter schema's settings.
+- A feed names one publisher, one session, one service, a provider key, a scope
+  and a schedule. No item belongs to two feeds of one publisher.
+- The adapter reads the session transport and reports the values it uses; no
+  endpoint or interval comes from a service flag.
+- A secret is a reference. A read never returns its value, and a write sets or
+  rotates it.
+- A party routes one feed for each publisher and asset class.
+- The prototype shows the supplier → session → feed tree, with the adapter
+  catalogue behind it.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D6076124-A427-4DCC-B018-A2992AA13CB3][Prototype the sources and adapters screens]] | DONE | 2026-10-29 | 2026-10-29 | The sources list, the adapters list and a source record with its transport, drawn before the entity changes. |
+| [[id:25131341-145D-4FFE-B70C-F063ACD39F67][Add the adapter and supplier catalogues]] | BACKLOG | | | Adapter and supplier tables and domains; the release seeds adapters, DQ seeds suppliers. |
+| [[id:1185DAEF-4CDF-4662-86E0-29167E668209][Add the session]] | BACKLOG | | | Session table and domain: supplier, adapter, environment, endpoint, credential reference, settings, enabled, history. |
+| [[id:9D724AA0-FF20-4404-BE49-95934564AE5C][Turn the source into a feed]] | BACKLOG | | | Feed table: publisher, session, service, provider key, default; migrate the existing sources. |
+| [[id:D2C6C741-B1FB-4020-B935-8F929210F0E7][Give a feed a scope]] | BACKLOG | | | Feed scope per class and item, with the disjointness invariant across the feeds of one publisher. |
+| [[id:B1CD376D-53C9-4584-80E8-C6C328332E14][Route a party by class]] | BACKLOG | | | Route key (party, publisher, class) to the feed, with the migration from (party, provider). |
+| [[id:E00182BC-6A71-4F3F-88FA-876A275087FA][Serve the catalogue reads]] | BACKLOG | | | Read APIs and permissions for publishers, suppliers, adapters, sessions and feeds. |
+
+* Decisions
+
+- The content owner is the *publisher*. The delivery party is the *supplier*.
+  They are different: Frankfurter delivers the ECB's data; Bloomberg is both the
+  supplier for a session and the publisher of its own data.
+- An *adapter* is code, installed by the release. An *instance* is now a
+  *session*: one configured adapter at a supplier, with an environment.
+- A *service* is what a session offers, and it decides the feed's shape:
+  =real_time= is demand driven, =end_of_day= is scheduled, =historical= is a
+  backfill.
+- A *feed* is the binding: publisher + session + service + provider key + scope
+  + schedule. It replaces the code's "source".
+- A party routes one feed for each publisher and asset class. The route key
+  changes accordingly.
+- Transport and credentials live on the session. The publisher keeps its terms
+  and credit; the supplier carries the contract.
+- The endpoint is entered once per session, not once per feed.
+
+* The words, with examples
+
+#+ATTR_HTML: :class hug-leading
+| Word | Meaning | Example |
+|------+---------+---------|
+| /Publisher/ | Owns the ids, the credit and the terms. | =ecb=, =imf=, =ust=, =bloomberg= for its own data |
+| /Supplier/ | Who we contract with and connect to. | =frankfurter=, =bloomberg=, =lseg=, =ecb-data-portal=, =fred= |
+| /Adapter/ | Code module that speaks one supplier protocol. | =frankfurter= 1.4.0 |
+| /Session/ | One configured adapter: supplier, environment, endpoint, credential, settings. | =frankfurter-eu= (production) |
+| /Environment/ | Where a session runs. | =production=, =test=, =dr=, =simulated= |
+| /Service/ | What a session offers. | =real_time=, =delayed=, =end_of_day=, =reference=, =historical= |
+| /Feed/ | Publisher + session + service + key + scope + schedule. | =ecb-frankfurter= (end_of_day) |
+| /Route/ | A party's feed for one publisher and class. | System Party, =ecb=, FX → =ecb-frankfurter= |
+| /Item/ | The internal identity of a value. | =FX-ECB-EUR-USD= |
+| /Vendor instrument/ | A supplier id scheme, id and field. | =iso4217/USD/rate= |
+
+* Terms compared
+
+The story had to choose a name for the configured instance of a provider. This
+table records the candidates and the reason the story uses the fourth.
+
+#+ATTR_HTML: :class hug-leading
+| Candidate | What it would name | Why the story does not use it | Word used instead |
+|-----------+--------------------+-------------------------------+-------------------|
+| Provider | The content owner and the delivery party at once | The two are different, and the contract, the credentials and the support belong to the delivery party. | Publisher and Supplier |
+| Source | The configured adapter | It hid the supplier's session and made every feed repeat the endpoint. | Session and Feed |
+| Instance | The configured adapter | The code already used it ad hoc; the real-world word for a configured connection is a session. | Session |
+| Service | — | It is not a candidate; it is needed, because real-time, end-of-day and historical feeds behave differently. | Service |
+
+The story uses *provider*, *source*, *adapter*, *kind*, *route*, *item* and
+*vendor instrument*, with the meanings in the table above and the examples in
+the prototype.

@@ -64,7 +64,7 @@ void lock_import_row(const ores::database::context& ctx, const boost::uuids::uui
                      boost::uuids::to_string(id) +
                      "'::uuid and valid_to = ores_utility_infinity_timestamp_fn() for update";
     try {
-        const ores::database::pq::text_statement statement({}, sql);
+        const ores::database::pq::fixed_statement statement({}, sql);
         ores::database::transact(
             ctx, [&](ores::database::pq::transaction& tx) { tx.run(statement, {}); });
     } catch (const ores::database::pq::store_error& e) {

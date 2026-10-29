@@ -21,6 +21,8 @@
 import { z } from 'zod';
 import { request } from './transport.js';
 
+const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
+
 /**
  * The curve configuration a report binds, as the curve screen reads it.
  *
@@ -51,6 +53,7 @@ const parameterSchema = z.object({
     removedIn: z.string(),
     valueSet: z.string(),
     sourceKind: z.string(),
+    catalogue: z.string().default(''),
     choices: z.array(choiceSchema),
     minimum: z.number().nullable(),
     maximum: z.number().nullable(),
@@ -67,6 +70,23 @@ const blockSchema = z.object({
 
 export type CurveBlock = z.infer<typeof blockSchema>;
 
+/** One row of a child collection, with the leaves the contract names for it. */
+const collectionRowSchema = z.object({
+    id: z.string(),
+    kind: z.string(),
+    leaves: z.array(parameterSchema),
+});
+
+export type CurveCollectionRow = z.infer<typeof collectionRowSchema>;
+
+/** A child collection an entry holds rows of, such as its segments. */
+const collectionSchema = z.object({
+    element: z.string(),
+    rows: z.array(collectionRowSchema),
+});
+
+export type CurveCollection = z.infer<typeof collectionSchema>;
+
 /** One curve entry: the definition every family shares, and its own parameters. */
 const entrySchema = z.object({
     id: z.string(),
@@ -76,6 +96,9 @@ const entrySchema = z.object({
     position: z.number(),
     parameters: z.array(parameterSchema),
     blocks: z.array(blockSchema),
+    // A server that predates the collections draws no rows rather than failing
+    // the whole page: the field is an addition, not a promise.
+    collections: z.array(collectionSchema).default([]),
 });
 
 export type CurveEntry = z.infer<typeof entrySchema>;
@@ -121,6 +144,24 @@ const summarySchema = z.object({
 
 export type CurveConfigurationSummary = z.infer<typeof summarySchema>;
 
+/** One leaf a save changes: the row, the column and the value it takes. */
+export interface CurveChange {
+    readonly entity: string;
+    /** The curve definition the entry is: every family row joins back to it. */
+    readonly entryId: string;
+    readonly column: string;
+    /** The value to hold, or null to unset the leaf and let ORE apply its default. */
+    readonly value: string | null;
+}
+
+/** What a save of a curve configuration states: the changes and the version it read. */
+export interface CurveAmendment {
+    readonly version: number;
+    readonly reasonCode: string;
+    readonly commentary: string;
+    readonly changes: readonly CurveChange[];
+}
+
 export const curveConfiguration = {
     /** The curve configurations the session's parties hold. */
     async list(): Promise<readonly CurveConfigurationSummary[]> {
@@ -143,5 +184,22 @@ export const curveConfiguration = {
                 method: 'GET',
             }),
         );
+    },
+
+    /**
+     * Changes leaves of the curve configuration `id`.
+     *
+     * The server reads the stored document, changes the leaves named here and
+     * writes back only the families it touched, so the rows this screen does not
+     * draw keep their versions. A version that moved on is a 409, which the page
+     * states as a conflict and offers to read again.
+     */
+    async amend(id: string, amendment: CurveAmendment, party?: string): Promise<void> {
+        const query = party === undefined ? '' : `?party=${encodeURIComponent(party)}`;
+        await request(`/api/refdata/curve-configurations/${encodeURIComponent(id)}${query}`, {
+            method: 'PUT',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(amendment),
+        });
     },
 };

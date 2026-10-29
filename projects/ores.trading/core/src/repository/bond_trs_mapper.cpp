@@ -46,27 +46,21 @@ domain::bond_trs bond_trs_mapper::map(const bond_trs_entity& v) {
 
     domain::bond_trs r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
-    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
+    r.tenant_id = v.tenant_id;
+    r.trade_id = v.trade_id;
+    r.trade_activity_id = v.trade_activity_id;
     r.return_type = v.return_type;
     r.funding_leg_type = v.funding_leg_type;
-    r.funding_rate =
-        v.funding_rate.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.funding_rate).value()) :
-            std::nullopt;
+    r.funding_rate = v.funding_rate;
     r.funding_index = v.funding_index;
     r.payer = v.payer;
     r.price_type = v.price_type;
-    r.initial_price =
-        v.initial_price.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.initial_price).value()) :
-            std::nullopt;
+    r.initial_price = v.initial_price;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -76,19 +70,17 @@ bond_trs_entity bond_trs_mapper::map(const domain::bond_trs& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     bond_trs_entity r;
-    r.trade_id = boost::uuids::to_string(v.trade_id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.trade_id = v.trade_id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
+    r.trade_activity_id = v.trade_activity_id;
     r.return_type = v.return_type;
     r.funding_leg_type = v.funding_leg_type;
-    r.funding_rate =
-        v.funding_rate.has_value() ? std::optional(v.funding_rate->to_string()) : std::nullopt;
+    r.funding_rate = v.funding_rate;
     r.funding_index = v.funding_index;
     r.payer = v.payer;
     r.price_type = v.price_type;
-    r.initial_price =
-        v.initial_price.has_value() ? std::optional(v.initial_price->to_string()) : std::nullopt;
+    r.initial_price = v.initial_price;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

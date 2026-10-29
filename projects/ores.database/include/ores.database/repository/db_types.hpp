@@ -20,19 +20,26 @@
 #ifndef ORES_DATABASE_REPOSITORY_DB_TYPES_HPP
 #define ORES_DATABASE_REPOSITORY_DB_TYPES_HPP
 
-#include <rfl/Timestamp.hpp>
+#include <chrono>
 
 namespace ores::database::repository {
 
 /**
- * @brief Canonical database timestamp type.
+ * @brief Canonical database timestamp type: the instant a timestamptz column
+ * holds.
  *
- * All timestamptz columns map to this type. The format matches PostgreSQL's
- * output when the session timezone is UTC: "YYYY-MM-DD HH:MM:SS".
- * DB sessions are forced to UTC by every transaction, so this
- * format is always correct regardless of the host machine timezone.
+ * The row an entity holds carries the instant itself, not its text. The layer
+ * reads and binds it in the binary format, which counts microseconds from
+ * 2000-01-01 UTC, and the mapper copies it to the domain member with no
+ * conversion. All sessions are forced to UTC by every transaction, so an
+ * instant has one meaning whatever the host machine's timezone.
+ *
+ * The database's infinity, which stands for the bitemporal never, is
+ * std::chrono::system_clock::time_point::max(): the binary codec reads it as
+ * 9999-12-31 23:59:59 and writes it back, and pq::text does the same in the
+ * text format a hand-written query uses.
  */
-using db_timestamp = rfl::Timestamp<"%Y-%m-%d %H:%M:%S">;
+using db_timestamp = std::chrono::system_clock::time_point;
 
 }
 

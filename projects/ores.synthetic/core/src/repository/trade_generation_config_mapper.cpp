@@ -49,20 +49,17 @@ trade_generation_config_mapper::map(const trade_generation_config_entity& v) {
 
     domain::trade_generation_config r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
     r.name = v.name;
-
     r.description = v.description;
     r.asset_class_code = v.asset_class_code;
     r.min_tenor_code = v.min_tenor_code;
     r.max_tenor_code = v.max_tenor_code;
-    r.min_notional = ores::utility::decimal::decimal::from_string(v.min_notional).value();
-    r.max_notional = ores::utility::decimal::decimal::from_string(v.max_notional).value();
-    r.as_of_date = ores::platform::time::datetime::from_iso8601_date(v.as_of_date);
+    r.min_notional = v.min_notional;
+    r.max_notional = v.max_notional;
+    r.as_of_date = v.as_of_date;
     r.seed = v.seed;
     r.trades_per_book = v.trades_per_book;
     r.structures_per_book = v.structures_per_book;
@@ -72,7 +69,7 @@ trade_generation_config_mapper::map(const trade_generation_config_entity& v) {
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -83,21 +80,18 @@ trade_generation_config_mapper::map(const domain::trade_generation_config& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     trade_generation_config_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
-
-
+    r.party_id = v.party_id;
     r.name = v.name;
-
     r.description = v.description;
     r.asset_class_code = v.asset_class_code;
     r.min_tenor_code = v.min_tenor_code;
     r.max_tenor_code = v.max_tenor_code;
-    r.min_notional = v.min_notional.to_string();
-    r.max_notional = v.max_notional.to_string();
-    r.as_of_date = ores::platform::time::datetime::to_iso8601_date(v.as_of_date);
+    r.min_notional = v.min_notional;
+    r.max_notional = v.max_notional;
+    r.as_of_date = v.as_of_date;
     r.seed = v.seed;
     r.trades_per_book = v.trades_per_book;
     r.structures_per_book = v.structures_per_book;

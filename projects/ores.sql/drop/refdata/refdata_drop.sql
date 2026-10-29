@@ -21,6 +21,9 @@
 -- Convention term validation, before the tables it guards
 \ir ./refdata_convention_terms_validate_drop.sql
 
+-- Curve value guard, before the tables it guards
+\ir ./refdata_curve_configuration_columns_validate_drop.sql
+
 -- Instrument leg reference data, moved from ores.trading: drop first,
 -- ores.trading.swap_leg (which soft-FKs these by code) already dropped
 -- before refdata in the top-level drop order.
@@ -127,6 +130,8 @@
 \ir ./refdata_yield_curve_configs_notify_trigger_drop.sql
 \ir ./refdata_yield_curve_configs_drop.sql
 \ir ./refdata_curve_definitions_notify_trigger_drop.sql
+\ir ./refdata_curve_configuration_columns_notify_trigger_drop.sql
+\ir ./refdata_curve_configuration_columns_drop.sql
 \ir ./refdata_curve_definitions_drop.sql
 \ir ./refdata_curve_configuration_sections_notify_trigger_drop.sql
 \ir ./refdata_curve_configuration_sections_drop.sql

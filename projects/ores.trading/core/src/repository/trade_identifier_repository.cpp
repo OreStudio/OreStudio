@@ -180,10 +180,10 @@ void trade_identifier_repository::write(
 }
 
 std::vector<domain::trade_identifier> trade_identifier_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_identifier_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("trade_id"_c, "id_type"_c);
 
     return query_builder::execute_read_query<trade_identifier_entity, domain::trade_identifier>(
@@ -198,11 +198,11 @@ std::vector<domain::trade_identifier> trade_identifier_repository::read_latest(
     context ctx, const std::string& trade_id, const std::string& id_type) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade identifier. " << "trade_id: " << trade_id
                                << " id_type: " << id_type;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_identifier_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "id_type"_c == id_type && "valid_to"_c == max.value());
+                                            "id_type"_c == id_type && "valid_to"_c == max);
 
     return query_builder::execute_read_query<trade_identifier_entity, domain::trade_identifier>(
         ctx,
@@ -264,11 +264,11 @@ std::vector<domain::trade_identifier> trade_identifier_repository::read_latest_b
     const std::optional<messaging::trade_identifiers_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade identifiers. trade_id: " << trade_id
                                << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_identifier_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<trade_identifier_entity,
@@ -288,12 +288,12 @@ std::uint32_t trade_identifier_repository::get_total_identifier_count_by_trade_i
     const std::optional<messaging::trade_identifiers_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade identifiers count. trade_id: "
                                << trade_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_identifier_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_count_query<trade_identifier_entity>(
         ctx,
@@ -318,7 +318,7 @@ trade_identifier_repository::remove(context ctx,
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -326,7 +326,7 @@ trade_identifier_repository::remove(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<trade_identifier_entity> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "id_type"_c == id_type && "valid_to"_c == max.value() &&
+                                            "id_type"_c == id_type && "valid_to"_c == max &&
                                             "version"_c == expected);
 
     query_builder::execute_delete_query(
@@ -396,12 +396,11 @@ trade_identifier_repository::read_latest(context ctx,
                                          const std::vector<std::string>& id_types) {
     if (trade_ids.empty() || id_types.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<trade_identifier_entity>> |
-        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
-                             "id_type"_c.in(id_types) && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<trade_identifier_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+                                            "id_type"_c.in(id_types) && "valid_to"_c == max);
     auto result =
         query_builder::execute_read_query<trade_identifier_entity, domain::trade_identifier>(
             ctx,

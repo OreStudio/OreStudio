@@ -189,11 +189,11 @@ void swap_leg_rate_repository::write(
 }
 
 std::vector<domain::swap_leg_rate> swap_leg_rate_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<swap_leg_rate_entity>> |
-        query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
         query_builder::order_by("trade_id"_c, "leg_number"_c, "rate_role"_c, "sequence_number"_c);
 
     return query_builder::execute_read_query<swap_leg_rate_entity, domain::swap_leg_rate>(
@@ -213,13 +213,13 @@ swap_leg_rate_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest swap leg rate. " << "trade_id: " << trade_id
                                << " leg_number: " << leg_number << " rate_role: " << rate_role
                                << " sequence_number: " << sequence_number;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<swap_leg_rate_entity>> |
         query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
                              "leg_number"_c == leg_number && "rate_role"_c == rate_role &&
-                             "sequence_number"_c == sequence_number && "valid_to"_c == max.value());
+                             "sequence_number"_c == sequence_number && "valid_to"_c == max);
 
     return query_builder::execute_read_query<swap_leg_rate_entity, domain::swap_leg_rate>(
         ctx,
@@ -296,11 +296,11 @@ std::vector<domain::swap_leg_rate> swap_leg_rate_repository::read_latest_by_trad
     const std::optional<messaging::swap_leg_rates_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest swap leg rates. trade_id: " << trade_id
                                << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<swap_leg_rate_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<swap_leg_rate_entity, domain::swap_leg_rate>(
@@ -320,12 +320,12 @@ std::uint32_t swap_leg_rate_repository::get_total_swap_leg_rate_count_by_trade_i
     const std::optional<messaging::swap_leg_rates_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active swap leg rates count. trade_id: "
                                << trade_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<swap_leg_rate_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_count_query<swap_leg_rate_entity>(
         ctx,
@@ -353,7 +353,7 @@ swap_leg_rate_repository::remove(context ctx,
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -363,8 +363,8 @@ swap_leg_rate_repository::remove(context ctx,
         query_builder::delete_from<swap_leg_rate_entity> |
         query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
                              "leg_number"_c == leg_number && "rate_role"_c == rate_role &&
-                             "sequence_number"_c == sequence_number &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                             "sequence_number"_c == sequence_number && "valid_to"_c == max &&
+                             "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing swap leg rate from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -436,13 +436,13 @@ swap_leg_rate_repository::read_latest(context ctx,
                                       const std::vector<std::string>& sequence_numbers) {
     if (trade_ids.empty() || leg_numbers.empty() || rate_roles.empty() || sequence_numbers.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<swap_leg_rate_entity>> |
-                       query_builder::where(
-                           "tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
-                           "leg_number"_c.in(leg_numbers) && "rate_role"_c.in(rate_roles) &&
-                           "sequence_number"_c.in(sequence_numbers) && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<swap_leg_rate_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+                             "leg_number"_c.in(leg_numbers) && "rate_role"_c.in(rate_roles) &&
+                             "sequence_number"_c.in(sequence_numbers) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<swap_leg_rate_entity, domain::swap_leg_rate>(
         ctx,
         query,
@@ -493,12 +493,12 @@ swap_leg_rate_repository::read_by_instruments_batch(context ctx,
                                                     const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<swap_leg_rate_entity>> |
         query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("trade_id"_c, "leg_number"_c, "rate_role"_c, "sequence_number"_c);
     return query_builder::execute_read_query<swap_leg_rate_entity, domain::swap_leg_rate>(
         ctx,

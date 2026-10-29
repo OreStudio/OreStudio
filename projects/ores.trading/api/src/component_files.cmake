@@ -701,6 +701,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/credit_instrument_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/credit_instrument_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/credit_instrument_table_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/credit_instruments.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/credit_linked_swap_instrument.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/credit_linked_swap_instrument_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/credit_linked_swap_instrument_table.hpp"

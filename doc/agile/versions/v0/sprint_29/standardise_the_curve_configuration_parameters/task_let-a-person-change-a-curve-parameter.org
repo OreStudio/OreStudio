@@ -7,41 +7,82 @@
 #+level: s1
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/declare-the-ore-parameter-vocabularies-as-data
+#+pr: 4057
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A person changes one parameter of a curve and saves it. The save states why, the
+configuration moves to its next version, and the rows the screen does not draw
+keep theirs. A value the leaf's set does not accept is refused where the change
+enters the system, because the store's guard does not cover the curve tables yet.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
 
--
+1. A save changes the leaves the screen names and no others. The families the
+   screen does not draw keep their versions, so a change to one curve does not
+   version the whole document.
+2. The save states the version the page read. A row that moved on since the read
+   is refused as =version_conflict=, never overwritten.
+3. Every row the save writes carries the reason and the commentary the person
+   gave, so the new version says why it was made.
+4. A value outside the leaf's value set is refused before it reaches the store,
+   and the refusal names the leaf and the values it accepts.
+5. The workbench offers *Edit* only to a person holding
+   =refdata::curve_configurations:write=, marks the parameters that changed,
+   counts them, asks for the reason the section needs, and offers to read again
+   when the save is a conflict.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Option A, the document echo, was chosen over rebuilding the document from the
+screen. A curve configuration is thirty-four families and the page draws one
+entry of one section at a time; a save assembled from what the screen holds would
+drop the rows it never read. So the route reads the stored document, changes the
+named leaves, and writes back only the families it touched.
+
+The order of the story changed. The nested drawing (task 894F3A64) was the next
+task, and the edit waited behind it. Two findings moved the edit first: the read
+already carries every nested row, so the echo needs no drawing to be safe; and
+the contract documents 22 segment leaves and 3 quote leaves of the forty-odd a
+segment holds, so drawing the blocks now would show mostly gaps. The nested
+drawing stays open as the screen's work, and the documentation gap is its own
+finding.
+
+What the save does, end to end:
+
+1. The browser sends the configuration's version, a reason, a commentary and one
+   change per leaf: the entity, the curve definition the entry is, the column and
+   the value.
+2. The route reads the stored document whole and refuses a version that moved on.
+3. Each change is checked against the leaf: the contract's required mark, the
+   value set's choices, and its bounds and pattern. A leaf the wiring does not
+   know, or a row the entry does not hold, is refused with a message naming it.
+4. The rows touched are collected per family, and only the header and those
+   families are written.
+5. The service derives a claim per row from the version the row states, so the
+   store's version management refuses a stale save, and stamps the reason and
+   commentary on every row it writes.
+6. The page reads the configuration again.
 
 * Measurements
 
@@ -55,9 +96,43 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Browser suite | 2327 tests, 187 files | =npm test --workspace @ores/web= | 4db0712d8a |
+| BFF suite | 1140 tests, 83 files | =npm test --workspace @ores/bff= | 4db0712d8a |
+| Tests this change adds | 3 BFF and 1 browser | the same two commands | 4db0712d8a |
+| Families the payload names, and the one it fills | 34 named, 1 filled | the BFF test asserts the payload's keys | 4db0712d8a |
+| Rows the save versioned, by table | curve_definitions 1, yield_curve_configs 2, curve_configurations 2 | =select max(version) from each table= | 4db0712d8a |
 
 * Notes
+
+- *The document states every family.* A save names all thirty-four families and
+  leaves the untouched ones empty. The service reads the document as a whole, so
+  a family the payload omits is a document it cannot decode, and the refusal is a
+  bare =bad_request= with nothing in the log. The empty families are not written,
+  so their rows keep their versions: a save that changed one leaf of one curve
+  left =curve_definitions= at version 1 and moved =yield_curve_configs= and the
+  header to version 2.
+
+- *The save states its claim per row.* =curve_configuration_repository::write=
+  derives its claim from the row's current version, so a stale client would be
+  accepted silently. The service now builds a claim from the version each row
+  states, which is the version the screen read, and the store's version
+  management refuses a row that moved on.
+- *The reason is overwritten, not defaulted.* =stamp()= sets
+  =change_reason_code= only when it is empty, and an imported row carries
+  =system.external_data_import=. So the service states the save's reason on every
+  row it writes; otherwise an amendment would be recorded as an import.
+- *Only the touched families are written.* The route sends the header and the
+  families the changes reach, so a change to one curve does not version the other
+  thirty-three families. This is what makes the echo safe without the nested
+  drawing.
+- *The boundary refuses the value.* The value-set trigger does not cover the
+  curve tables (task 050CE731), so the route checks each value against the leaf's
+  choices, bounds and pattern before it writes. The trigger stays the deeper
+  guard when it lands.
+- *What is not editable yet.* A curve's blocks -- Segments, Quotes,
+  BootstrapConfig, Report -- are named and not drawn, so their leaves are not
+  offered for change. Task 894F3A64 gives them their collection shape, and this
+  route already carries what it needs: the entity, the entry and the column.
 
 * Test Scenarios
 
@@ -74,7 +149,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4036][#4036]] | [refdata] Let a person change a curve parameter |
+| [[https://github.com/OreStudio/OreStudio/pull/4057][#4057]] | [reporting] Declare the ORE parameter vocabularies as data |
 
 * Review
 
@@ -82,4 +158,34 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The vocabulary table has a tenant column and no row-level security, so it ships a boundary no policy enforces. | ore_parameter_vocabulary.org | Accept | The model now states `:rls_tenant_isolation:` in its SQL drawer, where every other entity states it, and the generated create enables the policy. |
+| 2 | `:tablename:` sits in the root drawer instead of the SQL drawer's `** Flags`. | ore_parameter_vocabulary.org | Accept | Moved, with the table's other flags. |
+| 3 | The generator's module docstring still describes one script and a singular `--check`. | generate_value_sets.py | Accept | It now states the two scripts it writes. |
+| 4 | The declaration repeats `schema`/`element` inside its key, which can disagree with the fields. | ore_parameter_vocabularies.json | Accept | The code stays the row's identity, as every keyed table in the repo is, and the loader now reads the fields it applies and refuses a row for a schema no generator applies. |
+| 5 | The catalogue a value set draws on is guessed by splitting the set code and matching suffixes. | curve_value_sets.py | Accept | The declaration states the catalogue, and the generator refuses one it does not know. |
+| 6 | The provenance a row states is never checked. | generate_value_sets.py | Accept | A source outside the curation's set is refused before the populate script is written. |
+| 7 | The local check that guards the value-set scripts does not name the declaration, the new populate script or the generators. | local_checks.py | Accept | The paths are named, so editing any of them alone runs the check. |
+| 8 | The generator does not join the table, so the JSON and the table are two sources. | ore_parameter_vocabulary.org | No change | The table renders no C++ unit by design (`:sql_only:`), so there is nothing to join at generation time. The JSON is the authoring surface and the populate is generated from it, so the table cannot disagree with the generator; the table is the declaration a person and a query read. Recorded in the PR's limitations. |
+| 9 | Resolved `value_set_code` was not emitted onto the parameter row. | ores.reporting.ore_parameter | Deferred | The accepted option kept the `(scope, name)` link table as the statement, and a per-leaf column would restate it 4,530 times. Filed as the second step if the link table's join ever costs a query. |
+| 10 | Notify trigger and `pg_notify` for a table nothing subscribes to. | reporting_ore_parameter_vocabularies_notify_trigger_create.sql | No change | Every entity in the component carries the trigger; removing it for one table would be a divergence, not a simplification. |
+| 11 | No pgTAP test asserts a vocabulary row names an existing value set. | projects/ores.sql | Deferred | The suite this names does not exist in the tree; the check that regenerates the script covers the pairing today. |
+
 * Result
+
+A person changes a curve parameter and saves it. The page offers *Edit* to a
+person holding =refdata::curve_configurations:write=, turns each leaf into the
+shared control, marks and counts the changes, and asks for the reason the section
+needs. The save states the version the page read.
+
+Against the running environment, on a freshly provisioned database: a change to
+one curve's interpolation answered 204, moved the configuration from version 1 to
+2, changed that curve's leaf and no other, and put a version on the history that
+carries the reason and the commentary. The other families stayed at version 1. A
+save claiming the old version was refused 409 with the words the page shows, and a
+value outside the leaf's set was refused 400 naming the leaf and the values it
+accepts. A person without the write code was refused 403 at the door.
+

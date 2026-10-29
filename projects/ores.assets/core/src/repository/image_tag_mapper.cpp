@@ -47,15 +47,15 @@ domain::image_tag image_tag_mapper::map(const image_tag_entity& v) {
     domain::image_tag r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.image_id = boost::lexical_cast<boost::uuids::uuid>(v.image_id);
-    r.tag_id = boost::lexical_cast<boost::uuids::uuid>(v.tag_id);
+    r.image_id = v.image_id;
+    r.tag_id = v.tag_id;
     r.assigned_by = v.assigned_by;
-    r.assigned_at = timestamp_to_timepoint(std::string_view{v.assigned_at});
+    r.assigned_at = v.assigned_at;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -65,12 +65,12 @@ image_tag_entity image_tag_mapper::map(const domain::image_tag& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     image_tag_entity r;
-    r.image_id = boost::uuids::to_string(v.image_id);
+    r.image_id = v.image_id;
     r.tenant_id = v.tenant_id;
-    r.tag_id = boost::uuids::to_string(v.tag_id);
+    r.tag_id = v.tag_id;
     r.version = v.version;
     r.assigned_by = v.assigned_by;
-    r.assigned_at = ores::platform::time::datetime::to_iso8601_utc(v.assigned_at);
+    r.assigned_at = v.assigned_at;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

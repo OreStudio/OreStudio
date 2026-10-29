@@ -182,10 +182,10 @@ void business_unit_repository::write(
 }
 
 std::vector<domain::business_unit> business_unit_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<business_unit_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<business_unit_entity, domain::business_unit>(
@@ -199,11 +199,11 @@ std::vector<domain::business_unit> business_unit_repository::read_latest(context
 std::vector<domain::business_unit> business_unit_repository::read_latest(context ctx,
                                                                          const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest business unit. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<business_unit_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<business_unit_entity, domain::business_unit>(
         ctx,
@@ -217,12 +217,11 @@ std::vector<domain::business_unit> business_unit_repository::read_latest_by_code
     context ctx, const std::string& party_id, const std::string& unit_name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest business unit by party_id/unit_name: " << party_id
                                << "/" << unit_name;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<business_unit_entity>> |
-        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id &&
-                             "unit_name"_c == unit_name && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<business_unit_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id &&
+                                            "unit_name"_c == unit_name && "valid_to"_c == max);
 
     return query_builder::execute_read_query<business_unit_entity, domain::business_unit>(
         ctx,
@@ -234,11 +233,11 @@ std::vector<domain::business_unit> business_unit_repository::read_latest_by_code
 std::vector<domain::business_unit>
 business_unit_repository::read_latest_by_unit_code(context ctx, const std::string& unit_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest business unit by unit_code: " << unit_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<business_unit_entity>> |
                        query_builder::where("tenant_id"_c == tid && "unit_code"_c == unit_code &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
@@ -329,11 +328,11 @@ std::vector<domain::business_unit> business_unit_repository::read_latest_by_part
     const std::optional<messaging::business_units_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest business units. party_id: " << party_id
                                << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<business_unit_entity>> |
                        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<business_unit_entity, domain::business_unit>(
@@ -352,12 +351,12 @@ std::uint32_t business_unit_repository::get_total_business_unit_count_by_party_i
     const std::optional<messaging::business_units_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active business units count. party_id: "
                                << party_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<business_unit_entity>> |
                        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_count_query<business_unit_entity>(
         ctx,
@@ -378,7 +377,7 @@ business_unit_repository::remove_status business_unit_repository::remove(
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -386,7 +385,7 @@ business_unit_repository::remove_status business_unit_repository::remove(
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<business_unit_entity> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing business unit from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -449,11 +448,11 @@ std::vector<domain::business_unit>
 business_unit_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<business_unit_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<business_unit_entity, domain::business_unit>(
         ctx,
         query,
@@ -472,11 +471,11 @@ void business_unit_repository::remove(context ctx, const std::vector<std::string
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<business_unit_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing business units.");
 }
 

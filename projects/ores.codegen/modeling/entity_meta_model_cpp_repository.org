@@ -89,6 +89,8 @@ Generates, in =book_entity.hpp=:
 #+begin_src cpp
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -101,8 +103,10 @@ struct book_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_refdata_books_tbl";
 
-    std::string id;
-    // ... fields from Keys and columns ...
+    boost::uuids::uuid id;
+    // ... fields from Keys and columns, each the type its column has ...
+    db_timestamp valid_from = db_timestamp::max();
+    db_timestamp valid_to = db_timestamp::max();
 
     static constexpr auto columns() {
         using e = book_entity;
@@ -113,6 +117,11 @@ struct book_entity {
 
 }
 #+end_src
+
+A column whose database type the layer has no codec for, such as =jsonb= or
+=inet=, is stated with =bind_text= instead of =bind=. The statement asks the
+server for it cast to text and the row reads the text, so the member keeps the
+string the mapper converts.
 
 * Conventions
 

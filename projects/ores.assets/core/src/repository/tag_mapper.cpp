@@ -44,17 +44,15 @@ domain::tag tag_mapper::map(const tag_entity& v) {
 
     domain::tag r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
     r.name = v.name;
-
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -64,12 +62,10 @@ tag_entity tag_mapper::map(const domain::tag& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     tag_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-
     r.name = v.name;
-
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

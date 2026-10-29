@@ -45,21 +45,18 @@ domain::curve_quote curve_quote_mapper::map(const curve_quote_entity& v) {
 
     domain::curve_quote r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.curve_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.curve_definition_id);
-    r.curve_segment_id = v.curve_segment_id.has_value() ?
-                             boost::lexical_cast<boost::uuids::uuid>(*v.curve_segment_id) :
-                             boost::uuids::uuid{};
-    r.default_curve_configuration_id =
-        v.default_curve_configuration_id.has_value() ?
-            boost::lexical_cast<boost::uuids::uuid>(*v.default_curve_configuration_id) :
-            boost::uuids::uuid{};
-    r.commodity_price_segment_id =
-        v.commodity_price_segment_id.has_value() ?
-            boost::lexical_cast<boost::uuids::uuid>(*v.commodity_price_segment_id) :
-            boost::uuids::uuid{};
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
+    r.curve_definition_id = v.curve_definition_id;
+    r.curve_segment_id =
+        v.curve_segment_id.has_value() ? *v.curve_segment_id : boost::uuids::uuid{};
+    r.default_curve_configuration_id = v.default_curve_configuration_id.has_value() ?
+                                           *v.default_curve_configuration_id :
+                                           boost::uuids::uuid{};
+    r.commodity_price_segment_id = v.commodity_price_segment_id.has_value() ?
+                                       *v.commodity_price_segment_id :
+                                       boost::uuids::uuid{};
     r.quote_list = v.quote_list;
     r.quote_text = v.quote_text;
     r.optional_flag = v.optional_flag;
@@ -70,7 +67,7 @@ domain::curve_quote curve_quote_mapper::map(const curve_quote_entity& v) {
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -80,22 +77,20 @@ curve_quote_entity curve_quote_mapper::map(const domain::curve_quote& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     curve_quote_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
-    r.curve_definition_id = boost::uuids::to_string(v.curve_definition_id);
+    r.party_id = v.party_id;
+    r.curve_definition_id = v.curve_definition_id;
     r.curve_segment_id = v.curve_segment_id == boost::uuids::uuid{} ?
                              std::nullopt :
-                             std::optional(boost::uuids::to_string(v.curve_segment_id));
-    r.default_curve_configuration_id =
-        v.default_curve_configuration_id == boost::uuids::uuid{} ?
-            std::nullopt :
-            std::optional(boost::uuids::to_string(v.default_curve_configuration_id));
-    r.commodity_price_segment_id =
-        v.commodity_price_segment_id == boost::uuids::uuid{} ?
-            std::nullopt :
-            std::optional(boost::uuids::to_string(v.commodity_price_segment_id));
+                             std::optional(v.curve_segment_id);
+    r.default_curve_configuration_id = v.default_curve_configuration_id == boost::uuids::uuid{} ?
+                                           std::nullopt :
+                                           std::optional(v.default_curve_configuration_id);
+    r.commodity_price_segment_id = v.commodity_price_segment_id == boost::uuids::uuid{} ?
+                                       std::nullopt :
+                                       std::optional(v.commodity_price_segment_id);
     r.quote_list = v.quote_list;
     r.quote_text = v.quote_text;
     r.optional_flag = v.optional_flag;

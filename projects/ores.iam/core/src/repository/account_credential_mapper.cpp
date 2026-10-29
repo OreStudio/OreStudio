@@ -45,10 +45,9 @@ domain::account_credential account_credential_mapper::map(const account_credenti
 
     domain::account_credential r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id);
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.account_id = v.account_id;
     r.password_hash = v.password_hash.value_or("");
     r.service_password_hash = v.service_password_hash.value_or("");
     r.totp_secret = v.totp_secret.value_or("");
@@ -56,7 +55,7 @@ domain::account_credential account_credential_mapper::map(const account_credenti
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -66,11 +65,10 @@ account_credential_entity account_credential_mapper::map(const domain::account_c
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     account_credential_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.account_id = boost::uuids::to_string(v.account_id);
-
+    r.account_id = v.account_id;
     r.password_hash =
         v.password_hash.get().empty() ? std::nullopt : std::optional(v.password_hash.get());
     r.service_password_hash = v.service_password_hash.get().empty() ?

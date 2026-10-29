@@ -49,28 +49,24 @@ fx_accumulator_instrument_mapper::map(const fx_accumulator_instrument_entity& v)
 
     domain::fx_accumulator_instrument r;
     r.identity.version = v.version;
-    r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.identity.tenant_id = v.tenant_id;
+    r.identity.trade_id = v.trade_id;
     r.identity.trade_type_code = v.trade_type_code;
-    r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.identity.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
+    r.identity.party_id = v.party_id;
+    r.identity.trade_activity_id = v.trade_activity_id;
     r.currency = v.currency;
-    r.fixing_amount = ores::utility::decimal::decimal::from_string(v.fixing_amount).value();
-    r.strike = ores::utility::decimal::decimal::from_string(v.strike).value();
+    r.fixing_amount = v.fixing_amount;
+    r.strike = v.strike;
     r.underlying_code = v.underlying_code;
     r.long_short = v.long_short;
-    r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
-    r.knock_out_barrier =
-        v.knock_out_barrier.has_value() ?
-            std::optional(
-                ores::utility::decimal::decimal::from_string(*v.knock_out_barrier).value()) :
-            std::nullopt;
+    r.start_date = v.start_date;
+    r.knock_out_barrier = v.knock_out_barrier;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
     r.audit.change_commentary = v.change_commentary;
-    r.audit.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.audit.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -81,21 +77,19 @@ fx_accumulator_instrument_mapper::map(const domain::fx_accumulator_instrument& v
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     fx_accumulator_instrument_entity r;
-    r.trade_id = boost::uuids::to_string(v.identity.trade_id);
-    r.tenant_id = v.identity.tenant_id.to_string();
+    r.trade_id = v.identity.trade_id;
+    r.tenant_id = v.identity.tenant_id;
     r.version = v.identity.version;
     r.trade_type_code = v.identity.trade_type_code;
-    r.party_id = boost::uuids::to_string(v.identity.party_id);
-    r.trade_activity_id = boost::uuids::to_string(v.identity.trade_activity_id);
+    r.party_id = v.identity.party_id;
+    r.trade_activity_id = v.identity.trade_activity_id;
     r.currency = v.currency;
-    r.fixing_amount = v.fixing_amount.to_string();
-    r.strike = v.strike.to_string();
+    r.fixing_amount = v.fixing_amount;
+    r.strike = v.strike;
     r.underlying_code = v.underlying_code;
     r.long_short = v.long_short;
-    r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
-    r.knock_out_barrier = v.knock_out_barrier.has_value() ?
-                              std::optional(v.knock_out_barrier->to_string()) :
-                              std::nullopt;
+    r.start_date = v.start_date;
+    r.knock_out_barrier = v.knock_out_barrier;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

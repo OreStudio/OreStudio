@@ -131,6 +131,7 @@ set(files
     "ir_curve_bootstrap_pillar_commands_tests.cpp"
     "ledger_feed_type_commands_tests.cpp"
     "leg_type_commands_tests.cpp"
+    "legal_entity_commands_tests.cpp"
     "local_jurisdiction_commands_tests.cpp"
     "main.cpp"
     "monetary_nature_commands_tests.cpp"

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
+#include "ores.database/pq/text.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
@@ -209,7 +210,7 @@ telemetry_repository::query(context ctx, const messaging::telemetry_query& q) {
 
         telemetry_entity entity;
         entity.id = row[0].value_or("");
-        entity.timestamp = row[1].value_or("");
+        entity.timestamp = ores::database::pq::parse_timestamp_text(row[1].value_or(""));
         entity.source = row[2].value_or("");
         entity.source_name = row[3].value_or("");
         entity.session_id = row[4].has_value() && !row[4]->empty() ?
@@ -222,7 +223,7 @@ telemetry_repository::query(context ctx, const messaging::telemetry_query& q) {
         entity.component = row[7].value_or("");
         entity.message = row[8].value_or("");
         entity.tag = row[9].value_or("");
-        entity.recorded_at = row[10].value_or("");
+        entity.recorded_at = ores::database::pq::parse_timestamp_text(row[10].value_or(""));
 
         entries.push_back(telemetry_mapper::to_domain(entity));
     }
@@ -302,8 +303,8 @@ telemetry_repository::read_by_account(context ctx,
                                << boost::uuids::to_string(account_id);
 
     const auto account_str = boost::lexical_cast<std::string>(account_id);
-    const auto start_ts = db_timestamp{datetime::to_db_string(start)};
-    const auto end_ts = db_timestamp{datetime::to_db_string(end)};
+    const auto start_ts = start;
+    const auto end_ts = end;
 
     const auto query = query_builder::read<std::vector<telemetry_entity>> |
                        query_builder::where("account_id"_c == account_str &&
@@ -502,7 +503,7 @@ telemetry_repository::delete_old_logs(context ctx,
 
     BOOST_LOG_SEV(lg(), info) << "Deleting telemetry logs older than cutoff";
 
-    const auto older_ts = db_timestamp{datetime::to_db_string(older_than)};
+    const auto older_ts = older_than;
     const auto query = query_builder::delete_from<telemetry_entity> |
                        query_builder::where("timestamp"_c < older_ts);
 
@@ -551,8 +552,8 @@ telemetry_repository::query_server_samples(context ctx,
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Querying NATS server samples";
 
-    const auto start_ts = db_timestamp{datetime::to_db_string(q.start_time)};
-    const auto end_ts = db_timestamp{datetime::to_db_string(q.end_time)};
+    const auto start_ts = q.start_time;
+    const auto end_ts = q.end_time;
 
     const auto qry = query_builder::read<std::vector<nats_server_sample_entity>> |
                      query_builder::where("sampled_at"_c >= start_ts && "sampled_at"_c < end_ts) |
@@ -582,8 +583,8 @@ telemetry_repository::query_stream_samples(context ctx,
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Querying NATS stream samples for: " << q.stream_name;
 
-    const auto start_ts = db_timestamp{datetime::to_db_string(q.start_time)};
-    const auto end_ts = db_timestamp{datetime::to_db_string(q.end_time)};
+    const auto start_ts = q.start_time;
+    const auto end_ts = q.end_time;
 
     const auto qry = query_builder::read<std::vector<nats_stream_sample_entity>> |
                      query_builder::where("sampled_at"_c >= start_ts && "sampled_at"_c < end_ts &&
@@ -625,7 +626,7 @@ std::vector<messaging::service_sample> telemetry_repository::list_service_sample
     // Fetch all rows inside the running window so we can pick
     // the most recent per (service_name, instance_id) in C++.
     const auto cutoff = std::chrono::system_clock::now() - service_running_window;
-    const auto cutoff_ts = db_timestamp{datetime::to_db_string(cutoff)};
+    const auto cutoff_ts = cutoff;
 
     const auto qry = query_builder::read<std::vector<service_sample_entity>> |
                      query_builder::where("sampled_at"_c >= cutoff_ts) |

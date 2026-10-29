@@ -193,10 +193,10 @@ void counterparty_contact_information_repository::write(
 
 std::vector<domain::counterparty_contact_information>
 counterparty_contact_information_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_contact_information_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<counterparty_contact_information_entity,
@@ -212,11 +212,11 @@ std::vector<domain::counterparty_contact_information>
 counterparty_contact_information_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty contact information. "
                                << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<counterparty_contact_information_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<counterparty_contact_information_entity,
                                              domain::counterparty_contact_information>(
@@ -234,12 +234,12 @@ counterparty_contact_information_repository::read_latest_by_code(context ctx,
     BOOST_LOG_SEV(lg(), debug)
         << "Reading latest counterparty contact information by counterparty_id/contact_type: "
         << counterparty_id << "/" << contact_type;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<counterparty_contact_information_entity>> |
         query_builder::where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id &&
-                             "contact_type"_c == contact_type && "valid_to"_c == max.value());
+                             "contact_type"_c == contact_type && "valid_to"_c == max);
 
     return query_builder::execute_read_query<counterparty_contact_information_entity,
                                              domain::counterparty_contact_information>(
@@ -254,12 +254,12 @@ counterparty_contact_information_repository::read_latest_by_contact_type(
     context ctx, const std::string& contact_type) {
     BOOST_LOG_SEV(lg(), debug)
         << "Reading latest counterparty contact information by contact_type: " << contact_type;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<counterparty_contact_information_entity>> |
         query_builder::where("tenant_id"_c == tid && "contact_type"_c == contact_type &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     return query_builder::execute_read_query<counterparty_contact_information_entity,
                                              domain::counterparty_contact_information>(
@@ -348,12 +348,12 @@ counterparty_contact_information_repository::read_latest_by_counterparty_id(
     BOOST_LOG_SEV(lg(), debug)
         << "Reading latest counterparty contact informations. counterparty_id: " << counterparty_id
         << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<counterparty_contact_information_entity>> |
         query_builder::where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<counterparty_contact_information_entity,
@@ -375,13 +375,13 @@ std::uint32_t counterparty_contact_information_repository::
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active counterparty contact informations count. counterparty_id: "
         << counterparty_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<counterparty_contact_information_entity>> |
         query_builder::where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     return query_builder::execute_count_query<counterparty_contact_information_entity>(
         ctx,
@@ -402,15 +402,13 @@ counterparty_contact_information_repository::read_by_counterparty_id_as_of(
         << "Reading counterparty contact informations as of window. counterparty_id: "
         << counterparty_id;
 
-    const auto vf(
-        make_timestamp(ores::platform::time::datetime::to_db_string(valid_from_bound), lg()));
-    const auto vt(
-        make_timestamp(ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
+    const auto vf(valid_from_bound);
+    const auto vt(valid_to_bound);
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<counterparty_contact_information_entity>> |
         query_builder::where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id &&
-                             "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
+                             "valid_from"_c < vt && "valid_to"_c > vf) |
         query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<counterparty_contact_information_entity,
@@ -434,7 +432,7 @@ counterparty_contact_information_repository::remove(context ctx,
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -442,7 +440,7 @@ counterparty_contact_information_repository::remove(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<counterparty_contact_information_entity> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing counterparty contact information from database.");
@@ -510,11 +508,11 @@ counterparty_contact_information_repository::read_latest(context ctx,
                                                          const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<counterparty_contact_information_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<counterparty_contact_information_entity,
                                                     domain::counterparty_contact_information>(
         ctx,
@@ -535,11 +533,11 @@ void counterparty_contact_information_repository::remove(context ctx,
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<counterparty_contact_information_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(
         ctx, query, lg(), "Batch removing counterparty contact informations.");
 }

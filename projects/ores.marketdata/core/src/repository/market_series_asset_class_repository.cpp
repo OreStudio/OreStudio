@@ -133,10 +133,10 @@ void market_series_asset_class_repository::write(
 }
 
 std::vector<domain::market_series_asset_class> market_series_asset_class_repository::read_latest() {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_series_asset_class_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("market_series_id"_c, "asset_class_code"_c);
 
     return query_builder::execute_read_query<market_series_asset_class_entity,
@@ -152,10 +152,10 @@ std::vector<domain::market_series_asset_class>
 market_series_asset_class_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest asset classes with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_series_asset_class_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("market_series_id"_c, "asset_class_code"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -174,14 +174,14 @@ market_series_asset_class_repository::read_latest(const boost::uuids::uuid& mark
     BOOST_LOG_SEV(lg(), debug) << "Reading latest asset class. " << market_series_id << "/"
                                << asset_class_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto market_series_id_str = boost::uuids::to_string(market_series_id);
     const auto asset_class_code_str = asset_class_code;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<market_series_asset_class_entity>> |
-                       query_builder::where(
-                           "tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&
-                           "asset_class_code"_c == asset_class_code && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<market_series_asset_class_entity>> |
+        query_builder::where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&
+                             "asset_class_code"_c == asset_class_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<market_series_asset_class_entity,
                                              domain::market_series_asset_class>(
@@ -194,11 +194,11 @@ market_series_asset_class_repository::read_latest(const boost::uuids::uuid& mark
 
 std::uint32_t market_series_asset_class_repository::get_total_asset_class_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active asset classes count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_series_asset_class_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<market_series_asset_class_entity>(
         ctx_, query, std::nullopt, lg(), "Counting asset classes");
@@ -211,13 +211,13 @@ market_series_asset_class_repository::read_latest_by_series(
     const boost::uuids::uuid& market_series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest asset classes. Series: " << market_series_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto market_series_id_str = boost::uuids::to_string(market_series_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<market_series_asset_class_entity>> |
         query_builder::where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("asset_class_code"_c);
 
     auto rows = query_builder::execute_read_query<market_series_asset_class_entity,
@@ -236,12 +236,12 @@ market_series_asset_class_repository::read_latest_by_asset_class(
     const std::string& asset_class_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest asset classes. Asset Class: " << asset_class_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<market_series_asset_class_entity>> |
         query_builder::where("tenant_id"_c == tid && "asset_class_code"_c == asset_class_code &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("market_series_id"_c);
 
     auto rows = query_builder::execute_read_query<market_series_asset_class_entity,
@@ -262,12 +262,12 @@ market_series_asset_class_repository::read_latest_by_series(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest asset classes. Series: " << market_series_id
                                << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<market_series_asset_class_entity>> |
         query_builder::where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("asset_class_code"_c) | query_builder::offset(offset) |
         query_builder::limit(limit);
 
@@ -287,13 +287,13 @@ std::uint32_t market_series_asset_class_repository::get_total_asset_class_count_
     const auto market_series_id_str = boost::uuids::to_string(market_series_id);
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active asset classes count. Series: "
                                << market_series_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<market_series_asset_class_entity>> |
         query_builder::where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<market_series_asset_class_entity>(
         ctx_, query, std::nullopt, lg(), "Counting asset classes");
@@ -305,13 +305,13 @@ std::uint32_t market_series_asset_class_repository::get_total_asset_class_count_
     const std::string& asset_class_code) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active asset classes count. Asset Class: "
                                << asset_class_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<market_series_asset_class_entity>> |
         query_builder::where("tenant_id"_c == tid && "asset_class_code"_c == asset_class_code &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<market_series_asset_class_entity>(
         ctx_, query, std::nullopt, lg(), "Counting asset classes");
@@ -387,7 +387,7 @@ market_series_asset_class_repository::remove(const boost::uuids::uuid& market_se
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -398,8 +398,8 @@ market_series_asset_class_repository::remove(const boost::uuids::uuid& market_se
     const auto query =
         query_builder::delete_from<market_series_asset_class_entity> |
         query_builder::where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&
-                             "asset_class_code"_c == asset_class_code &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                             "asset_class_code"_c == asset_class_code && "valid_to"_c == max &&
+                             "version"_c == expected);
 
     query_builder::execute_delete_query(ctx_, query, lg(), "removing asset class from database");
     // The delete reports no affected-row count, so the row is read back: a row

@@ -46,24 +46,16 @@ domain::trade_summary trade_summary_mapper::map(const trade_summary_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::trade_summary r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
     r.row_kind = v.row_kind;
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.counterparty_id =
-        v.counterparty_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.counterparty_id)) :
-            std::nullopt;
-    r.book_id = v.book_id.has_value() ?
-                    std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.book_id)) :
-                    std::nullopt;
+    r.party_id = v.party_id;
+    r.counterparty_id = v.counterparty_id;
+    r.book_id = v.book_id;
     r.instrument_type = v.instrument_type;
     r.status = v.status;
     r.authorisation_status = v.authorisation_status;
-    r.trade_date =
-        v.trade_date.has_value() ?
-            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.trade_date)) :
-            std::nullopt;
+    r.trade_date = v.trade_date;
     r.trade_count = v.trade_count;
     r.search_text = v.search_text;
 
@@ -75,22 +67,16 @@ trade_summary_entity trade_summary_mapper::map(const domain::trade_summary& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     trade_summary_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.row_kind = v.row_kind;
-    r.party_id = boost::uuids::to_string(v.party_id);
-    r.counterparty_id = v.counterparty_id.has_value() ?
-                            std::optional(boost::uuids::to_string(*v.counterparty_id)) :
-                            std::nullopt;
-    r.book_id =
-        v.book_id.has_value() ? std::optional(boost::uuids::to_string(*v.book_id)) : std::nullopt;
+    r.party_id = v.party_id;
+    r.counterparty_id = v.counterparty_id;
+    r.book_id = v.book_id;
     r.instrument_type = v.instrument_type;
     r.status = v.status;
     r.authorisation_status = v.authorisation_status;
-    r.trade_date =
-        v.trade_date.has_value() ?
-            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.trade_date)) :
-            std::nullopt;
+    r.trade_date = v.trade_date;
     r.trade_count = v.trade_count;
     r.search_text = v.search_text;
 

@@ -133,10 +133,10 @@ void notification_recipient_repository::write(
 }
 
 std::vector<domain::notification_recipient> notification_recipient_repository::read_latest() {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("notification_id"_c, "notification_id"_c);
 
     return query_builder::execute_read_query<notification_recipient_entity,
@@ -152,10 +152,10 @@ std::vector<domain::notification_recipient>
 notification_recipient_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest notification recipients with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("notification_id"_c, "notification_id"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -174,14 +174,14 @@ notification_recipient_repository::read_latest(const boost::uuids::uuid& notific
     BOOST_LOG_SEV(lg(), debug) << "Reading latest notification recipient. " << notification_id
                                << "/" << account_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto notification_id_str = boost::uuids::to_string(notification_id);
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<notification_recipient_entity>> |
         query_builder::where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
-                             "account_id"_c == account_id_str && "valid_to"_c == max.value());
+                             "account_id"_c == account_id_str && "valid_to"_c == max);
 
     return query_builder::execute_read_query<notification_recipient_entity,
                                              domain::notification_recipient>(
@@ -194,11 +194,11 @@ notification_recipient_repository::read_latest(const boost::uuids::uuid& notific
 
 std::uint32_t notification_recipient_repository::get_total_recipient_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active notification recipients count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<notification_recipient_entity>(
         ctx_, query, std::nullopt, lg(), "Counting notification recipients");
@@ -212,13 +212,13 @@ notification_recipient_repository::read_latest_by_notification(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest notification recipients. Notification: "
                                << notification_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto notification_id_str = boost::uuids::to_string(notification_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<notification_recipient_entity>> |
         query_builder::where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("notification_id"_c);
 
     auto rows = query_builder::execute_read_query<notification_recipient_entity,
@@ -236,13 +236,13 @@ std::vector<domain::notification_recipient>
 notification_recipient_repository::read_latest_by_account(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest notification recipients. Account: " << account_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<notification_recipient_entity>> |
         query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("notification_id"_c);
 
     auto rows = query_builder::execute_read_query<notification_recipient_entity,
@@ -262,13 +262,13 @@ std::uint32_t notification_recipient_repository::get_total_recipient_count_by_no
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active notification recipients count. Notification: "
         << notification_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<notification_recipient_entity>> |
         query_builder::where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<notification_recipient_entity>(
         ctx_, query, std::nullopt, lg(), "Counting notification recipients");
@@ -285,12 +285,12 @@ notification_recipient_repository::read_latest_by_account(const boost::uuids::uu
     BOOST_LOG_SEV(lg(), debug) << "Reading latest notification recipients. Account: " << account_id
                                << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<notification_recipient_entity>> |
         query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("notification_id"_c) | query_builder::offset(offset) |
         query_builder::limit(limit);
 
@@ -310,13 +310,13 @@ std::uint32_t notification_recipient_repository::get_total_recipient_count_by_ac
     const auto account_id_str = boost::uuids::to_string(account_id);
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active notification recipients count. Account: "
                                << account_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<notification_recipient_entity>> |
         query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<notification_recipient_entity>(
         ctx_, query, std::nullopt, lg(), "Counting notification recipients");
@@ -391,7 +391,7 @@ notification_recipient_repository::remove(const boost::uuids::uuid& notification
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -402,7 +402,7 @@ notification_recipient_repository::remove(const boost::uuids::uuid& notification
     const auto query =
         query_builder::delete_from<notification_recipient_entity> |
         query_builder::where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
-                             "account_id"_c == account_id_str && "valid_to"_c == max.value() &&
+                             "account_id"_c == account_id_str && "valid_to"_c == max &&
                              "version"_c == expected);
 
     query_builder::execute_delete_query(

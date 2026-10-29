@@ -46,30 +46,25 @@ domain::workflow_instance workflow_instance_mapper::map(const workflow_instance_
 
     domain::workflow_instance r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
     r.type = v.type;
     r.target_kind = v.target_kind.value_or("");
-    r.target_id = v.target_id.has_value() ? boost::lexical_cast<boost::uuids::uuid>(*v.target_id) :
-                                            boost::uuids::uuid{};
-    r.state_id = boost::lexical_cast<boost::uuids::uuid>(v.state_id);
+    r.target_id = v.target_id.has_value() ? *v.target_id : boost::uuids::uuid{};
+    r.state_id = v.state_id;
     r.request_json = v.request_json;
     r.result_json = v.result_json.value_or("");
     r.error = v.error.value_or("");
     r.correlation_id = v.correlation_id.value_or("");
     r.created_by = v.created_by;
     r.step_count = v.step_count;
-    r.completed_at = v.completed_at.has_value() ?
-                         std::optional(timestamp_to_timepoint(*v.completed_at)) :
-                         std::nullopt;
-    r.last_event_at = v.last_event_at.has_value() ?
-                          std::optional(timestamp_to_timepoint(*v.last_event_at)) :
-                          std::nullopt;
+    r.completed_at = v.completed_at;
+    r.last_event_at = v.last_event_at;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -79,29 +74,21 @@ workflow_instance_entity workflow_instance_mapper::map(const domain::workflow_in
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     workflow_instance_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.type = v.type;
     r.target_kind = v.target_kind.empty() ? std::nullopt : std::optional(v.target_kind);
-    r.target_id = v.target_id == boost::uuids::uuid{} ?
-                      std::nullopt :
-                      std::optional(boost::uuids::to_string(v.target_id));
-    r.state_id = boost::uuids::to_string(v.state_id);
+    r.target_id = v.target_id == boost::uuids::uuid{} ? std::nullopt : std::optional(v.target_id);
+    r.state_id = v.state_id;
     r.request_json = v.request_json;
     r.result_json = v.result_json.empty() ? std::nullopt : std::optional(v.result_json);
     r.error = v.error.empty() ? std::nullopt : std::optional(v.error);
     r.correlation_id = v.correlation_id.empty() ? std::nullopt : std::optional(v.correlation_id);
     r.created_by = v.created_by;
     r.step_count = v.step_count;
-    r.completed_at =
-        v.completed_at.has_value() ?
-            std::optional(ores::platform::time::datetime::to_db_string(*v.completed_at)) :
-            std::nullopt;
-    r.last_event_at =
-        v.last_event_at.has_value() ?
-            std::optional(ores::platform::time::datetime::to_db_string(*v.last_event_at)) :
-            std::nullopt;
+    r.completed_at = v.completed_at;
+    r.last_event_at = v.last_event_at;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

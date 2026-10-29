@@ -57,10 +57,10 @@ ORES_DATABASE_EXPORT std::string numbered(const std::string& sql);
 /**
  * @brief The prepared statement for a fixed text, one for the process.
  */
-ORES_DATABASE_EXPORT const pq::text_statement& prepared(const std::string& sql);
+ORES_DATABASE_EXPORT const pq::fixed_statement& prepared(const std::string& sql);
 
 /**
- * @brief Runs one statement in a transaction and returns its text result.
+ * @brief Runs one statement in a transaction and returns its result.
  */
 ORES_DATABASE_EXPORT pq::result run(pq::transaction& tx,
                                     const std::string& sql,
@@ -86,7 +86,16 @@ const std::string& select_list() {
         std::string out;
         std::apply(
             [&](const auto&... b) {
-                ((out += (out.empty() ? "" : ", ") + std::string(b.name)), ...);
+                (([&] {
+                     std::string column(b.name);
+                     // A column the row holds as text is asked for as text, so
+                     // the binary format never describes a type the layer has no
+                     // codec for.
+                     if constexpr (std::remove_cvref_t<decltype(b)>::as_text)
+                         column += "::text";
+                     out += (out.empty() ? "" : ", ") + column;
+                 }()),
+                 ...);
             },
             Entity::columns().items);
         return out;
@@ -126,8 +135,17 @@ const std::string& insert_sql(bool replace) {
 template <typename Entity>
 std::vector<pq::param> row_params(const Entity& e) {
     std::vector<pq::param> out;
-    std::apply([&](const auto&... b) { (out.push_back(pq::to_text(e.*(b.member))), ...); },
-               Entity::columns().items);
+    std::apply(
+        [&](const auto&... b) {
+            (([&] {
+                 if constexpr (std::remove_cvref_t<decltype(b)>::as_text)
+                     out.push_back(pq::to_text(e.*(b.member)));
+                 else
+                     out.push_back(pq::encode_param(e.*(b.member)));
+             }()),
+             ...);
+        },
+        Entity::columns().items);
     return out;
 }
 
@@ -138,9 +156,17 @@ std::vector<Entity> entity_rows(const pq::result& r) {
         int column = 0;
         std::apply(
             [&](const auto&... b) {
-                ((out[static_cast<std::size_t>(row)].*(b.member) =
-                      pq::from_text<std::remove_cvref_t<decltype(out[0].*(b.member))>>(
-                          r, row, column++)),
+                (([&] {
+                     using member_type = std::remove_cvref_t<decltype(out[0].*(b.member))>;
+                     auto& cell = out[static_cast<std::size_t>(row)].*(b.member);
+                     // A column held as text is read through the text form, so
+                     // the member may keep a type the database does not store.
+                     if constexpr (std::remove_cvref_t<decltype(b)>::as_text)
+                         cell = pq::from_text<member_type>(r, row, column);
+                     else
+                         cell = pq::read<member_type>(r, row, column);
+                     ++column;
+                 }()),
                  ...);
             },
             Entity::columns().items);
@@ -173,11 +199,11 @@ condition select_sql(const std::optional<condition>& filter,
     c.sql += order_sql(sorting);
     if (max_rows) {
         c.sql += " limit ?";
-        c.params.push_back(pq::to_text(*max_rows));
+        c.params.push_back(pq::encode_param(static_cast<std::int64_t>(*max_rows)));
     }
     if (skip) {
         c.sql += " offset ?";
-        c.params.push_back(pq::to_text(*skip));
+        c.params.push_back(pq::encode_param(static_cast<std::int64_t>(*skip)));
     }
     return c;
 }
@@ -296,7 +322,7 @@ std::uint32_t execute_count_query(context ctx,
     try {
         return database::transact(ctx, [&](pq::transaction& tx) {
             const auto r = detail::run(tx, detail::numbered(statement.sql), statement.params, true);
-            return static_cast<std::uint32_t>(pq::from_text<std::int64_t>(r, 0, 0));
+            return static_cast<std::uint32_t>(pq::read<std::int64_t>(r, 0, 0));
         });
     } catch (const pq::store_error& e) {
         detail::refused(e, lg);

@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 61D313DD-F9B0-45A7-8906-56C9CF7235E5
+:END:
+#+title: Story: Publish the market data catalogue from DQ
+#+description: The ACME bundle publishes publishers, suppliers, sessions, feeds, scopes, routes and schedules, references adapters by code, and carries no secret.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:implementation:sprint_29:v0:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The ACME bundle publishes the catalogue a working system needs: publishers, suppliers, sessions, feeds, scopes, routes and schedules. Adapters are referenced by code and no secret is carried.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-29                               |
+
+* Acceptance
+
+- The datasets publish in dependency order and a tenant is provisioned from them.
+- Adapters are validated by code and version; the bundle does not create them.
+- Secrets are references only.
+- A provisioned tenant reaches serving feeds with no manual row.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B7518CC8-A327-490F-9706-DE91FD75B7BD][Publish the publishers and suppliers]] | BACKLOG | | | Datasets for publishers and suppliers, published in dependency order. |
+| [[id:75A3BB91-8675-45B2-B93C-C81D3CC6CAEF][Publish the sessions, feeds and scopes]] | BACKLOG | | | Datasets for sessions, feeds and scopes, referencing adapters by code. |
+| [[id:1C18B074-9B5B-43A1-9DF2-C398D6FF4B4D][Publish the routes and schedules]] | BACKLOG | | | Datasets for the party routes and the scheduler jobs. |
+| [[id:8F0460CF-2A56-4BB3-8AF5-569956975B41][Prove the ACME bundle]] | BACKLOG | | | A tenant provisioned from the bundle reaches serving feeds with no manual row. |
+
+* Decisions
+
+- Adapters are release data, seeded by the installation.
+- Suppliers, sessions, feeds, scopes, routes and schedules come from DQ.
+- Endpoints may differ per environment; the bundle carries the demo ones and references the rest.
+
+* Out of scope
+
+-

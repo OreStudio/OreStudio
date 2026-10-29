@@ -31,6 +31,17 @@
 namespace ores::database::pq {
 
 /**
+ * @brief The format a statement's values travel in on the wire.
+ *
+ * A generated repository states =binary_result=, so each column is bound and
+ * read by its own codec and never through its text; SQL that an entity model
+ * does not generate states =text_result= and reads the strings the server
+ * renders.
+ */
+inline constexpr int text_result = 0;
+inline constexpr int binary_result = 1;
+
+/**
  * @brief How often a statement was prepared and run, across connections.
  *
  * A statement is prepared once on each connection that runs it, so in a
@@ -57,19 +68,26 @@ std::vector<std::tuple<Columns...>> read_rows(const result& r) {
 }
 
 /**
- * @brief A statement declared once whose parameters and results are text, as
- * a repository that fills a text entity runs. The server types each parameter
- * from where it is used, so the statement names no types; it is prepared once
- * per connection all the same.
+ * @brief A statement declared once whose SQL is fixed, as a repository runs
+ * when it reads or writes the columns of one entity.
+ *
+ * The class says nothing about the format: the caller states it, so the same
+ * kind of statement serves a generated repository, which binds and reads its
+ * values by their own codecs, and a hand-written query, which passes and reads
+ * text. The server types each parameter from where it is used, so the statement
+ * names no types; it is prepared once per connection all the same.
+ *
+ * The name and the SQL are views of the caller's strings and must outlive the
+ * statement: declare it over a literal, or over a string that lives as long.
  */
-class text_statement final {
+class fixed_statement final {
 public:
-    text_statement(std::string_view name, std::string_view sql)
+    fixed_statement(std::string_view name, std::string_view sql)
         : name_(name)
         , sql_(sql) {}
 
-    text_statement(const text_statement&) = delete;
-    text_statement& operator=(const text_statement&) = delete;
+    fixed_statement(const fixed_statement&) = delete;
+    fixed_statement& operator=(const fixed_statement&) = delete;
 
     [[nodiscard]] std::string_view name() const noexcept {
         return name_;

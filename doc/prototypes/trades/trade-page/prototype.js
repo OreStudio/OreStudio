@@ -6,7 +6,7 @@ const STATE_P = P.get('state') || '';
 const SERVER = P.get('server') === 'today' ? 'today' : 'target';
 let TAB = P.get('tab') || 'details';
 let WORKFLOW = P.get('workflow') || '';
-const CODE = P.get('trade');
+const CODE = P.get('trade') || 'ACME-100201';
 const STRUCT_KIND = { 'PKG-0004': { kind: 'Package', whole: false, legs: 2 }, 'STR-0007': { kind: 'Strategy', template: 'RiskReversal', whole: true, legs: 2, parent: 'STR-0010' }, 'STR-0009': { kind: 'Typed', template: 'CallableSwap', whole: true, legs: 2 }, 'STR-0010': { kind: 'Dynamic', template: '', whole: true, legs: 1 }, 'PKG-0021': { kind: 'Package', whole: false, legs: 2, parent: 'STR-0010' } };
 const dealHref = id => '../structure-page/?deal=' + id;
 const TABS = [['details', 'Details'], ['instrument', 'Instrument'], ['identifiers', 'Identifiers and roles'], ['links', 'Links'], ['history', 'History']];
@@ -30,19 +30,14 @@ let listQuery = {
     party: P.get('party') || '', portfolio: P.get('portfolio') || ''
 };
 let selected = new Set();
-const pageCrumbs = () => [['Home', '#'], ['Trades', '../trade-page/'], ['Trades', qs({ trade: null, tab: null, workflow: null })], [CODE]];
+const pageCrumbs = () => [['Home', '#'], ['Trades', '../blotter/'], ['Trade ' + CODE]];
 const main = shell({
-    title: CODE ? 'Trade ' + CODE : 'Trades', name: 'trade-page',
+    title: 'Trade ' + CODE, name: 'trade-page',
     question: 'Does one trade page serve review, amendment and lifecycle events?',
-    crumbs: CODE ? pageCrumbs() : [['Home', '#'], ['Trades', '../trade-page/'], ['Trades']],
-    states: CODE
-        ? [['page', { state: null, workflow: null }, !STATE_P], ['stale', { state: 'stale', workflow: null }, STATE_P === 'stale'], ['conflict', { state: 'conflict', workflow: null }, STATE_P === 'conflict'], ['digest fixed', { digest: DIGEST_FIXED ? null : 'fixed' }, DIGEST_FIXED],
-            ['loading', { state: 'loading' }, STATE_P === 'loading'], ['error', { state: 'error' }, STATE_P === 'error'], ['refused', { state: 'refused', tab: 'history' }, STATE_P === 'refused'], ['list', { trade: null, tab: null, workflow: null, state: null }]]
-        : [['list', { state: null }, !STATE_P], ['stale', { state: 'stale' }, STATE_P === 'stale'], ['loading', { state: 'loading' }, STATE_P === 'loading'], ['empty', { state: 'empty' }, STATE_P === 'empty'], ['error', { state: 'error' }, STATE_P === 'error'],
-            ['server today', { server: SERVER === 'today' ? null : 'today' }, SERVER === 'today']],
-    says: CODE
-        ? 'One page per trade, one tab per aspect, an Edit button on each card, and history as a timeline. A tab switches in place, so a save is not lost. Edit asks for the kind of change first and offers only the fields that kind may touch. A save does not reload the page: Refresh turns gold and the person presses it. Recording a lifecycle event is a workflow with its own address. Try Edit on the instrument card as a trader, then Workflows as operations.'
-        : 'The list is the request: the pager, the filters, the order and the request line under the table are one thing, and all of them are in the address. The Workflows menu carries the doors to ORE import and export and to structures. Book a trade is the Add of the list.'
+    crumbs: pageCrumbs(),
+    states: [['page', { state: null, workflow: null }, !STATE_P], ['stale', { state: 'stale', workflow: null }, STATE_P === 'stale'], ['conflict', { state: 'conflict', workflow: null }, STATE_P === 'conflict'], ['digest fixed', { digest: DIGEST_FIXED ? null : 'fixed' }, DIGEST_FIXED],
+        ['loading', { state: 'loading' }, STATE_P === 'loading'], ['error', { state: 'error' }, STATE_P === 'error'], ['refused', { state: 'refused', tab: 'history' }, STATE_P === 'refused']],
+    says: 'One page per trade, one tab per aspect, an Edit button on each card, and history as a timeline. A tab switches in place, so a save is not lost. Edit asks for the kind of change first and offers only the fields that kind may touch. A save does not reload the page: Refresh turns gold and the person presses it. Recording a lifecycle event is a workflow with its own address. Try Edit on the instrument card as a trader, then Workflows as operations.'
 });
 
 function put(el) { main.querySelectorAll('.dyn').forEach(n => n.remove()); el.classList.add('dyn'); main.append(el); }
@@ -269,86 +264,11 @@ function structureRow(r, sel) {
         h('td', { class: 'num mono nw faint' }, '—'));
 }
 
-/* ---------- the list ---------- */
-function renderList() {
-    const q = listQuery;
-    syncUrl();
-    const head = pageHead({
-        title: 'Trades', lead: 'The trades and structures of ' + PARTY + ' and the books it holds.',
-        actions: [refreshButton({ stale, onClick: refresh }), CAN.book ? h('a', { class: 'btn primary', href: '../book-a-trade/' }, '+ Book a trade') : null, workflowMenu([
-            { title: 'Import a portfolio from ORE', line: 'Bring an ORE portfolio file into a book.', href: '../ore-portfolio/?mode=import', allowed: !!CAN.import },
-            { title: 'Export a portfolio to ORE', line: 'Write trades out as the portfolio the engine reads.', href: '../ore-portfolio/?mode=export' + (selected.size ? '&trades=' + [...selected].join(',') : ''), allowed: !!CAN.export },
-            { title: 'Group trades', line: selected.size >= 2 ? 'Hold the ' + selected.size + ' chosen trades as one deal, or as a package that confirms trade by trade.' : 'Choose two or more trades first.', run: () => selected.size >= 2 ? location.href = '../structure-page/?mode=group&trades=' + [...selected].join(',') : toast('Choose two or more trades in the list first.'), allowed: !!CAN.structure }
-        ])]
-    });
-    /* A combo box offers only the values that exist in the data. */
-    const have = key => [...new Set(TRADES.map(x => x[key]))];
-    const dateBox = (key, label) => h('input', { type: 'date', class: 'field-input', 'aria-label': label, title: label, value: q[key], onchange: e => { q[key] = e.target.value; q.offset = 0; renderList(); } });
-    const filters = SERVER === 'today'
-        ? h('div', { class: 'filters' }, searchInput('Trade id', 'Trade id'),
-            h('span', { class: 'faint small' }, 'Today the server filters by trade id only.'))
-        : h('div', null,
-            h('div', { class: 'filters' }, searchInput('Search by id, type or counterparty', 'Search')),
-            h('div', { class: 'filters' },
-                select([['', 'Trades and structures'], ['trades', 'Trades only'], ['structures', 'Structures only']], q.show, v => { q.show = v; q.offset = 0; renderList(); }),
-                select([['', 'All counterparties']].concat(COUNTERPARTIES.filter(c => have('cp').includes(c.code)).map(c => [c.code, c.name])), q.cp, v => { q.cp = v; q.offset = 0; renderList(); }),
-                select([['', 'All trade types']].concat(have('type').map(c => [c, tradeType(c).description]).sort((x, y) => x[1].localeCompare(y[1]))), q.type, v => { q.type = v; q.offset = 0; renderList(); }),
-                select([['', 'All books']].concat(BOOKS.filter(b => have('book').includes(b.code)).map(b => [b.code, b.name])), q.book, v => { q.book = v; q.portfolio = ''; q.offset = 0; renderList(); }),
-                select([['', 'All states']].concat(['live', 'draft', 'expired', 'cancelled'].filter(s => have('state').includes(s)).map(s => [s, s.charAt(0).toUpperCase() + s.slice(1)])), q.status, v => { q.status = v; q.offset = 0; renderList(); }),
-                h('span', { class: 'filter-group' }, h('span', { class: 'faint small' }, 'Trade date'), dateBox('from', 'Trade date from'), h('span', { class: 'faint small' }, 'to'), dateBox('to', 'Trade date to'))));
-    /* The tree sits beside the list. It keeps its shape while the list shows its state, so a person can leave a
-     * portfolio that holds nothing. */
-    const rail = SERVER === 'today' ? null : portfolioRail(q);
-    const body = (...kids) => h('div', { class: 'listrail' }, rail, h('div', { class: 'listmain' }, kids));
-    if (STATE_P === 'loading') return put(wrap(head, body(filters, h('div', { class: 'notice' }, 'Loading…'))));
-    if (STATE_P === 'error') return put(wrap(head, body(h('div', { class: 'notice bad' }, h('b', null, 'The trades could not be read. '), 'trading.v1.trade_summaries.list answered 503 (request 4f1c9a02). ', h('button', { class: 'btn small', onclick: () => location.href = qs({ state: null }) }, 'Retry')))));
-    const { rows, total } = STATE_P === 'empty' ? { rows: [], total: 0 } : listTrades(q);
-    const sel = CAN.structure || CAN.export;
-    const filtered = !!(q.show || q.search || q.status || q.book || q.cp || q.type || q.from || q.to || q.portfolio);
-    /* The change the stale list was told about names one trade. The row pulses when the page holds it, and a strip says so when it does not. */
-    const newsCode = 'ACME-100202';
-    const newsOnPage = rows.some(r => r.kind === 'trade' && r.t.code === newsCode);
-    const sortTh = (key, label, cls) => h('th', { class: cls || '', 'aria-sort': q.sort === key ? (q.desc ? 'descending' : 'ascending') : 'none' },
-        h('button', { class: 'sort', onclick: () => sortBy(key) }, label + (q.sort === key ? (q.desc ? ' ▾' : ' ▴') : '')));
-    const table = h('div', { class: 'tablewrap' }, h('table', { class: 'grid' },
-        h('thead', null, h('tr', null, sel ? h('th', { class: 'sel' }) : null, sortTh('code', 'Id'), sortTh('type', 'Type'), sortTh('cp', 'Counterparty'), sortTh('book', 'Book'), sortTh('status', 'State'), sortTh('date', 'Trade date'), sortTh('ver', 'Version', 'num'))),
-        h('tbody', null, rows.length ? rows.map(r => r.kind === 'structure' ? structureRow(r, sel) : (t => h('tr', { class: stale && t.code === newsCode ? 'row-news' : '' },
-            sel ? h('td', { class: 'sel' }, h('input', { type: 'checkbox', checked: selected.has(t.code), 'aria-label': 'Choose ' + t.code, onchange: e => { e.target.checked ? selected.add(t.code) : selected.delete(t.code); renderList(); } })) : null,
-            h('td', { class: 'nw' }, h('a', { href: tradeHref(t.code) }, t.code)), h('td', null, tradeType(t.type).description, rowChips(t)),
-            h('td', null, ref('counterparty', t.cp, cpty(t.cp).name)), h('td', null, ref('book', t.book, book(t.book).name)),
-            h('td', { class: 'nw' }, stateChip(t.state)), h('td', { class: 'nw' }, t.date),
-            h('td', { class: 'num mono nw' }, 'v' + t.ver + ' · ext ' + t.ext)))(r.t)) :
-            h('tr', null, h('td', { colspan: sel ? 8 : 7 }, filtered
-                ? ['Nothing matches. ', h('button', { class: 'btn small', onclick: () => { Object.assign(listQuery, { offset: 0, show: '', search: '', status: '', book: '', cp: '', type: '', from: '', to: '', party: '', portfolio: '' }); renderList(); } }, 'Clear filters')]
-                : ['There are no trades yet. ', CAN.book ? h('a', { href: '../book-a-trade/' }, 'Book a trade') : null])))));
-    put(wrap(head, selected.size ? h('div', { class: 'notice acc' }, selected.size + ' chosen. ', h('button', { class: 'btn small', onclick: () => { selected.clear(); renderList(); } }, 'Clear')) : null,
-        stale && !newsOnPage ? h('div', { class: 'strip' }, 'Something changed that this page cannot show. Press Refresh to read it again.') : null,
-        body(filters, table, pager({ offset: q.offset, limit: q.limit, total, onChange: v => { Object.assign(q, v); renderList(); } }),
-            h('div', { class: 'reqline' }, requestLine(q, total)))));
-}
-function debounce(fn) { let t; return e => { clearTimeout(t); t = setTimeout(() => fn(e), 300); }; }
-
-/* A search re-draws the list, and the box is part of it. Put the caret back where it was. */
-function searchInput(placeholder, label) {
-    const el = h('input', {
-        placeholder, value: listQuery.search, 'aria-label': label, id: 'trade-search',
-        oninput: debounce(e => {
-            const at = e.target.selectionStart;
-            listQuery.search = e.target.value;
-            listQuery.offset = 0;
-            renderList();
-            const again = document.getElementById('trade-search');
-            if (again) { again.focus(); again.setSelectionRange(at, at); }
-        })
-    });
-    return el;
-}
-
 /* ---------- applying writes after Refresh ---------- */
 function refresh() {
     LOADED = NOW; stale = false;
     for (const w of PENDING.splice(0)) w();
-    if (CODE) renderPage(); else renderList();
+    renderPage();
 }
 
 /* ---------- the page ---------- */
@@ -598,4 +518,4 @@ function renderLifecycle(t) {
     draw();
 }
 
-if (CODE) renderPage(); else renderList();
+renderPage();

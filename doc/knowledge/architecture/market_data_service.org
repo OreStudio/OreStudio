@@ -11,12 +11,13 @@
 
 * Summary
 
-=ores.marketdata= is the market data service. It sits between the sources of
-market data and the parties that consume it. Sources are adapters: one adapter
-for each way of reaching a provider. The service subscribes to the adapters,
-maps their ids to internal items, checks quality, stores the quote series,
-delivers ticks to the parties, and records what each party used. No party
-reads an adapter. No adapter knows a party.
+=ores.marketdata= is the market data service. It sits between the suppliers of
+market data and the parties that consume it. A supplier has sessions, a session
+is one configured adapter, and a feed binds a publisher to a session and a
+service. The service subscribes to the adapters, maps their ids to internal
+items, checks quality, stores the quote series, delivers ticks to the parties,
+and records what each party used. No party reads an adapter. No adapter knows a
+party.
 
 This is how Murex and Calypso work. A market data server owns the vendor
 connections. The rest of the system reads the server and cannot tell which
@@ -26,10 +27,10 @@ vendor, which environment or which simulator produced a value.
 
 ** What the service owns
 
-- The catalogue: providers, sources, vendor instruments and mappings.
+- The catalogue: publishers, suppliers, sessions, feeds, vendor instruments and mappings.
   See [[id:68CE1E1D-7568-4911-BB71-CCF5A9E07BB7][Every source belongs to a provider in the catalogue]].
 - The ingest path from tick to stored observation. See [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]].
-- Routing: which source serves which party. See [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]].
+- Routing: which feed serves which party and publisher. See [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]].
 - Quote series, composites and their rules. See [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]] and [[id:41D84AD1-0058-4135-9B9D-BDE08BE8169A][A composite attributes its use to the providers of its inputs]].
 - Entitlement and metering. See [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]].
 

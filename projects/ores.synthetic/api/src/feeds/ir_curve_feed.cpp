@@ -25,7 +25,7 @@
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
-#include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
+#include "ores.marketdata.core/oresmd/pillar_quote.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
@@ -111,15 +111,29 @@ ir_curve_feed::ir_curve_feed(
         adapter_targets_.emplace_back(*found);
     }
 
-    // Each pillar is a quote of one series. The keys are built once, here, so a pillar the
-    // codec refuses fails when the feed is built and not on the first tick.
+    // Each pillar is a quote, and the datum is built from the market data model rather than
+    // from a key: the identity of a market datum is its oresmd URI, and a key is a boundary
+    // format. The datums are built once, here, so a pillar the codec refuses fails when the
+    // feed is built and not on the first tick.
     for (const auto& e : entries_) {
-        const auto key = ores::marketdata::core::make_pillar_quote_key(
-            currency_code_, index_tenor, e.start_tenor_code, e.start_date, e.end_date, e.point_id);
-        datum_uris_.push_back(ores::marketdata::core::pillar_datum_uri(key));
-        auto series = ores::marketdata::core::pillar_series_uri(key);
-        if (std::ranges::find(series_uris_, series) == series_uris_.end())
-            series_uris_.push_back(std::move(series));
+        const ores::marketdata::core::pillar_quote quote{
+            currency_code_, index_tenor, e.start_tenor_code, e.point_id, e.start_date, e.end_date};
+        const auto made = ores::marketdata::core::pillar_quote_datum(quote);
+        if (!made)
+            throw std::invalid_argument("ir_curve_feed: the pillar " + e.start_tenor_code + " to " +
+                                        e.point_id + " names no datum: " + made.error());
+        const auto uri = ores::marketdata::datum::oresmd_uri_codec::write(*made);
+        if (!uri)
+            throw std::invalid_argument("ir_curve_feed: the pillar " + e.start_tenor_code + " to " +
+                                        e.point_id + " has no item: " + uri.error());
+        datum_uris_.push_back(*uri);
+        auto series =
+            ores::marketdata::datum::oresmd_uri_codec::write(ores::marketdata::datum::series_of(*made));
+        if (!series)
+            throw std::invalid_argument("ir_curve_feed: the pillar " + e.start_tenor_code + " to " +
+                                        e.point_id + " has no series: " + series.error());
+        if (std::ranges::find(series_uris_, *series) == series_uris_.end())
+            series_uris_.push_back(std::move(*series));
     }
 }
 

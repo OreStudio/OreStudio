@@ -27,18 +27,26 @@
 using namespace ores::database::repository;
 
 TEST_CASE("a_row_that_is_current_has_no_validity_end", "[repository][mapper_helpers]") {
-    auto lg(ores::logging::make_logger(test_suite));
-    const auto current = make_timestamp(MAX_TIMESTAMP_NAIVE, lg);
+    const auto current = db_timestamp::max();
 
-    CHECK_FALSE(validity_end(current.value()).has_value());
+    CHECK_FALSE(validity_end(current).has_value());
 }
 
 TEST_CASE("a_row_that_ended_has_the_instant_it_ended", "[repository][mapper_helpers]") {
-    auto lg(ores::logging::make_logger(test_suite));
-    const auto ended = make_timestamp("2026-10-11 16:52:50", lg);
+    const auto ended = timestamp_to_timepoint("2026-10-11 16:52:50+00");
 
-    const auto end = validity_end(ended.value());
+    const auto end = validity_end(ended);
     REQUIRE(end.has_value());
-    CHECK(*end == timestamp_to_timepoint(ended.value()));
     CHECK(ores::platform::time::datetime::to_iso8601_utc(*end) == "2026-10-11 16:52:50.000000Z");
+}
+
+TEST_CASE("the instant before never is an instant and not the sentinel",
+          "[repository][mapper_helpers]") {
+    // The sentinel is one value, so the boundary is that value and not the year
+    // it falls in: an instant a microsecond earlier still ends the row.
+    const auto almost = db_timestamp::max() - std::chrono::microseconds(1);
+
+    const auto end = validity_end(almost);
+    REQUIRE(end.has_value());
+    CHECK(*end == almost);
 }

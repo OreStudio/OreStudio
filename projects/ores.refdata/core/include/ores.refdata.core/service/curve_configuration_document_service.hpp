@@ -25,6 +25,7 @@
 #include "ores.refdata.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
+#include <string>
 
 namespace ores::refdata::service {
 
@@ -41,7 +42,21 @@ public:
 
     explicit curve_configuration_document_service(context ctx);
 
-    void save(messaging::curve_configuration_document v);
+    /**
+     * @brief Stores the rows of @p v, each as the version it states.
+     *
+     * A row that states the version it was read at becomes the next version of
+     * that row, and a row that moved on since the read is refused as
+     * =version_conflict= rather than overwritten. A row that states zero is
+     * created. @p reason_code and @p commentary are stamped on every row
+     * written, so the new version says why it was made.
+     *
+     * Only the rows the caller sends are written, so a change to one family does
+     * not version the families the caller did not read.
+     */
+    void save(messaging::curve_configuration_document v,
+              std::string reason_code = {},
+              std::string commentary = {});
 
     /**
      * @brief The document whose header has @p id.

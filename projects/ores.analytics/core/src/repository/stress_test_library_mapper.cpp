@@ -45,19 +45,18 @@ domain::stress_test_library stress_test_library_mapper::map(const stress_test_li
 
     domain::stress_test_library r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
     r.name = v.name;
-    r.configuration_id = v.configuration_id.has_value() ?
-                             boost::lexical_cast<boost::uuids::uuid>(*v.configuration_id) :
-                             boost::uuids::uuid{};
+    r.configuration_id =
+        v.configuration_id.has_value() ? *v.configuration_id : boost::uuids::uuid{};
     r.use_spreaded_term_structures = v.use_spreaded_term_structures;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -67,14 +66,14 @@ stress_test_library_entity stress_test_library_mapper::map(const domain::stress_
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     stress_test_library_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
+    r.party_id = v.party_id;
     r.name = v.name;
     r.configuration_id = v.configuration_id == boost::uuids::uuid{} ?
                              std::nullopt :
-                             std::optional(boost::uuids::to_string(v.configuration_id));
+                             std::optional(v.configuration_id);
     r.use_spreaded_term_structures = v.use_spreaded_term_structures;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

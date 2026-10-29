@@ -192,10 +192,10 @@ void party_contact_information_repository::write(
 
 std::vector<domain::party_contact_information>
 party_contact_information_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_contact_information_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<party_contact_information_entity,
@@ -210,11 +210,11 @@ party_contact_information_repository::read_latest(context ctx) {
 std::vector<domain::party_contact_information>
 party_contact_information_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party contact information. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<party_contact_information_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<party_contact_information_entity,
                                              domain::party_contact_information>(
@@ -232,12 +232,12 @@ party_contact_information_repository::read_latest_by_code(context ctx,
     BOOST_LOG_SEV(lg(), debug)
         << "Reading latest party contact information by party_id/contact_type: " << party_id << "/"
         << contact_type;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<party_contact_information_entity>> |
         query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id &&
-                             "contact_type"_c == contact_type && "valid_to"_c == max.value());
+                             "contact_type"_c == contact_type && "valid_to"_c == max);
 
     return query_builder::execute_read_query<party_contact_information_entity,
                                              domain::party_contact_information>(
@@ -252,12 +252,12 @@ party_contact_information_repository::read_latest_by_contact_type(context ctx,
                                                                   const std::string& contact_type) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party contact information by contact_type: "
                                << contact_type;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<party_contact_information_entity>> |
         query_builder::where("tenant_id"_c == tid && "contact_type"_c == contact_type &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
@@ -358,11 +358,11 @@ party_contact_information_repository::read_latest_by_party_id(
     const std::optional<messaging::party_contact_informations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party contact informations. party_id: "
                                << party_id << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_contact_information_entity>> |
                        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<party_contact_information_entity,
@@ -383,12 +383,12 @@ party_contact_information_repository::get_total_party_contact_information_count_
     const std::optional<messaging::party_contact_informations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active party contact informations count. party_id: " << party_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_contact_information_entity>> |
                        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_count_query<party_contact_information_entity>(
         ctx,
@@ -408,16 +408,13 @@ party_contact_information_repository::read_by_party_id_as_of(
     BOOST_LOG_SEV(lg(), debug) << "Reading party contact informations as of window. party_id: "
                                << party_id;
 
-    const auto vf(
-        make_timestamp(ores::platform::time::datetime::to_db_string(valid_from_bound), lg()));
-    const auto vt(
-        make_timestamp(ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
+    const auto vf(valid_from_bound);
+    const auto vt(valid_to_bound);
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<party_contact_information_entity>> |
-        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id &&
-                             "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
-        query_builder::order_by("id"_c);
+    const auto query = query_builder::read<std::vector<party_contact_information_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id &&
+                                            "valid_from"_c < vt && "valid_to"_c > vf) |
+                       query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<party_contact_information_entity,
                                              domain::party_contact_information>(
@@ -438,7 +435,7 @@ party_contact_information_repository::remove_status party_contact_information_re
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -446,7 +443,7 @@ party_contact_information_repository::remove_status party_contact_information_re
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<party_contact_information_entity> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing party contact information from database.");
@@ -512,11 +509,11 @@ party_contact_information_repository::read_latest(context ctx,
                                                   const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<party_contact_information_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<party_contact_information_entity,
                                                     domain::party_contact_information>(
         ctx,
@@ -537,11 +534,11 @@ void party_contact_information_repository::remove(context ctx,
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<party_contact_information_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(
         ctx, query, lg(), "Batch removing party contact informations.");
 }

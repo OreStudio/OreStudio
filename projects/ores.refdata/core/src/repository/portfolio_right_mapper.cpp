@@ -44,20 +44,16 @@ domain::portfolio_right portfolio_right_mapper::map(const portfolio_right_entity
 
     domain::portfolio_right r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id);
-
-    r.portfolio_id = boost::lexical_cast<boost::uuids::uuid>(v.portfolio_id);
-
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.account_id = v.account_id;
+    r.portfolio_id = v.portfolio_id;
     r.right_code = v.right_code;
-
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -67,16 +63,12 @@ portfolio_right_entity portfolio_right_mapper::map(const domain::portfolio_right
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     portfolio_right_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.account_id = boost::uuids::to_string(v.account_id);
-
-    r.portfolio_id = boost::uuids::to_string(v.portfolio_id);
-
-
+    r.account_id = v.account_id;
+    r.portfolio_id = v.portfolio_id;
     r.right_code = v.right_code;
-
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

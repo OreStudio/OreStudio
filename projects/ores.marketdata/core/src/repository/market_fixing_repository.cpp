@@ -182,10 +182,10 @@ void market_fixing_repository::write(
 }
 
 std::vector<domain::market_fixing> market_fixing_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_fixing_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<market_fixing_entity, domain::market_fixing>(
@@ -199,11 +199,11 @@ std::vector<domain::market_fixing> market_fixing_repository::read_latest(context
 std::vector<domain::market_fixing> market_fixing_repository::read_latest(context ctx,
                                                                          const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market fixing. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<market_fixing_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<market_fixing_entity, domain::market_fixing>(
         ctx,
@@ -241,11 +241,11 @@ market_fixing_repository::remove_status market_fixing_repository::remove(
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<market_fixing_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing market fixing from database.");
     return remove_status::removed;
@@ -303,11 +303,11 @@ std::vector<domain::market_fixing>
 market_fixing_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<market_fixing_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<market_fixing_entity, domain::market_fixing>(
         ctx,
         query,
@@ -326,11 +326,11 @@ void market_fixing_repository::remove(context ctx, const std::vector<std::string
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<market_fixing_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing market fixings.");
 }
 
@@ -338,13 +338,13 @@ void market_fixing_repository::remove(context ctx, const std::vector<std::string
 std::vector<domain::market_fixing>
 market_fixing_repository::read_latest_for_series(context ctx, const boost::uuids::uuid& series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest fixings for series: " << series_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
-    const auto query = query_builder::read<std::vector<market_fixing_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "series_id"_c == sid &&
-                                            "valid_to"_c == max.value()) |
-                       query_builder::order_by("fixing_date"_c);
+    const auto query =
+        query_builder::read<std::vector<market_fixing_entity>> |
+        query_builder::where("tenant_id"_c == tid && "series_id"_c == sid && "valid_to"_c == max) |
+        query_builder::order_by("fixing_date"_c);
 
     return query_builder::execute_read_query<market_fixing_entity, domain::market_fixing>(
         ctx,

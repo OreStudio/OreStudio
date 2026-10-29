@@ -347,7 +347,7 @@ true
 ** payment_lag
 :PROPERTIES:
 :type:     integer
-:cpp_type: std::optional<std::int64_t>
+:cpp_type: std::optional<int>
 :nullable: true
 :economic: true
 :END:

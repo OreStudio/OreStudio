@@ -85,8 +85,14 @@ const PILLAR_ENTITY = 'ores.refdata.ir_curve_bootstrap_pillar';
 /** The most sets one blueprint tab reads: the list is the server's page, not this screen's. */
 const SETS_READ = 200;
 
-/** The fields of one pillar: what it covers and what it bootstraps as. */
+/** The fields of one pillar: what it reads, what it covers, and what it bootstraps as. */
 const PILLAR_FIELDS: readonly FieldSpec[] = [
+    {
+        field: 'market_series_id',
+        history: 'Market Series Id',
+        kind: { kind: 'pick', choices: [] },
+        means: { key: 'marketdata.curveBlueprints.fields.marketSeriesMeans' },
+    },
     {
         field: 'start_tenor_code',
         history: 'Start Tenor Code',
@@ -640,6 +646,15 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
     const seriesState: SeriesState =
         series.state === 'read' ? (uri === undefined ? 'missing' : 'read') : series.state;
     const rows = pillars.data?.rows ?? [];
+    /*
+     * The series a pillar names, drawn as its oresmd URI, or as its id when the
+     * party's catalogue does not hold it: the reference is soft, so a row can
+     * keep naming a series nothing holds any more.
+     */
+    const seriesName = (row: RecordRow): string => {
+        const held = show(row['market_series_id']);
+        return series.choices.find((choice) => choice.value === held)?.label ?? held;
+    };
     const fed = setsOf(sets, id);
     const pageKeys = [
         ['records', CONFIGS, 'key', id],
@@ -740,7 +755,7 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
                 <PartsPanel
                     resource={PILLARS}
                     entityType={PILLAR_ENTITY}
-                    specs={pillarFields(ladder.tenors)}
+                    specs={pillarFields(ladder.tenors, series.choices)}
                     parentField="bootstrap_config_id"
                     parent={id}
                     rows={rows}
@@ -783,6 +798,12 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
                                     code={show(row['curve_role_code'])}
                                     catalogue={labels}
                                 />
+                            ),
+                        },
+                        {
+                            header: t('marketdata.curveBlueprints.columns.marketSeries'),
+                            cell: (row) => (
+                                <span className="font-mono text-xs">{seriesName(row)}</span>
                             ),
                         },
                         {
@@ -918,17 +939,29 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
     );
 }
 
-/** The pillar's fields, with the ladder the pickers draw from. */
+/**
+ * The pillar's fields, with the ladder the pickers draw from and the market
+ * series the party holds.
+ *
+ * A pillar names the market series it reads, so the Add and Edit dialogs pick
+ * one with the standard record picker and draw it as its oresmd URI: the URI is
+ * how a series is named everywhere else in the system, and it says what the
+ * pillar reads without the reader resolving a tenor against a convention.
+ */
 function pillarFields(
     ladder: readonly { readonly value: string; readonly label: string }[],
+    held: readonly { readonly value: string; readonly label: string }[],
 ): readonly FieldSpec[] {
-    return PILLAR_FIELDS.map((spec) =>
-        spec.kind.kind === 'pick' ? { ...spec, kind: { ...spec.kind, choices: ladder } } : spec,
-    );
+    return PILLAR_FIELDS.map((spec) => {
+        if (spec.field === 'market_series_id')
+            return { ...spec, kind: { kind: 'pick', choices: held } } as const;
+        return spec.kind.kind === 'pick'
+            ? ({ ...spec, kind: { ...spec.kind, choices: ladder } } as const)
+            : spec;
+    });
 }
 
-/** One pillar in words, for the title of its dialog and its history entry. */
-function pillarName(
+/** One pillar in words, for the title of its dialog and its history entry. */function pillarName(
     t: (key: string, values?: Readonly<Record<string, string>>) => string,
     row: RecordRow,
 ): string {

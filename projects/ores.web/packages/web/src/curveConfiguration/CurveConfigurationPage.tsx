@@ -18,13 +18,15 @@
  *
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
 import type { ConfigurationDetail } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
+import { useHeld } from '../access/holds.js';
 import {
     curveConfiguration,
+    type CurveChange,
     type CurveConfiguration,
     type CurveEntry,
     type CurveParameter,
@@ -32,17 +34,19 @@ import {
 } from '../api/curveConfiguration.js';
 import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { ParameterControl } from '../parameters/ParameterControl.js';
 import { ParameterRow } from '../parameters/ParameterRow.js';
+import { controlOfValueSet, shortDefault } from '../parameters/control.js';
 import { configurationKey } from '../reporting/ConfigurationPage.js';
 import { TabPane } from '../refdata/parties.js';
 import { RecordTimeline } from '../refdata/RecordTimeline.js';
-import { Crumbs } from '../refdata/shared.js';
+import { Crumbs, ReasonFields, useReason } from '../refdata/shared.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { configurationPath, reportPath } from '../shell/paths.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { EditingModeToggle, useEditingMode, type EditingMode } from '../ui/EditingMode.js';
 import { ParameterDocuments, ParameterFilters } from '../ui/OreParameter.js';
-import { Detail, Notice, PageHeader, Tag } from '../ui/Primitives.js';
+import { Button, Detail, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 
 /**
@@ -58,9 +62,15 @@ import { useTabs } from '../ui/Tabs.js';
  *
  * Every word comes from the server: the sections and their entry elements from
  * the curve section data, each parameter's label, meaning, default and value set
- * from the ORE parameter contract, and each value from the entry's own row. The
- * page reads and does not write, because a save writes the whole thirty-four
- * family document and the guard does not cover the curve tables yet.
+ * from the ORE parameter contract, and each value from the entry's own row.
+ *
+ * A change writes the leaves a person touched and nothing else: the route reads
+ * the stored document, changes those leaves and writes back only the families
+ * they reach, so the rows this page does not draw keep their versions. It states
+ * the version the page read, so a save from a stale page is a conflict the person
+ * reads again, never an overwrite. The blocks an entry holds -- its segments,
+ * quotes and bootstrap -- are named and not yet drawn, so their leaves are not
+ * offered for change.
  */
 
 /** The entity type the history of a curve configuration row is recorded under. */
@@ -72,8 +82,12 @@ export function curveConfigurationKey(configurationId: string): readonly unknown
 }
 
 /** The documentation switch of one leaf of one curve, which the workbench opens. */
-function documentationKey(entryId: string, leaf: CurveParameter): string {
-    return `${entryId}|${leaf.ore}`;
+/**
+ * The key of one leaf on the page: the row that holds it and its ORE name. A
+ * collection row's leaves repeat across rows, so the row is part of the key.
+ */
+function documentationKey(holder: string, leaf: CurveParameter): string {
+    return `${holder}|${leaf.ore}`;
 }
 
 /** The eight characters a person reads to tell one identifier from another. */
@@ -96,6 +110,24 @@ export function CurveConfigurationPage(): ReactNode {
     const { t } = useTranslation();
     const area = useAreaRoot('reporting');
     const [mode, setMode] = useEditingMode();
+    const held = useHeld();
+    const mayWrite = held('refdata::curve_configurations:write');
+    const queries = useQueryClient();
+    /*
+     * A save names the version the page read. The server refuses a version that
+     * moved on, so the page reads again after a save and states a conflict
+     * rather than writing over somebody else's change.
+     */
+    const amend = useMutation({
+        mutationFn: async (amendment: {
+            readonly changes: readonly CurveChange[];
+            readonly reasonCode: string;
+            readonly commentary: string;
+        }) => {
+            await curveConfiguration.amend(id, { ...amendment, version: curve?.version ?? 0 });
+            await queries.invalidateQueries({ queryKey: curveConfigurationKey(id) });
+        },
+    });
     const reading = useQuery({
         queryKey: curveConfigurationKey(id),
         queryFn: () => curveConfiguration.read(id),
@@ -177,7 +209,17 @@ export function CurveConfigurationPage(): ReactNode {
             />
             {panel.bar}
             {pane('details', <DetailsTab curve={curve} name={name} serving={serving.data} />)}
-            {pane('curves', <CurvesTab curve={curve} mode={mode} />)}
+            {pane(
+                'curves',
+                <CurvesTab
+                    curve={curve}
+                    mode={mode}
+                    mayWrite={mayWrite}
+                    onAmend={(changes, reasonCode, commentary) =>
+                        amend.mutateAsync({ changes, reasonCode, commentary })
+                    }
+                />,
+            )}
             {pane('usedBy', <UsedByTab configurationId={id} />)}
             {pane(
                 'history',
@@ -202,9 +244,17 @@ export function CurveConfigurationPage(): ReactNode {
 function CurvesTab({
     curve,
     mode,
+    mayWrite,
+    onAmend,
 }: {
     readonly curve: CurveConfiguration;
     readonly mode: EditingMode;
+    readonly mayWrite: boolean;
+    readonly onAmend: (
+        changes: readonly CurveChange[],
+        reason: string,
+        commentary: string,
+    ) => Promise<void>;
 }): ReactNode {
     const { t } = useTranslation();
     const groups = filled(curve.sections);
@@ -366,6 +416,8 @@ function CurvesTab({
                             section.entries.some((entry) => entry.id === selected.id),
                         )}
                         mode={mode}
+                        mayWrite={mayWrite}
+                        onAmend={onAmend}
                     />
                 )}
             </div>
@@ -378,46 +430,192 @@ function CurveWorkbench({
     entry,
     section,
     mode,
+    mayWrite,
+    onAmend,
 }: {
     readonly entry: CurveEntry;
     readonly section: CurveSection | undefined;
     readonly mode: EditingMode;
+    readonly mayWrite: boolean;
+    readonly onAmend: (
+        changes: readonly CurveChange[],
+        reason: string,
+        commentary: string,
+    ) => Promise<void>;
 }): ReactNode {
-    const { t } = useTranslation();
+    const { t, plural } = useTranslation();
     const [setOnly, setSetOnly] = useState(false);
     const [opened, setOpened] = useState<ReadonlySet<string>>(new Set());
+    /* The text of each leaf while the entry is being changed, keyed by entity and column. */
+    const [editing, setEditing] = useState<Readonly<Record<string, string>> | null>(null);
+    const [commentary, setCommentary] = useState('');
+    const [refusal, setRefusal] = useState<string | null>(null);
+    /* The server's answer when the version moved on, which a save cannot settle. */
+    const [conflict, setConflict] = useState(false);
     /*
      * A curve's identifier and description are its own; the rest are the
      * parameters the section's entry carries, as a product's model and engine
      * settings are the product's.
      */
     const identity = entry.parameters.filter((leaf) => leaf.entity === 'curve_definition');
+    /* A block the page draws rows of is drawn once, as those rows. */
+    const blocks = entry.blocks.filter(
+        (block) => !entry.collections.some((collection) => collection.element === block.element),
+    );
     const parameters = entry.parameters.filter((leaf) => leaf.entity !== 'curve_definition');
     const visible = parameters.filter((leaf) => !setOnly || leaf.value !== null);
-    const gaps = parameters.filter((leaf) => !leaf.documented).length;
-    const allOpen =
-        parameters.length > 0 &&
-        parameters.every((leaf) => opened.has(documentationKey(entry.id, leaf)));
+    const gaps = [
+        ...parameters,
+        ...entry.collections.flatMap((collection) =>
+            collection.rows.flatMap((row) => row.leaves),
+        ),
+    ].filter((leaf) => !leaf.documented).length;
+    const keyOf = (leaf: CurveParameter): string => `${leaf.entity}.${leaf.column}`;
+    const changed =
+        editing === null
+            ? []
+            : entry.parameters.filter(
+                  (leaf) => (editing[keyOf(leaf)] ?? '') !== (leaf.value ?? ''),
+              );
+    const reason = useReason('amend', changed.length > 0);
+    const missing = reason.needsCommentary && commentary.trim() === '';
+    const ready = changed.length > 0 && !missing && reason.code !== '' && !conflict;
+    const save = useMutation({
+        mutationFn: () =>
+            onAmend(
+                changed.map((leaf) => ({
+                    entity: leaf.entity,
+                    entryId: entry.id,
+                    column: leaf.column,
+                    value:
+                        (editing?.[keyOf(leaf)] ?? '') === ''
+                            ? null
+                            : (editing?.[keyOf(leaf)] ?? ''),
+                })),
+                reason.code,
+                commentary.trim(),
+            ),
+        onSuccess: () => {
+            setEditing(null);
+            setCommentary('');
+            setRefusal(null);
+            setConflict(false);
+        },
+        onError: (error) => {
+            setConflict(error instanceof ApiFailure && error.status === 409);
+            setRefusal(error instanceof Error ? error.message : String(error));
+        },
+    });
+    const cancel = (): void => {
+        setEditing(null);
+        setCommentary('');
+        setRefusal(null);
+        setConflict(false);
+    };
+    const edit = (): void =>
+        setEditing(
+            Object.fromEntries(entry.parameters.map((leaf) => [keyOf(leaf), leaf.value ?? ''])),
+        );
+    /*
+     * Every leaf the entry draws, including the ones its collection rows hold, so
+     * the button that opens the documentation opens all of it.
+     */
+    const drawable = [
+        ...parameters.map((leaf) => documentationKey(entry.id, leaf)),
+        ...entry.collections.flatMap((collection) =>
+            collection.rows.flatMap((row) => row.leaves.map((leaf) => documentationKey(row.id, leaf))),
+        ),
+    ];
+    const allOpen = drawable.length > 0 && drawable.every((key) => opened.has(key));
+    const toggle = (key: string): void =>
+        setOpened((before) => {
+            const next = new Set(before);
+            if (!next.delete(key)) {
+                next.add(key);
+            }
+            return next;
+        });
     const leave = (leaf: CurveParameter): ReactNode => {
         const key = documentationKey(entry.id, leaf);
+        const leafKey = keyOf(leaf);
+        const text = editing === null ? null : (editing[leafKey] ?? '');
         return (
             <LeafRow
                 key={key}
                 leaf={leaf}
                 mode={mode}
                 open={opened.has(key)}
-                onToggle={() =>
-                    setOpened((before) => {
-                        const next = new Set(before);
-                        if (!next.delete(key)) {
-                            next.add(key);
-                        }
-                        return next;
-                    })
+                text={text}
+                changed={text !== null && text !== (leaf.value ?? '')}
+                refused={refusal}
+                onText={(value) =>
+                    setEditing((before) =>
+                        before === null ? before : { ...before, [leafKey]: value },
+                    )
                 }
+                onToggle={() => toggle(key)}
             />
         );
     };
+    /*
+     * A collection row is read, not changed in place: the standard draws its rows
+     * as cards and changes them in a dialog, which this page does not offer yet.
+     * Its leaves take the same row and the same documentation as an entry's.
+     */
+    const leafOfRow =
+        (rowId: string) =>
+        (leaf: CurveParameter): ReactNode => {
+            const key = documentationKey(rowId, leaf);
+            return (
+                <LeafRow
+                    key={key}
+                    leaf={leaf}
+                    mode={mode}
+                    open={opened.has(key)}
+                    text={null}
+                    changed={false}
+                    refused={null}
+                    onText={() => undefined}
+                    onToggle={() => toggle(key)}
+                />
+            );
+        };
+    /* The edit and its save sit under the two cards, so the count and the reason
+       are read where the leaves they apply to are. */
+    const foot =
+        mayWrite && editing !== null ? (
+            <section className="card space-y-4 p-4">
+                <header className="flex flex-wrap items-baseline justify-between gap-2">
+                    <h3 className="text-sm font-medium">{t('curveConfiguration.edit.title')}</h3>
+                    <span className="text-xs text-ink-faint">
+                        {t('curveConfiguration.edit.changed', { count: String(changed.length) })}
+                    </span>
+                </header>
+                {conflict ? (
+                    <Notice tone="warn">{t('curveConfiguration.edit.conflict')}</Notice>
+                ) : null}
+                {refusal !== null && !conflict ? <Notice tone="error">{refusal}</Notice> : null}
+                <ReasonFields
+                    reason={reason}
+                    commentary={commentary}
+                    onCommentary={setCommentary}
+                    missing={missing}
+                />
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                    <Button size="sm" variant="ghost" onClick={cancel}>
+                        {t('curveConfiguration.edit.cancel')}
+                    </Button>
+                    <Button
+                        size="sm"
+                        icon="save"
+                        disabled={!ready || save.isPending}
+                        onClick={() => save.mutate()}
+                    >
+                        {t('curveConfiguration.edit.save')}
+                    </Button>
+                </div>
+            </section>
+        ) : null;
     return (
         <div className="space-y-4">
             <section className="card space-y-2 p-4">
@@ -485,13 +683,7 @@ function CurveWorkbench({
                             className="text-xs text-accent hover:text-accent-bright"
                             onClick={() =>
                                 setOpened(
-                                    allOpen
-                                        ? new Set()
-                                        : new Set(
-                                              parameters.map((leaf) =>
-                                                  documentationKey(entry.id, leaf),
-                                              ),
-                                          ),
+                                    allOpen ? new Set() : new Set(drawable),
                                 )
                             }
                         >
@@ -499,6 +691,11 @@ function CurveWorkbench({
                                 ? t('oreParameter.hideAllDocumentation')
                                 : t('oreParameter.showAllDocumentation')}
                         </button>
+                        {mayWrite && editing === null && (
+                            <Button size="sm" icon="edit" onClick={edit}>
+                                {t('curveConfiguration.edit.start')}
+                            </Button>
+                        )}
                     </div>
                 </header>
                 {visible.length === 0 ? (
@@ -510,12 +707,47 @@ function CurveWorkbench({
                 ) : (
                     <ul className="divide-y divide-line-subtle">{visible.map(leave)}</ul>
                 )}
-                {entry.blocks.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-2 border-t border-line-subtle pt-3">
+            </section>
+            {entry.collections.map((collection) => (
+                <section key={collection.element} className="card space-y-2 p-4">
+                    <header className="flex flex-wrap items-baseline justify-between gap-2">
+                        <h3 className="text-sm font-medium">
+                            {t('curveConfiguration.curves.collection', {
+                                element: collection.element,
+                            })}
+                        </h3>
+                        <Tag small>
+                            {plural(
+                                'curveConfiguration.curves.collectionRows',
+                                collection.rows.length,
+                            )}
+                        </Tag>
+                    </header>
+                    <ul className="space-y-3">
+                        {collection.rows.map((row) => (
+                            <li key={row.id} className="rounded-md border border-line-subtle p-3">
+                                <p className="text-xs font-medium">
+                                    {row.kind === ''
+                                        ? t('curveConfiguration.curves.collectionRow', {
+                                              id: shortId(row.id),
+                                          })
+                                        : row.kind}
+                                </p>
+                                <ul className="divide-y divide-line-subtle">
+                                    {row.leaves.map(leafOfRow(row.id))}
+                                </ul>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            ))}
+            {blocks.length > 0 && (
+                <section className="card p-4">
+                    <div className="flex flex-wrap items-center gap-2">
                         <span className="text-xs text-ink-faint">
                             {t('curveConfiguration.curves.blocks')}
                         </span>
-                        {entry.blocks.map((block) => (
+                        {blocks.map((block) => (
                             <span key={block.element} className="flex items-center gap-1">
                                 <Tag small>{block.element}</Tag>
                                 <span className="text-xs text-ink-faint">
@@ -528,8 +760,9 @@ function CurveWorkbench({
                             </span>
                         ))}
                     </div>
-                )}
-            </section>
+                </section>
+            )}
+            {foot}
         </div>
     );
 }
@@ -539,40 +772,69 @@ function LeafRow({
     leaf,
     mode,
     open,
+    text,
+    changed,
+    refused,
+    onText,
     onToggle,
 }: {
     readonly leaf: CurveParameter;
     readonly mode: EditingMode;
     readonly open: boolean;
+    /** The text of the control while the entry is being changed, else null. */
+    readonly text: string | null;
+    readonly changed: boolean;
+    /** The server's words when it refused the save, which the row shows beside its value. */
+    readonly refused: string | null;
+    readonly onText: (value: string) => void;
     readonly onToggle: () => void;
 }): ReactNode {
     const { t } = useTranslation();
     const label = leaf.label === '' ? leaf.ore : leaf.label;
     const words = leaf.choices.find((choice) => choice.value === leaf.value)?.label;
     const flag = leaf.sourceKind === 'boolean';
+    const standard = shortDefault(leaf.defaultText);
+    const invalid = changed && refused !== null;
     return (
-        <li className="space-y-2 py-3">
+        <li className={changed ? 'space-y-2 bg-accent/5 py-3' : 'space-y-2 py-3'}>
             {/* The help is the same sentence the documentation panel gives, because
                 the guide supplies one line for both, so the row states none of it:
                 the documentation is read where it is collapsed. */}
             <ParameterRow label={label} required={leaf.required}>
-                <div className="flex flex-wrap items-center gap-2">
-                    {leaf.value === null ? (
-                        <span className="text-sm text-ink-faint">
-                            {leaf.documented
-                                ? t('oreParameter.defaultIs', { text: leaf.defaultText })
-                                : '—'}
-                        </span>
-                    ) : (
-                        <span className={flag ? 'text-sm' : 'font-mono text-xs'}>
-                            {flag
-                                ? t(leaf.value === 'true' ? 'oreParameter.yes' : 'oreParameter.no')
-                                : words !== undefined && words !== leaf.value
-                                  ? `${words} (${leaf.value})`
-                                  : leaf.value}
-                        </span>
-                    )}
-                </div>
+                {text === null ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                        {leaf.value === null ? (
+                            <span className="text-sm text-ink-faint">
+                                {leaf.documented
+                                    ? t('oreParameter.defaultIs', { text: leaf.defaultText })
+                                    : '—'}
+                            </span>
+                        ) : (
+                            <span className={flag ? 'text-sm' : 'font-mono text-xs'}>
+                                {flag
+                                    ? t(
+                                          leaf.value === 'true'
+                                              ? 'oreParameter.yes'
+                                              : 'oreParameter.no',
+                                      )
+                                    : words !== undefined && words !== leaf.value
+                                      ? `${words} (${leaf.value})`
+                                      : leaf.value}
+                            </span>
+                        )}
+                    </div>
+                ) : (
+                    <ParameterControl
+                        model={controlOfValueSet(leaf)}
+                        label={label}
+                        value={text}
+                        unset={t('oreParameter.defaultOption', {
+                            value: standard === '' ? '—' : standard,
+                        })}
+                        invalid={invalid}
+                        onChange={onText}
+                    />
+                )}
             </ParameterRow>
             <ParameterDocuments
                 doc={{

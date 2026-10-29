@@ -199,11 +199,11 @@ void bond_leg_amortization_repository::write(
 
 std::vector<domain::bond_leg_amortization>
 bond_leg_amortization_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<bond_leg_amortization_entity>> |
-        query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
         query_builder::order_by("trade_id"_c, "leg_role"_c, "leg_number"_c, "sequence_number"_c);
 
     return query_builder::execute_read_query<bond_leg_amortization_entity,
@@ -225,13 +225,13 @@ bond_leg_amortization_repository::read_latest(context ctx,
                                << "trade_id: " << trade_id << " leg_role: " << leg_role
                                << " leg_number: " << leg_number
                                << " sequence_number: " << sequence_number;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<bond_leg_amortization_entity>> |
         query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
                              "leg_role"_c == leg_role && "leg_number"_c == leg_number &&
-                             "sequence_number"_c == sequence_number && "valid_to"_c == max.value());
+                             "sequence_number"_c == sequence_number && "valid_to"_c == max);
 
     return query_builder::execute_read_query<bond_leg_amortization_entity,
                                              domain::bond_leg_amortization>(
@@ -313,11 +313,11 @@ bond_leg_amortization_repository::read_latest_by_trade_id(
     const std::optional<messaging::bond_leg_amortizations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest bond leg amortizations. trade_id: " << trade_id
                                << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_leg_amortization_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<bond_leg_amortization_entity,
@@ -338,12 +338,12 @@ std::uint32_t bond_leg_amortization_repository::get_total_bond_leg_amortization_
     const std::optional<messaging::bond_leg_amortizations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond leg amortizations count. trade_id: "
                                << trade_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_leg_amortization_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_count_query<bond_leg_amortization_entity>(
         ctx,
@@ -362,15 +362,13 @@ std::vector<domain::bond_leg_amortization> bond_leg_amortization_repository::rea
     BOOST_LOG_SEV(lg(), debug) << "Reading bond leg amortizations as of window. trade_id: "
                                << trade_id;
 
-    const auto vf(
-        make_timestamp(ores::platform::time::datetime::to_db_string(valid_from_bound), lg()));
-    const auto vt(
-        make_timestamp(ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
+    const auto vf(valid_from_bound);
+    const auto vt(valid_to_bound);
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<bond_leg_amortization_entity>> |
         query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                             "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
+                             "valid_from"_c < vt && "valid_to"_c > vf) |
         query_builder::order_by("trade_id"_c, "leg_role"_c, "leg_number"_c, "sequence_number"_c);
 
     return query_builder::execute_read_query<bond_leg_amortization_entity,
@@ -400,7 +398,7 @@ bond_leg_amortization_repository::remove(context ctx,
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -410,8 +408,8 @@ bond_leg_amortization_repository::remove(context ctx,
         query_builder::delete_from<bond_leg_amortization_entity> |
         query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
                              "leg_role"_c == leg_role && "leg_number"_c == leg_number &&
-                             "sequence_number"_c == sequence_number &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                             "sequence_number"_c == sequence_number && "valid_to"_c == max &&
+                             "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing bond leg amortization from database.");
@@ -485,13 +483,13 @@ bond_leg_amortization_repository::read_latest(context ctx,
                                               const std::vector<std::string>& sequence_numbers) {
     if (trade_ids.empty() || leg_roles.empty() || leg_numbers.empty() || sequence_numbers.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<bond_leg_amortization_entity>> |
-                       query_builder::where(
-                           "tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
-                           "leg_role"_c.in(leg_roles) && "leg_number"_c.in(leg_numbers) &&
-                           "sequence_number"_c.in(sequence_numbers) && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<bond_leg_amortization_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+                             "leg_role"_c.in(leg_roles) && "leg_number"_c.in(leg_numbers) &&
+                             "sequence_number"_c.in(sequence_numbers) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<bond_leg_amortization_entity,
                                                     domain::bond_leg_amortization>(
         ctx,

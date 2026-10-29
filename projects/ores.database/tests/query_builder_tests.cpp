@@ -25,6 +25,21 @@ using namespace ores::database::query_builder::literals;
 
 namespace {
 
+struct probe_text_entity {
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "probe_text_tbl";
+
+    std::string code;
+    ores::database::repository::db_timestamp valid_to =
+        ores::database::repository::db_timestamp::max();
+
+    static constexpr auto columns() {
+        using e = probe_text_entity;
+        return query_builder::columns<e>() | query_builder::key("code", &e::code) |
+               query_builder::bind_text("valid_to", &e::valid_to);
+    }
+};
+
 struct probe_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "probe_tbl";
@@ -32,7 +47,8 @@ struct probe_entity {
     std::string code;
     std::string tenant_id;
     int version = 0;
-    ores::database::repository::db_timestamp valid_to = "9999-12-31 23:59:59";
+    ores::database::repository::db_timestamp valid_to =
+        ores::database::repository::db_timestamp::max();
 
     static constexpr auto columns() {
         using e = probe_entity;
@@ -59,6 +75,17 @@ TEST_CASE("an insert names every column and an upsert replaces all but the key",
           " values ($1, $2, $3, $4) on conflict (code) do update set"
           " tenant_id = excluded.tenant_id, version = excluded.version,"
           " valid_to = excluded.valid_to");
+}
+
+TEST_CASE("a column the row holds as text is asked for cast to text", "[q]") {
+    const auto query = query_builder::read<std::vector<probe_text_entity>>;
+    const auto s = query_builder::detail::select_sql<probe_text_entity>(
+        query.filter, query.sorting, query.max_rows, query.skip);
+    CHECK(s.sql == "select code, valid_to::text from public.probe_text_tbl");
+    const probe_text_entity row{.code = "x"};
+    const auto params = query_builder::detail::row_params(row);
+    REQUIRE(params.size() == 2);
+    CHECK(params[1].text);
 }
 
 TEST_CASE("a read states its condition, order, limit and offset with bound values", "[q]") {

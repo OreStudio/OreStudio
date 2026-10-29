@@ -168,10 +168,10 @@ void day_counter_repository::write(context ctx,
 }
 
 std::vector<domain::day_counter> day_counter_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<day_counter_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<day_counter_entity, domain::day_counter>(
@@ -185,11 +185,11 @@ std::vector<domain::day_counter> day_counter_repository::read_latest(context ctx
 std::vector<domain::day_counter> day_counter_repository::read_latest(context ctx,
                                                                      const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest day counter. " << "code: " << code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<day_counter_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<day_counter_entity>> |
+        query_builder::where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<day_counter_entity, domain::day_counter>(
         ctx,
@@ -250,7 +250,7 @@ day_counter_repository::remove_status day_counter_repository::remove(
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -258,7 +258,7 @@ day_counter_repository::remove_status day_counter_repository::remove(
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<day_counter_entity> |
                        query_builder::where("tenant_id"_c == tid && "code"_c == code &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing day counter from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -321,11 +321,11 @@ std::vector<domain::day_counter>
 day_counter_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<day_counter_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<day_counter_entity>> |
+        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<day_counter_entity, domain::day_counter>(
         ctx,
         query,
@@ -344,11 +344,11 @@ void day_counter_repository::remove(context ctx, const std::vector<std::string>&
     // asymmetric pair.
     if (codes.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::delete_from<day_counter_entity> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::delete_from<day_counter_entity> |
+        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing day counters.");
 }
 

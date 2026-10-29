@@ -45,31 +45,24 @@ domain::party party_mapper::map(const party_entity& v) {
 
     domain::party r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
     r.short_code = v.short_code;
-
     r.full_name = v.full_name;
     r.codename = v.codename;
     r.transliterated_name = v.transliterated_name;
     r.party_category = v.party_category;
     r.party_type = v.party_type;
-    r.parent_party_id =
-        v.parent_party_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.parent_party_id)) :
-            std::nullopt;
+    r.parent_party_id = v.parent_party_id;
     r.business_center_code = v.business_center_code;
     r.status = v.status;
-    r.image_id = v.image_id.has_value() ?
-                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.image_id)) :
-                     std::nullopt;
+    r.image_id = v.image_id;
     r.is_registration_default = v.is_registration_default;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -79,24 +72,19 @@ party_entity party_mapper::map(const domain::party& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     party_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-
     r.short_code = v.short_code;
-
     r.full_name = v.full_name;
     r.codename = v.codename;
     r.transliterated_name = v.transliterated_name;
     r.party_category = v.party_category;
     r.party_type = v.party_type;
-    r.parent_party_id = v.parent_party_id.has_value() ?
-                            std::optional(boost::uuids::to_string(*v.parent_party_id)) :
-                            std::nullopt;
+    r.parent_party_id = v.parent_party_id;
     r.business_center_code = v.business_center_code;
     r.status = v.status;
-    r.image_id =
-        v.image_id.has_value() ? std::optional(boost::uuids::to_string(*v.image_id)) : std::nullopt;
+    r.image_id = v.image_id;
     r.is_registration_default = v.is_registration_default;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

@@ -118,17 +118,17 @@ def _render(tmp_path, template, output):
     return (output_dir / output).read_text(encoding="utf-8")
 
 
-def test_a_junction_timestamp_column_is_a_string_in_the_entity_struct(tmp_path):
+def test_a_junction_timestamp_column_is_an_instant_in_the_entity_struct(tmp_path):
     header = _render(
         tmp_path, "cpp_domain_type_entity.hpp.mustache", "probe_link_entity.hpp")
 
-    assert "std::string assigned_at;" in header
-    assert "std::chrono::system_clock::time_point assigned_at" not in header
+    assert "db_timestamp assigned_at;" in header
+    assert "std::string assigned_at;" not in header
 
 
-def test_a_junction_timestamp_column_converts_in_both_mapper_directions(tmp_path):
+def test_a_junction_timestamp_column_is_copied_in_both_mapper_directions(tmp_path):
     mapper = _render(
         tmp_path, "cpp_domain_type_mapper.cpp.mustache", "probe_link_mapper.cpp")
 
-    assert "r.assigned_at = timestamp_to_timepoint(std::string_view{v.assigned_at});" in mapper
-    assert "r.assigned_at = ores::platform::time::datetime::to_iso8601_utc(v.assigned_at);" in mapper
+    assert "r.assigned_at = v.assigned_at;" in mapper
+    assert mapper.count("r.assigned_at = v.assigned_at;") == 2

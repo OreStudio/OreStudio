@@ -42,8 +42,8 @@ struct dataset_dependency_entity {
     std::string modified_by;
     std::string change_reason_code;
     std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = db_timestamp::max();
+    db_timestamp valid_to = db_timestamp::max();
 
     /**
      * @brief The columns of the table, named as the members, with the key.
@@ -52,7 +52,7 @@ struct dataset_dependency_entity {
         using e = dataset_dependency_entity;
         namespace query_builder = ores::database::query_builder;
         return query_builder::columns<e>() | query_builder::key("dataset_code", &e::dataset_code) |
-               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind_text("tenant_id", &e::tenant_id) |
                query_builder::bind("dependency_code", &e::dependency_code) |
                query_builder::bind("role", &e::role) |
                query_builder::bind("modified_by", &e::modified_by) |

@@ -130,10 +130,10 @@ void approval_kind_part_repository::write(
 }
 
 std::vector<domain::approval_kind_part> approval_kind_part_repository::read_latest() {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_kind_part_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("kind_code"_c, "part_code"_c);
 
     return query_builder::execute_read_query<approval_kind_part_entity, domain::approval_kind_part>(
@@ -148,10 +148,10 @@ std::vector<domain::approval_kind_part>
 approval_kind_part_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval kind parts with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_kind_part_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("kind_code"_c, "part_code"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -169,14 +169,13 @@ approval_kind_part_repository::read_latest(const std::string& kind_code,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval kind part. " << kind_code << "/"
                                << part_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto kind_code_str = kind_code;
     const auto part_code_str = part_code;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<approval_kind_part_entity>> |
-        query_builder::where("tenant_id"_c == tid && "kind_code"_c == kind_code &&
-                             "part_code"_c == part_code && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<approval_kind_part_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "kind_code"_c == kind_code &&
+                                            "part_code"_c == part_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<approval_kind_part_entity, domain::approval_kind_part>(
         ctx_,
@@ -188,11 +187,11 @@ approval_kind_part_repository::read_latest(const std::string& kind_code,
 
 std::uint32_t approval_kind_part_repository::get_total_approval_kind_part_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval kind parts count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_kind_part_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<approval_kind_part_entity>(
         ctx_, query, std::nullopt, lg(), "Counting approval kind parts");
@@ -204,11 +203,11 @@ std::vector<domain::approval_kind_part>
 approval_kind_part_repository::read_latest_by_kind(const std::string& kind_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval kind parts. Kind: " << kind_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_kind_part_entity>> |
                        query_builder::where("tenant_id"_c == tid && "kind_code"_c == kind_code &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("part_code"_c);
 
     auto rows =
@@ -226,11 +225,11 @@ std::vector<domain::approval_kind_part>
 approval_kind_part_repository::read_latest_by_part(const std::string& part_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval kind parts. Part: " << part_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_kind_part_entity>> |
                        query_builder::where("tenant_id"_c == tid && "part_code"_c == part_code &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("kind_code"_c);
 
     auto rows =
@@ -249,11 +248,11 @@ std::vector<domain::approval_kind_part> approval_kind_part_repository::read_late
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval kind parts. Kind: " << kind_code
                                << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_kind_part_entity>> |
                        query_builder::where("tenant_id"_c == tid && "kind_code"_c == kind_code &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("part_code"_c) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
@@ -272,12 +271,12 @@ std::uint32_t approval_kind_part_repository::get_total_approval_kind_part_count_
     const std::string& kind_code) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval kind parts count. Kind: "
                                << kind_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_kind_part_entity>> |
                        query_builder::where("tenant_id"_c == tid && "kind_code"_c == kind_code &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<approval_kind_part_entity>(
         ctx_, query, std::nullopt, lg(), "Counting approval kind parts");
@@ -289,12 +288,12 @@ std::uint32_t approval_kind_part_repository::get_total_approval_kind_part_count_
     const std::string& part_code) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval kind parts count. Part: "
                                << part_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_kind_part_entity>> |
                        query_builder::where("tenant_id"_c == tid && "part_code"_c == part_code &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<approval_kind_part_entity>(
         ctx_, query, std::nullopt, lg(), "Counting approval kind parts");
@@ -366,7 +365,7 @@ approval_kind_part_repository::remove(const std::string& kind_code,
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -376,8 +375,8 @@ approval_kind_part_repository::remove(const std::string& kind_code,
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::delete_from<approval_kind_part_entity> |
                        query_builder::where("tenant_id"_c == tid && "kind_code"_c == kind_code &&
-                                            "part_code"_c == part_code &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "part_code"_c == part_code && "valid_to"_c == max &&
+                                            "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx_, query, lg(), "removing approval kind part from database");

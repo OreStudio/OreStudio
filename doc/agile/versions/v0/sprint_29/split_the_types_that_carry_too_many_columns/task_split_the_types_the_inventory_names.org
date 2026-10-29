@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: 9844D039-9694-4290-9A97-3A755770911B
+:END:
+#+title: Task: Split the types the inventory names
+#+description: Split, worst first, the persisted types the inventory calls one aggregate over several components, so that each type holds one component.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-design:modeling:refdata:split_the_types_that_carry_too_many_columns:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: Inventory the types that carry too many columns (066BEB24)
+#+blocked_since: 2026-10-29
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each type on the inventory's split list becomes the components the inventory names. Each component has its own type, key, codec, repository and row, and whatever carried the aggregate carries one typed array per component, joined by key.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:066BEB24-5BFB-4D30-85E2-723E90C75712][Inventory the types that carry too many columns]] |
+| Next         | Wait for the inventory's verdicts.     |
+| Last touched | 2026-10-29                               |
+
+* Acceptance
+
+- The types on the inventory's split list are split in the order it gives.
+- Each part has its own key, codec, repository and SQL table, and the model, generated code, TypeScript twins, seed data and fixtures change in one change per type.
+- Each split states its wire change, and no part's fields appear as a nested object inside another.
+- No entity's query-builder tuple is wider than the widest component the inventory allows, and the C1202 recorded on 2026-10-29 does not reproduce.
+- The database is recreated, not migrated.
+
+* Plan
+
+** The order
+
+The inventory ranks the types. This task takes them in that order, one PR per
+type, and does not start a type the inventory has not judged =split=. A type the
+inventory cleared is not touched, however wide it looks.
+
+** The shape a split takes
+
+The target is [[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][The atomised entity:
+a central row and its parts]]: the central row keeps the identity and whatever
+the parts must agree on, and each part is a type of its own with its own key,
+its own table, its own codec and its own repository. A part that only one screen
+reads does not live in the central row.
+
+A block that shares the parent's key, is written by the same owner, and is
+always read with the parent is not a part: it is a field group, and the
+inventory says so.
+
+** What moves in one change
+
+A split is one change, because half a split does not build:
+
+1. the model file, split into one model per part;
+2. every generated address regenerated: SQL, C++ domain, repository, service,
+   protocol, and the TypeScript twins;
+3. the seed data and fixtures the type feeds;
+4. whatever carried the aggregate — a message, a document, a screen — becomes
+   one typed array per part, joined by key;
+5. the database recreated, never migrated.
+
+** What proves it
+
+- The parts' rows join to the central row on the key, and no part holds a column
+  the inventory gave to another part.
+- The wire carries one typed array per part. No part's fields appear as a nested
+  object inside another's.
+- The query builder's tuple for the type is no wider than the widest part, and
+  the C1202 recorded on 2026-10-29 does not reproduce on the widest remaining
+  entity.
+- Every suite passes, and the screens that read the type still read it.
+
+** What this task does not do
+
+- No compiler flag, no unity exclusion, no field-group reshuffle to reach a
+  column count. Those are treatments for the symptom, and the story exists
+  because the symptom has a cause.
+- No migration: the database is recreated, per the project's rule.
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

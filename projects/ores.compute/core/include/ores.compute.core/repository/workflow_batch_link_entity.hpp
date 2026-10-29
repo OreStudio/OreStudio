@@ -27,6 +27,9 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -37,16 +40,21 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a workflow batch link in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct workflow_batch_link_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_compute_workflow_batch_links_tbl";
 
-    std::string batch_id;
-    std::string tenant_id;
+    boost::uuids::uuid batch_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     std::string workflow_step_id;
     std::string workflow_instance_id;
-    std::string created_at;
+    db_timestamp created_at;
 
     /**
      * @brief The columns of the table, named as the members, with the key.

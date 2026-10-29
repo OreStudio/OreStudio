@@ -27,6 +27,9 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -37,20 +40,25 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a bond issue leg schedule in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct bond_issue_leg_schedule_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_bond_issue_leg_schedules_tbl";
 
-    std::string issue_id;
-    std::string leg_number;
+    boost::uuids::uuid issue_id;
+    int leg_number;
     std::string schedule_role;
-    std::string sequence_number;
-    std::string tenant_id;
+    int sequence_number;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     std::string schedule_kind;
-    std::optional<std::string> start_date;
-    std::optional<std::string> end_date;
+    std::optional<std::chrono::year_month_day> start_date;
+    std::optional<std::chrono::year_month_day> end_date;
     std::optional<std::string> adjust_end_date_to_previous_month_end;
     std::optional<std::string> tenor;
     std::optional<std::string> calendar;
@@ -59,8 +67,8 @@ struct bond_issue_leg_schedule_entity {
     std::optional<std::string> rule;
     std::optional<std::string> end_of_month;
     std::optional<std::string> end_of_month_convention;
-    std::optional<std::string> first_date;
-    std::optional<std::string> last_date;
+    std::optional<std::chrono::year_month_day> first_date;
+    std::optional<std::chrono::year_month_day> last_date;
     std::optional<bool> remove_first_date;
     std::optional<bool> remove_last_date;
     std::optional<std::string> include_duplicate_dates;
@@ -68,8 +76,8 @@ struct bond_issue_leg_schedule_entity {
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = db_timestamp::max();
+    db_timestamp valid_to = db_timestamp::max();
 
     /**
      * @brief The columns of the table, named as the members, with the key.

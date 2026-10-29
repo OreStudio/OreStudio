@@ -180,10 +180,10 @@ void trade_party_role_repository::write(
 }
 
 std::vector<domain::trade_party_role> trade_party_role_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_party_role_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("trade_id"_c, "role"_c);
 
     return query_builder::execute_read_query<trade_party_role_entity, domain::trade_party_role>(
@@ -198,11 +198,11 @@ std::vector<domain::trade_party_role> trade_party_role_repository::read_latest(
     context ctx, const std::string& trade_id, const std::string& role) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade party role. " << "trade_id: " << trade_id
                                << " role: " << role;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_party_role_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "role"_c == role && "valid_to"_c == max.value());
+                                            "role"_c == role && "valid_to"_c == max);
 
     return query_builder::execute_read_query<trade_party_role_entity, domain::trade_party_role>(
         ctx,
@@ -264,11 +264,11 @@ std::vector<domain::trade_party_role> trade_party_role_repository::read_latest_b
     const std::optional<messaging::trade_party_roles_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade party roles. trade_id: " << trade_id
                                << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_party_role_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<trade_party_role_entity,
@@ -288,12 +288,12 @@ std::uint32_t trade_party_role_repository::get_total_role_count_by_trade_id(
     const std::optional<messaging::trade_party_roles_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade party roles count. trade_id: "
                                << trade_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_party_role_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_count_query<trade_party_role_entity>(
         ctx,
@@ -318,7 +318,7 @@ trade_party_role_repository::remove(context ctx,
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -327,7 +327,7 @@ trade_party_role_repository::remove(context ctx,
     const auto query =
         query_builder::delete_from<trade_party_role_entity> |
         query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id && "role"_c == role &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                             "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing trade party role from database.");
@@ -394,11 +394,11 @@ std::vector<domain::trade_party_role> trade_party_role_repository::read_latest(
     context ctx, const std::vector<std::string>& trade_ids, const std::vector<std::string>& roles) {
     if (trade_ids.empty() || roles.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_party_role_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
-                                            "role"_c.in(roles) && "valid_to"_c == max.value());
+                                            "role"_c.in(roles) && "valid_to"_c == max);
     auto result =
         query_builder::execute_read_query<trade_party_role_entity, domain::trade_party_role>(
             ctx,

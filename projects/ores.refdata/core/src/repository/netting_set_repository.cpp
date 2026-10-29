@@ -193,10 +193,10 @@ void netting_set_repository::write(context ctx,
 }
 
 std::vector<domain::netting_set> netting_set_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<netting_set_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<netting_set_entity, domain::netting_set>(
@@ -210,11 +210,11 @@ std::vector<domain::netting_set> netting_set_repository::read_latest(context ctx
 std::vector<domain::netting_set> netting_set_repository::read_latest(context ctx,
                                                                      const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest netting set. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<netting_set_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<netting_set_entity, domain::netting_set>(
         ctx,
@@ -227,11 +227,11 @@ std::vector<domain::netting_set> netting_set_repository::read_latest(context ctx
 std::vector<domain::netting_set>
 netting_set_repository::read_latest_by_code(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest netting set by code: " << code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<netting_set_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<netting_set_entity>> |
+        query_builder::where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max);
 
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
@@ -323,12 +323,12 @@ std::vector<domain::netting_set> netting_set_repository::read_latest_by_netting_
     BOOST_LOG_SEV(lg(), debug) << "Reading latest netting sets. netting_agreement_id: "
                                << netting_agreement_id << " offset: " << offset
                                << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<netting_set_entity>> |
                        query_builder::where("tenant_id"_c == tid &&
                                             "netting_agreement_id"_c == netting_agreement_id &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<netting_set_entity, domain::netting_set>(
@@ -348,13 +348,13 @@ std::uint32_t netting_set_repository::get_total_netting_set_count_by_netting_agr
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active netting sets count. netting_agreement_id: "
         << netting_agreement_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<netting_set_entity>> |
                        query_builder::where("tenant_id"_c == tid &&
                                             "netting_agreement_id"_c == netting_agreement_id &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_count_query<netting_set_entity>(
         ctx,
@@ -374,12 +374,12 @@ std::vector<domain::netting_set> netting_set_repository::read_latest_by_credit_l
     const std::optional<messaging::netting_sets_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest netting sets. credit_limit_id: "
                                << credit_limit_id << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<netting_set_entity>> |
         query_builder::where("tenant_id"_c == tid && "credit_limit_id"_c == credit_limit_id &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<netting_set_entity, domain::netting_set>(
@@ -398,13 +398,13 @@ std::uint32_t netting_set_repository::get_total_netting_set_count_by_credit_limi
     const std::optional<messaging::netting_sets_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active netting sets count. credit_limit_id: "
                                << credit_limit_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<netting_set_entity>> |
         query_builder::where("tenant_id"_c == tid && "credit_limit_id"_c == credit_limit_id &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     return query_builder::execute_count_query<netting_set_entity>(
         ctx,
@@ -425,7 +425,7 @@ netting_set_repository::remove_status netting_set_repository::remove(
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -433,7 +433,7 @@ netting_set_repository::remove_status netting_set_repository::remove(
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<netting_set_entity> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing netting set from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -496,11 +496,11 @@ std::vector<domain::netting_set>
 netting_set_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<netting_set_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<netting_set_entity, domain::netting_set>(
         ctx,
         query,
@@ -519,11 +519,11 @@ void netting_set_repository::remove(context ctx, const std::vector<std::string>&
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<netting_set_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing netting sets.");
 }
 

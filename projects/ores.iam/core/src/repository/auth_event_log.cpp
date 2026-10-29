@@ -18,6 +18,7 @@
  *
  */
 #include "ores.iam.core/repository/auth_event_log.hpp"
+#include "ores.database/pq/text.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
@@ -222,7 +223,7 @@ auth_event_log::read_events(const context& ctx,
 
         repository::auth_event_entity e;
         e.id = row[0].value_or("");
-        e.event_time = row[1].value_or("");
+        e.event_time = ores::database::pq::parse_timestamp_text(row[1].value_or(""));
         e.tenant_id = row[2].value_or("");
         e.account_id = row[3].value_or("");
         e.event_type = row[4].value_or("");

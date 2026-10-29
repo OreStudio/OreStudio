@@ -570,6 +570,30 @@ CATALOGUE: tuple[Check, ...] = (
             " while the two disagree.",
     ),
     Check(
+        id="entity-binary-types",
+        title="A row binds each column in the format its column's type defines",
+        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_entity_binary_types.py"),
+        classes=("cpp", "sql", "modeling", "codegen"),
+        paths=(
+            "projects/*/*/include/*/repository/*_entity.hpp",
+            "projects/*/modeling/*.org",
+            "projects/*/*/modeling/*.org",
+            "projects/ores.sql/create/*/*_create.sql",
+            # The generator and its templates are what decide whether a column
+            # binds binary or as text, so a change there must run the check.
+            "projects/ores.codegen/src/*.py",
+            "projects/ores.codegen/src/*/*.py",
+            "projects/ores.codegen/library/templates/*",
+            "projects/ores.codegen/scripts/check_entity_binary_types.py",
+        ),
+        fix="Give the model the type its column has and regenerate, or state the"
+            " column as text when the row keeps a type the layer has no codec for."
+            " The statement names no parameter types, so the server infers each"
+            " from its column and refuses a member's bytes with incorrect binary"
+            " data format in bind parameter N. model-sql-types compares the model"
+            " with the table and neither of them with the member.",
+    ),
+    Check(
         id="sql-hygiene",
         title="The SQL tree has no unterminated comment or repeated index",
         argv=("python3", "projects/ores.sql/utility/check_sql_hygiene.py", "projects/ores.sql"),
@@ -614,6 +638,10 @@ CATALOGUE: tuple[Check, ...] = (
             "projects/ores.sql/utility/convention_parameter_rows.py",
             "projects/ores.sql/utility/convention_terms.json",
             "projects/ores.sql/utility/convention_term_curation.json",
+            "projects/ores.sql/utility/curve_parameter_rows.py",
+            "projects/ores.sql/utility/curve_terms.json",
+            "projects/ores.sql/utility/curve_term_curation.json",
+            "projects/ores.sql/utility/extract_curve_terms.py",
         ),
         fix="Run projects/ores.sql/utility/generate_ore_parameters_dataset.py and commit the seed.",
     ),
@@ -624,7 +652,14 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("sql",),
         paths=(
             "projects/ores.sql/populate/reporting/reporting_ore_parameter_value_sets_populate.sql",
+            "projects/ores.sql/populate/reporting/reporting_ore_parameter_vocabularies_populate.sql",
             "projects/ores.sql/utility/generate_value_sets.py",
+            "projects/ores.sql/utility/curve_value_sets.py",
+            "projects/ores.sql/utility/curve_parameter_rows.py",
+            "projects/ores.sql/utility/curve_terms.json",
+            "projects/ores.sql/utility/curve_term_curation.json",
+            "projects/ores.sql/utility/curve_value_set_curation.json",
+            "projects/ores.sql/utility/ore_parameter_vocabularies.json",
             "projects/ores.sql/utility/convention_value_sets.py",
             "projects/ores.sql/utility/convention_parameter_rows.py",
             "projects/ores.sql/utility/convention_terms.json",
@@ -693,6 +728,27 @@ CATALOGUE: tuple[Check, ...] = (
         ),
         fix="Run projects/ores.sql/utility/generate_curve_section_parameters.py"
             " and commit the module.",
+    ),
+    Check(
+        id="curve-column-guards",
+        title="The curve column map and its guard are the projection's",
+        argv=(
+            "python3",
+            "projects/ores.sql/utility/generate_curve_column_guards.py",
+            "--check",
+        ),
+        classes=("sql", "cpp", "modeling"),
+        paths=(
+            "projects/ores.sql/populate/refdata/refdata_curve_configuration_columns_populate.sql",
+            "projects/ores.sql/create/refdata/refdata_curve_configuration_columns_validate_create.sql",
+            "projects/ores.sql/drop/refdata/refdata_curve_configuration_columns_validate_drop.sql",
+            "projects/ores.sql/utility/generate_curve_column_guards.py",
+            "projects/ores.sql/utility/generate_curve_section_parameters.py",
+            "projects/ores.ore/core/src/domain/curve_configuration_projection.cpp",
+            "external/ore/xsd/curveconfig.xsd",
+        ),
+        fix="Run projects/ores.sql/utility/generate_curve_column_guards.py"
+            " and commit the map, the guard and the drop.",
     ),
     Check(
         id="marketdata-identity-columns",
@@ -977,7 +1033,15 @@ CATALOGUE: tuple[Check, ...] = (
     Check(
         id="db",
         title="The database rebuilds from the schema and the populate scripts",
-        argv=("./compass.sh", "db", "recreate", "-y", "-k"),
+        # The rebuild terminates every connection and then counts what is left,
+        # so a fleet that is still up reconnects inside the half second it waits
+        # and the count refuses the rebuild. Stopping the fleet is what makes
+        # the check a statement about the schema rather than about timing.
+        argv=(
+            "bash",
+            "-c",
+            "./compass.sh services stop || true; ./compass.sh db recreate -y -k",
+        ),
         classes=("cpp", "services", "sql"),
         phase=HEAVY,
         timeout=7200,
@@ -998,6 +1062,7 @@ CATALOGUE: tuple[Check, ...] = (
         ),
         classes=("cpp", "services", "sql"),
         phase=HEAVY,
+        after=("db",),
         timeout=7200,
     ),
     # A fresh database, the services, a provisioned tenant and a tick: the one
@@ -1037,6 +1102,7 @@ CATALOGUE: tuple[Check, ...] = (
         argv=("./projects/ores.sql/test/run_tests.sh",),
         classes=("sql",),
         phase=HEAVY,
+        after=("db",),
         timeout=1800,
         fix="Read the suite's plan line and the first ERROR it printed.",
     ),
@@ -1059,6 +1125,9 @@ CATALOGUE: tuple[Check, ...] = (
         ),
         classes=("cpp", "services"),
         phase=HEAVY,
+        # It starts the fleet, and the smoke before it does the same on a fresh
+        # database. Two starts beside each other race.
+        after=("ticks-smoke",),
         timeout=300,
         fix="Serve the family with one step_routes table and serve_step_commands,"
             " so the stream carries one durable named '<stream>_consumer'. If it"

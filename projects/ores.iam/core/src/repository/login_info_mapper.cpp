@@ -46,14 +46,18 @@ domain::login_info login_info_mapper::map(const login_info_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::login_info r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id);
-    r.last_ip = boost::asio::ip::make_address(v.last_ip);
-    r.last_attempt_ip = boost::asio::ip::make_address(v.last_attempt_ip);
+    r.tenant_id = v.tenant_id;
+    r.account_id = v.account_id;
+    // PostgreSQL renders an inet with its netmask, and the domain holds an
+    // address, which has none: the mask is the part this type cannot carry.
+    r.last_ip = boost::asio::ip::make_address(v.last_ip.substr(0, v.last_ip.find('/')));
+    // PostgreSQL renders an inet with its netmask, and the domain holds an
+    // address, which has none: the mask is the part this type cannot carry.
+    r.last_attempt_ip =
+        boost::asio::ip::make_address(v.last_attempt_ip.substr(0, v.last_attempt_ip.find('/')));
     r.failed_logins = v.failed_logins;
     r.locked = v.locked;
-    r.last_login = v.last_login.has_value() ? std::optional(timestamp_to_timepoint(*v.last_login)) :
-                                              std::nullopt;
+    r.last_login = v.last_login;
     r.online = v.online;
     r.password_reset_required = v.password_reset_required;
 
@@ -65,15 +69,13 @@ login_info_entity login_info_mapper::map(const domain::login_info& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     login_info_entity r;
-    r.account_id = boost::uuids::to_string(v.account_id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.account_id = v.account_id;
+    r.tenant_id = v.tenant_id;
     r.last_ip = v.last_ip.to_string();
     r.last_attempt_ip = v.last_attempt_ip.to_string();
     r.failed_logins = v.failed_logins;
     r.locked = v.locked;
-    r.last_login = v.last_login.has_value() ?
-                       std::optional(ores::platform::time::datetime::to_db_string(*v.last_login)) :
-                       std::nullopt;
+    r.last_login = v.last_login;
     r.online = v.online;
     r.password_reset_required = v.password_reset_required;
 

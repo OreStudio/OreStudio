@@ -27,6 +27,9 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -37,13 +40,18 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a dataset in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct dataset_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_dq_datasets_tbl";
 
-    std::string id;
-    std::string tenant_id;
+    boost::uuids::uuid id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
 
     std::string code;
@@ -55,23 +63,23 @@ struct dataset_entity {
     std::string origin_code;
     std::string nature_code;
     std::string treatment_code;
-    std::optional<std::string> methodology_id;
+    std::optional<boost::uuids::uuid> methodology_id;
     std::string name;
     std::string description;
     std::string source_system_id;
     std::string business_context;
-    std::optional<std::string> upstream_derivation_id;
+    std::optional<boost::uuids::uuid> upstream_derivation_id;
     int lineage_depth = 0;
-    std::string as_of_date;
-    std::string ingestion_timestamp;
+    db_timestamp as_of_date;
+    db_timestamp ingestion_timestamp;
     std::optional<std::string> license_info;
     std::string artefact_type;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = db_timestamp::max();
+    db_timestamp valid_to = db_timestamp::max();
 
     /**
      * @brief The columns of the table, named as the members, with the key.

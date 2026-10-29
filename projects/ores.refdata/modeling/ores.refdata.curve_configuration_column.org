@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 5B8E2C14-9D3A-4F71-8A26-1C4D7E9B3F58
+:END:
+#+title: ores.refdata.curve_configuration_column
+#+description: Codegen entity model for the refdata =curve_configuration_column= table. One column of a curve family table, and the ORE leaf it holds.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: One column of a curve family table, and the leaf of the document it holds.
+#+entity_singular: curve_configuration_column
+#+entity_plural: curve_configuration_columns
+#+entity_title: Curve Configuration Column
+#+created: 2026-10-29
+#+updated: 2026-10-29
+
+A curve configuration is stored one family table per section, and each column of
+those tables holds one leaf of the ORE document. This table names that leaf, so
+the store can check a value against the set the leaf accepts without holding a
+copy of the projection in a trigger body.
+
+The rows are generated from the same projection and schema that draw the page's
+columns, so the map and the screen cannot disagree.
+
+* Flags
+:PROPERTIES:
+:schema:                    public
+:product:                   ores
+:component:                 refdata
+:profile:                   simple-lookup
+:sql_only:                  true
+:system_tenant_validation:  true
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:rls_tenant_isolation:      true
+:tablename: ores_refdata_curve_configuration_columns_tbl
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:primary_key:  true
+:END:
+
+The column's code, which names the entity and the column, for example
+=yield_curve_config|interpolation_method=.
+
+** entity_name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The entity the column belongs to, spelled as the projection names it, for example
+=yield_curve_config=.
+
+** column_name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The column, as the table spells it, for example =interpolation_method=.
+
+** table_name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The table the column lives in, for example =ores_refdata_yield_curve_configs_tbl=.
+
+** schema_name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The ORE schema the leaf is documented in, for example =curveconfig.xsd=.
+
+** xpath
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The leaf's path in the ORE document, which is how the parameter contract names it.

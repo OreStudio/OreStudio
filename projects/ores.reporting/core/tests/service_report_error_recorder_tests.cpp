@@ -122,8 +122,7 @@ std::string write_bundle(const ores::database::context& ctx,
     bundle.trade_count = 3;
     bundle.trade_versions = trade_versions;
     bundle.series_count = 2;
-    bundle.created_at =
-        ores::platform::time::datetime::to_db_string(std::chrono::system_clock::now());
+    bundle.created_at = std::chrono::system_clock::now();
 
     ores::reporting::repository::report_input_bundle_repository bundles;
     bundles.create(ctx, bundle);

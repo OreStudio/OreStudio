@@ -180,10 +180,10 @@ void portfolio_repository::write(context ctx,
 }
 
 std::vector<domain::portfolio> portfolio_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<portfolio_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<portfolio_entity, domain::portfolio>(
@@ -197,11 +197,11 @@ std::vector<domain::portfolio> portfolio_repository::read_latest(context ctx) {
 std::vector<domain::portfolio> portfolio_repository::read_latest(context ctx,
                                                                  const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<portfolio_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<portfolio_entity, domain::portfolio>(
         ctx,
@@ -214,11 +214,11 @@ std::vector<domain::portfolio> portfolio_repository::read_latest(context ctx,
 std::vector<domain::portfolio> portfolio_repository::read_latest_by_name(context ctx,
                                                                          const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio by name: " << name;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<portfolio_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "name"_c == name &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<portfolio_entity>> |
+        query_builder::where("tenant_id"_c == tid && "name"_c == name && "valid_to"_c == max);
 
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
@@ -308,11 +308,11 @@ std::vector<domain::portfolio> portfolio_repository::read_latest_by_sandbox_id(
     const std::optional<messaging::portfolios_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolios. sandbox_id: " << sandbox_id
                                << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<portfolio_entity>> |
                        query_builder::where("tenant_id"_c == tid && "sandbox_id"_c == sandbox_id &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<portfolio_entity, domain::portfolio>(
@@ -331,12 +331,12 @@ std::uint32_t portfolio_repository::get_total_portfolio_count_by_sandbox_id(
     const std::optional<messaging::portfolios_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active portfolios count. sandbox_id: "
                                << sandbox_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<portfolio_entity>> |
                        query_builder::where("tenant_id"_c == tid && "sandbox_id"_c == sandbox_id &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_count_query<portfolio_entity>(
         ctx, query, portfolio_filter_condition(filter), lg(), "Counting portfolios by sandbox_id");
@@ -353,7 +353,7 @@ portfolio_repository::remove_status portfolio_repository::remove(
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -361,7 +361,7 @@ portfolio_repository::remove_status portfolio_repository::remove(
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<portfolio_entity> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing portfolio from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -422,11 +422,11 @@ std::vector<domain::portfolio>
 portfolio_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<portfolio_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<portfolio_entity, domain::portfolio>(
         ctx,
         query,
@@ -445,11 +445,11 @@ void portfolio_repository::remove(context ctx, const std::vector<std::string>& i
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<portfolio_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing portfolios.");
 }
 

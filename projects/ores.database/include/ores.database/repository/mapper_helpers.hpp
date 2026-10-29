@@ -121,40 +121,14 @@ timestamp_to_timepoint(std::string_view timestamp_str) {
 }
 
 /**
- * @brief Converts a db_timestamp to a std::chrono::system_clock::time_point.
- *
- * Formats the timestamp back to a string and passes it through from_iso8601_utc
- * so that both overloads use the same parsing path. The "+00" suffix is appended
- * explicitly because db_timestamp::str() (strftime) does not emit a timezone
- * designator, but from_iso8601_utc requires one to confirm UTC intent.
- *
- * Throws std::invalid_argument if the timestamp represents an invalid date
- * (e.g. a zero-initialised db_timestamp), making failures visible rather than
- * silently returning epoch.
- *
- * @param ts The db_timestamp to convert
- * @return A system_clock::time_point representing the UTC instant
- * @throws std::invalid_argument if parsing fails
- *
- * @example
- * auto tp = timestamp_to_timepoint(entity.last_login);
- */
-inline std::chrono::system_clock::time_point timestamp_to_timepoint(const db_timestamp& ts) {
-    return platform::time::datetime::from_iso8601_utc(ts.str() + "+00");
-}
-
-/**
  * @brief The instant a bitemporal row stopped being valid, when it has stopped.
  *
- * A row that is current ends at the maximum timestamp, which stands for
- * "never" and is not an instant anyone means. A row whose end is any other
- * value was closed or replaced at that instant. Reading the end through here
- * keeps the sentinel in one place, so a caller never compares a timestamp with
- * it, and never reads the sentinel as the year 9999.
- *
- * The sentinel is compared as text, before any conversion: a
- * std::chrono::system_clock::time_point counts nanoseconds and cannot hold
- * the year 9999, so converting the sentinel first would overflow.
+ * A row that is current ends at the clock's maximum, which stands for "never"
+ * and is not an instant anyone means; the database stores it as 9999-12-31
+ * 23:59:59, and the layer's codecs read that back as the maximum. A row whose
+ * end is any other value was closed or replaced at that instant. Reading the
+ * end through here keeps the sentinel in one place, so a caller never compares
+ * a timestamp with it.
  *
  * @param valid_to The row's valid_to, as the entity holds it
  * @return The instant the row ended, or nothing while it is current
@@ -164,30 +138,9 @@ inline std::chrono::system_clock::time_point timestamp_to_timepoint(const db_tim
  */
 inline std::optional<std::chrono::system_clock::time_point>
 validity_end(const db_timestamp& valid_to) {
-    if (valid_to.str() == MAX_TIMESTAMP_NAIVE)
+    if (valid_to == db_timestamp::max())
         return std::nullopt;
-    return timestamp_to_timepoint(valid_to);
-}
-
-/**
- * @brief Converts a system_clock::time_point to a db_timestamp.
- *
- * The inverse of timestamp_to_timepoint(const db_timestamp&). Formats via
- * datetime::to_db_string, which already produces db_timestamp's own
- * "%Y-%m-%d %H:%M:%S" format (to_iso8601_utc with the trailing "Z" stripped),
- * so the string round-trips through db_timestamp's strptime-based constructor
- * without a separate timezone designator.
- *
- * @param tp The time_point to convert (interpreted as a UTC instant)
- * @param lg Logger for a debug trace of the conversion
- * @return A db_timestamp representing the same UTC instant
- */
-inline db_timestamp timepoint_to_timestamp(const std::chrono::system_clock::time_point& tp,
-                                           logging::logger_t& lg) {
-    using namespace ores::logging;
-    const auto str = platform::time::datetime::to_db_string(tp);
-    BOOST_LOG_SEV(lg, debug) << "Converted time_point to db_timestamp: " << str;
-    return db_timestamp(str);
+    return valid_to;
 }
 
 }

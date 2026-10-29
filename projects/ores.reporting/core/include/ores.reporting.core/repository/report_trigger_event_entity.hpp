@@ -27,6 +27,8 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <ostream>
@@ -38,20 +40,25 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a report trigger event in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct report_trigger_event_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_reporting_report_trigger_events_tbl";
 
-    std::string id;
-    std::string tenant_id;
-    std::string report_definition_id;
+    boost::uuids::uuid id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+    boost::uuids::uuid report_definition_id;
     std::string trigger_type;
-    std::optional<std::string> scheduler_job_id;
+    std::optional<boost::uuids::uuid> scheduler_job_id;
     std::optional<std::int64_t> schedule_job_run_id;
     std::string triggered_by;
-    std::string triggered_at;
-    std::string party_id;
+    db_timestamp triggered_at;
+    boost::uuids::uuid party_id;
 
     /**
      * @brief The columns of the table, named as the members, with the key.

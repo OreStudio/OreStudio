@@ -117,7 +117,10 @@ def test_the_mapper_converts_the_address_column(tmp_path):
     """make_address on read, to_string on write, with the header it needs."""
     mapper = _render_mapper(
         tmp_path, PRIMARY_KEY + _ip_column("boost::asio::ip::address"))
-    assert "r.last_ip = boost::asio::ip::make_address(v.last_ip);" in mapper
+    assert (
+        "r.last_ip = boost::asio::ip::make_address(\n"
+        "        v.last_ip.substr(0, v.last_ip.find('/')));" in mapper
+    )
     assert "r.last_ip = v.last_ip.to_string();" in mapper
     assert "#include <boost/asio/ip/address.hpp>" in mapper
 

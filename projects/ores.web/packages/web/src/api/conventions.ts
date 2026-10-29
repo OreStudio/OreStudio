@@ -143,6 +143,8 @@ export interface ConventionTerm {
     readonly removedIn: string;
     /** How the term's value set states its values: enumerated, catalogue, boolean, a type or none. */
     readonly sourceKind: string;
+    /** The catalogue the term's list draws on, such as =refdata.currency=, or empty. */
+    readonly catalogue: string;
     readonly choices: readonly { readonly value: string; readonly label: string }[];
     /** The bounds a number takes, from the term's value set; null when it states none. */
     readonly minimum: number | null;
@@ -189,6 +191,7 @@ const termSchema = z.object({
     introducedIn: z.string(),
     removedIn: z.string(),
     sourceKind: z.string(),
+    catalogue: z.string().default(''),
     choices: z.array(z.object({ value: z.string(), label: z.string() })),
     minimum: z.number().nullable(),
     maximum: z.number().nullable(),

@@ -47,10 +47,10 @@ default_curve_configuration_mapper::map(const default_curve_configuration_entity
 
     domain::default_curve_configuration r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.curve_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.curve_definition_id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
+    r.curve_definition_id = v.curve_definition_id;
     r.is_inline = v.is_inline;
     r.priority = v.priority;
     r.default_curve_type = v.default_curve_type;
@@ -67,10 +67,7 @@ default_curve_configuration_mapper::map(const default_curve_configuration_entity
     r.calendar = v.calendar;
     r.conventions = v.conventions;
     r.extrapolation = v.extrapolation;
-    r.running_spread =
-        v.running_spread.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.running_spread).value()) :
-            std::nullopt;
+    r.running_spread = v.running_spread;
     r.index_term = v.index_term;
     r.imply_default_from_market = v.imply_default_from_market;
     r.allow_negative_rates = v.allow_negative_rates;
@@ -82,7 +79,7 @@ default_curve_configuration_mapper::map(const default_curve_configuration_entity
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -93,11 +90,11 @@ default_curve_configuration_mapper::map(const domain::default_curve_configuratio
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     default_curve_configuration_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
-    r.curve_definition_id = boost::uuids::to_string(v.curve_definition_id);
+    r.party_id = v.party_id;
+    r.curve_definition_id = v.curve_definition_id;
     r.is_inline = v.is_inline;
     r.priority = v.priority;
     r.default_curve_type = v.default_curve_type;
@@ -114,8 +111,7 @@ default_curve_configuration_mapper::map(const domain::default_curve_configuratio
     r.calendar = v.calendar;
     r.conventions = v.conventions;
     r.extrapolation = v.extrapolation;
-    r.running_spread =
-        v.running_spread.has_value() ? std::optional(v.running_spread->to_string()) : std::nullopt;
+    r.running_spread = v.running_spread;
     r.index_term = v.index_term;
     r.imply_default_from_market = v.imply_default_from_market;
     r.allow_negative_rates = v.allow_negative_rates;

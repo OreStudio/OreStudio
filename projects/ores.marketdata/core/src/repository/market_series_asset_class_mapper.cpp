@@ -46,13 +46,13 @@ market_series_asset_class_mapper::map(const market_series_asset_class_entity& v)
     domain::market_series_asset_class r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.market_series_id = boost::lexical_cast<boost::uuids::uuid>(v.market_series_id);
+    r.market_series_id = v.market_series_id;
     r.asset_class_code = v.asset_class_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -63,7 +63,7 @@ market_series_asset_class_mapper::map(const domain::market_series_asset_class& v
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     market_series_asset_class_entity r;
-    r.market_series_id = boost::uuids::to_string(v.market_series_id);
+    r.market_series_id = v.market_series_id;
     r.tenant_id = v.tenant_id;
     r.asset_class_code = v.asset_class_code;
     r.version = v.version;

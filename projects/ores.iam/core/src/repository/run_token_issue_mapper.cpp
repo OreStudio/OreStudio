@@ -44,7 +44,7 @@ domain::run_token_issue run_token_issue_mapper::map(const run_token_issue_entity
 
     domain::run_token_issue r;
     r.id = v.id;
-    r.issued_at = timestamp_to_timepoint(std::string_view{v.issued_at});
+    r.issued_at = v.issued_at;
     r.tenant_id = v.tenant_id;
     r.party_id = v.party_id;
     r.grant_id = v.grant_id;
@@ -63,7 +63,7 @@ run_token_issue_entity run_token_issue_mapper::map(const domain::run_token_issue
 
     run_token_issue_entity r;
     r.id = v.id;
-    r.issued_at = ores::platform::time::datetime::to_db_string(v.issued_at);
+    r.issued_at = v.issued_at;
     r.tenant_id = v.tenant_id;
     r.party_id = v.party_id;
     r.grant_id = v.grant_id;

@@ -111,7 +111,7 @@ TEST_CASE("series_classification_rule_commands_process_get_requires_a_session", 
 
     command_feedback::reset();
     series_classification_rule_commands::process_get(
-        out, session, series_classification_rule_tokens(2));
+        out, session, series_classification_rule_tokens(3));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -147,7 +147,7 @@ TEST_CASE("series_classification_rule_commands_process_get_many_requires_a_sessi
 
     command_feedback::reset();
     series_classification_rule_commands::process_get_many(
-        out, session, series_classification_rule_tokens(2));
+        out, session, series_classification_rule_tokens(3));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -162,7 +162,7 @@ TEST_CASE("series_classification_rule_commands_process_add_requires_a_session", 
 
     command_feedback::reset();
     series_classification_rule_commands::process_add(
-        out, session, series_classification_rule_tokens(6));
+        out, session, series_classification_rule_tokens(7));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -198,7 +198,7 @@ TEST_CASE("series_classification_rule_commands_process_set_requires_a_session", 
 
     command_feedback::reset();
     series_classification_rule_commands::process_set(
-        out, session, series_classification_rule_tokens(6));
+        out, session, series_classification_rule_tokens(7));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -234,7 +234,7 @@ TEST_CASE("series_classification_rule_commands_process_put_many_requires_a_sessi
 
     command_feedback::reset();
     series_classification_rule_commands::process_put_many(
-        out, session, series_classification_rule_tokens(6));
+        out, session, series_classification_rule_tokens(7));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -249,7 +249,7 @@ TEST_CASE("series_classification_rule_commands_process_delete_requires_a_session
 
     command_feedback::reset();
     series_classification_rule_commands::process_delete(
-        out, session, series_classification_rule_tokens(2));
+        out, session, series_classification_rule_tokens(3));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -286,7 +286,7 @@ TEST_CASE("series_classification_rule_commands_process_delete_many_requires_a_se
 
     command_feedback::reset();
     series_classification_rule_commands::process_delete_many(
-        out, session, series_classification_rule_tokens(2));
+        out, session, series_classification_rule_tokens(3));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -301,7 +301,7 @@ TEST_CASE("series_classification_rule_commands_process_versions_requires_a_sessi
 
     command_feedback::reset();
     series_classification_rule_commands::process_versions(
-        out, session, series_classification_rule_tokens(2));
+        out, session, series_classification_rule_tokens(3));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -337,7 +337,7 @@ TEST_CASE("series_classification_rule_commands_process_version_requires_a_sessio
 
     command_feedback::reset();
     series_classification_rule_commands::process_version(
-        out, session, series_classification_rule_tokens(2));
+        out, session, series_classification_rule_tokens(3));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

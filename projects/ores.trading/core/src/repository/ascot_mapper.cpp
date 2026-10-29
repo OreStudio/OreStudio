@@ -44,15 +44,15 @@ domain::ascot ascot_mapper::map(const ascot_entity& v) {
 
     domain::ascot r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
-    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
+    r.tenant_id = v.tenant_id;
+    r.trade_id = v.trade_id;
+    r.trade_activity_id = v.trade_activity_id;
     r.ascot_option_type = v.ascot_option_type;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -62,10 +62,10 @@ ascot_entity ascot_mapper::map(const domain::ascot& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     ascot_entity r;
-    r.trade_id = boost::uuids::to_string(v.trade_id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.trade_id = v.trade_id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
+    r.trade_activity_id = v.trade_activity_id;
     r.ascot_option_type = v.ascot_option_type;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

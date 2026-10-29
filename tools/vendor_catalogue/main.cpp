@@ -71,7 +71,7 @@
  */
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
-#include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
+#include "ores.marketdata.core/oresmd/pillar_quote.hpp"
 #include "ores.marketdata.core/vendor/provider_notation.hpp"
 #include "ores.marketdata.core/vendor/quote_description.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
@@ -211,18 +211,27 @@ std::string pair_datum_uri(const pair_feed& p) {
     return *uri;
 }
 
-/// The oresmd item the pillar's own quote key names.
+/// The oresmd item the pillar's quote is.
 ///
-/// The template names both ends of the pillar by tenors, so the dates are not part of the key: a
-/// pillar that starts at spot holds 0D and one that starts at a period holds that period. The
-/// dates are passed because the key takes them, and a pillar whose tenors reach them is one no
-/// notation writes, which this program never asks for a URI.
+/// The pillar's own tenors and the curve's index tenor name the quote, so neither date is part of
+/// it: a pillar that starts at spot holds 0D and one that starts at a period holds that period.
+/// The dates are passed because the builder takes them, and the pillar's term is the tenor its
+/// template names rather than a date, which is the case no notation refuses.
 std::string pillar_datum_uri(const pillar_feed& p, const std::string& index_tenor) {
-    const auto start_date = std::chrono::year{2026} / 1 / 1;
-    const auto end_date = std::chrono::year{2026} / 1 / 2;
-    const auto key = core::make_pillar_quote_key(
-        p.currency_code, index_tenor, p.start_tenor_code, start_date, end_date, p.end_tenor_code);
-    return core::pillar_datum_uri(key);
+    const core::pillar_quote quote{
+        p.currency_code, index_tenor, p.start_tenor_code, p.end_tenor_code,
+        std::chrono::year{2026} / 1 / 1, std::chrono::year{2026} / 1 / 2};
+    const auto made = core::pillar_quote_datum(quote);
+    if (!made)
+        throw std::runtime_error("no datum for the pillar " + p.currency_code + " " +
+                                 p.start_tenor_code + " to " + p.end_tenor_code + ": " +
+                                 made.error());
+    const auto uri = datum::oresmd_uri_codec::write(*made);
+    if (!uri)
+        throw std::runtime_error("no item for the pillar " + p.currency_code + " " +
+                                 p.start_tenor_code + " to " + p.end_tenor_code + ": " +
+                                 uri.error());
+    return *uri;
 }
 
 /// The row for one currency pair: the provider's id and the pair's item, or null for both when

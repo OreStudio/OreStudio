@@ -185,10 +185,10 @@ void counterparty_change_repository::write(
 }
 
 std::vector<domain::counterparty_change> counterparty_change_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_change_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<counterparty_change_entity,
@@ -203,11 +203,11 @@ std::vector<domain::counterparty_change> counterparty_change_repository::read_la
 std::vector<domain::counterparty_change>
 counterparty_change_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty change. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<counterparty_change_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<counterparty_change_entity,
                                              domain::counterparty_change>(
@@ -268,11 +268,11 @@ std::vector<domain::counterparty_change> counterparty_change_repository::read_la
     const std::optional<messaging::counterparty_changes_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty changes. request_id: " << request_id
                                << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_change_entity>> |
                        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<counterparty_change_entity,
@@ -292,12 +292,12 @@ std::uint32_t counterparty_change_repository::get_total_counterparty_change_coun
     const std::optional<messaging::counterparty_changes_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active counterparty changes count. request_id: "
                                << request_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_change_entity>> |
                        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_count_query<counterparty_change_entity>(
         ctx,
@@ -318,7 +318,7 @@ counterparty_change_repository::remove_status counterparty_change_repository::re
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -326,7 +326,7 @@ counterparty_change_repository::remove_status counterparty_change_repository::re
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<counterparty_change_entity> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing counterparty change from database.");
@@ -391,11 +391,11 @@ std::vector<domain::counterparty_change>
 counterparty_change_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<counterparty_change_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result =
         query_builder::execute_read_query<counterparty_change_entity, domain::counterparty_change>(
             ctx,
@@ -415,11 +415,11 @@ void counterparty_change_repository::remove(context ctx, const std::vector<std::
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<counterparty_change_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing counterparty changes.");
 }
 

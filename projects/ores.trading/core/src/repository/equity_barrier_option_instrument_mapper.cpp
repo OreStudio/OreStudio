@@ -49,35 +49,30 @@ equity_barrier_option_instrument_mapper::map(const equity_barrier_option_instrum
 
     domain::equity_barrier_option_instrument r;
     r.identity.version = v.version;
-    r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.identity.tenant_id = v.tenant_id;
+    r.identity.trade_id = v.trade_id;
     r.identity.trade_type_code = v.trade_type_code;
-    r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.identity.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
+    r.identity.party_id = v.party_id;
+    r.identity.trade_activity_id = v.trade_activity_id;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
-    r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
+    r.notional = v.notional;
     r.option_type = v.option_type;
-    r.strike = ores::utility::decimal::decimal::from_string(v.strike).value();
-    r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
+    r.strike = v.strike;
+    r.expiry_date = v.expiry_date;
     r.exercise_type = v.exercise_type;
     r.long_short = v.long_short;
-    r.lower_barrier = ores::utility::decimal::decimal::from_string(v.lower_barrier).value();
+    r.lower_barrier = v.lower_barrier;
     r.lower_barrier_type = v.lower_barrier_type;
-    r.upper_barrier =
-        v.upper_barrier.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.upper_barrier).value()) :
-            std::nullopt;
+    r.upper_barrier = v.upper_barrier;
     r.upper_barrier_type = v.upper_barrier_type.value_or("");
-    r.rebate = v.rebate.has_value() ?
-                   std::optional(ores::utility::decimal::decimal::from_string(*v.rebate).value()) :
-                   std::nullopt;
+    r.rebate = v.rebate;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
     r.audit.change_commentary = v.change_commentary;
-    r.audit.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.audit.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -88,27 +83,26 @@ equity_barrier_option_instrument_mapper::map(const domain::equity_barrier_option
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     equity_barrier_option_instrument_entity r;
-    r.trade_id = boost::uuids::to_string(v.identity.trade_id);
-    r.tenant_id = v.identity.tenant_id.to_string();
+    r.trade_id = v.identity.trade_id;
+    r.tenant_id = v.identity.tenant_id;
     r.version = v.identity.version;
     r.trade_type_code = v.identity.trade_type_code;
-    r.party_id = boost::uuids::to_string(v.identity.party_id);
-    r.trade_activity_id = boost::uuids::to_string(v.identity.trade_activity_id);
+    r.party_id = v.identity.party_id;
+    r.trade_activity_id = v.identity.trade_activity_id;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
-    r.notional = v.notional.to_string();
+    r.notional = v.notional;
     r.option_type = v.option_type;
-    r.strike = v.strike.to_string();
-    r.expiry_date = ores::platform::time::datetime::to_iso8601_date(v.expiry_date);
+    r.strike = v.strike;
+    r.expiry_date = v.expiry_date;
     r.exercise_type = v.exercise_type;
     r.long_short = v.long_short;
-    r.lower_barrier = v.lower_barrier.to_string();
+    r.lower_barrier = v.lower_barrier;
     r.lower_barrier_type = v.lower_barrier_type;
-    r.upper_barrier =
-        v.upper_barrier.has_value() ? std::optional(v.upper_barrier->to_string()) : std::nullopt;
+    r.upper_barrier = v.upper_barrier;
     r.upper_barrier_type =
         v.upper_barrier_type.empty() ? std::nullopt : std::optional(v.upper_barrier_type);
-    r.rebate = v.rebate.has_value() ? std::optional(v.rebate->to_string()) : std::nullopt;
+    r.rebate = v.rebate;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

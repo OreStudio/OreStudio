@@ -27,6 +27,7 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -37,13 +38,18 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a auth event in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct auth_event_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_iam_auth_events_tbl";
 
     std::string id;
-    std::string event_time;
+    db_timestamp event_time;
     std::string tenant_id;
     std::string account_id;
     std::string event_type;

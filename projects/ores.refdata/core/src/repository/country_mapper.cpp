@@ -45,25 +45,19 @@ domain::country country_mapper::map(const country_entity& v) {
 
     domain::country r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.tenant_id = v.tenant_id;
     r.alpha2_code = v.alpha2_code;
-
     r.alpha3_code = v.alpha3_code;
-
-
     r.numeric_code = v.numeric_code;
-
     r.name = v.name;
     r.official_name = v.official_name;
-    r.image_id = v.image_id.has_value() ?
-                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.image_id)) :
-                     std::nullopt;
+    r.image_id = v.image_id;
     r.coding_scheme_code = v.coding_scheme_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -74,18 +68,13 @@ country_entity country_mapper::map(const domain::country& v) {
 
     country_entity r;
     r.alpha2_code = v.alpha2_code;
-    r.tenant_id = v.tenant_id.to_string();
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-
     r.alpha3_code = v.alpha3_code;
-
-
     r.numeric_code = v.numeric_code;
-
     r.name = v.name;
     r.official_name = v.official_name;
-    r.image_id =
-        v.image_id.has_value() ? std::optional(boost::uuids::to_string(*v.image_id)) : std::nullopt;
+    r.image_id = v.image_id;
     r.coding_scheme_code = v.coding_scheme_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

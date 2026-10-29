@@ -46,11 +46,11 @@ domain::workflow_batch_link workflow_batch_link_mapper::map(const workflow_batch
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::workflow_batch_link r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.batch_id = boost::lexical_cast<boost::uuids::uuid>(v.batch_id);
+    r.tenant_id = v.tenant_id;
+    r.batch_id = v.batch_id;
     r.workflow_step_id = v.workflow_step_id;
     r.workflow_instance_id = v.workflow_instance_id;
-    r.created_at = timestamp_to_timepoint(std::string_view{v.created_at});
+    r.created_at = v.created_at;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -60,11 +60,11 @@ workflow_batch_link_entity workflow_batch_link_mapper::map(const domain::workflo
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     workflow_batch_link_entity r;
-    r.batch_id = boost::uuids::to_string(v.batch_id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.batch_id = v.batch_id;
+    r.tenant_id = v.tenant_id;
     r.workflow_step_id = v.workflow_step_id;
     r.workflow_instance_id = v.workflow_instance_id;
-    r.created_at = ores::platform::time::datetime::to_iso8601_utc(v.created_at);
+    r.created_at = v.created_at;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

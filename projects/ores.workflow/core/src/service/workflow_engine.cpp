@@ -623,6 +623,13 @@ void workflow_engine::dispatch_ready_steps(domain::workflow_instance& instance) 
                 workflow_step_result{.name = s.name, .response_json = s.response_json});
     }
 
+    // The run is touched before its steps go out, so the run's activity time is
+    // never later than the start of the step it brought. That ordering also
+    // keeps the touch from undoing an answer: the touch reads the run's row and
+    // writes it back, so one made after a command was published could restore
+    // the state the run was in before a step completed.
+    note_instance_activity(instance.id);
+
     for (const auto& name : ready) {
         const auto definition = def_by_name.find(name);
         const auto row = row_by_name.find(name);
@@ -697,9 +704,6 @@ void workflow_engine::dispatch_ready_steps(domain::workflow_instance& instance) 
                                   << ") for workflow=" << id_str << " type=" << instance.type;
     }
 
-    // Dispatching is work done on the run, so the run's activity moves even
-    // though its own state does not.
-    note_instance_activity(instance.id);
     publish_status_event(instance.id, instance.tenant_id.to_uuid());
 }
 

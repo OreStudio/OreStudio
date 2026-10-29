@@ -191,10 +191,10 @@ void trade_authorisation_request_repository::write(
 
 std::vector<domain::trade_authorisation_request>
 trade_authorisation_request_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_authorisation_request_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("request_id"_c);
 
     return query_builder::execute_read_query<trade_authorisation_request_entity,
@@ -210,11 +210,11 @@ std::vector<domain::trade_authorisation_request>
 trade_authorisation_request_repository::read_latest(context ctx, const std::string& request_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade authorisation request. "
                                << "request_id: " << request_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_authorisation_request_entity>> |
                        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_read_query<trade_authorisation_request_entity,
                                              domain::trade_authorisation_request>(
@@ -280,11 +280,11 @@ trade_authorisation_request_repository::read_latest_by_trade_id(
     const std::optional<messaging::trade_authorisation_requests_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade authorisation requests. trade_id: "
                                << trade_id << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_authorisation_request_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<trade_authorisation_request_entity,
@@ -305,12 +305,12 @@ trade_authorisation_request_repository::get_total_trade_authorisation_request_co
     const std::optional<messaging::trade_authorisation_requests_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active trade authorisation requests count. trade_id: " << trade_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_authorisation_request_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_count_query<trade_authorisation_request_entity>(
         ctx,
@@ -334,7 +334,7 @@ trade_authorisation_request_repository::remove(context ctx,
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -342,7 +342,7 @@ trade_authorisation_request_repository::remove(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<trade_authorisation_request_entity> |
                        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing trade authorisation request from database.");
@@ -409,12 +409,11 @@ trade_authorisation_request_repository::read_latest(context ctx,
                                                     const std::vector<std::string>& request_ids) {
     if (request_ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<trade_authorisation_request_entity>> |
-        query_builder::where("tenant_id"_c == tid && "request_id"_c.in(request_ids) &&
-                             "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<trade_authorisation_request_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                                            "request_id"_c.in(request_ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<trade_authorisation_request_entity,
                                                     domain::trade_authorisation_request>(
         ctx,
@@ -435,12 +434,11 @@ void trade_authorisation_request_repository::remove(context ctx,
     // asymmetric pair.
     if (request_ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::delete_from<trade_authorisation_request_entity> |
-        query_builder::where("tenant_id"_c == tid && "request_id"_c.in(request_ids) &&
-                             "valid_to"_c == max.value());
+    const auto query = query_builder::delete_from<trade_authorisation_request_entity> |
+                       query_builder::where("tenant_id"_c == tid &&
+                                            "request_id"_c.in(request_ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(
         ctx, query, lg(), "Batch removing trade authorisation requests.");
 }

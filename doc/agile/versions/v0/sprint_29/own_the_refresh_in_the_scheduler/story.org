@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 17BC0582-D339-4A14-87F4-FACD563DE115
+:END:
+#+title: Story: Own the refresh in the scheduler
+#+description: One refresh request serves the scheduler and the Fetch action; a job per feed carries the rhythm; the adapter no longer polls on its own flags.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:implementation:sprint_29:v0:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+One refresh request serves the scheduler and the Fetch action. A job per feed carries the rhythm, and the adapter no longer polls on its own flags.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-29                               |
+
+* Acceptance
+
+- The request names the feed, the scope and a day or a range; the adapter answers it.
+- One scheduler job per feed, seeded from the feed schedule.
+- The adapter poll and backfill flags are gone.
+- An end-to-end test shows the scheduler and the Fetch action sending the same request.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AA16E08C-F108-487D-BD86-98D8D2991AB7][Design and implement the refresh request]] | BACKLOG | | | A request on the adapter contract that names the feed, the scope and a day or a range, and the adapter answer. |
+| [[id:960841B9-70D9-4276-8840-8A6A337D242C][Schedule one job per feed]] | BACKLOG | | | A scheduler job per feed, seeded from the feed schedule, sending the refresh request. |
+| [[id:9205584A-42AF-4874-B997-F0E5926E2087][Remove the adapter poll flags]] | BACKLOG | | | The adapter no longer reads poll or backfill flags; the schedule and the feed carry them. |
+| [[id:E66A4A5D-E8A8-4DF6-B85B-ECC179440F23][Prove the schedule and the fetch share one request]] | BACKLOG | | | An end-to-end test where the scheduler and the Fetch action send the same request. |
+
+* Decisions
+
+- The scheduler owns the rhythm; the screen owns the on-demand trigger.
+- A real_time feed is demand driven and a range fetch does not apply to it.
+- The request is on the adapter contract, not a private message.
+
+* Out of scope
+
+-

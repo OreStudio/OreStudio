@@ -125,10 +125,10 @@ void image_tag_repository::write(const std::vector<domain::image_tag>& image_tag
 }
 
 std::vector<domain::image_tag> image_tag_repository::read_latest() {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<image_tag_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("image_id"_c, "tag_id"_c);
 
     return query_builder::execute_read_query<image_tag_entity, domain::image_tag>(
@@ -143,10 +143,10 @@ std::vector<domain::image_tag> image_tag_repository::read_latest(std::uint32_t o
                                                                  std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest image tags with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<image_tag_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("image_id"_c, "tag_id"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -162,14 +162,13 @@ std::vector<domain::image_tag> image_tag_repository::read_latest(const boost::uu
                                                                  const boost::uuids::uuid& tag_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest image tag. " << image_id << "/" << tag_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto image_id_str = boost::uuids::to_string(image_id);
     const auto tag_id_str = boost::uuids::to_string(tag_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<image_tag_entity>> |
-        query_builder::where("tenant_id"_c == tid && "image_id"_c == image_id_str &&
-                             "tag_id"_c == tag_id_str && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<image_tag_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "image_id"_c == image_id_str &&
+                                            "tag_id"_c == tag_id_str && "valid_to"_c == max);
 
     return query_builder::execute_read_query<image_tag_entity, domain::image_tag>(
         ctx_,
@@ -181,11 +180,11 @@ std::vector<domain::image_tag> image_tag_repository::read_latest(const boost::uu
 
 std::uint32_t image_tag_repository::get_total_image_tag_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active image tags count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<image_tag_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<image_tag_entity>(
         ctx_, query, std::nullopt, lg(), "Counting image tags");
@@ -197,12 +196,12 @@ std::vector<domain::image_tag>
 image_tag_repository::read_latest_by_image(const boost::uuids::uuid& image_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest image tags. Image: " << image_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto image_id_str = boost::uuids::to_string(image_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<image_tag_entity>> |
                        query_builder::where("tenant_id"_c == tid && "image_id"_c == image_id_str &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("tag_id"_c);
 
     auto rows = query_builder::execute_read_query<image_tag_entity, domain::image_tag>(
@@ -219,12 +218,12 @@ std::vector<domain::image_tag>
 image_tag_repository::read_latest_by_tag(const boost::uuids::uuid& tag_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest image tags. Tag: " << tag_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tag_id_str = boost::uuids::to_string(tag_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<image_tag_entity>> |
                        query_builder::where("tenant_id"_c == tid && "tag_id"_c == tag_id_str &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("image_id"_c);
 
     auto rows = query_builder::execute_read_query<image_tag_entity, domain::image_tag>(
@@ -243,11 +242,11 @@ std::vector<domain::image_tag> image_tag_repository::read_latest_by_image(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest image tags. Image: " << image_id
                                << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<image_tag_entity>> |
                        query_builder::where("tenant_id"_c == tid && "image_id"_c == image_id_str &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("tag_id"_c) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
@@ -265,12 +264,12 @@ std::uint32_t
 image_tag_repository::get_total_image_tag_count_by_image(const boost::uuids::uuid& image_id) {
     const auto image_id_str = boost::uuids::to_string(image_id);
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active image tags count. Image: " << image_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<image_tag_entity>> |
                        query_builder::where("tenant_id"_c == tid && "image_id"_c == image_id_str &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<image_tag_entity>(
         ctx_, query, std::nullopt, lg(), "Counting image tags");
@@ -282,12 +281,12 @@ std::uint32_t
 image_tag_repository::get_total_image_tag_count_by_tag(const boost::uuids::uuid& tag_id) {
     const auto tag_id_str = boost::uuids::to_string(tag_id);
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active image tags count. Tag: " << tag_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<image_tag_entity>> |
                        query_builder::where("tenant_id"_c == tid && "tag_id"_c == tag_id_str &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<image_tag_entity>(
         ctx_, query, std::nullopt, lg(), "Counting image tags");
@@ -314,7 +313,7 @@ image_tag_repository::remove(const boost::uuids::uuid& image_id,
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -324,8 +323,8 @@ image_tag_repository::remove(const boost::uuids::uuid& image_id,
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::delete_from<image_tag_entity> |
                        query_builder::where("tenant_id"_c == tid && "image_id"_c == image_id_str &&
-                                            "tag_id"_c == tag_id_str &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "tag_id"_c == tag_id_str && "valid_to"_c == max &&
+                                            "version"_c == expected);
 
     query_builder::execute_delete_query(ctx_, query, lg(), "removing image tag from database");
     // The delete reports no affected-row count, so the row is read back: a row

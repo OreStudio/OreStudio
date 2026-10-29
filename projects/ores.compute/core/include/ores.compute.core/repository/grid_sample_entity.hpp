@@ -27,6 +27,9 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -37,15 +40,20 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a grid sample in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct grid_sample_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_compute_grid_samples_tbl";
 
-    std::string id;
-    std::string sampled_at;
-    std::string tenant_id;
-    std::optional<std::string> party_id;
+    boost::uuids::uuid id;
+    db_timestamp sampled_at;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+    std::optional<boost::uuids::uuid> party_id;
     int total_hosts = 0;
     int online_hosts = 0;
     int idle_hosts = 0;

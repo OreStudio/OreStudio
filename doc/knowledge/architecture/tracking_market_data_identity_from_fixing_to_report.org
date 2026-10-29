@@ -24,7 +24,7 @@ names the two places where the chain is not yet complete: the report reads a
 curve configuration document rather than the published set, and four ORE
 spellings remain in the runtime.
 
-* 1. The question
+* The question
 
 A person reading a curve asks three questions of every number. What is it: a
 quote observed in the market, a value a generator produced, a discount factor a
@@ -41,7 +41,7 @@ with no history; lineage without identity gives records that cannot be compared.
 The rest of this document shows that ORE Studio does both, and where it does not
 yet.
 
-* 2. Why identity must distinguish
+* Why identity must distinguish
 
 The market does not supply term structures ready for valuation. A quote is
 observed; a curve is constructed from quotes by a bootstrap, and the construction
@@ -60,7 +60,7 @@ two; the provider, the party and the series separate one curve from another. The
 identity of the input is not a weaker version of the identity of the output; it is
 a different identity for a different kind of thing.
 
-* 3. The identification system
+* The identification system
 
 The identification system is the oresmd URI. A series is an item in a provider's
 catalogue for a party, and a datum is a series with a coordinate. The definition
@@ -72,7 +72,7 @@ First, the identity is independent of the vendor's spelling. A series a syntheti
 feed publishes and a series a bootstrap reads are the same series when their
 oresmd URIs agree, whatever the vendor would call them.
 
-Second, the identity is fine enough to tell kinds apart, as section 2 shows, and
+Second, the identity is fine enough to tell kinds apart, as the section on distinction shows, and
 coarse enough to compare them: the same series read at two as-ofs is one series
 with two datums, so a time series is a series and its coordinates, not a new
 series per day.
@@ -82,12 +82,12 @@ corpus' terms and converts to an oresmd datum at the edge; it is a boundary
 format, not an identity. The conversion is stated in
 [[id:D1A25B9E-B1A0-4E7C-AB5C-1C7C3EF07F90][ORE import and export]].
 
-* 4. The lifecycle and what tracks it
+* The lifecycle and what tracks it
 
 The lifecycle has six steps. At each, the data has an identity, and a record
 connects it to what came before.
 
-** 4.1 Observation
+** Observation
 
 A public source publishes a fixing: the ECB euro reference rates, the Federal
 Reserve H.10 through FRED, the US Treasury par yield curve, the New York Fed SOFR
@@ -101,7 +101,7 @@ and the provider key on the value.
 See [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]] and
 [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]].
 
-** 4.2 Generation
+** Generation
 
 A generation config names the fixing items it may start from, with a rank, a
 policy and a window. The initial value is the latest fixing on or before the
@@ -117,7 +117,7 @@ See [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation:
 [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]] and
 [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]].
 
-** 4.3 Delivery
+** Delivery
 
 A party takes a provider's feeds through a subscription that carries its display,
 non-display and derived rights. A route names the source the party uses for that
@@ -132,7 +132,7 @@ See [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds 
 [[id:083D4B54-549B-4D56-AE89-430A8A4277FF][Demand drives what an adapter publishes]] and
 [[id:7D1DE23F-AA14-44AB-81D5-9961EF02533C][Market data ticks because ownership, demand and a smoke check agree]].
 
-** 4.4 Derivation
+** Derivation
 
 A blueprint names a party, a currency, an index tenor, a role, the conventions and
 the output series it owns. Its pillars name the market series each quote comes
@@ -163,7 +163,7 @@ provenance is [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]
 
 #+caption: Figure 1. The lifecycle and the identity carried at each step. The observed quote, the synthetic tick, the derived curve point and the published set are distinct identities, connected by the lineage records and the publish record.
 
-** 4.5 Publication
+** Publication
 
 The maker raises a publish naming the blueprint and the as-of; the subject is a
 publish record. A second person decides under the kind's maker and checker
@@ -185,7 +185,7 @@ state, and the notice. See
 [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] and
 [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]].
 
-** 4.6 Consumption
+** Consumption
 
 A report has a definition, a schedule and a run, and the run needs market data.
 The data it consumes today is the curve configuration document: the reporting
@@ -193,7 +193,7 @@ component projects that document, the ORE export turns it into the ORE XML the
 compute reads, and the ORE key appears at that boundary as the boundary format it
 is. The read screens consume the published set directly.
 
-* 5. What the system can answer
+* What the system can answer
 
 The records support the provenance queries the lifecycle implies. From a point of
 a published curve, the output series and the as-of are known, and the lineage
@@ -204,7 +204,7 @@ and a synthetic tick names the configuration whose fixing items calibrated it.
 The same series read at two dates is one series with two datums, so a history is
 a series and its coordinates rather than a set of unrelated records.
 
-* 6. Where the chain is incomplete
+* Where the chain is incomplete
 
 Two places are incomplete, and they are different in kind.
 
@@ -230,7 +230,7 @@ A third gap is smaller but real: a blueprint's output series must already exist,
 and no screen mints one. The identity of the output series is sound once it
 exists; its creation is not part of the lifecycle the screens present.
 
-* 7. Conclusion
+* Conclusion
 
 The provenance of market data is trackable in ORE Studio because the
 identification system distinguishes the kinds of data and the lineage records
@@ -242,7 +242,7 @@ step, and the records exist for each. The chain is not yet complete in two
 places: the report consumes a curve configuration document rather than the
 published set, and four ORE spellings remain in the runtime. Both are named, and
 neither undermines the identification system; they are the work that would let
-the system answer the three questions of section 1 for every consumer without
+the system answer the three questions at the start for every consumer without
 exception.
 
 * References

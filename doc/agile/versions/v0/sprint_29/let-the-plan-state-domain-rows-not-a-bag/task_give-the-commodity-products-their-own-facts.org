@@ -8,7 +8,7 @@
 #+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
 #+owner: marco
 #+branch: feature/give-the-commodity-products-their-own-facts
-#+pr:
+#+pr: 4039
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -90,7 +90,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4039][#4039]] | [trading,synthetic] Give the commodity products their own facts |
 
 * Review
 

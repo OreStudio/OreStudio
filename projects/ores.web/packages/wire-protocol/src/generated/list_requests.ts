@@ -2785,6 +2785,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'refdata.v1.legal_entities.list': {
+        asOf: true,
+        filter: ['lei_one_of'],
+        rows: ['legal_entities'],
+    },
+    'refdata.v1.legal_entities_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'refdata.v1.local_jurisdictions.list': {
         asOf: true,
         filter: [],

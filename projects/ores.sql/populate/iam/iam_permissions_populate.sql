@@ -703,6 +703,12 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::leg_types:write',                          'Create and modify leg types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::leg_types:delete',                         'Delete leg types');
 
+    -- Legal entities permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::legal_entities:read',                      'View legal entities');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::legal_entities:write',                     'Create and modify legal entities');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::legal_entities:delete',                    'Delete legal entities');
+
+
     -- Ois conventions permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ois_conventions:read',                     'View ois conventions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ois_conventions:write',                    'Create and modify ois conventions');

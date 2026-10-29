@@ -21,6 +21,7 @@
 #include "ores.analytics.quant/service/run_clock.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
+#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -46,6 +47,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace {
@@ -130,18 +132,25 @@ ores::synthetic::feed::ir_curve_refdata_context make_refdata_context() {
     spot.multiplier = 0;
     ctx.tenors_by_code.emplace("SPOT", spot);
 
-    tenor m1;
-    m1.code = "1M";
-    m1.kind = "PERIOD";
-    m1.unit = "MONTH";
-    m1.multiplier = 1;
-    ctx.tenors_by_code.emplace("1M", m1);
+    // A short ladder: a month, a quarter and two years, so a curve can name more
+    // than one rung and the months and years units are both exercised.
+    for (const auto& [code, unit, multiplier] :
+         {std::tuple{"1M", "MONTH", 1},
+          std::tuple{"3M", "MONTH", 3},
+          std::tuple{"2Y", "YEAR", 2}}) {
+        tenor t;
+        t.code = code;
+        t.kind = "PERIOD";
+        t.unit = unit;
+        t.multiplier = multiplier;
+        ctx.tenors_by_code.emplace(code, t);
+    }
 
     ctx.convention.code = "RATES_SPOT_FORWARD";
     ctx.convention.measured_from = "SPOT";
     ctx.convention.resolution_algorithm = "ANCHOR_OFFSET";
 
-    for (const auto& code : {"SPOT", "1M"}) {
+    for (const auto& code : {"SPOT", "1M", "3M", "2Y"}) {
         tenor_convention_resolution r;
         r.convention_code = "RATES_SPOT_FORWARD";
         r.tenor_code = code;
@@ -304,6 +313,76 @@ TEST_CASE("factory::make constructs an ir_curve_feed from its persisted config",
           std::vector<std::string>{
               "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D"});
     CHECK(ir->publish_count() == 0);
+}
+
+TEST_CASE("a_curve_publishes_one_datum_per_pillar_of_the_one_series_its_series_uris_name",
+          "[feed_factory]") {
+    const auto factory = make_default_feed_factory();
+    const auto f = make_ir_fixture();
+    const auto feed = factory.make(
+        std::string(ir_curve_feed_kind),
+        make_build_context(),
+        ir_curve_feed_build_input{f.config, f.entries, f.values, f.definitions, f.refctx});
+    const auto* ir = dynamic_cast<const ores::synthetic::feed::ir_curve_feed*>(feed.get());
+    REQUIRE(ir != nullptr);
+
+    // The quote is a datum of the market data model: a spot-starting swap rate on
+    // the overnight index, maturing at the pillar's own tenor.
+    REQUIRE(ir->datum_uris().size() == f.entries.size());
+    CHECK(ir->datum_uris().front() ==
+          "oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D"
+          "&term=1M");
+
+    // The ingest derives the series from that datum and no other thing, so the
+    // series the feed says it publishes into is the series of the datum it
+    // publishes: a bootstrap reads the second by naming the first.
+    namespace datum = ores::marketdata::datum;
+    std::vector<std::string> derived;
+    for (const auto& uri : ir->datum_uris()) {
+        const auto read = datum::oresmd_uri_codec::read(uri);
+        REQUIRE(read.has_value());
+        const auto series = datum::oresmd_uri_codec::write(datum::series_of(*read));
+        REQUIRE(series.has_value());
+        if (derived.empty() || derived.back() != *series)
+            derived.push_back(*series);
+    }
+    CHECK(derived == ir->series_uris());
+    CHECK(ir->series_uris() ==
+          std::vector<std::string>{
+              "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D"});
+}
+
+TEST_CASE("every_rung_of_a_curve_is_its_own_term_of_the_one_series_it_shares",
+          "[feed_factory]") {
+    const auto factory = make_default_feed_factory();
+    auto f = make_ir_fixture();
+    // A spot-starting ladder, as the seeded demo curve is: three tenors, one series,
+    // three terms. A pillar of the bootstrap names the series and finds its rung by
+    // its end tenor.
+    auto second = f.entries.front();
+    second.sequence_index = 1;
+    second.end_tenor_code = "3M";
+    auto third = f.entries.front();
+    third.sequence_index = 2;
+    third.end_tenor_code = "2Y";
+    f.entries.push_back(second);
+    f.entries.push_back(third);
+
+    const auto feed = factory.make(
+        std::string(ir_curve_feed_kind),
+        make_build_context(),
+        ir_curve_feed_build_input{f.config, f.entries, f.values, f.definitions, f.refctx});
+    const auto* ir = dynamic_cast<const ores::synthetic::feed::ir_curve_feed*>(feed.get());
+    REQUIRE(ir != nullptr);
+
+    CHECK(ir->series_uris().size() == 1);
+    REQUIRE(ir->datum_uris().size() == 3);
+    CHECK(ir->datum_uris()[1] ==
+          "oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D"
+          "&term=3M");
+    CHECK(ir->datum_uris()[2] ==
+          "oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D"
+          "&term=2Y");
 }
 
 TEST_CASE("an ir_curve_feed's series carries the tenor of its index, so two index tenors are "

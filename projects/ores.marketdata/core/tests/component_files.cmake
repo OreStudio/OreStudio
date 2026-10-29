@@ -39,7 +39,6 @@ set(files
     "messaging_series_ticks_handler_tests.cpp"
     "messaging_tick_read_party_tests.cpp"
     "observation_lineage_eventing_integration_tests.cpp"
-    "oresmd_pillar_quote_key_tests.cpp"
     "oresmd_pillar_quote_tests.cpp"
     "provider_eventing_integration_tests.cpp"
     "rate_card_component_eventing_integration_tests.cpp"

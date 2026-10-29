@@ -18,7 +18,8 @@
  *
  */
 #include "../src/curve_pillar_reader.hpp"
-#include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
+#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.core/oresmd/pillar_quote.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.testing/database_helper.hpp"
@@ -28,6 +29,7 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -87,13 +89,49 @@ make_pillar(int seq, const std::string& start, const std::string& end, boost::uu
 const std::string spot_first = "1Y";
 const std::string first_second = "2Y";
 
-// The quote key of one pillar, built as the feed builds it, and the series and
-// datum identities it projects to.
-ores::marketdata::core::pillar_quote_key pillar_key(const curve_republish_refdata_context& ctx,
-                                                    const std::string& start,
-                                                    const std::string& end) {
-    return ores::marketdata::core::make_pillar_quote_key(
-        "USD", "1D", start, resolve_tenor_date(ctx, start), resolve_tenor_date(ctx, end), end);
+// The quote of one pillar, built as the feed builds it: the same datum builder,
+// given the dates the conventions resolve.
+ores::marketdata::core::pillar_quote pillar_quote_of(const curve_republish_refdata_context& ctx,
+                                                     const std::string& start,
+                                                     const std::string& end) {
+    return {"USD",
+            "1D",
+            start,
+            end,
+            resolve_tenor_date(ctx, start),
+            resolve_tenor_date(ctx, end)};
+}
+
+ores::marketdata::datum::market_datum
+quote_datum(const curve_republish_refdata_context& ctx,
+            const std::string& start,
+            const std::string& end) {
+    const auto made = ores::marketdata::core::pillar_quote_datum(pillar_quote_of(ctx, start, end));
+    if (!made)
+        throw std::runtime_error("no datum for the pillar " + start + " to " + end + ": " +
+                                 made.error());
+    return *made;
+}
+
+/// The series the feed's datum for this pillar belongs to.
+std::string quote_series_uri(const curve_republish_refdata_context& ctx,
+                             const std::string& start,
+                             const std::string& end) {
+    const auto uri = ores::marketdata::datum::oresmd_uri_codec::write(
+        ores::marketdata::datum::series_of(quote_datum(ctx, start, end)));
+    if (!uri)
+        throw std::runtime_error("no series for the pillar " + start + " to " + end);
+    return *uri;
+}
+
+/// The datum URI the feed publishes for this pillar.
+std::string quote_datum_uri(const curve_republish_refdata_context& ctx,
+                            const std::string& start,
+                            const std::string& end) {
+    const auto uri = ores::marketdata::datum::oresmd_uri_codec::write(quote_datum(ctx, start, end));
+    if (!uri)
+        throw std::runtime_error("no datum URI for the pillar " + start + " to " + end);
+    return *uri;
 }
 
 struct fixture {
@@ -101,14 +139,14 @@ struct fixture {
     boost::uuids::uuid party_id = boost::uuids::random_generator{}();
     boost::uuids::random_generator uuid_gen;
 
-    /// Writes the series @p key names and returns its id, as the ingest creates it.
-    boost::uuids::uuid write_series(const ores::marketdata::core::pillar_quote_key& key) {
+    /// Writes the series @p uri names and returns its id, as the ingest creates it.
+    boost::uuids::uuid write_series(const std::string& uri) {
         market_series s;
         s.id = uuid_gen();
         s.version = 0;
         s.tenant_id = h.tenant_id();
         s.party_id = party_id;
-        s.oresmd_uri = ores::marketdata::core::pillar_series_uri(key);
+        s.oresmd_uri = uri;
         s.series_subclass = "yield";
         s.provider_code = "ore";
         s.derivation_kind = "OBSERVED";
@@ -123,9 +161,9 @@ struct fixture {
         return s.id;
     }
 
-    /// Writes the quote of @p key into the series @p series_id, at the shared quote time.
+    /// Writes the quote @p datum_uri names into the series @p series_id, at the shared quote time.
     void write_quote(const boost::uuids::uuid& series_id,
-                     const ores::marketdata::core::pillar_quote_key& key,
+                     const std::string& datum_uri,
                      const std::string& value) {
         market_observation o;
         o.id = uuid_gen();
@@ -135,7 +173,7 @@ struct fixture {
         o.observation_datetime = quote_time;
         // The datum's URI, the same projection the feed writes, so the test
         // pins the agreement rather than a point string.
-        o.oresmd_uri = ores::marketdata::core::pillar_datum_uri(key);
+        o.oresmd_uri = datum_uri;
         o.value = value;
         o.source = "curve_pillar_reader test";
         market_observation_repository repo;
@@ -148,9 +186,8 @@ struct fixture {
 TEST_CASE("a_pillar_is_read_from_the_series_it_names", "[curve_pillar_reader]") {
     fixture f;
     const auto ctx = make_context();
-    const auto key = pillar_key(ctx, "SPOT", spot_first);
-    const auto series_id = f.write_series(key);
-    f.write_quote(series_id, key, "0.0432");
+    const auto series_id = f.write_series(quote_series_uri(ctx, "SPOT", spot_first));
+    f.write_quote(series_id, quote_datum_uri(ctx, "SPOT", spot_first), "0.0432");
 
     const auto read = read_pillar_rates(
         f.h.context(), {make_pillar(0, "SPOT", spot_first, series_id)}, ctx, read_as_of);
@@ -167,9 +204,9 @@ TEST_CASE("one series answers every rung of the ladder its pillars name", "[curv
     // Both pillars start at spot, so both read the one series and differ only by
     // the term they take from it. The second pillar is the first one's own quote
     // shifted to the longer tenor.
-    const auto series_id = f.write_series(pillar_key(ctx, "SPOT", spot_first));
-    f.write_quote(series_id, pillar_key(ctx, "SPOT", spot_first), "0.0432");
-    f.write_quote(series_id, pillar_key(ctx, "SPOT", first_second), "0.0410");
+    const auto series_id = f.write_series(quote_series_uri(ctx, "SPOT", spot_first));
+    f.write_quote(series_id, quote_datum_uri(ctx, "SPOT", spot_first), "0.0432");
+    f.write_quote(series_id, quote_datum_uri(ctx, "SPOT", first_second), "0.0410");
 
     const auto read = read_pillar_rates(f.h.context(),
                                         {make_pillar(0, "SPOT", spot_first, series_id),
@@ -190,8 +227,8 @@ TEST_CASE("a_pillar_naming_no_series_gets_no_rate", "[curve_pillar_reader]") {
     const auto ctx = make_context();
     // A series exists and holds a quote, but no pillar names it: the read asks
     // for the series the pillar carries and not for the one its tenors imply.
-    const auto series_id = f.write_series(pillar_key(ctx, "SPOT", spot_first));
-    f.write_quote(series_id, pillar_key(ctx, "SPOT", spot_first), "0.0432");
+    const auto series_id = f.write_series(quote_series_uri(ctx, "SPOT", spot_first));
+    f.write_quote(series_id, quote_datum_uri(ctx, "SPOT", spot_first), "0.0432");
 
     const auto read = read_pillar_rates(
         f.h.context(), {make_pillar(0, "SPOT", spot_first, f.uuid_gen())}, ctx, read_as_of);
@@ -203,12 +240,12 @@ TEST_CASE("a_pillar_naming_no_series_gets_no_rate", "[curve_pillar_reader]") {
 TEST_CASE("a_pillar_whose_series_has_no_quote_at_its_term_gets_no_rate", "[curve_pillar_reader]") {
     fixture f;
     const auto ctx = make_context();
-    const auto series_id = f.write_series(pillar_key(ctx, "SPOT", spot_first));
+    const auto series_id = f.write_series(quote_series_uri(ctx, "SPOT", spot_first));
 
     // The series is published, but not at the term this read derived: the row
     // carries the second rung, which a feed that published only the long end
     // leaves behind.
-    f.write_quote(series_id, pillar_key(ctx, "SPOT", first_second), "0.9999");
+    f.write_quote(series_id, quote_datum_uri(ctx, "SPOT", first_second), "0.9999");
 
     const auto read = read_pillar_rates(
         f.h.context(), {make_pillar(0, "SPOT", spot_first, series_id)}, ctx, read_as_of);
@@ -220,9 +257,8 @@ TEST_CASE("a_pillar_whose_series_has_no_quote_at_its_term_gets_no_rate", "[curve
 TEST_CASE("the_lineage_names_only_the_series_a_rate_was_read_from", "[curve_pillar_reader]") {
     fixture f;
     const auto ctx = make_context();
-    const auto spot_key = pillar_key(ctx, "SPOT", spot_first);
-    const auto spot_id = f.write_series(spot_key);
-    f.write_quote(spot_id, spot_key, "0.0432");
+    const auto spot_id = f.write_series(quote_series_uri(ctx, "SPOT", spot_first));
+    f.write_quote(spot_id, quote_datum_uri(ctx, "SPOT", spot_first), "0.0432");
 
     // The first pillar's series holds its quote; the second pillar names a series
     // nothing holds.

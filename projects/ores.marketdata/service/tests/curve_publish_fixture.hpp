@@ -36,7 +36,8 @@
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
-#include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
+#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.core/oresmd/pillar_quote.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
@@ -55,6 +56,7 @@
 #include <chrono>
 #include <map>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -251,22 +253,45 @@ private:
         return {std::tuple{"SPOT", "12M", "DEPOSIT"}, std::tuple{"12M", "2Y", "SWAP"}};
     }
 
-    /// The quote key of one pillar of the ladder, built as a feed builds it.
-    static ores::marketdata::core::pillar_quote_key
-    quote_key(const std::string& start, const std::string& end) {
-        return ores::marketdata::core::make_pillar_quote_key("USD",
-                                                             "1D",
-                                                             start,
-                                                             std::chrono::year{2026} / 1 / 1,
-                                                             std::chrono::year{2026} / 3 / 2,
-                                                             end);
+    /// The quote of one pillar of the ladder, as the feed states it.
+    static ores::marketdata::core::pillar_quote
+    quote_of(const std::string& start, const std::string& end) {
+        return {"USD", "1D", start, end, std::chrono::year{2026} / 1 / 1,
+                std::chrono::year{2026} / 3 / 2};
+    }
+
+    /// The series one pillar's quote belongs to, and the datum the quote is.
+    static ores::marketdata::datum::market_datum
+    quote_datum(const std::string& start, const std::string& end) {
+        const auto made = ores::marketdata::core::pillar_quote_datum(quote_of(start, end));
+        if (!made)
+            throw std::runtime_error("no datum for the pillar " + start + " to " + end + ": " +
+                                     made.error());
+        return *made;
+    }
+
+    static std::string quote_series_uri(const std::string& start, const std::string& end) {
+        const auto uri = ores::marketdata::datum::oresmd_uri_codec::write(
+            ores::marketdata::datum::series_of(quote_datum(start, end)));
+        if (!uri)
+            throw std::runtime_error("no series for the pillar " + start + " to " + end + ": " +
+                                     uri.error());
+        return *uri;
+    }
+
+    static std::string quote_datum_uri(const std::string& start, const std::string& end) {
+        const auto uri = ores::marketdata::datum::oresmd_uri_codec::write(quote_datum(start, end));
+        if (!uri)
+            throw std::runtime_error("no item for the pillar " + start + " to " + end + ": " +
+                                     uri.error());
+        return *uri;
     }
 
     /// One series per pillar's quote, written before the pillar that names it.
     void write_pillar_series() {
         for (const auto& [start, end, role] : pillar_ladder()) {
             const auto id = uuid_gen();
-            write_series(id, ores::marketdata::core::pillar_series_uri(quote_key(start, end)));
+            write_series(id, quote_series_uri(start, end));
             pillar_series.emplace(end, id);
         }
     }
@@ -299,7 +324,6 @@ private:
         ores::marketdata::repository::market_observation_repository obs_repo;
         for (const auto& [start, end, value] :
              {std::tuple{"SPOT", "12M", "0.0432"}, std::tuple{"12M", "2Y", "0.0395"}}) {
-            const auto key = quote_key(start, end);
             const auto series_id = pillar_series.at(end);
 
             ores::marketdata::domain::market_observation o;
@@ -308,7 +332,7 @@ private:
             o.party_id = party_id;
             o.series_id = series_id;
             o.observation_datetime = as_of;
-            o.oresmd_uri = ores::marketdata::core::pillar_datum_uri(key);
+            o.oresmd_uri = quote_datum_uri(start, end);
             o.value = value;
             o.source = "curve publish gate test";
             obs_repo.insert(*party, {o});

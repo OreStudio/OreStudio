@@ -21,6 +21,7 @@
 #include "ores.database/domain/context_transact.hpp"
 #include "ores.database/pq/statement.hpp"
 #include "ores.database/pq/transaction.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
@@ -144,61 +145,45 @@ std::optional<std::string> as_choice(const std::optional<std::string>& text) {
     return v;
 }
 
-/** The words a choice accepts, as the seed states them, comma separated. */
-std::vector<std::string> words_of(const std::string& options) {
-    std::vector<std::string> words;
-    std::size_t start = 0;
-    while (start <= options.size()) {
-        const auto end = options.find(',', start);
-        const auto word =
-            trim(options.substr(start, end == std::string::npos ? std::string::npos : end - start));
-        if (!word.empty())
-            words.push_back(word);
-        if (end == std::string::npos)
-            break;
-        start = end + 1;
-    }
-    return words;
-}
-
 /**
- * @brief Refuses a value the setting does not accept.
+ * @brief Refuses a value the setting's value set does not accept.
  *
  * The same check a direct write meets, made before a person is asked to decide
- * it: a proposal nobody could apply is a proposal nobody should sign.
+ * it: a proposal nobody could apply is a proposal nobody should sign. The rule
+ * is the store's own, so a proposal asks the function the parameter trigger
+ * asks, and no copy of the rule lives here to drift from it. A setting whose
+ * value set the tables do not hold takes the text as it stands.
  */
-void validate(const domain::engine_settings_group_setting& setting,
-              const std::optional<std::string>& text) {
-    if (setting.kind == "flag") {
-        as_flag(text);
+void validate(const ores::database::context& ctx,
+              const domain::engine_settings_group_setting& setting,
+              const std::optional<std::string>& text,
+              ores::logging::logger_t& lg) {
+    const auto value = trim(text.value_or(std::string{}));
+    if (value.empty())
         return;
-    }
-    if (setting.kind == "whole") {
-        const auto parsed = as_whole(text);
-        if (!parsed)
-            return;
-        if (setting.minimum && static_cast<double>(*parsed) < *setting.minimum)
-            throw std::invalid_argument(setting.column_name + " is below its minimum.");
-        if (setting.maximum && static_cast<double>(*parsed) > *setting.maximum)
-            throw std::invalid_argument(setting.column_name + " is above its maximum.");
+
+    const std::string sql =
+        "select l.value_set_code,"
+        " coalesce(ores_reporting_value_in_set_fn(l.value_set_code, $2)::text, 'true')"
+        " from ores_reporting_ore_parameter_setting_value_sets_tbl l"
+        "  join ores_reporting_ore_parameter_value_sets_tbl s"
+        "    on s.code = l.value_set_code"
+        "   and s.valid_to = ores_utility_infinity_timestamp_fn()"
+        " where l.code = $1"
+        "   and l.valid_to = ores_utility_infinity_timestamp_fn()";
+
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx, sql, {"Setup:" + setting.ore_name, value}, lg,
+        "validate an engine setting against its value set");
+
+    if (rows.empty() || rows.front().size() < 2 || !rows.front()[1].has_value())
         return;
-    }
-    if (setting.kind == "choice") {
-        const auto parsed = as_choice(text);
-        if (!parsed)
-            return;
-        std::string allowed;
-        bool found = false;
-        for (const auto& word : words_of(setting.options)) {
-            if (word == *parsed)
-                found = true;
-            allowed += (allowed.empty() ? "" : ", ") + word;
-        }
-        if (!found)
-            throw std::invalid_argument(setting.column_name + " is not one of: " + allowed + ".");
+    if (rows.front()[1].value() == "true")
         return;
-    }
-    throw std::invalid_argument("The setting " + setting.code + " has an unknown kind.");
+
+    const auto set_code = rows.front()[0].value_or(std::string{});
+    throw std::invalid_argument(setting.column_name + " is not a value its value set " + set_code +
+                                " accepts, so the proposal would be refused when it is applied.");
 }
 
 /**
@@ -726,7 +711,7 @@ engine_settings_proposal_service::raise(
                 return response;
             }
             try {
-                validate(*setting, v.text_value);
+                validate(ctx, *setting, v.text_value, lg());
             } catch (const std::exception& e) {
                 response.result = refusal_of(outcome::invalid, e.what());
                 return response;

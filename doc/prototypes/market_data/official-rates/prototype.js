@@ -24,8 +24,9 @@ let pair = q.get('pair') ?? 'EUR/USD';
 const DATES = ['2026-10-15', '2026-10-16', '2026-10-19', '2026-10-20', '2026-10-21',
     '2026-10-22', '2026-10-23', '2026-10-26', '2026-10-27', '2026-10-28'];
 
+const ROUTE = (name, adapter, state, last) => ({ name, adapter, state, last });
 const PROVIDERS = [
-    { code: 'ecb', name: 'European Central Bank', kind: 'reference',
+    { code: 'ecb', routes: [ROUTE('frankfurter', 'ecb-frankfurter', 'serving', '19:24'), ROUTE('bloomberg', 'bloomberg-a', 'serving', '19:23')], name: 'European Central Bank', kind: 'reference',
       terms: { accepted: true, version: 'v3', who: 'super_admin', at: '2026-01-15 10:22' },
       adapter: { state: 'serving', hb: '19:24', served: 44, refused: 0, unknown: 0 },
       last: { pair: 'EUR/CAD', date: '2026-10-28', received: '19:23', expected: 'today, on time', onTime: true },
@@ -33,38 +34,38 @@ const PROVIDERS = [
       series: { 'EUR/USD': [1.1605, 1.1609, 1.1612, 1.1614, 1.1618, 1.1620, 1.1622, 1.1626, 1.1631, 1.1638],
                 'EUR/CAD': [1.5590, 1.5601, 1.5610, 1.5614, 1.5618, 1.5620, 1.5622, 1.5626, 1.5631, 1.5638],
                 'EUR/GBP': [0.8620, 0.8624, 0.8627, 0.8630, 0.8632, 0.8634, 0.8637, 0.8640, 0.8643, 0.8646] } },
-    { code: 'boc', name: 'Bank of Canada', kind: 'reference',
+    { code: 'boc', routes: [ROUTE('frankfurter', 'boc-frankfurter', 'serving', '19:24')], name: 'Bank of Canada', kind: 'reference',
       terms: { accepted: true, version: 'v2', who: 'super_admin', at: '2026-10-26 11:20' },
       adapter: { state: 'serving', hb: '19:24', served: 27, refused: 0, unknown: 0 },
       last: { pair: 'CAD/EUR', date: '2026-10-27', received: '19:20', expected: 'today, late', onTime: false },
       credit: 'Source: Bank of Canada', storage: true, credential: 'none', rhythm: 'daily, 16:30 ET',
       series: { 'CAD/USD': [1.3820, 1.3824, 1.3827, 1.3830, 1.3833, 1.3836, 1.3839, 1.3842, 1.3845, 1.3848],
                 'CAD/EUR': [0.6410, 0.6408, 0.6406, 0.6404, 0.6402, 0.6400, 0.6398, 0.6396, 0.6394, 0.6392] } },
-    { code: 'imf', name: 'International Monetary Fund', kind: 'reference',
+    { code: 'imf', routes: [ROUTE('frankfurter', 'imf-frankfurter', 'serving', '19:24')], name: 'International Monetary Fund', kind: 'reference',
       terms: { accepted: !withdrawn, version: withdrawn ? 'v2' : 'v1', who: 'super_admin', at: '2026-09-01 09:00' },
       adapter: { state: 'serving', hb: '19:24', served: 48, refused: 0, unknown: 0 },
       last: { pair: 'EUR/USD', date: '2026-10-28', received: '19:24', expected: 'today, on time', onTime: true },
       credit: 'Source: IMF', storage: !withdrawn, credential: 'none', rhythm: 'daily, 12:00 ET',
       series: { 'EUR/USD': [1.1598, 1.1601, 1.1606, 1.1607, 1.1611, 1.1614, 1.1616, 1.1620, 1.1624, 1.1630],
                 'USD/CHF': [0.8290, 0.8294, 0.8297, 0.8300, 0.8303, 0.8306, 0.8309, 0.8312, 0.8316, 0.8321] } },
-    { code: 'fred', name: 'Federal Reserve (H.10)', kind: 'reference',
+    { code: 'fred', routes: [ROUTE('frankfurter', 'fred-frankfurter', 'serving', '19:24')], name: 'Federal Reserve (H.10)', kind: 'reference',
       terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-02 14:00' },
       adapter: { state: 'serving', hb: '19:24', served: 31, refused: 0, unknown: 0 },
       last: { pair: 'EUR/USD', date: '2026-10-28', received: '19:22', expected: 'today, on time', onTime: true },
       credit: 'Source: Federal Reserve Board', storage: true, credential: 'none', rhythm: 'daily, 16:15 ET',
       series: { 'EUR/USD': [1.1610, 1.1613, 1.1616, 1.1619, 1.1621, 1.1623, 1.1626, 1.1629, 1.1633, 1.1640],
                 'EUR/GBP': [0.8618, 0.8621, 0.8625, 0.8628, 0.8630, 0.8633, 0.8635, 0.8638, 0.8641, 0.8644] } },
-    { code: 'tcmb', name: 'Central Bank of Turkiye', kind: 'reference',
+    { code: 'tcmb', routes: [ROUTE('frankfurter', 'tcmb-frankfurter', 'serving', '19:24')], name: 'Central Bank of Turkiye', kind: 'reference',
       terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-20 08:10' },
       adapter: { state: 'down', hb: '16:02', served: 21, refused: 3, unknown: 0 },
       last: null, credit: 'Source: TCMB', storage: true, credential: 'none', rhythm: 'daily, 15:30 TRT',
       series: { 'TRY/USD': [42.10, 42.18, 42.25, 42.31, 42.38, 42.44, 42.50, 42.57, 42.63, 42.70] } },
-    { code: 'norges', name: 'Norges Bank', kind: 'reference',
+    { code: 'norges', routes: [ROUTE('frankfurter', 'norges-frankfurter', 'serving', '19:24')], name: 'Norges Bank', kind: 'reference',
       terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-18 09:00' },
       adapter: { state: 'serving', hb: '19:24', served: 12, refused: 0, unknown: 0 },
       last: null, credit: 'Source: Norges Bank', storage: true, credential: 'none', rhythm: 'daily, 14:00 CET',
       series: {} },
-    { code: 'boe', name: 'Bank of England', kind: 'reference',
+    { code: 'boe', routes: [ROUTE('frankfurter', 'boe-frankfurter', 'serving', '19:24')], name: 'Bank of England', kind: 'reference',
       terms: { accepted: true, version: 'v1', who: 'super_admin', at: '2026-10-18 14:00' },
       adapter: { state: 'serving', hb: '19:24', served: 34, refused: 0, unknown: 0 },
       paused: true,
@@ -110,6 +111,7 @@ function listRow(p) {
         <td class="provider">${fn.esc(p.name)}<div class="faint mono">${p.code}</div></td>
         <td class="num">${Object.keys(p.series).length || '—'}</td>
         <td>${p.terms.accepted ? `<span class="badge ok">${p.terms.version}</span>` : `<span class="badge warn">not accepted</span>`}</td>
+        <td>${p.routes.map((r) => r.name).join(', ')}</td>
         <td>${p.last ? `<div class="fresh"><span class="when">${p.last.date}</span><span class="sub">${p.last.pair}</span></div>` : '<span class="faint">no fixing ever</span>'}</td>
         <td>${fn.badge(kind)}</td>
         <td>${p.adapter.state === 'serving' ? `<span class="faint mono">hb ${p.adapter.hb}</span>` : `<span class="badge bad">hb ${p.adapter.hb}</span>`}</td>
@@ -263,6 +265,11 @@ function renderRecord() {
           <div class="card" style="margin-top:12px"><div class="card-head"><h2>Where a feed started</h2></div><div class="card-body">
           <div class="notice"><div class="title">Started from the ${p.code.toUpperCase()} fixing of ${values[values.length - 1].toFixed(4)} on ${DATES[DATES.length - 1]}</div>
           <div class="faint">the value this publisher's last run took</div></div></div></div>`;
+    } else if (rtab === 'routes') {
+        body.innerHTML = `<div class="card"><div class="card-head"><h2>Routes</h2><p>every way this publisher's values can reach the platform</p></div>
+          <table class="list"><thead><tr><th>Route</th><th>Adapter</th><th>State</th><th>Last delivery</th></tr></thead><tbody>${p.routes.map((r) =>
+            `<tr><td class="mono">${r.name}</td><td class="mono">${r.adapter}</td><td>${r.state === 'serving' ? fn.badge('live') : fn.badge('down')}</td><td class="when">${r.last}</td></tr>`).join('')}</tbody></table>
+          <div class="faint" style="margin-top:8px">A publisher's value keeps its own identity; the route that delivered it is provenance. A second route is a way to the same fixing, not a second fixing.</div></div></div>`;
     } else if (rtab === 'health') {
         body.innerHTML = `<div class="card"><div class="card-head"><h2>Adapter</h2><p>the official adapter, serving every publisher</p></div>
           <div class="card-body"><div class="kv">

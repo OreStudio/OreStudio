@@ -43,6 +43,21 @@ about the underlying it fixes.
 | Compare (area tab) | How far apart are their values? | fixings by series, arithmetic in the page |
 | Fetch (area tab) | Ask for data now | the refresh request, not yet on the contract |
 
+* Two things, two words: the publisher and the route
+
+A rate belongs to its publisher; a route is how the value reaches us.
+Frankfurter is a route today, and so are Bloomberg and LSEG. The list carries a
+Route column and the record a Routes tab, because the question "what happens if
+we take the ECB's rates through Bloomberg instead" is a question about a route,
+not about a publisher.
+
+A second route is a way to the same fixing, not a second fixing. The publisher's
+item keeps its identity, and the tick's source names the route that delivered
+it. When two routes deliver one publisher's item, the store holds one series:
+the same value on a stored date is a duplicate, and a different value is a
+correction with its source. This is the decision to settle before a vendor route
+is added; the prototype draws the routes so the decision has a shape.
+
 The list carries the count of underlyings, never the pairs themselves: a
 publisher fixes tens or hundreds of pairs, and the record's Underlyings tab is
 where they are read. The record page is the standard shape: a breadcrumb, a

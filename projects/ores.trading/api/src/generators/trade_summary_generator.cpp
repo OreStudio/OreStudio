@@ -52,6 +52,8 @@ generate_synthetic_trade_summary(utility::generation::generation_context& ctx) {
     r.authorisation_status = std::string("not_required");
     r.trade_date = std::nullopt;
     r.trade_count = 1;
+    r.structure_id = std::nullopt;
+    r.is_leg = false;
     r.search_text = std::string();
     return r;
 }

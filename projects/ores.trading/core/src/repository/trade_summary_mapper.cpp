@@ -57,6 +57,10 @@ domain::trade_summary trade_summary_mapper::map(const trade_summary_entity& v) {
     r.authorisation_status = v.authorisation_status;
     r.trade_date = v.trade_date;
     r.trade_count = v.trade_count;
+    r.structure_id = v.structure_id.has_value() ?
+                         boost::lexical_cast<boost::uuids::uuid>(*v.structure_id) :
+                         boost::uuids::uuid{};
+    r.is_leg = v.is_leg;
     r.search_text = v.search_text;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
@@ -78,6 +82,10 @@ trade_summary_entity trade_summary_mapper::map(const domain::trade_summary& v) {
     r.authorisation_status = v.authorisation_status;
     r.trade_date = v.trade_date;
     r.trade_count = v.trade_count;
+    r.structure_id = v.structure_id == boost::uuids::uuid{} ?
+                         std::nullopt :
+                         std::optional(boost::uuids::to_string(v.structure_id));
+    r.is_leg = v.is_leg;
     r.search_text = v.search_text;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

@@ -61,6 +61,8 @@ struct trade_summary_entity {
     std::string authorisation_status;
     std::optional<std::chrono::year_month_day> trade_date;
     int trade_count = 0;
+    std::optional<std::string> structure_id;
+    bool is_leg = false;
     std::string search_text;
 
     /**
@@ -80,6 +82,8 @@ struct trade_summary_entity {
                query_builder::bind("authorisation_status", &e::authorisation_status) |
                query_builder::bind("trade_date", &e::trade_date) |
                query_builder::bind("trade_count", &e::trade_count) |
+               query_builder::bind("structure_id", &e::structure_id) |
+               query_builder::bind("is_leg", &e::is_leg) |
                query_builder::bind("search_text", &e::search_text);
     }
 };

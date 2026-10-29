@@ -117,5 +117,3 @@ and invents none.
 The handler keeps one rule of its own, which is about runs and not about ORE: a
 run whose gathered data ends before the date it asked for prices at the data's
 last date, and says so.
-
-* Review

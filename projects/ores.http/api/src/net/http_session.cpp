@@ -35,11 +35,13 @@ namespace asio = boost::asio;
 http_session::http_session(asio::ip::tcp::socket socket,
                            std::shared_ptr<router> router,
                            std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier,
+                           std::shared_ptr<worker_pool> workers,
                            const http_server_options& options,
                            session_bytes_callback bytes_callback)
     : stream_(std::move(socket))
     , router_(std::move(router))
     , verifier_(std::move(verifier))
+    , workers_(std::move(workers))
     , options_(options)
     , bytes_callback_(std::move(bytes_callback)) {
 
@@ -209,17 +211,37 @@ asio::awaitable<void> http_session::handle_request(http::request<http::string_bo
         }
     }
 
-    // Execute handler
+    /*
+     * The handler blocks on the service that owns the data, so it runs on the
+     * worker pool and not here. This thread stays free to serve every other
+     * connection while one request waits on a slow service. A null pool keeps
+     * the old behaviour, which only a test wants.
+     */
     domain::http_response response;
-    try {
-        BOOST_LOG_SEV(lg(), trace) << "Executing handler for: " << matched->pattern;
-        response = co_await matched->handler(domain_req);
-        BOOST_LOG_SEV(lg(), debug)
-            << "Handler completed with status: " << static_cast<int>(response.status);
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Handler exception for " << matched->pattern << ": " << e.what();
-        response = domain::http_response::internal_error(e.what());
+    if (workers_ != nullptr && workers_->saturated()) {
+        BOOST_LOG_SEV(lg(), warn) << "Refusing " << matched->pattern
+                                  << ": the handler pool holds " << workers_->inflight()
+                                  << " requests already";
+        response = domain::http_response::error(domain::http_status::service_unavailable,
+                                               "The server is saturated. Try again shortly.");
+    } else {
+        try {
+            BOOST_LOG_SEV(lg(), trace) << "Executing handler for: " << matched->pattern;
+            if (workers_ != nullptr) {
+                const auto handler = matched->handler;
+                response = co_await workers_->run([&handler, &domain_req]() {
+                    return handler(domain_req);
+                });
+            } else {
+                response = co_await matched->handler(domain_req);
+            }
+            BOOST_LOG_SEV(lg(), debug)
+                << "Handler completed with status: " << static_cast<int>(response.status);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Handler exception for " << matched->pattern << ": " << e.what();
+            response = domain::http_response::internal_error(e.what());
+        }
     }
 
     // Add CORS headers if enabled

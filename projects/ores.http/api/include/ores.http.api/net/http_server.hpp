@@ -23,6 +23,7 @@
 #include "ores.http.api/export.hpp"
 #include "ores.http.api/net/http_server_options.hpp"
 #include "ores.http.api/net/http_session.hpp"
+#include "ores.http.api/net/worker_pool.hpp"
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -96,6 +97,15 @@ public:
         return running_.load();
     }
 
+    /**
+     * @brief The port the acceptor actually bound.
+     *
+     * A configuration of zero asks the operating system for a free port, and the
+     * caller needs to know which one it gave, so a test can reach it and an
+     * operator can report it.
+     */
+    [[nodiscard]] std::uint16_t bound_port() const;
+
 private:
     inline static std::string_view logger_name = "ores.http.net.http_server";
 
@@ -118,6 +128,10 @@ private:
     // way to be believed rather than a second way to sign.
     std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier_;
     std::shared_ptr<openapi::endpoint_registry> registry_;
+
+    // Runs a handler, which blocks on a downstream request. Declared before the
+    // acceptor so it outlives every session that holds a reference to it.
+    std::shared_ptr<worker_pool> workers_;
     std::unique_ptr<boost::asio::ip::tcp::acceptor> acceptor_;
     std::atomic<bool> running_{false};
     std::atomic<std::uint32_t> active_connections_{0};

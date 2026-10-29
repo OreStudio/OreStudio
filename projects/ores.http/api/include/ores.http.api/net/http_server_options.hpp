@@ -73,6 +73,25 @@ struct http_server_options final {
     std::uint32_t max_header_size = 64 * 1024;
 
     /**
+     * @brief Threads that run a route handler.
+     *
+     * A handler forwards to a service with a synchronous request, so running it
+     * on the connection's thread stalls every other connection for the length of
+     * one downstream answer. The handler runs here instead, and the connection
+     * stays on its own executor. Zero selects the default of eight.
+     */
+    std::size_t worker_threads = 0;
+
+    /**
+     * @brief Handlers the pool accepts at once.
+     *
+     * A slow service must cost a refusal once this is reached, not unbounded
+     * queueing: the request is answered 503 and each worker keeps a bounded
+     * share. Zero removes the cap, which is only appropriate for a test.
+     */
+    std::size_t max_inflight_requests = 1024;
+
+    /**
      * @brief Whether to enable SSL/TLS.
      */
     bool enable_ssl = false;

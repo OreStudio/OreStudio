@@ -33,7 +33,9 @@ http_server::http_server(asio::io_context& io_ctx, const http_server_options& op
     : io_ctx_(io_ctx)
     , options_(options)
     , router_(std::make_shared<router>())
-    , registry_(std::make_shared<openapi::endpoint_registry>()) {
+    , registry_(std::make_shared<openapi::endpoint_registry>())
+    , workers_(std::make_shared<worker_pool>(options.worker_threads,
+                                            options.max_inflight_requests)) {
 
     BOOST_LOG_SEV(lg(), info) << "HTTP server initializing with options: " << options_;
 
@@ -134,7 +136,7 @@ asio::awaitable<void> http_server::accept_connections() {
 
             // Create and run session
             auto session = std::make_shared<http_session>(
-                std::move(socket), router_, verifier_, options_, bytes_callback_);
+                std::move(socket), router_, verifier_, workers_, options_, bytes_callback_);
 
             asio::co_spawn(
                 io_ctx_,
@@ -158,6 +160,14 @@ asio::awaitable<void> http_server::accept_connections() {
             BOOST_LOG_SEV(lg(), error) << "Accept error: " << e.what();
         }
     }
+}
+
+std::uint16_t http_server::bound_port() const {
+    if (acceptor_ == nullptr || !acceptor_->is_open())
+        return 0;
+    boost::beast::error_code ec;
+    const auto endpoint = acceptor_->local_endpoint(ec);
+    return ec ? 0 : endpoint.port();
 }
 
 void http_server::stop() {

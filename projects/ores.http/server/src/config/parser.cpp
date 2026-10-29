@@ -87,7 +87,14 @@ options_description make_options_description() {
                                                      "Allowed CORS origins. Defaults to '*'.")(
         "identifier,i",
         value<std::string>()->default_value("ores-http-server-v1"),
-        "Server identifier for responses.");
+        "Server identifier for responses.")(
+        "worker-threads",
+        value<std::uint32_t>()->default_value(0),
+        "Threads that run a route handler. Defaults to 0, which selects eight.")(
+        "max-inflight-requests",
+        value<std::uint32_t>()->default_value(1024),
+        "Handlers the pool accepts at once; past it a request is refused 503. "
+        "Defaults to 1024.");
 
     options_description cod("Object Storage");
     cod.add_options()(storage_dir_arg.c_str(),
@@ -150,6 +157,8 @@ http_server_options read_server_configuration(const variables_map& vm) {
     r.enable_cors = (vm.count(server_disable_cors_arg) == 0);
     r.cors_allowed_origins = vm[server_cors_origins_arg].as<std::string>();
     r.server_identifier = vm[server_identifier_arg].as<std::string>();
+    r.worker_threads = vm["worker-threads"].as<std::uint32_t>();
+    r.max_inflight_requests = vm["max-inflight-requests"].as<std::uint32_t>();
 
     return r;
 }

@@ -23,8 +23,10 @@ set(files
     "endpoint_registry_tests.cpp"
     "http_request_tests.cpp"
     "http_response_tests.cpp"
+    "http_server_blocking_tests.cpp"
     "http_server_options_tests.cpp"
     "main.cpp"
     "route_tests.cpp"
     "router_tests.cpp"
+    "worker_pool_tests.cpp"
 )

@@ -23,6 +23,7 @@
 #include "ores.http.api/export.hpp"
 #include "ores.http.api/net/http_server_options.hpp"
 #include "ores.http.api/net/router.hpp"
+#include "ores.http.api/net/worker_pool.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <boost/asio/awaitable.hpp>
@@ -60,6 +61,7 @@ public:
     explicit http_session(boost::asio::ip::tcp::socket socket,
                           std::shared_ptr<router> router,
                           std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier,
+                          std::shared_ptr<worker_pool> workers,
                           const http_server_options& options,
                           session_bytes_callback bytes_callback = nullptr);
 
@@ -98,6 +100,11 @@ private:
     // request when this is absent, rather than falling back to a second way of
     // being believed.
     std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier_;
+
+    // Runs the handler, which blocks on a downstream request. May be null, in
+    // which case the handler runs on this connection's thread as before.
+    std::shared_ptr<worker_pool> workers_;
+
     http_server_options options_;
     std::string remote_address_;
     session_bytes_callback bytes_callback_;

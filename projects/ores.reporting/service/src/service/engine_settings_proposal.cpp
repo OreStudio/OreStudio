@@ -163,15 +163,14 @@ void validate(const ores::database::context& ctx,
     if (value.empty())
         return;
 
-    const std::string sql =
-        "select l.value_set_code, s.source_kind,"
-        " ores_reporting_value_in_set_fn(l.value_set_code, $2)::text"
-        " from ores_reporting_ore_parameter_setting_value_sets_tbl l"
-        "  join ores_reporting_ore_parameter_value_sets_tbl s"
-        "    on s.code = l.value_set_code"
-        "   and s.valid_to = ores_utility_infinity_timestamp_fn()"
-        " where l.code = $1"
-        "   and l.valid_to = ores_utility_infinity_timestamp_fn()";
+    const std::string sql = "select l.value_set_code, s.source_kind,"
+                            " ores_reporting_value_in_set_fn(l.value_set_code, $2)::text"
+                            " from ores_reporting_ore_parameter_setting_value_sets_tbl l"
+                            "  join ores_reporting_ore_parameter_value_sets_tbl s"
+                            "    on s.code = l.value_set_code"
+                            "   and s.valid_to = ores_utility_infinity_timestamp_fn()"
+                            " where l.code = $1"
+                            "   and l.valid_to = ores_utility_infinity_timestamp_fn()";
 
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
         ctx,

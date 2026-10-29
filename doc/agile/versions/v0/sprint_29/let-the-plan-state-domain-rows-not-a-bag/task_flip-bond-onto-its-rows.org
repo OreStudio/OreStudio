@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A bond trade states its instrument row, and the writer persists it without trans
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance

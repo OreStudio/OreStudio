@@ -117,23 +117,30 @@ public:
     /**
      * @brief The as-of date a run document states, when it states one.
      *
-     * The parameter is read by name, so a document that mentions the name in a
-     * comment, or that writes its attributes in another order, states the same
-     * date as one that does not.
+     * The parameter is read where the document states it, by name, so a document
+     * that mentions it in a comment or in an analytic's parameter list states the
+     * same date as one that does not.
      *
-     * @return The ISO 8601 date, or nothing when the document states none.
-     * @throws std::invalid_argument if the text is not a run document.
+     * @return The date as the document states it, or nothing when it states none.
+     * The text is not validated: comparing two of them is the caller's, and the
+     * document's owner writes it in the form ORE reads.
+     *
+     * @throws std::invalid_argument if the text is not XML.
+     * @throws std::runtime_error if it is XML the model cannot read: a missing
+     * Setup block, or a parameter whose text is not its type.
      */
     static std::optional<std::string> as_of_date(std::string_view text);
 
     /**
-     * @brief The same run document, priced at @p date.
+     * @brief The same run document, stating @p date as the date it prices at.
      *
-     * The document is written back through the projection, so the parameters it
-     * states are the ones ORE reads and a parameter the model holds nowhere is
-     * not invented.
+     * The document is read into the model and written back, so the parameters are
+     * the ones ORE reads, in the order the projection writes them. A parameter the
+     * model always states is written with the value the document gave it, or empty
+     * when it gave none; nothing that is not a run document parameter is invented.
      *
-     * @throws std::invalid_argument if the text is not a run document.
+     * @throws std::invalid_argument if the text is not XML.
+     * @throws std::runtime_error if it is XML the model cannot read.
      */
     static std::string with_as_of_date(std::string_view text, std::string_view date);
 };

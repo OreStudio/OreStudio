@@ -8,7 +8,7 @@
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
 #+owner: marco
 #+branch: feature/edit-the-run-document-through-the-projection
-#+pr: 4042
+#+pr: 4050
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -57,8 +57,13 @@ The handler keeps what it alone knows: that a run prices at the data's last date
 when the data ends before the date the run asked for.
 
 The tests live with the owners: a document that mentions the parameter in a
-comment, one that spells its attributes another way, one that states no date,
-and a body with comments, mixed date spellings and a line the parser refuses.
+comment and again inside an analytic, one that spells the attribute with other
+spacing and quote characters, one that states no date, and a body with comments,
+two date spellings and a line the tokeniser refuses.
+
+ORE's schema gives =Parameter= one attribute, so "another attribute order" cannot
+be written for the element this task reads. The spellings XML does allow, and the
+decoy in an analytic's parameter list, are the cases a text search reads wrong.
 
 * Measurements
 
@@ -72,10 +77,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Searches for an ORE spelling outside the projection | 0 (was 3 helpers) | =grep -rn 'name=\"' projects/ --include=*.cpp --include=*.hpp | grep -v "_tests.cpp\|/generated/"= | (this branch) |
-| Cases added for the two readers | 6 | =git diff origin/main -- '*_tests.cpp' | grep -c "^+TEST_CASE"= | (this branch) |
-| =ores.ore.core.tests= | passed, 20.74s | =compass test run -- -R ores.ore.core.tests= | (this branch) |
-| =ores.ore.service.tests= | passed, 1.08s | =compass test run -- -R ores.ore.service.tests= | (this branch) |
+| Searches for an ORE spelling outside the projection | 0 (both hits are in the projection) | =grep -rn 'name="' projects/ --include=*.cpp --include=*.hpp= | 016f15a55e |
+| Cases added for the two readers | 6 | =git diff origin/main -- '*_tests.cpp'= | 016f15a55e |
+| =ores.ore.core.tests= | passed, 22.37s | =compass test run -- -R ores.ore.core.tests= | 016f15a55e |
+| =ores.ore.service.tests= | passed, 0.91s, but the target holds no case | =compass test run -- -R ores.ore.service.tests= | 016f15a55e |
 
 * Notes
 
@@ -94,13 +99,21 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4050][#4050]] | [ore] Answer the projection review |
 | [[https://github.com/OreStudio/OreStudio/pull/4042][#4042]] | [ore] Edit a run document through its projection |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A pipeline with a line the tokeniser refuses read as a body with no date, so the run failed, where the old scan ignored the line | market_data_parser.cpp | Accepted | The newest date is read line by line through the tokeniser and a refused line is skipped. A case states it. |
+| 2 | `@throws` named one exception, but a valid document the model cannot hold throws another | run_document_projection.hpp | Accepted | The docs name `std::invalid_argument` for text that is not XML and `std::runtime_error` for XML the model cannot read. |
+| 3 | `with_as_of_date` promised not to invent parameters, but the projection always writes the ones the model always states | run_document_projection.hpp | Accepted | The doc says what it writes and when a value is empty; the task's Result says the same. |
+| 4 | The new cases are named as sentences where their neighbours are snake_case, and the projection's cases carry no logger | both test files | Accepted | Renamed, and each case logs what it read. |
+| 5 | The "attributes in another order" case re-spaced the attribute rather than reordering anything | xml_ore_run_document_projection_roundtrip_tests.cpp | Accepted in part | ORE's schema gives `Parameter` one attribute, so no order exists to vary. The case states the spellings XML allows, and a decoy in an analytic's parameters states the other failure of a text search. Recorded in the Plan. |
+| 6 | The rewrite's "keeps every parameter" claim had no test | xml_ore_run_document_projection_roundtrip_tests.cpp | Accepted | The comment case now checks that an unrelated parameter and the analytic's own parameter survive the rewrite. |
+| 7 | `ores.ore.service.tests` was cited as evidence but holds no case | task doc | Accepted | The measurement says so, and the limitation says the handler itself is untested. |
+| — | The review bot did not run: the same infrastructure error, at no cost, before reading anything. The round was run as two parallel reviews, standards and spec | — | — | Both are in the rows above. |
 
 * Result
 
@@ -110,9 +123,15 @@ projection searches for an ORE element name or attribute spelling.
 
 =as_of_date= and =with_as_of_date= are operations on the run document
 projection, and =latest_market_data_date= is an operation on the market data
-parser. The rewrite goes through the same =reverse= the export used, so a
-document that prices at the data's date keeps every parameter the model states
-and invents none.
+parser. The rewrite goes through the same =reverse= the export used, so the
+document it writes is the one the export would have written with the other date:
+the parameters the model always states are written with the values the document
+gave them, and no parameter outside the model is invented.
+
+A line the market data tokeniser cannot read is not a date line and is skipped,
+so a body with junk in it still states the newest date the lines around it carry.
+That mattered: reading a refused line as "no date" failed a run whose data did
+carry dates.
 
 The handler keeps one rule of its own, which is about runs and not about ORE: a
 run whose gathered data ends before the date it asked for prices at the data's

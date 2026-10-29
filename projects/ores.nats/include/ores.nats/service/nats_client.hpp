@@ -210,6 +210,15 @@ public:
     [[nodiscard]] bool is_logged_in() const noexcept;
 
     /**
+     * @brief Whether a person signed in, as opposed to the client carrying a token.
+     *
+     * A token provider is a service identity: it renews itself and nobody logs
+     * out of it. The bootstrap flow needs the narrower question, because it runs
+     * against a system nobody has signed in to yet.
+     */
+    [[nodiscard]] bool has_user_login() const noexcept { return auth_.has_value(); }
+
+    /**
      * @brief Unauthenticated synchronous request.
      *
      * Used for pre-login calls (login itself, JWKS fetch, bootstrap status).

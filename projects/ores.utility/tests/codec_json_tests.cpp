@@ -98,6 +98,30 @@ TEST_CASE("a tenant id, a date and a decimal are the strings reflect-cpp writes"
     CHECK(wire_json::read<ores::utility::decimal::decimal>(wire_json::write(amount)) == amount);
 }
 
+TEST_CASE("an address, an instant and an error code are what reflect-cpp writes", "[codec][json]") {
+    const auto address = boost::asio::ip::make_address("192.168.1.100");
+    const auto instant =
+        std::chrono::system_clock::time_point(std::chrono::microseconds(1'761'652'800'123'456));
+    const auto code = ores::utility::serialization::error_code::limit_exceeded;
+
+    CHECK(wire_json::write(address) == rfl::json::write(address));
+    CHECK(wire_json::write(instant) == rfl::json::write(instant));
+    CHECK(wire_json::write(code) == rfl::json::write(code));
+
+    CHECK(wire_json::read<boost::asio::ip::address>(wire_json::write(address)) == address);
+    CHECK(wire_json::read<std::chrono::system_clock::time_point>(wire_json::write(instant)) ==
+          instant);
+    CHECK(wire_json::read<ores::utility::serialization::error_code>(wire_json::write(code)) ==
+          code);
+}
+
+TEST_CASE("an error code outside the enum is refused", "[codec][json]") {
+    CHECK_THROWS_AS(wire_json::read<ores::utility::serialization::error_code>("65535"),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(wire_json::read<ores::utility::serialization::error_code>("\"ok\""),
+                    std::invalid_argument);
+}
+
 TEST_CASE("a string is its own JSON form", "[codec][json]") {
     CHECK(wire_json::write(std::string("zürich's \"quote\"")) ==
           rfl::json::write(std::string("zürich's \"quote\"")));

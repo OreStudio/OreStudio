@@ -105,6 +105,24 @@ TEST_CASE("a tenant id, a date and a decimal are the strings reflect-cpp writes"
           amount);
 }
 
+TEST_CASE("an address, an instant and an error code are what reflect-cpp writes",
+          "[codec][msgpack]") {
+    const auto address = boost::asio::ip::make_address("192.168.1.100");
+    const auto instant =
+        std::chrono::system_clock::time_point(std::chrono::microseconds(1'761'652'800'123'456));
+    const auto code = ores::utility::serialization::error_code::limit_exceeded;
+
+    CHECK(wire_msgpack::write(address) == rfl_msgpack(address));
+    CHECK(wire_msgpack::write(instant) == rfl_msgpack(instant));
+    CHECK(wire_msgpack::write(code) == rfl_msgpack(code));
+
+    CHECK(wire_msgpack::read<boost::asio::ip::address>(wire_msgpack::write(address)) == address);
+    CHECK(wire_msgpack::read<std::chrono::system_clock::time_point>(wire_msgpack::write(instant)) ==
+          instant);
+    CHECK(wire_msgpack::read<ores::utility::serialization::error_code>(wire_msgpack::write(code)) ==
+          code);
+}
+
 TEST_CASE("a string is its own MessagePack form", "[codec][msgpack]") {
     const auto text = std::string("zürich's \"quote\"");
     const auto theirs = rfl_msgpack(text);

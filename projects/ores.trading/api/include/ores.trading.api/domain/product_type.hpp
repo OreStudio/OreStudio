@@ -20,6 +20,7 @@
 #ifndef ORES_TRADING_DOMAIN_PRODUCT_TYPE_HPP
 #define ORES_TRADING_DOMAIN_PRODUCT_TYPE_HPP
 
+#include "ores.utility/codec/text_form.hpp"
 #include <cstdint>
 #include <optional>
 #include <ostream>
@@ -170,5 +171,21 @@ struct Reflector<ores::trading::domain::product_type> {
 };
 
 }
+
+template <>
+struct ores::utility::codec::text_form<ores::trading::domain::product_type> {
+    static constexpr std::string_view wire_name = "a product type";
+
+    static std::string to_text(const ores::trading::domain::product_type& v) {
+        return std::string(ores::trading::domain::to_string(v));
+    }
+
+    static ores::trading::domain::product_type from_text(std::string_view text) {
+        auto parsed = ores::trading::domain::product_type_from_string(text);
+        if (!parsed)
+            throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text));
+        return *parsed;
+    }
+};
 
 #endif

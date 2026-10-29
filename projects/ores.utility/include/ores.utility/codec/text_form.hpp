@@ -24,6 +24,7 @@
 #include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/export.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/asio/ip/address.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -128,6 +129,49 @@ struct text_form<ores::utility::decimal::decimal> {
             throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text) +
                                         ": " + result.error());
         return *result;
+    }
+};
+
+/**
+ * @brief An address's text form is the address's own spelling.
+ */
+template <>
+struct text_form<boost::asio::ip::address> {
+    static constexpr std::string_view wire_name = "an address";
+
+    static std::string to_text(const boost::asio::ip::address& v) {
+        return v.to_string();
+    }
+
+    static boost::asio::ip::address from_text(std::string_view text) {
+        try {
+            return boost::asio::ip::make_address(std::string(text));
+        } catch (const std::exception& e) {
+            throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text) +
+                                        ": " + e.what());
+        }
+    }
+};
+
+/**
+ * @brief An instant's text form is the wire shape the time architecture
+ * states, six digits of microseconds and a UTC designator.
+ */
+template <>
+struct text_form<std::chrono::system_clock::time_point> {
+    static constexpr std::string_view wire_name = "an instant";
+
+    static std::string to_text(const std::chrono::system_clock::time_point& v) {
+        return ores::platform::time::datetime::to_iso8601_utc(v);
+    }
+
+    static std::chrono::system_clock::time_point from_text(std::string_view text) {
+        try {
+            return ores::platform::time::datetime::from_iso8601_utc(std::string(text));
+        } catch (const std::exception& e) {
+            throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text) +
+                                        ": " + e.what());
+        }
     }
 };
 

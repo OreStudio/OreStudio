@@ -54,17 +54,25 @@ rather than eleven:
 | =std::chrono::year_month_day= | ="YYYY-MM-DD"=, the empty string for the default-constructed value | same |
 | =utility::decimal::decimal= | the decimal's own text | same |
 | =boost::asio::ip::address= | the address's text | same |
-| =utility::serialization::error_code= | the code's text | same |
+| =utility::serialization::error_code= | the underlying integer, not its name | same |
 | =trading::domain::product_type= | the enum's token | =ores.trading.api/domain/product_type.hpp= |
 | =scheduler::domain::cron_expression= | the expression's text | =ores.scheduler.api/domain/cron_expression.hpp= |
 | =workflow::messaging::step_log_level= | the enum's token | =ores.workflow.api/messaging/workflow_vocabulary.hpp= |
 | =workflow::messaging::step_outcome= | the enum's token | same |
 | =std::chrono::system_clock::time_point= | ISO 8601 UTC, six digits | =ores.utility/rfl/time_point_parser.hpp= |
 
-Every one of them is a *string* on the wire. The custom part is the text form,
-which the two formats then carry as their own string primitive: yyjson's mut
-string and msgpack's string. That is what makes this task small and uniform
-rather than twelve unrelated encoders.
+Eleven of them are a *string* on the wire, and the custom part is the text form,
+which the two formats carry as their own string primitive. The twelfth,
+=error_code=, is the exception the survey found: its reflector names the
+underlying integer, so the wire carries a number and the codec states a number.
+That is what makes this task small and uniform rather than twelve unrelated
+encoders, and it is why the survey mattered -- the plan read "twelve strings"
+until the reflectors were read one by one.
+
+The text forms of four types live in the components that own the types, beside
+their reflectors, because =ores.utility= cannot see a product type or a workflow
+outcome: =ores.trading.api=, =ores.scheduler.api= and =ores.workflow.api= each
+state their own.
 
 ** Dependencies
 
@@ -117,6 +125,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Types with a text form and its both-format proof | 12 of 12 | | |
+| Codec assertions | 102 in 23 cases | | |
 | Custom reflectors in the tree (11 Reflector + 1 Parser) | 12 | =grep -rn 'struct Reflector<' projects --include=*.hpp | grep -v build | wc -l= | 649b3072f0 |
 | Wire-format libraries in vcpkg.json | 0 of 2 (yyjson, msgpack-c absent) | =grep -c 'yyjson\|msgpack' vcpkg.json= | 649b3072f0 |
 

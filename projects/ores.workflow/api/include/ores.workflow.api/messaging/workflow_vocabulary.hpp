@@ -20,6 +20,7 @@
 #ifndef ORES_WORKFLOW_API_MESSAGING_WORKFLOW_VOCABULARY_HPP
 #define ORES_WORKFLOW_API_MESSAGING_WORKFLOW_VOCABULARY_HPP
 
+#include "ores.utility/codec/text_form.hpp"
 #include <cstdint>
 #include <rfl.hpp>
 #include <stdexcept>
@@ -159,5 +160,41 @@ struct Reflector<ores::workflow::messaging::step_outcome> {
 };
 
 }
+
+template <>
+struct ores::utility::codec::text_form<ores::workflow::messaging::step_log_level> {
+    static constexpr std::string_view wire_name = "a step log level";
+
+    static std::string to_text(const ores::workflow::messaging::step_log_level& v) {
+        return std::string(ores::workflow::messaging::to_string(v));
+    }
+
+    static ores::workflow::messaging::step_log_level from_text(std::string_view text) {
+        try {
+            return ores::workflow::messaging::step_log_level_from_string(text);
+        } catch (const std::exception& e) {
+            throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text) +
+                                        ": " + e.what());
+        }
+    }
+};
+
+template <>
+struct ores::utility::codec::text_form<ores::workflow::messaging::step_outcome> {
+    static constexpr std::string_view wire_name = "a step outcome";
+
+    static std::string to_text(const ores::workflow::messaging::step_outcome& v) {
+        return std::string(ores::workflow::messaging::to_string(v));
+    }
+
+    static ores::workflow::messaging::step_outcome from_text(std::string_view text) {
+        try {
+            return ores::workflow::messaging::step_outcome_from_string(text);
+        } catch (const std::exception& e) {
+            throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text) +
+                                        ": " + e.what());
+        }
+    }
+};
 
 #endif

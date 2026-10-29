@@ -21,6 +21,7 @@
 #define ORES_UTILITY_CODEC_JSON_CODEC_HPP
 
 #include "ores.utility/codec/text_form.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -54,6 +55,28 @@ struct json_codec {
             throw std::invalid_argument("Not " + std::string(text_form<T>::wire_name) +
                                         ": the JSON value is not a string");
         return text_form<T>::from_text(std::string_view(yyjson_get_str(v), yyjson_get_len(v)));
+    }
+};
+
+/**
+ * @brief An error code is the one type the wire states as a number: its
+ * reflector names the underlying integer, so the JSON carries the integer and
+ * not its name. The sentinel past the last real value is refused, as the
+ * reflector refuses it.
+ */
+template <>
+struct json_codec<serialization::error_code> {
+    static yyjson_mut_val* write(yyjson_mut_doc* doc, const serialization::error_code& v) {
+        return yyjson_mut_uint(doc, static_cast<std::uint16_t>(v));
+    }
+
+    static serialization::error_code read(yyjson_val* v) {
+        if (!yyjson_is_uint(v))
+            throw std::invalid_argument("Not an error code: the JSON value is not a number");
+        const auto number = yyjson_get_uint(v);
+        if (number > static_cast<std::uint16_t>(serialization::error_code::limit_exceeded))
+            throw std::invalid_argument("Not an error code: " + std::to_string(number));
+        return static_cast<serialization::error_code>(number);
     }
 };
 

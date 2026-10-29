@@ -21,6 +21,7 @@
 #define ORES_UTILITY_CODEC_MSGPACK_CODEC_HPP
 
 #include "ores.utility/codec/text_form.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 #include <cstddef>
 #include <msgpack.h>
 #include <optional>
@@ -54,6 +55,26 @@ struct msgpack_codec {
             throw std::invalid_argument("Not " + std::string(text_form<T>::wire_name) +
                                         ": the MessagePack value is not a string");
         return text_form<T>::from_text(std::string_view(v.via.str.ptr, v.via.str.size));
+    }
+};
+
+/**
+ * @brief An error code travels as the underlying integer, which is what its
+ * reflector names, and the sentinel past the last real value is refused.
+ */
+template <>
+struct msgpack_codec<serialization::error_code> {
+    static void write(msgpack_packer* pk, const serialization::error_code& v) {
+        if (msgpack_pack_uint16(pk, static_cast<std::uint16_t>(v)) != 0)
+            throw std::runtime_error("Could not pack an error code");
+    }
+
+    static serialization::error_code read(const msgpack_object& v) {
+        if (v.type != MSGPACK_OBJECT_POSITIVE_INTEGER)
+            throw std::invalid_argument("Not an error code: the MessagePack value is not a number");
+        if (v.via.u64 > static_cast<std::uint64_t>(serialization::error_code::limit_exceeded))
+            throw std::invalid_argument("Not an error code: " + std::to_string(v.via.u64));
+        return static_cast<serialization::error_code>(v.via.u64);
     }
 };
 

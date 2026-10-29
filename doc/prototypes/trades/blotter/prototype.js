@@ -216,8 +216,8 @@ function renderRail() {
                 go({ sel: id === '' || (view === 'portfolio' && id === ROOT_ID) ? null : id }, render);
             },
         }, h('span', { class: 'label' }, h('span', { class: 'name' }, label),
-            meta ? h('span', { class: 'meta' }, meta) : null,
-            h('span', { class: 'num' }, '  ' + count)));
+            meta ? h('span', { class: 'meta' }, meta) : null),
+        h('span', { class: 'num' }, String(count)));
     };
 
     if (view === 'portfolio') {

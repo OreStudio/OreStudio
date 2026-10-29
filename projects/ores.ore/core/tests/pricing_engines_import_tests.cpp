@@ -116,7 +116,7 @@ TEST_CASE("a_pricing_engine_document_exports_and_imports_back_as_the_same_docume
     // Imported into a copy of the configuration it came from, the document
     // comes back as itself.
     const auto target = pricing_engines_import::parse(text).document;
-    const auto merged = pricing_engines_import::merge(file, target, {});
+    const auto merged = pricing_engines_import::merge(file, target, {}, target.config.id);
 
     CHECK(ores::ore::xml::exporter::export_pricing_engines(merged) == text);
 }
@@ -278,7 +278,7 @@ TEST_CASE("a_duplicate_setting_is_resolved_by_the_person_who_reviews_the_row",
 
     // The person takes the file's row: the first statement of the setting is
     // written, and the review is what says so.
-    const auto merged = pricing_engines_import::merge(file, target, {});
+    const auto merged = pricing_engines_import::merge(file, target, {}, target.config.id);
     REQUIRE(merged.parameters.size() == 1);
     CHECK(merged.parameters.front().parameter_value == "First");
     CHECK(merged.parameters.front().id == discount.id);
@@ -337,7 +337,7 @@ TEST_CASE("a_row_the_file_omits_is_kept_unless_the_person_says_otherwise",
     const auto kept = pricing_engines_import::kept_by_default(difference);
     CHECK(kept == std::vector<std::string>{"Bond#0"});
 
-    const auto defaulted = pricing_engines_import::merge(file, target, kept);
+    const auto defaulted = pricing_engines_import::merge(file, target, kept, target.config.id);
     REQUIRE(defaulted.products.size() == 2);
     CHECK(defaulted.products.back().id == bond.id);
     REQUIRE(defaulted.parameters.size() == 1);
@@ -345,7 +345,7 @@ TEST_CASE("a_row_the_file_omits_is_kept_unless_the_person_says_otherwise",
 
     // A person who says the Bond goes leaves the document without it, and
     // without the setting it owned.
-    const auto dropped = pricing_engines_import::merge(file, target, {});
+    const auto dropped = pricing_engines_import::merge(file, target, {}, target.config.id);
     REQUIRE(dropped.products.size() == 1);
     CHECK(dropped.products.front().id == swap.id);
     CHECK(dropped.parameters.empty());
@@ -398,8 +398,9 @@ TEST_CASE("a_product_the_file_omits_is_one_removal_and_not_one_per_setting",
 
     // Kept, the product brings its two settings back with it; dropped, it takes
     // them with it, because the save writes the document whole.
-    CHECK(pricing_engines_import::merge(file, target, {"Bond#0"}).parameters.size() == 2);
-    CHECK(pricing_engines_import::merge(file, target, {}).parameters.empty());
+    CHECK(pricing_engines_import::merge(file, target, {"Bond#0"}, target.config.id)
+              .parameters.size() == 2);
+    CHECK(pricing_engines_import::merge(file, target, {}, target.config.id).parameters.empty());
 }
 
 TEST_CASE("a_setting_the_file_omits_is_a_removal_of_its_own", "[ore][import][pricing_engines]") {
@@ -440,7 +441,105 @@ TEST_CASE("a_setting_the_file_omits_is_a_removal_of_its_own", "[ore][import][pri
     CHECK(difference.rows.front().key == "Swap#0/engine/DiscountingCurve");
     CHECK(difference.rows.front().change == "removed");
 
-    CHECK(pricing_engines_import::merge(file, target, {"Swap#0/engine/DiscountingCurve"})
+    CHECK(pricing_engines_import::merge(
+              file, target, {"Swap#0/engine/DiscountingCurve"}, target.config.id)
               .parameters.size() == 1);
-    CHECK(pricing_engines_import::merge(file, target, {}).parameters.empty());
+    CHECK(pricing_engines_import::merge(file, target, {}, target.config.id).parameters.empty());
+}
+
+TEST_CASE("an_imported_row_belongs_to_the_configuration_it_was_written_into",
+          "[ore][import][pricing_engines]") {
+    auto lg(make_logger(test_suite));
+
+    // The parser stamps its rows with the id it minted for the configuration it
+    // read. A row written under that id would belong to a configuration that
+    // does not exist, and the analytics save writes the rows it is given as they
+    // stand.
+    const auto file = pricing_engines_import::parse(exported_swap_document());
+    REQUIRE(file.ok());
+    const auto file_configuration = file.document.config.id;
+    CHECK(file.document.products.front().pricing_model_config_id == file_configuration);
+    CHECK(file.document.parameters.front().pricing_model_config_id == file_configuration);
+
+    pricing_engines_document target;
+    target.config.id = boost::uuids::random_generator()();
+    target.config.name = "Existing";
+    ores::analytics::domain::pricing_model_product swap;
+    swap.id = boost::uuids::random_generator()();
+    swap.pricing_model_config_id = target.config.id;
+    swap.pricing_engine_type_code = "Swap";
+    swap.model = "DiscountedCashflows";
+    swap.engine = "DiscountingSwapEngine";
+    swap.position = 0;
+    target.products.push_back(swap);
+
+    // Into a configuration that exists, every row belongs to it.
+    const auto into_target = pricing_engines_import::merge(file, target, {}, target.config.id);
+    CHECK(into_target.config.id == target.config.id);
+    REQUIRE(into_target.products.size() == 1);
+    CHECK(into_target.products.front().pricing_model_config_id == target.config.id);
+    REQUIRE(into_target.parameters.size() == 5);
+    for (const auto& parameter : into_target.parameters)
+        CHECK(parameter.pricing_model_config_id == target.config.id);
+
+    // Into a new one, every row belongs to the configuration the caller is about
+    // to create, which is the id the parser minted and the caller states.
+    const auto new_configuration = boost::uuids::random_generator()();
+    const auto into_new = pricing_engines_import::merge(file, {}, {}, new_configuration);
+    CHECK(into_new.config.id == new_configuration);
+    CHECK(into_new.products.front().pricing_model_config_id == new_configuration);
+    for (const auto& parameter : into_new.parameters)
+        CHECK(parameter.pricing_model_config_id == new_configuration);
+}
+
+TEST_CASE("a_document_larger_than_the_import_reads_is_refused_by_its_size",
+          "[ore][import][pricing_engines]") {
+    auto lg(make_logger(test_suite));
+
+    const auto padding = std::string(pricing_engines_import::maximum_content + 1 - 64, ' ');
+    const auto file = pricing_engines_import::parse("<PricingEngines>" + std::string(64, ' ') +
+                                                    padding + "</PricingEngines>");
+    BOOST_LOG_SEV(lg, debug) << "Refusal: " << file.refusal;
+
+    CHECK(!file.ok());
+    CHECK(file.refusal.starts_with("The file is "));
+    CHECK(file.refusal.find("bytes") != std::string::npos);
+    CHECK(file.document.products.empty());
+}
+
+TEST_CASE("a_product_key_is_the_type_and_the_place_of_that_type",
+          "[ore][import][pricing_engines]") {
+    auto lg(make_logger(test_suite));
+
+    // The review names every row by these keys, and a refused row is named by the
+    // same builder, so the two cannot drift.
+    const auto file = pricing_engines_import::parse(R"(<?xml version="1.0"?>
+<PricingEngines>
+  <Product type="Swap">
+    <Model>M</Model>
+    <ModelParameters />
+    <Engine>E</Engine>
+    <EngineParameters />
+  </Product>
+  <Product type="Bond">
+    <Model>M</Model>
+    <ModelParameters />
+    <Engine>E</Engine>
+    <EngineParameters />
+  </Product>
+  <Product type="Swap">
+    <Model>M</Model>
+    <ModelParameters />
+    <Engine>E</Engine>
+    <EngineParameters />
+  </Product>
+</PricingEngines>
+)");
+    REQUIRE(file.ok());
+
+    const auto keys = pricing_engines_import::product_keys(file.document);
+    REQUIRE(file.document.products.size() == 3);
+    CHECK(keys.at(file.document.products[0].id) == "Swap#0");
+    CHECK(keys.at(file.document.products[1].id) == "Bond#0");
+    CHECK(keys.at(file.document.products[2].id) == "Swap#1");
 }

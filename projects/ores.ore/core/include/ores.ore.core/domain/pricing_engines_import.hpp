@@ -22,7 +22,10 @@
 
 #include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
 #include "ores.ore.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
+#include <map>
 #include <set>
 #include <string>
 #include <string_view>
@@ -134,6 +137,16 @@ public:
     static constexpr std::string_view root_element = "PricingEngines";
 
     /**
+     * @brief The largest document the import reads, in bytes.
+     *
+     * A configuration ORE reads is a few kilobytes. The cap is stated at the one
+     * door every caller comes through, so a document too large to serve is
+     * refused before it is parsed, and a caller that feeds the import from a
+     * request body has a number to hold the body to.
+     */
+    static constexpr std::size_t maximum_content = 4 * 1024 * 1024;
+
+    /**
      * @brief Reads the text of a pricing engines document.
      *
      * A text that is not well formed, or whose root element is another
@@ -144,6 +157,15 @@ public:
      * @param text The document.
      */
     static pricing_engines_import_file parse(std::string_view text);
+
+    /**
+     * @brief The key each product of a document is named by, by its id.
+     *
+     * One builder, so the key the review states and the key a refusal names
+     * cannot drift: both ask here.
+     */
+    static std::map<boost::uuids::uuid, std::string>
+    product_keys(const ores::analytics::messaging::pricing_engines_document& document);
 
     /**
      * @brief States how the file differs from the target.
@@ -193,11 +215,16 @@ public:
      * @param target The configuration the file would be written into.
      * @param kept_removals The keys of the removed rows the person chose to
      *                      keep.
+     * @param configuration_id The configuration the answer fills: the target's,
+     *                      or the one the caller is about to create. Every row
+     *                      is stamped with it, because the file's own id belongs
+     *                      to a configuration that does not exist.
      */
     static ores::analytics::messaging::pricing_engines_document
     merge(const pricing_engines_import_file& file,
           const ores::analytics::messaging::pricing_engines_document& target,
-          const std::vector<std::string>& kept_removals);
+          const std::vector<std::string>& kept_removals,
+          const boost::uuids::uuid& configuration_id);
 };
 
 }

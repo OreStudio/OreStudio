@@ -194,6 +194,18 @@ int pei_occurrence_of(const std::map<std::string, int>& counts, const std::strin
 pricing_engines_import_file pricing_engines_import::parse(std::string_view text) {
     pricing_engines_import_file out;
 
+    // A configuration ORE reads is small: the seeded ones are a few kilobytes.
+    // The cap is stated here, at the one door every caller comes through, so a
+    // document the service cannot serve is refused before it is parsed rather
+    // than after.
+    if (text.size() > maximum_content) {
+        out.refusal = std::format("The file is {} bytes, and a pricing engines document may be at "
+                                  "most {} bytes.",
+                                  text.size(),
+                                  maximum_content);
+        return out;
+    }
+
     pugi::xml_document document;
     const auto loaded = document.load_buffer(text.data(), text.size());
     if (!loaded) {
@@ -451,6 +463,102 @@ const std::array<std::string, 2>& pei_scopes() {
     return names;
 }
 
+/**
+ * @brief A row the file omits: a product, or a setting the target holds under a
+ * product the file does reach.
+ */
+struct pei_removal {
+    std::string key;
+    /** One of product, parameter. */
+    std::string entity;
+    /** The target product the row is, or nothing when the row is a setting. */
+    const pei_product_row* product = nullptr;
+    /** The target setting the row is, or nothing when the row is a product. */
+    const pei_parameter_row* setting = nullptr;
+    /** The product the row belongs to, empty for a product and for a global. */
+    std::string owner;
+    /** The setting's name, empty for a product. */
+    std::string name;
+};
+
+/**
+ * @brief Every row the file omits, in the order the review states them.
+ *
+ * One walk, so the review and the write cannot drift: the difference states
+ * these rows and the merge carries the ones the person keeps, and both read the
+ * same list. A product the file does not reach takes the settings it owns with
+ * it — the save removes a product's settings when it omits the product — so the
+ * settings are listed only under the products the file does reach.
+ */
+std::vector<pei_removal> pei_removals_of(const pei_document& file,
+                                         const pei_file_view& view,
+                                         const pei_target_rows& grouped) {
+    std::vector<pei_removal> removals;
+
+    for (const auto& [type_code, candidates] : grouped.by_type) {
+        const auto stated = pei_occurrence_of(view.stated_by_type, type_code);
+        for (auto at = stated; at < static_cast<int>(candidates.size()); ++at)
+            removals.push_back({.key = pei_product_key(type_code, at),
+                                .entity = "product",
+                                .product = candidates[at]});
+    }
+
+    for (const auto* product : view.products) {
+        const auto* theirs = view.target(product->id);
+        if (theirs == nullptr)
+            continue;
+        const auto settings = grouped.settings.find(theirs->id);
+        if (settings == grouped.settings.end())
+            continue;
+        const auto& key = view.key_of.at(product->id);
+        for (const auto& scope : pei_scopes()) {
+            std::map<std::string, int> stated;
+            for (const auto* parameter : pei_settings_of(file, product->id, scope))
+                ++stated[parameter->parameter_name];
+            for (const auto& [identity, rows] : settings->second) {
+                if (identity.rfind(scope + '\x1f', 0) != 0)
+                    continue;
+                const auto& name = rows.front()->parameter_name;
+                const auto from = stated.contains(name) ? stated[name] : 0;
+                for (auto at = from; at < static_cast<int>(rows.size()); ++at)
+                    removals.push_back({.key = pei_setting_key(key, scope, name, at),
+                                        .entity = "parameter",
+                                        .setting = rows[at],
+                                        .owner = key,
+                                        .name = name});
+            }
+        }
+    }
+
+    for (const auto& [name, rows] : grouped.globals) {
+        if (rows.empty())
+            continue;
+        const auto stated =
+            std::ranges::any_of(file.parameters, [&name](const pei_parameter_row& parameter) {
+                return parameter.parameter_scope == pei_scope_global &&
+                       parameter.parameter_name == name;
+            });
+        if (stated)
+            continue;
+        removals.push_back({.key = pei_setting_key("/", pei_scope_global, name, 0),
+                            .entity = "parameter",
+                            .setting = rows.front(),
+                            .owner = "the configuration",
+                            .name = name});
+    }
+
+    return removals;
+}
+
+/// How many settings the target holds under one product.
+std::size_t pei_settings_count_of(const pei_document& target, const pei_product_row& product) {
+    return static_cast<std::size_t>(
+        std::ranges::count_if(target.parameters, [&product](const pei_parameter_row& parameter) {
+            return parameter.pricing_model_product_id.has_value() &&
+                   *parameter.pricing_model_product_id == product.id;
+        }));
+}
+
 }
 
 
@@ -546,60 +654,21 @@ pricing_engines_import::difference(const pricing_engines_import_file& file,
         }
     }
 
-    // Every target product the file does not reach is a removal, and its
-    // settings go with it: the save removes a product's settings when it omits
-    // the product, so they are not stated as removals of their own.
-    for (const auto& [type_code, candidates] : grouped.by_type) {
-        const auto stated = pei_occurrence_of(view.stated_by_type, type_code);
-        for (auto at = stated; at < static_cast<int>(candidates.size()); ++at) {
-            const auto& product = *candidates[at];
-            ++out.removed;
-            const auto settings = std::ranges::count_if(
-                target.parameters, [&product](const pei_parameter_row& parameter) {
-                    return parameter.pricing_model_product_id.has_value() &&
-                           *parameter.pricing_model_product_id == product.id;
-                });
-            out.rows.push_back({.key = pei_product_key(type_code, at),
-                                .entity = "product",
-                                .change = "removed",
-                                .owner = {},
-                                .name = {},
-                                .what = std::format("Not in the file. It carries {} setting{}.",
-                                                    settings,
-                                                    settings == 1 ? "" : "s")});
+    // Every row the file omits, in the one order the merge reads them in.
+    for (const auto& removal : pei_removals_of(file.document, view, grouped)) {
+        ++out.removed;
+        std::string what = "Not in the file";
+        if (removal.product != nullptr) {
+            const auto settings = pei_settings_count_of(target, *removal.product);
+            what = std::format(
+                "Not in the file. It carries {} setting{}.", settings, settings == 1 ? "" : "s");
         }
-    }
-
-    // A setting the file omits from a product it does reach is a removal of its
-    // own.
-    for (const auto* product : view.products) {
-        const auto* theirs = view.target(product->id);
-        if (theirs == nullptr)
-            continue;
-        const auto& key = view.key_of.at(product->id);
-        const auto settings = grouped.settings.find(theirs->id);
-        if (settings == grouped.settings.end())
-            continue;
-        for (const auto& scope : pei_scopes()) {
-            std::map<std::string, int> stated;
-            for (const auto* parameter : pei_settings_of(file.document, product->id, scope))
-                ++stated[parameter->parameter_name];
-            for (const auto& [identity, rows] : settings->second) {
-                if (identity.rfind(scope + '\x1f', 0) != 0)
-                    continue;
-                const auto& name = rows.front()->parameter_name;
-                const auto from = stated.contains(name) ? stated[name] : 0;
-                for (auto at = from; at < static_cast<int>(rows.size()); ++at) {
-                    ++out.removed;
-                    out.rows.push_back({.key = pei_setting_key(key, scope, name, at),
-                                        .entity = "parameter",
-                                        .change = "removed",
-                                        .owner = key,
-                                        .name = name,
-                                        .what = "Not in the file"});
-                }
-            }
-        }
+        out.rows.push_back({.key = removal.key,
+                            .entity = removal.entity,
+                            .change = "removed",
+                            .owner = removal.owner,
+                            .name = removal.name,
+                            .what = std::move(what)});
     }
 
     // The root-level settings belong to the configuration, so they are matched
@@ -656,6 +725,26 @@ pricing_engines_import::difference(const pricing_engines_import_file& file,
     return out;
 }
 
+std::map<boost::uuids::uuid, std::string>
+pricing_engines_import::product_keys(const pei_document& document) {
+    std::map<boost::uuids::uuid, std::string> keys;
+    std::vector<const pei_product_row*> products;
+    for (const auto& product : document.products)
+        products.push_back(&product);
+    std::ranges::sort(products, [](const pei_product_row* lhs, const pei_product_row* rhs) {
+        if (lhs->position != rhs->position)
+            return lhs->position < rhs->position;
+        return lhs->id < rhs->id;
+    });
+    std::map<std::string, int> counts;
+    for (const auto* product : products) {
+        const auto& type_code = product->pricing_engine_type_code;
+        keys[product->id] = pei_product_key(type_code, pei_occurrence_of(counts, type_code));
+        ++counts[type_code];
+    }
+    return keys;
+}
+
 std::vector<std::string>
 pricing_engines_import::kept_by_default(const pricing_engines_import_difference& difference) {
     std::vector<std::string> kept;
@@ -667,13 +756,20 @@ pricing_engines_import::kept_by_default(const pricing_engines_import_difference&
 
 pei_document pricing_engines_import::merge(const pricing_engines_import_file& file,
                                            const pei_document& target,
-                                           const std::vector<std::string>& kept_removals) {
+                                           const std::vector<std::string>& kept_removals,
+                                           const boost::uuids::uuid& configuration_id) {
     const std::set<std::string> kept(kept_removals.begin(), kept_removals.end());
     const auto grouped = pei_group_target(target);
     const auto view = pei_view_of(file.document, grouped);
 
     pei_document out;
     out.config = target.config;
+    // The configuration the document fills is the caller's, not the file's: the
+    // parser stamps its rows with the id it minted for the configuration it read,
+    // and a row written under that id would belong to a configuration that does
+    // not exist. The analytics save writes the rows it is given as they stand, so
+    // the identity is set here.
+    out.config.id = configuration_id;
     int product_position = 0;
 
     // The file's rows, each keeping the identity and the version of the row the
@@ -712,7 +808,9 @@ pei_document pricing_engines_import::merge(const pricing_engines_import_file& fi
     }
 
     // What the file omits and the person keeps is carried from the target as it
-    // stands: the document says nothing about it, so nothing about it moves.
+    // stands: the document says nothing about it, so nothing about it moves. The
+    // rows come from the same walk the review read, so the two cannot disagree
+    // about which row a choice names.
     const auto carry = [&](const pei_product_row& product) {
         pei_product_row row = product;
         row.position = product_position++;
@@ -727,40 +825,13 @@ pei_document pricing_engines_import::merge(const pricing_engines_import_file& fi
             out.parameters.push_back(setting);
         }
     };
-    for (const auto& [type_code, candidates] : grouped.by_type) {
-        const auto stated = pei_occurrence_of(view.stated_by_type, type_code);
-        for (auto at = stated; at < static_cast<int>(candidates.size()); ++at)
-            if (kept.contains(pei_product_key(type_code, at)))
-                carry(*candidates[at]);
-    }
-
-    // A setting of a product that stays is a removal of its own, unless the
-    // person kept it.
-    for (const auto* product : view.products) {
-        const auto* theirs = view.target(product->id);
-        if (theirs == nullptr)
+    for (const auto& removal : pei_removals_of(file.document, view, grouped)) {
+        if (!kept.contains(removal.key))
             continue;
-        const auto settings = grouped.settings.find(theirs->id);
-        if (settings == grouped.settings.end())
-            continue;
-        const auto& key = view.key_of.at(product->id);
-        for (const auto& scope : pei_scopes()) {
-            std::map<std::string, int> stated;
-            for (const auto* parameter : pei_settings_of(file.document, product->id, scope))
-                ++stated[parameter->parameter_name];
-            for (const auto& [identity, rows] : settings->second) {
-                if (identity.rfind(scope + '\x1f', 0) != 0)
-                    continue;
-                const auto& name = rows.front()->parameter_name;
-                const auto from = stated.contains(name) ? stated[name] : 0;
-                for (auto at = from; at < static_cast<int>(rows.size()); ++at) {
-                    if (!kept.contains(pei_setting_key(key, scope, name, at)))
-                        continue;
-                    pei_parameter_row setting = *rows[at];
-                    out.parameters.push_back(setting);
-                }
-            }
-        }
+        if (removal.product != nullptr)
+            carry(*removal.product);
+        else if (removal.setting != nullptr)
+            out.parameters.push_back(*removal.setting);
     }
 
     for (const auto* parameter : pei_global_settings_of(file.document)) {
@@ -775,19 +846,10 @@ pei_document pricing_engines_import::merge(const pricing_engines_import_file& fi
         }
         out.parameters.push_back(setting);
     }
-    for (const auto& [name, rows] : grouped.globals) {
-        if (rows.empty())
-            continue;
-        const auto stated = std::ranges::any_of(
-            file.document.parameters, [&name](const pei_parameter_row& parameter) {
-                return parameter.parameter_scope == pei_scope_global &&
-                       parameter.parameter_name == name;
-            });
-        if (stated)
-            continue;
-        if (kept.contains(pei_setting_key("/", pei_scope_global, name, 0)))
-            out.parameters.push_back(*rows.front());
-    }
+    for (auto& row : out.products)
+        row.pricing_model_config_id = configuration_id;
+    for (auto& row : out.parameters)
+        row.pricing_model_config_id = configuration_id;
 
     // A setting's position is the place it takes in its own scope, and the rows
     // were laid out in the order the document is to state them: the file's

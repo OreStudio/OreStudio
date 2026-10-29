@@ -287,9 +287,24 @@ via its "Verifies task" field.
 
 * Review
 
+The review of [[https://github.com/OreStudio/OreStudio/pull/3999][#3999]] found five
+things. All five are taken, on
+=fix/import-pricing-engines-review=, with the tests the review asked for.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A new configuration's header can be orphaned: it is registered before the vocabulary read, and the final catch never removes it | =pricing_engines_handler.cpp= | Taken | The order and the rollback are now =run_pricing_engines_import= in =pricing_engines_import_run.cpp=. Everything that can refuse is read before anything is registered, the registration is the last step before the save, and the catch removes it however the run fails. The regression test makes the vocabulary read fail on a new-configuration import and asserts no configuration remains, and a second case makes the save refuse so the rollback itself is driven |
+| 2 | =read_target= reads =read->message= before it tests =!read= | =pricing_engines_handler.cpp= | Taken | The missing reply is tested first and answers its own sentence; the service refusal is read only from a reply that came back |
+| 3 | Merged rows may keep the file's random =pricing_model_config_id= | =pricing_engines_import.cpp= | Taken | Confirmed in the code: the analytics save writes the rows it is given as they stand (`pricing_engines_document_service::save` stamps the tenant, the party and the audit fields and nothing else), so a row would have been written under an id no configuration holds. =merge= now takes the configuration the document fills and stamps every row with it. The core case reads each row's id back for an existing target and for a new configuration, the run case does the same through the save, and the live run shows no product or parameter row pointing at a configuration that does not exist |
+| 4 | No size cap on the request's content | =pricing_engines_import.cpp=, =pricing-engines.ts= | Taken | =pricing_engines_import::maximum_content= is four megabytes, refused by =parse= with the size and the limit named, and the BFF states the same limit and holds its body to twice it (a body is the document and its escaping) |
+| 5 | Log a failed rollback; build the =type#n= key once; share the removal walk between the difference and the merge | =pricing_engines_handler.cpp=, =pricing_engines_import.cpp= | Taken | The rollback that fails is a warning; =pricing_engines_import::product_keys= is the one builder of a product key, which the review's rows and a refused row's name both ask; the rows the file omits come from one walk that the difference states and the merge carries the kept ones from |
+
+One suggestion did not fit the code as it stands: the review's regression test is
+asked for at the handler, and this component's handlers talk to analytics and
+reporting over subjects their own test server cannot stand in for without racing
+the running services. The orchestration was therefore made a function with each
+step handed in, so the test drives the order and the rollback with fakes instead
+of a fake broker — the property under test is the same one.
 
 * Result
 
@@ -357,6 +372,30 @@ Committed on =feature/import-a-pricing-engine-configuration-as-ore-xml=:
 - The live round trip is what found the one defect the unit tests could not: the
   ordering of the settings within a scope. It is fixed, and the round-trip case
   now carries three settings of one scope in an order no sort would produce.
+
+** The review branch
+
+The five things the review of #3999 found are taken on
+=fix/import-pricing-engines-review= (see =* Review=). What that branch proved
+again, on a database recreated with =compass db recreate -y -k= and provisioned
+with =compass smoke ticks --leave-running=:
+
+- The UK party's *XVA Overnight* exported as 8 products and 19 settings.
+- Imported through the shell into a configuration that **exists** — the case the
+  review's third finding was about — 13 rows were added and the export of that
+  configuration is the file's document, byte for byte. No product and no parameter
+  row in the database points at a configuration that does not exist, which is what
+  the finding would have caused.
+- Imported through the API into a new configuration: 27 added, and the export is
+  the file's document, byte for byte.
+- A file whose product states no model is refused by the save, the refusal names
+  the row by its key (=Swap#0=), and no configuration with that name is left
+  behind — the rollback, live.
+- A body of four megabytes and one byte is refused over HTTP with "An ORE pricing
+  engines document may be at most 4194304 bytes."
+- The suites: ORE core 444 cases (478894 assertions), ORE service 6 cases (the
+  first this target has held), BFF 1139 tests in 83 files, and =./compass.sh
+  build= passes bare.
 
 ** The checks
 

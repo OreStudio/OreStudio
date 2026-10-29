@@ -375,27 +375,96 @@ function renderSupplierPane() {
     const sup = fn.supplier(supplierCode);
     if (!sup) { location.search = '?'; return; }
     const sessions = fn.sessionsOfSupplier(sup.code);
-    const feeds = sessions.reduce((n, x) => n + fn.feedsOfSession(x.name).length, 0);
+    const feeds = sessions.flatMap((x) => fn.feedsOfSession(x.name));
+    const publishers = [...new Set(feeds.map((f) => f.publisher))];
+    const serving = sessions.filter((x) => x.runtime.state === 'serving').length;
+    const services = [...new Set(sessions.flatMap((x) => x.services))];
+    const lastDelivery = sessions.map((x) => x.runtime.lastTick).filter(Boolean).sort().pop() ?? '—';
+
+    const alerts = [];
+    sessions.forEach((x) => {
+        if (x.runtime.state !== 'serving') alerts.push(['bad', `Session ${x.name} is not serving`, `?session=${x.name}&tab=runtime`]);
+    });
+    feeds.forEach((f) => {
+        if (f.schedule.last.includes('failed') || f.schedule.last.includes('late'))
+            alerts.push(['warn', `${f.name}: last run ${f.schedule.last}`, `?feed=${f.name}&tab=schedule`]);
+        if (!f.routes.length) alerts.push(['warn', `${f.name} is configured but not routed`, `?feed=${f.name}&tab=routes`]);
+    });
+    publishers.forEach((code) => {
+        const p = fn.publisher(code);
+        if (!p.terms.accepted) alerts.push(['warn', `${p.name} terms are not accepted`, `?publisher=${p.code}`]);
+    });
+
+    const kpis = `<div class="strip">
+        <div class="metric"><span class="label">Sessions</span><div class="v">${sessions.length}</div><span class="sub">${serving} serving</span></div>
+        <div class="metric"><span class="label">Feeds</span><div class="v">${feeds.length}</div><span class="sub">${feeds.filter((f) => f.schedule.enabled).length} scheduled</span></div>
+        <div class="metric"><span class="label">Publishers</span><div class="v">${publishers.length}</div><span class="sub">aggregated by ${sup.name}</span></div>
+        <div class="metric"><span class="label">Services</span><div class="v">${services.length}</div><span class="sub">${services.join(', ')}</span></div>
+        <div class="metric"><span class="label">Attention</span><div class="v ${alerts.length ? 'warn' : 'up'}">${alerts.length}</div><span class="sub">${alerts.length ? 'see the list below' : 'nothing needs a person'}</span></div>
+        <div class="metric"><span class="label">Last delivery</span><div class="v">${lastDelivery}</div><span class="sub">from any session</span></div>
+      </div>`;
+
+    const sessionsCard = `<div class="card"><div class="card-head"><h2>Sessions</h2><p>where the adapter runs, and whether it serves</p></div>
+      <table class="list"><thead><tr><th>Session</th><th>Env</th><th>Adapter</th><th>State</th><th>Heartbeat</th><th>Feeds</th><th class="acts"></th></tr></thead><tbody>${sessions.length ? sessions.map((x) => {
+        const a = fn.adapter(x.adapter);
+        return `<tr><td class="mono"><a href="?session=${x.name}">${x.name}</a></td><td>${x.environment}</td>
+          <td class="mono">${a.code} ${a.version}</td><td>${fn.state(x)}</td><td class="when">${x.runtime.hb}</td>
+          <td class="num">${fn.feedsOfSession(x.name).length}</td>
+          <td class="acts"><a class="act" href="?session=${x.name}">Open</a></td></tr>`;
+      }).join('') : '<tr><td colspan="7" class="faint">No session.</td></tr>'}</tbody></table></div>`;
+
+    const coverageCard = `<div class="card"><div class="card-head"><h2>Coverage</h2><p>publishers served, and what they carry</p></div>
+      <table class="list"><thead><tr><th>Publisher</th><th>Classes</th><th>Feeds</th><th>Service</th></tr></thead><tbody>${publishers.length ? publishers.map((code) => {
+        const p = fn.publisher(code);
+        const fds = feeds.filter((f) => f.publisher === code);
+        return `<tr><td class="mono"><a href="?publisher=${p.code}">${p.code}</a></td>
+          <td>${p.classes.map((c) => c.toUpperCase()).join(', ')}</td><td class="num">${fds.length}</td>
+          <td class="faint">${[...new Set(fds.map((f) => f.service))].join(', ')}</td></tr>`;
+      }).join('') : '<tr><td colspan="4" class="faint">No publisher is served.</td></tr>'}</tbody></table></div>`;
+
+    const attentionCard = `<div class="card"><div class="card-head"><h2>Needs attention</h2><p>what a person would look at first</p></div>
+      <div class="card-body">${alerts.length ? alerts.map(([tone, text, href]) =>
+        `<div class="alert"><span class="badge ${tone}">${tone === 'bad' ? 'down' : 'warning'}</span><a href="${href}">${esc(text)}</a></div>`).join('')
+        : '<div class="faint">Nothing. Every session serves, every feed has run, and every feed is routed.</div>'}</div></div>`;
+
+    const feedsCard = `<div class="card full"><div class="card-head"><h2>Feeds</h2><p>each publisher's data, its service, its rhythm and its last delivery</p>
+        <span class="filters"><a class="act" href="?add-feed=1&supplier=${sup.code}">Add a feed</a></span></div>
+      <table class="list"><thead><tr><th>Feed</th><th>Publisher</th><th>Service</th><th>Schedule</th><th>Last run</th><th>Last delivery</th><th>Session</th><th class="acts"></th></tr></thead><tbody>${feeds.length ? feeds.map((f) => {
+        const p = fn.publisher(f.publisher);
+        const trouble = f.schedule.last.includes('failed') || f.schedule.last.includes('late');
+        return `<tr><td class="mono"><a href="?feed=${f.name}">${f.name}</a>${f.isDefault ? ' <span class="badge">default</span>' : ''}</td>
+          <td>${esc(p.name)}</td><td>${f.service}</td>
+          <td class="faint">${f.schedule.enabled ? esc(f.schedule.rhythm) : 'off'}</td>
+          <td class="when">${esc(f.schedule.last)}${trouble ? ' <span class="badge warn">late</span>' : ''}</td>
+          <td class="when">${f.last ?? '—'}</td><td>${fn.feedState(f)}</td>
+          <td class="acts"><a class="act" href="?feed=${f.name}">Open</a></td></tr>`;
+      }).join('') : '<tr><td colspan="8" class="faint">No feed.</td></tr>'}</tbody></table></div>`;
+
+    const contractCard = `<div class="card"><div class="card-head"><h2>Contract</h2><p>who we deal with, and where to ask</p></div><div class="card-body">${detail([
+        ['Kind', sup.kind],
+        ['Contract', `<span class="mono">${esc(sup.contract)}</span>`],
+        ['Support', esc(sup.support)],
+        ['Description', esc(sup.description)],
+        ['Sessions', `${sessions.length} (${serving} serving)`],
+    ])}</div></div>`;
+
+    const activityCard = `<div class="card full"><div class="card-head"><h2>Recent activity</h2><p>the shared timeline, newest first</p></div><div class="card-body"><div class="timeline">
+        <div class="row"><span class="at">2026-10-28 19:24</span><span class="what"><b>${feeds[0]?.name ?? 'feed'} delivered</b> · by adapter</span></div>
+        <div class="row"><span class="at">2026-10-28 09:00</span><span class="what"><b>Credential rotated</b> · by super_admin</span></div>
+        <div class="row"><span class="at">2026-10-20 11:12</span><span class="what"><b>Endpoint changed</b> · by super_admin</span></div>
+        <div class="row"><span class="at">2026-10-01 09:00</span><span class="what"><b>Supplier created</b> · by super_admin</span></div>
+      </div></div></div>`;
+
+    const headline = sup.kind === 'aggregator'
+        ? `aggregates ${plural(publishers.length, 'publisher')} over ${plural(sessions.length, 'session')}`
+        : `${sup.kind} · ${plural(sessions.length, 'session')} · ${plural(feeds.length, 'feed')}`;
+
     document.querySelector('#pane').innerHTML = paneHeader(
         `Connectivity / Suppliers / ${esc(sup.name)}`, esc(sup.name),
-        `${sup.kind} · contract ${esc(sup.contract)} · ${plural(sessions.length, 'session')} · ${plural(feeds, 'feed')}`,
+        `${esc(headline)} · contract ${esc(sup.contract)} · ${alerts.length ? `${alerts.length} needing attention` : 'all clear'}`,
         `<a class="act primary" href="?add-session=1&supplier=${sup.code}">New session</a><a class="act" href="#">Contract</a>`)
-        + `<div class="card"><div class="card-head"><h2>Supplier</h2><p>the party we contract with and connect to</p></div>
-          <div class="card-body">${detail([
-            ['Code', `<span class="mono">${sup.code}</span>`],
-            ['Kind', sup.kind],
-            ['Contract', `<span class="mono">${esc(sup.contract)}</span>`],
-            ['Support', esc(sup.support)],
-            ['Description', esc(sup.description)],
-          ])}</div></div>
-          <div class="card"><div class="card-head"><h2>Sessions</h2><p>one configured adapter each; open one to see its feeds</p></div>
-          <table class="list"><thead><tr><th>Session</th><th>Adapter</th><th>Environment</th><th>Endpoint</th><th>Feeds</th><th>State</th><th class="acts"></th></tr></thead><tbody>${sessions.length ? sessions.map((x) => {
-            const a = fn.adapter(x.adapter);
-            return `<tr><td class="mono"><a href="?session=${x.name}">${x.name}</a></td><td>${a.code} <span class="faint">${a.version}</span></td>
-              <td>${x.environment}</td><td class="mono faint">${esc(x.endpoint)}</td>
-              <td class="num">${fn.feedsOfSession(x.name).length}</td><td>${fn.state(x)}</td>
-              <td class="acts"><a class="act" href="?session=${x.name}">Open</a></td></tr>`;
-          }).join('') : '<tr><td colspan="7" class="faint">No session yet.</td></tr>'}</tbody></table></div>`;
+        + kpis
+        + `<div class="dash">${sessionsCard}${coverageCard}${attentionCard}${contractCard}${feedsCard}${activityCard}</div>`;
 }
 
 function renderPublisherPane() {
@@ -568,7 +637,9 @@ function renderAddSession() {
 
 function renderAddFeed() {
     const p = fn.publisher(publisherCode) ?? PUBLISHERS[0];
-    const fits = SESSIONS.filter((x) => x.enabled && fn.adapter(x.adapter).classes.some((c) => p.classes.includes(c)));
+    const fits = SESSIONS.filter((x) => x.enabled
+        && fn.adapter(x.adapter).classes.some((c) => p.classes.includes(c))
+        && (!supplierCode || x.supplier === supplierCode));
     document.querySelector('#pane').innerHTML = paneHeader(`Connectivity / Publishers / ${esc(p.name)} / New feed`, 'New feed',
         'a publisher, a session, a service, a scope and a schedule',
         `<a class="act" href="?publisher=${p.code}">Cancel</a>`)

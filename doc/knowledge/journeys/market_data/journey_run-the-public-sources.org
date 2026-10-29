@@ -147,7 +147,7 @@ example.
 | | Adapters | What code does the release provide, with which services and configuration schema? |
 | | Feeds | Every feed: publisher, supplier, session, service, scope, schedule, state |
 | | Publisher record | The terms, and the feeds that serve each class |
-| | Supplier record | The contract, and the sessions of that supplier |
+| | Supplier dashboard | The contract, sessions, coverage, feeds needing attention, and recent activity |
 | | Session record | Endpoint, environment, credential, settings, services, runtime, feeds |
 | | Feed record | Publisher, service, publisher key, scope, schedule, routes |
 | Public rates | Publishers | Which publishers are there, what are their terms, and is their data arriving? |

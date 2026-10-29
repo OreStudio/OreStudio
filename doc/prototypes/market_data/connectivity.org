@@ -46,7 +46,9 @@ The screen is one page split in two.
 - *Left*: the delivery tree, supplier → session → feed, and a second tree of
   publishers → feeds. A search box filters both. The selected node is marked.
 - *Right*: what the person came to see.
-  - A supplier shows its details and the list of its sessions.
+  - A supplier shows a dashboard: its sessions, the coverage of publishers it
+    serves, the feeds that need attention, its contract, all its feeds, and the
+    recent activity. The first thing a person sees is what needs a person.
   - A session shows its transport and its feeds; runtime and history are tabs.
   - A feed shows its details, then Underlyings, Schedule, Routes and History.
   - A publisher shows its terms and the list of its feeds.

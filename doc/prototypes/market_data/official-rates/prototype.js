@@ -305,13 +305,11 @@ function wire() {
 
 if (providerCode) {
     renderRecord();
-} else if (tab === 'availability') {
-    renderAvailability();
-} else if (tab === 'compare') {
-    renderCompare();
-} else if (tab === 'fetch') {
-    renderFetch();
 } else {
-    renderList();
+    document.querySelectorAll('[role="tabpanel"]').forEach((s) => { s.hidden = s.id !== `tab-${tab}`; });
+    if (tab === 'availability') renderAvailability();
+    else if (tab === 'compare') renderCompare();
+    else if (tab === 'fetch') renderFetch();
+    else renderList();
 }
 wire();

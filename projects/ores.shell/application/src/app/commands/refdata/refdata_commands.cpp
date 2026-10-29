@@ -111,6 +111,7 @@
 #include "ores.shell/app/commands/refdata/ledger_feed_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/leg_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/local_jurisdiction_commands.hpp"
+#include "ores.shell/app/commands/refdata/legal_entity_commands.hpp"
 #include "ores.shell/app/commands/refdata/monetary_nature_commands.hpp"
 #include "ores.shell/app/commands/refdata/netting_agreement_commands.hpp"
 #include "ores.shell/app/commands/refdata/netting_set_commands.hpp"
@@ -282,6 +283,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     ledger_feed_type_commands::register_commands(root_menu, session);
     leg_type_commands::register_commands(root_menu, session);
     local_jurisdiction_commands::register_commands(root_menu, session);
+    legal_entity_commands::register_commands(root_menu, session);
     monetary_nature_commands::register_commands(root_menu, session);
     netting_agreement_commands::register_commands(root_menu, session);
     netting_set_commands::register_commands(root_menu, session);

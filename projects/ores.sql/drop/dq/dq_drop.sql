@@ -35,6 +35,7 @@
 -- Artefacts
 \ir ./dq_account_contact_informations_artefact_drop.sql
 \ir ./dq_accounts_artefact_drop.sql
+\ir ./dq_legal_entities_artefact_drop.sql
 \ir ./dq_report_definitions_artefact_drop.sql
 \ir ./dq_configuration_market_bindings_artefact_drop.sql
 \ir ./dq_configuration_analytic_parameters_artefact_drop.sql

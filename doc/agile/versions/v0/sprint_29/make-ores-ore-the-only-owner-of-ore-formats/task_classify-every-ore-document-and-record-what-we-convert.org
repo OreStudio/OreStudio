@@ -49,15 +49,13 @@ answers from the table, so a family is described in one row and nowhere else.
 
 | Family | Read | Write | Surface |
 |--------+------+-------+---------|
-| portfolio | yes | yes | portfolio import and export |
-| currency config, calendar adjustments, credit simulation | yes | yes | the round trip |
-| conventions, curve configuration, today's market, pricing engines | yes | yes | run configuration import and export |
-| run document | yes | yes | the run document projection |
+| portfolio, currency config, calendar adjustments, credit simulation, conventions | yes | yes | the round trip |
+| pricing engines | yes | yes | run configuration import and export, and the round trip |
+| curve configuration, today's market, run document | yes | yes | run configuration import and export, or the run document projection; not the round trip |
 | counterparty information, IBOR fallback config, netting set definitions, stress testing | no | no | none |
 
-The round trip now asks the table: a family it does not convert reports itself as
-unsupported rather than throwing, because a family the codec can name is no
-longer an unknown document.
+The round trip asks the table which families it converts, and reports the others
+as classified documents nothing converts rather than as unknown ones.
 
 Four cases state the table: every generated family has a row whose root element
 is the one its own source writes, every kind has exactly one row, a family
@@ -77,7 +75,7 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Families the generator emits | 13, each with a row | =ls projects/ores.ore/core/include/ores.ore.core/xml/generated/*.hpp= | (this branch) |
-| Kinds the detector answered | 6 | =grep -c "case document_kind::" projects/ores.ore/core/src/xml/roundtrip.cpp= | (this branch) |
+| Families the detector answers | 13 | =grep -c "document_kind::" projects/ores.ore/core/src/xml/document_kind.cpp= | (this branch) |
 | Schemas in =external/ore/xsd= | 24, every one recorded | =ls external/ore/xsd/*.xsd= | (this branch) |
 | =ores.ore.core.tests= | passed, 22.98s | =compass test run -- -R ores.ore.core.tests= | (this branch) |
 
@@ -118,9 +116,9 @@ definitions, stress testing and the run document — are named from their root
 elements, which the generated sources state.
 
 Four of them have no conversion at all, and the table says so rather than
-leaving them absent. The round trip now asks the table before converting: a
-family it does not convert is reported as unsupported, where it used to be
-indistinguishable from a file the codec had never heard of.
+leaving them absent. The round trip asks the table before it converts, so a
+family it does not convert is reported as a classified document nothing converts,
+where it used to be indistinguishable from a file the codec had never heard of.
 
 The schema test is the gate: every file in =external/ore/xsd= is recorded as the
 schema a family comes from, or as one that holds no document of ours. A new

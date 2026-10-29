@@ -17,7 +17,6 @@
  *
  */
 #include "ores.ore.core/xml/roundtrip.hpp"
-#include <optional>
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/credit_simulation_projection.hpp"
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
@@ -56,7 +55,7 @@ using millis = std::chrono::milliseconds;
  * exporter. It throws when either half fails, so the caller decides what a
  * failure means rather than reading it out of a shared counter.
  */
-std::optional<std::string>
+std::string
 convert(const std::filesystem::path& file, document_kind kind, roundtrip_summary& summary) {
     switch (kind) {
         case document_kind::portfolio: {
@@ -158,9 +157,9 @@ convert(const std::filesystem::path& file, document_kind kind, roundtrip_summary
             ++summary.convention_files;
             return xml;
         }
-        // A family the round trip does not convert says so by returning
-        // nothing, and the loop counts it as unsupported. The coverage table
-        // states which families the tree reaches at all.
+        // The table says which families the round trip converts, so a case here
+        // is one it converts and this switch does not: a disagreement, not an
+        // unsupported family.
         case document_kind::curve_configuration:
         case document_kind::todays_market:
         case document_kind::counterparty_information:
@@ -170,7 +169,9 @@ convert(const std::filesystem::path& file, document_kind kind, roundtrip_summary
         case document_kind::run_document:
             break;
     }
-    return std::nullopt;
+    // The coverage table decides this before the call, so reaching here means
+    // the table and the conversion disagree.
+    throw std::logic_error("the table states a conversion this switch does not make");
 }
 
 } // namespace
@@ -201,16 +202,18 @@ roundtrip_summary roundtrip(const std::filesystem::path& input_dir,
                 continue;
             }
 
-            const auto xml = convert(file, *kind, summary);
-            if (!xml) {
-                BOOST_LOG_SEV(lg(), debug) << "Unsupported document, not written: " << relative;
+            if (!family_of(*kind).roundtrip) {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Classified document, nothing converts it: " << relative;
                 ++summary.unsupported;
                 continue;
             }
 
+            const auto xml = convert(file, *kind, summary);
+
             const auto out_path = output_dir / relative;
             std::filesystem::create_directories(out_path.parent_path());
-            platform::filesystem::file::write_content(out_path, *xml);
+            platform::filesystem::file::write_content(out_path, xml);
             ++summary.output_files_written;
             BOOST_LOG_SEV(lg(), trace) << "Written: " << out_path;
         } catch (const std::exception& e) {

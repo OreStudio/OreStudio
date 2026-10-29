@@ -53,20 +53,25 @@ enum class document_kind {
  * @brief One ORE document family, and what the tree does with it.
  *
  * The table this describes is the one place a family is classified: the root
- * element that names it, whether the codec reads it, whether it writes it, and
- * the surface that reaches it. A family the generator emits is in the table
- * whether or not anything converts it, so an unsupported family says so rather
- * than being absent.
+ * element that names it, whether our conversion reads it, whether it writes it,
+ * whether the round trip converts it, and the surface that reaches it. A family
+ * the generator emits is in the table whether or not anything converts it, so an
+ * unsupported family says so rather than being absent.
+ *
+ * A generated binding is not a read: every family has a codec, and a read means
+ * a projection from the family onto our own types.
  */
 struct document_family {
     /// The kind the root element maps to.
     document_kind kind;
     /// The root element ORE writes for the family.
     std::string_view root_element;
-    /// Whether the codec reads the family.
+    /// Whether our conversion reads the family onto our own types.
     bool read;
-    /// Whether the codec writes the family.
+    /// Whether our conversion writes the family from our own types.
     bool write;
+    /// Whether the round trip converts the family, which asks for both.
+    bool roundtrip;
     /// The operation that reaches the family, or empty when none does.
     std::string_view surface;
 };

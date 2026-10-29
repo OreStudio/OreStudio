@@ -20,7 +20,6 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
-    "xml_document_families_tests.cpp"
     "configuration_type_seed_tests.cpp"
     "conventions_package_tests.cpp"
     "hierarchy_hierarchy_builder_tests.cpp"
@@ -42,6 +41,7 @@ set(files
     "xml_creditsimulation_projection_tests.cpp"
     "xml_currency_config_tests.cpp"
     "xml_curve_configuration_projection_roundtrip_tests.cpp"
+    "xml_document_families_tests.cpp"
     "xml_document_tests.cpp"
     "xml_emitter_tests.cpp"
     "xml_exporter_directory_roundtrip_tests.cpp"

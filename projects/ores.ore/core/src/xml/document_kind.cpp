@@ -17,9 +17,9 @@
  *
  */
 #include "ores.ore.core/xml/document_kind.hpp"
-#include <stdexcept>
 #include <cctype>
 #include <fstream>
+#include <stdexcept>
 #include <string>
 
 namespace ores::ore::xml {
@@ -77,23 +77,54 @@ std::string root_element_of(const std::filesystem::path& file) {
 
 const std::array<document_family, 13>& document_families() {
     static const std::array<document_family, 13> families{{
-        {document_kind::portfolio, "Portfolio", true, true, "portfolio import and export"},
-        {document_kind::currency_config, "CurrencyConfig", true, true, "the round trip"},
-        {document_kind::calendar_adjustments, "CalendarAdjustments", true, true, "the round trip"},
-        {document_kind::conventions, "Conventions", true, true,
-         "run configuration import and export"},
-        {document_kind::curve_configuration, "CurveConfiguration", true, true,
-         "run configuration import and export"},
-        {document_kind::pricing_engines, "PricingEngines", true, true,
+        {document_kind::portfolio,
+         "Portfolio",
+         true,
+         true,
+         true,
+         "portfolio import and export, and the round trip"},
+        {document_kind::currency_config, "CurrencyConfig", true, true, true, "the round trip"},
+        {document_kind::calendar_adjustments,
+         "CalendarAdjustments",
+         true,
+         true,
+         true,
+         "the round trip"},
+        {document_kind::conventions,
+         "Conventions",
+         true,
+         true,
+         true,
          "run configuration import and export, and the round trip"},
-        {document_kind::todays_market, "TodaysMarket", true, true,
+        {document_kind::curve_configuration,
+         "CurveConfiguration",
+         true,
+         true,
+         false,
          "run configuration import and export"},
-        {document_kind::credit_simulation, "CreditSimulation", true, true, "the round trip"},
-        {document_kind::counterparty_information, "CounterpartyInformation", false, false, {}},
-        {document_kind::ibor_fallback_config, "IborFallbackConfig", false, false, {}},
-        {document_kind::netting_set_definitions, "NettingSetDefinitions", false, false, {}},
-        {document_kind::stress_testing, "StressTesting", false, false, {}},
-        {document_kind::run_document, "ORE", true, true, "the run document projection"},
+        {document_kind::pricing_engines,
+         "PricingEngines",
+         true,
+         true,
+         true,
+         "run configuration import and export, and the round trip"},
+        {document_kind::todays_market,
+         "TodaysMarket",
+         true,
+         true,
+         false,
+         "run configuration import and export"},
+        {document_kind::credit_simulation, "CreditSimulation", true, true, true, "the round trip"},
+        {document_kind::counterparty_information,
+         "CounterpartyInformation",
+         false,
+         false,
+         false,
+         {}},
+        {document_kind::ibor_fallback_config, "IborFallbackConfig", false, false, false, {}},
+        {document_kind::netting_set_definitions, "NettingSetDefinitions", false, false, false, {}},
+        {document_kind::stress_testing, "StressTesting", false, false, false, {}},
+        {document_kind::run_document, "ORE", true, true, false, "the run document projection"},
     }};
     return families;
 }

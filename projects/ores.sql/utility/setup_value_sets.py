@@ -23,10 +23,8 @@ name. The sets are curated in the engine settings groups file, which states the
 rule once: a flag takes the two switch values, a whole number takes a bounded
 integer, and a choice takes the words the run accepts.
 
-The groups and their settings name a set; they state no control of their own.
-The group settings table still carried the control when this module was written,
-and the groups generator derives those columns from the set until the model
-drops them.
+The groups and their settings name a set; they state no control of their own,
+because the set is the control.
 """
 
 import os
@@ -38,24 +36,6 @@ import curation  # noqa: E402
 
 SCOPE = "Setup"
 
-# The control a set's source kind gives the screen, in the words the group
-# settings table used before the set stated it.
-CONTROL_OF = {
-    "boolean": "flag",
-    "integer": "whole",
-    "number": "whole",
-    "range": "whole",
-    "enumerated": "choice",
-}
-
-# The source kind a control needs, so a set that cannot draw the control the
-# screen needs stops the generator instead of drawing the wrong field.
-KIND_OF_CONTROL = {
-    "flag": ("boolean",),
-    "whole": ("integer", "number", "range"),
-    "choice": ("enumerated",),
-}
-
 
 def groups():
     """The curated groups, with the sets they name."""
@@ -65,14 +45,6 @@ def groups():
 def settings():
     """Every setting of every group, in the order the screen draws them."""
     return [setting for group in groups()["groups"] for setting in group.get("settings", [])]
-
-
-def control_of(set_code):
-    """The control the set states: (kind, options, minimum, maximum)."""
-    entry = groups()["value_sets"][set_code]
-    kind = CONTROL_OF[entry["source_kind"]]
-    options = [value["value"] for value in entry.get("values", [])]
-    return kind, options, entry.get("minimum"), entry.get("maximum")
 
 
 def problems():

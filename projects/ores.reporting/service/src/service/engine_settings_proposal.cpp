@@ -151,8 +151,9 @@ std::optional<std::string> as_choice(const std::optional<std::string>& text) {
  * The same check a direct write meets, made before a person is asked to decide
  * it: a proposal nobody could apply is a proposal nobody should sign. The rule
  * is the store's own, so a proposal asks the function the parameter trigger
- * asks, and no copy of the rule lives here to drift from it. A setting whose
- * value set the tables do not hold takes the text as it stands.
+ * asks, and no copy of the rule lives here to drift from it. Every setting a
+ * group holds names a set, so a setting with no set is a broken model and not a
+ * value that passes unchecked.
  */
 void validate(const ores::database::context& ctx,
               const domain::engine_settings_group_setting& setting,
@@ -164,7 +165,7 @@ void validate(const ores::database::context& ctx,
 
     const std::string sql =
         "select l.value_set_code, s.source_kind,"
-        " coalesce(ores_reporting_value_in_set_fn(l.value_set_code, $2)::text, 'true')"
+        " ores_reporting_value_in_set_fn(l.value_set_code, $2)::text"
         " from ores_reporting_ore_parameter_setting_value_sets_tbl l"
         "  join ores_reporting_ore_parameter_value_sets_tbl s"
         "    on s.code = l.value_set_code"
@@ -179,8 +180,9 @@ void validate(const ores::database::context& ctx,
         lg,
         "validate an engine setting against its value set");
 
-    if (rows.empty() || rows.front().size() < 3)
-        return;
+    if (rows.empty() || rows.front().size() < 3 || !rows.front()[2].has_value())
+        throw std::invalid_argument(setting.column_name +
+                                    " has no value set, so the value it holds cannot be checked.");
 
     const auto set_code = rows.front()[0].value_or(std::string{});
     const auto kind = rows.front()[1].value_or(std::string{});
@@ -194,7 +196,7 @@ void validate(const ores::database::context& ctx,
     if (kind == "integer")
         as_whole(text);
 
-    if (rows.front()[2].value_or(std::string{}) == "true")
+    if (rows.front()[2].value() == "true")
         return;
 
     throw std::invalid_argument(setting.column_name + " is not a value its value set " + set_code +

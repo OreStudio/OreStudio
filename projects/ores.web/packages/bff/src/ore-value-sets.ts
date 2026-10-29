@@ -53,7 +53,6 @@ export interface ValueFields {
     readonly pattern: string;
 }
 
-/** A parameter whose setting names no value set carries these fields empty. */
 /** The fields a parameter carries when its setting names no value set. */
 export const NO_VALUE_SET: ValueFields = {
     valueSet: '',

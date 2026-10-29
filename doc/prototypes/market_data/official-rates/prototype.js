@@ -12,12 +12,8 @@
 
 const q = new URLSearchParams(location.search);
 const tab = q.get('tab') ?? 'providers';
-const SETUP_TABS = ['connections', 'drivers'];
-const screen = q.get('screen') ?? (SETUP_TABS.includes(tab) ? 'setup' : 'market');
 const rtab = q.get('rtab') ?? 'overview';
 const providerCode = q.get('provider');
-const connectionId = q.get('connection');
-const ctab = q.get('ctab') ?? 'overview';
 const pausedVariant = q.get('paused') ?? 'muted';
 const withdrawn = q.get('terms') === 'withdraw';
 const fetchState = q.get('fetch') ?? 'at';
@@ -29,52 +25,15 @@ const DATES = ['2026-10-15', '2026-10-16', '2026-10-19', '2026-10-20', '2026-10-
     '2026-10-22', '2026-10-23', '2026-10-26', '2026-10-27', '2026-10-28'];
 
 
-const DRIVERS = [
-    { code: 'frankfurter', name: 'Frankfurter', speaks: 'HTTPS and JSON', needs: 'base URL, publisher key path' },
-    { code: 'bloomberg', name: 'Bloomberg', speaks: 'the Bloomberg API', needs: 'endpoint, credential, publisher keys' },
-    { code: 'lseg', name: 'LSEG', speaks: 'the LSEG API', needs: 'endpoint, credential, publisher keys' },
-    { code: 'ecb-data', name: 'ECB Data Portal', speaks: 'the ECB data API (SDW)', needs: 'endpoint, series keys' },
-    { code: 'fred', name: 'FRED', speaks: 'the FRED API', needs: 'endpoint, credential, series ids' },
-    { code: 'boe', name: 'Bank of England', speaks: 'the BoE statistics API', needs: 'endpoint, series codes' },
-    { code: 'treasury', name: 'US Treasury', speaks: 'the Treasury data feed', needs: 'endpoint, curve year' },
-    { code: 'synthetic', name: 'Synthetic simulator', speaks: 'its own generators', needs: 'nothing: no endpoint, no credential' },
-];
-
 const CONNECTIONS = [
-    { id: 'frankfurter', name: 'Frankfurter', driver: 'frankfurter', endpoint: 'https://api.frankfurter.app',
-      credential: 'none', rhythm: 'daily, 16:00 CET', poll: '60 min', backfill: '400 days', state: 'serving',
-      classes: ['fx'], providers: ['ecb', 'boc', 'imf', 'fred', 'tcmb', 'norges', 'boe'], destination: 'System Party', last: '19:24',
-      secrets: [] },
-    { id: 'bloomberg-prod', name: 'Bloomberg production', driver: 'bloomberg', endpoint: 'https://api.bloomberg.com',
-      credential: 'vault:marketdata/bloomberg/prod', rhythm: 'streaming, always on', poll: 'not polled', backfill: '400 days',
-      classes: ['fx'], state: 'serving', providers: ['ecb'], destination: 'System Party', last: '19:23',
-      secrets: [{ name: 'api key', masked: '•••• 7f2a', set: '2026-10-01' }, { name: 'api secret', masked: '•••• c91b', set: '2026-10-01' }] },
-    { id: 'bloomberg-test', name: 'Bloomberg test', driver: 'bloomberg', endpoint: 'https://api.test.bloomberg.com',
-      credential: 'vault:marketdata/bloomberg/test', rhythm: 'streaming, always on', poll: 'not polled', backfill: '30 days',
-      classes: ['fx'], state: 'not serving', providers: [], destination: 'none', last: '—',
-      secrets: [{ name: 'api key', masked: 'not set', set: '—' }] },
-    { id: 'synthetic', name: 'Synthetic feeds', driver: 'synthetic', endpoint: 'none',
-      credential: 'none', rhythm: 'continuous, the scheduler drives it', poll: 'not polled', backfill: 'not applicable',
-      classes: ['fx', 'ir'], state: 'serving', providers: ['lseg (simulated)', 'bloomberg (simulated)'], destination: 'System Party', last: 'now',
-      secrets: [] },
+    { id: 'frankfurter', name: 'Frankfurter', driver: 'frankfurter', state: 'serving', last: '19:24' },
+    { id: 'bloomberg-prod', name: 'Bloomberg production', driver: 'bloomberg', state: 'serving', last: '19:23' },
+    { id: 'ecb-data', name: 'ECB Data Portal', driver: 'ecb-data', state: 'serving', last: '17:02' },
+    { id: 'fred-api', name: 'FRED', driver: 'fred', state: 'serving', last: '19:22' },
+    { id: 'boe-api', name: 'Bank of England statistics', driver: 'boe', state: 'serving', last: '15:00' },
+    { id: 'treasury', name: 'US Treasury', driver: 'treasury', state: 'serving', last: '18:05' },
 ];
 
-CONNECTIONS.push(
-    { id: 'ecb-data', name: 'ECB Data Portal', driver: 'ecb-data', endpoint: 'https://data-api.ecb.europa.eu',
-      credential: 'none', rhythm: 'daily, 16:00 CET', poll: '60 min', backfill: '400 days', classes: ['ir'],
-      state: 'serving', providers: ['ecb'], destination: 'System Party', last: '17:02', secrets: [] },
-    { id: 'fred-api', name: 'FRED', driver: 'fred', endpoint: 'https://api.stlouisfed.org',
-      credential: 'vault:marketdata/fred', rhythm: 'daily, 16:15 ET', poll: '60 min', backfill: '400 days', classes: ['fx', 'ir'],
-      state: 'serving', providers: ['fred'], destination: 'System Party', last: '19:22',
-      secrets: [{ name: 'api key', masked: '•••• 4d10', set: '2026-09-12' }] },
-    { id: 'boe-api', name: 'Bank of England statistics', driver: 'boe', endpoint: 'https://www.bankofengland.co.uk/boeapps/database',
-      credential: 'none', rhythm: 'daily, 15:00 GMT', poll: '60 min', backfill: '400 days', classes: ['fx', 'ir'],
-      state: 'serving', providers: ['boe'], destination: 'System Party', last: '15:00', secrets: [] },
-    { id: 'treasury', name: 'US Treasury', driver: 'treasury', endpoint: 'https://home.treasury.gov/resource-center/data-chart-center',
-      credential: 'none', rhythm: 'daily, 18:00 ET', poll: '60 min', backfill: '400 days', classes: ['ir'],
-      state: 'serving', providers: ['ust'], destination: 'System Party', last: '18:05', secrets: [] });
-
-// IR items per publisher: a rate is one value a day; a curve is a set of pillars.
 const IR_ITEMS = {
     ecb: [{ name: '€STR', kind: 'rate' }, { name: 'EUR AAA spot curve', kind: 'curve' }],
     fred: [{ name: 'SOFR', kind: 'rate' }, { name: 'US Treasury par curve', kind: 'curve' }],
@@ -344,12 +303,13 @@ function renderRecord() {
         const rows = ids.map((id) => {
             const c = CONNECTIONS.find((x) => x.id === id);
             return `<tr><td>${c.name}<div class="faint mono">${c.id}</div></td><td class="mono">${c.driver}</td>
-                <td class="mono faint">${c.endpoint}</td><td>${c.state === 'serving' ? fn.badge('live') : fn.badge('down')}</td>
-                <td class="when">${c.last}</td><td class="acts"><a class="act" href="?connection=${c.id}&ctab=overview">Open</a></td></tr>`;
+                <td>${c.state === 'serving' ? fn.badge('live') : fn.badge('down')}</td>
+                <td class="when">${c.last}</td>
+                <td class="acts"><a class="act" href="../connectivity/index.html?connection=${c.id}&ctab=overview">Open <span class="faint">· in Connectivity</span></a></td></tr>`;
         }).join('');
         body.innerHTML = `<div class="card"><div class="card-head"><h2>Connections</h2><p>every configured driver that delivers this publisher</p></div>
-          <table class="list"><thead><tr><th>Connection</th><th>Driver</th><th>Endpoint</th><th>State</th><th>Last delivery</th><th class="acts"></th></tr></thead><tbody>${rows}</tbody></table>
-          <div class="faint" style="margin-top:8px;padding:0 14px 12px">A publisher's value keeps its identity; the connection that delivered it is provenance. A second connection is another way to the same fixing. Its endpoint, credential and rhythm are configured on the connection, not here.</div></div>`;
+          <table class="list"><thead><tr><th>Connection</th><th>Driver</th><th>State</th><th>Last delivery</th><th class="acts"></th></tr></thead><tbody>${rows}</tbody></table>
+          <div class="faint" style="margin-top:8px;padding:0 14px 12px">A publisher's value keeps its identity; the connection that delivered it is provenance. A second connection is another way to the same fixing. The endpoint, the credential and the rhythm are configured in Connectivity, not here.</div></div>`;
     } else if (rtab === 'health') {
         body.innerHTML = `<div class="card"><div class="card-head"><h2>Adapter</h2><p>the official adapter, serving every publisher</p></div>
           <div class="card-body"><div class="kv">
@@ -373,102 +333,6 @@ function renderRecord() {
 function hidePanels(except) {
     document.querySelectorAll('[role="tabpanel"]').forEach((x) => { x.hidden = x.id !== except; });
     document.querySelector('#record').hidden = true;
-    document.querySelector('#conn-record').hidden = true;
-}
-
-function renderConnections() {
-    hidePanels('tab-connections');
-    document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === 'connections')));
-    document.querySelector('#connections tbody').innerHTML = CONNECTIONS.map((c) => `
-        <tr>
-          <td class="provider">${c.name}<div class="faint mono">${c.id}</div></td>
-          <td class="mono">${c.driver}</td>
-          <td class="mono faint">${c.endpoint}</td>
-          <td>${(c.classes ?? ['fx']).map((x) => `<span class="badge">${x.toUpperCase()}</span>`).join(' ')}</td>
-          <td class="num">${c.providers.length}</td>
-          <td>${c.destination}</td>
-          <td>${c.state === 'serving' ? fn.badge('live') : fn.badge('down')}</td>
-          <td class="when">${c.last}</td>
-          <td class="acts"><a class="act" href="?connection=${c.id}&ctab=overview">Open</a></td>
-        </tr>`).join('');
-    document.querySelector('#connections-note').textContent =
-        'A connection is a driver configured as one instance: an endpoint, its credentials, a rhythm and the destination its values land in. Two connections of one driver are how a test and a production endpoint coexist. The synthetic connection has no endpoint and no credential; the scheduler drives it.';
-}
-
-function renderDrivers() {
-    hidePanels('tab-drivers');
-    document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === 'drivers')));
-    document.querySelector('#drivers tbody').innerHTML = DRIVERS.map((d) => {
-        const used = CONNECTIONS.filter((c) => c.driver === d.code);
-        return `<tr><td class="provider">${d.name}<div class="faint mono">${d.code}</div></td>
-          <td>${d.speaks}</td><td>${d.needs}</td>
-          <td>${used.length ? used.map((c) => `<a href="?connection=${c.id}&ctab=overview">${c.name}</a>`).join(', ') : '<span class="faint">none</span>'}</td></tr>`;
-    }).join('');
-    document.querySelector('#drivers-note').textContent =
-        'A driver is code, not configuration; nobody adds one from a screen. The catalogue is read only, and it exists so a person can see what a connection must say before they add one.';
-}
-
-function renderConnectionRecord() {
-    const c = CONNECTIONS.find((x) => x.id === connectionId);
-    if (!c) { location.search = fn.href({ tab: 'connections', connection: null }); return; }
-    hidePanels(null);
-    document.querySelector('#conn-record').hidden = false;
-    document.querySelector('#conn-crumb').textContent = c.name;
-    document.querySelector('#conn-title').textContent = c.name;
-    document.querySelector('#conn-meta').innerHTML = `<span class="mono faint">${c.id}</span> · driver ${c.driver} · ${c.state === 'serving' ? fn.badge('live') : fn.badge('down')}`;
-    document.querySelector('#conn-acts').innerHTML = `<a class="act" href="#">Edit configuration <span class="faint">· design pending</span></a>
-        <a class="act" href="#">${c.state === 'serving' ? 'Stop' : 'Start'}</a><a class="act" href="?tab=fetch">Fetch</a>`;
-    document.querySelectorAll('[data-ctab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.ctab === ctab)));
-    const body = document.querySelector('#conn-body');
-    const detail = (rows) => `<div class="kv">${rows.map(([k, v]) => `<span class="k">${k}</span><span>${v}</span>`).join('')}</div>`;
-    if (ctab === 'overview') {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Configuration</h2><p>what the driver needs to run</p></div><div class="card-body">${detail([
-            ['Endpoint', `<span class="mono">${c.endpoint}</span>`],
-            ['Driver', c.driver],
-            ['Asset classes', (c.classes ?? ['fx']).map((x) => x.toUpperCase()).join(', ')],
-            ['Credential reference', `<span class="mono">${c.credential}</span>`],
-            ['Expected rhythm', c.rhythm],
-            ['Poll interval', c.poll],
-            ['Backfill window', c.backfill],
-            ['Destination', c.destination],
-            ['Providers', String(c.providers.length)],
-        ])}<div class="faint" style="margin-top:8px">The endpoint and the rhythm are rows the driver reads. A secret is a reference; its value is encrypted at rest, write-only, and never returned here.</div></div></div>`;
-    } else if (ctab === 'credentials') {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Credentials</h2><p>masked; the value never leaves the service</p></div><div class="card-body">
-          ${c.secrets.length ? `<table class="list"><thead><tr><th>Secret</th><th>Value</th><th>Set</th><th class="acts"></th></tr></thead><tbody>${c.secrets.map((x) => `<tr><td>${x.name}</td><td class="mono">${x.masked}</td><td class="when">${x.set}</td><td class="acts"><a class="act" href="#">Rotate <span class="faint">· design pending</span></a></td></tr>`).join('')}</tbody></table>` : '<div class="notice">This driver needs no secret. The synthetic simulator makes its own values, and Frankfurter is open.</div>'}
-          <div class="faint" style="margin-top:8px">A secret is set by writing it once; the screen shows a mask and the date. It is encrypted at rest and never returned by a read.</div></div></div>`;
-    } else if (ctab === 'providers') {
-        const list = c.providers;
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Providers</h2><p>the publishers this connection reaches</p></div>
-          <table class="list"><thead><tr><th>Provider</th><th>Underlyings</th><th>Last fixing</th><th>State</th><th class="acts"></th></tr></thead><tbody>${list.map((code) => {
-            const p = PROVIDERS.find((x) => x.code === code);
-            if (!p) return `<tr><td>${code}</td><td class="num">—</td><td class="faint">simulated</td><td>${fn.badge('live')}</td><td class="acts"><span class="faint">simulated provider</span></td></tr>`;
-            return `<tr><td class="provider">${p.name}<div class="faint mono">${p.code}</div></td><td class="num">${Object.keys(p.series).length}</td>
-              <td>${p.last ? p.last.date : '<span class="faint">none</span>'}</td><td>${fn.badge(fn.status(p))}</td>
-              <td class="acts"><a class="act" href="?provider=${p.code}&rtab=overview">Open</a></td></tr>`;
-        }).join('') || '<tr><td colspan="5" class="faint">No provider is mapped to this connection yet.</td></tr>'}</tbody></table>
-          <div class="faint" style="margin-top:8px;padding:0 14px 12px">A provider belongs to the connection that delivers it. A publisher reached two ways is two connections over one provider.</div></div>`;
-    } else if (ctab === 'routing') {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Routing</h2><p>where the values land</p></div><div class="card-body">${detail([
-            ['Destination', c.destination],
-            ['Party', c.destination === 'none' ? '—' : 'System Party'],
-            ['Store', 'the durable fixings table'],
-            ['Entitlement', 'the party reads only its own series'],
-        ])}<div class="faint" style="margin-top:8px">Pointing the stream is the last step: the connection reaches the provider, and the destination names the party and the store its values fill.</div></div></div>`;
-    } else if (ctab === 'health') {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Health</h2><p>the connection, as the service sees it</p></div><div class="card-body">${detail([
-            ['State', c.state === 'serving' ? 'serving' : 'not serving'],
-            ['Last delivery', c.last],
-            ['Providers served', String(c.providers.length)],
-            ['Endpoint', `<span class="mono">${c.endpoint}</span>`],
-        ])}</div></div>`;
-    } else {
-        const events = c.id === 'synthetic'
-            ? [['v1', '2026-10-20 09:00', 'Connection created', 'super_admin'], ['—', '2026-10-28 19:00', 'Destination set to System Party', 'super_admin']]
-            : [['v1', '2026-10-01 09:00', 'Connection created', 'super_admin'], ['v2', '2026-10-20 11:12', 'Endpoint changed', 'super_admin'], ['—', '2026-10-28 19:00', 'Credential rotated', 'super_admin']];
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>History</h2><p>the shared timeline</p></div><div class="card-body"><div class="timeline">${events.map(([v, at, what, who]) =>
-            `<div class="row"><span class="at">${at}</span><span class="what"><b>${what}</b> · ${v} · by ${who}</span></div>`).join('')}</div></div></div>`;
-    }
 }
 
 function wire() {
@@ -478,42 +342,17 @@ function wire() {
     document.querySelectorAll('[data-rtab]').forEach((b) => b.addEventListener('click', () => {
         location.search = fn.href({ provider: providerCode, rtab: b.dataset.rtab, tab: null });
     }));
-    document.querySelectorAll('[data-ctab]').forEach((b) => b.addEventListener('click', () => {
-        location.search = fn.href({ connection: connectionId, ctab: b.dataset.ctab, tab: null });
-    }));
     document.querySelector('#av-pair').addEventListener('change', (e) => { location.search = fn.href({ tab: 'availability', pair: e.target.value }); });
     document.querySelector('#cmp-pair').addEventListener('change', (e) => { location.search = fn.href({ tab: 'compare', pair: e.target.value }); });
     document.querySelector('#search').addEventListener('change', (e) => { location.search = fn.href({ tab: 'providers', find: e.target.value || null }); });
     document.querySelector('#search').value = q.get('find') ?? '';
     document.querySelector('#refresh').addEventListener('click', () => location.reload());
-    document.querySelectorAll('[data-tab]').forEach((b) => {
-        b.hidden = (screen === 'setup') !== SETUP_TABS.includes(b.dataset.tab);
-    });
-    const title = document.querySelector('#list-header h1');
-    const lead = document.querySelector('#list-header .lead');
-    if (screen === 'setup') {
-        title.textContent = 'Market data setup';
-        lead.textContent = 'how data reaches the platform: the drivers, the connections, the credentials and where the values land';
-    } else {
-        title.textContent = 'Official rates';
-        lead.textContent = 'the daily rates central banks and public bodies publish, and whether they are arriving';
-    }
-    document.querySelectorAll('.screen-switch a').forEach((a) => {
-        const target = a.getAttribute('href').includes('screen=setup') ? 'setup' : 'market';
-        if (target === screen) a.setAttribute('aria-current', 'page');
-    });
 }
 
-if (connectionId) {
-    renderConnectionRecord();
-} else if (providerCode) {
+if (providerCode) {
     renderRecord();
-} else if (tab === 'connections') {
-    renderConnections();
-} else if (tab === 'drivers') {
-    renderDrivers();
 } else {
-    document.querySelectorAll('[role="tabpanel"]').forEach((s) => { s.hidden = s.id !== `tab-${tab}`; });
+    hidePanels('tab-' + tab);
     if (tab === 'availability') renderAvailability();
     else if (tab === 'compare') renderCompare();
     else if (tab === 'fetch') renderFetch();

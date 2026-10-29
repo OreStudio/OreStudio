@@ -190,6 +190,8 @@
 \ir ./dq_ir_curve_template_entries_artefact_create.sql
 
 -- Market data artefact tables
+\ir ./dq_adapters_artefact_create.sql
+\ir ./dq_suppliers_artefact_create.sql
 \ir ./dq_market_observations_artefact_create.sql
 \ir ./dq_crm_topology_configs_artefact_create.sql
 

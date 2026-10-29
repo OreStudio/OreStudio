@@ -50,7 +50,7 @@ session and a production session of one supplier differ without a redeploy.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:D6076124-A427-4DCC-B018-A2992AA13CB3][Prototype the sources and adapters screens]] | DONE | 2026-10-29 | 2026-10-29 | The sources list, the adapters list and a source record with its transport, drawn before the entity changes. |
-| [[id:25131341-145D-4FFE-B70C-F063ACD39F67][Add the adapter and supplier catalogues]] | STARTED | 2026-10-29 | | Adapter and supplier tables and domains; the release seeds adapters, DQ seeds suppliers. |
+| [[id:25131341-145D-4FFE-B70C-F063ACD39F67][Add the adapter and supplier catalogues]] | STARTED | 2026-10-29 | | Adapter and supplier tables and domains; DQ seeds both catalogues, and an adapter module marks itself installed when it announces. |
 | [[id:1185DAEF-4CDF-4662-86E0-29167E668209][Add the session]] | BACKLOG | | | Session table and domain: supplier, adapter, environment, endpoint, credential reference, settings, enabled, history. |
 | [[id:9D724AA0-FF20-4404-BE49-95934564AE5C][Turn the source into a feed]] | BACKLOG | | | Feed table: publisher, session, service, provider key, default; migrate the existing sources. |
 | [[id:D2C6C741-B1FB-4020-B935-8F929210F0E7][Give a feed a scope]] | BACKLOG | | | Feed scope per class and item, with the disjointness invariant across the feeds of one publisher. |
@@ -74,6 +74,11 @@ session and a production session of one supplier differ without a redeploy.
 - Transport and credentials live on the session. The publisher keeps its terms
   and credit; the supplier carries the contract.
 - The endpoint is entered once per session, not once per feed.
+- An adapter is a class whose metadata names its code, version, process, asset
+  classes, services and configuration. The catalogue holds the definitions the
+  release ships; an installation claims a module only when that module
+  announces itself, so a module this installation never runs is not installed
+  here. The release defines two: =frankfurter= and =synthetic=.
 
 * The words, with examples
 
@@ -81,8 +86,8 @@ session and a production session of one supplier differ without a redeploy.
 | Word | Meaning | Example |
 |------+---------+---------|
 | /Publisher/ | Owns the ids, the credit and the terms. | =ecb=, =imf=, =ust=, =bloomberg= for its own data |
-| /Supplier/ | Who we contract with and connect to. | =frankfurter=, =bloomberg=, =lseg=, =ecb-data-portal=, =fred= |
-| /Adapter/ | Code module that speaks one supplier protocol. | =frankfurter= 1.4.0 |
+| /Supplier/ | Who we contract with and connect to. | =frankfurter=, =synthetic= |
+| /Adapter/ | Code class that speaks one supplier protocol. | =frankfurter= 0.0.29, =synthetic= 0.0.29 |
 | /Session/ | One configured adapter: supplier, environment, endpoint, credential, settings. | =frankfurter-eu= (production) |
 | /Environment/ | Where a session runs. | =production=, =test=, =dr=, =simulated= |
 | /Service/ | What a session offers. | =real_time=, =delayed=, =end_of_day=, =reference=, =historical= |

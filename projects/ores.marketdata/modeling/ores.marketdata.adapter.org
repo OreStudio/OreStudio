@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5B1E0B49-6C0C-4F0E-9A47-3E0F0B3C6D21
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.marketdata.adapter
 #+description: The catalogue of adapter modules the release provides: one code module for each supplier protocol, with its version, the asset classes it serves, the services it offers and the configuration a session must provide.

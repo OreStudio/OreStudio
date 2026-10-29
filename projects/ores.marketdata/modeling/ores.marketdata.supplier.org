@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 0E7C4A52-8B5D-4B1E-9C2F-6A3D5E7F9B10
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.marketdata.supplier
 #+description: The catalogue of delivery parties: the vendors, aggregators, authorities and internal services we contract with and connect to. A supplier has sessions; each session is one configured adapter at that supplier.

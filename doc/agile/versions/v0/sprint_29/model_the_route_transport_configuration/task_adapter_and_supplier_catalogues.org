@@ -2,7 +2,7 @@
 :ID: 25131341-145D-4FFE-B70C-F063ACD39F67
 :END:
 #+title: Task: Add the adapter and supplier catalogues
-#+description: Adapter and supplier tables and domains; the release seeds adapters, DQ seeds suppliers.
+#+description: Adapter and supplier tables and domains; DQ seeds both catalogues, and an adapter module marks itself installed when it announces.
 #+type: task
 #+level: s1
 #+filetags: :marketdata:implementation:model_the_route_transport_configuration:sprint_29:v0:
@@ -60,6 +60,16 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The release defines two adapter modules, and only two: =frankfurter=, the
+  official-rates adapter behind =ores.marketdata.official=, and =synthetic=,
+  the simulator behind =ores.synthetic.service=. The catalogue holds no module
+  the code does not have.
+- A module is a class. Its announce carries =adapter_code= and
+  =module_version=; the service refuses a module the catalogue does not
+  define, and the announce is what marks the module installed on this
+  installation. A catalogue row is a definition; the status list is the
+  installation claim.
 
 * Test Scenarios
 

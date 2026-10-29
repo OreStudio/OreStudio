@@ -749,6 +749,18 @@
       "name": "ores_refdata_publish_equity_underlyings_from_dq_fn",
       "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
       "reason": "a DQ publish function, written in SQL like every sibling"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_marketdata_publish_adapters_from_dq_fn",
+      "file": "projects/ores.sql/create/marketdata/marketdata_publish_from_dq_create.sql",
+      "reason": "a DQ publish function, written in SQL like every sibling"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_marketdata_publish_suppliers_from_dq_fn",
+      "file": "projects/ores.sql/create/marketdata/marketdata_publish_from_dq_create.sql",
+      "reason": "a DQ publish function, written in SQL like every sibling"
     }
   ]
 }

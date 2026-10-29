@@ -1,0 +1,55 @@
+#+title: Connectivity, prototype
+#+description: The infrastructure screen: the drivers that speak an external language, the connections that configure one instance, their credentials and where their values land.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:marketdata:connectivity:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+| Item | Where |
+|------+-------|
+| Prototype | [[file:connectivity/][the prototype page]] |
+| Design note | this page |
+| Group | [[file:index.org][Market data prototypes]] |
+| Review | none |
+
+* What it argues
+
+Configuring how data arrives is not reading data. The screen is called
+*Connectivity*, which is what a trading system calls the place where a venue or a
+vendor is wired in: FIX connectivity, a vendor session, a test and a production
+endpoint.
+
+A *driver* is code that speaks an external language: Bloomberg, LSEG,
+Frankfurter, the ECB Data Portal, FRED, the BoE statistics API, the US Treasury
+and the synthetic simulator. Nobody configures a driver; the Drivers tab is a
+read-only catalogue that says what a connection of each kind must state. A
+*connection* is one configured instance: Bloomberg production, Bloomberg test,
+Frankfurter, Synthetic feeds, the ECB Data Portal, FRED, the BoE statistics, the
+US Treasury. It carries the endpoint, the classes (FX, IR), the rhythm, the
+poll, the backfill window, the credential reference and the destination.
+
+The synthetic connection is drawn with no endpoint and no credential, driven by
+the scheduler.
+
+* States
+
+| State | Address |
+|-------+---------|
+| Connections | =index.html= |
+| Drivers | =?tab=drivers= |
+| A connection | =?connection=bloomberg-prod&ctab=overview= |
+| Credentials | =?connection=bloomberg-prod&ctab=credentials= |
+| Providers reached | =?connection=frankfurter&ctab=providers= |
+| Routing | =?connection=synthetic&ctab=routing= |
+
+* What is fake
+
+Every endpoint, credential, date and count is invented. Secrets are masks only;
+nothing is stored, set or rotated. No request leaves the page.
+
+* Verdict
+
+The split is the design: Connectivity owns the plumbing, and
+[[file:official-rates.org][Official rates]] owns the rates. A person reading a
+rate follows a link here only to see where it came from.

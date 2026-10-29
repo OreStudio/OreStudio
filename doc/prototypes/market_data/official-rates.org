@@ -190,3 +190,9 @@ routing, its health and its history. The Drivers tab is a read-only catalogue of
 what can be configured. The provider list states the connections that deliver
 each publisher, and the provider record's Connections tab names them.
 
+* The plumbing is a screen of its own
+
+The connections, drivers and credentials moved to
+[[file:connectivity.org][Connectivity]]. This prototype reads the rates; it
+names the connections that delivered each provider and links to their record,
+but it configures none of them.

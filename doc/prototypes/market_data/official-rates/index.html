@@ -22,15 +22,8 @@
     <span class="lead">the daily rates central banks and public bodies publish, and whether they are arriving</span>
     <span class="actions"><button class="act" id="refresh">Refresh</button></span>
   </div>
-  <div class="screen-switch">
-    <a class="act" href="?screen=market&tab=providers">Market data</a>
-    <a class="act" href="?screen=setup&tab=connections">Setup</a>
-    <span class="faint">two screens: one configures the plumbing, one reads the rates</span>
-  </div>
   <nav class="tabs" role="tablist" aria-label="The screen">
     <button role="tab" data-tab="providers">Providers <span class="q">who is arriving</span></button>
-    <button role="tab" data-tab="connections">Connections <span class="q">the configured drivers</span></button>
-    <button role="tab" data-tab="drivers">Drivers <span class="q">the code, and what it speaks</span></button>
     <button role="tab" data-tab="availability">Availability <span class="q">who holds this underlying</span></button>
     <button role="tab" data-tab="compare">Compare <span class="q">how far apart they are</span></button>
     <button role="tab" data-tab="fetch">Fetch <span class="q">ask for data now</span></button>
@@ -58,32 +51,6 @@
         <tbody></tbody>
       </table>
       <div class="card-body legend" id="legend"></div>
-    </div>
-  </section>
-
-  <section id="tab-connections" role="tabpanel" hidden>
-    <div class="card">
-      <div class="card-head">
-        <h2>Connections</h2><p>a driver, configured as one instance a person knows</p>
-        <span class="filters"><a class="act primary" href="#">New connection <span class="faint">· design pending</span></a></span>
-      </div>
-      <table class="list" id="connections">
-        <thead><tr><th>Connection</th><th>Driver</th><th>Endpoint</th><th>Classes</th><th>Providers</th>
-          <th>Destination</th><th>State</th><th>Last delivery</th><th class="acts"></th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <div class="card-body faint" id="connections-note"></div>
-    </div>
-  </section>
-
-  <section id="tab-drivers" role="tabpanel" hidden>
-    <div class="card">
-      <div class="card-head"><h2>Drivers</h2><p>the code that speaks an external language; nobody configures one</p></div>
-      <table class="list" id="drivers">
-        <thead><tr><th>Driver</th><th>Speaks</th><th>What a connection must say</th><th>Connections</th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <div class="card-body faint" id="drivers-note"></div>
     </div>
   </section>
 
@@ -135,22 +102,6 @@
     <div id="rec-body"></div>
   </section>
 
-  <section id="conn-record" hidden>
-    <div class="crumbs"><a href="?tab=connections">Market data</a> / <a href="?tab=connections">Connections</a> / <span id="conn-crumb"></span></div>
-    <div class="record-header">
-      <div><h1 id="conn-title"></h1><div class="record-meta" id="conn-meta"></div></div>
-      <span class="actions" id="conn-acts"></span>
-    </div>
-    <nav class="tabs" role="tablist" aria-label="Connection" id="conn-tabs">
-      <button role="tab" data-ctab="overview">Overview</button>
-      <button role="tab" data-ctab="credentials">Credentials</button>
-      <button role="tab" data-ctab="providers">Providers</button>
-      <button role="tab" data-ctab="routing">Routing</button>
-      <button role="tab" data-ctab="health">Health</button>
-      <button role="tab" data-ctab="history">History</button>
-    </nav>
-    <div id="conn-body"></div>
-  </section>
 </main>
 
 <script src="prototype.js"></script>

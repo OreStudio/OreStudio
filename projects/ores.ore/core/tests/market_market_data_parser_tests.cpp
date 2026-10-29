@@ -358,7 +358,7 @@ TEST_CASE("parse_fixings_throws_on_fewer_than_three_tokens", "[ore][market][mark
     CHECK_THROWS_AS(parse_fixings(in), std::invalid_argument);
 }
 
-TEST_CASE("the latest date a body states is the last one it carries",
+TEST_CASE("latest_market_data_date_states_the_newest_date_wherever_it_sits",
           "[ore][market][market_data_parser]") {
     const auto body = R"(# Market data gathered for the run
 2016-02-03 ZERO/RATE/EUR/BANK_EUR_BORROW/A365/1Y 0.0010
@@ -370,13 +370,17 @@ TEST_CASE("the latest date a body states is the last one it carries",
     CHECK(latest_market_data_date(body) == std::optional<std::string>("2016-02-05"));
 }
 
-TEST_CASE("a body the parser cannot read states no date", "[ore][market][market_data_parser]") {
-    const auto body = "20160205 ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y 0.0024\nnot a market datum\n";
+TEST_CASE("latest_market_data_date_keeps_the_dates_around_an_unreadable_line",
+          "[ore][market][market_data_parser]") {
+    const auto body = "20160205 ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y 0.0024\n"
+                      "not a market datum\n"
+                      "20160203 ZERO/RATE/EUR/BANK_EUR_BORROW/A365/1Y 0.0010\n";
 
-    CHECK_FALSE(latest_market_data_date(body).has_value());
+    CHECK(latest_market_data_date(body) == std::optional<std::string>("2016-02-05"));
 }
 
-TEST_CASE("an empty market data body states no date", "[ore][market][market_data_parser]") {
+TEST_CASE("latest_market_data_date_states_nothing_for_a_body_with_no_date",
+          "[ore][market][market_data_parser]") {
     CHECK_FALSE(latest_market_data_date("").has_value());
     CHECK_FALSE(latest_market_data_date("# nothing but a comment\n").has_value());
 }

@@ -1,5 +1,5 @@
 @startuml
-title Figure 1. The lifecycle and the identity carried at each step
+title Figure 1. The target lifecycle: a report references the published curve
 skinparam backgroundColor #FFFFFF
 skinparam defaultFontName sans-serif
 skinparam componentStyle rectangle
@@ -12,7 +12,6 @@ component "Curve blueprint\n(pillars name their series)" as bp
 component "Approval\n(maker, checker)" as appr
 component "Published set" as pub
 component "Report run" as rep
-component "Curve configuration\ndocument" as cfg
 component "ORE XML" as ore
 
 src --> official : fixing, oresmd
@@ -21,7 +20,6 @@ gen --> sub : synthetic ticks, oresmd
 sub --> bp : quotes, oresmd
 bp --> appr : candidate
 appr --> pub : published set, oresmd
-cfg --> ore : projection
-ore --> rep : ORE XML (ORE keys)
-pub ..> rep : not built
+rep --> ore : ORE XML (ORE keys)
+pub --> rep : published set, oresmd
 @enduml

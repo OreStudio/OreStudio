@@ -310,6 +310,7 @@
 #include "ores.refdata.core/messaging/ir_curve_bootstrap_pillar_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/ledger_feed_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/leg_type_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/legal_entity_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/local_jurisdiction_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/monetary_nature_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/netting_agreement_history_provider_registrar.hpp"
@@ -822,6 +823,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_yield_curve_config_history_provider(hist_registry);
         register_yield_volatility_config_history_provider(hist_registry);
         register_zero_inflation_index_convention_history_provider(hist_registry);
+        register_legal_entity_history_provider(hist_registry);
 
         subs.push_back(ores::history::messaging::register_history_handlers(
             nats, hist_registry, "refdata", registrar_queue_group, ctx, verifier));

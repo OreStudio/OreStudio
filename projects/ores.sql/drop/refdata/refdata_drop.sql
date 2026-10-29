@@ -429,6 +429,8 @@
 \ir ./refdata_entity_classifications_drop.sql
 \ir ./refdata_local_jurisdictions_notify_trigger_drop.sql
 \ir ./refdata_local_jurisdictions_drop.sql
+\ir ./refdata_legal_entities_notify_trigger_drop.sql
+\ir ./refdata_legal_entities_drop.sql
 \ir ./refdata_party_relationships_notify_trigger_drop.sql
 \ir ./refdata_party_relationships_drop.sql
 \ir ./refdata_party_roles_notify_trigger_drop.sql

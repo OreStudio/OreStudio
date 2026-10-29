@@ -12,6 +12,8 @@
 
 const q = new URLSearchParams(location.search);
 const tab = q.get('tab') ?? 'providers';
+const SETUP_TABS = ['connections', 'drivers'];
+const screen = q.get('screen') ?? (SETUP_TABS.includes(tab) ? 'setup' : 'market');
 const rtab = q.get('rtab') ?? 'overview';
 const providerCode = q.get('provider');
 const connectionId = q.get('connection');
@@ -484,6 +486,22 @@ function wire() {
     document.querySelector('#search').addEventListener('change', (e) => { location.search = fn.href({ tab: 'providers', find: e.target.value || null }); });
     document.querySelector('#search').value = q.get('find') ?? '';
     document.querySelector('#refresh').addEventListener('click', () => location.reload());
+    document.querySelectorAll('[data-tab]').forEach((b) => {
+        b.hidden = (screen === 'setup') !== SETUP_TABS.includes(b.dataset.tab);
+    });
+    const title = document.querySelector('#list-header h1');
+    const lead = document.querySelector('#list-header .lead');
+    if (screen === 'setup') {
+        title.textContent = 'Market data setup';
+        lead.textContent = 'how data reaches the platform: the drivers, the connections, the credentials and where the values land';
+    } else {
+        title.textContent = 'Official rates';
+        lead.textContent = 'the daily rates central banks and public bodies publish, and whether they are arriving';
+    }
+    document.querySelectorAll('.screen-switch a').forEach((a) => {
+        const target = a.getAttribute('href').includes('screen=setup') ? 'setup' : 'market';
+        if (target === screen) a.setAttribute('aria-current', 'page');
+    });
 }
 
 if (connectionId) {

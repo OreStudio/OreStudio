@@ -22,7 +22,12 @@
     <span class="lead">the daily rates central banks and public bodies publish, and whether they are arriving</span>
     <span class="actions"><button class="act" id="refresh">Refresh</button></span>
   </div>
-  <nav class="tabs" role="tablist" aria-label="Official rates">
+  <div class="screen-switch">
+    <a class="act" href="?screen=market&tab=providers">Market data</a>
+    <a class="act" href="?screen=setup&tab=connections">Setup</a>
+    <span class="faint">two screens: one configures the plumbing, one reads the rates</span>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="The screen">
     <button role="tab" data-tab="providers">Providers <span class="q">who is arriving</span></button>
     <button role="tab" data-tab="connections">Connections <span class="q">the configured drivers</span></button>
     <button role="tab" data-tab="drivers">Drivers <span class="q">the code, and what it speaks</span></button>
@@ -63,7 +68,7 @@
         <span class="filters"><a class="act primary" href="#">New connection <span class="faint">· design pending</span></a></span>
       </div>
       <table class="list" id="connections">
-        <thead><tr><th>Connection</th><th>Driver</th><th>Endpoint</th><th>Providers</th>
+        <thead><tr><th>Connection</th><th>Driver</th><th>Endpoint</th><th>Classes</th><th>Providers</th>
           <th>Destination</th><th>State</th><th>Last delivery</th><th class="acts"></th></tr></thead>
         <tbody></tbody>
       </table>

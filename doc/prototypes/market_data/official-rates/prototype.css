@@ -214,3 +214,7 @@ table.list td.num, table.list td.when { font-family: var(--mono); font-variant-n
 .record-header .actions { margin-left: auto; display: flex; gap: 6px; }
 #record .tabs { margin: 12px 24px 0; }
 #rec-body { padding: 14px 24px 32px; display: grid; gap: 12px; }
+
+/* Two screens: the plumbing and the rates. */
+.screen-switch { display: flex; gap: 8px; align-items: baseline; margin-top: 10px; }
+.screen-switch a[aria-current="page"] { background: var(--accent-dim); border-color: var(--accent-line); }

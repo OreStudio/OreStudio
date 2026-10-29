@@ -26,11 +26,11 @@ A reader follows a single path from a public provider through generation, subscr
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -85,3 +85,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The documentation is signed off and delivered as two target-state documents.
+
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]] states the target: identities that distinguish observed, generated, derived and published data, lineage that connects them, and reports that reference published curves through the publish record and the as-of. It names the three changes that reach the state: the report's market binding, the removal of the ORE spelling from the runtime, and the creation of the output series.
+- [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]] states the construction: the recipe, the named quotes, the dates, the solve, the six checks, the candidate and the publication. It names four changes: the named series, the validation operation, the cubic spline, and the output series.
+- The settled decision [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]] and its migration task [[id:EAD9F02F-3B4B-495E-B37D-71BF766F7970][Name a curve pillar's market series]] are carried on the branch.
+- Both documents are structure notes: registered in the knowledge index, linked from the market data hub and from each other, 24 structure notes with their back-links, and the service patterns they use name them in turn.
+- The tenor architecture's stale paragraphs are corrected: the config no longer claims a source series, and the pillar names its series rather than composing it.
+- The public-source and calibration notes document the Frankfurter route at the path level; the in-flight loader design remains prime origin's work and is linked, not duplicated.
+
+Evidence: compass lint clean; link_structure_notes --check passes for 24 notes; check_pattern_uses passes; every id link resolves; both pages render at the site preview.
+
+Open: the target changes are documented, not implemented.

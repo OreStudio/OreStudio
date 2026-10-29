@@ -70,8 +70,8 @@ fails when the committed tables differ from what the schemas produce.
 - =ores.refdata.api=, =ores.trading.api=, =ores.analytics.api= and
   =ores.reporting.api= — the domain types the mappers and projections target,
   linked publicly.
-- =ores.dq.api=, =ores.history.core=, =ores.logging=, =ores.platform=,
-  =ores.utility= and Boost — linked privately.
+- =ores.dq.api=, =ores.logging=, =ores.platform=, =ores.utility= and Boost — linked
+  privately.
 
 The component holds no database session. It converts documents and returns
 types; the store that once wrote reporting, refdata and analytics rows lived
@@ -125,7 +125,6 @@ target_link_libraries(${lib_target_name}
         ores.trading.api.lib
     PRIVATE
         ores.dq.api.lib
-        ores.history.core.lib
         ores.logging.lib
         ores.platform.lib
         ores.utility.lib

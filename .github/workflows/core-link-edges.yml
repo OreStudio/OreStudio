@@ -1,0 +1,54 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+---
+name: Core link edges
+on:  # yamllint disable-line rule:truthy
+  # The check reads every component's CMakeLists, so it fires on any of them,
+  # and on the check, its baseline and this file, so an edit to any of those is
+  # verified here too.
+  push:
+    branches: ["main"]
+    paths:
+      - "projects/ores.*/*/src/CMakeLists.txt"
+      - "projects/ores.*/*/CMakeLists.txt"
+      - "projects/ores.*/CMakeLists.txt"
+      - "projects/ores.codegen/scripts/check_core_link_edges.py"
+      - "projects/ores.codegen/scripts/core_link_edges_baseline.json"
+      - ".github/workflows/core-link-edges.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # A component's core is the domain and its repositories. It may depend on
+  # other components' api contracts and on the shared libraries; it may not
+  # depend on another component's core or service, which is how the ORE codec
+  # once reached into reporting's repositories. The ratchet baseline names the
+  # edges that predate the rule. The scan needs no toolchain.
+  core-link-edges:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Check that no core links another component's core or service
+        run: |
+          python3 projects/ores.codegen/scripts/check_core_link_edges.py

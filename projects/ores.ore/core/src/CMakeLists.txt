@@ -66,7 +66,6 @@ target_link_libraries(${lib_target_name}
         ores.trading.api.lib
     PRIVATE
         ores.dq.api.lib
-        ores.history.core.lib
         ores.logging.lib
         ores.platform.lib
         ores.utility.lib

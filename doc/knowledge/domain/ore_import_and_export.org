@@ -112,6 +112,8 @@ Both requests declare =requires_session = true=.
 * See also
 
 
+
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][The market data path: a public fixing, a curve, a report]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:C6D75337-0EA6-40F0-8E8B-52737558851D][The source kind]], the =replay= kind of the import's source.
 - [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], the catalog the import writes into.

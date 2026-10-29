@@ -8,11 +8,11 @@
 #+filetags: :refdata:codegen:msvc:c1202:fix-the-tenor-basis-swap-convention-model-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/split-the-configuration-document-protocol-by-document-family
-#+pr: 4016
+#+pr: 4037
 #+blocked_on: Investigate the configuration document protocol's translation unit
 #+blocked_since: 2026-10-14
 #+created: 2026-10-14
-#+updated: 2026-10-24
+#+updated: 2026-10-28
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,10 +28,10 @@ The configuration document protocol is split on the seam the investigation names
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:EB412177-0504-4299-A332-903EB15DA560][Fix the tenor basis swap convention model and the document TU — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-14                               |
+| Now          | Blocked on evidence: C1202 has never been reached. |
+| Waiting on   | The Windows job, past the errors in front of the aggregate. |
+| Next         | Read the MSVC leg's first error; if it is C1202, split by curve section. |
+| Last touched | 2026-10-28                               |
 
 * Acceptance
 
@@ -103,29 +103,63 @@ configuration document is involved. It is recorded here so the split is not
 blamed for it, and it wants its own task before the clang-cl job can prove
 anything about this one.
 
+* What the Windows job says after the fourth fix
+
+The run
+[[https://github.com/OreStudio/OreStudio/actions/runs/40783811342][40783811342]]
+on =main= at =0d97232d7f= carries the =getenv=, =retry.hpp= and =codec.cpp=
+fixes. Both legs move, and neither reaches the aggregate.
+
+- MSVC gets past =ores.database= and into =ores.refdata.core= -- the component
+  this task is about -- where it stops on =C4702: unreachable code= in
+  =counterparty_identifier_service.cpp= and =counterparty_service.cpp=. Both
+  files refuse a direct write with a =[[noreturn]]= helper, so everything after
+  it is dead. The dead bodies are deleted in
+  [[https://github.com/OreStudio/OreStudio/pull/4037][#4037]].
+- clang-cl stops where it did, but the cause is now known: =Windows.h='s =min=
+  and =max= macros break =std::numeric_limits<T>::max()= inside rfl. =NOMINMAX=
+  is defined for every Windows target in
+  [[https://github.com/OreStudio/OreStudio/pull/4033][#4033]].
+
+The order the story's plan set still holds: each fix clears one error, the next
+run names the next one, and C1202 is judged only when the MSVC leg compiles the
+document's own unit.
+
 * What the split actually is
 
-The measurement first: =curve_configuration_document= holds **33 typed vectors**
-plus its configuration object, in one reflected struct. The C1202 limit is a
-per-struct count, so a file split -- moving the same struct into more headers --
-cannot lower it. The task's original instruction ("split the header and the
-handler") was written before that was measured, and on its own it would not have
-worked.
+The measurement first. The document holds **33 typed vectors** plus its
+configuration object, in one reflected struct: a literal of 34 names. The
+sprint 28 investigation measured the unit as **Mode 1, context accumulation**,
+not a single literal that is too wide: the same 24-name
+=tenor_basis_swap_convention= literal built in a unit of 12 headers and failed
+in a unit of 103. See
+[[id:1B13CDFF-BDA0-4D2E-8E05-ECB3EC3B9259][Why the configuration document
+protocol unit is wide]].
 
-The mechanism that does work is already in this tree: field groups.
-=projects/ores.codegen/library/templates/ores.cpp.field-group.field_group_header.org=
-states it in its own words --
+That reading decides the remedy, and it rules out two candidates:
 
-#+begin_quote
-By composing the parent struct via =rfl::Flatten<SubStruct>= each sub-struct is
-reflected independently, keeping the per-struct field count low while preserving
-the original flat JSON wire format.
-#+end_quote
+- A file split alone does not lower accumulation, and under a unity build it
+  cannot even separate the files: every source of the component lands in the
+  same unit.
+- =rfl::Flatten= is not a decomposition fix either. It adds the flattened
+  struct's names to the parent's literal, recursively, so a wide parent stays
+  wide, and it is a JSON-shape decision, never a compile fix. See
+  [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE
+  Studio]]. An earlier version of this section said otherwise, on the authority
+  of the field-group template's header comment; the template was wrong and is
+  corrected in the same change as this page.
 
-So the split is: the document's families become field groups, the document
-composes them with =rfl::Flatten=, and each family is reflected on its own. The
-wire stays flat, which is what the acceptance asks for, and no subject or
-handler changes.
+What the investigation recommended, and what already happened. It recommended
+one operation model per document family, so each unit's encode graph reaches one
+document. The conventions half is gone: =ebcf187bca= deleted the conventions
+aggregate and the whole-document service, so this protocol now carries one
+document of 33 element types where it carried two and 58. Half the accumulation
+the investigation measured left the unit by deleting a document, not by
+splitting a file.
+
+What remains is 33 element types in one unit, and whether that is over MSVC's
+ceiling is not known: C1202 has never been reached, because the Windows job
+stops earlier every time. The next step is evidence, not code.
 
 * Plan
 
@@ -162,6 +196,15 @@ task and name that file in the Command column.
 
 * Notes
 
+- 2026-10-28. The field-group template said that composing a parent with
+  =rfl::Flatten= keeps the per-struct field count low. The Data-Oriented Design
+  decomposition section says the opposite: Flatten adds the group's names to the
+  parent's literal, recursively. The template is corrected with this page, and
+  the plan below no longer proposes that split.
+- The same day's nightly answers nothing about this task yet: the MSVC leg stops
+  in =ores.database=, and the clang leg inside =rfl='s headers, on =min=/=max=
+  from =Windows.h=. Both are separate tasks.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -177,6 +220,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4037][#4037]] | [refdata] Drop the dead bodies of the refusing stubs |
+| [[https://github.com/OreStudio/OreStudio/pull/4034][#4034]] | [codegen] Stop the field-group template promising a C1202 cure |
 | [[https://github.com/OreStudio/OreStudio/pull/4016][#4016]] | [database] Stop the decimal codec hiding a global last |
 | [[https://github.com/OreStudio/OreStudio/pull/4014][#4014]] | [agile] Say what the configuration document split actually is |
 | [[https://github.com/OreStudio/OreStudio/pull/4002][#4002]] | [platform] Read the environment without the deprecated CRT call |

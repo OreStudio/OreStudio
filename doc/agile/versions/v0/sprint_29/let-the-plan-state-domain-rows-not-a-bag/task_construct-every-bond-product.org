@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: FF69E606-2005-49B4-A2B8-61DAF46EC623
+:END:
+#+title: Task: Construct every bond product by name
+#+description: The bond writer assembles one table's rows from the terms bag for ten routed codes. Give each code a constructor that states its own facts, so the bond family joins equity and commodities in constructing rather than assembling, and the bag has one fewer family to carry.
+#+type: task
+#+level: s1
+#+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
+#+owner: marco
+#+branch: feature/construct-every-bond-product
+#+pr: 4040
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every routed bond code is constructed by a function that names it, the writer translates no bond product, and a provisioning run books the same bond population as before.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | ABANDONED                            |
+| Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-29                               |
+
+* Acceptance
+
+- One constructor per routed bond code, with the trade type fixed by it.
+- Terms hold only the columns each product's shape states, and the closed vocabularies are refused at construction.
+- The writer hands the constructed row to the batch and no longer translates a bond.
+- A provisioning run books the same bond population as before this change, and the suites are green.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4040][#4040]] | [agile] Record two populations that do not book |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Abandoned, because the measurement changed the task. Nine of the ten routed
+bond codes are never drawn: the planner states one product, =Bond=, for every
+slot. Measured on a recreated database at =0f0533fc7a=, the bond instrument
+table holds 24 rows and all 24 are =Bond=; the family's own fact rows are
+empty, because the writer fills only the instrument header.
+
+Constructing nine products nothing draws would have been dead code with a
+test attached, and constructing the tenth would have fixed a trade type the
+planner already hardcodes. So the work is not a constructor's: the population
+has to draw the products before a constructor can state them.
+
+Recorded as captures:
+- [[file:../../../../product_backlog/inbox/the-bond-population-books-one-product-of-ten.org][The bond population books one product of ten]]
+- [[file:../../../../product_backlog/inbox/no-config-books-credit-so-the-family-never-runs.org][No config books credit, so the family never runs]]
+
+The rates family is where constructors pay next: eight of its ten codes are
+drawn, across a header table and its fact tables.

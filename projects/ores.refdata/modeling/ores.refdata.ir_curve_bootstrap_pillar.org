@@ -26,6 +26,15 @@ columns exactly -- tenor validation happens through the
 =tenor_resolution= machinery at the application layer, not a
 per-consumer DB-level FK.
 
+The pillar names no input series today. The curve read composes the
+series from the parent config's currency and index tenor and this
+row's tenors, in the ORE vocabulary, so the link from a pillar to the
+market series it reads is a computation and not a column.
+[[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market
+series it reads]] decides that it becomes a column, a soft reference
+to =ores.marketdata.market_series=: the dependency is stated where a
+person can read it, and a pillar can read any series the party holds.
+
 * Flags
 :PROPERTIES:
 :schema:        public
@@ -206,4 +215,5 @@ std::string("SWAP")
 
 - [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][IR Curve Bootstrap Config]] -- the parent this pillar belongs to.
 - [[id:D9A9B2C5-2C22-456A-851F-B458E0568CD3][Curve Role]] -- the instrument-pricing role this pillar carries.
+- [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]] -- the decision that this row gains a soft reference to the series it reads.
 - [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] -- component group overview.

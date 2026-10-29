@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: 0F633A30-454C-46CD-A9EB-D223DFC8879D
+:END:
+#+title: Task: Give the commodity products their own facts where the family can state them
+#+description: The commodity constructors fixed each product's shape, but several products are drawn as a plainer shape than they are: the Asian option states no averaging, and the basket products state no members even though the family has a constituent table nothing writes to. Give those products their own facts, and record the ones the family still cannot state.
+#+type: task
+#+level: s1
+#+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
+#+owner: marco
+#+branch: feature/give-the-commodity-products-their-own-facts
+#+pr: 4039
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The products the family can state are constructed whole, and the ones it cannot are named rather than silently drawn as something simpler.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- CommodityAsianOption states an average type and its averaging window, and the constructor requires them.
+- The basket option, rainbow, best entry and worst-of basket swap state numbered constituents, and their constructors refuse an empty basket.
+- A provisioning run books every routed code, with constituents and averaging present, and the suites are green.
+- The products the family still cannot distinguish are recorded, with what each one is missing.
+
+* Plan
+
+Two products the family can already state correctly, and one gap to name.
+
+The Asian option gains its own terms: an average type and the window it
+averages over, both required, because an Asian without an average is not an
+Asian.
+
+The four basket products gain members. The family already has
+=commodity_basket_constituents=, a table nothing wrote to; a basket product
+now constructs its members and numbers them, and refuses a basket of fewer
+than two, because one member is not a basket.
+
+The rest of the codes stay as they are, and the task records what each one is
+missing rather than drawing it as something simpler without saying so.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Commodity rows | 25, one per routed code | =compass db sql= on =ores_trading_commodity_instruments_tbl= | =d69d31c55a= |
+| Basket constituents | 12, over 4 products | the same, on =ores_trading_commodity_basket_constituents_tbl= | =d69d31c55a= |
+| Asian option averaging | Arithmetic, with a window | the same, on the averaging columns | =d69d31c55a= |
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4039][#4039]] | [trading,synthetic] Give the commodity products their own facts |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Two more products state what they are. =CommodityAsianOption= requires an
+average type and its averaging window, and the planner now draws them instead
+of leaving the product as a plain option. The three basket option codes and
+the worst-of basket swap construct numbered members, so the
+=commodity_basket_constituents= table is written for the first time.
+
+Proved by a provisioning run on a recreated database: 25 rows over 25 codes,
+12 constituents over 4 products (three members each), and the Asian option's
+row carries =Arithmetic= and a window. The suites are green:
+=ores.trading.api.tests= at 485 assertions in 130 test cases,
+=ores.synthetic.core.tests= at 1741 assertions in 79.
+
+* What the family still cannot say
+
+This is the part worth reading. Several of the twenty-five codes are still
+drawn as a plainer shape, because the table has nowhere to put their facts:
+
+| Product | What it needs | Where it would go |
+|---------+---------------+-------------------|
+| CommodityDigitalOption | a payout amount | no column |
+| CommodityDigitalAveragePriceOption | a payout amount | no column |
+| CommodityAccumulator | no target, which it now has by absence | none needed |
+| CommodityTaRF | a target amount and target type | no columns |
+| CommodityStrikeResettableOption | the reset dates and the strike it resets to | no columns |
+| CommodityWindowBarrierOption | the observation window | no columns |
+| CommodityGenericBarrierOption | the barrier's own shape, which ORE states per point | no columns |
+| CommodityForwardVolatilityAgreement | a volatility strike and a realised-vol leg | no columns |
+| IntradayPowerForward | the intraday delivery shape | no columns |
+| CommodityBasketOption, RainbowOption, BestEntryOption | how the members combine | members only |
+
+So the basket products can name their members but not say what they do with
+them, and the TaRF cannot state a target at all. Those need the family's own
+tables, the way the equity family has nine, which is a modelling task and not
+a constructor's.

@@ -1778,8 +1778,7 @@ TEST_CASE("workflow_engine stops a run whose step outlives its deadline", "[engi
     BOOST_LOG_SEV(lg, debug) << "An overdue step stopped its run.";
 }
 
-TEST_CASE("workflow_engine leaves a queued step alone",
-          "[engine][integration]") {
+TEST_CASE("workflow_engine leaves a queued step alone", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     /*
@@ -1812,8 +1811,7 @@ TEST_CASE("workflow_engine leaves a queued step alone",
     CHECK(rows.front().state_id == f.step_states.require("in_progress"));
 }
 
-TEST_CASE("workflow_engine stops a step no worker ever claimed",
-          "[engine][integration]") {
+TEST_CASE("workflow_engine stops a step no worker ever claimed", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     /*
@@ -1844,8 +1842,7 @@ TEST_CASE("workflow_engine stops a step no worker ever claimed",
     CHECK(rows.front().error.find("No worker ever claimed it") != std::string::npos);
 }
 
-TEST_CASE("workflow_engine gives a claimed step its whole budget",
-          "[engine][integration]") {
+TEST_CASE("workflow_engine gives a claimed step its whole budget", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     /*

@@ -6,17 +6,23 @@
 
     WHEN TO USE
     -----------
-    Use this template when you need to split a large flat entity
-    struct into logical sub-groups WITHOUT introducing a new DB
-    table, repository layer, or wire-format change.
+    Use this template when you need a named block of related fields
+    that is its own type: no new DB table, no repository layer, and no
+    change to the wire format.
 
-    The canonical use case is working around the MSVC C1202 error
-    ("recursive type or function dependency context too complex")
-    triggered by rfl/internal/no_duplicate_field_names.hpp when a
-    single struct has too many fields.  By composing the parent
-    struct via rfl::Flatten<SubStruct> each sub-struct is reflected
-    independently, keeping the per-struct field count low while
-    preserving the original flat JSON wire format.
+    The first use case is a column block composed into an entity. The
+    group is reflected as its own struct with a literal of its own
+    names, so a reader states what belongs together, and the entity's
+    mapper names every column through the member that carries it. The
+    domain struct nests; the wire and the write records stay flat.
+
+    Flatten is NOT a cure for MSVC C1202. rfl::Flatten adds the
+    flattened struct's names to the parent's literal, recursively, so a
+    wide parent stays wide, and reflect-cpp reflects a plain nested
+    member as one name already. C1202 has two paths -- one literal that
+    is too wide, and accumulation across a unit -- and a group answers
+    neither. See the decomposition section of
+    doc/knowledge/architecture/data_oriented_design.org.
 
     The second use case is a document-only struct: a shape the ORE
     schema states and no table holds, such as a bond's option block.
@@ -60,8 +66,12 @@
     The composing parent struct (e.g. trade) is hand-crafted; it
     is not generated.  It should:
       #include the generated sub-struct headers
-      declare members as  rfl::Flatten<SubStruct>
+      declare one member per group, nested by default
       itself be marked final if appropriate
+    Declare a group as  rfl::Flatten<SubStruct>  only when the parent's
+    JSON must carry that group's members beside its own -- the shape the
+    wire already had.  Flatten keeps the wire flat; it does not narrow
+    the parent's reflected literal.
     ============================================================ }}
 {{{cpp_license}}}
 #ifndef ORES_{{field_group.component_include_upper}}_DOMAIN_{{field_group.entity_singular_upper}}_HPP

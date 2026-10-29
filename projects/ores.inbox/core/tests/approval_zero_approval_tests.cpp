@@ -49,7 +49,8 @@
 namespace {
 
 auto& test_lg() {
-    static auto instance = ores::logging::make_logger("ores.inbox.core.tests.approval_zero_approval");
+    static auto instance =
+        ores::logging::make_logger("ores.inbox.core.tests.approval_zero_approval");
     return instance;
 }
 

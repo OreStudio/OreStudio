@@ -77,11 +77,10 @@ public:
             // the request is no longer approved, and its state stands.
             const auto request = ores::inbox::service::approval_lifecycle(ctx).request(request_id);
             if (!request || request->state_code != "approved") {
-                return step_outcome{
-                    .completed = false,
-                    .error = "The request is " +
-                             (request ? request->state_code : std::string("gone")) +
-                             " and cannot be applied."};
+                return step_outcome{.completed = false,
+                                    .error = "The request is " +
+                                             (request ? request->state_code : std::string("gone")) +
+                                             " and cannot be applied."};
             }
             const auto refusals =
                 service::engine_settings_proposal_service(ctx).refusals(request_id);
@@ -100,15 +99,14 @@ public:
      */
     void apply(ores::nats::message msg) {
         run(msg, [](const auto& ctx, const std::string& request_id) {
-            const auto applied =
-                service::engine_settings_proposal_service(ctx).apply(request_id);
+            const auto applied = service::engine_settings_proposal_service(ctx).apply(request_id);
             if (applied.applied)
                 return step_outcome{.completed = true, .error = {}};
             // A transient failure leaves the request approved and the run to be
             // resumed, so the step fails without moving the request.
             if (!applied.transient)
                 ores::inbox::service::approval_lifecycle(ctx).fail_apply(request_id,
-                                                                        applied.refusal);
+                                                                         applied.refusal);
             return step_outcome{.completed = false, .error = applied.refusal};
         });
     }
@@ -150,17 +148,16 @@ private:
             // format this process speaks elsewhere. The default codec is a
             // process-wide value another client in this process can change, so
             // the format is stated here rather than inherited.
-            const auto command =
-                ores::nats::wire_codec(ores::nats::wire_format::json)
-                    .decode<ores::inbox::workflow::apply_step_command>(msg.data);
+            const auto command = ores::nats::wire_codec(ores::nats::wire_format::json)
+                                     .decode<ores::inbox::workflow::apply_step_command>(msg.data);
             if (!command || command->request_id.empty()) {
                 wf->fail("The command names no request.");
                 ack.accept();
                 return;
             }
 
-            const auto tenant = ores::database::service::tenant_context::with_tenant(
-                ctx_, wf->tenant_id);
+            const auto tenant =
+                ores::database::service::tenant_context::with_tenant(ctx_, wf->tenant_id);
             const auto result = body(tenant, command->request_id);
             if (result.completed)
                 wf->complete("{}");

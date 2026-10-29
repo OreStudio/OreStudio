@@ -85,25 +85,87 @@ TEST_CASE("the_four_forward_shaped_products_state_their_own_type", "[domain]") {
     CHECK(construct_commodity_position(terms).identity.trade_type_code == "CommodityPosition");
 }
 
-TEST_CASE("the_seven_option_shaped_products_state_their_own_type", "[domain]") {
+TEST_CASE("the_three_vanilla_shaped_products_state_their_own_type", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto terms = make_option_terms();
-    BOOST_LOG_SEV(lg, info) << "Constructing the seven option-shaped products";
+    BOOST_LOG_SEV(lg, info) << "Constructing the three vanilla-shaped products";
 
     CHECK(construct_commodity_option(terms).identity.trade_type_code == "CommodityOption");
     CHECK(construct_commodity_digital_option(terms).identity.trade_type_code ==
           "CommodityDigitalOption");
-    CHECK(construct_commodity_asian_option(terms).identity.trade_type_code ==
-          "CommodityAsianOption");
     CHECK(construct_commodity_strike_resettable_option(terms).identity.trade_type_code ==
           "CommodityStrikeResettableOption");
-    CHECK(construct_commodity_basket_option(terms).identity.trade_type_code ==
-          "CommodityBasketOption");
-    CHECK(construct_commodity_rainbow_option(terms).identity.trade_type_code ==
-          "CommodityRainbowOption");
-    CHECK(construct_commodity_best_entry_option(terms).identity.trade_type_code ==
-          "CommodityBestEntryOption");
+}
+
+TEST_CASE("an_asian_option_states_its_average_and_its_window", "[domain]") {
+    auto lg(make_logger(test_suite));
+
+    commodity_asian_option_terms terms{make_common(),
+                                       "Put",
+                                       commodity_money("80"),
+                                       "Arithmetic",
+                                       a_commodity_date(),
+                                       a_commodity_date()};
+    const auto sut = construct_commodity_asian_option(terms);
+    BOOST_LOG_SEV(lg, info) << "Asian average: " << sut.average_type;
+
+    CHECK(sut.identity.trade_type_code == "CommodityAsianOption");
+    CHECK(sut.average_type == "Arithmetic");
+    CHECK(sut.averaging_start_date.has_value());
+    CHECK(sut.averaging_end_date.has_value());
+}
+
+TEST_CASE("an_asian_option_without_an_average_is_refused", "[domain]") {
+    auto lg(make_logger(test_suite));
+
+    commodity_asian_option_terms terms{
+        make_common(), "Put", commodity_money("80"), "", a_commodity_date(), a_commodity_date()};
+    BOOST_LOG_SEV(lg, info) << "Refusing an Asian option with no average type";
+
+    CHECK_THROWS_AS(construct_commodity_asian_option(terms), commodity_product_error);
+}
+
+TEST_CASE("the_three_basket_products_number_their_members", "[domain]") {
+    auto lg(make_logger(test_suite));
+
+    commodity_basket_option_terms terms{
+        make_common(), "Call", commodity_money("80"), "European", {{"BRENT", 0.6}, {"WTI", 0.4}}};
+    const auto basket = construct_commodity_basket_option(terms);
+    const auto rainbow = construct_commodity_rainbow_option(terms);
+    const auto best_entry = construct_commodity_best_entry_option(terms);
+    BOOST_LOG_SEV(lg, info) << "Basket type: " << basket.row.identity.trade_type_code;
+
+    CHECK(basket.row.identity.trade_type_code == "CommodityBasketOption");
+    CHECK(rainbow.row.identity.trade_type_code == "CommodityRainbowOption");
+    CHECK(best_entry.row.identity.trade_type_code == "CommodityBestEntryOption");
+    REQUIRE(basket.constituents.size() == 2);
+    CHECK(basket.constituents[0].sequence_number == 1);
+    CHECK(basket.constituents[0].underlying_code == "BRENT");
+    CHECK(basket.constituents[1].sequence_number == 2);
+}
+
+TEST_CASE("a_basket_with_one_member_is_refused", "[domain]") {
+    auto lg(make_logger(test_suite));
+
+    commodity_basket_option_terms terms{
+        make_common(), "Call", commodity_money("80"), "European", {{"BRENT", 1.0}}};
+    BOOST_LOG_SEV(lg, info) << "Refusing a basket of one member";
+
+    CHECK_THROWS_AS(construct_commodity_basket_option(terms), commodity_product_error);
+}
+
+TEST_CASE("a_worst_of_basket_swap_numbers_its_members", "[domain]") {
+    auto lg(make_logger(test_suite));
+
+    commodity_worst_of_basket_swap_terms terms{
+        make_common(), commodity_money("75"), {{"BRENT", 0.5}, {"WTI", 0.5}}};
+    const auto sut = construct_commodity_worst_of_basket_swap(terms);
+    BOOST_LOG_SEV(lg, info) << "Worst of: " << sut.row.identity.trade_type_code;
+
+    CHECK(sut.row.identity.trade_type_code == "CommodityWorstOfBasketSwap");
+    REQUIRE(sut.constituents.size() == 2);
+    CHECK(sut.constituents[1].underlying_code == "WTI");
 }
 
 TEST_CASE("an_option_type_outside_the_closed_set_is_refused", "[domain]") {
@@ -129,15 +191,15 @@ TEST_CASE("an_exercise_type_outside_the_closed_set_is_refused", "[domain]") {
 TEST_CASE("an_accumulator_and_a_target_redemption_forward_differ_only_by_type", "[domain]") {
     auto lg(make_logger(test_suite));
 
-    commodity_accumulation_terms terms{make_common(), "Call", commodity_money("50000"), commodity_money("88")};
+    commodity_accumulation_terms terms{
+        make_common(), "Call", commodity_money("50000"), commodity_money("88")};
     const auto accumulator = construct_commodity_accumulator(terms);
     const auto tarf = construct_commodity_target_redemption_forward(terms);
     BOOST_LOG_SEV(lg, info) << "Accumulator: " << accumulator.identity.trade_type_code;
 
     CHECK(accumulator.identity.trade_type_code == "CommodityAccumulator");
     CHECK(tarf.identity.trade_type_code == "CommodityTaRF");
-    CHECK(accumulator.accumulation_amount->to_string() ==
-          tarf.accumulation_amount->to_string());
+    CHECK(accumulator.accumulation_amount->to_string() == tarf.accumulation_amount->to_string());
 }
 
 TEST_CASE("a_variance_swap_with_a_non_finite_strike_is_refused", "[domain]") {
@@ -166,7 +228,8 @@ TEST_CASE("a_zero_quantity_is_refused_for_every_shape", "[domain]") {
     common.quantity = 0.0;
     BOOST_LOG_SEV(lg, info) << "Refusing a commodity product with no quantity";
 
-    CHECK_THROWS_AS(construct_commodity_forward({common, commodity_money("75")}), commodity_product_error);
+    CHECK_THROWS_AS(construct_commodity_forward({common, commodity_money("75")}),
+                    commodity_product_error);
     CHECK_THROWS_AS(construct_commodity_option({common, "Call", commodity_money("80"), "European"}),
                     commodity_product_error);
     CHECK_THROWS_AS(construct_commodity_variance_swap({common, 0.05}), commodity_product_error);

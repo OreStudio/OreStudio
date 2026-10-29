@@ -40,9 +40,9 @@
 #include <optional>
 #include <span>
 #include <stdexcept>
-#include <vector>
 #include <string>
 #include <string_view>
+#include <vector>
 
 /**
  * @brief The equity family's named constructors.
@@ -87,15 +87,26 @@ inline constexpr auto settlement_types = std::to_array<std::string_view>({"Cash"
 
 inline constexpr auto direction_types = std::to_array<std::string_view>({"Long", "Short"});
 
-inline constexpr auto barrier_types = std::to_array<std::string_view>(
-    {"UpAndOut", "UpAndIn", "DownAndOut", "DownAndIn", "KnockIn", "KnockOut",
-     "CumulatedProfitCap", "CumulatedProfitCapPoints", "FixingCap", "FixingFloor"});
+inline constexpr auto barrier_types = std::to_array<std::string_view>({"UpAndOut",
+                                                                       "UpAndIn",
+                                                                       "DownAndOut",
+                                                                       "DownAndIn",
+                                                                       "KnockIn",
+                                                                       "KnockOut",
+                                                                       "CumulatedProfitCap",
+                                                                       "CumulatedProfitCapPoints",
+                                                                       "FixingCap",
+                                                                       "FixingFloor"});
 
 inline constexpr auto return_types = std::to_array<std::string_view>({"Total", "Price"});
 
-inline constexpr auto payoff_types = std::to_array<std::string_view>(
-    {"Accumulator", "Asian", "AverageStrike", "Decumulator", "TargetExact", "TargetFull",
-     "Vanilla"});
+inline constexpr auto payoff_types = std::to_array<std::string_view>({"Accumulator",
+                                                                      "Asian",
+                                                                      "AverageStrike",
+                                                                      "Decumulator",
+                                                                      "TargetExact",
+                                                                      "TargetFull",
+                                                                      "Vanilla"});
 
 inline constexpr auto target_types = std::to_array<std::string_view>({"TargetFull", "TargetExact"});
 
@@ -115,20 +126,22 @@ inline constexpr auto target_types = std::to_array<std::string_view>({"TargetFul
     throw equity_product_error("An " + std::string(product) + " states " + std::string(fact) + ".");
 }
 
-inline void require_text(std::string_view product, std::string_view fact,
-                         const std::string& value) {
+inline void
+require_text(std::string_view product, std::string_view fact, const std::string& value) {
     if (value.empty())
         refuse(product, fact);
 }
 
-inline void require_one_of(std::string_view product, std::string_view fact,
+inline void require_one_of(std::string_view product,
+                           std::string_view fact,
                            const std::string& value,
                            std::span<const std::string_view> allowed) {
     if (!states_one_of(value, allowed))
         refuse(product, fact);
 }
 
-inline void require_one_of_or_absent(std::string_view product, std::string_view fact,
+inline void require_one_of_or_absent(std::string_view product,
+                                     std::string_view fact,
                                      const std::string& value,
                                      std::span<const std::string_view> allowed) {
     if (!value.empty() && !states_one_of(value, allowed))
@@ -140,14 +153,14 @@ inline void require_money(std::string_view product, std::string_view fact, const
         refuse(product, fact);
 }
 
-inline void require_not_negative(std::string_view product, std::string_view fact,
-                                 const decimal& value) {
+inline void
+require_not_negative(std::string_view product, std::string_view fact, const decimal& value) {
     if (value < decimal{})
         refuse(product, fact);
 }
 
-inline void require_date(std::string_view product, std::string_view fact,
-                         std::chrono::year_month_day value) {
+inline void
+require_date(std::string_view product, std::string_view fact, std::chrono::year_month_day value) {
     if (value == std::chrono::year_month_day{})
         refuse(product, fact);
 }
@@ -452,15 +465,14 @@ construct_equity_option(const equity_option_terms& terms) {
     require_text("equity option", "an underlying name", terms.underlying_name);
     require_text("equity option", "a currency", terms.currency);
     require_money("equity option", "a positive notional", terms.notional);
-    require_one_of("equity option", "a Call or Put option type", terms.option_type,
-                   option_types);
+    require_one_of("equity option", "a Call or Put option type", terms.option_type, option_types);
     require_not_negative("equity option", "a non-negative strike", terms.strike);
     require_date("equity option", "an expiry date", terms.expiry_date);
-    require_one_of("equity option", "a European, Bermudan or American exercise type",
+    require_one_of("equity option",
+                   "a European, Bermudan or American exercise type",
                    terms.exercise_type,
                    exercise_types);
-    require_one_of("equity option", "a Long or Short direction", terms.long_short,
-                   direction_types);
+    require_one_of("equity option", "a Long or Short direction", terms.long_short, direction_types);
     require_one_of_or_absent("equity option",
                              "a Cash or Physical settlement type where it states one",
                              terms.settlement_type,
@@ -486,20 +498,22 @@ construct_equity_cliquet_option(const equity_cliquet_option_terms& terms) {
     require_text("equity cliquet option", "an underlying name", terms.underlying_name);
     require_text("equity cliquet option", "a currency", terms.currency);
     require_money("equity cliquet option", "a positive notional", terms.notional);
-    require_one_of("equity cliquet option", "a Call or Put option type", terms.option_type,
-                   option_types);
+    require_one_of(
+        "equity cliquet option", "a Call or Put option type", terms.option_type, option_types);
     require_not_negative("equity cliquet option", "a non-negative strike", terms.strike);
     require_date("equity cliquet option", "an expiry date", terms.expiry_date);
-    require_one_of("equity cliquet option", "a European, Bermudan or American exercise type",
+    require_one_of("equity cliquet option",
+                   "a European, Bermudan or American exercise type",
                    terms.exercise_type,
                    exercise_types);
-    require_one_of("equity cliquet option", "a Long or Short direction", terms.long_short,
-                   direction_types);
+    require_one_of(
+        "equity cliquet option", "a Long or Short direction", terms.long_short, direction_types);
     require_one_of_or_absent("equity cliquet option",
                              "a Cash or Physical settlement type where it states one",
                              terms.settlement_type,
                              settlement_types);
-    require_text("equity cliquet option", "a frequency, because that is how often it observes",
+    require_text("equity cliquet option",
+                 "a frequency, because that is how often it observes",
                  terms.frequency);
 
     equity_option_instrument row;
@@ -523,15 +537,16 @@ construct_equity_asian_option(const equity_asian_option_terms& terms) {
     require_text("equity Asian option", "an underlying name", terms.underlying_name);
     require_text("equity Asian option", "a currency", terms.currency);
     require_money("equity Asian option", "a positive notional", terms.notional);
-    require_one_of("equity Asian option", "a Call or Put option type", terms.option_type,
-                   option_types);
+    require_one_of(
+        "equity Asian option", "a Call or Put option type", terms.option_type, option_types);
     require_not_negative("equity Asian option", "a non-negative strike", terms.strike);
     require_date("equity Asian option", "an expiry date", terms.expiry_date);
-    require_one_of("equity Asian option", "a European, Bermudan or American exercise type",
+    require_one_of("equity Asian option",
+                   "a European, Bermudan or American exercise type",
                    terms.exercise_type,
                    exercise_types);
-    require_one_of("equity Asian option", "a Long or Short direction", terms.long_short,
-                   direction_types);
+    require_one_of(
+        "equity Asian option", "a Long or Short direction", terms.long_short, direction_types);
     require_text("equity Asian option", "the average it takes", terms.average_type);
     require_date("equity Asian option", "the start of its averaging", terms.averaging_start_date);
     require_date("equity Asian option", "the end of its averaging", terms.averaging_end_date);
@@ -560,24 +575,26 @@ namespace equity_builders {
  * The barriers stay with the caller, so the single and double forms state
  * exactly the barriers their product has.
  */
-inline equity_barrier_option_instrument
-barrier_common(std::string_view product, const std::string& trade_type_code,
-               const std::string& underlying_name, const std::string& currency,
-               const decimal& notional, const std::string& option_type, const decimal& strike,
-               std::chrono::year_month_day expiry_date, const std::string& exercise_type,
-               const std::string& long_short) {
+inline equity_barrier_option_instrument barrier_common(std::string_view product,
+                                                       const std::string& trade_type_code,
+                                                       const std::string& underlying_name,
+                                                       const std::string& currency,
+                                                       const decimal& notional,
+                                                       const std::string& option_type,
+                                                       const decimal& strike,
+                                                       std::chrono::year_month_day expiry_date,
+                                                       const std::string& exercise_type,
+                                                       const std::string& long_short) {
     using namespace equity_terms;
     require_text(product, "an underlying name", underlying_name);
     require_text(product, "a currency", currency);
     require_money(product, "a positive notional", notional);
-    require_one_of(product, "a Call or Put option type", option_type,
-                   option_types);
+    require_one_of(product, "a Call or Put option type", option_type, option_types);
     require_not_negative(product, "a non-negative strike", strike);
     require_date(product, "an expiry date", expiry_date);
-    require_one_of(product, "a European, Bermudan or American exercise type", exercise_type,
-                   exercise_types);
-    require_one_of(product, "a Long or Short direction", long_short,
-                   direction_types);
+    require_one_of(
+        product, "a European, Bermudan or American exercise type", exercise_type, exercise_types);
+    require_one_of(product, "a Long or Short direction", long_short, direction_types);
 
     equity_barrier_option_instrument row;
     row.identity.trade_type_code = trade_type_code;
@@ -597,12 +614,20 @@ barrier_common(std::string_view product, const std::string& trade_type_code,
 [[nodiscard]] inline equity_barrier_option_instrument
 construct_equity_barrier_option(const equity_barrier_option_terms& terms) {
     using namespace equity_terms;
-    auto row = equity_builders::barrier_common(
-        "equity barrier option", "EquityBarrierOption", terms.underlying_name, terms.currency,
-        terms.notional, terms.option_type, terms.strike, terms.expiry_date, terms.exercise_type,
-        terms.long_short);
-    require_one_of("equity barrier option", "a barrier type from ORE's closed set",
-                   terms.lower_barrier_type, barrier_types);
+    auto row = equity_builders::barrier_common("equity barrier option",
+                                               "EquityBarrierOption",
+                                               terms.underlying_name,
+                                               terms.currency,
+                                               terms.notional,
+                                               terms.option_type,
+                                               terms.strike,
+                                               terms.expiry_date,
+                                               terms.exercise_type,
+                                               terms.long_short);
+    require_one_of("equity barrier option",
+                   "a barrier type from ORE's closed set",
+                   terms.lower_barrier_type,
+                   barrier_types);
     require_not_negative("equity barrier option", "a non-negative barrier", terms.lower_barrier);
     row.lower_barrier = terms.lower_barrier;
     row.lower_barrier_type = terms.lower_barrier_type;
@@ -613,14 +638,22 @@ construct_equity_barrier_option(const equity_barrier_option_terms& terms) {
 [[nodiscard]] inline equity_barrier_option_instrument
 construct_equity_european_barrier_option(const equity_barrier_option_terms& terms) {
     using namespace equity_terms;
-    auto row = equity_builders::barrier_common(
-        "equity European barrier option", "EquityEuropeanBarrierOption", terms.underlying_name,
-        terms.currency, terms.notional, terms.option_type, terms.strike, terms.expiry_date,
-        terms.exercise_type, terms.long_short);
-    require_one_of("equity European barrier option", "a barrier type from ORE's closed set",
-                   terms.lower_barrier_type, barrier_types);
-    require_not_negative("equity European barrier option", "a non-negative barrier",
-                         terms.lower_barrier);
+    auto row = equity_builders::barrier_common("equity European barrier option",
+                                               "EquityEuropeanBarrierOption",
+                                               terms.underlying_name,
+                                               terms.currency,
+                                               terms.notional,
+                                               terms.option_type,
+                                               terms.strike,
+                                               terms.expiry_date,
+                                               terms.exercise_type,
+                                               terms.long_short);
+    require_one_of("equity European barrier option",
+                   "a barrier type from ORE's closed set",
+                   terms.lower_barrier_type,
+                   barrier_types);
+    require_not_negative(
+        "equity European barrier option", "a non-negative barrier", terms.lower_barrier);
     row.lower_barrier = terms.lower_barrier;
     row.lower_barrier_type = terms.lower_barrier_type;
     row.rebate = terms.rebate;
@@ -630,18 +663,28 @@ construct_equity_european_barrier_option(const equity_barrier_option_terms& term
 [[nodiscard]] inline equity_barrier_option_instrument
 construct_equity_double_barrier_option(const equity_double_barrier_option_terms& terms) {
     using namespace equity_terms;
-    auto row = equity_builders::barrier_common(
-        "equity double barrier option", "EquityDoubleBarrierOption", terms.underlying_name,
-        terms.currency, terms.notional, terms.option_type, terms.strike, terms.expiry_date,
-        terms.exercise_type, terms.long_short);
-    require_one_of("equity double barrier option", "a barrier type from ORE's closed set",
-                   terms.lower_barrier_type, barrier_types);
-    require_one_of("equity double barrier option", "a barrier type from ORE's closed set",
-                   terms.upper_barrier_type, barrier_types);
-    require_not_negative("equity double barrier option", "a non-negative barrier",
-                         terms.lower_barrier);
-    require_not_negative("equity double barrier option", "a non-negative barrier",
-                         terms.upper_barrier);
+    auto row = equity_builders::barrier_common("equity double barrier option",
+                                               "EquityDoubleBarrierOption",
+                                               terms.underlying_name,
+                                               terms.currency,
+                                               terms.notional,
+                                               terms.option_type,
+                                               terms.strike,
+                                               terms.expiry_date,
+                                               terms.exercise_type,
+                                               terms.long_short);
+    require_one_of("equity double barrier option",
+                   "a barrier type from ORE's closed set",
+                   terms.lower_barrier_type,
+                   barrier_types);
+    require_one_of("equity double barrier option",
+                   "a barrier type from ORE's closed set",
+                   terms.upper_barrier_type,
+                   barrier_types);
+    require_not_negative(
+        "equity double barrier option", "a non-negative barrier", terms.lower_barrier);
+    require_not_negative(
+        "equity double barrier option", "a non-negative barrier", terms.upper_barrier);
     if (!(terms.upper_barrier > terms.lower_barrier))
         refuse("equity double barrier option", "an upper barrier above its lower one");
     row.lower_barrier = terms.lower_barrier;
@@ -658,12 +701,12 @@ construct_equity_digital_option(const equity_digital_option_terms& terms) {
     require_text("equity digital option", "an underlying name", terms.underlying_name);
     require_text("equity digital option", "a currency", terms.currency);
     require_money("equity digital option", "a positive notional", terms.notional);
-    require_one_of("equity digital option", "a Call or Put option type", terms.option_type,
-                   option_types);
+    require_one_of(
+        "equity digital option", "a Call or Put option type", terms.option_type, option_types);
     require_not_negative("equity digital option", "a non-negative strike", terms.strike);
     require_date("equity digital option", "an expiry date", terms.expiry_date);
-    require_one_of("equity digital option", "a Long or Short direction", terms.long_short,
-                   direction_types);
+    require_one_of(
+        "equity digital option", "a Long or Short direction", terms.long_short, direction_types);
 
     equity_digital_option_instrument row;
     row.identity.trade_type_code = "EquityDigitalOption";
@@ -684,12 +727,14 @@ construct_equity_touch_option(const equity_touch_option_terms& terms) {
     require_text("equity touch option", "an underlying name", terms.underlying_name);
     require_text("equity touch option", "a currency", terms.currency);
     require_money("equity touch option", "a positive notional", terms.notional);
-    require_one_of("equity touch option", "a barrier type from ORE's closed set",
-                   terms.barrier_type, barrier_types);
+    require_one_of("equity touch option",
+                   "a barrier type from ORE's closed set",
+                   terms.barrier_type,
+                   barrier_types);
     require_not_negative("equity touch option", "a non-negative barrier", terms.barrier_level);
     require_date("equity touch option", "an expiry date", terms.expiry_date);
-    require_one_of("equity touch option", "a Long or Short direction", terms.long_short,
-                   direction_types);
+    require_one_of(
+        "equity touch option", "a Long or Short direction", terms.long_short, direction_types);
 
     equity_digital_option_instrument row;
     row.identity.trade_type_code = "EquityTouchOption";
@@ -711,8 +756,8 @@ construct_equity_forward(const equity_forward_terms& terms) {
     require_text("equity forward", "a currency", terms.currency);
     require_positive_quantity("equity forward", terms.quantity);
     require_date("equity forward", "an expiry date", terms.expiry_date);
-    require_one_of("equity forward", "a Long or Short direction", terms.long_short,
-                   direction_types);
+    require_one_of(
+        "equity forward", "a Long or Short direction", terms.long_short, direction_types);
     require_one_of_or_absent("equity forward",
                              "a Cash or Physical settlement type where it states one",
                              terms.settlement_type,
@@ -732,19 +777,22 @@ construct_equity_forward(const equity_forward_terms& terms) {
 
 namespace equity_builders {
 
-inline equity_swap_instrument
-swap_common(std::string_view product, const std::string& trade_type_code,
-            const std::string& currency, const decimal& notional, const std::string& return_type,
-            std::chrono::year_month_day start_date, std::chrono::year_month_day maturity_date,
-            const std::string& long_short, const std::string& payment_frequency_code) {
+inline equity_swap_instrument swap_common(std::string_view product,
+                                          const std::string& trade_type_code,
+                                          const std::string& currency,
+                                          const decimal& notional,
+                                          const std::string& return_type,
+                                          std::chrono::year_month_day start_date,
+                                          std::chrono::year_month_day maturity_date,
+                                          const std::string& long_short,
+                                          const std::string& payment_frequency_code) {
     using namespace equity_terms;
     require_text(product, "a currency", currency);
     require_money(product, "a positive notional", notional);
     require_one_of(product, "a Total or Price return", return_type, return_types);
     require_date(product, "a start date", start_date);
     require_date(product, "a maturity date", maturity_date);
-    require_one_of(product, "a Long or Short direction", long_short,
-                   direction_types);
+    require_one_of(product, "a Long or Short direction", long_short, direction_types);
     require_text(product, "a payment frequency", payment_frequency_code);
 
     equity_swap_instrument row;
@@ -813,7 +861,8 @@ period_rows(std::string_view product, const std::vector<equity_swap_period_terms
  * @brief Numbers the range bounds and states the product's start date on each.
  */
 inline std::vector<range_bound>
-range_bound_rows(std::string_view product, std::chrono::year_month_day start_date,
+range_bound_rows(std::string_view product,
+                 std::chrono::year_month_day start_date,
                  const std::vector<equity_range_bound_terms>& bounds) {
     using namespace equity_terms;
     std::vector<range_bound> rows;
@@ -841,9 +890,14 @@ range_bound_rows(std::string_view product, std::chrono::year_month_day start_dat
     using namespace equity_terms;
     require_text("equity swap", "an underlying name", terms.underlying_name);
     equity_swap_product product;
-    product.row = equity_builders::swap_common("equity swap", "EquitySwap", terms.currency,
-                                               terms.notional, terms.return_type, terms.start_date,
-                                               terms.maturity_date, terms.long_short,
+    product.row = equity_builders::swap_common("equity swap",
+                                               "EquitySwap",
+                                               terms.currency,
+                                               terms.notional,
+                                               terms.return_type,
+                                               terms.start_date,
+                                               terms.maturity_date,
+                                               terms.long_short,
                                                terms.payment_frequency_code);
     product.row.underlying_name = terms.underlying_name;
     product.constituents = equity_builders::basket_rows("equity swap", terms.basket);
@@ -857,11 +911,17 @@ construct_equity_worst_of_basket_swap(const equity_basket_swap_terms& terms) {
     if (terms.basket.empty())
         refuse("equity worst-of basket swap", "a basket, because that is what it is worst of");
     equity_swap_product product;
-    product.row = equity_builders::swap_common(
-        "equity worst-of basket swap", "EquityWorstOfBasketSwap", terms.currency, terms.notional,
-        terms.return_type, terms.start_date, terms.maturity_date, terms.long_short,
-        terms.payment_frequency_code);
-    product.constituents = equity_builders::basket_rows("equity worst-of basket swap", terms.basket);
+    product.row = equity_builders::swap_common("equity worst-of basket swap",
+                                               "EquityWorstOfBasketSwap",
+                                               terms.currency,
+                                               terms.notional,
+                                               terms.return_type,
+                                               terms.start_date,
+                                               terms.maturity_date,
+                                               terms.long_short,
+                                               terms.payment_frequency_code);
+    product.constituents =
+        equity_builders::basket_rows("equity worst-of basket swap", terms.basket);
     product.periods = equity_builders::period_rows("equity worst-of basket swap", terms.periods);
     return product;
 }
@@ -875,8 +935,8 @@ construct_equity_variance_swap(const equity_variance_swap_terms& terms) {
     require_moment("equity variance swap", terms.variance_strike);
     require_date("equity variance swap", "a start date", terms.start_date);
     require_date("equity variance swap", "a maturity date", terms.maturity_date);
-    require_one_of("equity variance swap", "a Long or Short direction", terms.long_short,
-                   direction_types);
+    require_one_of(
+        "equity variance swap", "a Long or Short direction", terms.long_short, direction_types);
 
     equity_variance_swap_instrument row;
     row.identity.trade_type_code = "EquityVarianceSwap";
@@ -893,12 +953,17 @@ construct_equity_variance_swap(const equity_variance_swap_terms& terms) {
 namespace equity_builders {
 
 inline equity_accumulator_instrument
-accumulator_common(std::string_view product, const std::string& trade_type_code,
-                   const std::string& underlying_name, const std::string& currency,
-                   const decimal& strike, const decimal& fixing_amount,
+accumulator_common(std::string_view product,
+                   const std::string& trade_type_code,
+                   const std::string& underlying_name,
+                   const std::string& currency,
+                   const decimal& strike,
+                   const decimal& fixing_amount,
                    std::chrono::year_month_day start_date,
-                   std::chrono::year_month_day expiry_date, const std::string& fixing_frequency,
-                   const std::string& long_short, const std::optional<decimal>& knock_out_level,
+                   std::chrono::year_month_day expiry_date,
+                   const std::string& fixing_frequency,
+                   const std::string& long_short,
+                   const std::optional<decimal>& knock_out_level,
                    const std::string& payoff_type) {
     using namespace equity_terms;
     require_text(product, "an underlying name", underlying_name);
@@ -908,8 +973,7 @@ accumulator_common(std::string_view product, const std::string& trade_type_code,
     require_date(product, "a start date", start_date);
     require_date(product, "an expiry date", expiry_date);
     require_text(product, "a fixing frequency", fixing_frequency);
-    require_one_of(product, "a Long or Short direction", long_short,
-                   direction_types);
+    require_one_of(product, "a Long or Short direction", long_short, direction_types);
     require_one_of(product, "a payoff the accumulator table holds", payoff_type, payoff_types);
 
     equity_accumulator_instrument row;
@@ -932,27 +996,45 @@ accumulator_common(std::string_view product, const std::string& trade_type_code,
 [[nodiscard]] inline equity_accumulator_product
 construct_equity_accumulator(const equity_accumulator_terms& terms) {
     equity_accumulator_product product;
-    product.row = equity_builders::accumulator_common(
-        "equity accumulator", "EquityAccumulator", terms.underlying_name, terms.currency,
-        terms.strike, terms.fixing_amount, terms.start_date, terms.expiry_date,
-        terms.fixing_frequency, terms.long_short, terms.knock_out_level, terms.payoff_type);
-    product.range_bounds = equity_builders::range_bound_rows("equity accumulator", terms.start_date,
-                                                             terms.range_bounds);
+    product.row = equity_builders::accumulator_common("equity accumulator",
+                                                      "EquityAccumulator",
+                                                      terms.underlying_name,
+                                                      terms.currency,
+                                                      terms.strike,
+                                                      terms.fixing_amount,
+                                                      terms.start_date,
+                                                      terms.expiry_date,
+                                                      terms.fixing_frequency,
+                                                      terms.long_short,
+                                                      terms.knock_out_level,
+                                                      terms.payoff_type);
+    product.range_bounds = equity_builders::range_bound_rows(
+        "equity accumulator", terms.start_date, terms.range_bounds);
     return product;
 }
 
 [[nodiscard]] inline equity_accumulator_product
 construct_equity_target_redemption_forward(const equity_tarf_terms& terms) {
     using namespace equity_terms;
-    require_money("equity target redemption forward", "a positive target amount",
-                  terms.target_amount);
-    require_one_of("equity target redemption forward", "a target type the table holds",
-                   terms.target_type, target_types);
+    require_money(
+        "equity target redemption forward", "a positive target amount", terms.target_amount);
+    require_one_of("equity target redemption forward",
+                   "a target type the table holds",
+                   terms.target_type,
+                   target_types);
     equity_accumulator_product product;
-    product.row = equity_builders::accumulator_common(
-        "equity target redemption forward", "EquityTaRF", terms.underlying_name, terms.currency,
-        terms.strike, terms.fixing_amount, terms.start_date, terms.expiry_date,
-        terms.fixing_frequency, terms.long_short, terms.knock_out_level, terms.payoff_type);
+    product.row = equity_builders::accumulator_common("equity target redemption forward",
+                                                      "EquityTaRF",
+                                                      terms.underlying_name,
+                                                      terms.currency,
+                                                      terms.strike,
+                                                      terms.fixing_amount,
+                                                      terms.start_date,
+                                                      terms.expiry_date,
+                                                      terms.fixing_frequency,
+                                                      terms.long_short,
+                                                      terms.knock_out_level,
+                                                      terms.payoff_type);
     product.row.target_amount = terms.target_amount;
     product.row.target_type = terms.target_type;
     product.range_bounds = equity_builders::range_bound_rows(
@@ -965,7 +1047,8 @@ namespace equity_builders {
 inline equity_position_instrument position_common(std::string_view product,
                                                   const std::string& trade_type_code,
                                                   const std::string& underlying_name,
-                                                  const std::string& currency, double quantity,
+                                                  const std::string& currency,
+                                                  double quantity,
                                                   const std::optional<decimal>& price) {
     using namespace equity_terms;
     require_text(product, "an underlying name", underlying_name);
@@ -985,16 +1068,22 @@ inline equity_position_instrument position_common(std::string_view product,
 
 [[nodiscard]] inline equity_position_instrument
 construct_equity_position(const equity_position_terms& terms) {
-    return equity_builders::position_common("equity position", "EquityPosition",
-                                            terms.underlying_name, terms.currency, terms.quantity,
+    return equity_builders::position_common("equity position",
+                                            "EquityPosition",
+                                            terms.underlying_name,
+                                            terms.currency,
+                                            terms.quantity,
                                             terms.price);
 }
 
 [[nodiscard]] inline equity_position_instrument
 construct_equity_option_position(const equity_position_terms& terms) {
-    return equity_builders::position_common("equity option position", "EquityOptionPosition",
-                                            terms.underlying_name, terms.currency,
-                                            terms.quantity, terms.price);
+    return equity_builders::position_common("equity option position",
+                                            "EquityOptionPosition",
+                                            terms.underlying_name,
+                                            terms.currency,
+                                            terms.quantity,
+                                            terms.price);
 }
 
 }

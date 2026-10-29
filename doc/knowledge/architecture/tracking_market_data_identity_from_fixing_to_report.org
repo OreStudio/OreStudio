@@ -1,0 +1,288 @@
+:PROPERTIES:
+:ID: FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC
+:END:
+#+title: Tracking market data identity from fixing to report
+#+description: The target state: identities that distinguish observed, generated, derived and published data, lineage that connects them, and reports that reference published curves.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:path:oresmd:publish:report:structure_note:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+* Summary
+
+This document describes the target state of market data provenance in ORE
+Studio. Every number a consumer reads will answer three questions: what it is,
+where it came from, and which act made it authoritative. It will answer them
+because the identification system gives each kind of market data its own
+identity, so an observed fixing, a synthetic observation, a bootstrapped curve
+point and a published set are never confusable, and because the lineage records
+connect those identities through the lifecycle. At the end of the lifecycle a
+report references the published curve: the report's market binding names the
+publish record, the ORE XML is produced from that set at the boundary, and only a
+set in the published state is consumable. The chain is then trackable end to end,
+from a report's number back to the public fixing that started it.
+
+* The question
+
+A person reading a curve asks three questions of every number. What is it: a
+quote observed in the market, a value a generator produced, a discount factor a
+bootstrap derived, or a set a person published? Where did it come from: which
+quote, which generator, which curve configuration, which people? Which act made
+it authoritative: the decision, the publish, or nothing at all?
+
+The target state answers all three for every consumer. Two conditions make that
+possible. The identity must distinguish the kinds of data, because a discount
+factor and the swap rate it was bootstrapped from are not the same datum and must
+not answer to the same name. The lineage must connect them, because the point
+must name the quote it came from and the act that published the set. Identity
+without lineage gives distinct names with no history; lineage without identity
+gives records that cannot be compared.
+
+* Why identity must distinguish
+
+The market does not supply term structures ready for valuation. A quote is
+observed; a curve is constructed from quotes by a bootstrap, and the construction
+is a decision about method, conventions and pillars. The target state therefore
+gives the observed quote and the bootstrapped curve point different identities. If
+they were the same, nothing in the system could say whether a number was observed
+or constructed, and the whole question of provenance would dissolve into a naming
+convention.
+
+The distinction is visible in the identity itself. An observed OIS quote is a
+series of the form =oresmd://ir/USD?...instrument=ir_swap&quote=rate...=; a point
+of a bootstrapped discount curve is a series such as
+=oresmd://ir/USD?...instrument=discount&quote=rate&curve_id=...=, and its datum
+carries the term. The instrument, the quote and the curve identity separate the
+two; the provider, the party and the series separate one curve from another. The
+identity of the input is not a weaker version of the identity of the output; it is
+a different identity for a different kind of thing.
+
+* The identification system
+
+The identification system is the oresmd URI. A series is an item in a provider's
+catalogue for a party, and a datum is a series with a coordinate. The definition
+is stated in [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]] and
+[[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]]. Three properties make
+it fit every use case.
+
+First, the identity is independent of the vendor's spelling. A series a synthetic
+feed publishes and a series a bootstrap reads are the same series when their
+oresmd URIs agree, whatever the vendor would call them.
+
+Second, the identity is fine enough to tell kinds apart, as the previous section
+shows, and coarse enough to compare them: the same series read at two as-ofs is
+one series with two datums, so a time series is a series and its coordinates, not
+a new series per day.
+
+Third, the runtime uses oresmd and nothing else. An ORE key is a boundary format:
+it names a datum in the corpus' terms and converts to an oresmd datum where ORE
+XML is read or written. In the target state no reader, feed or classifier in the
+runtime spells a datum the ORE way. The conversion is stated in
+[[id:D1A25B9E-B1A0-4E7C-AB5C-1C7C3EF07F90][ORE import and export]].
+
+* The lifecycle and what tracks it
+
+The lifecycle has six steps. At each, the data has an identity, and a record
+connects it to what came before.
+
+** Observation
+
+A public source publishes a fixing: the ECB euro reference rates, the Federal
+Reserve H.10 through FRED, the US Treasury par yield curve, the New York Fed SOFR
+and the Bank of England SONIA, reached for FX through the Frankfurter API. The
+official adapter publishes it as a durable fixing per provider, with the
+provider's key kept so the credit and the terms apply. The identity is the
+fixing's series and datum; a provider without a terms page is not loaded.
+
+Tracks it: the provider catalogue and the source, the series and the observation,
+and the provider key on the value.
+See [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]] and
+[[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]].
+
+** Generation
+
+A generation config names the fixing items it may start from, with a rank, a
+policy and a window. The initial value is the latest fixing on or before the
+market clock's date, and the volatility is the spread of the log returns over the
+window. The generator reads the published fixing and publishes a synthetic series
+of ticks. The identity of a synthetic observation is its own series, separate
+from the fixing it was calibrated from; the config's fixing items are the lineage
+that connects the two.
+
+Tracks it: the generation config's fixing items, the synthetic series and its
+observations, and the config version.
+See [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]],
+[[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]] and
+[[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]].
+
+** Delivery
+
+A party takes a provider's feeds through a subscription that carries its display,
+non-display and derived rights. A route names the source the party uses for that
+provider. The demand is computed from the subscriptions, and the adapters follow
+it. Delivery does not change the identity: the series the party reads is the
+series the catalogues named, and the rights decide whether the party may read it,
+not what it is called.
+
+Tracks it: the subscription, its rights, the route and the computed demand.
+See [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]],
+[[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]],
+[[id:083D4B54-549B-4D56-AE89-430A8A4277FF][Demand drives what an adapter publishes]] and
+[[id:7D1DE23F-AA14-44AB-81D5-9961EF02533C][Market data ticks because ownership, demand and a smoke check agree]].
+
+** Derivation
+
+A blueprint names a party, a currency, an index tenor, a role, the conventions and
+the output series it owns. Its pillars name the market series each quote comes
+from. The compute reads those series' observations at the as-of, resolves the
+tenor dates, and runs the bootstrap; a projection also reads its funding curve's
+discount factors. The result is written as observations of the output series,
+with lineage naming the source series and the configuration version.
+
+This is the step where identity must distinguish. The curve points are not the
+quotes: they are a discount series with a curve identity and a term coordinate.
+The lineage is what connects them: the output series' observations carry the
+input series and the version that produced them, so a curve point can be traced
+to the quotes without pretending to be one.
+
+Tracks it: the blueprint and its pillars, the output series and its observations,
+and the lineage record with the source series and the config version. The pillar
+names its series, as [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]]
+decides. The records are [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][IR Curve Bootstrap Config]] and
+[[id:5DC8A225-A2FD-4ECC-8284-C1D333F0EB3A][IR Curve Bootstrap Pillar]]; the journeys are
+[[id:FBD32402-C71F-4730-A3D2-70BA1D5F3868][Maintain the curve blueprints]],
+[[id:62728AF9-01AD-4FBF-B022-83DCD64204A9][Check that a curve blueprint builds]] and
+[[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]]; the architecture is
+[[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]], and the
+provenance is [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]].
+
+[[file:tracking_market_data_identity_from_fixing_to_report.png]]
+
+#+caption: Figure 1. The lifecycle and the identity carried at each step, ending with a report that references the published curve.
+
+** Publication
+
+The maker raises a publish naming the blueprint and the as-of; the subject is a
+publish record. A second person decides under the kind's maker and checker
+permissions and the record's four-eyes rule. Publishing applies the approved
+request once, stamps the publisher and the instant, ends the set it replaces, and
+sends the notice. The set then reads as published, superseded or withdrawn.
+
+Publication is an act, and the identification records it without confusing the
+data with the act: the publish record names the configuration, the party, the
+as-of, the request and the publisher; the points remain observations of the output
+series. The set's state is a function of the record's facts, so a published set,
+a candidate and a withdrawn set are distinguished by what happened to them, not by
+a different series identity.
+
+Tracks it: the approval request, the publish record, the published set and its
+state, and the notice. See
+[[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]],
+[[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]],
+[[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] and
+[[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]].
+
+** Consumption
+
+A report has a definition, a schedule and a run, and the run needs market data. In
+the target state the report references the published curve. Its market binding
+names the published set: the output series, the as-of and the publish record that
+made it authoritative. The reader accepts only a set in the published state; a
+candidate is not consumable, and a superseded or withdrawn set is consumable only
+when the report explicitly names a historical as-of, which is what makes a rerun
+reproducible.
+
+The ORE export turns that set into the ORE XML the compute reads, and the ORE key
+appears at the boundary as the boundary format it is. The report's curve is
+therefore the published curve, not a separate document: the number in the report
+and the set on the published screen share the same output series, as-of and
+publish record. The provenance chain then runs unbroken from the report to the
+publication, the derivation, the delivery, the generation and the fixing.
+
+* What the target makes answerable
+
+The records support the provenance queries the lifecycle implies, end to end. From
+a number in a report, the report's market binding names the publish record and the
+as-of; the publish record names the request, the decider and the publisher; the
+output series and its observations name the points; the lineage names the source
+series and the configuration version; the source series names the quote; and the
+quote names the provider and the fixing it was calibrated from.
+
+From the input side the same records answer the reverse question. An observed
+fixing names its provider and its terms; a synthetic tick names the configuration
+whose fixing items calibrated it; a published set names its act and its state. The
+same series read at two dates is one series with two datums, so a history is a
+series and its coordinates rather than a set of unrelated records.
+
+* The changes that reach the target
+
+Three changes remain to be built, and each is a change to a named part of the
+system rather than an open design question.
+
+The first is the report's market binding. A report will name the published set,
+and the published read will refuse a set that is not in the published state. The
+binding carries the output series, the as-of and the publish record, and the ORE
+export builds the XML from those. This closes the chain described above.
+
+The second is the runtime's ORE spelling. No reader, feed or classifier in the
+runtime will compose an ORE key. The pillar names its series, as
+[[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]] decides; the
+series classifier keys its rules on the oresmd identity; and the oresmd codec
+accepts every valid datum rather than only those with an ORE spelling. The work is
+recorded as [[id:EAD9F02F-3B4B-495E-B37D-71BF766F7970][Name a curve pillar's market series]].
+
+The third is the creation of the output series. A blueprint's output series will
+be created as part of the blueprint's lifecycle, so the series exists by the time
+a person needs to choose it, and the Add dialog is not the first place the person
+learns that it must already exist.
+
+* Conclusion
+
+In the target state, the provenance of market data is trackable end to end. The
+identification system distinguishes the kinds of data, so an observed quote, a
+synthetic observation, a derived curve point and a published set each have their
+own identity; the lineage and the publish records connect them, so each number
+can be traced to its sources and to the act that made it authoritative; and the
+report references the published curve, so the chain from a report to a fixing is
+unbroken. The three changes that reach that state are the report's market
+binding, the removal of the ORE spelling from the runtime, and the creation of the
+output series within the blueprint lifecycle.
+
+* References
+
+- [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]]
+- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]]
+- [[id:D1A25B9E-B1A0-4E7C-AB5C-1C7C3EF07F90][ORE import and export]]
+- [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]]
+- [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]]
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]
+- [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]]
+- [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]]
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]]
+- [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]]
+- [[id:083D4B54-549B-4D56-AE89-430A8A4277FF][Demand drives what an adapter publishes]]
+- [[id:7D1DE23F-AA14-44AB-81D5-9961EF02533C][Market data ticks because ownership, demand and a smoke check agree]]
+- [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]]
+- [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][IR Curve Bootstrap Config]]
+- [[id:5DC8A225-A2FD-4ECC-8284-C1D333F0EB3A][IR Curve Bootstrap Pillar]]
+- [[id:EAD9F02F-3B4B-495E-B37D-71BF766F7970][Name a curve pillar's market series]]
+- [[id:FBD32402-C71F-4730-A3D2-70BA1D5F3868][Maintain the curve blueprints]]
+- [[id:62728AF9-01AD-4FBF-B022-83DCD64204A9][Check that a curve blueprint builds]]
+- [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]]
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
+- [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]]
+- [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]]
+- [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]]
+- [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]]
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]
+- [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]]
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]]
+
+* Patterns used
+
+- [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] -- each step is a call that waits for its answer: the screen reads, the compute, the publish, the report run.
+- [[id:5C52B5EA-C13B-4149-BC18-DCB2D9AE998B][Competing Consumers]] -- the adapter and every service handler take their messages through a queue group, so one instance of the service handles each.
+- [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] -- the publish gate applies one request once, and the ingest tolerates a repeated tick, so a retry or a replay cannot move a set twice.
+- [[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per Service]] -- the path crosses the market data, refdata, inbox and reporting stores, and each component owns its own.

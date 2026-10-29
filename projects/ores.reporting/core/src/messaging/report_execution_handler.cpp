@@ -597,9 +597,8 @@ void report_execution_handler::record_run_logs(const std::string& tenant_id,
     std::vector<service::engine_log_row> rows;
     for (const auto& result_id : result_ids) {
         auto read = read_run_log_rows(tenant_id, report_instance_id, result_id);
-        rows.insert(rows.end(),
-                    std::make_move_iterator(read.begin()),
-                    std::make_move_iterator(read.end()));
+        rows.insert(
+            rows.end(), std::make_move_iterator(read.begin()), std::make_move_iterator(read.end()));
     }
     if (rows.empty())
         return;

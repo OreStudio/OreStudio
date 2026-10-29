@@ -54,10 +54,10 @@
 #include <format>
 #include <limits>
 #include <optional>
-#include <utility>
 #include <rfl/json.hpp>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace ores::reporting::messaging {

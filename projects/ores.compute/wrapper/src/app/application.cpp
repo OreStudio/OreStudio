@@ -26,8 +26,8 @@
 #include "ores.compute.wrapper/app/log_publisher.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.ore.core/log/engine_run_verdict.hpp"
 #include "ores.ore.core/log/engine_log.hpp"
+#include "ores.ore.core/log/engine_run_verdict.hpp"
 #include "ores.ore.core/results/canonical_rows.hpp"
 #include "ores.platform/net/network_info.hpp"
 #include "ores.platform/system/system_info.hpp"
@@ -488,8 +488,7 @@ void upload_canonical_log(auto& lg,
     if (!fs::is_regular_file(text_log))
         return;
 
-    const auto events =
-        ores::ore::log::parse_engine_log_text(read_file_text(text_log), "log.txt");
+    const auto events = ores::ore::log::parse_engine_log_text(read_file_text(text_log), "log.txt");
     if (events.empty())
         return;
 
@@ -502,8 +501,8 @@ void upload_canonical_log(auto& lg,
         std::ofstream out(log_file, std::ios::binary);
         out.write(compressed.data(), static_cast<std::streamsize>(compressed.size()));
     }
-    BOOST_LOG_SEV(lg, info) << "Uploading " << events.size() << " log rows for "
-                            << evt.result_id << " (" << compressed.size() << " bytes)";
+    BOOST_LOG_SEV(lg, info) << "Uploading " << events.size() << " log rows for " << evt.result_id
+                            << " (" << compressed.size() << " bytes)";
     ores::storage::net::http_client::put(
         make_url(cfg.http_base_url, evt.logs_uri), log_file, evt.storage_token);
 }

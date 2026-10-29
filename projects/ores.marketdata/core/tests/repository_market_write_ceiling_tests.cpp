@@ -296,7 +296,8 @@ TEST_CASE("write_ceiling_of_the_repository_insert", repository_tags) {
 }
 
 TEST_CASE("write_ceiling_of_copy_through_libpq", copy_tags) {
-    const bool keep = ores::platform::environment::environment::get_value("WRITE_CEILING_KEEP").has_value();
+    const bool keep =
+        ores::platform::environment::environment::get_value("WRITE_CEILING_KEEP").has_value();
     auto conn = connect_as("ORES_TEST_DB_DDL_USER", "ORES_TEST_DB_DDL_PASSWORD");
     scratch_schema_guard guard(conn.get(), keep);
 

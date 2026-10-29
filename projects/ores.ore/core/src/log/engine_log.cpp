@@ -445,9 +445,8 @@ std::string canonical_log_csv(const std::vector<engine_log_event>& events) {
     for (const auto& event : events) {
         out << event.ordinal << ',' << quoted(event.severity) << ',' << quoted(event.scope) << ','
             << quoted(event.message) << ',' << quoted(event.subject) << ','
-            << quoted(event.subject_id) << ',' << quoted(event.cause) << ','
-            << quoted(event.detail) << ',' << quoted(event.event_time) << ','
-            << quoted(event.source) << '\n';
+            << quoted(event.subject_id) << ',' << quoted(event.cause) << ',' << quoted(event.detail)
+            << ',' << quoted(event.event_time) << ',' << quoted(event.source) << '\n';
     }
     return out.str();
 }

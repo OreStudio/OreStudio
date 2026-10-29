@@ -38,8 +38,8 @@ using ores::reporting::service::engine_settings_proposal_service;
 using ores::utility::domain::outcome;
 
 /** One proposed value for a setting, as the screen sends it. */
-ores::reporting::messaging::engine_settings_value
-value(const std::string& code, const std::string& text) {
+ores::reporting::messaging::engine_settings_value value(const std::string& code,
+                                                        const std::string& text) {
     return {.setting_code = code, .text_value = text};
 }
 
@@ -97,9 +97,8 @@ TEST_CASE("a_proposal_holds_its_values_and_the_version_in_force_does_not_move",
     CHECK(lines.front().group_code == "fixings");
     CHECK(lines.front().base_version == 0);
     CHECK_FALSE(lines.front().applied);
-    const auto changed = std::ranges::find_if(lines.front().fields, [](const auto& f) {
-        return f.changed;
-    });
+    const auto changed =
+        std::ranges::find_if(lines.front().fields, [](const auto& f) { return f.changed; });
     REQUIRE(changed != lines.front().fields.end());
     CHECK(changed->column_name == "imply_todays_fixings");
     CHECK(changed->after == "true");
@@ -150,7 +149,8 @@ TEST_CASE("the_kind_names_one_part_for_each_number_changing_group",
     CHECK(named == std::vector<std::string>{"fixings", "building"});
 }
 
-TEST_CASE("the_proposer_cannot_sign_off_their_own_proposal", "[engine_settings_proposal][database]") {
+TEST_CASE("the_proposer_cannot_sign_off_their_own_proposal",
+          "[engine_settings_proposal][database]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     engine_settings_proposal_service svc(w.ctx);

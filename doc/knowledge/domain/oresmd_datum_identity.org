@@ -69,6 +69,10 @@ URIs compare as text.
 * See also
 
 
+
+
+- [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][One identity from fixing to report: provenance and publication of market data]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]], the URI grammar this note assumes.
 - [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]], the requirement side identifier, which is a different thing from the stored datum.

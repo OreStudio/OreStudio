@@ -387,8 +387,7 @@ private:
      * started. The deadline reads it to tell a command whose handler is absent
      * from one whose handler is simply busy with earlier work.
      */
-    std::optional<std::chrono::system_clock::time_point>
-    last_seen_of(const std::string& subject);
+    std::optional<std::chrono::system_clock::time_point> last_seen_of(const std::string& subject);
 
     /**
      * @brief Publishes a step command to the domain service.

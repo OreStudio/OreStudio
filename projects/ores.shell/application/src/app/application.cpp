@@ -111,9 +111,7 @@ bool auto_login(ores::nats::service::nats_client& session,
          * while a long command is still waiting for its answer.
          */
         session.set_session_renewer(
-            [&session,
-             username = login_config.username,
-             password = login_config.password] {
+            [&session, username = login_config.username, password = login_config.password] {
                 return commands::sign_in_again(session, username, password);
             });
         out << "✓ Logged in as: " << result->username << std::endl;

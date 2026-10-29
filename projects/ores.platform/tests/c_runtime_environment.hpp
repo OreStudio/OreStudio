@@ -40,8 +40,7 @@
 namespace ores::platform::tests {
 
 /** The value the C runtime holds for @p name, when it holds one. */
-inline std::optional<std::string>
-c_runtime_environment_variable(const std::string& name) {
+inline std::optional<std::string> c_runtime_environment_variable(const std::string& name) {
 #ifdef _WIN32
     char* value = nullptr;
     std::size_t size = 0;
@@ -62,8 +61,7 @@ c_runtime_environment_variable(const std::string& name) {
 }
 
 /** Sets @p name in the C runtime's own environment block. */
-inline void c_runtime_set_environment_variable(const std::string& name,
-                                               const std::string& value) {
+inline void c_runtime_set_environment_variable(const std::string& name, const std::string& value) {
 #ifdef _WIN32
     _putenv_s(name.c_str(), value.c_str());
 #else

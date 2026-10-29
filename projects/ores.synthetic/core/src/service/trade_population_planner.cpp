@@ -186,8 +186,8 @@ void validate_scope(const domain::trade_generation_scope& scope) {
 }
 
 std::vector<std::string_view> planned_asset_classes() {
-    static const std::vector<std::string_view> codes{"bond", "commodity", "equity", "fx",
-                                                          "interest_rates"};
+    static const std::vector<std::string_view> codes{
+        "bond", "commodity", "equity", "fx", "interest_rates"};
     return codes;
 }
 
@@ -198,10 +198,10 @@ const trade_planner& planner_for(const std::string& asset_class_code) {
     static const fx_trade_planner fx;
     static const equity_trade_planner equity;
     static const std::map<std::string, const trade_planner*> planners{{"bond", &bond},
-                                                                     {"commodity", &commodity},
-                                                                     {"equity", &equity},
-                                                                     {"fx", &fx},
-                                                                     {"interest_rates", &rates}};
+                                                                      {"commodity", &commodity},
+                                                                      {"equity", &equity},
+                                                                      {"fx", &fx},
+                                                                      {"interest_rates", &rates}};
 
     const auto entry = planners.find(asset_class_code);
     if (entry == planners.end()) {
@@ -310,6 +310,7 @@ namespace {
 enum class commodity_shape {
     forward,
     option,
+    asian_option,
     average_price_option,
     option_strip,
     barrier_option,
@@ -333,7 +334,7 @@ constexpr commodity_type commodity_types[] = {
     {"CommodityForwardVolatilityAgreement", commodity_shape::forward},
     {"CommodityOption", commodity_shape::option},
     {"CommodityDigitalOption", commodity_shape::option},
-    {"CommodityAsianOption", commodity_shape::option},
+    {"CommodityAsianOption", commodity_shape::asian_option},
     {"CommodityStrikeResettableOption", commodity_shape::option},
     {"CommodityPosition", commodity_shape::forward},
     {"CommodityAveragePriceOption", commodity_shape::average_price_option},
@@ -425,6 +426,27 @@ commodity_trade_planner::plan(const domain::trade_generation_scope& scope) const
                 terms.option_type = (draw(name, 6) < 0.5) ? "Call" : "Put";
                 terms.strike_price = strike;
                 terms.exercise_type = "European";
+                /*
+                 * A basket product names its members; the family has a
+                 * constituent table for them. Three over the catalogue, the
+                 * way the equity basket draws its own.
+                 */
+                if (type.shape == commodity_shape::basket_option) {
+                    for (std::uint32_t member = 0; member < 3; ++member) {
+                        const auto& drawn_member =
+                            scope.commodities[(slot + member) % scope.commodities.size()];
+                        terms.basket.push_back(
+                            domain::commodity_basket_member{drawn_member.code, 1.0 / 3.0});
+                    }
+                }
+                break;
+            case commodity_shape::asian_option:
+                terms.option_type = (draw(name, 6) < 0.5) ? "Call" : "Put";
+                terms.strike_price = strike;
+                terms.exercise_type = "European";
+                terms.average_type = "Arithmetic";
+                terms.averaging_start_date = terms.start_date;
+                terms.averaging_end_date = terms.maturity_date;
                 break;
             case commodity_shape::average_price_option:
             case commodity_shape::option_strip:
@@ -460,6 +482,14 @@ commodity_trade_planner::plan(const domain::trade_generation_scope& scope) const
                 break;
             case commodity_shape::swap:
                 terms.fixed_price = price;
+                if (type.code == "CommodityWorstOfBasketSwap") {
+                    for (std::uint32_t member = 0; member < 3; ++member) {
+                        const auto& drawn_member =
+                            scope.commodities[(slot + member) % scope.commodities.size()];
+                        terms.basket.push_back(
+                            domain::commodity_basket_member{drawn_member.code, 1.0 / 3.0});
+                    }
+                }
                 break;
             case commodity_shape::swaption:
                 terms.option_type = "Call";
@@ -906,13 +936,22 @@ std::string_view equity_trade_planner::asset_class_code() const {
 
 namespace {
 
-constexpr std::string_view equity_types[] = {
-    "EquityAccumulator",       "EquityAsianOption",         "EquityBarrierOption",
-    "EquityCliquetOption",     "EquityDigitalOption",       "EquityDoubleBarrierOption",
-    "EquityEuropeanBarrierOption", "EquityForward",         "EquityOption",
-    "EquityOptionPosition",    "EquityPosition",
-    "EquitySwap",              "EquityTaRF",                "EquityTouchOption",
-    "EquityVarianceSwap",      "EquityWorstOfBasketSwap"};
+constexpr std::string_view equity_types[] = {"EquityAccumulator",
+                                             "EquityAsianOption",
+                                             "EquityBarrierOption",
+                                             "EquityCliquetOption",
+                                             "EquityDigitalOption",
+                                             "EquityDoubleBarrierOption",
+                                             "EquityEuropeanBarrierOption",
+                                             "EquityForward",
+                                             "EquityOption",
+                                             "EquityOptionPosition",
+                                             "EquityPosition",
+                                             "EquitySwap",
+                                             "EquityTaRF",
+                                             "EquityTouchOption",
+                                             "EquityVarianceSwap",
+                                             "EquityWorstOfBasketSwap"};
 /*
  * EquityOutperformanceOption is routed to the option table and that table's
  * check admits EquityOption and EquityCliquetOption only, so no outperformance
@@ -1076,7 +1115,8 @@ equity_trade_planner::plan(const domain::trade_generation_scope& scope) const {
                 domain::equity_basket_member constituent;
                 constituent.name = drawn_underlying.code;
                 constituent.kind = drawn_underlying.kind;
-                constituent.initial_price = std::round(level * (1.0 + 0.1 * member) * 100.0) / 100.0;
+                constituent.initial_price =
+                    std::round(level * (1.0 + 0.1 * member) * 100.0) / 100.0;
                 terms.basket.push_back(std::move(constituent));
             }
             for (std::uint32_t period = 0; period < 4; ++period) {

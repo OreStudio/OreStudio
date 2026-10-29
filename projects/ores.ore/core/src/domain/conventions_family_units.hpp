@@ -53,14 +53,16 @@ struct family_codec {
     void (*join)(const package_row& row, xml::record_writer& root);
 };
 
-void pack_average_ois(const xml::record_reader& root, refdata::messaging::conventions_bundle& bundle);
+void pack_average_ois(const xml::record_reader& root,
+                      refdata::messaging::conventions_bundle& bundle);
 void join_average_ois(const package_row& row, xml::record_writer& root);
 
 void pack_bma_basis_swap(const xml::record_reader& root,
                          refdata::messaging::conventions_bundle& bundle);
 void join_bma_basis_swap(const package_row& row, xml::record_writer& root);
 
-void pack_bond_yield(const xml::record_reader& root, refdata::messaging::conventions_bundle& bundle);
+void pack_bond_yield(const xml::record_reader& root,
+                     refdata::messaging::conventions_bundle& bundle);
 void join_bond_yield(const package_row& row, xml::record_writer& root);
 
 void pack_cds(const xml::record_reader& root, refdata::messaging::conventions_bundle& bundle);
@@ -98,7 +100,8 @@ void join_future(const package_row& row, xml::record_writer& root);
 void pack_fx_option(const xml::record_reader& root, refdata::messaging::conventions_bundle& bundle);
 void join_fx_option(const package_row& row, xml::record_writer& root);
 
-void pack_ibor_index(const xml::record_reader& root, refdata::messaging::conventions_bundle& bundle);
+void pack_ibor_index(const xml::record_reader& root,
+                     refdata::messaging::conventions_bundle& bundle);
 void join_ibor_index(const package_row& row, xml::record_writer& root);
 
 void pack_inflation_swap(const xml::record_reader& root,
@@ -119,7 +122,8 @@ void join_overnight_index(const package_row& row, xml::record_writer& root);
 void pack_swap(const xml::record_reader& root, refdata::messaging::conventions_bundle& bundle);
 void join_swap(const package_row& row, xml::record_writer& root);
 
-void pack_swap_index(const xml::record_reader& root, refdata::messaging::conventions_bundle& bundle);
+void pack_swap_index(const xml::record_reader& root,
+                     refdata::messaging::conventions_bundle& bundle);
 void join_swap_index(const package_row& row, xml::record_writer& root);
 
 void pack_tenor_basis_two_swap(const xml::record_reader& root,

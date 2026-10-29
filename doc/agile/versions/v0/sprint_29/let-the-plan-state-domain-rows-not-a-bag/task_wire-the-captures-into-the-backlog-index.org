@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A capture this story files is findable in the backlog it belongs to.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -84,3 +84,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Both captures appear in the inbox. Before the index regeneration,
+=grep= found neither slug in =inbox.org= while both documents were on disk.
+
+What caused it: =compass add capture= writes the capture document, and the
+bucket index is a separate artefact that =regenerate_backlog_indexes.py=
+writes. The tool's own help says so for =compass capture --commit=, but the
+generic =compass add capture= says only "remember to wire the new artefact
+into its parent", which reads as advice about the sprint table and not about
+the backlog index.
+
+So the rule for the next capture: after =compass add capture=, run
+=regenerate_backlog_indexes.py=, or the capture is a document nothing lists.

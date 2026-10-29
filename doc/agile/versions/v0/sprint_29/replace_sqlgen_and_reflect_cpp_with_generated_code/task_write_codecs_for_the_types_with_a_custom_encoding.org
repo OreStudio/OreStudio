@@ -156,3 +156,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The twelve types have a JSON and a MessagePack encoder and decoder over yyjson
+and msgpack-c. Eleven are strings on the wire and the twelfth is a number: the
+survey of the reflectors, one by one, is what found that an error code is its
+underlying integer and not its name, and the plan was corrected before any of
+the code was written.
+
+The custom part of every type is its text form, so the two formats cannot
+disagree about a value -- only about how they frame it -- and one generic
+carrier serves eleven of the twelve. `ores.utility` owns the types it can see;
+the product type, the cron expression and the two workflow enums state their
+text form in their own components, beside the reflector that already named it,
+because the utility component cannot see them.
+
+The acceptance is proved by byte equality with reflect-cpp, in both formats and
+both directions, for each of the twelve: 102 assertions in 23 cases across the
+four suites, and two defects in the test harness were found by those cases
+before the code was believed -- a string built from two different temporaries,
+and two test files colliding in the unity build.
+
+Both libraries are declared in the manifest and linked into the component that
+owns the codecs, rather than relied on as dependencies of reflect-cpp, so the
+day reflect-cpp is removed the codecs keep their carriers.

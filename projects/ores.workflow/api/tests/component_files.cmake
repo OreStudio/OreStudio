@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "codec_workflow_vocabulary_tests.cpp"
     "identity_workflow_tests.cpp"
     "main.cpp"
     "messaging_workflow_protocol_tests.cpp"

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/write-codecs-for-the-types-with-a-custom-encoding
+#+pr: 4071
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Step 5 of 7. The building blocks the generated codecs call. Starts after step 1,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -40,9 +40,78 @@ Step 5 of 7. The building blocks the generated codecs call. Starts after step 1,
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** What the twelve are, and what makes each custom
+
+Surveyed at =649b3072f0=. Eleven are =rfl::Reflector= specialisations and one is
+a =rfl::parsing::Parser= specialisation, which is why the count reads twelve
+rather than eleven:
+
+| Type | Wire form | Where the reflector is |
+|------|-----------|------------------------|
+| =boost::uuids::uuid= | the lower-case canonical string | =ores.utility/rfl/reflectors.hpp= |
+| =std::optional<boost::uuids::uuid>= | the string, or null | same |
+| =utility::uuid::tenant_id= | the canonical string | same |
+| =std::chrono::year_month_day= | ="YYYY-MM-DD"=, the empty string for the default-constructed value | same |
+| =utility::decimal::decimal= | the decimal's own text | same |
+| =boost::asio::ip::address= | the address's text | same |
+| =utility::serialization::error_code= | the underlying integer, not its name | same |
+| =trading::domain::product_type= | the enum's token | =ores.trading.api/domain/product_type.hpp= |
+| =scheduler::domain::cron_expression= | the expression's text | =ores.scheduler.api/domain/cron_expression.hpp= |
+| =workflow::messaging::step_log_level= | the enum's token | =ores.workflow.api/messaging/workflow_vocabulary.hpp= |
+| =workflow::messaging::step_outcome= | the enum's token | same |
+| =std::chrono::system_clock::time_point= | ISO 8601 UTC, six digits | =ores.utility/rfl/time_point_parser.hpp= |
+
+Eleven of them are a *string* on the wire, and the custom part is the text form,
+which the two formats carry as their own string primitive. The twelfth,
+=error_code=, is the exception the survey found: its reflector names the
+underlying integer, so the wire carries a number and the codec states a number.
+That is what makes this task small and uniform rather than twelve unrelated
+encoders, and it is why the survey mattered -- the plan read "twelve strings"
+until the reflectors were read one by one.
+
+The text forms of four types live in the components that own the types, beside
+their reflectors, because =ores.utility= cannot see a product type or a workflow
+outcome: =ores.trading.api=, =ores.scheduler.api= and =ores.workflow.api= each
+state their own.
+
+** Dependencies
+
+=vcpkg.json= names =reflectcpp= and neither =yyjson= nor =msgpack-c=. Both are
+added with this task and linked into =ores.utility=, beside the reflect-cpp they
+are measured against.
+
+** The surface the generated codecs will call
+
+One header per format, in =ores.utility= beside =rfl/=, with a per-type
+specialisation and a free function the generated code names:
+
+#+begin_src cpp
+namespace ores::utility::codec {
+
+template <typename T>
+struct json_codec;   // static void write(yyjson_mut_doc*, yyjson_mut_val*, const T&)
+                     // static T read(yyjson_val*)
+
+template <typename T>
+struct msgpack_codec;  // static void write(msgpack_packer*, const T&)
+                       // static T read(msgpack_unpacker*)
+
+}
+#+end_src
+
+A container and the =std::optional= wrapper are generic over the element's
+codec, as the database layer's =pq::codec= is; only the twelve need a
+specialisation.
+
+** How it is proved
+
+The acceptance is byte equality with reflect-cpp, so the case per type encodes
+the same value through both and compares the bytes, in both formats, and decodes
+reflect-cpp's bytes with the new decoder and the new encoder's bytes with
+reflect-cpp. A value chosen at the edge of the type's range is encoded as well as
+a typical one, because the two disagree first at the edges: a nil uuid, the
+default-constructed date, a negative decimal, a time point with a microsecond and
+one before the epoch.
 
 * Measurements
 
@@ -56,7 +125,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Types with a text form and its both-format proof | 12 of 12 | | |
+| Codec assertions | 102 in 23 cases | | |
+| Custom reflectors in the tree (11 Reflector + 1 Parser) | 12 | =grep -rn 'struct Reflector<' projects --include=*.hpp | grep -v build | wc -l= | 649b3072f0 |
+| Wire-format libraries in vcpkg.json | 0 of 2 (yyjson, msgpack-c absent) | =grep -c 'yyjson\|msgpack' vcpkg.json= | 649b3072f0 |
 
 * Notes
 
@@ -75,12 +147,39 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4071][#4071]] | [utility] Write a codec for every type with a custom encoding |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The text form's doc says every type with a custom encoding is a string, which the error code is not | codec/text_form.hpp | Accepted | It says what the header is for and names the exception. |
+| 2 | Only the uuid case decodes bytes reflect-cpp wrote; the other eleven round-trip this codec's own output | the four codec test files | Accepted | Every type reads reflect-cpp's bytes as well as its own, which is what the acceptance means by both directions. |
+| 3 | The MessagePack reader takes the first value in a buffer and ignores what follows | codec/msgpack_codec.hpp | Accepted | A buffer holding more than one value is refused, and the message states how many bytes were read. |
+| 4 | An unused export header in the text form's includes | codec/text_form.hpp | Accepted | Removed. |
+| 5 | The four component-owned specialisations sit in headers that a component's every consumer now includes | product_type.hpp, cron_expression.hpp, workflow_vocabulary.hpp | Declined | That is where each one's reflector already sits, and it is the component's own statement about its own type. The header is two lines of template and the include it needs, and the whole ctest suite is green with it. |
 
 * Result
+
+The twelve types have a JSON and a MessagePack encoder and decoder over yyjson
+and msgpack-c. Eleven are strings on the wire and the twelfth is a number: the
+survey of the reflectors, one by one, is what found that an error code is its
+underlying integer and not its name, and the plan was corrected before any of
+the code was written.
+
+The custom part of every type is its text form, so the two formats cannot
+disagree about a value -- only about how they frame it -- and one generic
+carrier serves eleven of the twelve. `ores.utility` owns the types it can see;
+the product type, the cron expression and the two workflow enums state their
+text form in their own components, beside the reflector that already named it,
+because the utility component cannot see them.
+
+The acceptance is proved by byte equality with reflect-cpp, in both formats and
+both directions, for each of the twelve: 102 assertions in 23 cases across the
+four suites, and two defects in the test harness were found by those cases
+before the code was believed -- a string built from two different temporaries,
+and two test files colliding in the unity build.
+
+Both libraries are declared in the manifest and linked into the component that
+owns the codecs, rather than relied on as dependencies of reflect-cpp, so the
+day reflect-cpp is removed the codecs keep their carriers.

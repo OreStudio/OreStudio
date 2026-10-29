@@ -20,6 +20,7 @@
 #pragma once
 
 #include "ores.scheduler.api/export.hpp"
+#include "ores.utility/codec/text_form.hpp"
 #include <chrono>
 #include <expected>
 #include <ostream>
@@ -126,3 +127,20 @@ struct Reflector<ores::scheduler::domain::cron_expression> {
 };
 
 }
+
+template <>
+struct ores::utility::codec::text_form<ores::scheduler::domain::cron_expression> {
+    static constexpr std::string_view wire_name = "a cron expression";
+
+    static std::string to_text(const ores::scheduler::domain::cron_expression& v) {
+        return v.to_string();
+    }
+
+    static ores::scheduler::domain::cron_expression from_text(std::string_view text) {
+        auto parsed = ores::scheduler::domain::cron_expression::from_string(text);
+        if (!parsed)
+            throw std::invalid_argument("Not " + std::string(wire_name) + ": " + std::string(text) +
+                                        ": " + parsed.error());
+        return *parsed;
+    }
+};

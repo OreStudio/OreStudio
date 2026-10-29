@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 6E93FD89-3443-4BED-8E2F-9295E773BFB7
+:END:
+#+title: Story: Read the public interest rate sources
+#+description: The ECB Data Portal, FRED, the Bank of England and the US Treasury become adapters and feeds that deliver rates and curve pillars as end-of-day data.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:implementation:sprint_29:v0:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The ECB Data Portal, FRED, the Bank of England and the US Treasury deliver their rates and curves as end-of-day feeds, so the synthetic IR feeds have a public seed.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-29                               |
+
+* Acceptance
+
+- Each supplier has an adapter, a session and its feeds.
+- Rates are one value a day and curves are pillared items, catalogued and mapped.
+- Values arrive as durable fixings and a feed can start from the latest one.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:319D1167-5429-404D-A212-D2E616CEB13A][Add the ECB Data Portal adapter]] | BACKLOG | | | A module that reads ECB Data Portal series: €STR and the EUR AAA spot curve. |
+| [[id:C884743B-8461-4B8F-9312-B370E978A891][Add the FRED adapter]] | BACKLOG | | | A module that reads FRED series by id: SOFR and the H.15 Treasury par curve. |
+| [[id:17698965-09A3-4E0F-AE39-F5E694BF1D7F][Add the BoE statistics adapter]] | BACKLOG | | | A module that reads Bank of England statistics: SONIA and the gilt curve. |
+| [[id:BF7F804E-5F6D-4FD8-B57E-212DC754E43E][Add the US Treasury adapter]] | BACKLOG | | | A module that reads the US Treasury par yield curve. |
+| [[id:0D8B2280-F6E1-4198-8372-6712D1E8DFD8][Catalogue the interest rate items]] | BACKLOG | | | Rate and curve-pillar item identities, and the vendor instruments that map to them. |
+| [[id:E3C078D3-FFE5-4C40-9C09-83058FD3040F][Seed the IR feeds]] | BACKLOG | | | Sessions and feeds for the four suppliers, with end-of-day schedules and their scopes. |
+
+* Decisions
+
+- One session per supplier; the supplier and the publisher coincide for the direct APIs.
+- The service is end_of_day for all four at first.
+- A curve is a set of pillared items, not one item with an array.
+
+* Out of scope
+
+-

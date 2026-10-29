@@ -5,7 +5,7 @@
 #+description: The 38,213 legal entities a provisioned tenant holds sit in the DQ lei_entity artefact under the system tenant (ffffffff-ffff-ffff-ffff-ffffffffffff). A party's session reads its own tenant, so list_lei_entities returns nothing and a credit trade cannot name a reference entity. Legal entities are world data that every party should see, which is the split already recorded as world data versus party configuration; until that split reaches this dataset, no family can reference a legal entity.
 #+type: capture
 #+level: cross
-#+filetags: :=dq= =refdata= =tenancy= =defect=:
+#+filetags: :dq:refdata:tenancy:defect:
 #+created: 2026-10-29
 #+updated: 2026-10-29
 

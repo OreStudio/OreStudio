@@ -30,9 +30,9 @@ The analysis this story carries, taken with the user on 2026-10-28:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | ABANDONED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The journey and the prototype are in PR #4032 for review; the health read is next. |
+| Now           | Superseded by the supplier, session and feed stories. |
 | Waiting on    | Nothing.                               |
 | Next          | Start [[id:3003F16C-C239-4C5C-A36A-29A2D376EEE1][Show each provider's freshness and its adapter's health]]. |
 | Last touched  | 2026-10-28                               |
@@ -51,16 +51,16 @@ The analysis this story carries, taken with the user on 2026-10-28:
 |------+-------+-------+-----+-------------|
 | [[id:1048DB09-9987-4199-9129-EDBC94A6A640][Scaffold story: Run the public sources from the Official rates screen]] | DONE | 2026-10-28 | 2026-10-28 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:7F3AB01E-C043-46EB-BABD-A5F3DE9DEDCB][Prototype the provider row and the provider page]] | DONE | 2026-10-28 | 2026-10-28 | One static prototype of the row and the page, with competing answers for the paused state and the freshness line, before any control is built. |
-| [[id:3003F16C-C239-4C5C-A36A-29A2D376EEE1][Show each provider's freshness and its adapter's health]] | BACKLOG | | | Each public provider states whether its data is arriving, in the words a daily source needs, from the adapter status the marketdata service already reports. |
-| [[id:EFAC2D06-56C6-41FD-856E-2B2AB415A947][Decide how a provider is paused]] | BACKLOG | | | A decision, not a control: whether a pause is a fact about demand or a provider state, and what it does to the provider's fixings and its feeds. |
-| [[id:B9BCE538-9616-4C0F-A56F-BBE981CB2043][Design a backfill request on the adapter contract]] | BACKLOG | | | A chosen date range is a request only the adapter can answer, and the contract carries no such request today; this task designs it and its window rule. |
+| [[id:3003F16C-C239-4C5C-A36A-29A2D376EEE1][Show each provider's freshness and its adapter's health]] | ABANDONED | | | Each public provider states whether its data is arriving, in the words a daily source needs, from the adapter status the marketdata service already reports. |
+| [[id:EFAC2D06-56C6-41FD-856E-2B2AB415A947][Decide how a provider is paused]] | ABANDONED | | | A decision, not a control: whether a pause is a fact about demand or a provider state, and what it does to the provider's fixings and its feeds. |
+| [[id:B9BCE538-9616-4C0F-A56F-BBE981CB2043][Design a backfill request on the adapter contract]] | ABANDONED | | | A chosen date range is a request only the adapter can answer, and the contract carries no such request today; this task designs it and its window rule. |
 | [[id:9C112C73-10C4-4FAC-A7D3-C182540C99F8][Write the journey that runs the public sources]] | DONE | 2026-10-28 | 2026-10-28 | The journey a system administrator takes through the Official rates screen: the providers, their terms and freshness, the three failures, the acts still to come, and what the screen cannot do yet. |
-| [[id:ACDB335D-F7AC-44FF-9B7D-023CEA074012][Schedule the public sources' fetch]] | BACKLOG | | | A scheduler job asks the adapters to refresh on each publisher's rhythm, so the poll leaves the adapter's own timer and no screen owns a schedule. |
-| [[id:721FBA47-ABB2-48F9-BBD0-70AA7ED8B030][Force a fetch from the Official rates screen]] | BACKLOG | | | A Fetch tab that asks for a day or a range, for all providers or one, for a pair or every pair, with permission and audit. |
-| [[id:5FCD261F-8B93-4A84-891B-AE907F4AA91B][Show what each provider holds for an underlying]] | BACKLOG | | | For one pair, every publisher's coverage, gaps and last value, so a person sees who fixes it and how far back. |
-| [[id:9D82560D-D2F6-43D5-A0EF-782D498E69D6][Measure the distance between providers]] | BACKLOG | | | For one pair, each publisher's values against the others in basis points, the dispersion, and the publisher furthest from the rest. |
-| [[id:98441CF0-7EBF-4056-BB6D-E91C22A23B82][Show one publisher's history for an underlying]] | BACKLOG | | | One publisher and one pair over time: its fixings, corrections, gaps, and the feeds that started from a value. |
-| [[id:A6855E9A-3607-48C0-AF62-B3B90B35D377][See a provider's configuration and its history]] | BACKLOG | | | The provider record page: terms, credit, credential reference and kind on Details, and every version and acceptance on the shared timeline. |
+| [[id:ACDB335D-F7AC-44FF-9B7D-023CEA074012][Schedule the public sources' fetch]] | ABANDONED | | | A scheduler job asks the adapters to refresh on each publisher's rhythm, so the poll leaves the adapter's own timer and no screen owns a schedule. |
+| [[id:721FBA47-ABB2-48F9-BBD0-70AA7ED8B030][Force a fetch from the Official rates screen]] | ABANDONED | | | A Fetch tab that asks for a day or a range, for all providers or one, for a pair or every pair, with permission and audit. |
+| [[id:5FCD261F-8B93-4A84-891B-AE907F4AA91B][Show what each provider holds for an underlying]] | ABANDONED | | | For one pair, every publisher's coverage, gaps and last value, so a person sees who fixes it and how far back. |
+| [[id:9D82560D-D2F6-43D5-A0EF-782D498E69D6][Measure the distance between providers]] | ABANDONED | | | For one pair, each publisher's values against the others in basis points, the dispersion, and the publisher furthest from the rest. |
+| [[id:98441CF0-7EBF-4056-BB6D-E91C22A23B82][Show one publisher's history for an underlying]] | ABANDONED | | | One publisher and one pair over time: its fixings, corrections, gaps, and the feeds that started from a value. |
+| [[id:A6855E9A-3607-48C0-AF62-B3B90B35D377][See a provider's configuration and its history]] | ABANDONED | | | The provider record page: terms, credit, credential reference and kind on Details, and every version and acceptance on the shared timeline. |
 
 * Decisions
 
@@ -82,3 +82,14 @@ The analysis this story carries, taken with the user on 2026-10-28:
 - Building the controls themselves: pause is task [[id:EFAC2D06-56C6-41FD-856E-2B2AB415A947][Decide how a provider is paused]], and the chosen range is task [[id:B9BCE538-9616-4C0F-A56F-BBE981CB2043][Design a backfill request on the adapter contract]].
 - Deleting a provider's fixings, which follows from terms that withdraw storage and is decided with the pause task.
 - The first-run terms journey, which is its own task on the story that published the fixings.
+
+* Superseded
+
+The screen this story described was rebuilt on the supplier, session and feed
+model. Its remaining scope lives in:
+
+- [[file:../model_the_route_transport_configuration/story.org][Model suppliers, sessions and feeds]]
+- [[file:../build_the_connectivity_screens/story.org][Build the Connectivity screens]]
+- [[file:../build_the_public_rates_screens/story.org][Build the Public rates screens]]
+- [[file:../own_the_refresh_in_the_scheduler/story.org][Own the refresh in the scheduler]]
+- [[file:../govern_the_public_feeds/story.org][Govern the public feeds]]

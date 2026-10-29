@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: A418CD8B-9B60-4D5D-B7C1-2220C519B339
+:END:
+#+title: Story: Run the adapter per session
+#+description: The session is the runtime identity: one announce, demand and heartbeat per session, the transport read from the catalogue, the simulator as one session, and health reported per session.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:implementation:sprint_29:v0:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The session is what the service knows. One adapter id, one announce, one heartbeat, one demand set, and the feeds it serves. The official adapter reads its transport and its scopes from the catalogue instead of flags, and the simulator appears as one simulated session.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-29                               |
+
+* Acceptance
+
+- One announce, heartbeat and demand set per session; feeds are scopes inside it.
+- The adapter reads endpoint, credential, settings and feed scopes from rows, not command-line flags.
+- The simulator runs as one simulated session on the same contract.
+- The status read answers session health and the feeds the session serves.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6BB1FD5C-FF31-4E14-A710-1A2763C4235A][Make the session the adapter identity]] | BACKLOG | | | One announce, demand and heartbeat per session; feeds are scopes inside it; the service registry and status key on the session. |
+| [[id:318B489A-2E04-4F6D-8F93-CEE8F122D959][Read the transport from the catalogue]] | BACKLOG | | | The official adapter reads the session endpoint, credential and settings and the feed scopes instead of command-line flags. |
+| [[id:B5B65060-57C9-48AE-B002-610DACD586FE][Run the simulator as one session]] | BACKLOG | | | The simulator announces one simulated session and serves its feeds on the same contract. |
+| [[id:CCF7C05D-2068-4247-9041-87D07E30A8B7][Report session health]] | BACKLOG | | | The status read returns session state, heartbeat, served and refused counts, and the feeds the session serves. |
+
+* Decisions
+
+- The adapter identity is the session name, so the service registry and the status read key on the session.
+- Feed health is freshness, not session state; the two are read from different facts.
+- The policy and replay feeders remain sessions of built-in adapters.
+
+* Out of scope
+
+-

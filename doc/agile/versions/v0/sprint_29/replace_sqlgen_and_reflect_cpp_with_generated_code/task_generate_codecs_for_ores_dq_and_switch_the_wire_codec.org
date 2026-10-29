@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generate-codecs-for-ores-dq-and-switch-the-wire-codec
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Step 6 of 7, first component. The codec templates emit generated codecs, and the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,52 @@ Step 6 of 7, first component. The codec templates emit generated codecs, and the
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Two halves, and the seam between them
+
+=ores::nats::wire_codec= is a template over the message type: =encode<T>= calls
+=rfl::json::write= or =rfl::msgpack::write=, and =decode<T>= the matching reader.
+A generated codec cannot be called by name from a template that knows no type,
+so the codec gains a seam: a traits template whose primary form keeps
+reflect-cpp, and which a generated codec specialises in the type's own
+translation unit.
+
+#+begin_src cpp
+namespace ores::utility::codec {
+
+template <typename T>
+struct wire_traits;   // write_json/read_json, write_msgpack/read_msgpack
+
+}
+#+end_src
+
+=wire_codec= calls =wire_traits<T>= and nothing else. Every type that has no
+generated codec keeps reflect-cpp through the primary template, which is what
+lets this land one component at a time; step 7 deletes the primary template and
+with it the last reflect-cpp dependency.
+
+** The generated codec
+
+The per-type translation unit already exists: =api/src/domain/<type>_json_io.cpp=
+is where the type's =operator<<= lives today. The codec template adds to it the
+four functions over the carriers step 5 built -- =to_json=, =from_json=,
+=to_msgpack=, =from_msgpack= -- and the =wire_traits= specialisation that names
+them.
+
+The body is the type's field list, which the generator already holds: each field
+is written as an object member, and read back by name. A field's own form is the
+carrier's for its type -- a string, a decimal, an instant, a uuid -- and a field
+that is itself a generated type recurses into that type's functions, so one
+template serves every shape the models state.
+
+** How it is proved
+
+Three ways, because the acceptance names three. Each generated codec's bytes are
+compared with reflect-cpp's for the same value, in both formats, for every
+ores.dq type -- the same proof step 5 used, one level up. =wire_codec= is tested
+with a type whose codec is generated and a type whose codec is not, so the seam
+is proved in both directions rather than only where the generated half is. And
+ores.dq is built as a unity build, which is what the acceptance's last line
+names and what a per-type translation unit can quietly break.
 
 * Measurements
 
@@ -61,6 +104,22 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+The seam landed first, because the generated half cannot be called without it:
+=ores::nats::wire_codec= now names =ores::utility::codec::wire_traits<T>=, whose
+primary template keeps reflect-cpp and whose specialisation a generated codec
+will state in the type's own translation unit. =ores.nats.lib= builds with it.
+
+The generated half is blocked on the tree, not on this task: trunk does not build
+at =481292e5e8= for two refdata reasons, and neither is this branch's. The
+generated =legal_entity= entity and repository still state the pre-step-4 shape --
+a =db_timestamp= member initialised from a string, and =make_timestamp= calls --
+so the component's artefacts are stale against the templates step 4 landed.
+Regenerating refdata fixes those two and then stops on a hand-written file: the
+refdata =messaging/registrar.cpp= calls =publish_legal_entities_from_dq_request=,
+which the merged models no longer name (=publish_lei_parties_from_dq_request= is
+what they produce). Both want the owners of that rename: a regeneration sweep by
+the component that holds it, not a patch here.
 
 * Test Scenarios
 

@@ -60,10 +60,11 @@ Examples: '5493001KJTIIGC8Y1R12', '529900T8BM49AURSDO55'.
 :PROPERTIES:
 :type:        text
 :cpp_type:    std::string
-:natural_key: true
 :END:
 
-The entity's legal name, as its own registry states it.
+The entity's legal name, as its own registry states it. It is not a natural
+key: two legal entities in different jurisdictions may carry the same name, and
+the LEI dataset holds many that do.
 
 #+begin_src cpp :name generator
 std::string(faker::company::companyName())

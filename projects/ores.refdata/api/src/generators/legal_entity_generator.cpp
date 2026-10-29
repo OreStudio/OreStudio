@@ -46,7 +46,7 @@ domain::legal_entity generate_synthetic_legal_entity(utility::generation::genera
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.lei = std::string(faker::word::noun()) + "-" + std::to_string(idx);
-    r.legal_name = std::string(faker::company::companyName()) + "-" + std::to_string(idx);
+    r.legal_name = std::string(faker::company::companyName());
     r.jurisdiction = std::string("GB");
     r.entity_status = std::string("ACTIVE");
     r.entity_category = std::string("CORPORATION");

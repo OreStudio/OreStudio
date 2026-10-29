@@ -119,3 +119,32 @@ Recommendation: *A*, because the question that started this was what a reference
 means. B makes the credit population book without making the reference true.
 
 * Result
+
+Legal entities are a refdata entity of their own, keyed by LEI, and the LEI
+reaches a party through the DQ publish. Measured on a recreated database: the
+tenant holds 42,388 legal entities with their LEIs, published from the GLEIF
+LEI artefact every tenant already receives.
+
+Credit books on the back of it: five routed products, one trade each, every one
+stating =LEI= and a real identifier rather than the curve name the ORE import
+keeps.
+
+* What the path is
+
+=ores_dq_lei_entities_artefact_tbl= -> =ores_refdata_publish_legal_entities_from_dq_fn=
+-> =ores_refdata_legal_entities_tbl= (tenant's own copy) -> =list_legal_entities=
+-> the synthetic scope -> a credit trade's typed reference.
+
+The publish is registered as a third target of the existing LEI artefact, so it
+runs wherever the LEI dataset already publishes its parties and counterparties,
+and the LEI stops being lost on the way.
+
+* Two defects found by doing it
+
+- The schema manifests are hand-maintained: =refdata_create.sql= and
+  =dq_create.sql= list every file with =\ir=. A generated table that is not
+  added to them is never created, and the failure appears as a missing relation
+  at publish time rather than as a missing file.
+- =legal_name= cannot be a natural key. The dataset holds thousands of entities
+  that share a name, so the uniqueness the natural key implied made the publish
+  fail on the first duplicate.

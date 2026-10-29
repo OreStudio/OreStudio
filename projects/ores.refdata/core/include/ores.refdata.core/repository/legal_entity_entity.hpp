@@ -45,9 +45,7 @@ struct legal_entity_entity {
     std::string lei;
     std::string tenant_id;
     int version = 0;
-
     std::string legal_name;
-
     std::optional<std::string> jurisdiction;
     std::optional<std::string> entity_status;
     std::optional<std::string> entity_category;

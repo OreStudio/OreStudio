@@ -44,9 +44,7 @@ domain::legal_entity legal_entity_mapper::map(const legal_entity_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.lei = v.lei;
-
     r.legal_name = v.legal_name;
-
     r.jurisdiction = v.jurisdiction.value_or("");
     r.entity_status = v.entity_status.value_or("");
     r.entity_category = v.entity_category.value_or("");
@@ -68,9 +66,7 @@ legal_entity_entity legal_entity_mapper::map(const domain::legal_entity& v) {
     r.lei = v.lei;
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
-
     r.legal_name = v.legal_name;
-
     r.jurisdiction = v.jurisdiction.empty() ? std::nullopt : std::optional(v.jurisdiction);
     r.entity_status = v.entity_status.empty() ? std::nullopt : std::optional(v.entity_status);
     r.entity_category = v.entity_category.empty() ? std::nullopt : std::optional(v.entity_category);

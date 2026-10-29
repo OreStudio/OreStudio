@@ -68,11 +68,6 @@ create table if not exists "ores_refdata_legal_entities_tbl" (
     check ("lei" <> '')
 );
 
--- Unique legal_name for active records
-create unique index if not exists legal_entities_legal_name_uniq_idx
-on "ores_refdata_legal_entities_tbl" (tenant_id, legal_name)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists legal_entities_version_uniq_idx
 on "ores_refdata_legal_entities_tbl" (tenant_id, lei, version)

@@ -73,7 +73,9 @@ struct legal_entity final {
     std::string lei;
 
     /**
-     * @brief The entity's legal name, as its own registry states it.
+     * @brief The entity's legal name, as its own registry states it. It is not a natural key: two
+     * legal entities in different jurisdictions may carry the same name, and the LEI dataset holds
+     * many that do.
      */
     std::string legal_name;
 

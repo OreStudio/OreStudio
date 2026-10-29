@@ -4854,6 +4854,7 @@ const fr: SourceCatalogue = {
                 startTenor: 'Tenor de début',
                 endTenor: 'Tenor de fin',
                 curveRole: 'Rôle',
+                marketSeries: 'Série de marché',
                 changedBy: 'Modifié par',
                 asOf: "Date d'arrêté",
                 party: 'Partie',
@@ -4892,6 +4893,8 @@ const fr: SourceCatalogue = {
                 startTenorMeans:
                     "Où l'instrument commence. Un dépôt commence à SPOT, parce qu'il commence aujourd'hui.",
                 endTenorMeans: "Où l'instrument arrive à échéance, et donc où se tient le pilier.",
+                marketSeriesMeans:
+                    "La série de marché d'où ce pilier lit sa cotation, dessinée par son URI oresmd. Le pilier trouve son point dans cette série par son tenor de fin.",
                 curveRoleMeans: {
                     DEPOSIT: 'Se construit comme un dépôt : du spot à son tenor de fin.',
                     FRA: 'Se construit comme un accord de taux futur sur sa propre période.',

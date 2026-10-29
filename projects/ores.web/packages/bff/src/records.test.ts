@@ -1024,6 +1024,7 @@ describe('the curve blueprint resources', () => {
                     start_tenor_code: 'SPOT',
                     end_tenor_code: '1Y',
                     curve_role_code: 'DEPOSIT',
+                    market_series_id: 'a2a2a2a2-0000-4000-8000-000000000002',
                 },
                 version: null,
                 ...reason,

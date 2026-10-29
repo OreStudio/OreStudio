@@ -53,6 +53,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
+#include <map>
 #include <optional>
 #include <string>
 #include <tuple>
@@ -109,6 +110,7 @@ public:
         party = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
         write_series(output_series_id, output_series_uri());
         write_config();
+        write_pillar_series();
         write_pillars();
         write_market();
     }
@@ -164,6 +166,8 @@ public:
     boost::uuids::uuid party_id;
     boost::uuids::uuid config_id;
     boost::uuids::uuid output_series_id;
+    /// The market series each pillar reads, by the pillar's end tenor.
+    std::map<std::string, boost::uuids::uuid> pillar_series;
 
     /// The party's context: a curve, its quotes and its publish record are one party's.
     std::optional<ores::database::context> party;
@@ -242,11 +246,35 @@ private:
         repo.write(h.context(), c);
     }
 
+    /// The ladder every pillar-writing step walks: start tenor, end tenor, role.
+    static std::vector<std::tuple<std::string, std::string, std::string>> pillar_ladder() {
+        return {std::tuple{"SPOT", "12M", "DEPOSIT"}, std::tuple{"12M", "2Y", "SWAP"}};
+    }
+
+    /// The quote key of one pillar of the ladder, built as a feed builds it.
+    static ores::marketdata::core::pillar_quote_key
+    quote_key(const std::string& start, const std::string& end) {
+        return ores::marketdata::core::make_pillar_quote_key("USD",
+                                                             "1D",
+                                                             start,
+                                                             std::chrono::year{2026} / 1 / 1,
+                                                             std::chrono::year{2026} / 3 / 2,
+                                                             end);
+    }
+
+    /// One series per pillar's quote, written before the pillar that names it.
+    void write_pillar_series() {
+        for (const auto& [start, end, role] : pillar_ladder()) {
+            const auto id = uuid_gen();
+            write_series(id, ores::marketdata::core::pillar_series_uri(quote_key(start, end)));
+            pillar_series.emplace(end, id);
+        }
+    }
+
     void write_pillars() {
         ores::refdata::repository::ir_curve_bootstrap_pillar_repository repo;
         int seq = 0;
-        for (const auto& [start, end, role] :
-             {std::tuple{"SPOT", "12M", "DEPOSIT"}, std::tuple{"12M", "2Y", "SWAP"}}) {
+        for (const auto& [start, end, role] : pillar_ladder()) {
             ores::refdata::domain::ir_curve_bootstrap_pillar p;
             p.id = uuid_gen();
             p.version = 0;
@@ -257,6 +285,7 @@ private:
             p.start_tenor_code = start;
             p.end_tenor_code = end;
             p.curve_role_code = role;
+            p.market_series_id = pillar_series.at(end);
             p.modified_by = h.db_user();
             p.performed_by = h.db_user();
             p.change_reason_code = "system.test";
@@ -265,20 +294,13 @@ private:
         }
     }
 
-    /// @brief The raw grid: one series per pillar, each quoted at the as-of.
+    /// @brief The quotes: one observation in the series each pillar names.
     void write_market() {
         ores::marketdata::repository::market_observation_repository obs_repo;
         for (const auto& [start, end, value] :
              {std::tuple{"SPOT", "12M", "0.0432"}, std::tuple{"12M", "2Y", "0.0395"}}) {
-            const auto key =
-                ores::marketdata::core::make_pillar_quote_key("USD",
-                                                              "1D",
-                                                              start,
-                                                              std::chrono::year{2026} / 1 / 1,
-                                                              std::chrono::year{2026} / 3 / 2,
-                                                              end);
-            const auto series_id = uuid_gen();
-            write_series(series_id, ores::marketdata::core::pillar_series_uri(key));
+            const auto key = quote_key(start, end);
+            const auto series_id = pillar_series.at(end);
 
             ores::marketdata::domain::market_observation o;
             o.id = uuid_gen();

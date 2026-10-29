@@ -4816,6 +4816,7 @@ const pt: SourceCatalogue = {
                 startTenor: 'Tenor de inicio',
                 endTenor: 'Tenor de fim',
                 curveRole: 'Papel',
+                marketSeries: 'Serie de mercado',
                 changedBy: 'Alterado por',
                 asOf: 'Data de referencia',
                 party: 'Parte',
@@ -4854,6 +4855,8 @@ const pt: SourceCatalogue = {
                 startTenorMeans:
                     'Onde o instrumento comeca. Um deposito comeca em SPOT, porque comeca hoje.',
                 endTenorMeans: 'Onde o instrumento vence, e portanto onde o pilar se situa.',
+                marketSeriesMeans:
+                    'A serie de mercado de onde este pilar le a sua cotacao, desenhada pelo seu URI oresmd. O pilar encontra o seu ponto nessa serie pelo seu tenor final.',
                 curveRoleMeans: {
                     DEPOSIT: 'Constroi-se como um deposito: do spot ao seu tenor de fim.',
                     FRA: 'Constroi-se como um acordo de taxa futura sobre o seu proprio periodo.',

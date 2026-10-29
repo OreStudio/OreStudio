@@ -4785,6 +4785,7 @@ export const en: SourceCatalogue = {
                 startTenor: 'Start tenor',
                 endTenor: 'End tenor',
                 curveRole: 'Role',
+                marketSeries: 'Market Series',
                 changedBy: 'Changed by',
                 asOf: 'As-of',
                 party: 'Party',
@@ -4822,6 +4823,8 @@ export const en: SourceCatalogue = {
                 startTenorMeans:
                     'Where the instrument starts. A deposit starts at SPOT, because it starts today.',
                 endTenorMeans: 'Where the instrument matures, which is where the pillar stands.',
+                marketSeriesMeans:
+                    'The market series this pillar reads its quote from, drawn as its oresmd URI. The pillar finds its point in that series by its end tenor.',
                 curveRoleMeans: {
                     DEPOSIT: 'Bootstraps as a deposit: spot to its end tenor.',
                     FRA: 'Bootstraps as a forward rate agreement over its own period.',

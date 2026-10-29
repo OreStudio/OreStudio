@@ -55,6 +55,7 @@ struct ir_curve_bootstrap_pillar_entity {
     std::string start_tenor_code;
     std::string end_tenor_code;
     std::string curve_role_code;
+    std::string market_series_id;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -77,6 +78,7 @@ struct ir_curve_bootstrap_pillar_entity {
                query_builder::bind("start_tenor_code", &e::start_tenor_code) |
                query_builder::bind("end_tenor_code", &e::end_tenor_code) |
                query_builder::bind("curve_role_code", &e::curve_role_code) |
+               query_builder::bind("market_series_id", &e::market_series_id) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

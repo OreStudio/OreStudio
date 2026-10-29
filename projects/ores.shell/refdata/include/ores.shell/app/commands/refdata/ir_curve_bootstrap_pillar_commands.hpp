@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <party_id> <bootstrap_config_id> <sequence_index> <start_tenor_code>
-     * <end_tenor_code> <curve_role_code> <reason> <commentary>
+     * <end_tenor_code> <curve_role_code> <market_series_id> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,7 +96,7 @@ public:
 
     /**
      * @brief set <id> <party_id> <bootstrap_config_id> <sequence_index> <start_tenor_code>
-     * <end_tenor_code> <curve_role_code> <reason> <commentary> [--version <n>]
+     * <end_tenor_code> <curve_role_code> <market_series_id> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +104,8 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <party_id> <bootstrap_config_id> <sequence_index>
-     * <start_tenor_code> <end_tenor_code> <curve_role_code> <reason> <commentary>
+     * <start_tenor_code> <end_tenor_code> <curve_role_code> <market_series_id> <reason>
+     * <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

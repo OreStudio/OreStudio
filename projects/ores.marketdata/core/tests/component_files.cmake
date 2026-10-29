@@ -40,6 +40,7 @@ set(files
     "messaging_tick_read_party_tests.cpp"
     "observation_lineage_eventing_integration_tests.cpp"
     "oresmd_pillar_quote_key_tests.cpp"
+    "oresmd_pillar_quote_tests.cpp"
     "provider_eventing_integration_tests.cpp"
     "rate_card_component_eventing_integration_tests.cpp"
     "repository_as_of_rows_tests.cpp"

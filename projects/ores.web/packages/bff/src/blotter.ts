@@ -388,15 +388,19 @@ export function registerBlotterRoutes(
                   : { book_id_one_of: bookIdsUnder(query.node, books) };
         const matched = await allSummaries(
             session,
-            { ...nodeFilter, ...(query.search === '' ? {} : { search: query.search }) },
+            {
+                ...nodeFilter,
+                is_leg: query.flat,
+                ...(query.search === '' ? {} : { search: query.search }),
+            },
             order,
         );
-        const kept = matched.filter((row) => {
-            const kind = text(row['row_kind']);
-            return query.flat
-                ? kind === 'trade'
-                : kind === 'structure' || !holderOf.has(text(row['id']));
-        });
+        /*
+         * The view states whether a row is a leg, so the two lists ask for their
+         * own rows: the top list leaves the legs out and the flat list keeps only
+         * them.
+         */
+        const kept = matched;
         const rows = kept.slice(query.offset, query.offset + query.limit).map((row) => {
             const id = text(row['id']);
             const kind = text(row['row_kind']);

@@ -50,9 +50,7 @@ generate_synthetic_engine_settings_group_setting(utility::generation::generation
     r.group_code = std::string(faker::word::noun());
     r.column_name = std::string(faker::word::noun());
     r.ore_name = std::string(faker::word::noun());
-    r.kind = std::string(faker::word::noun());
     r.changes_numbers = false;
-    r.options = std::string();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

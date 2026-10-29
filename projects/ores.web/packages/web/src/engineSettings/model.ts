@@ -79,20 +79,32 @@ export function controlText(value: SettingValue): string {
 
 /**
  * The value a control's text means for a setting, or `invalid` when the text is
- * not a value the setting's kind can hold. An empty text is the default.
+ * not a value the setting's value set holds. An empty text is the default.
+ *
+ * The set is the only source: its kind says whether the text is a switch, a
+ * whole number, a number or one of the choices, and its bounds are applied by
+ * problemOf.
  */
 export function valueOfText(setting: EngineSetting, text: string): SettingValue | 'invalid' {
     const trimmed = text.trim();
     if (trimmed === '') {
         return null;
     }
-    switch (setting.kind) {
-        case 'flag':
+    switch (setting.sourceKind) {
+        case 'boolean':
             return trimmed === 'yes' ? true : trimmed === 'no' ? false : 'invalid';
-        case 'whole':
-            return /^\d{1,9}$/.test(trimmed) ? Number(trimmed) : 'invalid';
-        case 'choice':
-            return setting.options.includes(trimmed) ? trimmed : 'invalid';
+        case 'integer':
+            return /^-?\d{1,9}$/.test(trimmed) ? Number(trimmed) : 'invalid';
+        case 'number':
+        case 'range':
+            return Number.isFinite(Number(trimmed)) ? Number(trimmed) : 'invalid';
+        case 'enumerated':
+        case 'catalogue':
+            return setting.choices.some((choice) => choice.value === trimmed)
+                ? trimmed
+                : 'invalid';
+        default:
+            return trimmed;
     }
 }
 
@@ -106,26 +118,34 @@ export interface Problem {
 export function problemOf(setting: EngineSetting, text: string, label: string): Problem | null {
     const value = valueOfText(setting, text);
     if (value === 'invalid') {
-        return setting.kind === 'whole'
-            ? { key: 'engineSettings.problem.whole', params: { setting: label } }
-            : { key: 'engineSettings.problem.choice', params: { setting: label } };
+        return {
+            key: PROBLEM_OF[setting.sourceKind] ?? 'engineSettings.problem.choice',
+            params: { setting: label },
+        };
     }
     if (typeof value === 'number') {
-        if (setting.min !== null && value < setting.min) {
+        if (setting.minimum !== null && value < setting.minimum) {
             return {
                 key: 'engineSettings.problem.min',
-                params: { setting: label, min: String(setting.min) },
+                params: { setting: label, min: String(setting.minimum) },
             };
         }
-        if (setting.max !== null && value > setting.max) {
+        if (setting.maximum !== null && value > setting.maximum) {
             return {
                 key: 'engineSettings.problem.max',
-                params: { setting: label, max: String(setting.max) },
+                params: { setting: label, max: String(setting.maximum) },
             };
         }
     }
     return null;
 }
+
+/** The words for a text a set of this kind does not hold. */
+const PROBLEM_OF: Readonly<Record<string, string>> = {
+    integer: 'engineSettings.problem.whole',
+    number: 'engineSettings.problem.number',
+    range: 'engineSettings.problem.number',
+};
 
 /** The columns whose value a draft changes from the saved one. */
 export function changedColumns(group: EngineGroup, saved: Draft, draft: Draft): readonly string[] {

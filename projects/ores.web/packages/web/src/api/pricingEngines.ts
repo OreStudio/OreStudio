@@ -20,6 +20,7 @@
 
 import { z } from 'zod';
 import { request, requestFile, type ServedFile } from './transport.js';
+import { valueSetFields } from './valueSets.js';
 
 /**
  * The pricing engine configuration screens' reads and writes.
@@ -94,16 +95,6 @@ const described = z.object({
     detail: z.string(),
     source: z.string(),
 });
-
-/** The values a setting accepts, as the value set it names states them. */
-const valueSetFields = {
-    valueSet: z.string().default(''),
-    sourceKind: z.string().default(''),
-    choices: z.array(z.object({ value: z.string(), label: z.string() })).default([]),
-    minimum: z.number().nullable().default(null),
-    maximum: z.number().nullable().default(null),
-    pattern: z.string().default(''),
-};
 
 const vocabularySchema = z.object({
     valueSets: z.record(z.string(), z.object(valueSetFields)).default({}),

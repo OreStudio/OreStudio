@@ -37,11 +37,7 @@ export interface EngineSettingsGroupSetting {
     group_code: string;
     column_name: string;
     ore_name: string;
-    kind: string;
     changes_numbers: boolean;
-    options: string;
-    minimum: number | null;
-    maximum: number | null;
     position: number;
     modified_by: string;
     performed_by: string;

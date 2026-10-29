@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-engine_settings_group_settings add <code> <group_code> <column_name> <ore_name> <kind> <changes_numbers> <options> <minimum> <maximum> <position> <reason> <commentary>
+engine_settings_group_settings add <code> <group_code> <column_name> <ore_name> <changes_numbers> <position> <reason> <commentary>
 #+end_example
 
 It is addressed at =reporting.v1.engine_settings_group_settings.put=.
 
 #+name: engine_settings_group_settings-add
 #+begin_src ores-shell :tangle engine_settings_group_settings-add.ores :exports none
-engine_settings_group_settings add __none__ __none__ __none__ __none__ __none__ false __none__ - - 0 system.new_record generated_script
+engine_settings_group_settings add __none__ __none__ __none__ __none__ false 0 system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-engine_settings_group_settings set <code> <group_code> <column_name> <ore_name> <kind> <changes_numbers> <options> <minimum> <maximum> <position> <reason> <commentary> [--version <n>]
+engine_settings_group_settings set <code> <group_code> <column_name> <ore_name> <changes_numbers> <position> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =reporting.v1.engine_settings_group_settings.put=.
 
 #+name: engine_settings_group_settings-set
 #+begin_src ores-shell :tangle engine_settings_group_settings-set.ores :exports none
-engine_settings_group_settings set __none__ __none__ __none__ __none__ __none__ false __none__ - - 0 system.new_record generated_script
+engine_settings_group_settings set __none__ __none__ __none__ __none__ false 0 system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-engine_settings_group_settings put-many --count <n> <code> <group_code> <column_name> <ore_name> <kind> <changes_numbers> <options> <minimum> <maximum> <position> <reason> <commentary>
+engine_settings_group_settings put-many --count <n> <code> <group_code> <column_name> <ore_name> <changes_numbers> <position> <reason> <commentary>
 #+end_example
 
 It is addressed at =reporting.v1.engine_settings_group_settings.put_many=.
 
 #+name: engine_settings_group_settings-put-many
 #+begin_src ores-shell :tangle engine_settings_group_settings-put-many.ores :exports none
-engine_settings_group_settings put-many --count 1 __none__ __none__ __none__ __none__ __none__ false __none__ - - 0 system.new_record generated_script
+engine_settings_group_settings put-many --count 1 __none__ __none__ __none__ __none__ false 0 system.new_record generated_script
 #+end_src
 
 ** =delete=

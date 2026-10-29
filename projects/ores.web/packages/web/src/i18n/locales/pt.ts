@@ -6217,6 +6217,7 @@ const pt: SourceCatalogue = {
         },
         problem: {
             whole: '{setting} deve ser um número inteiro.',
+            number: '{setting} deve ser um número.',
             choice: '{setting} deve ser um dos valores da lista.',
             min: '{setting} deve ser no mínimo {min}.',
             max: '{setting} deve ser no máximo {max}.',

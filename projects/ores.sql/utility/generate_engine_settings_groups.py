@@ -98,12 +98,10 @@ def rows_of(data):
             q(group["code"]), TENANT, "0", q(group["name"]), q(group["description"]),
             str(group_position), ACTOR, q(SEED)])
         for setting_position, setting in enumerate(group.get("settings", [])):
-            kind, options, minimum, maximum = setup_value_sets.control_of(setting["value_set"])
             settings.append([
                 q(f"{group['code']}:{setting['column']}"), TENANT, "0", q(group["code"]),
-                q(setting["column"]), q(setting["ore"]), q(kind),
-                q(setting.get("changes_numbers", False)),
-                q(",".join(options)), q(minimum), q(maximum), str(setting_position),
+                q(setting["column"]), q(setting["ore"]),
+                q(setting.get("changes_numbers", False)), str(setting_position),
                 ACTOR, q(SEED)])
     return groups, settings
 
@@ -145,8 +143,8 @@ def render(data):
                 "change_reason_code, change_commentary", groups)
         + write("Engine Settings Group Settings",
                 "ores_reporting_engine_settings_group_settings_tbl",
-                "code, tenant_id, version, group_code, column_name, ore_name, kind, "
-                "changes_numbers, options, minimum, maximum, position, modified_by, "
+                "code, tenant_id, version, group_code, column_name, ore_name, "
+                "changes_numbers, position, modified_by, "
                 "change_reason_code, change_commentary", settings))
 
 

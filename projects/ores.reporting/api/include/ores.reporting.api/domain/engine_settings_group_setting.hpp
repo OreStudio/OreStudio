@@ -27,7 +27,6 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
-#include <optional>
 #include <string>
 #include <string_view>
 
@@ -36,11 +35,14 @@ namespace ores::reporting::domain {
 /**
  * @brief One setting of a group of engine settings.
  *
- * One setting of one group, as the screen draws it: the column its value travels
- * under, the ORE parameter that documents it, the kind of control it takes, and
- * the range or the list of words the value must be one of. The group's settings are
- * what a screen shows and what a write to the group accepts, so a setting is data
- * here and no longer a list in the browser's server code.
+ * One setting of one group, as the screen lists it: the column its value travels
+ * under, and the ORE parameter that documents it and that names its value set. The
+ * group's settings are what a screen shows and what a write to the group accepts,
+ * so a setting is data here and no longer a list in the browser's server code.
+ *
+ * The control the screen draws and the values the setting accepts are not stated
+ * here. They belong to the value set of the ORE parameter, which the Setup scope
+ * link names, so one rule serves this table, the pricing screen and the write path.
  *
  * Whether a setting changes the numbers a run computes is stated here, so the
  * screen can warn a person before a write that moves them.
@@ -75,36 +77,14 @@ struct engine_settings_group_setting final {
 
     /**
      * @brief The parameter as ORE writes it, which names the ore parameter that documents the
-     * setting, for example implyTodaysFixings.
+     * setting and that its value set belongs to, for example implyTodaysFixings.
      */
     std::string ore_name;
-
-    /**
-     * @brief The control the screen draws and the values the setting accepts: flag, whole or
-     * choice.
-     */
-    std::string kind;
 
     /**
      * @brief Whether the setting changes the numbers a run computes, and is not only operational.
      */
     bool changes_numbers = false;
-
-    /**
-     * @brief The words a choice setting accepts, comma separated, in the order the screen lists
-     * them. Empty for a setting that is not a choice.
-     */
-    std::string options;
-
-    /**
-     * @brief The lowest value a whole setting accepts. Empty when it has no floor.
-     */
-    std::optional<double> minimum;
-
-    /**
-     * @brief The highest value a whole setting accepts. Empty when it has no ceiling.
-     */
-    std::optional<double> maximum;
 
     /**
      * @brief Where the setting sits in its group, counting from zero.

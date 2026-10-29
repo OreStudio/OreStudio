@@ -33,11 +33,10 @@ std::string convert_to_table(const std::vector<engine_settings_group_setting>& v
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Group" << "Column" << "ORE" << "Kind" << "Position" << fort::endr;
+    table << fort::header << "Group" << "Column" << "ORE" << "Position" << fort::endr;
 
     for ([[maybe_unused]] const auto& egs : v) {
-        table << egs.group_code << egs.column_name << egs.ore_name << egs.kind << egs.position
-              << fort::endr;
+        table << egs.group_code << egs.column_name << egs.ore_name << egs.position << fort::endr;
     }
     return table.to_string();
 }

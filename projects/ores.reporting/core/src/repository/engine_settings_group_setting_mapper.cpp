@@ -47,11 +47,7 @@ engine_settings_group_setting_mapper::map(const engine_settings_group_setting_en
     r.group_code = v.group_code;
     r.column_name = v.column_name;
     r.ore_name = v.ore_name;
-    r.kind = v.kind;
     r.changes_numbers = v.changes_numbers;
-    r.options = v.options;
-    r.minimum = v.minimum;
-    r.maximum = v.maximum;
     r.position = v.position;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -74,11 +70,7 @@ engine_settings_group_setting_mapper::map(const domain::engine_settings_group_se
     r.group_code = v.group_code;
     r.column_name = v.column_name;
     r.ore_name = v.ore_name;
-    r.kind = v.kind;
     r.changes_numbers = v.changes_numbers;
-    r.options = v.options;
-    r.minimum = v.minimum;
-    r.maximum = v.maximum;
     r.position = v.position;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

@@ -45,23 +45,23 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 \echo '--- Engine Settings Group Settings ---'
 
 insert into ores_reporting_engine_settings_group_settings_tbl (
-    code, tenant_id, version, group_code, column_name, ore_name, kind, changes_numbers, options, minimum, maximum, position, modified_by, change_reason_code, change_commentary
+    code, tenant_id, version, group_code, column_name, ore_name, changes_numbers, position, modified_by, change_reason_code, change_commentary
 ) values
-    ('fixings:imply_todays_fixings', ores_utility_system_tenant_id_fn(), 0, 'fixings', 'imply_todays_fixings', 'implyTodaysFixings', 'flag', true, '', null, null, 0, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
-    ('fixings:include_todays_cash_flows', ores_utility_system_tenant_id_fn(), 0, 'fixings', 'include_todays_cash_flows', 'includeTodaysCashFlows', 'flag', true, '', null, null, 1, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
-    ('fixings:include_reference_date_events', ores_utility_system_tenant_id_fn(), 0, 'fixings', 'include_reference_date_events', 'includeReferenceDateEvents', 'flag', true, '', null, null, 2, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
-    ('fixings:enrich_index_fixings', ores_utility_system_tenant_id_fn(), 0, 'fixings', 'enrich_index_fixings', 'enrichIndexFixings', 'flag', true, '', null, null, 3, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
-    ('fixings:ignore_fixing_lag', ores_utility_system_tenant_id_fn(), 0, 'fixings', 'ignore_fixing_lag', 'ignoreFixingLag', 'whole', true, '', 0, null, 4, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
-    ('fixings:ignore_fixing_lead', ores_utility_system_tenant_id_fn(), 0, 'fixings', 'ignore_fixing_lead', 'ignoreFixingLead', 'whole', true, '', 0, null, 5, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
-    ('building:observation_model', ores_utility_system_tenant_id_fn(), 0, 'building', 'observation_model', 'observationModel', 'choice', false, 'None,Disable,Defer,Unregister', null, null, 0, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
-    ('building:lazy_market_building', ores_utility_system_tenant_id_fn(), 0, 'building', 'lazy_market_building', 'lazyMarketBuilding', 'flag', false, '', null, null, 1, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
-    ('building:build_failed_trades', ores_utility_system_tenant_id_fn(), 0, 'building', 'build_failed_trades', 'buildFailedTrades', 'flag', true, '', null, null, 2, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
-    ('building:continue_on_error', ores_utility_system_tenant_id_fn(), 0, 'building', 'continue_on_error', 'continueOnError', 'flag', true, '', null, null, 3, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
-    ('building:use_at_par_coupons_curves', ores_utility_system_tenant_id_fn(), 0, 'building', 'use_at_par_coupons_curves', 'useAtParCouponsCurves', 'flag', true, '', null, null, 4, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
-    ('building:use_at_par_coupons_trades', ores_utility_system_tenant_id_fn(), 0, 'building', 'use_at_par_coupons_trades', 'useAtParCouponsTrades', 'flag', true, '', null, null, 5, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
-    ('execution:n_threads', ores_utility_system_tenant_id_fn(), 0, 'execution', 'n_threads', 'nThreads', 'whole', false, '', 1, null, 0, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
-    ('execution:log_mask', ores_utility_system_tenant_id_fn(), 0, 'execution', 'log_mask', 'logMask', 'whole', false, '', 0, null, 1, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
-    ('execution:gzip_compression_level', ores_utility_system_tenant_id_fn(), 0, 'execution', 'gzip_compression_level', 'gzipCompressionLevel', 'whole', false, '', 0, 9, 2, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups')
+    ('fixings:imply_todays_fixings', ores_utility_system_tenant_id_fn(), 0, 'fixings', 'imply_todays_fixings', 'implyTodaysFixings', true, 0, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
+    ('fixings:include_todays_cash_flows', ores_utility_system_tenant_id_fn(), 0, 'fixings', 'include_todays_cash_flows', 'includeTodaysCashFlows', true, 1, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
+    ('fixings:include_reference_date_events', ores_utility_system_tenant_id_fn(), 0, 'fixings', 'include_reference_date_events', 'includeReferenceDateEvents', true, 2, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
+    ('fixings:enrich_index_fixings', ores_utility_system_tenant_id_fn(), 0, 'fixings', 'enrich_index_fixings', 'enrichIndexFixings', true, 3, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
+    ('fixings:ignore_fixing_lag', ores_utility_system_tenant_id_fn(), 0, 'fixings', 'ignore_fixing_lag', 'ignoreFixingLag', true, 4, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
+    ('fixings:ignore_fixing_lead', ores_utility_system_tenant_id_fn(), 0, 'fixings', 'ignore_fixing_lead', 'ignoreFixingLead', true, 5, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
+    ('building:observation_model', ores_utility_system_tenant_id_fn(), 0, 'building', 'observation_model', 'observationModel', false, 0, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
+    ('building:lazy_market_building', ores_utility_system_tenant_id_fn(), 0, 'building', 'lazy_market_building', 'lazyMarketBuilding', false, 1, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
+    ('building:build_failed_trades', ores_utility_system_tenant_id_fn(), 0, 'building', 'build_failed_trades', 'buildFailedTrades', true, 2, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
+    ('building:continue_on_error', ores_utility_system_tenant_id_fn(), 0, 'building', 'continue_on_error', 'continueOnError', true, 3, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
+    ('building:use_at_par_coupons_curves', ores_utility_system_tenant_id_fn(), 0, 'building', 'use_at_par_coupons_curves', 'useAtParCouponsCurves', true, 4, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
+    ('building:use_at_par_coupons_trades', ores_utility_system_tenant_id_fn(), 0, 'building', 'use_at_par_coupons_trades', 'useAtParCouponsTrades', true, 5, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
+    ('execution:n_threads', ores_utility_system_tenant_id_fn(), 0, 'execution', 'n_threads', 'nThreads', false, 0, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
+    ('execution:log_mask', ores_utility_system_tenant_id_fn(), 0, 'execution', 'log_mask', 'logMask', false, 1, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups'),
+    ('execution:gzip_compression_level', ores_utility_system_tenant_id_fn(), 0, 'execution', 'gzip_compression_level', 'gzipCompressionLevel', false, 2, 'ores_reporting_service', 'system.initial_load', 'Seed engine settings groups')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;

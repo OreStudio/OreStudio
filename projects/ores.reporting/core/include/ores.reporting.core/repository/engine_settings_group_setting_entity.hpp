@@ -48,11 +48,7 @@ struct engine_settings_group_setting_entity {
     std::string group_code;
     std::string column_name;
     std::string ore_name;
-    std::string kind;
     bool changes_numbers = false;
-    std::string options;
-    std::optional<double> minimum;
-    std::optional<double> maximum;
     int position = 0;
     std::string modified_by;
     std::string performed_by;
@@ -73,11 +69,7 @@ struct engine_settings_group_setting_entity {
                query_builder::bind("group_code", &e::group_code) |
                query_builder::bind("column_name", &e::column_name) |
                query_builder::bind("ore_name", &e::ore_name) |
-               query_builder::bind("kind", &e::kind) |
                query_builder::bind("changes_numbers", &e::changes_numbers) |
-               query_builder::bind("options", &e::options) |
-               query_builder::bind("minimum", &e::minimum) |
-               query_builder::bind("maximum", &e::maximum) |
                query_builder::bind("position", &e::position) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

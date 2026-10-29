@@ -75,9 +75,14 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Forbidden edges in the tree | 37, accepted in the baseline | =python3 projects/ores.codegen/scripts/check_core_link_edges.py --list= | (this branch) |
 | Forbidden edges in =ores.ore.core= | 0 | =python3 projects/ores.codegen/scripts/check_core_link_edges.py --list | grep "ores.ore.core.lib links"= | (this branch) |
-| Tests of the gate | 7 passed | =pytest projects/ores.codegen/tests/test_core_link_edges.py= | (this branch) |
+| Tests of the gate | 13 passed | =pytest projects/ores.codegen/tests/test_core_link_edges.py= | (this branch) |
 
 * Notes
+
+The gate reads the CMake tree, so its blind spot is a link it cannot see: a
+dependency that names a variable the templates do not use, and a core file that
+states no name, are both failures rather than silence. Today every core is
+scanned and every dependency is literal.
 
 * Test Scenarios
 
@@ -123,14 +128,15 @@ That declaration left the component model, and the check now passes for
 The deliberate violation the acceptance asks for:
 
 #+begin_example
-ores.ore.core.lib: links ores.reporting.core.lib, which is ore's core library.
+ores.ore.core.lib: links ores.reporting.core.lib, which is reporting's core library.
 A core may link another component's api contract, not its core.
 1 core link edge(s) failed the check.
 #+end_example
 
-* Notes
-
-The seven cases of the gate's suite state what the parser must find and what it
-must not: another component's core, another component's service, an api contract
-or its own libraries, the shared =ores.service.lib= (which is not a component),
-a new edge, an accepted edge, and a baseline entry whose edge is gone.
+The gate's suite states what the parser must find and what it must not: another
+component's core, another component's service, an api contract or its own
+libraries, the shared =ores.service.lib= (which is not a component), a link named
+only in a comment, a new edge, an accepted edge, a baseline entry whose edge is
+gone, and an edge whose dependency names a variable the check cannot resolve.
+The message names the component the dependency belongs to, not the one that
+links it, and a case pins that too.

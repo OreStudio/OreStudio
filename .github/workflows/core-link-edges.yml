@@ -16,15 +16,21 @@
 ---
 name: Core link edges
 on:  # yamllint disable-line rule:truthy
-  # The check reads every component's CMakeLists, so it fires on any of them,
-  # and on the check, its baseline and this file, so an edit to any of those is
-  # verified here too.
+  # The check reads every CMakeLists under projects, including the tests and
+  # modeling directories that state a core's name, so it fires on any of them,
+  # and on the check, its baseline and this file.
   push:
     branches: ["main"]
     paths:
-      - "projects/ores.*/*/src/CMakeLists.txt"
-      - "projects/ores.*/*/CMakeLists.txt"
-      - "projects/ores.*/CMakeLists.txt"
+      - "projects/**/CMakeLists.txt"
+      - "projects/ores.codegen/scripts/check_core_link_edges.py"
+      - "projects/ores.codegen/scripts/core_link_edges_baseline.json"
+      - ".github/workflows/core-link-edges.yml"
+
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "projects/**/CMakeLists.txt"
       - "projects/ores.codegen/scripts/check_core_link_edges.py"
       - "projects/ores.codegen/scripts/core_link_edges_baseline.json"
       - ".github/workflows/core-link-edges.yml"
@@ -37,9 +43,9 @@ permissions:
 jobs:
   # A component's core is the domain and its repositories. It may depend on
   # other components' api contracts and on the shared libraries; it may not
-  # depend on another component's core or service, which is how the ORE codec
-  # once reached into reporting's repositories. The ratchet baseline names the
-  # edges that predate the rule. The scan needs no toolchain.
+  # depend on another component's core or service: an edge of that kind is how a
+  # codec comes to reach into another component's repositories. The ratchet
+  # baseline names the edges that predate the rule. The scan needs no toolchain.
   core-link-edges:
     runs-on: ubuntu-24.04
     steps:

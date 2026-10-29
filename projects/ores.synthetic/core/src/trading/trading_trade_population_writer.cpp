@@ -18,6 +18,7 @@
  *
  */
 #include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
+#include "ores.dq.api/messaging/lei_entity_protocol.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
@@ -37,6 +38,7 @@
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
 #include "ores.trading.api/domain/commodity_instruments.hpp"
+#include "ores.trading.api/domain/credit_instruments.hpp"
 #include "ores.trading.api/domain/rate_instruments.hpp"
 #include "ores.trading.api/domain/equity_instruments.hpp"
 #include "ores.trading.api/domain/fx_instruments.hpp"
@@ -280,6 +282,17 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
              */
             .kind = "equity",
             .currency = underlying.currency_code});
+
+    /*
+     * A credit trade references a legal entity by its LEI. The entities belong
+     * to the DQ dataset rather than to a trading table, so the population reads
+     * them from where they live and states the LEI as the reference.
+     */
+    ores::dq::messaging::list_lei_entities_request lei_req;
+    lei_req.limit = page;
+    for (const auto& entity : read(lei_req).entities)
+        if (!entity.lei.empty())
+            scope.credit_reference_entities.push_back(entity.lei);
 
     ores::refdata::messaging::list_counterparties_request cp_req;
     cp_req.limit = page;
@@ -1304,6 +1317,34 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             throw trade_population_write_error("The FX trade type " + type +
                                                " states no table this writer knows.");
         }
+
+    } else if (const auto* credit = std::get_if<domain::credit_terms>(&slot.terms)) {
+        namespace tdom = ores::trading::domain;
+        tdom::credit_common_terms terms;
+        terms.trade_type_code = slot.trade_type_code;
+        terms.reference_entity_id_type = credit->reference_entity_id_type;
+        terms.reference_entity_id = credit->reference_entity_id;
+        terms.start_date = credit->start_date;
+        terms.maturity_date = credit->maturity_date;
+
+        const auto& type = slot.trade_type_code;
+        auto row = [&] {
+            if (type == "CreditDefaultSwap")
+                return tdom::construct_credit_default_swap(terms);
+            if (type == "IndexCreditDefaultSwap")
+                return tdom::construct_index_credit_default_swap(terms);
+            if (type == "IndexCreditDefaultSwapOption")
+                return tdom::construct_index_credit_default_swap_option(terms);
+            if (type == "CreditLinkedSwap")
+                return tdom::construct_credit_linked_swap(terms);
+            if (type == "RiskParticipationAgreement")
+                return tdom::construct_risk_participation_agreement(terms);
+            return tdom::construct_synthetic_cdo(terms);
+        }();
+        row.description = "Generated credit trade.";
+        row.audit.change_reason_code = std::string(population_reason);
+        row.audit.change_commentary = "Generated trade population.";
+        book_req.instruments.credit_instruments.push_back(row);
 
     } else {
         throw trade_population_write_error(

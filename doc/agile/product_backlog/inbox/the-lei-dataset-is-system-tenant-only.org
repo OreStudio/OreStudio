@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: C743B8B4-563C-472F-9F01-BB8B98C9300A
+:END:
+#+title: The LEI dataset is system-tenant only, so a party cannot read it
+#+description: The 38,213 legal entities a provisioned tenant holds sit in the DQ lei_entity artefact under the system tenant (ffffffff-ffff-ffff-ffff-ffffffffffff). A party's session reads its own tenant, so list_lei_entities returns nothing and a credit trade cannot name a reference entity. Legal entities are world data that every party should see, which is the split already recorded as world data versus party configuration; until that split reaches this dataset, no family can reference a legal entity.
+#+type: capture
+#+level: cross
+#+filetags: :=dq= =refdata= =tenancy= =defect=:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

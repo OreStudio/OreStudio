@@ -85,3 +85,35 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The family exists: constructors for its six routed codes, a planner that draws
+five of them, a writer arm, and a read path from the synthetic service into the
+DQ lei_entity dataset. It does not book, and the reason is not this family.
+
+The DQ read returns nothing for a party session. The 38,213 legal entities sit
+in the DQ lei_entity artefact under the *system* tenant, and a session acting as
+a party reads its own tenant, so the planner's refusal fires:
+"The tenant holds no legal entity, so no credit trade can state a reference
+entity. Publish the LEI dataset first."
+
+Measured: every row of ores_dq_lei_entities_artefact_tbl carries
+tenant_id = ffffffff-ffff-ffff-ffff-ffffffffffff, and acme_corporation is
+484a4153-d7b6-46cf-b382-884d86ce8225.
+
+So legal entities are world data recorded as if they were one tenant's, which is
+the split already captured as world data versus party configuration. Until that
+split reaches this dataset, no family can reference a legal entity, and the
+credit config is deliberately not seeded: with it seeded the provisioning run
+fails at generate_trades, and a green run matters more than an empty family.
+
+Captured: [[file:../../../../product_backlog/inbox/the-lei-dataset-is-system-tenant-only.org][The LEI dataset is system-tenant only, so a party cannot read it]].
+
+* What is proved
+
+- The constructors refuse a reference that is neither LEI nor Internal, and an
+  LEI that is not twenty alphanumeric characters.
+- The planner refuses a scope with no legal entity, by name, instead of booking
+  a credit trade with no reference.
+- The provisioning run is green with no credit config, and the suites pass:
+  =ores.synthetic.core.tests= 1741 assertions in 79 test cases,
+  =ores.trading.api.tests= 548 in 147.

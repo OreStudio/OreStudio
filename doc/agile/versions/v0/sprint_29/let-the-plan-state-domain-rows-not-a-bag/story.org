@@ -52,7 +52,7 @@ A trade has one description, in the domain. The planner draws a product and cons
 | [[id:196C254E-7632-4F8B-93FF-33B3A4E0C9D4][State what a credit reference entity is]] | DONE | 2026-10-29 | 2026-10-29 | The credit writer and its routing exist and the credit catalogue is seeded, but no ACME party has a credit generation config, so a provisioned tenant holds no credit trades at all. Measured on a recreated database: zero rows in the credit instrument table, and the demo profile seeds bond, commodity, equity, fx and interest_rates only. Unlike commodities, which were chartered in the same sprint, credit has neither a book nor a config. |
 | [[id:09DAA144-047F-4191-8D21-AC32C11F4289][The bond population books one product of ten]] | BACKLOG | | | Ten trade types route to the bond instrument table. The planner draws exactly one of them, a plain Bond, so every one of the twenty-four bond trades in a provisioned tenant is a Bond and the other nine codes never appear. The family's own fact rows -- the option, the repo, the future, the total return swap, the ASCOT, the callable's call dates, the convertible's conversion targets -- are all empty, because the writer fills only the instrument header. A tenant therefore cannot see a bond option, a repo or a convertible, and nothing says so. |
 | [[id:E089FF36-13AC-44C8-8AF3-6D8B4E6403BC][Populate the credit family]] | DONE | | 2026-10-29 | Credit has a routed table, catalogue rows and four seeded books, and nothing that writes it: no credit trade planner and no writer arm. Draw its five products, resolve reference entities from the DQ lei_entity dataset, and prove the family books. |
-| [[id:E692198E-97E6-44A4-9EE1-2C566DDFC831][Give the system a legal entity]] | BACKLOG | | | A credit trade must reference a legal entity by LEI, and the system has nowhere to put one: the 38,213 LEI rows sit in a DQ artefact under the system tenant, a party session cannot read them, and the publication that does exist turns them into counterparties, which carry a name and no LEI. Model the legal entity where a party can reference it. |
+| [[id:E692198E-97E6-44A4-9EE1-2C566DDFC831][Give the system a legal entity]] | DONE | | | A credit trade must reference a legal entity by LEI, and the system has nowhere to put one: the 38,213 LEI rows sit in a DQ artefact under the system tenant, a party session cannot read them, and the publication that does exist turns them into counterparties, which carry a name and no LEI. Model the legal entity where a party can reference it. |
 
 * Decisions
 
@@ -132,6 +132,56 @@ The couplings move into named constructors beside the types, one per routed
 product, each taking that product's own facts and filling exactly the columns it
 states. The rule becomes: *a product is constructed, never assembled*. The SQL
 check stays as the backstop it should always have been.
+
+* The flip: what it changes, and the order
+
+Every family now constructs its products, but the population still carries each
+trade as a bag of drawn fields and the writer still translates one. The last
+step removes both: a slot states the domain rows, and the writer persists them.
+
+**1. The slot carries an instrument batch.** =trade_population_slot.terms= is a
+=std::variant= of eight bags; it becomes one =instrument_batch=, the shape the
+booking request already takes. The envelope the slot already carries -- book,
+counterparty, trader, trade date, structure -- is untouched, because it belongs
+to the trade and not to the product.
+
+**2. Construction moves into the planner.** A planner already resolves the
+scope; it will call the constructors the last four tasks produced and put the
+rows in the batch. A planner that cannot construct a product will fail where the
+drawing happens, with the product named, instead of failing in the writer after
+the trade has been half-built.
+
+**3. The writer stops translating.** Its per-family arms go. It stamps the audit
+columns on every row in the batch, builds the booking request's anchor and
+booking from the envelope, and sends. Stamping becomes one walk over the batch
+rather than six hand-written ones.
+
+**4. The bag dies last, and only when empty.** =trade_terms= and the eight
+=*_terms= structs are deleted when the last family stops filling them. Until
+then they stay and one family uses each, which is what makes the move safe: a
+family that has flipped cannot regress, and a family that has not keeps booking.
+
+* Order of families
+
+Bond, commodity, rates, fx, equity, credit. Smallest first, and bond first
+because it draws one product, so the seam is proved where there is least to
+change. Each family flips in its own task with its own provisioning run, and the
+population it books must match what it booked before the flip: the run is the
+proof, and a changed count is a defect in the move rather than a decision.
+
+* What must not change
+
+- The rows the population writes. A flip is a move, not a redesign; the eight
+  families book the same trades afterwards.
+- The envelope. Book, counterparty, trader and dates stay the generator's.
+- The config and the scope. They are the generator's own language.
+
+* What this does not fix
+
+Products the planner does not draw. Bonds draw one of ten, and their fact rows
+are empty; credit draws five of six. Those are population decisions recorded as
+their own tasks, and the flip does not hide them: a family that draws one
+product still books one product.
 
 * Design record
 

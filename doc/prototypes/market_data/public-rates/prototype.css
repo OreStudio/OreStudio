@@ -218,3 +218,10 @@ table.list td.num, table.list td.when { font-family: var(--mono); font-variant-n
 /* Two screens: the plumbing and the rates. */
 .screen-switch { display: flex; gap: 8px; align-items: baseline; margin-top: 10px; }
 .screen-switch a[aria-current="page"] { background: var(--accent-dim); border-color: var(--accent-line); }
+
+/* Asset-class segmented control and the state combo. */
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius-chip); overflow: hidden; }
+.seg a { padding: 2px 10px; font: 600 .72rem/1.6 var(--mono); letter-spacing: var(--tracking); color: var(--ink-muted); text-decoration: none; }
+.seg a.primary { background: var(--accent-dim); color: var(--ink); }
+.seg a + a { border-left: 1px solid var(--line); }
+.filters select { background: var(--sunk); border: 1px solid var(--line); border-radius: var(--radius-chip); padding: 3px 6px; font-size: .78rem; }

@@ -116,10 +116,14 @@ function renderList() {
     document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === 'providers')));
     const classes = ['all', 'fx', 'ir'];
     const states = ['all', 'fresh', 'late', 'no data'];
-    document.querySelector('#filters').innerHTML = classes.map((c) =>
-        `<a class="act ${klass === c ? 'primary' : ''}" href="${fn.href({ tab: 'providers', provider: null, rtab: null, class: c === 'all' ? null : c })}">${c.toUpperCase()}</a>`).join('')
-        + '<span class="faint">·</span>' + states.map((s) =>
-        `<a class="act ${stateFilter === s ? 'primary' : ''}" href="${fn.href({ tab: 'providers', provider: null, rtab: null, state: s === 'all' ? null : s })}">${s}</a>`).join('');
+    document.querySelector('#filters').innerHTML =
+        `<span class="seg" role="group" aria-label="Asset class">${classes.map((c) =>
+            `<a class="${klass === c ? 'primary' : ''}" href="${fn.href({ tab: 'providers', provider: null, rtab: null, class: c === 'all' ? null : c })}">${c === 'all' ? 'ALL' : c.toUpperCase()}</a>`).join('')}</span>
+         <select id="state-filter" aria-label="Freshness state">${states.map((s) =>
+            `<option value="${s}" ${stateFilter === s ? 'selected' : ''}>${s === 'all' ? 'Any state' : s}</option>`).join('')}</select>`;
+    document.querySelector('#state-filter').addEventListener('change', (e) => {
+        location.search = fn.href({ tab: 'providers', provider: null, rtab: null, state: e.target.value === 'all' ? null : e.target.value });
+    });
     let rows = fn.rows();
     if (klass !== 'all') rows = rows.filter((r) => r.cls === klass);
     if (stateFilter !== 'all') rows = rows.filter((r) => r.state === stateFilter);

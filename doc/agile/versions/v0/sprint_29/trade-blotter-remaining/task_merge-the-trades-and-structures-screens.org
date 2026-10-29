@@ -48,17 +48,24 @@ follows the decision, and the screen follows the prototype.
 
 * Acceptance
 
-- A recorded decision on the shape: a structure is a row of the blotter with its
-  legs folded under it, a separate screen, or a row that opens a record page —
-  with the reason the other shapes were rejected.
-- The perspectives the screen offers are named, each with the question it
-  answers and the column or grouping that answers it.
-- A clickable prototype of the chosen screen, beside the two screens it replaces
-  or folds, so the difference is visible.
-- The read that serves it is stated: one paged read over the summary the views
-  already produce, or several. It names the filter, the order and the grouping.
-- What happens to the structures list and the deal page is stated: kept, folded
-  into the blotter, or deleted.
+- The blotter's shape is fixed: a portfolio tree on the left and a trade list
+  beside it, whose rows are the top-level trades and the structures. A row opens
+  the trade view or the structure view; a structure's legs are not rows of the
+  list.
+- A flat option is specified: the same list with the structures expanded to their
+  legs, so only leaves and leaf trades are rows.
+- The perspectives are explored and named, each with the question it answers, the
+  topology it groups by, and the read that serves it. The task states which one
+  ships first and why.
+- A clickable prototype of the screen, with the default view, the flat option and
+  one perspective beyond the portfolio tree.
+- The read is stated: one paged read over the summary the views already produce,
+  with the filter, the order and the grouping, or the reason a second read is
+  needed.
+- What happens to the structures list and the structure's page is stated: folded
+  into the blotter, kept as the record a row opens, or deleted.
+- No screen copy, message or prototype says *deal*: the words are the composition
+  ladder's, and the ten locale keys that say it today are named and rewritten.
 
 * Plan
 
@@ -69,17 +76,19 @@ follows the decision, and the screen follows the prototype.
 Two pages in the tree state the target, and both contradict the two screens this
 arc built.
 
-[[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] gives the deal grid a
+[[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] gives the grid a
 *Trade ID*, a *Structure ID* ("Parent structure identifier; blank for standalone
 trades") and a *Strategy* column ("Named structure: RR, Butterfly, Strangle,
 Spread, DNT"), and it draws the *Structure view* as a mini-blotter of the
-selected deal's legs, tabbed by product type. That is one screen, with the deal
-as a row and the legs read inside it.
+selected structure's legs, tabbed by product type. That is one screen, with the
+structure as a row and the legs read inside it. Its prose uses "deal" for the
+structure throughout; this task replaces that word, as the owner ruled.
 
 [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]
 states the same as a requirement: "the blotter needs to show the deal as one row
 and the legs as children of it", and notes that front-office screens offer a
-condensed and an expanded presentation of the same tree.
+condensed and an expanded presentation of the same tree. Its title and that quote
+are its own words; the rule applies to what this task writes and builds.
 
 The data layer already agrees. The trade summary view emits rows of two kinds —
 =trade= and =structure= — and the blotter's own read filters on =row_kind=. The
@@ -105,36 +114,51 @@ answer, not for implementation detail:
 - [[https://calypsoeducation.nasdaq.com/courses/1010-structured-flows][Calypso 1010 - Structured Flows]]
 - [[https://calypsoeducation.nasdaq.com/courses/calypso-trade-blotter][Calypso Trade Blotter]]
 
-** The candidate shapes
+** The shape, as the owner decided it on 2026-10-29
 
-- *A. One blotter, structures folded in it.* The list reads the summary rows of
-  both kinds; a structure row carries a disclosure triangle and its legs unfold
-  under it; the columns state the deal for a structure and the leg for a trade.
-  The deal page survives as the record a row opens.
-- *B. One blotter with a perspective switch.* Shape A, plus a rail or a switch
-  that changes the grouping and the columns: portfolio and book tree,
-  counterparty, book, product family. Every perspective is the same read with a
-  different filter and order.
-- *C. Two screens, joined by links.* What exists today, with the blotter gaining
-  a structure column and the structures list gaining the trade's economics. The
-  cheapest change and the one that keeps the duplication.
+One screen, not two. It opens on a portfolio tree on the left and the trade list
+beside it. The list's rows are what a person books and sees at the top level: the
+top-level trades, and the structures — packages and the other rungs of the
+composition ladder — as single rows. A structure's legs are not rows of that list,
+because they are inside it.
 
-The question the task answers is which of A, B or C the next screens take, and
-whether the deal page is the record a row opens or a tab inside the blotter.
+A row opens what it is: a trade that belongs to no structure opens the trade view,
+and a structure opens the structure view. The two record screens survive as what a
+row opens; they stop being places a person browses to on their own.
 
-** The perspectives, and what each asks
+A *flat* option turns the same list into leaves: the structures expanded to their
+legs, so every row is a trade. The option is an option and not the default,
+because the flat list loses the commercial unit the customer bought while it makes
+the risk readable trade by trade.
 
-| Perspective | The question | What it groups by | Evidence it needs |
-|-------------+--------------+-------------------+-------------------|
-| Portfolio and book tree | What does this portfolio hold, down to the trade? | The portfolio, book and desk hierarchy | The portfolio of each book, and a roll-up per node |
-| Counterparty | What have we done with this counterparty, and when? | Counterparty, then trade date | Counterparty on every row, which the summary carries |
-| Book | What is in this book today? | Book, then product family | Book on every row, which the summary carries |
-| Deal | What does this structure hold? | The structure, then its legs | The structure rows and the member rows the summary view already emits |
-| My day | What did I book or change today? | The trader and the day | The trader and the audit fields |
+The two screens this arc built are therefore replaced by one: the structures list
+folds into the blotter, and the structure's page becomes the structure view a row
+opens. The existing blotter's structure view — a mini-blotter of the selected
+structure's legs, tabbed by product type — is the same idea at a smaller scale and
+is folded in with it.
 
-Two questions follow, and the task answers them rather than assuming: whether a
-perspective is a saved view of one list or a different screen, and whether the
-rows a perspective shows are structures, legs, or both with the choice folded.
+** Perspectives, and why the word needs exploring
+
+The owner's framing: a trade set has two or three topologies it can be read
+through, and each answers a different desk's question.
+
+| Topology | The question | Serves | What the read needs |
+|----------+--------------+--------+---------------------|
+| The portfolio tree, with or without structures | What does this book hold, and how does it roll up? | Trading | The portfolio, book and desk hierarchy, a roll-up per node, and the flat option |
+| The counterparty topology | What have we done with this counterparty, and when? | Sales, and credit risk exposure | Counterparty on every row, a roll-up per counterparty, and the netting set |
+| The instrument and asset-class topology | What risk are we carrying in this family, and where? | Trading, and risk | The instrument family and asset class on every row, rolled up |
+
+The first is the default and the one that ships first: it is the hierarchy the
+books already model, and it is what a trader opens the screen for. The second is
+for sales and credit risk; the third is the risk cut. The task explores what a
+perspective actually is before building one — a saved view of one list, a
+different grouping and column set over the same read, a separate screen, or a
+different read — and states the test that tells them apart. *Perspective* is
+therefore a working word in this task, not a decided concept.
+
+Two things follow and are answered here rather than assumed: whether the tree on
+the left changes with the perspective or stays the portfolio tree, and whether a
+perspective is chosen by a control on the screen or by the address.
 
 ** The read
 
@@ -172,6 +196,22 @@ the screen is designed, with its command and commit recorded then.
   different perspectives (e.g. counterparty perspective rather than portfolio
   tree and so on)". The task exists to answer that with evidence rather than
   preference.
+- The owner then fixed the shape in the same conversation, and it is the one this
+  task designs: "we need a trade blotter which opens up with the default view of a
+  portfolio tree on the left hand side, and the trade list in the middle of the
+  screen. the trade list contains top level trades, structures packages etc. if a
+  user clicks on a trade which is not in a structure, it shows the trade view. if
+  the user clicks on a structure it shows the structure view. legs are not in the
+  trade list as they are inside the structure. however, a user may want to see a
+  flat view, in which case we only show the legs for structures plus leaf trades."
+- The same conversation fixed the perspectives' purpose: the first is for trading,
+  the second for sales and credit risk. The owner also asked for the word itself to
+  be explored, which this task does rather than assuming a control.
+- The owner ruled out *deal* as a term in the same breath. It is recorded as a
+  memory, and this task's acceptance makes the screens it designs use the
+  composition ladder's words. Today the English copy says it in ten keys under
+  =trading.structure= and =trading.booking=, the server's refusal messages say it,
+  the browser cases say it, and the story's own pages say it.
 - The two screens that exist today were built in
   [[id:2D3C5B23-E6DB-46D5-8732-ACF54987A33A][Build Book a trade]] and its
   structure screens; their shapes follow the prototypes, and the prototypes did

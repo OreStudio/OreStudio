@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 7FB91F2B-13FA-4589-BB5D-B85628A0E897
+:END:
+#+title: Never call a structure a deal
+#+description: The owner ruled out 'deal' as a term: the objects are trade, leg, structure, package and strategy.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :llm:memory:feedback:trading:ux:wording:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+
+Use the composition ladder's words for what the trading screens show: trade, leg, structure, package, strategy. Do not use the word deal.
+
+*Why:* The prototypes said deal throughout and the screens followed them, so the term reached labels, sentences and the agile record. The owner ruled it out on 2026-10-29 while shaping the merged blotter: deal is the customer's word for the commercial act, and it conflates a typed structure, an untyped package and a strategy, which the composition ladder separates. It also reads as though the leg is not a trade.
+
+*How to apply:* Write structure or package (or strategy when it is one), and trade or leg for the parts. Check locale files, server refusal messages, test names and agile docs, because the term spread into all four. A structure's own record page is the structure view; a trade's is the trade view.

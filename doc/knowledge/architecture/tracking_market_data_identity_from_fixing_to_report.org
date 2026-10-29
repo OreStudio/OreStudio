@@ -9,7 +9,7 @@
 #+created: 2026-10-28
 #+updated: 2026-10-28
 
-* Abstract
+* Summary
 
 This document describes the target state of market data provenance in ORE
 Studio. Every number a consumer reads will answer three questions: what it is,

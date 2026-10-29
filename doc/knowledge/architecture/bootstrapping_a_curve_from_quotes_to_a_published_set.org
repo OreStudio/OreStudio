@@ -9,7 +9,7 @@
 #+created: 2026-10-28
 #+updated: 2026-10-28
 
-* Abstract
+* Summary
 
 This document describes the target state of curve construction in ORE Studio. A
 curve is not observed in the market; the market quotes instruments, and a

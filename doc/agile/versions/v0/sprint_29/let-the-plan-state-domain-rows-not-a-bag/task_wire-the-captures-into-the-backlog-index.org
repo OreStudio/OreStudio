@@ -8,7 +8,7 @@
 #+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
 #+owner: marco
 #+branch: feature/wire-the-captures-into-the-backlog-index
-#+pr:
+#+pr: 4047
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4047][#4047]] | [agile] Wire the captures into the backlog index |
 
 * Review
 

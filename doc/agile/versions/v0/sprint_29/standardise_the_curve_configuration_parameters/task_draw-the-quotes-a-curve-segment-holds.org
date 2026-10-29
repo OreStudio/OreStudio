@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/draw-the-quotes-a-curve-segment-holds
-#+pr:
+#+pr: 4078
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -106,7 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4078][#4078]] | [web] Draw the quotes a segment holds |
 
 * Review
 

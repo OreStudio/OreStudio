@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/document-the-curve-segment-and-quote-leaves
-#+pr:
+#+pr: 4069
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -130,7 +130,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4069][#4069]] | [reporting] Give the curve segments their words |
 
 * Review
 

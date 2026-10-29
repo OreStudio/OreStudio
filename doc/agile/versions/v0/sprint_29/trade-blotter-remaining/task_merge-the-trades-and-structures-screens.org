@@ -221,6 +221,12 @@ the screen is designed, with its command and commit recorded then.
 - The counterparty rule is a separate, open question: the store enforces the party
   of a structure's legs and not the counterparty, while the screens state both.
   Whichever shape this task picks has to state what it can enforce.
+- The book question — whether all trades under a structure share one book, and
+  what the tree does when they do not — was investigated separately:
+  [[id:1E035C4E-119B-472E-96FA-310D8B7C7CD8][The book of a structure]]. Its
+  verdict: the rule is a booking convention and not an invariant, so a structure
+  row is placed at the lowest common ancestor of its legs' books and says so when
+  it spans.
 - What is not prior art: no public Murex or Calypso documentation describes their
   internal trade-package model. The vendor pages are cited for the shape of the
   answer, and the schema documentation for the data model.

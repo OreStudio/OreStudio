@@ -666,41 +666,20 @@ std::vector<domain::book> book_service::get_books(const std::vector<std::string>
     return repo_.read_latest(ctx_, ids);
 }
 
-void book_service::save_book(const domain::book& v) {
+void book_service::save_book(const domain::book&) {
     book_refuse_direct_write();
-    if (v.id.is_nil())
-        throw std::invalid_argument("Book id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving book. " << "id: " << v.id;
-    auto t = v;
-    stamp(t, ctx_);
-    repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved book. " << "id: " << v.id;
 }
 
-void book_service::save_books(const std::vector<domain::book>& books) {
+void book_service::save_books(const std::vector<domain::book>&) {
     book_refuse_direct_write();
-    for (const auto& e : books) {
-        if (e.id.is_nil())
-            throw std::invalid_argument("Book id cannot be empty.");
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << books.size() << " books";
-    auto ts = books;
-    for (auto& e : ts) {
-        stamp(e, ctx_);
-    }
-    repo_.write(ctx_, ts);
 }
 
-void book_service::delete_book(const boost::uuids::uuid& id) {
+void book_service::delete_book(const boost::uuids::uuid&) {
     book_refuse_direct_write();
-    BOOST_LOG_SEV(lg(), debug) << "Removing book. " << "id: " << id;
-    repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed book. " << "id: " << id;
 }
 
-void book_service::delete_books(const std::vector<std::string>& ids) {
+void book_service::delete_books(const std::vector<std::string>&) {
     book_refuse_direct_write();
-    repo_.remove(ctx_, ids);
 }
 
 std::vector<domain::book> book_service::get_book_history(const std::string& key) {

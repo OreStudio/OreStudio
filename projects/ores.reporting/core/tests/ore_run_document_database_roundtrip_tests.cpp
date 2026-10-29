@@ -18,13 +18,16 @@
  *
  */
 #include "ores.database/domain/party_scope.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/run_document_projection.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.reporting.core/repository/configuration_repository.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
+#include "ores.testing/ore_parameter_fixture.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "party_fixture.hpp"
+#include "ores.testing/stamp_audit.hpp"
+#include "ores.testing/two_parties.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -45,13 +48,20 @@ using ores::reporting::repository::configuration_repository;
 using ores::reporting::repository::risk_report_config_repository;
 using ores::testing::scoped_database_helper;
 
-TEST_CASE("a party sees only its own run settings", "[ore][run_document][database][roundtrip]") {
+TEST_CASE("a party sees only its own run settings",
+          "[reporting][run_document][database][roundtrip]") {
+    auto lg(ores::logging::make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "a party sees only its own run settings";
     scoped_database_helper h;
-    auto parties = ores::ore::tests::make_two_parties(h);
+    // A run document names its parameters, and the system tenant describes them.
+    auto generation = ores::testing::make_generation_context(h);
+    ores::testing::seed_system_analytic_parameters(h.context(), h.db_user(), generation);
+    auto parties = ores::testing::make_two_parties(h);
 
     const auto original = run_document_projection::read(
         file::read_content(corpus_file("ORE-Python/Notebooks/Example_1/Input/ore.xml")));
     auto next_id = boost::uuids::random_generator();
+
 
     ores::reporting::domain::configuration header;
     header.id = next_id();
@@ -59,6 +69,7 @@ TEST_CASE("a party sees only its own run settings", "[ore][run_document][databas
     header.configuration_type_code = "risk_report_config";
     header.owning_component = "ores.reporting";
     ores::database::domain::assign_party(header, parties.a);
+    ores::testing::stamp_audit(header, h.db_user());
     configuration_repository().write(parties.a_context, header);
 
     auto settings = run_document_projection::map_setup(original).settings;
@@ -68,6 +79,7 @@ TEST_CASE("a party sees only its own run settings", "[ore][run_document][databas
     settings.configuration_id = header.id;
     ores::database::domain::assign_party(settings, parties.a);
 
+    ores::testing::stamp_audit(settings, h.db_user());
     risk_report_config_repository repository;
     repository.write(parties.a_context, settings);
 

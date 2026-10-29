@@ -2,18 +2,18 @@
 :ID: AD82918C-283A-4C32-9324-BAC29219230A
 :END:
 #+title: Task: Move the cross-component tests out of the ORE codec
-#+description: Nine test files in the codec's suite need a database, and three of them read reporting's tables rather than the codec: the configuration type seed, reporting's configuration repository, and the run store this story deletes.
+#+description: Eight test files in the codec's suite opened a database, and three of them read reporting's tables rather than the codec: the configuration type seed, reporting's configuration repository, and the run store this story deleted.
 #+type: task
 #+level: s1
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/move-the-cross-component-tests-out-of-the-ore-codec
+#+pr: 4055
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,24 +26,37 @@ The ORE codec's suite proves the codec; the roundtrips that cross a component ru
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-27                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-29                               |
 
 * Acceptance
 
-- No test file in ores.ore.core.tests opens a database session, a repository or a transaction.
+- No test file in ores.ore.core.tests opens a database session, a repository or a transaction, except the configuration type seed check, which the third bullet keeps.
 - The document-to-rows roundtrips run in a suite that owns a database and the components they exercise.
 - The configuration type seed check stays, because it guards ORE format coverage, and it says so.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Each roundtrip goes to the suite of the component whose tables it writes:
+
+| Test | Suite |
+|------+-------|
+| credit simulation, pricing engine, today's market | ores.analytics.core.tests |
+| conventions per party, curve configuration | ores.refdata.core.tests |
+| run document, pooled session | ores.reporting.core.tests |
+
+The configuration type seed check stays, because it guards the codec's format
+coverage and not a component's rows, and a comment says so.
+
+The fixtures they shared move to =ores.testing=, where the suites that now use
+them can reach them: the two parties and their contexts, the conventions rows,
+and the two ORE corpus helpers. The helper that seeds the system analytic
+parameters leaves the party fixture, because only the run document needs it and
+the analytics suite must not be made to link reporting for it.
 
 * Measurements
 
@@ -57,7 +70,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Test files in the codec's suite that open a session | 1 (the seed check) | =grep -rln "scoped_database_helper" projects/ores.ore/core/tests/*.cpp= | (this branch) |
+| Test files moved | 7 | =git diff --stat -M origin/main -- '*tests*'= | (this branch) |
+| =ores.ore.core.tests= | passed, 29.11s | =compass test run -- -R ores.ore.core.tests= | (this branch) |
+| =ores.analytics.core.tests= | passed, 23.34s | =compass test run -- -R ores.analytics.core.tests= | (this branch) |
+| =ores.refdata.core.tests= | passed, 174.68s | =compass test run -- -R ores.refdata.core.tests= | (this branch) |
+| =ores.reporting.core.tests= | passed, 62.35s | =compass test run -- -R ores.reporting.core.tests= | (this branch) |
 
 * Notes
 
@@ -76,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4055][#4055]] | [ore] Leave the database to the suites that own one |
 
 * Review
 
@@ -85,3 +103,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The codec's suite proves the codec. Seven test files left it for the suite of the
+component whose tables they write, and the one file that still opens a session
+says why: the configuration type seed guards the ORE format coverage, so it
+belongs where the codec is.
+
+The fixtures they shared moved to =ores.testing=: the two parties and their
+contexts, the conventions rows, and the ORE corpus helpers. Nothing is copied,
+so the suites cannot drift from each other.
+
+Moving them found a fault that had been invisible: three of the moved cases wrote
+a reporting configuration without the audit fields the schema requires, so they
+failed with "modified_by cannot be null or empty". The codec's suite had not run
+them in a state where that showed. They now state their actor, and run.

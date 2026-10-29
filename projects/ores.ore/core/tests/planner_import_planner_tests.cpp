@@ -115,7 +115,7 @@ namespace {
 TEST_CASE("plan_includes_all_currencies_when_mode_is_all", "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
-    const auto root = ore_path("examples/Legacy/Example_1/Input");
+    const auto root = ores::testing::ore_path("examples/Legacy/Example_1/Input");
     const auto sr = make_scan_result(root);
 
     if (sr.currency_files.empty()) {
@@ -137,7 +137,7 @@ TEST_CASE("plan_skips_existing_iso_codes_when_mode_is_missing_only",
           "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
-    const auto root = ore_path("examples/Legacy/Example_1/Input");
+    const auto root = ores::testing::ore_path("examples/Legacy/Example_1/Input");
     const auto sr = make_scan_result(root);
 
     if (sr.currency_files.empty()) {
@@ -190,7 +190,7 @@ TEST_CASE("plan_creates_portfolios_and_books_from_portfolio_files",
           "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
-    const auto root = ore_path("examples/Legacy/Example_1");
+    const auto root = ores::testing::ore_path("examples/Legacy/Example_1");
     auto sr = make_scan_result(root / "Input");
     sr.root = root;
 
@@ -233,7 +233,8 @@ TEST_CASE("plan_creates_portfolios_and_books_from_portfolio_files",
 TEST_CASE("plan_with_parent_portfolio_has_one_extra_portfolio", "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
-    const auto source = ore_path("examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml");
+    const auto source =
+        ores::testing::ore_path("examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml");
     if (!std::filesystem::exists(source)) {
         SUCCEED("No Cash_BondRepo_and_Bond.xml — skipping");
         return;
@@ -271,7 +272,8 @@ TEST_CASE("plan_with_parent_portfolio_has_one_extra_portfolio", "[ore][planner][
 TEST_CASE("plan_rejects_a_flat_upload_with_no_parent_portfolio", "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
-    const auto source = ore_path("examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml");
+    const auto source =
+        ores::testing::ore_path("examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml");
     if (!std::filesystem::exists(source)) {
         SUCCEED("No Cash_BondRepo_and_Bond.xml — skipping");
         return;
@@ -307,7 +309,7 @@ TEST_CASE("plan_rejects_a_flat_upload_with_no_parent_portfolio", "[ore][planner]
 TEST_CASE("plan_trades_have_book_id_and_portfolio_id_stamped", "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
-    const auto root = ore_path("examples/Legacy/Example_1");
+    const auto root = ores::testing::ore_path("examples/Legacy/Example_1");
     auto sr = make_scan_result(root);
     sr.root = root;
 
@@ -339,7 +341,7 @@ TEST_CASE("plan_trades_have_book_id_and_portfolio_id_stamped", "[ore][planner][i
 TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
-    const auto root = ore_path("examples/Legacy/Example_1");
+    const auto root = ores::testing::ore_path("examples/Legacy/Example_1");
     auto sr = make_scan_result(root);
     sr.root = root;
 
@@ -424,7 +426,7 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", "[ore][planner][im
 TEST_CASE("plan_trade_defaults_override_parsed_values", "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
-    const auto root = ore_path("examples/Legacy/Example_1");
+    const auto root = ores::testing::ore_path("examples/Legacy/Example_1");
     auto sr = make_scan_result(root);
     sr.root = root;
 
@@ -459,7 +461,8 @@ TEST_CASE("plan_into_a_sandbox_creates_only_sandbox_portfolios_and_virtual_books
           "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
-    const auto source = ore_path("examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml");
+    const auto source =
+        ores::testing::ore_path("examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml");
     if (!std::filesystem::exists(source)) {
         SUCCEED("No Cash_BondRepo_and_Bond.xml — skipping");
         return;
@@ -492,7 +495,8 @@ TEST_CASE("plan_without_a_sandbox_creates_official_portfolios_and_books",
           "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
-    const auto source = ore_path("examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml");
+    const auto source =
+        ores::testing::ore_path("examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml");
     if (!std::filesystem::exists(source)) {
         SUCCEED("No Cash_BondRepo_and_Bond.xml — skipping");
         return;

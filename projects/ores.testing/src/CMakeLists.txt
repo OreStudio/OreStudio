@@ -45,6 +45,8 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.database.lib
         ores.marketdata.api.lib
+        ores.refdata.api.lib
+        ores.refdata.core.lib
         ores.ore.core.lib
     PRIVATE
         ores.platform.lib

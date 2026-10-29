@@ -156,7 +156,7 @@ TEST_CASE("validate_currency_with_multiple_errors", "[ore][xml][importer]") {
 TEST_CASE("import_currency_config_from_currencies_xml", "[ore][xml][importer]") {
     auto lg(make_logger(test_suite));
 
-    const auto f = ore_path("examples/Input/currencies.xml");
+    const auto f = ores::testing::ore_path("examples/Input/currencies.xml");
     BOOST_LOG_SEV(lg, debug) << "Importing from: " << f;
 
     const auto currencies = importer::import_currency_config(f);
@@ -179,7 +179,7 @@ TEST_CASE("import_currency_config_from_currencies_xml", "[ore][xml][importer]") 
 TEST_CASE("import_currency_config_from_example_1", "[ore][xml][importer]") {
     auto lg(make_logger(test_suite));
 
-    const auto f = ore_path("examples/Legacy/Example_1/Input/currencies.xml");
+    const auto f = ores::testing::ore_path("examples/Legacy/Example_1/Input/currencies.xml");
     BOOST_LOG_SEV(lg, debug) << "Importing from: " << f;
 
     const auto currencies = importer::import_currency_config(f);
@@ -201,7 +201,7 @@ TEST_CASE("import_currency_config_from_example_1", "[ore][xml][importer]") {
 TEST_CASE("import_currency_config_maps_all_fields", "[ore][xml][importer]") {
     auto lg(make_logger(test_suite));
 
-    const auto f = ore_path("examples/Input/currencies.xml");
+    const auto f = ores::testing::ore_path("examples/Input/currencies.xml");
     const auto currencies = importer::import_currency_config(f);
     REQUIRE(!currencies.empty());
 

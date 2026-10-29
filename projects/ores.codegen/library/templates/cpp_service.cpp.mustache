@@ -989,10 +989,11 @@ std::vector<domain::{{entity_singular}}>
     return repo_.read_latest(ctx_, {{{primary_key.batch_args}}});
 }
 
-void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{{entity_singular}}& v) {
+void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{{entity_singular}}& {{^gated}}v{{/gated}}) {
 {{#gated}}
     {{entity_singular}}_refuse_direct_write();
 {{/gated}}
+{{^gated}}
 {{#primary_key.columns}}
 {{^is_int}}
 {{^is_timestamp}}
@@ -1015,13 +1016,15 @@ void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{
 {{/has_domain_groups}}
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
+{{/gated}}
 }
 
 void {{entity_singular}}_service::save_{{entity_plural_short}}(
-    const std::vector<domain::{{entity_singular}}>& {{entity_plural_short}}) {
+    const std::vector<domain::{{entity_singular}}>& {{^gated}}{{entity_plural_short}}{{/gated}}) {
 {{#gated}}
     {{entity_singular}}_refuse_direct_write();
 {{/gated}}
+{{^gated}}
     for (const auto& e : {{entity_plural_short}}) {
 {{#primary_key.columns}}
 {{^is_int}}
@@ -1048,33 +1051,40 @@ void {{entity_singular}}_service::save_{{entity_plural_short}}(
 {{/has_domain_groups}}
     }
     repo_.write(ctx_, ts);
+{{/gated}}
 }
 
-void {{entity_singular}}_service::delete_{{entity_singular_short}}({{{primary_key.typed_params}}}) {
+void {{entity_singular}}_service::delete_{{entity_singular_short}}({{#gated}}{{{primary_key.typed_params_unnamed}}}{{/gated}}{{^gated}}{{{primary_key.typed_params}}}{{/gated}}) {
 {{#gated}}
     {{entity_singular}}_refuse_direct_write();
 {{/gated}}
+{{^gated}}
     BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
     repo_.remove(ctx_, {{{primary_key.typed_args}}});
     BOOST_LOG_SEV(lg(), info) << "Removed {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
+{{/gated}}
 }
 {{#service_find_by_uuid}}
 
-void {{entity_singular}}_service::remove_{{entity_singular_short}}(const boost::uuids::uuid& {{primary_key.column}}) {
+void {{entity_singular}}_service::remove_{{entity_singular_short}}(const boost::uuids::uuid& {{^gated}}{{primary_key.column}}{{/gated}}) {
 {{#gated}}
     {{entity_singular}}_refuse_direct_write();
 {{/gated}}
+{{^gated}}
     BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}. " << "{{primary_key.column}}: " << {{primary_key.column}};
     repo_.remove(ctx_, boost::uuids::to_string({{primary_key.column}}));
     BOOST_LOG_SEV(lg(), info) << "Removed {{entity_singular_words}}. " << "{{primary_key.column}}: " << {{primary_key.column}};
+{{/gated}}
 }
 {{/service_find_by_uuid}}
 
-void {{entity_singular}}_service::delete_{{entity_plural_short}}({{{primary_key.batch_params}}}) {
+void {{entity_singular}}_service::delete_{{entity_plural_short}}({{#gated}}{{{primary_key.batch_params_unnamed}}}{{/gated}}{{^gated}}{{{primary_key.batch_params}}}{{/gated}}) {
 {{#gated}}
     {{entity_singular}}_refuse_direct_write();
 {{/gated}}
+{{^gated}}
     repo_.remove(ctx_, {{{primary_key.batch_args}}});
+{{/gated}}
 }
 
 {{^current_state}}

@@ -23,9 +23,9 @@ ores.ore converts between ORE formats and our domain types and does nothing else
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Eight work tasks are done: the codec holds no database store, the conventions bundle is in refdata's contract, the input files a run names are declared in the codec, the engine's log has one reader, reporting holds no ORE log grammar, the run document is edited only through its projection, the codec's suite opens a session only for the seed check, and a gate fails a build whose core links another component's core. Its declared libraries are down from 22 to 18. |
+| Now           | Nine work tasks are done: the codec holds no database store, the conventions bundle is in refdata's contract, the input files a run names are declared in the codec, the engine's log has one reader, reporting holds no ORE log grammar, the run document is edited only through its projection, the codec's suite opens a session only for the seed check, a gate fails a build whose core links another component's core, and all thirteen ORE document families are classified in one table. Its declared libraries are down from 22 to 18. |
 | Waiting on    | Nothing.                               |
-| Next          | [[id:8ADBE19F-10E6-449B-BB82-4A1201488801][Classify every ORE document and record what we convert]]: document_kind knows six of the thirteen generated families, so the directory scanner cannot name a run document, a curve configuration or a today's market. |
+| Next          | Nothing: the story's tasks are done. The last one classified all thirteen families and recorded what reaches each. |
 | Last touched  | 2026-10-28                               |
 
 * Acceptance

@@ -17,6 +17,7 @@
  *
  */
 #include "ores.ore.core/xml/document_kind.hpp"
+#include <stdexcept>
 #include <cctype>
 #include <fstream>
 #include <string>
@@ -74,20 +75,42 @@ std::string root_element_of(const std::filesystem::path& file) {
 
 } // namespace
 
+const std::array<document_family, 13>& document_families() {
+    static const std::array<document_family, 13> families{{
+        {document_kind::portfolio, "Portfolio", true, true, "portfolio import and export"},
+        {document_kind::currency_config, "CurrencyConfig", true, true, "the round trip"},
+        {document_kind::calendar_adjustments, "CalendarAdjustments", true, true, "the round trip"},
+        {document_kind::conventions, "Conventions", true, true,
+         "run configuration import and export"},
+        {document_kind::curve_configuration, "CurveConfiguration", true, true,
+         "run configuration import and export"},
+        {document_kind::pricing_engines, "PricingEngines", true, true,
+         "run configuration import and export, and the round trip"},
+        {document_kind::todays_market, "TodaysMarket", true, true,
+         "run configuration import and export"},
+        {document_kind::credit_simulation, "CreditSimulation", true, true, "the round trip"},
+        {document_kind::counterparty_information, "CounterpartyInformation", false, false, {}},
+        {document_kind::ibor_fallback_config, "IborFallbackConfig", false, false, {}},
+        {document_kind::netting_set_definitions, "NettingSetDefinitions", false, false, {}},
+        {document_kind::stress_testing, "StressTesting", false, false, {}},
+        {document_kind::run_document, "ORE", true, true, "the run document projection"},
+    }};
+    return families;
+}
+
+const document_family& family_of(document_kind kind) {
+    for (const auto& family : document_families())
+        if (family.kind == kind)
+            return family;
+    // The table holds every value of the enum, which a test states.
+    throw std::logic_error("a document kind with no family in the table");
+}
+
 std::optional<document_kind> detect_document_kind(const std::filesystem::path& path) {
     const auto root = root_element_of(path);
-    if (root == "Portfolio")
-        return document_kind::portfolio;
-    if (root == "CurrencyConfig")
-        return document_kind::currency_config;
-    if (root == "CalendarAdjustments")
-        return document_kind::calendar_adjustments;
-    if (root == "Conventions")
-        return document_kind::conventions;
-    if (root == "PricingEngines")
-        return document_kind::pricing_engines;
-    if (root == "CreditSimulation")
-        return document_kind::credit_simulation;
+    for (const auto& family : document_families())
+        if (family.root_element == root)
+            return family.kind;
     return std::nullopt;
 }
 

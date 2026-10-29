@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/classify-every-ore-document-and-record-what-we-convert
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Every ORE document family is classified in one place, and the tree states in one
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-27                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-29                               |
 
 * Acceptance
 
@@ -41,9 +41,28 @@ Every ORE document family is classified in one place, and the tree states in one
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The thirteen families the generator emits become the thirteen values of
+=document_kind=, and one table says for each of them what the tree does with it:
+the root element that names it, whether the codec reads it, whether it writes
+it, and the surface that reaches it, or nothing when none does. The detector
+answers from the table, so a family is described in one row and nowhere else.
+
+| Family | Read | Write | Surface |
+|--------+------+-------+---------|
+| portfolio | yes | yes | portfolio import and export |
+| currency config, calendar adjustments, credit simulation | yes | yes | the round trip |
+| conventions, curve configuration, today's market, pricing engines | yes | yes | run configuration import and export |
+| run document | yes | yes | the run document projection |
+| counterparty information, IBOR fallback config, netting set definitions, stress testing | no | no | none |
+
+The round trip now asks the table: a family it does not convert reports itself as
+unsupported rather than throwing, because a family the codec can name is no
+longer an unknown document.
+
+Four cases state the table: every generated family has a row whose root element
+is the one its own source writes, every kind has exactly one row, a family
+nothing converts says so, and every schema in =external/ore/xsd= is recorded as
+the schema of a family or as one holding no document of ours.
 
 * Measurements
 
@@ -57,7 +76,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Families the generator emits | 13, each with a row | =ls projects/ores.ore/core/include/ores.ore.core/xml/generated/*.hpp= | (this branch) |
+| Kinds the detector answered | 6 | =grep -c "case document_kind::" projects/ores.ore/core/src/xml/roundtrip.cpp= | (this branch) |
+| Schemas in =external/ore/xsd= | 24, every one recorded | =ls external/ore/xsd/*.xsd= | (this branch) |
+| =ores.ore.core.tests= | passed, 22.98s | =compass test run -- -R ores.ore.core.tests= | (this branch) |
 
 * Notes
 
@@ -85,3 +107,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every family the generator emits is classified, and the tree says in one table
+what it does with each: which root element names it, whether the codec reads it,
+whether it writes it, and which surface reaches it.
+
+Six kinds became thirteen. The seven that were unnamed — curve configuration,
+today's market, counterparty information, IBOR fallback config, netting set
+definitions, stress testing and the run document — are named from their root
+elements, which the generated sources state.
+
+Four of them have no conversion at all, and the table says so rather than
+leaving them absent. The round trip now asks the table before converting: a
+family it does not convert is reported as unsupported, where it used to be
+indistinguishable from a file the codec had never heard of.
+
+The schema test is the gate: every file in =external/ore/xsd= is recorded as the
+schema a family comes from, or as one that holds no document of ours. A new
+schema fails the case until someone says which it is.

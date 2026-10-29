@@ -17,6 +17,7 @@
  *
  */
 #include "ores.ore.core/xml/roundtrip.hpp"
+#include <optional>
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/credit_simulation_projection.hpp"
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
@@ -55,7 +56,7 @@ using millis = std::chrono::milliseconds;
  * exporter. It throws when either half fails, so the caller decides what a
  * failure means rather than reading it out of a shared counter.
  */
-std::string
+std::optional<std::string>
 convert(const std::filesystem::path& file, document_kind kind, roundtrip_summary& summary) {
     switch (kind) {
         case document_kind::portfolio: {
@@ -157,8 +158,19 @@ convert(const std::filesystem::path& file, document_kind kind, roundtrip_summary
             ++summary.convention_files;
             return xml;
         }
+        // A family the round trip does not convert says so by returning
+        // nothing, and the loop counts it as unsupported. The coverage table
+        // states which families the tree reaches at all.
+        case document_kind::curve_configuration:
+        case document_kind::todays_market:
+        case document_kind::counterparty_information:
+        case document_kind::ibor_fallback_config:
+        case document_kind::netting_set_definitions:
+        case document_kind::stress_testing:
+        case document_kind::run_document:
+            break;
     }
-    throw std::logic_error("unhandled document kind");
+    return std::nullopt;
 }
 
 } // namespace
@@ -190,10 +202,15 @@ roundtrip_summary roundtrip(const std::filesystem::path& input_dir,
             }
 
             const auto xml = convert(file, *kind, summary);
+            if (!xml) {
+                BOOST_LOG_SEV(lg(), debug) << "Unsupported document, not written: " << relative;
+                ++summary.unsupported;
+                continue;
+            }
 
             const auto out_path = output_dir / relative;
             std::filesystem::create_directories(out_path.parent_path());
-            platform::filesystem::file::write_content(out_path, xml);
+            platform::filesystem::file::write_content(out_path, *xml);
             ++summary.output_files_written;
             BOOST_LOG_SEV(lg(), trace) << "Written: " << out_path;
         } catch (const std::exception& e) {

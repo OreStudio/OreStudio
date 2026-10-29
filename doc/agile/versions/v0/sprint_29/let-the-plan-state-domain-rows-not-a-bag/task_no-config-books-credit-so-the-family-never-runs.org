@@ -12,8 +12,9 @@ The reference entity is the open question, and it is also a defect in its own ri
 
 * Decisions
 
-- The reference entity is the LEI of the legal entity the risk is on, and the column is renamed to say so: reference_entity_lei. Its model states the soft reference to the DQ lei_entity dataset, in the shape the other soft references use.
 - The population draws its reference entities from the DQ lei_entity dataset (option A). That means a read path from the synthetic service into the DQ subject, which is the work this task carries beyond the writer.
+- The column cannot simply become an LEI. Measured while attempting the rename: the ORE importer writes a credit curve identifier or an issuer identifier into it (credit_instrument_projection.cpp: reference_entity is the issuer id, the credit curve id, or a qualifier such as =ACME= or =ACME-SR=), and the projection tests assert exactly that. A rename to reference_entity_lei plus a twenty-character check compiles but breaks the import path and misnames what imported trades carry.
+- Two shapes reconcile it, and the choice is not made: (a) one column named for what it holds, the identifier the source states, with no referential integrity; or (b) two columns, the source's identifier and a nullable LEI, where the population writes the LEI and an ORE import leaves it empty. (b) is a real fix and keeps the import honest; it changes the table's shape and the import mapping.
 
 * Scope
 
@@ -49,8 +50,9 @@ The reference entity is the open question, and it is also a defect in its own ri
 
 * Decisions
 
-- The reference entity is the LEI of the legal entity the risk is on, and the column is renamed to say so: reference_entity_lei. Its model states the soft reference to the DQ lei_entity dataset, in the shape the other soft references use.
 - The population draws its reference entities from the DQ lei_entity dataset (option A). That means a read path from the synthetic service into the DQ subject, which is the work this task carries beyond the writer.
+- The column cannot simply become an LEI. Measured while attempting the rename: the ORE importer writes a credit curve identifier or an issuer identifier into it (credit_instrument_projection.cpp: reference_entity is the issuer id, the credit curve id, or a qualifier such as =ACME= or =ACME-SR=), and the projection tests assert exactly that. A rename to reference_entity_lei plus a twenty-character check compiles but breaks the import path and misnames what imported trades carry.
+- Two shapes reconcile it, and the choice is not made: (a) one column named for what it holds, the identifier the source states, with no referential integrity; or (b) two columns, the source's identifier and a nullable LEI, where the population writes the LEI and an ORE import leaves it empty. (b) is a real fix and keeps the import honest; it changes the table's shape and the import mapping.
 
 * Scope
 

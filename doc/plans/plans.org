@@ -105,3 +105,4 @@ Active work lives in the [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][agile proces
 | 2026-05-21 | [[id:A4B5C6D7-E8F9-0A1B-2C3D-4E5F6A7B8C9D][Entity Creator Skills Overhaul]]                                                   | DONE        |
 | 2026-05-21 | [[id:3F7A2C1D-84BE-4E9F-B261-5C0D9A3E7B48][Entity Creator Skills: v1 → v2 Migration]]                                         | DONE        |
 | 2026-05-21 | [[id:B9A1498E-5903-4C82-8A19-3CE43A0BA5FA][Promote Workspace to Full Standard Entity]]                                        | MINED       |
+| 2026-10-28 | [[id:2E504EF1-F812-4D83-BD21-AE97162A1ABC][One HTTP Server: designing ores.http to replace the web BFF]]                          | PROPOSED    |

@@ -47,10 +47,45 @@ The column list marks the primary key; the field itself is a plain member.
 | SQL Type | C++ Entity Type | Notes |
 |----------|-----------------|-------|
 | `uuid` | `boost::uuids::uuid` | |
+| `tenant_id` | `utility::uuid::tenant_id` | Defaults to the system tenant |
 | `text` | `std::string` | |
 | `integer` | `int` | |
+| `bigint` | `std::int64_t` | `std::uint64_t` where the model asks for it |
+| `smallint` | `std::int16_t` | `std::uint16_t` where the model asks for it |
+| `boolean` | `bool` | |
+| `double precision` | `double` | |
+| `numeric` | `ores::utility::decimal::decimal` | Held as `double` where the model asks for it |
 | `timestamp` | `std::chrono::system_clock::time_point` | Microsecond precision |
+| `date` | `std::chrono::year_month_day` | |
 | nullable column | `std::optional<T>` | SQL NULL is `std::nullopt` |
+
+Two shapes keep their text, and the column list states them with `bind_text`
+rather than `bind`. The statement asks the server for the column cast to text,
+binds it as text and reads it through the text form, so the binary format never
+describes a type the layer has no codec for:
+
+| Shape | Examples | Why |
+|-------|----------|-----|
+| A type with no codec in the layer | `jsonb`, `inet` | The row keeps the text the server renders |
+| A column the row keeps in another type | a `date` the domain holds as a string, a `numeric` it holds as a `double` | The member keeps the domain's type and the text form parses it |
+
+The text is the server's rendering, so it is the server's spelling of the value
+that the row holds. A `jsonb` value keeps its meaning and not its layout: a
+document written with other spacing or another key order reads back canonical.
+An `inet` keeps the netmask the server prints, and a domain member of type
+`boost::asio::ip::address` has none to give back, so the mapper reads the host
+and the mask does not survive a write.
+
+A member bound with `bind` must be the type its column has, down to the width of
+an integer. The statement names no parameter types, so the server infers each
+one from the column the placeholder sits in, and the member's codec writes its
+own type in binary. A `std::int64_t` member on an `integer` column compiles and
+then fails at run time with `incorrect binary data format in bind parameter N`,
+which names neither the column nor the type.
+`projects/ores.codegen/scripts/check_entity_binary_types.py` compares every
+generated row against the table its SQL creates and reports the column, the
+member type and the column type; `compass check --only entity-binary-types` runs
+it.
 
 ---
 
@@ -85,9 +120,9 @@ std::chrono::system_clock::time_point valid_to;
 |--------|---------------|----------------|
 | Primary Key | UUID (`id`) | Composite text keys |
 | Natural Keys | Separate (code, name) | Part of composite PK |
-| Entity PK Type | `PrimaryKey<string>` for id | `PrimaryKey<string>` for left key |
+| Entity PK Type | `boost::uuids::uuid` for id | `std::string` for the left key, or a uuid where the model states one |
 | Domain includes | `<boost/uuid/uuid.hpp>` | None (no UUID) |
-| Mapper | UUID conversion needed | Simple string copy |
+| Mapper | Copies each member; both sides hold the same type | Copies each member |
 
 ---
 
@@ -222,7 +257,7 @@ Need detailed field mappings and logic:
 
 - `{entity}_generator.hpp` - Function declarations
 - `{entity}_generator.cpp` - faker expressions per field
-- `{entity}_mapper.cpp` - Field-by-field mapping with type conversions
+- `{entity}_mapper.cpp` - Field-by-field mapping; a copy for a column the row holds in the domain's own type, a conversion for the rest
 - `{entity}_repository.hpp` - CRUD operations, query methods
 - `{entity}_repository.cpp` - Statements on libpq, custom lookups
 

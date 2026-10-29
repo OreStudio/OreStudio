@@ -41,11 +41,9 @@ domain::approval_part approval_part_mapper::map(const approval_part_entity& v) {
 
     domain::approval_part r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.tenant_id = v.tenant_id;
     r.code = v.code;
-
     r.name = v.name;
-
     r.description = v.description;
     r.decide_permission_code = v.decide_permission_code;
     r.answer_order = v.answer_order;
@@ -54,7 +52,7 @@ domain::approval_part approval_part_mapper::map(const approval_part_entity& v) {
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -65,11 +63,9 @@ approval_part_entity approval_part_mapper::map(const domain::approval_part& v) {
 
     approval_part_entity r;
     r.code = v.code;
-    r.tenant_id = v.tenant_id.to_string();
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-
     r.name = v.name;
-
     r.description = v.description;
     r.decide_permission_code = v.decide_permission_code;
     r.answer_order = v.answer_order;

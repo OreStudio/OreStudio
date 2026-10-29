@@ -27,6 +27,7 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -37,6 +38,11 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a delivery outcome type in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct delivery_outcome_type_entity {
     constexpr static const char* schema = "public";

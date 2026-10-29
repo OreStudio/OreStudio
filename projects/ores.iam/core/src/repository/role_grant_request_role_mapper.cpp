@@ -48,15 +48,14 @@ role_grant_request_role_mapper::map(const role_grant_request_role_entity& v) {
     domain::role_grant_request_role r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.request_id = boost::lexical_cast<boost::uuids::uuid>(v.request_id);
-    r.role_id = boost::lexical_cast<boost::uuids::uuid>(v.role_id);
-    r.applied_at = v.applied_at.has_value() ? std::optional(timestamp_to_timepoint(*v.applied_at)) :
-                                              std::nullopt;
+    r.request_id = v.request_id;
+    r.role_id = v.role_id;
+    r.applied_at = v.applied_at;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -67,13 +66,11 @@ role_grant_request_role_mapper::map(const domain::role_grant_request_role& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     role_grant_request_role_entity r;
-    r.request_id = boost::uuids::to_string(v.request_id);
+    r.request_id = v.request_id;
     r.tenant_id = v.tenant_id;
-    r.role_id = boost::uuids::to_string(v.role_id);
+    r.role_id = v.role_id;
     r.version = v.version;
-    r.applied_at = v.applied_at.has_value() ?
-                       std::optional(ores::platform::time::datetime::to_db_string(*v.applied_at)) :
-                       std::nullopt;
+    r.applied_at = v.applied_at;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

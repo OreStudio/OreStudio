@@ -128,10 +128,10 @@ void account_role_repository::write(
 }
 
 std::vector<domain::account_role> account_role_repository::read_latest() {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_role_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("account_id"_c, "role_id"_c);
 
     return query_builder::execute_read_query<account_role_entity, domain::account_role>(
@@ -146,10 +146,10 @@ std::vector<domain::account_role> account_role_repository::read_latest(std::uint
                                                                        std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account roles with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_role_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("account_id"_c, "role_id"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -166,14 +166,14 @@ account_role_repository::read_latest(const boost::uuids::uuid& account_id,
                                      const boost::uuids::uuid& role_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account role. " << account_id << "/" << role_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto role_id_str = boost::uuids::to_string(role_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<account_role_entity>> |
         query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
-                             "role_id"_c == role_id_str && "valid_to"_c == max.value());
+                             "role_id"_c == role_id_str && "valid_to"_c == max);
 
     return query_builder::execute_read_query<account_role_entity, domain::account_role>(
         ctx_,
@@ -185,11 +185,11 @@ account_role_repository::read_latest(const boost::uuids::uuid& account_id,
 
 std::uint32_t account_role_repository::get_total_account_role_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account roles count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_role_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<account_role_entity>(
         ctx_, query, std::nullopt, lg(), "Counting account roles");
@@ -201,13 +201,13 @@ std::vector<domain::account_role>
 account_role_repository::read_latest_by_account(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account roles. Account: " << account_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<account_role_entity>> |
         query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("role_id"_c);
 
     auto rows = query_builder::execute_read_query<account_role_entity, domain::account_role>(
@@ -224,12 +224,12 @@ std::vector<domain::account_role>
 account_role_repository::read_latest_by_role(const boost::uuids::uuid& role_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account roles. Role: " << role_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto role_id_str = boost::uuids::to_string(role_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_role_entity>> |
                        query_builder::where("tenant_id"_c == tid && "role_id"_c == role_id_str &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("account_id"_c);
 
     auto rows = query_builder::execute_read_query<account_role_entity, domain::account_role>(
@@ -248,12 +248,12 @@ std::vector<domain::account_role> account_role_repository::read_latest_by_accoun
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account roles. Account: " << account_id
                                << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<account_role_entity>> |
         query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("role_id"_c) | query_builder::offset(offset) |
         query_builder::limit(limit);
 
@@ -272,13 +272,13 @@ std::uint32_t account_role_repository::get_total_account_role_count_by_account(
     const auto account_id_str = boost::uuids::to_string(account_id);
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account roles count. Account: "
                                << account_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<account_role_entity>> |
         query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<account_role_entity>(
         ctx_, query, std::nullopt, lg(), "Counting account roles");
@@ -292,11 +292,11 @@ std::vector<domain::account_role> account_role_repository::read_latest_by_role(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account roles. Role: " << role_id
                                << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_role_entity>> |
                        query_builder::where("tenant_id"_c == tid && "role_id"_c == role_id_str &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("account_id"_c) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
@@ -314,12 +314,12 @@ std::uint32_t
 account_role_repository::get_total_account_role_count_by_role(const boost::uuids::uuid& role_id) {
     const auto role_id_str = boost::uuids::to_string(role_id);
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account roles count. Role: " << role_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_role_entity>> |
                        query_builder::where("tenant_id"_c == tid && "role_id"_c == role_id_str &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<account_role_entity>(
         ctx_, query, std::nullopt, lg(), "Counting account roles");
@@ -392,7 +392,7 @@ account_role_repository::remove(const boost::uuids::uuid& account_id,
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -403,7 +403,7 @@ account_role_repository::remove(const boost::uuids::uuid& account_id,
     const auto query =
         query_builder::delete_from<account_role_entity> |
         query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
-                             "role_id"_c == role_id_str && "valid_to"_c == max.value() &&
+                             "role_id"_c == role_id_str && "valid_to"_c == max &&
                              "version"_c == expected);
 
     query_builder::execute_delete_query(ctx_, query, lg(), "removing account role from database");

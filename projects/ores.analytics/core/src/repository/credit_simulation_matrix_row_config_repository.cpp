@@ -191,11 +191,11 @@ void credit_simulation_matrix_row_config_repository::write(
 
 std::vector<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
-        query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
         query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<credit_simulation_matrix_row_config_entity,
@@ -212,11 +212,11 @@ credit_simulation_matrix_row_config_repository::read_latest(context ctx) {
 std::vector<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest matrix row. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<credit_simulation_matrix_row_config_entity,
                                              domain::credit_simulation_matrix_row_config>(
@@ -233,12 +233,12 @@ std::vector<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_repository::read_latest_by_from_rating(
     context ctx, const std::string& from_rating) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest matrix row by from_rating: " << from_rating;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
         query_builder::where("tenant_id"_c == tid && "from_rating"_c == from_rating &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
@@ -348,13 +348,13 @@ credit_simulation_matrix_row_config_repository::read_latest_by_transition_matrix
     BOOST_LOG_SEV(lg(), debug) << "Reading latest matrix rows. transition_matrix_id: "
                                << transition_matrix_id << " offset: " << offset
                                << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
         query_builder::where("tenant_id"_c == tid &&
                              "transition_matrix_id"_c == transition_matrix_id &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<credit_simulation_matrix_row_config_entity,
@@ -378,14 +378,14 @@ credit_simulation_matrix_row_config_repository::get_total_row_count_by_transitio
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active matrix rows count. transition_matrix_id: "
         << transition_matrix_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
         query_builder::where("tenant_id"_c == tid &&
                              "transition_matrix_id"_c == transition_matrix_id &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     return query_builder::execute_count_query<credit_simulation_matrix_row_config_entity>(
         ctx,
@@ -408,7 +408,7 @@ credit_simulation_matrix_row_config_repository::remove(context ctx,
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -416,7 +416,7 @@ credit_simulation_matrix_row_config_repository::remove(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<credit_simulation_matrix_row_config_entity> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing matrix row from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -486,11 +486,11 @@ credit_simulation_matrix_row_config_repository::read_latest(context ctx,
                                                             const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<credit_simulation_matrix_row_config_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<credit_simulation_matrix_row_config_entity,
                                                     domain::credit_simulation_matrix_row_config>(
         ctx,
@@ -513,11 +513,11 @@ void credit_simulation_matrix_row_config_repository::remove(context ctx,
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<credit_simulation_matrix_row_config_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing matrix rows.");
 }
 

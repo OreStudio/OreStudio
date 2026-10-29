@@ -47,31 +47,22 @@ domain::instrument_strike instrument_strike_mapper::map(const instrument_strike_
 
     domain::instrument_strike r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.tenant_id = v.tenant_id;
+    r.trade_id = v.trade_id;
     r.strike_role = v.strike_role;
-    r.sequence_number = boost::lexical_cast<int>(v.sequence_number);
-    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
-    r.price_value =
-        v.price_value.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.price_value).value()) :
-            std::nullopt;
+    r.sequence_number = v.sequence_number;
+    r.trade_activity_id = v.trade_activity_id;
+    r.price_value = v.price_value;
     r.price_currency = v.price_currency;
-    r.yield_value =
-        v.yield_value.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.yield_value).value()) :
-            std::nullopt;
+    r.yield_value = v.yield_value;
     r.yield_compounding = v.yield_compounding;
-    r.bare_value =
-        v.bare_value.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.bare_value).value()) :
-            std::nullopt;
+    r.bare_value = v.bare_value;
     r.bare_currency = v.bare_currency;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -81,20 +72,17 @@ instrument_strike_entity instrument_strike_mapper::map(const domain::instrument_
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     instrument_strike_entity r;
-    r.trade_id = boost::uuids::to_string(v.trade_id);
+    r.trade_id = v.trade_id;
     r.strike_role = v.strike_role;
-    r.sequence_number = std::to_string(v.sequence_number);
-    r.tenant_id = v.tenant_id.to_string();
+    r.sequence_number = v.sequence_number;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
-    r.price_value =
-        v.price_value.has_value() ? std::optional(v.price_value->to_string()) : std::nullopt;
+    r.trade_activity_id = v.trade_activity_id;
+    r.price_value = v.price_value;
     r.price_currency = v.price_currency;
-    r.yield_value =
-        v.yield_value.has_value() ? std::optional(v.yield_value->to_string()) : std::nullopt;
+    r.yield_value = v.yield_value;
     r.yield_compounding = v.yield_compounding;
-    r.bare_value =
-        v.bare_value.has_value() ? std::optional(v.bare_value->to_string()) : std::nullopt;
+    r.bare_value = v.bare_value;
     r.bare_currency = v.bare_currency;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

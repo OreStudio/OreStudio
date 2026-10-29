@@ -49,34 +49,28 @@ fx_barrier_option_instrument_mapper::map(const fx_barrier_option_instrument_enti
 
     domain::fx_barrier_option_instrument r;
     r.identity.version = v.version;
-    r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.identity.tenant_id = v.tenant_id;
+    r.identity.trade_id = v.trade_id;
     r.identity.trade_type_code = v.trade_type_code;
-    r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.identity.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
+    r.identity.party_id = v.party_id;
+    r.identity.trade_activity_id = v.trade_activity_id;
     r.bought_currency = v.bought_currency;
-    r.bought_amount = ores::utility::decimal::decimal::from_string(v.bought_amount).value();
+    r.bought_amount = v.bought_amount;
     r.sold_currency = v.sold_currency;
-    r.sold_amount = ores::utility::decimal::decimal::from_string(v.sold_amount).value();
+    r.sold_amount = v.sold_amount;
     r.option_type = v.option_type.value_or("");
-    r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
+    r.expiry_date = v.expiry_date;
     r.settlement = v.settlement.value_or("");
     r.barrier_type = v.barrier_type;
-    r.lower_barrier =
-        v.lower_barrier.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.lower_barrier).value()) :
-            std::nullopt;
-    r.upper_barrier =
-        v.upper_barrier.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.upper_barrier).value()) :
-            std::nullopt;
+    r.lower_barrier = v.lower_barrier;
+    r.upper_barrier = v.upper_barrier;
     r.underlying_code = v.underlying_code.value_or("");
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
     r.audit.change_commentary = v.change_commentary;
-    r.audit.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.audit.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -87,24 +81,22 @@ fx_barrier_option_instrument_mapper::map(const domain::fx_barrier_option_instrum
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     fx_barrier_option_instrument_entity r;
-    r.trade_id = boost::uuids::to_string(v.identity.trade_id);
-    r.tenant_id = v.identity.tenant_id.to_string();
+    r.trade_id = v.identity.trade_id;
+    r.tenant_id = v.identity.tenant_id;
     r.version = v.identity.version;
     r.trade_type_code = v.identity.trade_type_code;
-    r.party_id = boost::uuids::to_string(v.identity.party_id);
-    r.trade_activity_id = boost::uuids::to_string(v.identity.trade_activity_id);
+    r.party_id = v.identity.party_id;
+    r.trade_activity_id = v.identity.trade_activity_id;
     r.bought_currency = v.bought_currency;
-    r.bought_amount = v.bought_amount.to_string();
+    r.bought_amount = v.bought_amount;
     r.sold_currency = v.sold_currency;
-    r.sold_amount = v.sold_amount.to_string();
+    r.sold_amount = v.sold_amount;
     r.option_type = v.option_type.empty() ? std::nullopt : std::optional(v.option_type);
-    r.expiry_date = ores::platform::time::datetime::to_iso8601_date(v.expiry_date);
+    r.expiry_date = v.expiry_date;
     r.settlement = v.settlement.empty() ? std::nullopt : std::optional(v.settlement);
     r.barrier_type = v.barrier_type;
-    r.lower_barrier =
-        v.lower_barrier.has_value() ? std::optional(v.lower_barrier->to_string()) : std::nullopt;
-    r.upper_barrier =
-        v.upper_barrier.has_value() ? std::optional(v.upper_barrier->to_string()) : std::nullopt;
+    r.lower_barrier = v.lower_barrier;
+    r.upper_barrier = v.upper_barrier;
     r.underlying_code = v.underlying_code.empty() ? std::nullopt : std::optional(v.underlying_code);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;

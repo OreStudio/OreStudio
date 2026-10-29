@@ -45,19 +45,19 @@ domain::fra_instrument fra_instrument_mapper::map(const fra_instrument_entity& v
 
     domain::fra_instrument r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
-    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
+    r.tenant_id = v.tenant_id;
+    r.trade_id = v.trade_id;
+    r.trade_activity_id = v.trade_activity_id;
     r.currency = v.currency;
     r.rate_index = v.rate_index;
     r.long_short = v.long_short;
-    r.strike = ores::utility::decimal::decimal::from_string(v.strike).value();
-    r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
+    r.strike = v.strike;
+    r.notional = v.notional;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -67,15 +67,15 @@ fra_instrument_entity fra_instrument_mapper::map(const domain::fra_instrument& v
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     fra_instrument_entity r;
-    r.trade_id = boost::uuids::to_string(v.trade_id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.trade_id = v.trade_id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
+    r.trade_activity_id = v.trade_activity_id;
     r.currency = v.currency;
     r.rate_index = v.rate_index;
     r.long_short = v.long_short;
-    r.strike = v.strike.to_string();
-    r.notional = v.notional.to_string();
+    r.strike = v.strike;
+    r.notional = v.notional;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

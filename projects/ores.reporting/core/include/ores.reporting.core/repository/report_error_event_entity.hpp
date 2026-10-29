@@ -27,6 +27,8 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <ostream>
@@ -38,15 +40,20 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a report error event in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct report_error_event_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_reporting_report_error_events_tbl";
 
-    std::string id;
-    std::string tenant_id;
-    std::string report_instance_id;
-    std::string party_id;
+    boost::uuids::uuid id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+    boost::uuids::uuid report_instance_id;
+    boost::uuids::uuid party_id;
     std::string scope_code = "Report";
     std::string severity = "error";
     std::string message;
@@ -56,7 +63,7 @@ struct report_error_event_entity {
     std::optional<db_timestamp> subject_as_of;
     std::optional<std::string> cause;
     std::optional<std::string> detail;
-    std::string event_time;
+    db_timestamp event_time;
 
     /**
      * @brief The columns of the table, named as the members, with the key.
@@ -75,7 +82,8 @@ struct report_error_event_entity {
                query_builder::bind("subject_id", &e::subject_id) |
                query_builder::bind("subject_version", &e::subject_version) |
                query_builder::bind("subject_as_of", &e::subject_as_of) |
-               query_builder::bind("cause", &e::cause) | query_builder::bind("detail", &e::detail) |
+               query_builder::bind("cause", &e::cause) |
+               query_builder::bind_text("detail", &e::detail) |
                query_builder::bind("event_time", &e::event_time);
     }
 };

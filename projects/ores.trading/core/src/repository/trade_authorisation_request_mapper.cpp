@@ -45,15 +45,15 @@ trade_authorisation_request_mapper::map(const trade_authorisation_request_entity
 
     domain::trade_authorisation_request r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.request_id = boost::lexical_cast<boost::uuids::uuid>(v.request_id);
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.tenant_id = v.tenant_id;
+    r.request_id = v.request_id;
+    r.trade_id = v.trade_id;
     r.trade_version = v.trade_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -64,10 +64,10 @@ trade_authorisation_request_mapper::map(const domain::trade_authorisation_reques
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     trade_authorisation_request_entity r;
-    r.request_id = boost::uuids::to_string(v.request_id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.request_id = v.request_id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.trade_id = boost::uuids::to_string(v.trade_id);
+    r.trade_id = v.trade_id;
     r.trade_version = v.trade_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

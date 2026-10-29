@@ -49,19 +49,19 @@ notification_delivery_mapper::map(const notification_delivery_entity& v) {
 
     domain::notification_delivery r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.notification_id = boost::lexical_cast<boost::uuids::uuid>(v.notification_id);
-    r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.notification_id = v.notification_id;
+    r.account_id = v.account_id;
     r.channel_code = v.channel_code;
-    r.attempted_at = timestamp_to_timepoint(std::string_view{v.attempted_at});
+    r.attempted_at = v.attempted_at;
     r.outcome = rfl::string_to_enum<domain::delivery_outcome>(v.outcome).value();
     r.failure_reason = v.failure_reason;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -72,13 +72,13 @@ notification_delivery_mapper::map(const domain::notification_delivery& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     notification_delivery_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.notification_id = boost::uuids::to_string(v.notification_id);
-    r.account_id = boost::uuids::to_string(v.account_id);
+    r.notification_id = v.notification_id;
+    r.account_id = v.account_id;
     r.channel_code = v.channel_code;
-    r.attempted_at = ores::platform::time::datetime::to_iso8601_utc(v.attempted_at);
+    r.attempted_at = v.attempted_at;
     r.outcome = rfl::enum_to_string(v.outcome);
     r.failure_reason = v.failure_reason;
     r.modified_by = v.modified_by;

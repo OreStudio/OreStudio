@@ -45,25 +45,13 @@ domain::netting_set netting_set_mapper::map(const netting_set_entity& v) {
 
     domain::netting_set r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
     r.code = v.code;
-
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-
-    r.netting_agreement_id =
-        v.netting_agreement_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.netting_agreement_id)) :
-            std::nullopt;
-    r.credit_limit_id =
-        v.credit_limit_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.credit_limit_id)) :
-            std::nullopt;
-    r.counterparty_id =
-        v.counterparty_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.counterparty_id)) :
-            std::nullopt;
+    r.party_id = v.party_id;
+    r.netting_agreement_id = v.netting_agreement_id;
+    r.credit_limit_id = v.credit_limit_id;
+    r.counterparty_id = v.counterparty_id;
     r.call_type = v.call_type;
     r.initial_margin_type = v.initial_margin_type;
     r.risk_weight = v.risk_weight;
@@ -72,7 +60,7 @@ domain::netting_set netting_set_mapper::map(const netting_set_entity& v) {
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -82,23 +70,14 @@ netting_set_entity netting_set_mapper::map(const domain::netting_set& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     netting_set_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-
     r.code = v.code;
-
-    r.party_id = boost::uuids::to_string(v.party_id);
-
-    r.netting_agreement_id = v.netting_agreement_id.has_value() ?
-                                 std::optional(boost::uuids::to_string(*v.netting_agreement_id)) :
-                                 std::nullopt;
-    r.credit_limit_id = v.credit_limit_id.has_value() ?
-                            std::optional(boost::uuids::to_string(*v.credit_limit_id)) :
-                            std::nullopt;
-    r.counterparty_id = v.counterparty_id.has_value() ?
-                            std::optional(boost::uuids::to_string(*v.counterparty_id)) :
-                            std::nullopt;
+    r.party_id = v.party_id;
+    r.netting_agreement_id = v.netting_agreement_id;
+    r.credit_limit_id = v.credit_limit_id;
+    r.counterparty_id = v.counterparty_id;
     r.call_type = v.call_type;
     r.initial_margin_type = v.initial_margin_type;
     r.risk_weight = v.risk_weight;

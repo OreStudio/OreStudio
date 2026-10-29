@@ -7,8 +7,18 @@
 #include <string>
 #include <optional>
 #include <ostream>
+#include <chrono>
 #include "ores.database/repository/db_types.hpp"
 #include "ores.database/query_builder/columns.hpp"
+{{#has_uuid_columns}}
+#include <boost/uuid/uuid.hpp>
+{{/has_uuid_columns}}
+{{#has_tenant_id}}
+#include "ores.utility/uuid/tenant_id.hpp"
+{{/has_tenant_id}}
+{{#has_decimal_columns}}
+#include "ores.utility/decimal/decimal.hpp"
+{{/has_decimal_columns}}
 {{#cpp.includes.entity}}
 #include {{{.}}}
 {{/cpp.includes.entity}}
@@ -19,63 +29,89 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a {{entity_title_lower}} in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct {{entity_singular}}_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "{{sql.tablename}}";
 
 {{#primary_key.columns}}
+{{#is_uuid}}
+    boost::uuids::uuid {{column}};
+{{/is_uuid}}
+{{#is_timestamp}}
+    db_timestamp {{column}};
+{{/is_timestamp}}
+{{#is_int}}
+    int {{column}};
+{{/is_int}}
+{{#is_text}}
     std::string {{column}};
+{{/is_text}}
 {{/primary_key.columns}}
 {{#has_tenant_id}}
 {{#nullable_tenant_id}}
-    std::optional<std::string> tenant_id;
+    std::optional<utility::uuid::tenant_id> tenant_id;
 {{/nullable_tenant_id}}
 {{^nullable_tenant_id}}
-    std::string tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 {{/nullable_tenant_id}}
 {{/has_tenant_id}}
 {{#has_audit_columns}}
     int version = 0;
 {{/has_audit_columns}}
 {{#natural_keys}}
+{{#is_optional_uuid}}
+    std::optional<boost::uuids::uuid> {{column}};
+{{/is_optional_uuid}}
 {{#is_uuid}}
-    std::string {{column}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+{{^is_optional_uuid}}
+    boost::uuids::uuid {{column}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+{{/is_optional_uuid}}
 {{/is_uuid}}
+{{#is_optional_timestamp}}
+    std::optional<db_timestamp> {{column}};
+{{/is_optional_timestamp}}
 {{#is_date}}
-    std::string {{column}};
+    std::chrono::year_month_day {{column}};
 {{/is_date}}
 {{#is_timestamp}}
-    std::string {{column}};
+{{^is_optional_timestamp}}
+    db_timestamp {{column}};
+{{/is_optional_timestamp}}
 {{/is_timestamp}}
-{{^is_uuid}}{{^is_date}}{{^is_timestamp}}
+{{^is_uuid}}{{^is_optional_uuid}}{{^is_date}}{{^is_timestamp}}{{^is_optional_timestamp}}
     {{{cpp_type}}} {{column}}{{#default_value}} = {{{default_value}}}{{/default_value}};
-{{/is_timestamp}}{{/is_date}}{{/is_uuid}}
+{{/is_optional_timestamp}}{{/is_timestamp}}{{/is_date}}{{/is_optional_uuid}}{{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}
 {{#is_optional_uuid}}
-    std::optional<std::string> {{name}};
+    std::optional<boost::uuids::uuid> {{name}};
 {{/is_optional_uuid}}
 {{#is_uuid}}
-    std::string {{name}};
+    boost::uuids::uuid {{name}};
 {{/is_uuid}}
 {{#is_optional_timestamp}}
     std::optional<db_timestamp> {{name}};
 {{/is_optional_timestamp}}
 {{#is_required_timestamp}}
-    std::string {{name}};
+    db_timestamp {{name}};
 {{/is_required_timestamp}}
 {{#is_optional_date}}
-    std::optional<std::string> {{name}};
+    std::optional<std::chrono::year_month_day> {{name}};
 {{/is_optional_date}}
 {{#is_required_date}}
-    std::string {{name}};
+    std::chrono::year_month_day {{name}};
 {{/is_required_date}}
 {{#is_optional_decimal}}
-    std::optional<std::string> {{name}};
+    std::optional<ores::utility::decimal::decimal> {{name}};
 {{/is_optional_decimal}}
 {{#is_required_decimal}}
-    std::string {{name}};
+    ores::utility::decimal::decimal {{name}};
 {{/is_required_decimal}}
 {{#is_required_inet}}
     std::string {{name}};
@@ -114,8 +150,8 @@ struct {{entity_singular}}_entity {
     std::string change_commentary;
 {{/has_audit_columns}}
 {{^current_state}}
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = db_timestamp::max();
+    db_timestamp valid_to = db_timestamp::max();
 {{/current_state}}
 
     /**
@@ -135,11 +171,21 @@ struct {{entity_singular}}_entity {
             | query_builder::bind("version", &e::version)
 {{/has_audit_columns}}
 {{#natural_keys}}
+{{#is_text_stored}}
+            | query_builder::bind_text("{{column}}", &e::{{column}})
+{{/is_text_stored}}
+{{^is_text_stored}}
             | query_builder::bind("{{column}}", &e::{{column}})
+{{/is_text_stored}}
 {{/natural_keys}}
 {{#columns}}
 {{^sql_only}}
+{{#is_text_stored}}
+            | query_builder::bind_text("{{name}}", &e::{{name}})
+{{/is_text_stored}}
+{{^is_text_stored}}
             | query_builder::bind("{{name}}", &e::{{name}})
+{{/is_text_stored}}
 {{/sql_only}}
 {{/columns}}
 {{#has_audit_columns}}
@@ -169,8 +215,18 @@ std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v);
 #include <string>
 #include <optional>
 #include <ostream>
+#include <chrono>
 #include "ores.database/repository/db_types.hpp"
 #include "ores.database/query_builder/columns.hpp"
+{{#has_uuid_left_or_right}}
+#include <boost/uuid/uuid.hpp>
+{{/has_uuid_left_or_right}}
+{{#has_tenant_id}}
+#include "ores.utility/uuid/tenant_id.hpp"
+{{/has_tenant_id}}
+{{#has_decimal_columns}}
+#include "ores.utility/decimal/decimal.hpp"
+{{/has_decimal_columns}}
 {{#cpp.includes.entity}}
 #include {{{.}}}
 {{/cpp.includes.entity}}
@@ -188,25 +244,57 @@ struct {{name_singular}}_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "{{sql.tablename}}";
 
+{{#left.is_uuid}}
+    boost::uuids::uuid {{left.column}};
+{{/left.is_uuid}}
+{{#left.is_date}}
+    std::chrono::year_month_day {{left.column}};
+{{/left.is_date}}
+{{^left.is_uuid}}{{^left.is_date}}
     std::string {{left.column}};
+{{/left.is_date}}{{/left.is_uuid}}
 {{#has_tenant_id}}
     std::string tenant_id;
 {{/has_tenant_id}}
+{{#right.is_uuid}}
+    boost::uuids::uuid {{right.column}};
+{{/right.is_uuid}}
+{{#right.is_date}}
+    std::chrono::year_month_day {{right.column}};
+{{/right.is_date}}
+{{^right.is_uuid}}{{^right.is_date}}
     std::string {{right.column}};
+{{/right.is_date}}{{/right.is_uuid}}
     int version = 0;
-{{#columns}}{{#is_uuid}}    std::string {{name}};
-{{/is_uuid}}{{#is_optional_uuid}}    std::optional<std::string> {{name}};
-{{/is_optional_uuid}}{{#is_optional_timestamp}}    std::optional<db_timestamp> {{name}};
-{{/is_optional_timestamp}}{{#is_required_timestamp}}    std::string {{name}};
-{{/is_required_timestamp}}{{#is_date}}    std::string {{name}};
-{{/is_date}}{{#is_base64}}    std::string {{name}};
-{{/is_base64}}{{^is_uuid}}{{^is_optional_uuid}}{{^is_optional_timestamp}}{{^is_required_timestamp}}{{^is_date}}{{^is_base64}}    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
-{{/is_base64}}{{/is_date}}{{/is_required_timestamp}}{{/is_optional_timestamp}}{{/is_optional_uuid}}{{/is_uuid}}{{/columns}}    std::string modified_by;
+{{#columns}}
+{{#is_uuid}}
+    boost::uuids::uuid {{name}};
+{{/is_uuid}}
+{{#is_optional_uuid}}
+    std::optional<boost::uuids::uuid> {{name}};
+{{/is_optional_uuid}}
+{{#is_optional_timestamp}}
+    std::optional<db_timestamp> {{name}};
+{{/is_optional_timestamp}}
+{{#is_required_timestamp}}
+    db_timestamp {{name}};
+{{/is_required_timestamp}}
+{{#is_date}}
+    std::chrono::year_month_day {{name}};
+{{/is_date}}
+{{#is_base64}}
+    std::string {{name}};
+{{/is_base64}}
+{{^is_uuid}}{{^is_optional_uuid}}{{^is_optional_timestamp}}{{^is_required_timestamp}}{{^is_date}}{{^is_base64}}
+    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+{{/is_base64}}{{/is_date}}{{/is_required_timestamp}}{{/is_optional_timestamp}}{{/is_optional_uuid}}{{/is_uuid}}
+{{/columns}}
+    std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = db_timestamp::max();
+    db_timestamp valid_to = db_timestamp::max();
 {{#history}}
     std::optional<std::string> closed_by;
 {{/history}}
@@ -220,13 +308,18 @@ struct {{name_singular}}_entity {
         return query_builder::columns<e>()
             | query_builder::key("{{left.column}}", &e::{{left.column}})
 {{#has_tenant_id}}
-            | query_builder::bind("tenant_id", &e::tenant_id)
+            | query_builder::bind_text("tenant_id", &e::tenant_id)
 {{/has_tenant_id}}
             | query_builder::bind("{{right.column}}", &e::{{right.column}})
             | query_builder::bind("version", &e::version)
 {{#columns}}
 {{^sql_only}}
+{{#is_text_stored}}
+            | query_builder::bind_text("{{name}}", &e::{{name}})
+{{/is_text_stored}}
+{{^is_text_stored}}
             | query_builder::bind("{{name}}", &e::{{name}})
+{{/is_text_stored}}
 {{/sql_only}}
 {{/columns}}
             | query_builder::bind("modified_by", &e::modified_by)

@@ -57,15 +57,15 @@ struct report_input_bundle_entity {
     static constexpr auto columns() {
         using e = report_input_bundle_entity;
         namespace query_builder = ores::database::query_builder;
-        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
-               query_builder::bind("tenant_id", &e::tenant_id) |
-               query_builder::bind("report_instance_id", &e::report_instance_id) |
-               query_builder::bind("definition_id", &e::definition_id) |
+        return query_builder::columns<e>() | query_builder::key_text("id", &e::id) |
+               query_builder::bind_text("tenant_id", &e::tenant_id) |
+               query_builder::bind_text("report_instance_id", &e::report_instance_id) |
+               query_builder::bind_text("definition_id", &e::definition_id) |
                query_builder::bind("trades_storage_key", &e::trades_storage_key) |
                query_builder::bind("market_data_storage_key", &e::market_data_storage_key) |
                query_builder::bind("fixings_storage_key", &e::fixings_storage_key) |
                query_builder::bind("trade_count", &e::trade_count) |
-               query_builder::bind("trade_versions", &e::trade_versions) |
+               query_builder::bind_text("trade_versions", &e::trade_versions) |
                query_builder::bind("series_count", &e::series_count) |
                query_builder::bind("created_at", &e::created_at);
     }

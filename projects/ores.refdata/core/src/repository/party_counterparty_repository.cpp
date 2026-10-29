@@ -132,10 +132,10 @@ void party_counterparty_repository::write(
 }
 
 std::vector<domain::party_counterparty> party_counterparty_repository::read_latest() {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_counterparty_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("party_id"_c, "counterparty_id"_c);
 
     return query_builder::execute_read_query<party_counterparty_entity, domain::party_counterparty>(
@@ -150,10 +150,10 @@ std::vector<domain::party_counterparty>
 party_counterparty_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparties with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_counterparty_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("party_id"_c, "counterparty_id"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -171,14 +171,14 @@ party_counterparty_repository::read_latest(const boost::uuids::uuid& party_id,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparty. " << party_id << "/"
                                << counterparty_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<party_counterparty_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
-                                            "counterparty_id"_c == counterparty_id_str &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<party_counterparty_entity>> |
+        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
+                             "counterparty_id"_c == counterparty_id_str && "valid_to"_c == max);
 
     return query_builder::execute_read_query<party_counterparty_entity, domain::party_counterparty>(
         ctx_,
@@ -190,11 +190,11 @@ party_counterparty_repository::read_latest(const boost::uuids::uuid& party_id,
 
 std::uint32_t party_counterparty_repository::get_total_party_counterparty_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party counterparties count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_counterparty_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<party_counterparty_entity>(
         ctx_, query, std::nullopt, lg(), "Counting party counterparties");
@@ -206,12 +206,12 @@ std::vector<domain::party_counterparty>
 party_counterparty_repository::read_latest_by_party(const boost::uuids::uuid& party_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Party: " << party_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_counterparty_entity>> |
                        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("counterparty_id"_c);
 
     auto rows =
@@ -230,13 +230,13 @@ std::vector<domain::party_counterparty> party_counterparty_repository::read_late
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Counterparty: "
                                << counterparty_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<party_counterparty_entity>> |
         query_builder::where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("party_id"_c);
 
     auto rows =
@@ -256,11 +256,11 @@ std::vector<domain::party_counterparty> party_counterparty_repository::read_late
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Party: " << party_id
                                << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_counterparty_entity>> |
                        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("counterparty_id"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -280,12 +280,12 @@ std::uint32_t party_counterparty_repository::get_total_party_counterparty_count_
     const auto party_id_str = boost::uuids::to_string(party_id);
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party counterparties count. Party: "
                                << party_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_counterparty_entity>> |
                        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<party_counterparty_entity>(
         ctx_, query, std::nullopt, lg(), "Counting party counterparties");
@@ -299,12 +299,12 @@ std::vector<domain::party_counterparty> party_counterparty_repository::read_late
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Counterparty: "
                                << counterparty_id << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<party_counterparty_entity>> |
         query_builder::where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("party_id"_c) | query_builder::offset(offset) |
         query_builder::limit(limit);
 
@@ -324,13 +324,13 @@ std::uint32_t party_counterparty_repository::get_total_party_counterparty_count_
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active party counterparties count. Counterparty: " << counterparty_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<party_counterparty_entity>> |
         query_builder::where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<party_counterparty_entity>(
         ctx_, query, std::nullopt, lg(), "Counting party counterparties");
@@ -404,7 +404,7 @@ party_counterparty_repository::remove(const boost::uuids::uuid& party_id,
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -415,7 +415,7 @@ party_counterparty_repository::remove(const boost::uuids::uuid& party_id,
     const auto query = query_builder::delete_from<party_counterparty_entity> |
                        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
                                             "counterparty_id"_c == counterparty_id_str &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx_, query, lg(), "removing party counterparty from database");

@@ -27,6 +27,9 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -37,21 +40,26 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a trade summary in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct trade_summary_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_trade_summaries_vw";
 
-    std::string id;
-    std::string tenant_id;
+    boost::uuids::uuid id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     std::string row_kind;
-    std::string party_id;
-    std::optional<std::string> counterparty_id;
-    std::optional<std::string> book_id;
+    boost::uuids::uuid party_id;
+    std::optional<boost::uuids::uuid> counterparty_id;
+    std::optional<boost::uuids::uuid> book_id;
     std::string instrument_type;
     std::optional<std::string> status;
     std::string authorisation_status;
-    std::optional<std::string> trade_date;
+    std::optional<std::chrono::year_month_day> trade_date;
     int trade_count = 0;
     std::string search_text;
 

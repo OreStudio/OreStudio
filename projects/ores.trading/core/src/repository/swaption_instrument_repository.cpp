@@ -177,10 +177,10 @@ void swaption_instrument_repository::write(
 }
 
 std::vector<domain::swaption_instrument> swaption_instrument_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<swaption_instrument_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("trade_id"_c);
 
     return query_builder::execute_read_query<swaption_instrument_entity,
@@ -196,11 +196,11 @@ std::vector<domain::swaption_instrument>
 swaption_instrument_repository::read_latest(context ctx, const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest swaption instrument. "
                                << "trade_id: " << trade_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<swaption_instrument_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_read_query<swaption_instrument_entity,
                                              domain::swaption_instrument>(
@@ -264,7 +264,7 @@ swaption_instrument_repository::remove_status swaption_instrument_repository::re
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -272,7 +272,7 @@ swaption_instrument_repository::remove_status swaption_instrument_repository::re
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<swaption_instrument_entity> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing swaption instrument from database.");
@@ -338,11 +338,11 @@ swaption_instrument_repository::read_latest(context ctx,
                                             const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<swaption_instrument_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
     auto result =
         query_builder::execute_read_query<swaption_instrument_entity, domain::swaption_instrument>(
             ctx,
@@ -363,11 +363,11 @@ void swaption_instrument_repository::remove(context ctx,
     // asymmetric pair.
     if (trade_ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<swaption_instrument_entity> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing swaption instruments.");
 }
 

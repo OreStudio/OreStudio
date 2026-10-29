@@ -47,11 +47,11 @@ domain::notification notification_mapper::map(const notification_entity& v) {
 
     domain::notification r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
     r.kind_code = v.kind_code;
-    r.raised_by = boost::lexical_cast<boost::uuids::uuid>(v.raised_by);
-    r.raised_at = timestamp_to_timepoint(std::string_view{v.raised_at});
+    r.raised_by = v.raised_by;
+    r.raised_at = v.raised_at;
     r.link_route = v.link_route;
     r.link_id = v.link_id;
     r.audience_permission_code = v.audience_permission_code;
@@ -59,7 +59,7 @@ domain::notification notification_mapper::map(const notification_entity& v) {
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -69,12 +69,12 @@ notification_entity notification_mapper::map(const domain::notification& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     notification_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.kind_code = v.kind_code;
-    r.raised_by = boost::uuids::to_string(v.raised_by);
-    r.raised_at = ores::platform::time::datetime::to_iso8601_utc(v.raised_at);
+    r.raised_by = v.raised_by;
+    r.raised_at = v.raised_at;
     r.link_route = v.link_route;
     r.link_id = v.link_id;
     r.audience_permission_code = v.audience_permission_code;

@@ -34,7 +34,7 @@ constexpr long long slow_statement_ms = 250;
 struct prepared_entry {
     std::string name;
     std::string sql;
-    std::unique_ptr<pq::text_statement> statement;
+    std::unique_ptr<pq::fixed_statement> statement;
 };
 
 }
@@ -58,7 +58,7 @@ std::string detail::numbered(const std::string& sql) {
     return out;
 }
 
-const pq::text_statement& detail::prepared(const std::string& sql) {
+const pq::fixed_statement& detail::prepared(const std::string& sql) {
     static std::mutex mutex;
     static std::map<std::string, std::unique_ptr<prepared_entry>, std::less<>> statements;
     std::scoped_lock lock(mutex);
@@ -67,7 +67,7 @@ const pq::text_statement& detail::prepared(const std::string& sql) {
         entry = std::make_unique<prepared_entry>();
         entry->name = "ores_q_" + std::to_string(statements.size());
         entry->sql = sql;
-        entry->statement = std::make_unique<pq::text_statement>(entry->name, entry->sql);
+        entry->statement = std::make_unique<pq::fixed_statement>(entry->name, entry->sql);
     }
     return *entry->statement;
 }
@@ -76,12 +76,15 @@ pq::result detail::run(pq::transaction& tx,
                        const std::string& sql,
                        const std::vector<pq::param>& params,
                        bool variadic) {
+    // A generated repository's row holds the type its column has, so the
+    // statement it runs asks for binary values, and each column's own codec
+    // binds and reads them.
     if (!variadic)
-        return tx.run(prepared(sql), params);
+        return tx.run(prepared(sql), params, pq::binary_result);
     pq::dynamic_statement s(sql);
     for (const auto& p : params)
         s.add(p);
-    return tx.run_text(s);
+    return tx.run(s, pq::binary_result);
 }
 
 void detail::refused(const pq::store_error& e, logging::logger_t& lg) {

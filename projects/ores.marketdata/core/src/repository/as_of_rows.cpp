@@ -18,7 +18,10 @@
  *
  */
 #include "ores.marketdata.core/repository/as_of_rows.hpp"
+#include "ores.database/pq/text.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <cctype>
 #include <chrono>
@@ -31,6 +34,39 @@ namespace {
 constexpr std::size_t observation_columns = 11;
 constexpr std::size_t valid_from_column = 9;
 
+/*
+ * The entity holds the type each column has, so a column read as text is
+ * parsed here, once, at the seam between the raw read and the row.
+ */
+std::string_view column_text(const std::optional<std::string>& text,
+                             std::string_view column,
+                             std::string_view read) {
+    if (!text)
+        throw std::runtime_error(std::string(read) + ": column " + std::string(column) +
+                                 " is NULL");
+    return *text;
+}
+
+boost::uuids::uuid
+parse_uuid(const std::optional<std::string>& text, std::string_view column, std::string_view read) {
+    return boost::lexical_cast<boost::uuids::uuid>(column_text(text, column, read));
+}
+
+ores::utility::uuid::tenant_id parse_tenant(const std::optional<std::string>& text,
+                                            std::string_view read) {
+    const auto id =
+        ores::utility::uuid::tenant_id::from_string(column_text(text, "tenant_id", read));
+    if (!id)
+        throw std::runtime_error(std::string(read) + ": not a tenant id: " + id.error());
+    return *id;
+}
+
+ores::database::repository::db_timestamp parse_timestamp(const std::optional<std::string>& text,
+                                                         std::string_view column,
+                                                         std::string_view read) {
+    return ores::database::pq::parse_timestamp_text(column_text(text, column, read));
+}
+
 }
 
 market_observation_entity
@@ -41,17 +77,17 @@ as_of_observation(const as_of_row& row, std::size_t first, std::string_view read
                                  std::to_string(first + observation_columns));
 
     market_observation_entity e;
-    e.id = row[first].value_or("");
-    e.tenant_id = row[first + 1].value_or("");
-    e.party_id = row[first + 2].value_or("");
-    e.series_id = row[first + 3].value_or("");
-    e.observation_datetime = row[first + 4].value_or("");
+    e.id = parse_uuid(row[first], "id", read);
+    e.tenant_id = parse_tenant(row[first + 1], read);
+    e.party_id = parse_uuid(row[first + 2], "party_id", read);
+    e.series_id = parse_uuid(row[first + 3], "series_id", read);
+    e.observation_datetime = parse_timestamp(row[first + 4], "observation_datetime", read);
     e.oresmd_uri = row[first + 5].value_or("");
     e.value = row[first + 6].value_or("");
     e.source = row[first + 7];
-    e.source_id = row[first + 8].value_or("");
-    e.valid_from = row[first + 9].value_or("");
-    e.valid_to = row[first + 10].value_or("");
+    e.source_id = parse_uuid(row[first + 8], "source_id", read);
+    e.valid_from = parse_timestamp(row[first + 9], "valid_from", read);
+    e.valid_to = parse_timestamp(row[first + 10], "valid_to", read);
     return e;
 }
 

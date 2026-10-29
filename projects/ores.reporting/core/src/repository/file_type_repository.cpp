@@ -204,10 +204,10 @@ void file_type_repository::write(context ctx,
 }
 
 std::vector<domain::file_type> file_type_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<file_type_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<file_type_entity, domain::file_type>(
@@ -221,11 +221,11 @@ std::vector<domain::file_type> file_type_repository::read_latest(context ctx) {
 std::vector<domain::file_type> file_type_repository::read_latest(context ctx,
                                                                  const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest file type. " << "code: " << code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<file_type_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<file_type_entity>> |
+        query_builder::where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<file_type_entity, domain::file_type>(
         ctx,
@@ -284,12 +284,12 @@ std::vector<domain::file_type> file_type_repository::read_latest_by_analytic_typ
     BOOST_LOG_SEV(lg(), debug) << "Reading latest file types. analytic_type_code: "
                                << analytic_type_code << " offset: " << offset
                                << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<file_type_entity>> |
         query_builder::where("tenant_id"_c == tid && "analytic_type_code"_c == analytic_type_code &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<file_type_entity, domain::file_type>(
@@ -308,13 +308,13 @@ std::uint32_t file_type_repository::get_total_type_count_by_analytic_type_code(
     const std::optional<messaging::file_types_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active file types count. analytic_type_code: "
                                << analytic_type_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<file_type_entity>> |
         query_builder::where("tenant_id"_c == tid && "analytic_type_code"_c == analytic_type_code &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     return query_builder::execute_count_query<file_type_entity>(
         ctx,
@@ -335,13 +335,13 @@ std::vector<domain::file_type> file_type_repository::read_latest_by_configuratio
     BOOST_LOG_SEV(lg(), debug) << "Reading latest file types. configuration_type_code: "
                                << configuration_type_code << " offset: " << offset
                                << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<file_type_entity>> |
         query_builder::where("tenant_id"_c == tid &&
                              "configuration_type_code"_c == configuration_type_code &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<file_type_entity, domain::file_type>(
@@ -361,14 +361,14 @@ std::uint32_t file_type_repository::get_total_type_count_by_configuration_type_c
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active file types count. configuration_type_code: "
         << configuration_type_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<file_type_entity>> |
         query_builder::where("tenant_id"_c == tid &&
                              "configuration_type_code"_c == configuration_type_code &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     return query_builder::execute_count_query<file_type_entity>(
         ctx,
@@ -389,13 +389,13 @@ std::vector<domain::file_type> file_type_repository::read_latest_by_produced_by_
     BOOST_LOG_SEV(lg(), debug) << "Reading latest file types. produced_by_file_type_code: "
                                << produced_by_file_type_code << " offset: " << offset
                                << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<file_type_entity>> |
         query_builder::where("tenant_id"_c == tid &&
                              "produced_by_file_type_code"_c == produced_by_file_type_code &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<file_type_entity, domain::file_type>(
@@ -415,14 +415,14 @@ std::uint32_t file_type_repository::get_total_type_count_by_produced_by_file_typ
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active file types count. produced_by_file_type_code: "
         << produced_by_file_type_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<file_type_entity>> |
         query_builder::where("tenant_id"_c == tid &&
                              "produced_by_file_type_code"_c == produced_by_file_type_code &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     return query_builder::execute_count_query<file_type_entity>(
         ctx,
@@ -443,7 +443,7 @@ file_type_repository::remove_status file_type_repository::remove(
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -451,7 +451,7 @@ file_type_repository::remove_status file_type_repository::remove(
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<file_type_entity> |
                        query_builder::where("tenant_id"_c == tid && "code"_c == code &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing file type from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -512,11 +512,11 @@ std::vector<domain::file_type>
 file_type_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<file_type_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<file_type_entity>> |
+        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<file_type_entity, domain::file_type>(
         ctx,
         query,
@@ -535,11 +535,11 @@ void file_type_repository::remove(context ctx, const std::vector<std::string>& c
     // asymmetric pair.
     if (codes.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::delete_from<file_type_entity> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::delete_from<file_type_entity> |
+        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing file types.");
 }
 

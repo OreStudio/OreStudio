@@ -48,28 +48,20 @@ domain::rate_card_component rate_card_component_mapper::map(const rate_card_comp
 
     domain::rate_card_component r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.source_id = boost::lexical_cast<boost::uuids::uuid>(v.source_id);
-
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.source_id = v.source_id;
     r.driver = v.driver;
-
-
     r.licence_right = v.licence_right;
-
-    r.effective_from = timestamp_to_timepoint(std::string_view{v.effective_from});
-
+    r.effective_from = v.effective_from;
     r.currency = v.currency;
     r.charge_micros = v.charge_micros;
-    r.effective_to = v.effective_to.has_value() ?
-                         std::optional(timestamp_to_timepoint(*v.effective_to)) :
-                         std::nullopt;
+    r.effective_to = v.effective_to;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -79,25 +71,16 @@ rate_card_component_entity rate_card_component_mapper::map(const domain::rate_ca
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     rate_card_component_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.source_id = boost::uuids::to_string(v.source_id);
-
-
+    r.source_id = v.source_id;
     r.driver = v.driver;
-
-
     r.licence_right = v.licence_right;
-
-    r.effective_from = ores::platform::time::datetime::to_iso8601_utc(v.effective_from);
-
+    r.effective_from = v.effective_from;
     r.currency = v.currency;
     r.charge_micros = v.charge_micros;
-    r.effective_to =
-        v.effective_to.has_value() ?
-            std::optional(ores::platform::time::datetime::to_db_string(*v.effective_to)) :
-            std::nullopt;
+    r.effective_to = v.effective_to;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

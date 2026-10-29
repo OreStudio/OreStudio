@@ -49,21 +49,18 @@ domain::swap_leg_amount swap_leg_amount_mapper::map(const swap_leg_amount_entity
 
     domain::swap_leg_amount r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
-    r.leg_number = boost::lexical_cast<int>(v.leg_number);
-    r.sequence_number = boost::lexical_cast<int>(v.sequence_number);
-    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
-    r.start_date =
-        v.start_date.has_value() ?
-            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.start_date)) :
-            std::nullopt;
-    r.amount = ores::utility::decimal::decimal::from_string(v.amount).value();
+    r.tenant_id = v.tenant_id;
+    r.trade_id = v.trade_id;
+    r.leg_number = v.leg_number;
+    r.sequence_number = v.sequence_number;
+    r.trade_activity_id = v.trade_activity_id;
+    r.start_date = v.start_date;
+    r.amount = v.amount;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -73,17 +70,14 @@ swap_leg_amount_entity swap_leg_amount_mapper::map(const domain::swap_leg_amount
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     swap_leg_amount_entity r;
-    r.trade_id = boost::uuids::to_string(v.trade_id);
-    r.leg_number = std::to_string(v.leg_number);
-    r.sequence_number = std::to_string(v.sequence_number);
-    r.tenant_id = v.tenant_id.to_string();
+    r.trade_id = v.trade_id;
+    r.leg_number = v.leg_number;
+    r.sequence_number = v.sequence_number;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
-    r.start_date =
-        v.start_date.has_value() ?
-            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.start_date)) :
-            std::nullopt;
-    r.amount = v.amount.to_string();
+    r.trade_activity_id = v.trade_activity_id;
+    r.start_date = v.start_date;
+    r.amount = v.amount;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

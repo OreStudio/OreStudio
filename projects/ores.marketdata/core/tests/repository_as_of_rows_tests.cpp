@@ -17,7 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/pq/text.hpp"
+#include "ores.database/repository/db_types.hpp"
 #include "ores.marketdata.core/repository/as_of_rows.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <stdexcept>
@@ -29,12 +33,13 @@ using ores::marketdata::repository::as_of_bucket_ordinal;
 using ores::marketdata::repository::as_of_observation;
 using ores::marketdata::repository::as_of_row;
 using Catch::Matchers::ContainsSubstring;
+using ores::database::repository::db_timestamp;
 
 as_of_row observation_columns() {
-    return {std::string("id"),
-            std::string("tenant"),
-            std::string("party"),
-            std::string("series"),
+    return {std::string("0b64b4b0-1c4b-4a0e-9a2f-3d5e6f7a8b9c"),
+            std::string("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+            std::string("1b64b4b0-1c4b-4a0e-9a2f-3d5e6f7a8b9c"),
+            std::string("2b64b4b0-1c4b-4a0e-9a2f-3d5e6f7a8b9c"),
             std::string("2026-10-05 09:00:00+00"),
             std::string("oresmd://fx/EUR/USD?type=quote&instrument=fx_spot&quote=rate"),
             std::string("1.0845"),
@@ -56,15 +61,19 @@ as_of_row bucket_row(std::optional<std::string> ordinal) {
 TEST_CASE("an_as_of_row_maps_every_observation_column", "[repository][as_of]") {
     const auto e = as_of_observation(bucket_row("0"), 1, "read_as_of_buckets");
 
-    CHECK(e.id == "id");
-    CHECK(e.series_id == "series");
+    CHECK(e.id == boost::lexical_cast<boost::uuids::uuid>(
+                      std::string("0b64b4b0-1c4b-4a0e-9a2f-3d5e6f7a8b9c")));
+    CHECK(e.series_id == boost::lexical_cast<boost::uuids::uuid>(
+                             std::string("2b64b4b0-1c4b-4a0e-9a2f-3d5e6f7a8b9c")));
     CHECK(e.value == "1.0845");
     CHECK_FALSE(e.source.has_value());
-    CHECK(e.source_id == "26772cc0-57d6-4fac-be36-2ae75eb56b6b");
-    CHECK(e.valid_from.str() == "2026-10-05 09:00:00");
-    CHECK(e.valid_to.str() == "9999-12-31 23:59:59");
+    CHECK(e.source_id == boost::lexical_cast<boost::uuids::uuid>(
+                             std::string("26772cc0-57d6-4fac-be36-2ae75eb56b6b")));
+    CHECK(e.valid_from == ores::database::pq::parse_timestamp_text("2026-10-05 09:00:00+00"));
+    CHECK(e.valid_to == db_timestamp::max());
     CHECK(e.oresmd_uri == "oresmd://fx/EUR/USD?type=quote&instrument=fx_spot&quote=rate");
-    CHECK(e.observation_datetime == "2026-10-05 09:00:00+00");
+    CHECK(e.observation_datetime ==
+          ores::database::pq::parse_timestamp_text("2026-10-05 09:00:00+00"));
 }
 
 TEST_CASE("a_short_as_of_row_is_refused", "[repository][as_of]") {

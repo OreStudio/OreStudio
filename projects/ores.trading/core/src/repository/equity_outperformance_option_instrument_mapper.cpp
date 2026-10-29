@@ -47,33 +47,26 @@ domain::equity_outperformance_option_instrument equity_outperformance_option_ins
 
     domain::equity_outperformance_option_instrument r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
-    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
+    r.tenant_id = v.tenant_id;
+    r.trade_id = v.trade_id;
+    r.trade_activity_id = v.trade_activity_id;
     r.underlying1_name = v.underlying1_name;
     r.underlying2_name = v.underlying2_name;
     r.currency = v.currency;
-    r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
+    r.notional = v.notional;
     r.long_short = v.long_short;
-    r.initial_price1 = ores::utility::decimal::decimal::from_string(v.initial_price1).value();
-    r.initial_price2 = ores::utility::decimal::decimal::from_string(v.initial_price2).value();
-    r.strike_return = ores::utility::decimal::decimal::from_string(v.strike_return).value();
-    r.knock_in_price =
-        v.knock_in_price.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.knock_in_price).value()) :
-            std::nullopt;
-    r.knock_out_price =
-        v.knock_out_price.has_value() ?
-            std::optional(
-                ores::utility::decimal::decimal::from_string(*v.knock_out_price).value()) :
-            std::nullopt;
+    r.initial_price1 = v.initial_price1;
+    r.initial_price2 = v.initial_price2;
+    r.strike_return = v.strike_return;
+    r.knock_in_price = v.knock_in_price;
+    r.knock_out_price = v.knock_out_price;
     r.initial_price_currency1 = v.initial_price_currency1;
     r.initial_price_currency2 = v.initial_price_currency2;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -84,23 +77,20 @@ equity_outperformance_option_instrument_entity equity_outperformance_option_inst
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     equity_outperformance_option_instrument_entity r;
-    r.trade_id = boost::uuids::to_string(v.trade_id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.trade_id = v.trade_id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
+    r.trade_activity_id = v.trade_activity_id;
     r.underlying1_name = v.underlying1_name;
     r.underlying2_name = v.underlying2_name;
     r.currency = v.currency;
-    r.notional = v.notional.to_string();
+    r.notional = v.notional;
     r.long_short = v.long_short;
-    r.initial_price1 = v.initial_price1.to_string();
-    r.initial_price2 = v.initial_price2.to_string();
-    r.strike_return = v.strike_return.to_string();
-    r.knock_in_price =
-        v.knock_in_price.has_value() ? std::optional(v.knock_in_price->to_string()) : std::nullopt;
-    r.knock_out_price = v.knock_out_price.has_value() ?
-                            std::optional(v.knock_out_price->to_string()) :
-                            std::nullopt;
+    r.initial_price1 = v.initial_price1;
+    r.initial_price2 = v.initial_price2;
+    r.strike_return = v.strike_return;
+    r.knock_in_price = v.knock_in_price;
+    r.knock_out_price = v.knock_out_price;
     r.initial_price_currency1 = v.initial_price_currency1;
     r.initial_price_currency2 = v.initial_price_currency2;
     r.modified_by = v.modified_by;

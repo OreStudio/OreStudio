@@ -46,9 +46,9 @@ domain::session_sample session_sample_mapper::map(const session_sample_entity& v
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::session_sample r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.session_id = boost::lexical_cast<boost::uuids::uuid>(v.session_id);
-    r.sample_time = timestamp_to_timepoint(std::string_view{v.sample_time});
+    r.tenant_id = v.tenant_id;
+    r.session_id = v.session_id;
+    r.sample_time = v.sample_time;
     r.bytes_sent = v.bytes_sent;
     r.bytes_received = v.bytes_received;
     r.latency_ms = v.latency_ms;
@@ -61,9 +61,9 @@ session_sample_entity session_sample_mapper::map(const domain::session_sample& v
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     session_sample_entity r;
-    r.session_id = boost::uuids::to_string(v.session_id);
-    r.sample_time = ores::platform::time::datetime::to_db_string(v.sample_time);
-    r.tenant_id = v.tenant_id.to_string();
+    r.session_id = v.session_id;
+    r.sample_time = v.sample_time;
+    r.tenant_id = v.tenant_id;
     r.bytes_sent = v.bytes_sent;
     r.bytes_received = v.bytes_received;
     r.latency_ms = v.latency_ms;

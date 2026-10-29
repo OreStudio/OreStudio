@@ -136,10 +136,10 @@ void approval_request_part_repository::write(
 }
 
 std::vector<domain::approval_request_part> approval_request_part_repository::read_latest() {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("request_id"_c, "part_code"_c);
 
     return query_builder::execute_read_query<approval_request_part_entity,
@@ -155,10 +155,10 @@ std::vector<domain::approval_request_part>
 approval_request_part_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval request parts with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("request_id"_c, "part_code"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -177,14 +177,14 @@ approval_request_part_repository::read_latest(const boost::uuids::uuid& request_
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval request part. " << request_id << "/"
                                << part_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto part_code_str = part_code;
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<approval_request_part_entity>> |
         query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
-                             "part_code"_c == part_code && "valid_to"_c == max.value());
+                             "part_code"_c == part_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<approval_request_part_entity,
                                              domain::approval_request_part>(
@@ -197,11 +197,11 @@ approval_request_part_repository::read_latest(const boost::uuids::uuid& request_
 
 std::uint32_t approval_request_part_repository::get_total_approval_request_part_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval request parts count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<approval_request_part_entity>(
         ctx_, query, std::nullopt, lg(), "Counting approval request parts");
@@ -213,13 +213,13 @@ std::vector<domain::approval_request_part>
 approval_request_part_repository::read_latest_by_request(const boost::uuids::uuid& request_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval request parts. Request: " << request_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<approval_request_part_entity>> |
         query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("part_code"_c);
 
     auto rows = query_builder::execute_read_query<approval_request_part_entity,
@@ -237,11 +237,11 @@ std::vector<domain::approval_request_part>
 approval_request_part_repository::read_latest_by_part(const std::string& part_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval request parts. Part: " << part_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
                        query_builder::where("tenant_id"_c == tid && "part_code"_c == part_code &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("request_id"_c);
 
     auto rows = query_builder::execute_read_query<approval_request_part_entity,
@@ -261,12 +261,12 @@ std::vector<domain::approval_request_part> approval_request_part_repository::rea
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval request parts. Request: " << request_id
                                << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<approval_request_part_entity>> |
         query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("part_code"_c) | query_builder::offset(offset) |
         query_builder::limit(limit);
 
@@ -286,13 +286,13 @@ std::uint32_t approval_request_part_repository::get_total_approval_request_part_
     const auto request_id_str = boost::uuids::to_string(request_id);
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval request parts count. Request: "
                                << request_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<approval_request_part_entity>> |
         query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<approval_request_part_entity>(
         ctx_, query, std::nullopt, lg(), "Counting approval request parts");
@@ -304,12 +304,12 @@ std::uint32_t approval_request_part_repository::get_total_approval_request_part_
     const std::string& part_code) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval request parts count. Part: "
                                << part_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_request_part_entity>> |
                        query_builder::where("tenant_id"_c == tid && "part_code"_c == part_code &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<approval_request_part_entity>(
         ctx_, query, std::nullopt, lg(), "Counting approval request parts");
@@ -383,7 +383,7 @@ approval_request_part_repository::remove(const boost::uuids::uuid& request_id,
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -394,7 +394,7 @@ approval_request_part_repository::remove(const boost::uuids::uuid& request_id,
     const auto query =
         query_builder::delete_from<approval_request_part_entity> |
         query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
-                             "part_code"_c == part_code && "valid_to"_c == max.value() &&
+                             "part_code"_c == part_code && "valid_to"_c == max &&
                              "version"_c == expected);
 
     query_builder::execute_delete_query(

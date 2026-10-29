@@ -47,34 +47,20 @@ domain::trade_booking trade_booking_mapper::map(const trade_booking_entity& v) {
 
     domain::trade_booking r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
-    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
-    r.book_id = boost::lexical_cast<boost::uuids::uuid>(v.book_id);
-    r.netting_set_id =
-        v.netting_set_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.netting_set_id)) :
-            std::nullopt;
-    r.counterparty_identifier_id =
-        v.counterparty_identifier_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.counterparty_identifier_id)) :
-            std::nullopt;
-    r.netting_set_identifier_id =
-        v.netting_set_identifier_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.netting_set_identifier_id)) :
-            std::nullopt;
-    r.trade_date =
-        v.trade_date.has_value() ?
-            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.trade_date)) :
-            std::nullopt;
-    r.execution_timestamp = v.execution_timestamp.has_value() ?
-                                std::optional(timestamp_to_timepoint(*v.execution_timestamp)) :
-                                std::nullopt;
+    r.tenant_id = v.tenant_id;
+    r.trade_id = v.trade_id;
+    r.trade_activity_id = v.trade_activity_id;
+    r.book_id = v.book_id;
+    r.netting_set_id = v.netting_set_id;
+    r.counterparty_identifier_id = v.counterparty_identifier_id;
+    r.netting_set_identifier_id = v.netting_set_identifier_id;
+    r.trade_date = v.trade_date;
+    r.execution_timestamp = v.execution_timestamp;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -84,30 +70,16 @@ trade_booking_entity trade_booking_mapper::map(const domain::trade_booking& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     trade_booking_entity r;
-    r.trade_id = boost::uuids::to_string(v.trade_id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.trade_id = v.trade_id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
-    r.book_id = boost::uuids::to_string(v.book_id);
-    r.netting_set_id = v.netting_set_id.has_value() ?
-                           std::optional(boost::uuids::to_string(*v.netting_set_id)) :
-                           std::nullopt;
-    r.counterparty_identifier_id =
-        v.counterparty_identifier_id.has_value() ?
-            std::optional(boost::uuids::to_string(*v.counterparty_identifier_id)) :
-            std::nullopt;
-    r.netting_set_identifier_id =
-        v.netting_set_identifier_id.has_value() ?
-            std::optional(boost::uuids::to_string(*v.netting_set_identifier_id)) :
-            std::nullopt;
-    r.trade_date =
-        v.trade_date.has_value() ?
-            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.trade_date)) :
-            std::nullopt;
-    r.execution_timestamp =
-        v.execution_timestamp.has_value() ?
-            std::optional(ores::platform::time::datetime::to_db_string(*v.execution_timestamp)) :
-            std::nullopt;
+    r.trade_activity_id = v.trade_activity_id;
+    r.book_id = v.book_id;
+    r.netting_set_id = v.netting_set_id;
+    r.counterparty_identifier_id = v.counterparty_identifier_id;
+    r.netting_set_identifier_id = v.netting_set_identifier_id;
+    r.trade_date = v.trade_date;
+    r.execution_timestamp = v.execution_timestamp;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

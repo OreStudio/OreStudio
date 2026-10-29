@@ -522,8 +522,7 @@ void report_execution_handler::assemble_bundle(ores::nats::message msg) {
         bundle.trade_versions =
             req.trade_versions.empty() ? std::nullopt : std::optional(req.trade_versions);
         bundle.series_count = req.series_count;
-        bundle.created_at =
-            ores::platform::time::datetime::to_db_string(std::chrono::system_clock::now());
+        bundle.created_at = std::chrono::system_clock::now();
 
         repository::report_input_bundle_repository bundle_repo;
         bundle_repo.create(tenant_ctx, bundle);

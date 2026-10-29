@@ -47,33 +47,23 @@ domain::run_grant run_grant_mapper::map(const run_grant_entity& v) {
 
     domain::run_grant r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
     r.resource = v.resource;
-
-    r.grantor_account_id = boost::lexical_cast<boost::uuids::uuid>(v.grantor_account_id);
-
-    r.role_id = boost::lexical_cast<boost::uuids::uuid>(v.role_id);
+    r.grantor_account_id = v.grantor_account_id;
+    r.role_id = v.role_id;
     r.audience = v.audience;
     r.max_runs = v.max_runs.value_or(0);
-    if (v.not_after)
-        r.not_after = timestamp_to_timepoint(*v.not_after);
-    else
-        r.not_after = {};
-    if (v.revoked_at)
-        r.revoked_at = timestamp_to_timepoint(*v.revoked_at);
-    else
-        r.revoked_at = {};
+    r.not_after = v.not_after.value_or(db_timestamp{});
+    r.revoked_at = v.revoked_at.value_or(db_timestamp{});
     r.revoked_by = v.revoked_by.value_or("");
     r.revoke_reason = v.revoke_reason.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -83,25 +73,17 @@ run_grant_entity run_grant_mapper::map(const domain::run_grant& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     run_grant_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
-
-
+    r.party_id = v.party_id;
     r.resource = v.resource;
-
-    r.grantor_account_id = boost::uuids::to_string(v.grantor_account_id);
-
-    r.role_id = boost::uuids::to_string(v.role_id);
+    r.grantor_account_id = v.grantor_account_id;
+    r.role_id = v.role_id;
     r.audience = v.audience;
     r.max_runs = v.max_runs == 0 ? std::nullopt : std::optional(v.max_runs);
-    r.not_after = v.not_after != std::chrono::system_clock::time_point{} ?
-                      std::optional(ores::platform::time::datetime::to_db_string(v.not_after)) :
-                      std::nullopt;
-    r.revoked_at = v.revoked_at != std::chrono::system_clock::time_point{} ?
-                       std::optional(ores::platform::time::datetime::to_db_string(v.revoked_at)) :
-                       std::nullopt;
+    r.not_after = v.not_after == db_timestamp{} ? std::nullopt : std::optional(v.not_after);
+    r.revoked_at = v.revoked_at == db_timestamp{} ? std::nullopt : std::optional(v.revoked_at);
     r.revoked_by = v.revoked_by.empty() ? std::nullopt : std::optional(v.revoked_by);
     r.revoke_reason = v.revoke_reason.empty() ? std::nullopt : std::optional(v.revoke_reason);
     r.modified_by = v.modified_by;

@@ -46,18 +46,12 @@ fx_spot_generation_config_mapper::map(const fx_spot_generation_config_entity& v)
 
     domain::fx_spot_generation_config r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-
-    r.config_id = boost::lexical_cast<boost::uuids::uuid>(v.config_id);
-
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
+    r.config_id = v.config_id;
     r.base_currency_code = v.base_currency_code;
-
-
     r.quote_currency_code = v.quote_currency_code;
-
     r.source_name = v.source_name;
     r.oresmd_uri = v.oresmd_uri;
     r.price_source = v.price_source;
@@ -66,9 +60,7 @@ fx_spot_generation_config_mapper::map(const fx_spot_generation_config_entity& v)
     r.process_type = v.process_type;
     r.enabled = v.enabled;
     r.auto_start = v.auto_start;
-    r.folder_id = v.folder_id.has_value() ?
-                      std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.folder_id)) :
-                      std::nullopt;
+    r.folder_id = v.folder_id;
     r.asset_class_code = v.asset_class_code;
     r.arrival_mode = v.arrival_mode;
     r.branching_ratio = v.branching_ratio;
@@ -78,7 +70,7 @@ fx_spot_generation_config_mapper::map(const fx_spot_generation_config_entity& v)
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -89,19 +81,13 @@ fx_spot_generation_config_mapper::map(const domain::fx_spot_generation_config& v
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     fx_spot_generation_config_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
-
-    r.config_id = boost::uuids::to_string(v.config_id);
-
-
+    r.party_id = v.party_id;
+    r.config_id = v.config_id;
     r.base_currency_code = v.base_currency_code;
-
-
     r.quote_currency_code = v.quote_currency_code;
-
     r.source_name = v.source_name;
     r.oresmd_uri = v.oresmd_uri;
     r.price_source = v.price_source;
@@ -110,8 +96,7 @@ fx_spot_generation_config_mapper::map(const domain::fx_spot_generation_config& v
     r.process_type = v.process_type;
     r.enabled = v.enabled;
     r.auto_start = v.auto_start;
-    r.folder_id = v.folder_id.has_value() ? std::optional(boost::uuids::to_string(*v.folder_id)) :
-                                            std::nullopt;
+    r.folder_id = v.folder_id;
     r.asset_class_code = v.asset_class_code;
     r.arrival_mode = v.arrival_mode;
     r.branching_ratio = v.branching_ratio;

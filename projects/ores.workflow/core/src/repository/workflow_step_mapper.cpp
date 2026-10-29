@@ -46,34 +46,29 @@ domain::workflow_step workflow_step_mapper::map(const workflow_step_entity& v) {
 
     domain::workflow_step r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.workflow_id = boost::lexical_cast<boost::uuids::uuid>(v.workflow_id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.workflow_id = v.workflow_id;
     r.step_index = v.step_index;
     r.name = v.name;
-    r.state_id = boost::lexical_cast<boost::uuids::uuid>(v.state_id);
+    r.state_id = v.state_id;
     r.request_json = v.request_json;
     r.response_json = v.response_json.value_or("");
     r.error = v.error.value_or("");
     r.step_log_json = v.step_log_json.value_or("");
     r.command_subject = v.command_subject;
     r.command_json = v.command_json;
-    r.command_published_at = v.command_published_at.has_value() ?
-                                 std::optional(timestamp_to_timepoint(*v.command_published_at)) :
-                                 std::nullopt;
+    r.command_published_at = v.command_published_at;
     r.idempotency_key = v.idempotency_key;
     r.compensation_subject = v.compensation_subject;
     r.compensation_json = v.compensation_json;
-    r.started_at = v.started_at.has_value() ? std::optional(timestamp_to_timepoint(*v.started_at)) :
-                                              std::nullopt;
-    r.completed_at = v.completed_at.has_value() ?
-                         std::optional(timestamp_to_timepoint(*v.completed_at)) :
-                         std::nullopt;
+    r.started_at = v.started_at;
+    r.completed_at = v.completed_at;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -83,33 +78,25 @@ workflow_step_entity workflow_step_mapper::map(const domain::workflow_step& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     workflow_step_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.workflow_id = boost::uuids::to_string(v.workflow_id);
+    r.workflow_id = v.workflow_id;
     r.step_index = v.step_index;
     r.name = v.name;
-    r.state_id = boost::uuids::to_string(v.state_id);
+    r.state_id = v.state_id;
     r.request_json = v.request_json;
     r.response_json = v.response_json.empty() ? std::nullopt : std::optional(v.response_json);
     r.error = v.error.empty() ? std::nullopt : std::optional(v.error);
     r.step_log_json = v.step_log_json.empty() ? std::nullopt : std::optional(v.step_log_json);
     r.command_subject = v.command_subject;
     r.command_json = v.command_json;
-    r.command_published_at =
-        v.command_published_at.has_value() ?
-            std::optional(ores::platform::time::datetime::to_db_string(*v.command_published_at)) :
-            std::nullopt;
+    r.command_published_at = v.command_published_at;
     r.idempotency_key = v.idempotency_key;
     r.compensation_subject = v.compensation_subject;
     r.compensation_json = v.compensation_json;
-    r.started_at = v.started_at.has_value() ?
-                       std::optional(ores::platform::time::datetime::to_db_string(*v.started_at)) :
-                       std::nullopt;
-    r.completed_at =
-        v.completed_at.has_value() ?
-            std::optional(ores::platform::time::datetime::to_db_string(*v.completed_at)) :
-            std::nullopt;
+    r.started_at = v.started_at;
+    r.completed_at = v.completed_at;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

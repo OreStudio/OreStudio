@@ -128,10 +128,10 @@ void account_party_repository::write(
 }
 
 std::vector<domain::account_party> account_party_repository::read_latest() {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_party_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("account_id"_c, "party_id"_c);
 
     return query_builder::execute_read_query<account_party_entity, domain::account_party>(
@@ -146,10 +146,10 @@ std::vector<domain::account_party> account_party_repository::read_latest(std::ui
                                                                          std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account parties with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_party_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("account_id"_c, "party_id"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -166,14 +166,14 @@ account_party_repository::read_latest(const boost::uuids::uuid& account_id,
                                       const boost::uuids::uuid& party_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account party. " << account_id << "/" << party_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<account_party_entity>> |
         query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
-                             "party_id"_c == party_id_str && "valid_to"_c == max.value());
+                             "party_id"_c == party_id_str && "valid_to"_c == max);
 
     return query_builder::execute_read_query<account_party_entity, domain::account_party>(
         ctx_,
@@ -185,11 +185,11 @@ account_party_repository::read_latest(const boost::uuids::uuid& account_id,
 
 std::uint32_t account_party_repository::get_total_account_party_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account parties count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_party_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<account_party_entity>(
         ctx_, query, std::nullopt, lg(), "Counting account parties");
@@ -201,13 +201,13 @@ std::vector<domain::account_party>
 account_party_repository::read_latest_by_account(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account parties. Account: " << account_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<account_party_entity>> |
         query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("party_id"_c);
 
     auto rows = query_builder::execute_read_query<account_party_entity, domain::account_party>(
@@ -224,12 +224,12 @@ std::vector<domain::account_party>
 account_party_repository::read_latest_by_party(const boost::uuids::uuid& party_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account parties. Party: " << party_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_party_entity>> |
                        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("account_id"_c);
 
     auto rows = query_builder::execute_read_query<account_party_entity, domain::account_party>(
@@ -248,12 +248,12 @@ std::vector<domain::account_party> account_party_repository::read_latest_by_acco
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account parties. Account: " << account_id
                                << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<account_party_entity>> |
         query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("party_id"_c) | query_builder::offset(offset) |
         query_builder::limit(limit);
 
@@ -272,13 +272,13 @@ std::uint32_t account_party_repository::get_total_account_party_count_by_account
     const auto account_id_str = boost::uuids::to_string(account_id);
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account parties count. Account: "
                                << account_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<account_party_entity>> |
         query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<account_party_entity>(
         ctx_, query, std::nullopt, lg(), "Counting account parties");
@@ -291,12 +291,12 @@ std::uint32_t account_party_repository::get_total_account_party_count_by_party(
     const auto party_id_str = boost::uuids::to_string(party_id);
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account parties count. Party: "
                                << party_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_party_entity>> |
                        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<account_party_entity>(
         ctx_, query, std::nullopt, lg(), "Counting account parties");
@@ -369,7 +369,7 @@ account_party_repository::remove(const boost::uuids::uuid& account_id,
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -380,7 +380,7 @@ account_party_repository::remove(const boost::uuids::uuid& account_id,
     const auto query =
         query_builder::delete_from<account_party_entity> |
         query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
-                             "party_id"_c == party_id_str && "valid_to"_c == max.value() &&
+                             "party_id"_c == party_id_str && "valid_to"_c == max &&
                              "version"_c == expected);
 
     query_builder::execute_delete_query(ctx_, query, lg(), "removing account party from database");

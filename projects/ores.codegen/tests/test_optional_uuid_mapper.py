@@ -99,12 +99,13 @@ def _generate(tmp_path, template, output):
     return (output_dir / output).read_text(encoding="utf-8")
 
 
-def test_sql_mapper_guards_a_nullable_uuid_natural_key(tmp_path):
+def test_sql_mapper_copies_a_nullable_uuid_natural_key(tmp_path):
     mapper = _generate(tmp_path, "cpp_domain_type_mapper.cpp.mustache", "probe_mapper.cpp")
-    assert "if (v.from_state_id) {" in mapper
-    assert "r.from_state_id = boost::uuids::to_string(*v.from_state_id);" in mapper
-    # the non-nullable natural key is untouched
-    assert "r.machine_id = boost::uuids::to_string(v.machine_id);" in mapper
+    # Both sides hold the optional uuid, so the NULL travels as an empty optional.
+    assert "r.from_state_id = v.from_state_id;" in mapper
+    assert "boost::uuids::to_string(*v.from_state_id)" not in mapper
+    # the non-nullable natural key is copied too
+    assert "r.machine_id = v.machine_id;" in mapper
 
 
 def test_history_field_mapper_guards_a_nullable_uuid_natural_key(tmp_path):

@@ -49,19 +49,14 @@ bond_issue_leg_schedule_mapper::map(const bond_issue_leg_schedule_entity& v) {
 
     domain::bond_issue_leg_schedule r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.issue_id = boost::lexical_cast<boost::uuids::uuid>(v.issue_id);
-    r.leg_number = boost::lexical_cast<int>(v.leg_number);
+    r.tenant_id = v.tenant_id;
+    r.issue_id = v.issue_id;
+    r.leg_number = v.leg_number;
     r.schedule_role = v.schedule_role;
-    r.sequence_number = boost::lexical_cast<int>(v.sequence_number);
+    r.sequence_number = v.sequence_number;
     r.schedule_kind = v.schedule_kind;
-    r.start_date =
-        v.start_date.has_value() ?
-            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.start_date)) :
-            std::nullopt;
-    r.end_date = v.end_date.has_value() ?
-                     std::optional(ores::platform::time::datetime::from_iso8601_date(*v.end_date)) :
-                     std::nullopt;
+    r.start_date = v.start_date;
+    r.end_date = v.end_date;
     r.adjust_end_date_to_previous_month_end = v.adjust_end_date_to_previous_month_end;
     r.tenor = v.tenor;
     r.calendar = v.calendar;
@@ -70,14 +65,8 @@ bond_issue_leg_schedule_mapper::map(const bond_issue_leg_schedule_entity& v) {
     r.rule = v.rule;
     r.end_of_month = v.end_of_month;
     r.end_of_month_convention = v.end_of_month_convention;
-    r.first_date =
-        v.first_date.has_value() ?
-            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.first_date)) :
-            std::nullopt;
-    r.last_date =
-        v.last_date.has_value() ?
-            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.last_date)) :
-            std::nullopt;
+    r.first_date = v.first_date;
+    r.last_date = v.last_date;
     r.remove_first_date = v.remove_first_date;
     r.remove_last_date = v.remove_last_date;
     r.include_duplicate_dates = v.include_duplicate_dates;
@@ -85,7 +74,7 @@ bond_issue_leg_schedule_mapper::map(const bond_issue_leg_schedule_entity& v) {
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -96,20 +85,15 @@ bond_issue_leg_schedule_mapper::map(const domain::bond_issue_leg_schedule& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     bond_issue_leg_schedule_entity r;
-    r.issue_id = boost::uuids::to_string(v.issue_id);
-    r.leg_number = std::to_string(v.leg_number);
+    r.issue_id = v.issue_id;
+    r.leg_number = v.leg_number;
     r.schedule_role = v.schedule_role;
-    r.sequence_number = std::to_string(v.sequence_number);
-    r.tenant_id = v.tenant_id.to_string();
+    r.sequence_number = v.sequence_number;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.schedule_kind = v.schedule_kind;
-    r.start_date =
-        v.start_date.has_value() ?
-            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.start_date)) :
-            std::nullopt;
-    r.end_date = v.end_date.has_value() ?
-                     std::optional(ores::platform::time::datetime::to_iso8601_date(*v.end_date)) :
-                     std::nullopt;
+    r.start_date = v.start_date;
+    r.end_date = v.end_date;
     r.adjust_end_date_to_previous_month_end = v.adjust_end_date_to_previous_month_end;
     r.tenor = v.tenor;
     r.calendar = v.calendar;
@@ -118,13 +102,8 @@ bond_issue_leg_schedule_mapper::map(const domain::bond_issue_leg_schedule& v) {
     r.rule = v.rule;
     r.end_of_month = v.end_of_month;
     r.end_of_month_convention = v.end_of_month_convention;
-    r.first_date =
-        v.first_date.has_value() ?
-            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.first_date)) :
-            std::nullopt;
-    r.last_date = v.last_date.has_value() ?
-                      std::optional(ores::platform::time::datetime::to_iso8601_date(*v.last_date)) :
-                      std::nullopt;
+    r.first_date = v.first_date;
+    r.last_date = v.last_date;
     r.remove_first_date = v.remove_first_date;
     r.remove_last_date = v.remove_last_date;
     r.include_duplicate_dates = v.include_duplicate_dates;

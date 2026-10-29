@@ -170,10 +170,10 @@ void equity_basket_constituent_repository::write(
 
 std::vector<domain::equity_basket_constituent>
 equity_basket_constituent_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<equity_basket_constituent_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("trade_id"_c, "sequence_number"_c);
 
     return query_builder::execute_read_query<equity_basket_constituent_entity,
@@ -190,12 +190,12 @@ std::vector<domain::equity_basket_constituent> equity_basket_constituent_reposit
     BOOST_LOG_SEV(lg(), debug) << "Reading latest equity basket constituent. "
                                << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<equity_basket_constituent_entity>> |
         query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                             "sequence_number"_c == sequence_number && "valid_to"_c == max.value());
+                             "sequence_number"_c == sequence_number && "valid_to"_c == max);
 
     return query_builder::execute_read_query<equity_basket_constituent_entity,
                                              domain::equity_basket_constituent>(
@@ -270,7 +270,7 @@ equity_basket_constituent_repository::remove(context ctx,
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -279,7 +279,7 @@ equity_basket_constituent_repository::remove(context ctx,
     const auto query = query_builder::delete_from<equity_basket_constituent_entity> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
                                             "sequence_number"_c == sequence_number &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing equity basket constituent from database.");
@@ -343,12 +343,12 @@ std::vector<domain::equity_basket_constituent> equity_basket_constituent_reposit
     const std::vector<std::string>& sequence_numbers) {
     if (trade_ids.empty() || sequence_numbers.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<equity_basket_constituent_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
-                                            "sequence_number"_c.in(sequence_numbers) &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<equity_basket_constituent_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+                             "sequence_number"_c.in(sequence_numbers) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<equity_basket_constituent_entity,
                                                     domain::equity_basket_constituent>(
         ctx,

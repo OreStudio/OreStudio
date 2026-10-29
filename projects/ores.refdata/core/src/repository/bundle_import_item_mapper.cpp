@@ -44,24 +44,19 @@ domain::bundle_import_item bundle_import_item_mapper::map(const bundle_import_it
 
     domain::bundle_import_item r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.import_id = boost::lexical_cast<boost::uuids::uuid>(v.import_id);
-
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.import_id = v.import_id;
     r.family = v.family;
-
-
     r.sequence = v.sequence;
-
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.party_id = v.party_id;
     r.payload = v.payload;
     r.checksum = v.checksum;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -71,18 +66,13 @@ bundle_import_item_entity bundle_import_item_mapper::map(const domain::bundle_im
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     bundle_import_item_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.import_id = boost::uuids::to_string(v.import_id);
-
-
+    r.import_id = v.import_id;
     r.family = v.family;
-
-
     r.sequence = v.sequence;
-
-    r.party_id = boost::uuids::to_string(v.party_id);
+    r.party_id = v.party_id;
     r.payload = v.payload;
     r.checksum = v.checksum;
     r.modified_by = v.modified_by;

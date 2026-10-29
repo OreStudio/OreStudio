@@ -35,9 +35,9 @@ dataset_dependency_repository::dataset_dependency_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
 std::vector<domain::dataset_dependency> dataset_dependency_repository::read_latest() {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<dataset_dependency_entity>> |
-                       query_builder::where("valid_to"_c == max.value()) |
+                       query_builder::where("valid_to"_c == max) |
                        query_builder::order_by("dataset_code"_c, "dependency_code"_c);
 
     return execute_read_query<dataset_dependency_entity, domain::dataset_dependency>(

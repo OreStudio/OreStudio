@@ -42,7 +42,7 @@ series_classification_rule_mapper::map(const series_classification_rule_entity& 
 
     domain::series_classification_rule r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.tenant_id = v.tenant_id;
     r.instrument = v.instrument;
     r.quote = v.quote;
     r.key_kind = v.key_kind;
@@ -54,7 +54,7 @@ series_classification_rule_mapper::map(const series_classification_rule_entity& 
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -68,7 +68,7 @@ series_classification_rule_mapper::map(const domain::series_classification_rule&
     r.instrument = v.instrument;
     r.quote = v.quote;
     r.key_kind = v.key_kind;
-    r.tenant_id = v.tenant_id.to_string();
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.asset_class_source = v.asset_class_source;
     r.asset_class_code = v.asset_class_code;

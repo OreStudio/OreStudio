@@ -49,8 +49,7 @@ make_bundle(const std::string& tenant_id,
     bundle.fixings_storage_key = instance_id + "/fixings.txt";
     bundle.trade_count = 3;
     bundle.series_count = 5;
-    bundle.created_at =
-        ores::platform::time::datetime::to_db_string(std::chrono::system_clock::now());
+    bundle.created_at = std::chrono::system_clock::now();
     return bundle;
 }
 

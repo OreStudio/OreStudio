@@ -45,34 +45,24 @@ domain::account account_mapper::map(const account_entity& v) {
 
     domain::account r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
     r.username = v.username;
-
     r.account_type = v.account_type;
     r.account_status = v.account_status;
     r.full_name = v.full_name.value_or("");
     r.email = v.email;
-    r.default_party_id =
-        v.default_party_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.default_party_id)) :
-            std::nullopt;
-    r.image_id = v.image_id.has_value() ?
-                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.image_id)) :
-                     std::nullopt;
+    r.default_party_id = v.default_party_id;
+    r.image_id = v.image_id;
     r.picture_code = v.picture_code.value_or("");
     r.job_title = v.job_title.value_or("");
-    r.reports_to_account_id =
-        v.reports_to_account_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.reports_to_account_id)) :
-            std::nullopt;
+    r.reports_to_account_id = v.reports_to_account_id;
     r.shared = v.shared;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -82,26 +72,19 @@ account_entity account_mapper::map(const domain::account& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     account_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-
     r.username = v.username;
-
     r.account_type = v.account_type;
     r.account_status = v.account_status;
     r.full_name = v.full_name.empty() ? std::nullopt : std::optional(v.full_name);
     r.email = v.email;
-    r.default_party_id = v.default_party_id.has_value() ?
-                             std::optional(boost::uuids::to_string(*v.default_party_id)) :
-                             std::nullopt;
-    r.image_id =
-        v.image_id.has_value() ? std::optional(boost::uuids::to_string(*v.image_id)) : std::nullopt;
+    r.default_party_id = v.default_party_id;
+    r.image_id = v.image_id;
     r.picture_code = v.picture_code.empty() ? std::nullopt : std::optional(v.picture_code);
     r.job_title = v.job_title.empty() ? std::nullopt : std::optional(v.job_title);
-    r.reports_to_account_id = v.reports_to_account_id.has_value() ?
-                                  std::optional(boost::uuids::to_string(*v.reports_to_account_id)) :
-                                  std::nullopt;
+    r.reports_to_account_id = v.reports_to_account_id;
     r.shared = v.shared;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

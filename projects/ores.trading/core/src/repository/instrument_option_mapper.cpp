@@ -48,9 +48,9 @@ domain::instrument_option instrument_option_mapper::map(const instrument_option_
 
     domain::instrument_option r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
-    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
+    r.tenant_id = v.tenant_id;
+    r.trade_id = v.trade_id;
+    r.trade_activity_id = v.trade_activity_id;
     r.long_short = v.long_short;
     r.option_type = v.option_type;
     r.payoff_type = v.payoff_type;
@@ -63,28 +63,16 @@ domain::instrument_option instrument_option_mapper::map(const instrument_option_
     r.settlement = v.settlement;
     r.settlement_method = v.settlement_method;
     r.pay_off_at_expiry = v.pay_off_at_expiry;
-    r.premium_amount =
-        v.premium_amount.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.premium_amount).value()) :
-            std::nullopt;
+    r.premium_amount = v.premium_amount;
     r.premium_currency = v.premium_currency;
-    r.premium_pay_date =
-        v.premium_pay_date.has_value() ?
-            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.premium_pay_date)) :
-            std::nullopt;
+    r.premium_pay_date = v.premium_pay_date;
     r.exercise_fee_settlement_period = v.exercise_fee_settlement_period;
     r.exercise_fee_settlement_calendar = v.exercise_fee_settlement_calendar;
     r.exercise_fee_settlement_convention = v.exercise_fee_settlement_convention;
     r.automatic_exercise = v.automatic_exercise;
     r.has_exercise_data = v.has_exercise_data;
-    r.exercise_date =
-        v.exercise_date.has_value() ?
-            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.exercise_date)) :
-            std::nullopt;
-    r.exercise_price =
-        v.exercise_price.has_value() ?
-            std::optional(ores::utility::decimal::decimal::from_string(*v.exercise_price).value()) :
-            std::nullopt;
+    r.exercise_date = v.exercise_date;
+    r.exercise_price = v.exercise_price;
     r.has_payment_data = v.has_payment_data;
     r.payment_lag = v.payment_lag;
     r.payment_calendar = v.payment_calendar;
@@ -93,15 +81,12 @@ domain::instrument_option instrument_option_mapper::map(const instrument_option_
     r.has_settlement_data = v.has_settlement_data;
     r.settlement_pay_currency = v.settlement_pay_currency;
     r.settlement_fx_index = v.settlement_fx_index;
-    r.settlement_fixing_date = v.settlement_fixing_date.has_value() ?
-                                   std::optional(ores::platform::time::datetime::from_iso8601_date(
-                                       *v.settlement_fixing_date)) :
-                                   std::nullopt;
+    r.settlement_fixing_date = v.settlement_fixing_date;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -111,10 +96,10 @@ instrument_option_entity instrument_option_mapper::map(const domain::instrument_
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     instrument_option_entity r;
-    r.trade_id = boost::uuids::to_string(v.trade_id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.trade_id = v.trade_id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
+    r.trade_activity_id = v.trade_activity_id;
     r.long_short = v.long_short;
     r.option_type = v.option_type;
     r.payoff_type = v.payoff_type;
@@ -127,24 +112,16 @@ instrument_option_entity instrument_option_mapper::map(const domain::instrument_
     r.settlement = v.settlement;
     r.settlement_method = v.settlement_method;
     r.pay_off_at_expiry = v.pay_off_at_expiry;
-    r.premium_amount =
-        v.premium_amount.has_value() ? std::optional(v.premium_amount->to_string()) : std::nullopt;
+    r.premium_amount = v.premium_amount;
     r.premium_currency = v.premium_currency;
-    r.premium_pay_date =
-        v.premium_pay_date.has_value() ?
-            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.premium_pay_date)) :
-            std::nullopt;
+    r.premium_pay_date = v.premium_pay_date;
     r.exercise_fee_settlement_period = v.exercise_fee_settlement_period;
     r.exercise_fee_settlement_calendar = v.exercise_fee_settlement_calendar;
     r.exercise_fee_settlement_convention = v.exercise_fee_settlement_convention;
     r.automatic_exercise = v.automatic_exercise;
     r.has_exercise_data = v.has_exercise_data;
-    r.exercise_date =
-        v.exercise_date.has_value() ?
-            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.exercise_date)) :
-            std::nullopt;
-    r.exercise_price =
-        v.exercise_price.has_value() ? std::optional(v.exercise_price->to_string()) : std::nullopt;
+    r.exercise_date = v.exercise_date;
+    r.exercise_price = v.exercise_price;
     r.has_payment_data = v.has_payment_data;
     r.payment_lag = v.payment_lag;
     r.payment_calendar = v.payment_calendar;
@@ -153,10 +130,7 @@ instrument_option_entity instrument_option_mapper::map(const domain::instrument_
     r.has_settlement_data = v.has_settlement_data;
     r.settlement_pay_currency = v.settlement_pay_currency;
     r.settlement_fx_index = v.settlement_fx_index;
-    r.settlement_fixing_date = v.settlement_fixing_date.has_value() ?
-                                   std::optional(ores::platform::time::datetime::to_iso8601_date(
-                                       *v.settlement_fixing_date)) :
-                                   std::nullopt;
+    r.settlement_fixing_date = v.settlement_fixing_date;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

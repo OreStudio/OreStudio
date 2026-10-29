@@ -210,14 +210,15 @@ Example of =book='s primary key:
 UUID uniquely identifying this book.
 #+end_src
 
-Generates, in the repository entity (=book_entity.hpp=):
+Generates, in the repository entity (=book_entity.hpp=), a member of the
+type the column has:
 
 #+begin_src cpp
 struct book_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_refdata_books_tbl";
 
-    std::string id;
+    boost::uuids::uuid id;
     // ...
 };
 #+end_src

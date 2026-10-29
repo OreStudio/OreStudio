@@ -27,6 +27,9 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -44,16 +47,18 @@ struct account_party_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_iam_account_parties_tbl";
 
-    std::string account_id;
+    boost::uuids::uuid account_id;
+
     std::string tenant_id;
-    std::string party_id;
+    boost::uuids::uuid party_id;
+
     int version = 0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = db_timestamp::max();
+    db_timestamp valid_to = db_timestamp::max();
     std::optional<std::string> closed_by;
 
     /**
@@ -63,7 +68,7 @@ struct account_party_entity {
         using e = account_party_entity;
         namespace query_builder = ores::database::query_builder;
         return query_builder::columns<e>() | query_builder::key("account_id", &e::account_id) |
-               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind_text("tenant_id", &e::tenant_id) |
                query_builder::bind("party_id", &e::party_id) |
                query_builder::bind("version", &e::version) |
                query_builder::bind("modified_by", &e::modified_by) |

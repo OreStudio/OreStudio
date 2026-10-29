@@ -136,10 +136,10 @@ void role_grant_request_role_repository::write(
 }
 
 std::vector<domain::role_grant_request_role> role_grant_request_role_repository::read_latest() {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_grant_request_role_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("request_id"_c, "role_id"_c);
 
     return query_builder::execute_read_query<role_grant_request_role_entity,
@@ -155,10 +155,10 @@ std::vector<domain::role_grant_request_role>
 role_grant_request_role_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest role grant request roles with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_grant_request_role_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("request_id"_c, "role_id"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -177,14 +177,14 @@ role_grant_request_role_repository::read_latest(const boost::uuids::uuid& reques
     BOOST_LOG_SEV(lg(), debug) << "Reading latest role grant request role. " << request_id << "/"
                                << role_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto role_id_str = boost::uuids::to_string(role_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<role_grant_request_role_entity>> |
         query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
-                             "role_id"_c == role_id_str && "valid_to"_c == max.value());
+                             "role_id"_c == role_id_str && "valid_to"_c == max);
 
     return query_builder::execute_read_query<role_grant_request_role_entity,
                                              domain::role_grant_request_role>(
@@ -197,11 +197,11 @@ role_grant_request_role_repository::read_latest(const boost::uuids::uuid& reques
 
 std::uint32_t role_grant_request_role_repository::get_total_role_grant_request_role_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active role grant request roles count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_grant_request_role_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<role_grant_request_role_entity>(
         ctx_, query, std::nullopt, lg(), "Counting role grant request roles");
@@ -214,13 +214,13 @@ role_grant_request_role_repository::read_latest_by_request(const boost::uuids::u
     BOOST_LOG_SEV(lg(), debug) << "Reading latest role grant request roles. Request: "
                                << request_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto request_id_str = boost::uuids::to_string(request_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<role_grant_request_role_entity>> |
         query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("role_id"_c);
 
     auto rows = query_builder::execute_read_query<role_grant_request_role_entity,
@@ -238,12 +238,12 @@ std::vector<domain::role_grant_request_role>
 role_grant_request_role_repository::read_latest_by_role(const boost::uuids::uuid& role_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest role grant request roles. Role: " << role_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto role_id_str = boost::uuids::to_string(role_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_grant_request_role_entity>> |
                        query_builder::where("tenant_id"_c == tid && "role_id"_c == role_id_str &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("request_id"_c);
 
     auto rows = query_builder::execute_read_query<role_grant_request_role_entity,
@@ -265,12 +265,12 @@ role_grant_request_role_repository::read_latest_by_request(const boost::uuids::u
     BOOST_LOG_SEV(lg(), debug) << "Reading latest role grant request roles. Request: " << request_id
                                << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<role_grant_request_role_entity>> |
         query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("role_id"_c) | query_builder::offset(offset) |
         query_builder::limit(limit);
 
@@ -291,13 +291,13 @@ role_grant_request_role_repository::get_total_role_grant_request_role_count_by_r
     const auto request_id_str = boost::uuids::to_string(request_id);
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active role grant request roles count. Request: " << request_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<role_grant_request_role_entity>> |
         query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<role_grant_request_role_entity>(
         ctx_, query, std::nullopt, lg(), "Counting role grant request roles");
@@ -311,12 +311,12 @@ std::uint32_t role_grant_request_role_repository::get_total_role_grant_request_r
     const auto role_id_str = boost::uuids::to_string(role_id);
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active role grant request roles count. Role: "
                                << role_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_grant_request_role_entity>> |
                        query_builder::where("tenant_id"_c == tid && "role_id"_c == role_id_str &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<role_grant_request_role_entity>(
         ctx_, query, std::nullopt, lg(), "Counting role grant request roles");
@@ -390,7 +390,7 @@ role_grant_request_role_repository::remove(const boost::uuids::uuid& request_id,
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -401,7 +401,7 @@ role_grant_request_role_repository::remove(const boost::uuids::uuid& request_id,
     const auto query =
         query_builder::delete_from<role_grant_request_role_entity> |
         query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id_str &&
-                             "role_id"_c == role_id_str && "valid_to"_c == max.value() &&
+                             "role_id"_c == role_id_str && "valid_to"_c == max &&
                              "version"_c == expected);
 
     query_builder::execute_delete_query(

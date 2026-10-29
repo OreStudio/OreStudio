@@ -71,109 +71,72 @@ domain::{{entity_singular}}
 {{#has_tenant_id}}
 {{#nullable_tenant_id}}
     if (v.tenant_id)
-        r.{{{scaffold_prefix}}}tenant_id = utility::uuid::tenant_id::from_string(*v.tenant_id).value();
+        r.{{{scaffold_prefix}}}tenant_id = *v.tenant_id;
 {{/nullable_tenant_id}}
 {{^nullable_tenant_id}}
-    r.{{{scaffold_prefix}}}tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.{{{scaffold_prefix}}}tenant_id = v.tenant_id;
 {{/nullable_tenant_id}}
 {{/has_tenant_id}}
 {{#primary_key.columns}}
-{{#is_text}}
     r.{{{group_prefix}}}{{column}} = v.{{column}};
-{{/is_text}}
-{{#is_uuid}}
-    r.{{{group_prefix}}}{{column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{column}});
-{{/is_uuid}}
-{{#is_int}}
-    r.{{{group_prefix}}}{{column}} = boost::lexical_cast<int>(v.{{column}});
-{{/is_int}}
-{{#is_timestamp}}
-    r.{{{group_prefix}}}{{column}} = timestamp_to_timepoint(std::string_view{v.{{column}}});
-{{/is_timestamp}}
 {{/primary_key.columns}}
 {{! Natural keys are not identity-group-column-aware: they always map flat.
     An entity with both has_identity_group and non-empty natural_keys would
     produce incorrect code if those keys live in the identity sub-struct. }}
 {{#natural_keys}}
-{{#is_uuid}}
-    r.{{{group_prefix}}}{{column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{column}});
-{{/is_uuid}}
-{{#is_date}}
-    {
-        int yy{}, mm{}, dd{}; char s1{}, s2{};
-        std::istringstream ss(v.{{column}});
-        ss >> yy >> s1 >> mm >> s2 >> dd;
-        r.{{{group_prefix}}}{{column}} = std::chrono::year{yy} / std::chrono::month{static_cast<unsigned>(mm)} /
-                       std::chrono::day{static_cast<unsigned>(dd)};
-    }
-{{/is_date}}
-{{#is_timestamp}}
-    r.{{{group_prefix}}}{{column}} = timestamp_to_timepoint(std::string_view{v.{{column}}});
-{{/is_timestamp}}
-{{^is_uuid}}{{^is_date}}{{^is_timestamp}}
+{{#is_optional_uuid}}
+{{#render_is_uuid}}
+    r.{{{group_prefix}}}{{column}} = v.{{column}}.has_value() ? *v.{{column}} : boost::uuids::uuid{};
+{{/render_is_uuid}}
+{{^render_is_uuid}}
     r.{{{group_prefix}}}{{column}} = v.{{column}};
-{{/is_timestamp}}{{/is_date}}{{/is_uuid}}
+{{/render_is_uuid}}
+{{/is_optional_uuid}}
+{{^is_optional_uuid}}
+    r.{{{group_prefix}}}{{column}} = v.{{column}};
+{{/is_optional_uuid}}
 {{/natural_keys}}
 {{#columns}}
 {{^sql_only}}
 {{#is_uuid}}
-    r.{{{group_prefix}}}{{name}} = boost::lexical_cast<boost::uuids::uuid>(v.{{name}});
+    r.{{{group_prefix}}}{{name}} = v.{{name}};
 {{/is_uuid}}
 {{#is_optional_uuid}}
-{{#render_is_optional_uuid}}
-    r.{{{group_prefix}}}{{name}} = v.{{name}}.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.{{name}})) : std::nullopt;
-{{/render_is_optional_uuid}}
 {{#render_is_uuid}}
-    r.{{{group_prefix}}}{{name}} = v.{{name}}.has_value() ? boost::lexical_cast<boost::uuids::uuid>(*v.{{name}}) : boost::uuids::uuid{};
+    r.{{{group_prefix}}}{{name}} = v.{{name}}.has_value() ? *v.{{name}} : boost::uuids::uuid{};
+{{/render_is_uuid}}
+{{^render_is_uuid}}
+    r.{{{group_prefix}}}{{name}} = v.{{name}};
 {{/render_is_uuid}}
 {{/is_optional_uuid}}
 {{#is_optional_timestamp}}
-{{#render_is_optional_timestamp}}
-    r.{{{group_prefix}}}{{name}} = v.{{name}}.has_value() ? std::optional(timestamp_to_timepoint(*v.{{name}})) : std::nullopt;
-{{/render_is_optional_timestamp}}
-{{^render_is_optional_timestamp}}
-{{^render_is_timestamp}}
-    r.{{{group_prefix}}}{{name}} = v.{{name}}.has_value() ? std::optional(v.{{name}}->str()) : std::nullopt;
-{{/render_is_timestamp}}
-{{/render_is_optional_timestamp}}
 {{#render_is_timestamp}}
-    if (v.{{name}})
-        r.{{{group_prefix}}}{{name}} = timestamp_to_timepoint(*v.{{name}});
-    else
-        r.{{{group_prefix}}}{{name}} = {};
+    r.{{{group_prefix}}}{{name}} = v.{{name}}.value_or(db_timestamp{});
+{{/render_is_timestamp}}
+{{^render_is_timestamp}}
+    r.{{{group_prefix}}}{{name}} = v.{{name}};
 {{/render_is_timestamp}}
 {{/is_optional_timestamp}}
 {{#is_required_timestamp}}
-    r.{{{group_prefix}}}{{name}} = timestamp_to_timepoint(std::string_view{v.{{name}}});
+    r.{{{group_prefix}}}{{name}} = v.{{name}};
 {{/is_required_timestamp}}
-{{#is_date}}
 {{#is_optional_date}}
-{{#render_is_optional_date}}
-    r.{{{group_prefix}}}{{name}} = v.{{name}}.has_value() ? std::optional(ores::platform::time::datetime::from_iso8601_date(*v.{{name}})) : std::nullopt;
-{{/render_is_optional_date}}
-{{^render_is_optional_date}}
-    r.{{{group_prefix}}}{{name}} = v.{{name}}.has_value() ? ores::platform::time::datetime::from_iso8601_date(*v.{{name}}) : std::chrono::year_month_day{};
-{{/render_is_optional_date}}
+    r.{{{group_prefix}}}{{name}} = v.{{name}};
 {{/is_optional_date}}
 {{#is_required_date}}
-{{#render_is_optional_date}}
-    r.{{{group_prefix}}}{{name}} = v.{{name}}.empty() ? std::nullopt : std::optional(ores::platform::time::datetime::from_iso8601_date(v.{{name}}));
-{{/render_is_optional_date}}
-{{^render_is_optional_date}}
-    r.{{{group_prefix}}}{{name}} = ores::platform::time::datetime::from_iso8601_date(v.{{name}});
-{{/render_is_optional_date}}
+    r.{{{group_prefix}}}{{name}} = v.{{name}};
 {{/is_required_date}}
-{{/is_date}}
-{{#is_decimal}}
 {{#is_optional_decimal}}
-    r.{{{group_prefix}}}{{name}} = v.{{name}}.has_value() ? std::optional(ores::utility::decimal::decimal::from_string(*v.{{name}}).value()) : std::nullopt;
+    r.{{{group_prefix}}}{{name}} = v.{{name}};
 {{/is_optional_decimal}}
 {{#is_required_decimal}}
-    r.{{{group_prefix}}}{{name}} = ores::utility::decimal::decimal::from_string(v.{{name}}).value();
+    r.{{{group_prefix}}}{{name}} = v.{{name}};
 {{/is_required_decimal}}
-{{/is_decimal}}
 {{#is_required_inet}}
-    r.{{{group_prefix}}}{{name}} = boost::asio::ip::make_address(v.{{name}});
+    // PostgreSQL renders an inet with its netmask, and the domain holds an
+    // address, which has none: the mask is the part this type cannot carry.
+    r.{{{group_prefix}}}{{name}} = boost::asio::ip::make_address(
+        v.{{name}}.substr(0, v.{{name}}.find('/')));
 {{/is_required_inet}}
 {{#is_base64}}
     r.{{{group_prefix}}}{{name}} = utility::convert::base64_converter::convert(v.{{name}});
@@ -217,7 +180,7 @@ domain::{{entity_singular}}
     r.{{{audit_prefix}}}performed_by = v.performed_by;
     r.{{{audit_prefix}}}change_reason_code = v.change_reason_code;
     r.{{{audit_prefix}}}change_commentary = v.change_commentary;
-    r.{{{audit_prefix}}}recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.{{{audit_prefix}}}recorded_at = v.valid_from;
 {{/has_audit_columns}}
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
@@ -230,33 +193,14 @@ domain::{{entity_singular}}
 
     {{entity_singular}}_entity r;
 {{#primary_key.columns}}
-{{#is_text}}
     r.{{column}} = v.{{{group_prefix}}}{{column}};
-{{/is_text}}
-{{#is_uuid}}
-{{#render_is_optional_uuid}}
-    if (v.{{{group_prefix}}}{{column}}) {
-        r.{{column}} = boost::uuids::to_string(*v.{{{group_prefix}}}{{column}});
-    }
-{{/render_is_optional_uuid}}
-{{^render_is_optional_uuid}}
-    r.{{column}} = boost::uuids::to_string(v.{{{group_prefix}}}{{column}});
-{{/render_is_optional_uuid}}
-{{/is_uuid}}
-{{#is_int}}
-    r.{{column}} = std::to_string(v.{{{group_prefix}}}{{column}});
-{{/is_int}}
-{{#is_timestamp}}
-    r.{{column}} = ores::platform::time::datetime::to_db_string(v.{{{group_prefix}}}{{column}});
-{{/is_timestamp}}
 {{/primary_key.columns}}
 {{#has_tenant_id}}
 {{#nullable_tenant_id}}
-    if (v.{{{scaffold_prefix}}}tenant_id)
-        r.tenant_id = v.{{{scaffold_prefix}}}tenant_id->to_string();
+    r.tenant_id = v.{{{scaffold_prefix}}}tenant_id;
 {{/nullable_tenant_id}}
 {{^nullable_tenant_id}}
-    r.tenant_id = v.{{{scaffold_prefix}}}tenant_id.to_string();
+    r.tenant_id = v.{{{scaffold_prefix}}}tenant_id;
 {{/nullable_tenant_id}}
 {{/has_tenant_id}}
 {{#has_audit_columns}}
@@ -266,87 +210,63 @@ domain::{{entity_singular}}
     An entity with both has_identity_group and non-empty natural_keys would
     produce incorrect code if those keys live in the identity sub-struct. }}
 {{#natural_keys}}
-{{#is_uuid}}
+{{#is_optional_uuid}}
 {{#render_is_optional_uuid}}
-    if (v.{{{group_prefix}}}{{column}}) {
-        r.{{column}} = boost::uuids::to_string(*v.{{{group_prefix}}}{{column}});
-    }
+    r.{{column}} = v.{{{group_prefix}}}{{column}};
 {{/render_is_optional_uuid}}
 {{^render_is_optional_uuid}}
-    r.{{column}} = boost::uuids::to_string(v.{{{group_prefix}}}{{column}});
+    r.{{column}} = v.{{{group_prefix}}}{{column}}.value_or(boost::uuids::uuid{});
 {{/render_is_optional_uuid}}
-{{/is_uuid}}
-{{#is_date}}
-    r.{{column}} = std::format("{:%Y-%m-%d}", v.{{{group_prefix}}}{{column}});
-{{/is_date}}
-{{#is_timestamp}}
-    r.{{column}} = ores::platform::time::datetime::to_iso8601_utc(v.{{{group_prefix}}}{{column}});
-{{/is_timestamp}}
-{{^is_uuid}}{{^is_date}}{{^is_timestamp}}
+{{/is_optional_uuid}}
+{{^is_optional_uuid}}
     r.{{column}} = v.{{{group_prefix}}}{{column}};
-{{/is_timestamp}}{{/is_date}}{{/is_uuid}}
+{{/is_optional_uuid}}
 {{/natural_keys}}
 {{#columns}}
 {{^sql_only}}
 {{#is_uuid}}
-    r.{{name}} = boost::uuids::to_string(v.{{{group_prefix}}}{{name}});
+{{#render_is_optional_uuid}}
+    r.{{name}} = v.{{{group_prefix}}}{{name}}.value_or(boost::uuids::uuid{});
+{{/render_is_optional_uuid}}
+{{^render_is_optional_uuid}}
+    r.{{name}} = v.{{{group_prefix}}}{{name}};
+{{/render_is_optional_uuid}}
 {{/is_uuid}}
 {{#is_optional_uuid}}
-{{#render_is_optional_uuid}}
-    r.{{name}} = v.{{{group_prefix}}}{{name}}.has_value() ? std::optional(boost::uuids::to_string(*v.{{{group_prefix}}}{{name}})) : std::nullopt;
-{{/render_is_optional_uuid}}
 {{#render_is_uuid}}
-    r.{{name}} = v.{{{group_prefix}}}{{name}} == boost::uuids::uuid{} ? std::nullopt :
-                                                      std::optional(boost::uuids::to_string(v.{{{group_prefix}}}{{name}}));
+    r.{{name}} = v.{{{group_prefix}}}{{name}} == boost::uuids::uuid{} ?
+                     std::nullopt :
+                     std::optional(v.{{{group_prefix}}}{{name}});
+{{/render_is_uuid}}
+{{^render_is_uuid}}
+    r.{{name}} = v.{{{group_prefix}}}{{name}};
 {{/render_is_uuid}}
 {{/is_optional_uuid}}
 {{#is_optional_timestamp}}
-{{#render_is_optional_timestamp}}
-    r.{{name}} = v.{{{group_prefix}}}{{name}}.has_value() ? std::optional(ores::platform::time::datetime::to_db_string(*v.{{{group_prefix}}}{{name}})) : std::nullopt;
-{{/render_is_optional_timestamp}}
 {{#render_is_timestamp}}
-    r.{{name}} = v.{{{group_prefix}}}{{name}} != std::chrono::system_clock::time_point{} ?
-                     std::optional(ores::platform::time::datetime::to_db_string(v.{{{group_prefix}}}{{name}})) :
-                     std::nullopt;
+    r.{{name}} = v.{{{group_prefix}}}{{name}} == db_timestamp{} ?
+                     std::nullopt :
+                     std::optional(v.{{{group_prefix}}}{{name}});
 {{/render_is_timestamp}}
-{{^render_is_optional_timestamp}}
 {{^render_is_timestamp}}
-    if (v.{{{group_prefix}}}{{name}}.has_value())
-        r.{{name}}.emplace(*v.{{{group_prefix}}}{{name}});
-    else
-        r.{{name}} = std::nullopt;
+    r.{{name}} = v.{{{group_prefix}}}{{name}};
 {{/render_is_timestamp}}
-{{/render_is_optional_timestamp}}
 {{/is_optional_timestamp}}
 {{#is_required_timestamp}}
-    r.{{name}} = ores::platform::time::datetime::to_iso8601_utc(v.{{{group_prefix}}}{{name}});
+    r.{{name}} = v.{{{group_prefix}}}{{name}};
 {{/is_required_timestamp}}
-{{#is_date}}
 {{#is_optional_date}}
-{{#render_is_optional_date}}
-    r.{{name}} = v.{{{group_prefix}}}{{name}}.has_value() ? std::optional(ores::platform::time::datetime::to_iso8601_date(*v.{{{group_prefix}}}{{name}})) : std::nullopt;
-{{/render_is_optional_date}}
-{{^render_is_optional_date}}
-    r.{{name}} = v.{{{group_prefix}}}{{name}}.ok() ? std::optional(ores::platform::time::datetime::to_iso8601_date(v.{{{group_prefix}}}{{name}})) : std::nullopt;
-{{/render_is_optional_date}}
+    r.{{name}} = v.{{{group_prefix}}}{{name}};
 {{/is_optional_date}}
 {{#is_required_date}}
-{{#render_is_optional_date}}
-    r.{{name}} = v.{{{group_prefix}}}{{name}}.has_value() ? ores::platform::time::datetime::to_iso8601_date(*v.{{{group_prefix}}}{{name}}) : std::string{};
-{{/render_is_optional_date}}
-{{^render_is_optional_date}}
-    r.{{name}} = ores::platform::time::datetime::to_iso8601_date(v.{{{group_prefix}}}{{name}});
-{{/render_is_optional_date}}
+    r.{{name}} = v.{{{group_prefix}}}{{name}};
 {{/is_required_date}}
-{{/is_date}}
-{{#is_decimal}}
 {{#is_optional_decimal}}
-    r.{{name}} = v.{{{group_prefix}}}{{name}}.has_value() ? std::optional(v.{{{group_prefix}}}{{name}}->to_string()) : std::nullopt;
+    r.{{name}} = v.{{{group_prefix}}}{{name}};
 {{/is_optional_decimal}}
 {{#is_required_decimal}}
-    r.{{name}} = v.{{{group_prefix}}}{{name}}.to_string();
+    r.{{name}} = v.{{{group_prefix}}}{{name}};
 {{/is_required_decimal}}
-{{/is_decimal}}
 {{#is_required_inet}}
     r.{{name}} = v.{{{group_prefix}}}{{name}}.to_string();
 {{/is_required_inet}}
@@ -475,38 +395,21 @@ domain::{{name_singular}}
 {{#has_tenant_id}}
     r.tenant_id = v.tenant_id;
 {{/has_tenant_id}}
-{{#left.is_uuid}}
-    r.{{left.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{left.column}});
-{{/left.is_uuid}}
-{{^left.is_uuid}}
-{{#left.is_date}}
-    r.{{left.column}} = ores::platform::time::datetime::from_iso8601_date(v.{{left.column}});
-{{/left.is_date}}
-{{^left.is_date}}
     r.{{left.column}} = v.{{left.column}};
-{{/left.is_date}}
-{{/left.is_uuid}}
-{{#right.is_uuid}}
-    r.{{right.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{right.column}});
-{{/right.is_uuid}}
-{{^right.is_uuid}}
-{{#right.is_date}}
-    r.{{right.column}} = ores::platform::time::datetime::from_iso8601_date(v.{{right.column}});
-{{/right.is_date}}
-{{^right.is_date}}
     r.{{right.column}} = v.{{right.column}};
-{{/right.is_date}}
-{{/right.is_uuid}}
-{{#columns}}{{#is_required_timestamp}}    r.{{name}} = timestamp_to_timepoint(std::string_view{v.{{name}}});
-{{/is_required_timestamp}}{{#is_optional_timestamp}}    r.{{name}} = v.{{name}}.has_value() ? std::optional(timestamp_to_timepoint(*v.{{name}})) : std::nullopt;
-{{/is_optional_timestamp}}{{#is_date}}    r.{{name}} = ores::platform::time::datetime::from_iso8601_date(v.{{name}});
-{{/is_date}}{{#is_base64}}    r.{{name}} = utility::convert::base64_converter::convert(v.{{name}});
-{{/is_base64}}{{^is_required_timestamp}}{{^is_optional_timestamp}}{{^is_date}}{{^is_base64}}    r.{{name}} = v.{{name}};
-{{/is_base64}}{{/is_date}}{{/is_optional_timestamp}}{{/is_required_timestamp}}{{/columns}}    r.modified_by = v.modified_by;
+{{#columns}}
+{{#is_base64}}
+    r.{{name}} = utility::convert::base64_converter::convert(v.{{name}});
+{{/is_base64}}
+{{^is_base64}}
+    r.{{name}} = v.{{name}};
+{{/is_base64}}
+{{/columns}}
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -517,38 +420,21 @@ domain::{{name_singular}}
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     {{name_singular}}_entity r;
-{{#left.is_uuid}}
-    r.{{left.column}} = boost::uuids::to_string(v.{{left.column}});
-{{/left.is_uuid}}
-{{^left.is_uuid}}
-{{#left.is_date}}
-    r.{{left.column}} = ores::platform::time::datetime::to_iso8601_date(v.{{left.column}});
-{{/left.is_date}}
-{{^left.is_date}}
     r.{{left.column}} = v.{{left.column}};
-{{/left.is_date}}
-{{/left.is_uuid}}
 {{#has_tenant_id}}
     r.tenant_id = v.tenant_id;
 {{/has_tenant_id}}
-{{#right.is_uuid}}
-    r.{{right.column}} = boost::uuids::to_string(v.{{right.column}});
-{{/right.is_uuid}}
-{{^right.is_uuid}}
-{{#right.is_date}}
-    r.{{right.column}} = ores::platform::time::datetime::to_iso8601_date(v.{{right.column}});
-{{/right.is_date}}
-{{^right.is_date}}
     r.{{right.column}} = v.{{right.column}};
-{{/right.is_date}}
-{{/right.is_uuid}}
     r.version = v.version;
-{{#columns}}{{#is_required_timestamp}}    r.{{name}} = ores::platform::time::datetime::to_iso8601_utc(v.{{name}});
-{{/is_required_timestamp}}{{#is_optional_timestamp}}    r.{{name}} = v.{{name}}.has_value() ? std::optional(ores::platform::time::datetime::to_db_string(*v.{{name}})) : std::nullopt;
-{{/is_optional_timestamp}}{{#is_date}}    r.{{name}} = ores::platform::time::datetime::to_iso8601_date(v.{{name}});
-{{/is_date}}{{#is_base64}}    r.{{name}} = utility::convert::base64_converter::convert(v.{{name}});
-{{/is_base64}}{{^is_required_timestamp}}{{^is_optional_timestamp}}{{^is_date}}{{^is_base64}}    r.{{name}} = v.{{name}};
-{{/is_base64}}{{/is_date}}{{/is_optional_timestamp}}{{/is_required_timestamp}}{{/columns}}    r.modified_by = v.modified_by;
+{{#columns}}
+{{#is_base64}}
+    r.{{name}} = utility::convert::base64_converter::convert(v.{{name}});
+{{/is_base64}}
+{{^is_base64}}
+    r.{{name}} = v.{{name}};
+{{/is_base64}}
+{{/columns}}
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;

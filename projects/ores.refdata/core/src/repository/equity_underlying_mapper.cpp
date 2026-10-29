@@ -42,11 +42,9 @@ domain::equity_underlying equity_underlying_mapper::map(const equity_underlying_
 
     domain::equity_underlying r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.tenant_id = v.tenant_id;
     r.code = v.code;
-
     r.name = v.name;
-
     r.description = v.description;
     r.instrument_type = v.instrument_type;
     r.resolves_to = v.resolves_to.value_or("");
@@ -56,7 +54,7 @@ domain::equity_underlying equity_underlying_mapper::map(const equity_underlying_
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -67,11 +65,9 @@ equity_underlying_entity equity_underlying_mapper::map(const domain::equity_unde
 
     equity_underlying_entity r;
     r.code = v.code;
-    r.tenant_id = v.tenant_id.to_string();
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-
     r.name = v.name;
-
     r.description = v.description;
     r.instrument_type = v.instrument_type;
     r.resolves_to = v.resolves_to.empty() ? std::nullopt : std::optional(v.resolves_to);

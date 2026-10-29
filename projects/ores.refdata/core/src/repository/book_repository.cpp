@@ -179,10 +179,10 @@ void book_repository::write(context ctx,
 }
 
 std::vector<domain::book> book_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<book_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<book_entity, domain::book>(
@@ -195,11 +195,11 @@ std::vector<domain::book> book_repository::read_latest(context ctx) {
 
 std::vector<domain::book> book_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest book. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<book_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<book_entity, domain::book>(
         ctx,
@@ -212,11 +212,11 @@ std::vector<domain::book> book_repository::read_latest(context ctx, const std::s
 std::vector<domain::book> book_repository::read_latest_by_name(context ctx,
                                                                const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest book by name: " << name;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<book_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "name"_c == name &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<book_entity>> |
+        query_builder::where("tenant_id"_c == tid && "name"_c == name && "valid_to"_c == max);
 
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
@@ -306,12 +306,12 @@ std::vector<domain::book> book_repository::read_latest_by_parent_portfolio_id(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest books. parent_portfolio_id: "
                                << parent_portfolio_id << " offset: " << offset
                                << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<book_entity>> |
                        query_builder::where("tenant_id"_c == tid &&
                                             "parent_portfolio_id"_c == parent_portfolio_id &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<book_entity, domain::book>(
@@ -330,13 +330,13 @@ std::uint32_t book_repository::get_total_book_count_by_parent_portfolio_id(
     const std::optional<messaging::books_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active books count. parent_portfolio_id: "
                                << parent_portfolio_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<book_entity>> |
-                       query_builder::where("tenant_id"_c == tid &&
-                                            "parent_portfolio_id"_c == parent_portfolio_id &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<book_entity>> |
+        query_builder::where("tenant_id"_c == tid &&
+                             "parent_portfolio_id"_c == parent_portfolio_id && "valid_to"_c == max);
 
     return query_builder::execute_count_query<book_entity>(
         ctx, query, book_filter_condition(filter), lg(), "Counting books by parent_portfolio_id");
@@ -351,15 +351,13 @@ std::vector<domain::book> book_repository::read_by_parent_portfolio_id_as_of(
     BOOST_LOG_SEV(lg(), debug) << "Reading books as of window. parent_portfolio_id: "
                                << parent_portfolio_id;
 
-    const auto vf(
-        make_timestamp(ores::platform::time::datetime::to_db_string(valid_from_bound), lg()));
-    const auto vt(
-        make_timestamp(ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
+    const auto vf(valid_from_bound);
+    const auto vt(valid_to_bound);
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<book_entity>> |
-                       query_builder::where(
-                           "tenant_id"_c == tid && "parent_portfolio_id"_c == parent_portfolio_id &&
-                           "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
+                       query_builder::where("tenant_id"_c == tid &&
+                                            "parent_portfolio_id"_c == parent_portfolio_id &&
+                                            "valid_from"_c < vt && "valid_to"_c > vf) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<book_entity, domain::book>(
@@ -381,7 +379,7 @@ book_repository::remove(context ctx, const std::string& id, std::optional<std::u
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -389,7 +387,7 @@ book_repository::remove(context ctx, const std::string& id, std::optional<std::u
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<book_entity> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing book from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -450,11 +448,11 @@ std::vector<domain::book> book_repository::read_latest(context ctx,
                                                        const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<book_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<book_entity, domain::book>(
         ctx,
         query,
@@ -473,11 +471,11 @@ void book_repository::remove(context ctx, const std::vector<std::string>& ids) {
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<book_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing books.");
 }
 

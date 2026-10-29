@@ -169,9 +169,9 @@ std::vector<domain::crm_driver_pair> read_latest_all_tenants(context ctx);
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::crm_driver_pair>
 crm_driver_pair_repository::read_latest_all_tenants(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<crm_driver_pair_entity>> |
-                       query_builder::where("valid_to"_c == max.value()) |
+                       query_builder::where("valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<crm_driver_pair_entity, domain::crm_driver_pair>(

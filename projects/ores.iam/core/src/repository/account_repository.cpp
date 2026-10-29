@@ -176,12 +176,12 @@ void account_repository::write(context ctx,
 }
 
 std::vector<domain::account> account_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<account_entity>> |
                        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<account_entity, domain::account>(
@@ -194,12 +194,12 @@ std::vector<domain::account> account_repository::read_latest(context ctx) {
 
 std::vector<domain::account> account_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<account_entity>> |
                        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
-                                            "id"_c == id && "valid_to"_c == max.value());
+                                            "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<account_entity, domain::account>(
         ctx,
@@ -281,7 +281,7 @@ account_repository::remove_status account_repository::remove(context ctx,
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -289,7 +289,7 @@ account_repository::remove_status account_repository::remove(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<account_entity> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing account from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -352,12 +352,12 @@ std::vector<domain::account> account_repository::read_latest(context ctx,
                                                              const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<account_entity>> |
                        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
-                                            "id"_c.in(ids) && "valid_to"_c == max.value());
+                                            "id"_c.in(ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<account_entity, domain::account>(
         ctx,
         query,
@@ -376,11 +376,11 @@ void account_repository::remove(context ctx, const std::vector<std::string>& ids
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<account_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing accounts.");
 }
 
@@ -403,11 +403,11 @@ std::vector<domain::account>
 account_repository::read_latest_by_username(context ctx, const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by username: " << username;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_entity>> |
                        query_builder::where("tenant_id"_c == tid && "username"_c == username &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("valid_from"_c.desc());
 
     return query_builder::execute_read_query<account_entity, domain::account>(
@@ -422,12 +422,12 @@ std::vector<domain::account> account_repository::read_latest_by_email(context ct
                                                                       const std::string& email) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by email: " << email;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<account_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "email"_c == email &&
-                                            "valid_to"_c == max.value()) |
-                       query_builder::order_by("valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<account_entity>> |
+        query_builder::where("tenant_id"_c == tid && "email"_c == email && "valid_to"_c == max) |
+        query_builder::order_by("valid_from"_c.desc());
 
     return query_builder::execute_read_query<account_entity, domain::account>(
         ctx,

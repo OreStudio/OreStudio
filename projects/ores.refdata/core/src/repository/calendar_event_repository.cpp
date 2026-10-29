@@ -192,10 +192,10 @@ void calendar_event_repository::write(
 }
 
 std::vector<domain::calendar_event> calendar_event_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<calendar_event_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<calendar_event_entity, domain::calendar_event>(
@@ -209,11 +209,11 @@ std::vector<domain::calendar_event> calendar_event_repository::read_latest(conte
 std::vector<domain::calendar_event> calendar_event_repository::read_latest(context ctx,
                                                                            const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar event. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<calendar_event_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<calendar_event_entity, domain::calendar_event>(
         ctx,
@@ -272,12 +272,12 @@ std::vector<domain::calendar_event> calendar_event_repository::read_latest_by_ca
     const std::optional<messaging::calendar_events_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar events. calendar_code: " << calendar_code
                                << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<calendar_event_entity>> |
         query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<calendar_event_entity, domain::calendar_event>(
@@ -296,13 +296,13 @@ std::uint32_t calendar_event_repository::get_total_calendar_event_count_by_calen
     const std::optional<messaging::calendar_events_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar events count. calendar_code: "
                                << calendar_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<calendar_event_entity>> |
         query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     return query_builder::execute_count_query<calendar_event_entity>(
         ctx,
@@ -321,15 +321,13 @@ std::vector<domain::calendar_event> calendar_event_repository::read_by_calendar_
     BOOST_LOG_SEV(lg(), debug) << "Reading calendar events as of window. calendar_code: "
                                << calendar_code;
 
-    const auto vf(
-        make_timestamp(ores::platform::time::datetime::to_db_string(valid_from_bound), lg()));
-    const auto vt(
-        make_timestamp(ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
+    const auto vf(valid_from_bound);
+    const auto vt(valid_to_bound);
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<calendar_event_entity>> |
         query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
-                             "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
+                             "valid_from"_c < vt && "valid_to"_c > vf) |
         query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<calendar_event_entity, domain::calendar_event>(
@@ -349,12 +347,12 @@ std::vector<domain::calendar_event> calendar_event_repository::read_latest_by_di
     const std::optional<messaging::calendar_events_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar events. diary_entry_type: "
                                << diary_entry_type << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<calendar_event_entity>> |
         query_builder::where("tenant_id"_c == tid && "diary_entry_type"_c == diary_entry_type &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<calendar_event_entity, domain::calendar_event>(
@@ -373,13 +371,13 @@ std::uint32_t calendar_event_repository::get_total_calendar_event_count_by_diary
     const std::optional<messaging::calendar_events_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active calendar events count. diary_entry_type: " << diary_entry_type;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<calendar_event_entity>> |
         query_builder::where("tenant_id"_c == tid && "diary_entry_type"_c == diary_entry_type &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     return query_builder::execute_count_query<calendar_event_entity>(
         ctx,
@@ -398,15 +396,13 @@ std::vector<domain::calendar_event> calendar_event_repository::read_by_diary_ent
     BOOST_LOG_SEV(lg(), debug) << "Reading calendar events as of window. diary_entry_type: "
                                << diary_entry_type;
 
-    const auto vf(
-        make_timestamp(ores::platform::time::datetime::to_db_string(valid_from_bound), lg()));
-    const auto vt(
-        make_timestamp(ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
+    const auto vf(valid_from_bound);
+    const auto vt(valid_to_bound);
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<calendar_event_entity>> |
         query_builder::where("tenant_id"_c == tid && "diary_entry_type"_c == diary_entry_type &&
-                             "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
+                             "valid_from"_c < vt && "valid_to"_c > vf) |
         query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<calendar_event_entity, domain::calendar_event>(
@@ -427,7 +423,7 @@ calendar_event_repository::remove_status calendar_event_repository::remove(
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -435,7 +431,7 @@ calendar_event_repository::remove_status calendar_event_repository::remove(
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<calendar_event_entity> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing calendar event from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -498,11 +494,11 @@ std::vector<domain::calendar_event>
 calendar_event_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<calendar_event_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<calendar_event_entity, domain::calendar_event>(
         ctx,
         query,
@@ -521,11 +517,11 @@ void calendar_event_repository::remove(context ctx, const std::vector<std::strin
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<calendar_event_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing calendar events.");
 }
 

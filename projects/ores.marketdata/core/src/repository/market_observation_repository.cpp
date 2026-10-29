@@ -241,10 +241,10 @@ void market_observation_repository::write(
 }
 
 std::vector<domain::market_observation> market_observation_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_observation_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<market_observation_entity, domain::market_observation>(
@@ -258,11 +258,11 @@ std::vector<domain::market_observation> market_observation_repository::read_late
 std::vector<domain::market_observation>
 market_observation_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market observation. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<market_observation_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<market_observation_entity, domain::market_observation>(
         ctx,
@@ -299,11 +299,11 @@ std::vector<domain::market_observation> market_observation_repository::read_late
     const std::optional<messaging::market_observations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market observations. series_id: " << series_id
                                << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_observation_entity>> |
                        query_builder::where("tenant_id"_c == tid && "series_id"_c == series_id &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<market_observation_entity,
@@ -323,12 +323,12 @@ std::uint32_t market_observation_repository::get_total_market_observation_count_
     const std::optional<messaging::market_observations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market observations count. series_id: "
                                << series_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_observation_entity>> |
                        query_builder::where("tenant_id"_c == tid && "series_id"_c == series_id &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_count_query<market_observation_entity>(
         ctx,
@@ -349,11 +349,11 @@ market_observation_repository::remove_status market_observation_repository::remo
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<market_observation_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing market observation from database.");
@@ -413,11 +413,11 @@ std::vector<domain::market_observation>
 market_observation_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<market_observation_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result =
         query_builder::execute_read_query<market_observation_entity, domain::market_observation>(
             ctx,
@@ -437,11 +437,11 @@ void market_observation_repository::remove(context ctx, const std::vector<std::s
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<market_observation_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing market observations.");
 }
 
@@ -450,13 +450,13 @@ std::vector<domain::market_observation>
 market_observation_repository::read_latest_for_series(context ctx,
                                                       const boost::uuids::uuid& series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest observations for series: " << series_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
-    const auto query = query_builder::read<std::vector<market_observation_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "series_id"_c == sid &&
-                                            "valid_to"_c == max.value()) |
-                       query_builder::order_by("observation_datetime"_c);
+    const auto query =
+        query_builder::read<std::vector<market_observation_entity>> |
+        query_builder::where("tenant_id"_c == tid && "series_id"_c == sid && "valid_to"_c == max) |
+        query_builder::order_by("observation_datetime"_c);
 
     return query_builder::execute_read_query<market_observation_entity, domain::market_observation>(
         ctx,
@@ -469,10 +469,10 @@ market_observation_repository::read_latest_for_series(context ctx,
 std::vector<domain::market_observation>
 market_observation_repository::read_latest_all(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the latest observations of every series";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_observation_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("series_id"_c, "observation_datetime"_c);
 
     return query_builder::execute_read_query<market_observation_entity, domain::market_observation>(

@@ -129,10 +129,10 @@ void role_permission_repository::write(
 }
 
 std::vector<domain::role_permission> role_permission_repository::read_latest() {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_permission_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("role_id"_c, "role_id"_c);
 
     return query_builder::execute_read_query<role_permission_entity, domain::role_permission>(
@@ -147,10 +147,10 @@ std::vector<domain::role_permission> role_permission_repository::read_latest(std
                                                                              std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest role permissions with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_permission_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("role_id"_c, "role_id"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -168,14 +168,14 @@ role_permission_repository::read_latest(const boost::uuids::uuid& role_id,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest role permission. " << role_id << "/"
                                << permission_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto role_id_str = boost::uuids::to_string(role_id);
     const auto permission_id_str = boost::uuids::to_string(permission_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<role_permission_entity>> |
         query_builder::where("tenant_id"_c == tid && "role_id"_c == role_id_str &&
-                             "permission_id"_c == permission_id_str && "valid_to"_c == max.value());
+                             "permission_id"_c == permission_id_str && "valid_to"_c == max);
 
     return query_builder::execute_read_query<role_permission_entity, domain::role_permission>(
         ctx_,
@@ -187,11 +187,11 @@ role_permission_repository::read_latest(const boost::uuids::uuid& role_id,
 
 std::uint32_t role_permission_repository::get_total_role_permission_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active role permissions count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_permission_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<role_permission_entity>(
         ctx_, query, std::nullopt, lg(), "Counting role permissions");
@@ -203,12 +203,12 @@ std::vector<domain::role_permission>
 role_permission_repository::read_latest_by_role(const boost::uuids::uuid& role_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest role permissions. Role: " << role_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto role_id_str = boost::uuids::to_string(role_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_permission_entity>> |
                        query_builder::where("tenant_id"_c == tid && "role_id"_c == role_id_str &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("role_id"_c);
 
     auto rows = query_builder::execute_read_query<role_permission_entity, domain::role_permission>(
@@ -225,13 +225,13 @@ std::vector<domain::role_permission>
 role_permission_repository::read_latest_by_permission(const boost::uuids::uuid& permission_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest role permissions. Permission: " << permission_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto permission_id_str = boost::uuids::to_string(permission_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<role_permission_entity>> |
         query_builder::where("tenant_id"_c == tid && "permission_id"_c == permission_id_str &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("role_id"_c);
 
     auto rows = query_builder::execute_read_query<role_permission_entity, domain::role_permission>(
@@ -250,11 +250,11 @@ std::vector<domain::role_permission> role_permission_repository::read_latest_by_
     BOOST_LOG_SEV(lg(), debug) << "Reading latest role permissions. Role: " << role_id
                                << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_permission_entity>> |
                        query_builder::where("tenant_id"_c == tid && "role_id"_c == role_id_str &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("role_id"_c) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
@@ -273,12 +273,12 @@ std::uint32_t role_permission_repository::get_total_role_permission_count_by_rol
     const auto role_id_str = boost::uuids::to_string(role_id);
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active role permissions count. Role: "
                                << role_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_permission_entity>> |
                        query_builder::where("tenant_id"_c == tid && "role_id"_c == role_id_str &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<role_permission_entity>(
         ctx_, query, std::nullopt, lg(), "Counting role permissions");
@@ -292,12 +292,12 @@ std::vector<domain::role_permission> role_permission_repository::read_latest_by_
     BOOST_LOG_SEV(lg(), debug) << "Reading latest role permissions. Permission: " << permission_id
                                << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<role_permission_entity>> |
         query_builder::where("tenant_id"_c == tid && "permission_id"_c == permission_id_str &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::order_by("role_id"_c) | query_builder::offset(offset) |
         query_builder::limit(limit);
 
@@ -316,13 +316,13 @@ std::uint32_t role_permission_repository::get_total_role_permission_count_by_per
     const auto permission_id_str = boost::uuids::to_string(permission_id);
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active role permissions count. Permission: "
                                << permission_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<role_permission_entity>> |
         query_builder::where("tenant_id"_c == tid && "permission_id"_c == permission_id_str &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<role_permission_entity>(
         ctx_, query, std::nullopt, lg(), "Counting role permissions");
@@ -394,7 +394,7 @@ role_permission_repository::remove(const boost::uuids::uuid& role_id,
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -405,7 +405,7 @@ role_permission_repository::remove(const boost::uuids::uuid& role_id,
     const auto query = query_builder::delete_from<role_permission_entity> |
                        query_builder::where("tenant_id"_c == tid && "role_id"_c == role_id_str &&
                                             "permission_id"_c == permission_id_str &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx_, query, lg(), "removing role permission from database");

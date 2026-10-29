@@ -96,23 +96,17 @@ def _render(tmp_path, template, suffix):
     return (output_dir / f"probe.{suffix}").read_text(encoding="utf-8")
 
 
-def test_the_entity_binds_the_timestamp_key_as_text(tmp_path):
+def test_the_entity_binds_the_timestamp_key_as_an_instant(tmp_path):
     entity = _render(tmp_path, "cpp_domain_type_entity.hpp.mustache", "hpp")
-    assert "std::string id;" in entity
-    assert "std::string start_time;" in entity
+    assert "boost::uuids::uuid id;" in entity
+    assert "db_timestamp start_time;" in entity
 
 
-def test_the_mapper_converts_the_timestamp_key(tmp_path):
+def test_the_mapper_copies_the_timestamp_key(tmp_path):
     mapper = _render(tmp_path, "cpp_domain_type_mapper.cpp.mustache", "cpp")
-    assert (
-        "r.start_time = timestamp_to_timepoint(std::string_view{v.start_time});"
-        in mapper
-    )
-    assert (
-        "r.start_time = ores::platform::time::datetime::to_db_string(v.start_time);"
-        in mapper
-    )
-    assert '#include "ores.platform/time/datetime.hpp"' in mapper
+    assert "r.start_time = v.start_time;" in mapper
+    assert mapper.count("r.start_time = v.start_time;") == 2
+    assert "timestamp_to_timepoint(v.start_time)" not in mapper
 
 
 def test_the_generator_fills_the_timestamp_key_from_the_past(tmp_path):

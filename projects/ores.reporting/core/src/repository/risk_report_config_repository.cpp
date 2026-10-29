@@ -156,10 +156,10 @@ void risk_report_config_repository::write(
 }
 
 std::vector<domain::risk_report_config> risk_report_config_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<risk_report_config_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<risk_report_config_entity, domain::risk_report_config>(
@@ -173,11 +173,11 @@ std::vector<domain::risk_report_config> risk_report_config_repository::read_late
 std::vector<domain::risk_report_config>
 risk_report_config_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest risk report config. " << "id: " << id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<risk_report_config_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<risk_report_config_entity, domain::risk_report_config>(
         ctx,
@@ -236,12 +236,12 @@ risk_report_config_repository::read_latest_by_configuration_id(
     const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest risk report configs. configuration_id: "
                                << configuration_id << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<risk_report_config_entity>> |
         query_builder::where("tenant_id"_c == tid && "configuration_id"_c == configuration_id &&
-                             "valid_to"_c == max.value()) |
+                             "valid_to"_c == max) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<risk_report_config_entity,
@@ -260,13 +260,13 @@ std::uint32_t risk_report_config_repository::get_total_config_count_by_configura
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active risk report configs count. configuration_id: "
         << configuration_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<risk_report_config_entity>> |
         query_builder::where("tenant_id"_c == tid && "configuration_id"_c == configuration_id &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     return query_builder::execute_count_query<risk_report_config_entity>(
         ctx, query, std::nullopt, lg(), "Counting risk report configs by configuration_id");
@@ -283,7 +283,7 @@ risk_report_config_repository::remove_status risk_report_config_repository::remo
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -291,7 +291,7 @@ risk_report_config_repository::remove_status risk_report_config_repository::remo
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<risk_report_config_entity> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing risk report config from database.");
@@ -352,11 +352,11 @@ std::vector<domain::risk_report_config>
 risk_report_config_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<risk_report_config_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     auto result =
         query_builder::execute_read_query<risk_report_config_entity, domain::risk_report_config>(
             ctx,
@@ -376,11 +376,11 @@ void risk_report_config_repository::remove(context ctx, const std::vector<std::s
     // asymmetric pair.
     if (ids.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<risk_report_config_entity> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing risk report configs.");
 }
 
@@ -394,8 +394,8 @@ struct book_scope_entity {
     std::string tenant_id;
     std::string risk_report_config_id;
     std::string book_id;
-    std::optional<db_timestamp> valid_from = "9999-12-31 23:59:59";
-    std::optional<db_timestamp> valid_to = "9999-12-31 23:59:59";
+    std::optional<db_timestamp> valid_from = db_timestamp::max();
+    std::optional<db_timestamp> valid_to = db_timestamp::max();
     static constexpr auto columns() {
         using e = book_scope_entity;
         namespace query_builder = ores::database::query_builder;
@@ -415,8 +415,8 @@ struct binding_entity {
     std::string report_definition_id;
     std::string configuration_type_code;
     std::string configuration_id;
-    std::optional<db_timestamp> valid_from = "9999-12-31 23:59:59";
-    std::optional<db_timestamp> valid_to = "9999-12-31 23:59:59";
+    std::optional<db_timestamp> valid_from = db_timestamp::max();
+    std::optional<db_timestamp> valid_to = db_timestamp::max();
     static constexpr auto columns() {
         using e = binding_entity;
         namespace query_builder = ores::database::query_builder;
@@ -436,8 +436,8 @@ struct portfolio_scope_entity {
     std::string tenant_id;
     std::string risk_report_config_id;
     std::string portfolio_id;
-    std::optional<db_timestamp> valid_from = "9999-12-31 23:59:59";
-    std::optional<db_timestamp> valid_to = "9999-12-31 23:59:59";
+    std::optional<db_timestamp> valid_from = db_timestamp::max();
+    std::optional<db_timestamp> valid_to = db_timestamp::max();
     static constexpr auto columns() {
         using e = portfolio_scope_entity;
         namespace query_builder = ores::database::query_builder;
@@ -457,13 +457,13 @@ risk_report_config_repository::find_by_definition_id(context ctx,
 
     BOOST_LOG_SEV(lg(), debug) << "Finding risk_report_config by definition_id: " << definition_id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto bound =
         query_builder::read<std::vector<binding_entity>> |
         query_builder::where("tenant_id"_c == tid && "report_definition_id"_c == definition_id &&
                              "configuration_type_code"_c == std::string("risk_report_config") &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     const auto bindings = query_builder::execute_read_query<binding_entity, binding_entity>(
         ctx,
@@ -478,7 +478,7 @@ risk_report_config_repository::find_by_definition_id(context ctx,
         query_builder::read<std::vector<risk_report_config_entity>> |
         query_builder::where("tenant_id"_c == tid &&
                              "configuration_id"_c == bindings.front().configuration_id &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     auto results =
         query_builder::execute_read_query<risk_report_config_entity, domain::risk_report_config>(
@@ -531,12 +531,12 @@ risk_report_config_repository::get_book_scope(context ctx, const std::string& co
 
     BOOST_LOG_SEV(lg(), debug) << "Reading book scope for config: " << config_id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<book_scope_entity>> |
         query_builder::where("tenant_id"_c == tid && "risk_report_config_id"_c == config_id &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     auto rows = query_builder::execute_read_query<book_scope_entity, book_scope_entity>(
         ctx, query, [](const auto& entities) { return entities; }, lg(), "Reading book scope");
@@ -555,12 +555,12 @@ risk_report_config_repository::get_portfolio_scope(context ctx, const std::strin
 
     BOOST_LOG_SEV(lg(), debug) << "Reading portfolio scope for config: " << config_id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<portfolio_scope_entity>> |
         query_builder::where("tenant_id"_c == tid && "risk_report_config_id"_c == config_id &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     auto rows = query_builder::execute_read_query<portfolio_scope_entity, portfolio_scope_entity>(
         ctx, query, [](const auto& entities) { return entities; }, lg(), "Reading portfolio scope");

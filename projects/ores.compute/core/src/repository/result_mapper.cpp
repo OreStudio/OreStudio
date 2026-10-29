@@ -47,32 +47,23 @@ domain::result result_mapper::map(const result_entity& v) {
 
     domain::result r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.party_id = v.party_id.has_value() ?
-                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.party_id)) :
-                     std::nullopt;
-    r.workunit_id = boost::lexical_cast<boost::uuids::uuid>(v.workunit_id);
-    r.host_id = v.host_id.has_value() ? boost::lexical_cast<boost::uuids::uuid>(*v.host_id) :
-                                        boost::uuids::uuid{};
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
+    r.workunit_id = v.workunit_id;
+    r.host_id = v.host_id.has_value() ? *v.host_id : boost::uuids::uuid{};
     r.server_state = v.server_state;
     r.outcome = v.outcome.value_or(0);
     r.output_uri = v.output_uri.value_or("");
     r.error_message = v.error_message.value_or("");
-    if (v.received_at)
-        r.received_at = timestamp_to_timepoint(*v.received_at);
-    else
-        r.received_at = {};
-    if (v.started_at)
-        r.started_at = timestamp_to_timepoint(*v.started_at);
-    else
-        r.started_at = {};
+    r.received_at = v.received_at.value_or(db_timestamp{});
+    r.started_at = v.started_at.value_or(db_timestamp{});
     r.duration_ms = v.duration_ms;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -82,25 +73,18 @@ result_entity result_mapper::map(const domain::result& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     result_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.party_id =
-        v.party_id.has_value() ? std::optional(boost::uuids::to_string(*v.party_id)) : std::nullopt;
-    r.workunit_id = boost::uuids::to_string(v.workunit_id);
-    r.host_id = v.host_id == boost::uuids::uuid{} ?
-                    std::nullopt :
-                    std::optional(boost::uuids::to_string(v.host_id));
+    r.party_id = v.party_id;
+    r.workunit_id = v.workunit_id;
+    r.host_id = v.host_id == boost::uuids::uuid{} ? std::nullopt : std::optional(v.host_id);
     r.server_state = v.server_state;
     r.outcome = v.outcome == 0 ? std::nullopt : std::optional(v.outcome);
     r.output_uri = v.output_uri.empty() ? std::nullopt : std::optional(v.output_uri);
     r.error_message = v.error_message.empty() ? std::nullopt : std::optional(v.error_message);
-    r.received_at = v.received_at != std::chrono::system_clock::time_point{} ?
-                        std::optional(ores::platform::time::datetime::to_db_string(v.received_at)) :
-                        std::nullopt;
-    r.started_at = v.started_at != std::chrono::system_clock::time_point{} ?
-                       std::optional(ores::platform::time::datetime::to_db_string(v.started_at)) :
-                       std::nullopt;
+    r.received_at = v.received_at == db_timestamp{} ? std::nullopt : std::optional(v.received_at);
+    r.started_at = v.started_at == db_timestamp{} ? std::nullopt : std::optional(v.started_at);
     r.duration_ms = v.duration_ms;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

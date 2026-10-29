@@ -48,32 +48,22 @@ domain::observation_lineage observation_lineage_mapper::map(const observation_li
 
     domain::observation_lineage r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-
-    r.series_id = boost::lexical_cast<boost::uuids::uuid>(v.series_id);
-
-    r.observation_datetime = timestamp_to_timepoint(std::string_view{v.observation_datetime});
-
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
+    r.series_id = v.series_id;
+    r.observation_datetime = v.observation_datetime;
     r.oresmd_uri = v.oresmd_uri;
-
     r.point_source_kind = v.point_source_kind;
-    r.derivation_config_id =
-        v.derivation_config_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.derivation_config_id)) :
-            std::nullopt;
+    r.derivation_config_id = v.derivation_config_id;
     r.derivation_config_version = v.derivation_config_version;
-    r.source_as_of = v.source_as_of.has_value() ?
-                         std::optional(timestamp_to_timepoint(*v.source_as_of)) :
-                         std::nullopt;
+    r.source_as_of = v.source_as_of;
     r.source_series_ids = v.source_series_ids;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -83,27 +73,17 @@ observation_lineage_entity observation_lineage_mapper::map(const domain::observa
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     observation_lineage_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
-
-    r.series_id = boost::uuids::to_string(v.series_id);
-
-    r.observation_datetime = ores::platform::time::datetime::to_iso8601_utc(v.observation_datetime);
-
-
+    r.party_id = v.party_id;
+    r.series_id = v.series_id;
+    r.observation_datetime = v.observation_datetime;
     r.oresmd_uri = v.oresmd_uri;
-
     r.point_source_kind = v.point_source_kind;
-    r.derivation_config_id = v.derivation_config_id.has_value() ?
-                                 std::optional(boost::uuids::to_string(*v.derivation_config_id)) :
-                                 std::nullopt;
+    r.derivation_config_id = v.derivation_config_id;
     r.derivation_config_version = v.derivation_config_version;
-    r.source_as_of =
-        v.source_as_of.has_value() ?
-            std::optional(ores::platform::time::datetime::to_db_string(*v.source_as_of)) :
-            std::nullopt;
+    r.source_as_of = v.source_as_of;
     r.source_series_ids = v.source_series_ids;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

@@ -18,12 +18,14 @@
  *
  */
 #include "ores.telemetry.database/repository/telemetry_entity.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <ostream>
 
 namespace ores::telemetry::database::repository {
 
 std::ostream& operator<<(std::ostream& s, const telemetry_entity& v) {
-    s << "telemetry_entity[" << "id=" << v.id << ", timestamp=" << v.timestamp.str()
+    s << "telemetry_entity[" << "id=" << v.id
+      << ", timestamp=" << ores::platform::time::datetime::to_iso8601_utc(v.timestamp)
       << ", source=" << v.source << ", source_name=" << v.source_name << ", level=" << v.level
       << ", component=" << v.component
       << ", message=" << (v.message.size() > 50 ? v.message.substr(0, 50) + "..." : v.message)

@@ -41,14 +41,14 @@ domain::data_domain data_domain_mapper::map(const data_domain_entity& v) {
 
     domain::data_domain r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.tenant_id = v.tenant_id;
     r.name = v.name;
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -59,7 +59,7 @@ data_domain_entity data_domain_mapper::map(const domain::data_domain& v) {
 
     data_domain_entity r;
     r.name = v.name;
-    r.tenant_id = v.tenant_id.to_string();
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.description = v.description;
     r.modified_by = v.modified_by;

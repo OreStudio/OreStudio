@@ -42,7 +42,7 @@ domain::lei_entity lei_entity_mapper::map(const lei_entity_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::lei_entity r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.tenant_id = v.tenant_id;
     r.lei = v.lei;
     r.entity_legal_name = v.entity_legal_name;
     r.entity_entity_category = v.entity_entity_category;
@@ -62,22 +62,10 @@ domain::lei_entity lei_entity_mapper::map(const lei_entity_entity& v) {
     r.entity_headquarters_address_region = v.entity_headquarters_address_region;
     r.entity_headquarters_address_country = v.entity_headquarters_address_country;
     r.entity_headquarters_address_postal_code = v.entity_headquarters_address_postal_code;
-    r.entity_entity_creation_date =
-        v.entity_entity_creation_date.has_value() ?
-            std::optional(timestamp_to_timepoint(*v.entity_entity_creation_date)) :
-            std::nullopt;
-    r.registration_initial_registration_date =
-        v.registration_initial_registration_date.has_value() ?
-            std::optional(timestamp_to_timepoint(*v.registration_initial_registration_date)) :
-            std::nullopt;
-    r.registration_last_update_date =
-        v.registration_last_update_date.has_value() ?
-            std::optional(timestamp_to_timepoint(*v.registration_last_update_date)) :
-            std::nullopt;
-    r.registration_next_renewal_date =
-        v.registration_next_renewal_date.has_value() ?
-            std::optional(timestamp_to_timepoint(*v.registration_next_renewal_date)) :
-            std::nullopt;
+    r.entity_entity_creation_date = v.entity_entity_creation_date;
+    r.registration_initial_registration_date = v.registration_initial_registration_date;
+    r.registration_last_update_date = v.registration_last_update_date;
+    r.registration_next_renewal_date = v.registration_next_renewal_date;
     r.registration_registration_status = v.registration_registration_status;
     r.entity_transliterated_name_1 = v.entity_transliterated_name_1;
     r.entity_transliterated_name_1_type = v.entity_transliterated_name_1_type;
@@ -91,7 +79,7 @@ lei_entity_entity lei_entity_mapper::map(const domain::lei_entity& v) {
 
     lei_entity_entity r;
     r.lei = v.lei;
-    r.tenant_id = v.tenant_id.to_string();
+    r.tenant_id = v.tenant_id;
     r.entity_legal_name = v.entity_legal_name;
     r.entity_entity_category = v.entity_entity_category;
     r.entity_entity_sub_category = v.entity_entity_sub_category;
@@ -110,25 +98,10 @@ lei_entity_entity lei_entity_mapper::map(const domain::lei_entity& v) {
     r.entity_headquarters_address_region = v.entity_headquarters_address_region;
     r.entity_headquarters_address_country = v.entity_headquarters_address_country;
     r.entity_headquarters_address_postal_code = v.entity_headquarters_address_postal_code;
-    r.entity_entity_creation_date = v.entity_entity_creation_date.has_value() ?
-                                        std::optional(ores::platform::time::datetime::to_db_string(
-                                            *v.entity_entity_creation_date)) :
-                                        std::nullopt;
-    r.registration_initial_registration_date =
-        v.registration_initial_registration_date.has_value() ?
-            std::optional(ores::platform::time::datetime::to_db_string(
-                *v.registration_initial_registration_date)) :
-            std::nullopt;
-    r.registration_last_update_date =
-        v.registration_last_update_date.has_value() ?
-            std::optional(
-                ores::platform::time::datetime::to_db_string(*v.registration_last_update_date)) :
-            std::nullopt;
-    r.registration_next_renewal_date =
-        v.registration_next_renewal_date.has_value() ?
-            std::optional(
-                ores::platform::time::datetime::to_db_string(*v.registration_next_renewal_date)) :
-            std::nullopt;
+    r.entity_entity_creation_date = v.entity_entity_creation_date;
+    r.registration_initial_registration_date = v.registration_initial_registration_date;
+    r.registration_last_update_date = v.registration_last_update_date;
+    r.registration_next_renewal_date = v.registration_next_renewal_date;
     r.registration_registration_status = v.registration_registration_status;
     r.entity_transliterated_name_1 = v.entity_transliterated_name_1;
     r.entity_transliterated_name_1_type = v.entity_transliterated_name_1_type;

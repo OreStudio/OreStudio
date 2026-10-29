@@ -46,23 +46,18 @@ counterparty_identifier_mapper::map(const counterparty_identifier_entity& v) {
 
     domain::counterparty_identifier r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.counterparty_id = boost::lexical_cast<boost::uuids::uuid>(v.counterparty_id);
-
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.counterparty_id = v.counterparty_id;
     r.id_scheme = v.id_scheme;
-
-
     r.id_value = v.id_value;
-
     r.description = v.description.value_or("");
     r.is_authoritative = v.is_authoritative;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -73,17 +68,12 @@ counterparty_identifier_mapper::map(const domain::counterparty_identifier& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     counterparty_identifier_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.counterparty_id = boost::uuids::to_string(v.counterparty_id);
-
-
+    r.counterparty_id = v.counterparty_id;
     r.id_scheme = v.id_scheme;
-
-
     r.id_value = v.id_value;
-
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.is_authoritative = v.is_authoritative;
     r.modified_by = v.modified_by;

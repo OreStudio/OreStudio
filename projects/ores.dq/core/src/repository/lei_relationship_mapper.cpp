@@ -42,29 +42,17 @@ domain::lei_relationship lei_relationship_mapper::map(const lei_relationship_ent
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::lei_relationship r;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.tenant_id = v.tenant_id;
     r.relationship_start_node_node_id = v.relationship_start_node_node_id;
     r.relationship_start_node_node_id_type = v.relationship_start_node_node_id_type;
     r.relationship_end_node_node_id = v.relationship_end_node_node_id;
     r.relationship_end_node_node_id_type = v.relationship_end_node_node_id_type;
     r.relationship_relationship_type = v.relationship_relationship_type;
     r.relationship_relationship_status = v.relationship_relationship_status;
-    r.relationship_period_1_start_date =
-        v.relationship_period_1_start_date.has_value() ?
-            std::optional(timestamp_to_timepoint(*v.relationship_period_1_start_date)) :
-            std::nullopt;
-    r.relationship_period_1_end_date =
-        v.relationship_period_1_end_date.has_value() ?
-            std::optional(timestamp_to_timepoint(*v.relationship_period_1_end_date)) :
-            std::nullopt;
-    r.registration_initial_registration_date =
-        v.registration_initial_registration_date.has_value() ?
-            std::optional(timestamp_to_timepoint(*v.registration_initial_registration_date)) :
-            std::nullopt;
-    r.registration_last_update_date =
-        v.registration_last_update_date.has_value() ?
-            std::optional(timestamp_to_timepoint(*v.registration_last_update_date)) :
-            std::nullopt;
+    r.relationship_period_1_start_date = v.relationship_period_1_start_date;
+    r.relationship_period_1_end_date = v.relationship_period_1_end_date;
+    r.registration_initial_registration_date = v.registration_initial_registration_date;
+    r.registration_last_update_date = v.registration_last_update_date;
     r.registration_registration_status = v.registration_registration_status;
     r.registration_validation_sources = v.registration_validation_sources;
 
@@ -77,32 +65,16 @@ lei_relationship_entity lei_relationship_mapper::map(const domain::lei_relations
 
     lei_relationship_entity r;
     r.relationship_start_node_node_id = v.relationship_start_node_node_id;
-    r.tenant_id = v.tenant_id.to_string();
+    r.tenant_id = v.tenant_id;
     r.relationship_start_node_node_id_type = v.relationship_start_node_node_id_type;
     r.relationship_end_node_node_id = v.relationship_end_node_node_id;
     r.relationship_end_node_node_id_type = v.relationship_end_node_node_id_type;
     r.relationship_relationship_type = v.relationship_relationship_type;
     r.relationship_relationship_status = v.relationship_relationship_status;
-    r.relationship_period_1_start_date =
-        v.relationship_period_1_start_date.has_value() ?
-            std::optional(
-                ores::platform::time::datetime::to_db_string(*v.relationship_period_1_start_date)) :
-            std::nullopt;
-    r.relationship_period_1_end_date =
-        v.relationship_period_1_end_date.has_value() ?
-            std::optional(
-                ores::platform::time::datetime::to_db_string(*v.relationship_period_1_end_date)) :
-            std::nullopt;
-    r.registration_initial_registration_date =
-        v.registration_initial_registration_date.has_value() ?
-            std::optional(ores::platform::time::datetime::to_db_string(
-                *v.registration_initial_registration_date)) :
-            std::nullopt;
-    r.registration_last_update_date =
-        v.registration_last_update_date.has_value() ?
-            std::optional(
-                ores::platform::time::datetime::to_db_string(*v.registration_last_update_date)) :
-            std::nullopt;
+    r.relationship_period_1_start_date = v.relationship_period_1_start_date;
+    r.relationship_period_1_end_date = v.relationship_period_1_end_date;
+    r.registration_initial_registration_date = v.registration_initial_registration_date;
+    r.registration_last_update_date = v.registration_last_update_date;
     r.registration_registration_status = v.registration_registration_status;
     r.registration_validation_sources = v.registration_validation_sources;
 

@@ -27,6 +27,8 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -44,18 +46,25 @@ struct calendar_date_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_refdata_calendar_dates_tbl";
 
+
     std::string calendar_code;
+
     std::string tenant_id;
-    std::string date;
+    std::chrono::year_month_day date;
+
     int version = 0;
+
     bool is_business_day;
+
+
     std::string source;
+
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = db_timestamp::max();
+    db_timestamp valid_to = db_timestamp::max();
     std::optional<std::string> closed_by;
 
     /**
@@ -66,7 +75,7 @@ struct calendar_date_entity {
         namespace query_builder = ores::database::query_builder;
         return query_builder::columns<e>() |
                query_builder::key("calendar_code", &e::calendar_code) |
-               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind_text("tenant_id", &e::tenant_id) |
                query_builder::bind("date", &e::date) | query_builder::bind("version", &e::version) |
                query_builder::bind("is_business_day", &e::is_business_day) |
                query_builder::bind("source", &e::source) |

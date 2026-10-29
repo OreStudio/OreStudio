@@ -44,7 +44,7 @@ domain::auth_event auth_event_mapper::map(const auth_event_entity& v) {
 
     domain::auth_event r;
     r.id = v.id;
-    r.event_time = timestamp_to_timepoint(std::string_view{v.event_time});
+    r.event_time = v.event_time;
     r.tenant_id = v.tenant_id;
     r.account_id = v.account_id;
     r.event_type = v.event_type;
@@ -62,7 +62,7 @@ auth_event_entity auth_event_mapper::map(const domain::auth_event& v) {
 
     auth_event_entity r;
     r.id = v.id;
-    r.event_time = ores::platform::time::datetime::to_db_string(v.event_time);
+    r.event_time = v.event_time;
     r.tenant_id = v.tenant_id;
     r.account_id = v.account_id;
     r.event_type = v.event_type;

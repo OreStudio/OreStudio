@@ -160,40 +160,31 @@ def test_a_plain_date_is_a_calendar_date_in_the_domain_struct(tmp_path):
     assert "#include <chrono>" in domain
 
 
-def test_a_plain_date_reaches_the_entity_as_an_iso_string(tmp_path):
-    """The entity is the database row type, and its text codec holds no date."""
+def test_a_plain_date_reaches_the_entity_as_a_calendar_date(tmp_path):
+    """The row holds the date the column has, so its codec binds it."""
     entity = _render_entity(tmp_path)
-    assert "std::string settlement_date;" in entity
-    assert "std::optional<std::string> optional_settlement_date;" in entity
-    assert "std::chrono::year_month_day settlement_date;" not in entity
-    assert "std::optional<std::chrono::year_month_day> optional_settlement_date;" not in entity
+    assert "std::chrono::year_month_day settlement_date;" in entity
+    assert "std::optional<std::chrono::year_month_day> optional_settlement_date;" in entity
+    assert "std::string settlement_date;" not in entity
+    assert "std::optional<std::string> optional_settlement_date;" not in entity
 
 
-def test_the_mapper_converts_a_plain_date_in_both_directions(tmp_path):
-    """Parse on read, format on write, with the include the helpers need."""
+def test_the_mapper_copies_a_plain_date_in_both_directions(tmp_path):
+    """Both sides hold the date, so neither direction converts."""
     mapper = _render_mapper(tmp_path)
-    parse = "r.settlement_date = ores::platform::time::datetime::from_iso8601_date(v.settlement_date);"
-    render = "r.settlement_date = ores::platform::time::datetime::to_iso8601_date(v.settlement_date);"
-    assert parse in mapper
-    assert render in mapper
-    assert '#include "ores.platform/time/datetime.hpp"' in mapper
+    assert "r.settlement_date = v.settlement_date;" in mapper
+    assert mapper.count("r.settlement_date = v.settlement_date;") == 2
+    assert "from_iso8601_date(v.settlement_date)" not in mapper
+    assert "to_iso8601_date(v.settlement_date)" not in mapper
 
 
-def test_the_mapper_converts_an_optional_plain_date(tmp_path):
-    """The optional form guards on has_value and maps NULL to nullopt."""
+def test_the_mapper_copies_an_optional_plain_date(tmp_path):
+    """An empty optional is a NULL on the wire, so the copy is the mapping."""
     mapper = _render_mapper(tmp_path)
-    parse = (
-        "r.optional_settlement_date = v.optional_settlement_date.has_value() ? "
-        "std::optional(ores::platform::time::datetime::from_iso8601_date(*v.optional_settlement_date)) "
-        ": std::nullopt;"
-    )
-    render = (
-        "r.optional_settlement_date = v.optional_settlement_date.has_value() ? "
-        "std::optional(ores::platform::time::datetime::to_iso8601_date(*v.optional_settlement_date)) "
-        ": std::nullopt;"
-    )
-    assert parse in mapper
-    assert render in mapper
+    assert "r.optional_settlement_date = v.optional_settlement_date;" in mapper
+    assert mapper.count("r.optional_settlement_date = v.optional_settlement_date;") == 2
+    assert "from_iso8601_date(*v.optional_settlement_date)" not in mapper
+    assert "to_iso8601_date(*v.optional_settlement_date)" not in mapper
 
 
 def test_the_history_field_mapper_renders_a_plain_date(tmp_path):

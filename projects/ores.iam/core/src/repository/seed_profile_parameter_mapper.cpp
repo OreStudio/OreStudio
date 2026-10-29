@@ -46,13 +46,10 @@ seed_profile_parameter_mapper::map(const seed_profile_parameter_entity& v) {
 
     domain::seed_profile_parameter r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.seed_profile_id = boost::lexical_cast<boost::uuids::uuid>(v.seed_profile_id);
-
-
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.seed_profile_id = v.seed_profile_id;
     r.name = v.name;
-
     r.label = v.label;
     r.data_type = v.data_type;
     r.choices_json = v.choices_json.value_or("");
@@ -64,7 +61,7 @@ seed_profile_parameter_mapper::map(const seed_profile_parameter_entity& v) {
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -75,14 +72,11 @@ seed_profile_parameter_mapper::map(const domain::seed_profile_parameter& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     seed_profile_parameter_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.seed_profile_id = boost::uuids::to_string(v.seed_profile_id);
-
-
+    r.seed_profile_id = v.seed_profile_id;
     r.name = v.name;
-
     r.label = v.label;
     r.data_type = v.data_type;
     r.choices_json = v.choices_json.empty() ? std::nullopt : std::optional(v.choices_json);

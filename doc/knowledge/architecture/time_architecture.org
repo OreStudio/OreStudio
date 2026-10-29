@@ -188,6 +188,14 @@ shape carries six digits. A =time_point= therefore survives a round trip
 through the database or the wire to the microsecond, and loses only what a
 =microseconds= duration cannot hold.
 
+An instant that falls between two microseconds is taken down to the one it
+falls in, in every path that writes it: the binary codec, =to_iso8601_utc= and
+therefore =to_db_string=. The rule is one rule because the paths are read
+against each other: a hand-written statement passes an instant as text and the
+server parses it, so a lookup by that text must find the row a generated
+repository wrote through the codec, and the two agree only if they chose the
+same microsecond.
+
 * The Infinity Sentinel
 
 The sentinel value represents "this record is currently valid, with no
@@ -231,7 +239,9 @@ a comparison does not depend on the session timezone. A statement that can
 name the sentinel in SQL calls the function instead.
 
 The database INSERT trigger sets =valid_from= and =valid_to= on every write,
-so a repository entity does not need a sentinel default for them.
+so the sentinel an entity holds before a write never reaches the database. A
+generated row defaults both members to =db_timestamp::max()= all the same, so a
+row read back and a row built in memory mean the same thing by "never".
 
 * Repository WHERE Clauses
 

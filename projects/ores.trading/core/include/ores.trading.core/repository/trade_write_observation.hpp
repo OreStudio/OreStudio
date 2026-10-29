@@ -61,6 +61,7 @@
 #include "ores.trading.core/repository/trade_portfolio_entity.hpp"
 #include "ores.trading.core/repository/trade_state_entity.hpp"
 #include "ores.trading.core/repository/vanilla_swap_instrument_entity.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <string>
 
 namespace ores::trading::service {
@@ -89,7 +90,8 @@ using context = ores::database::context;
  * write, so the read-back and the trade write are one unit with it.
  *
  * @param ctx The context bound to the component write's transaction.
- * @param trade_id The trade whose digest to refresh, as text.
+ * @param trade_id The trade whose digest to refresh, as the text its uuid
+ * writes to.
  * @param lg The logger to use.
  */
 ORES_TRADING_CORE_EXPORT void refresh_trade_economic_digest(context ctx,
@@ -119,7 +121,7 @@ struct entity_write_observer<ores::trading::repository::trade_identifier_entity>
                         const ores::trading::repository::trade_identifier_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -131,7 +133,7 @@ struct entity_write_observer<ores::trading::repository::trade_party_role_entity>
                         const ores::trading::repository::trade_party_role_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -148,7 +150,7 @@ struct entity_write_observer<ores::trading::repository::balance_guaranteed_swap_
             const ores::trading::repository::balance_guaranteed_swap_instrument_entity& entity,
             ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -159,7 +161,7 @@ struct entity_write_observer<ores::trading::repository::bond_instrument_entity> 
                         const ores::trading::repository::bond_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -170,7 +172,7 @@ struct entity_write_observer<ores::trading::repository::callable_swap_instrument
                         const ores::trading::repository::callable_swap_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -181,7 +183,7 @@ struct entity_write_observer<ores::trading::repository::cap_floor_instrument_ent
                         const ores::trading::repository::cap_floor_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -192,7 +194,7 @@ struct entity_write_observer<ores::trading::repository::commodity_instrument_ent
                         const ores::trading::repository::commodity_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -203,7 +205,7 @@ struct entity_write_observer<ores::trading::repository::composite_instrument_ent
                         const ores::trading::repository::composite_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -214,7 +216,7 @@ struct entity_write_observer<ores::trading::repository::credit_instrument_entity
                         const ores::trading::repository::credit_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -226,7 +228,7 @@ struct entity_write_observer<ores::trading::repository::equity_accumulator_instr
             const ores::trading::repository::equity_accumulator_instrument_entity& entity,
             ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -238,7 +240,7 @@ struct entity_write_observer<ores::trading::repository::equity_asian_option_inst
             const ores::trading::repository::equity_asian_option_instrument_entity& entity,
             ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -250,7 +252,7 @@ struct entity_write_observer<ores::trading::repository::equity_barrier_option_in
             const ores::trading::repository::equity_barrier_option_instrument_entity& entity,
             ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -262,7 +264,7 @@ struct entity_write_observer<ores::trading::repository::equity_digital_option_in
             const ores::trading::repository::equity_digital_option_instrument_entity& entity,
             ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -273,7 +275,7 @@ struct entity_write_observer<ores::trading::repository::equity_forward_instrumen
                         const ores::trading::repository::equity_forward_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -284,7 +286,7 @@ struct entity_write_observer<ores::trading::repository::equity_option_instrument
                         const ores::trading::repository::equity_option_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -295,7 +297,7 @@ struct entity_write_observer<ores::trading::repository::equity_position_instrume
                         const ores::trading::repository::equity_position_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -306,7 +308,7 @@ struct entity_write_observer<ores::trading::repository::equity_swap_instrument_e
                         const ores::trading::repository::equity_swap_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -318,7 +320,7 @@ struct entity_write_observer<ores::trading::repository::equity_variance_swap_ins
             const ores::trading::repository::equity_variance_swap_instrument_entity& entity,
             ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -329,7 +331,7 @@ struct entity_write_observer<ores::trading::repository::fra_instrument_entity> {
                         const ores::trading::repository::fra_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -340,7 +342,7 @@ struct entity_write_observer<ores::trading::repository::fx_accumulator_instrumen
                         const ores::trading::repository::fx_accumulator_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -351,7 +353,7 @@ struct entity_write_observer<ores::trading::repository::fx_asian_forward_instrum
                         const ores::trading::repository::fx_asian_forward_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -363,7 +365,7 @@ struct entity_write_observer<ores::trading::repository::fx_barrier_option_instru
             const ores::trading::repository::fx_barrier_option_instrument_entity& entity,
             ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -375,7 +377,7 @@ struct entity_write_observer<ores::trading::repository::fx_digital_option_instru
             const ores::trading::repository::fx_digital_option_instrument_entity& entity,
             ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -386,7 +388,7 @@ struct entity_write_observer<ores::trading::repository::fx_forward_instrument_en
                         const ores::trading::repository::fx_forward_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -398,7 +400,7 @@ struct entity_write_observer<ores::trading::repository::fx_vanilla_option_instru
             const ores::trading::repository::fx_vanilla_option_instrument_entity& entity,
             ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -409,7 +411,7 @@ struct entity_write_observer<ores::trading::repository::fx_variance_swap_instrum
                         const ores::trading::repository::fx_variance_swap_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -420,7 +422,7 @@ struct entity_write_observer<ores::trading::repository::inflation_swap_instrumen
                         const ores::trading::repository::inflation_swap_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -431,7 +433,7 @@ struct entity_write_observer<ores::trading::repository::knock_out_swap_instrumen
                         const ores::trading::repository::knock_out_swap_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -447,7 +449,7 @@ struct entity_write_observer<ores::trading::repository::rate_instrument_entity> 
                         const ores::trading::repository::rate_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -458,7 +460,7 @@ struct entity_write_observer<ores::trading::repository::scripted_instrument_enti
                         const ores::trading::repository::scripted_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -469,7 +471,7 @@ struct entity_write_observer<ores::trading::repository::swaption_instrument_enti
                         const ores::trading::repository::swaption_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 
@@ -480,7 +482,7 @@ struct entity_write_observer<ores::trading::repository::vanilla_swap_instrument_
                         const ores::trading::repository::vanilla_swap_instrument_entity& entity,
                         ores::logging::logger_t& lg) {
         ores::trading::service::refresh_trade_economic_digest(
-            ctx, entity.trade_id, entity.change_reason_code, lg);
+            ctx, boost::uuids::to_string(entity.trade_id), entity.change_reason_code, lg);
     }
 };
 

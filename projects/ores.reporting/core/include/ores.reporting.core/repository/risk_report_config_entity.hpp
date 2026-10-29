@@ -27,6 +27,9 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -37,21 +40,26 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a risk report config in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
  */
 struct risk_report_config_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_reporting_risk_report_configs_tbl";
 
-    std::string id;
-    std::string tenant_id;
+    boost::uuids::uuid id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
-    std::string party_id;
+    boost::uuids::uuid party_id;
 
 
     std::string name;
 
     std::optional<std::string> description;
-    std::string configuration_id;
+    boost::uuids::uuid configuration_id;
     std::optional<std::string> base_currency;
     std::string market_data_type = "eod";
     std::optional<std::string> market_data_date;
@@ -65,8 +73,8 @@ struct risk_report_config_entity {
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = db_timestamp::max();
+    db_timestamp valid_to = db_timestamp::max();
 
     /**
      * @brief The columns of the table, named as the members, with the key.
@@ -83,7 +91,7 @@ struct risk_report_config_entity {
                query_builder::bind("configuration_id", &e::configuration_id) |
                query_builder::bind("base_currency", &e::base_currency) |
                query_builder::bind("market_data_type", &e::market_data_type) |
-               query_builder::bind("market_data_date", &e::market_data_date) |
+               query_builder::bind_text("market_data_date", &e::market_data_date) |
                query_builder::bind("input_path", &e::input_path) |
                query_builder::bind("input_path_market", &e::input_path_market) |
                query_builder::bind("input_path_portfolio", &e::input_path_portfolio) |

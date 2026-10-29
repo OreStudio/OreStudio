@@ -175,10 +175,10 @@ void sensitivity_method_repository::write(
 }
 
 std::vector<domain::sensitivity_method> sensitivity_method_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sensitivity_method_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<sensitivity_method_entity, domain::sensitivity_method>(
@@ -192,11 +192,11 @@ std::vector<domain::sensitivity_method> sensitivity_method_repository::read_late
 std::vector<domain::sensitivity_method>
 sensitivity_method_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest sensitivity method. " << "code: " << code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<sensitivity_method_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<sensitivity_method_entity>> |
+        query_builder::where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<sensitivity_method_entity, domain::sensitivity_method>(
         ctx,
@@ -256,7 +256,7 @@ sensitivity_method_repository::remove_status sensitivity_method_repository::remo
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -264,7 +264,7 @@ sensitivity_method_repository::remove_status sensitivity_method_repository::remo
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<sensitivity_method_entity> |
                        query_builder::where("tenant_id"_c == tid && "code"_c == code &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing sensitivity method from database.");
@@ -329,11 +329,11 @@ std::vector<domain::sensitivity_method>
 sensitivity_method_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<sensitivity_method_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<sensitivity_method_entity>> |
+        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
     auto result =
         query_builder::execute_read_query<sensitivity_method_entity, domain::sensitivity_method>(
             ctx,
@@ -353,11 +353,11 @@ void sensitivity_method_repository::remove(context ctx, const std::vector<std::s
     // asymmetric pair.
     if (codes.empty())
         return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::delete_from<sensitivity_method_entity> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::delete_from<sensitivity_method_entity> |
+        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing sensitivity methods.");
 }
 

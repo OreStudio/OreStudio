@@ -47,20 +47,20 @@ domain::approval_decision approval_decision_mapper::map(const approval_decision_
 
     domain::approval_decision r;
     r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
-    r.request_id = boost::lexical_cast<boost::uuids::uuid>(v.request_id);
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.request_id = v.request_id;
     r.decision_code = v.decision_code;
     r.part_code = v.part_code;
-    r.decided_by = boost::lexical_cast<boost::uuids::uuid>(v.decided_by);
-    r.decided_at = timestamp_to_timepoint(std::string_view{v.decided_at});
+    r.decided_by = v.decided_by;
+    r.decided_at = v.decided_at;
     r.hold_reason_code = v.hold_reason_code;
     r.comment = v.comment;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.recorded_at = v.valid_from;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -70,14 +70,14 @@ approval_decision_entity approval_decision_mapper::map(const domain::approval_de
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     approval_decision_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.request_id = boost::uuids::to_string(v.request_id);
+    r.request_id = v.request_id;
     r.decision_code = v.decision_code;
     r.part_code = v.part_code;
-    r.decided_by = boost::uuids::to_string(v.decided_by);
-    r.decided_at = ores::platform::time::datetime::to_iso8601_utc(v.decided_at);
+    r.decided_by = v.decided_by;
+    r.decided_at = v.decided_at;
     r.hold_reason_code = v.hold_reason_code;
     r.comment = v.comment;
     r.modified_by = v.modified_by;

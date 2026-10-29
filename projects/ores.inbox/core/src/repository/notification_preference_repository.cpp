@@ -192,10 +192,10 @@ void notification_preference_repository::write(
 
 std::vector<domain::notification_preference>
 notification_preference_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_preference_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("account_id"_c, "kind_code"_c, "channel_code"_c);
 
     return query_builder::execute_read_query<notification_preference_entity,
@@ -215,13 +215,13 @@ notification_preference_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest notification preference. "
                                << "account_id: " << account_id << " kind_code: " << kind_code
                                << " channel_code: " << channel_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<notification_preference_entity>> |
         query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id &&
                              "kind_code"_c == kind_code && "channel_code"_c == channel_code &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
 
     return query_builder::execute_read_query<notification_preference_entity,
                                              domain::notification_preference>(
@@ -297,11 +297,11 @@ notification_preference_repository::read_latest_by_account_id(
     const std::optional<messaging::notification_preferences_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest notification preferences. account_id: "
                                << account_id << " offset: " << offset << " limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_preference_entity>> |
                        query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<notification_preference_entity,
@@ -322,12 +322,12 @@ std::uint32_t notification_preference_repository::get_total_preference_count_by_
     const std::optional<messaging::notification_preferences_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active notification preferences count. account_id: " << account_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_preference_entity>> |
                        query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     return query_builder::execute_count_query<notification_preference_entity>(
         ctx,
@@ -354,7 +354,7 @@ notification_preference_repository::remove(context ctx,
     // int, so the comparison states the conversion rather than relying on one.
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -364,7 +364,7 @@ notification_preference_repository::remove(context ctx,
         query_builder::delete_from<notification_preference_entity> |
         query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id &&
                              "kind_code"_c == kind_code && "channel_code"_c == channel_code &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                             "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing notification preference from database.");
@@ -436,13 +436,13 @@ notification_preference_repository::read_latest(context ctx,
                                                 const std::vector<std::string>& channel_codes) {
     if (account_ids.empty() || kind_codes.empty() || channel_codes.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<notification_preference_entity>> |
         query_builder::where("tenant_id"_c == tid && "account_id"_c.in(account_ids) &&
                              "kind_code"_c.in(kind_codes) && "channel_code"_c.in(channel_codes) &&
-                             "valid_to"_c == max.value());
+                             "valid_to"_c == max);
     auto result = query_builder::execute_read_query<notification_preference_entity,
                                                     domain::notification_preference>(
         ctx,

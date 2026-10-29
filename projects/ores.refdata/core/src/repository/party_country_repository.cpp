@@ -128,10 +128,10 @@ void party_country_repository::write(
 }
 
 std::vector<domain::party_country> party_country_repository::read_latest() {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_country_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("party_id"_c, "country_alpha2_code"_c);
 
     return query_builder::execute_read_query<party_country_entity, domain::party_country>(
@@ -146,10 +146,10 @@ std::vector<domain::party_country> party_country_repository::read_latest(std::ui
                                                                          std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party countries with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_country_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("party_id"_c, "country_alpha2_code"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -167,14 +167,14 @@ party_country_repository::read_latest(const boost::uuids::uuid& party_id,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party country. " << party_id << "/"
                                << country_alpha2_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto country_alpha2_code_str = country_alpha2_code;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<party_country_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
-                                            "country_alpha2_code"_c == country_alpha2_code &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<party_country_entity>> |
+        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
+                             "country_alpha2_code"_c == country_alpha2_code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<party_country_entity, domain::party_country>(
         ctx_,
@@ -186,11 +186,11 @@ party_country_repository::read_latest(const boost::uuids::uuid& party_id,
 
 std::uint32_t party_country_repository::get_total_party_country_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party countries count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_country_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<party_country_entity>(
         ctx_, query, std::nullopt, lg(), "Counting party countries");
@@ -202,12 +202,12 @@ std::vector<domain::party_country>
 party_country_repository::read_latest_by_party(const boost::uuids::uuid& party_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party countries. Party: " << party_id;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_country_entity>> |
                        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("country_alpha2_code"_c);
 
     auto rows = query_builder::execute_read_query<party_country_entity, domain::party_country>(
@@ -225,12 +225,12 @@ party_country_repository::read_latest_by_country(const std::string& country_alph
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party countries. Country: "
                                << country_alpha2_code;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_country_entity>> |
                        query_builder::where("tenant_id"_c == tid &&
                                             "country_alpha2_code"_c == country_alpha2_code &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("party_id"_c);
 
     auto rows = query_builder::execute_read_query<party_country_entity, domain::party_country>(
@@ -249,11 +249,11 @@ std::vector<domain::party_country> party_country_repository::read_latest_by_part
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party countries. Party: " << party_id
                                << " offset: " << offset << " limit: " << limit;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_country_entity>> |
                        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
-                                            "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max) |
                        query_builder::order_by("country_alpha2_code"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -272,12 +272,12 @@ std::uint32_t party_country_repository::get_total_party_country_count_by_party(
     const auto party_id_str = boost::uuids::to_string(party_id);
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party countries count. Party: "
                                << party_id;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_country_entity>> |
                        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
-                                            "valid_to"_c == max.value());
+                                            "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<party_country_entity>(
         ctx_, query, std::nullopt, lg(), "Counting party countries");
@@ -289,13 +289,13 @@ std::uint32_t party_country_repository::get_total_party_country_count_by_country
     const std::string& country_alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party countries count. Country: "
                                << country_alpha2_code;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<party_country_entity>> |
-                       query_builder::where("tenant_id"_c == tid &&
-                                            "country_alpha2_code"_c == country_alpha2_code &&
-                                            "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<party_country_entity>> |
+        query_builder::where("tenant_id"_c == tid &&
+                             "country_alpha2_code"_c == country_alpha2_code && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<party_country_entity>(
         ctx_, query, std::nullopt, lg(), "Counting party countries");
@@ -368,7 +368,7 @@ party_country_repository::remove(const boost::uuids::uuid& party_id,
     if (version && static_cast<std::uint32_t>(current.front().version) != *version)
         return remove_status::conflicting;
 
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static constexpr auto max = db_timestamp::max();
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
@@ -379,7 +379,7 @@ party_country_repository::remove(const boost::uuids::uuid& party_id,
     const auto query = query_builder::delete_from<party_country_entity> |
                        query_builder::where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
                                             "country_alpha2_code"_c == country_alpha2_code &&
-                                            "valid_to"_c == max.value() && "version"_c == expected);
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx_, query, lg(), "removing party country from database");
     // The delete reports no affected-row count, so the row is read back: a row

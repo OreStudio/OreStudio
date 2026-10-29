@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 24F976BC-6523-4279-9ADA-73400D493D11
+:END:
+#+title: A model's org source carries generated C++, so a layer change must sweep the models
+#+description: A repository method the template does not emit lives as a named cpp src block in the entity's modeling org, so a layer API change must sweep the models before regenerating
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :codegen:repository:modeling:memory:feedback:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+A repository method that a template does not emit lives as a named cpp src block in the entity's modeling .org; a change to the layer's API must sweep those blocks too, or regenerating leaves a stale call in the generated file.
+
+*Why:* Making the generated row typed replaced make_timestamp and max.value() in the templates, yet 36 generated repository files still failed to compile: 40 fragments across 31 modeling org files and five hand-written repository units called the old helpers. The generated file carried both the new and the old form in the same function, which is the fingerprint of a fragment spliced from a model.
+
+*How to apply:* Before declaring a template change done, run grep -rn '<old symbol>' projects/*/modeling/*.org projects/*/*/modeling/*.org and sweep the hits, then regenerate. Treat a generated file that mixes old and new forms in one function as a spliced fragment, not as a failed regeneration.

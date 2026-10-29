@@ -27,6 +27,9 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -44,18 +47,24 @@ struct app_version_platform_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_compute_app_version_platforms_tbl";
 
-    std::string app_version_id;
+    boost::uuids::uuid app_version_id;
+
     std::string tenant_id;
-    std::string platform_id;
+    boost::uuids::uuid platform_id;
+
     int version = 0;
+
     std::string package_uri;
+
+
     std::string sha256;
+
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = db_timestamp::max();
+    db_timestamp valid_to = db_timestamp::max();
 
     /**
      * @brief The columns of the table, named as the members, with the key.
@@ -65,7 +74,7 @@ struct app_version_platform_entity {
         namespace query_builder = ores::database::query_builder;
         return query_builder::columns<e>() |
                query_builder::key("app_version_id", &e::app_version_id) |
-               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind_text("tenant_id", &e::tenant_id) |
                query_builder::bind("platform_id", &e::platform_id) |
                query_builder::bind("version", &e::version) |
                query_builder::bind("package_uri", &e::package_uri) |

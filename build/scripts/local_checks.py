@@ -701,6 +701,27 @@ CATALOGUE: tuple[Check, ...] = (
             " and commit the module.",
     ),
     Check(
+        id="curve-column-guards",
+        title="The curve column map and its guard are the projection's",
+        argv=(
+            "python3",
+            "projects/ores.sql/utility/generate_curve_column_guards.py",
+            "--check",
+        ),
+        classes=("sql", "cpp", "modeling"),
+        paths=(
+            "projects/ores.sql/populate/refdata/refdata_curve_configuration_columns_populate.sql",
+            "projects/ores.sql/create/refdata/refdata_curve_configuration_columns_validate_create.sql",
+            "projects/ores.sql/drop/refdata/refdata_curve_configuration_columns_validate_drop.sql",
+            "projects/ores.sql/utility/generate_curve_column_guards.py",
+            "projects/ores.sql/utility/generate_curve_section_parameters.py",
+            "projects/ores.ore/core/src/domain/curve_configuration_projection.cpp",
+            "external/ore/xsd/curveconfig.xsd",
+        ),
+        fix="Run projects/ores.sql/utility/generate_curve_column_guards.py"
+            " and commit the map, the guard and the drop.",
+    ),
+    Check(
         id="marketdata-identity-columns",
         title="The series identity projection matches the codec schema",
         argv=("python3", "build/scripts/check_marketdata_identity_columns.py"),

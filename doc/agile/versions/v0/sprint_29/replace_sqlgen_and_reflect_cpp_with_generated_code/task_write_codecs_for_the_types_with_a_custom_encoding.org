@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/write-codecs-for-the-types-with-a-custom-encoding
-#+pr:
+#+pr: 4071
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -147,7 +147,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4071][#4071]] | [utility] Write a codec for every type with a custom encoding |
 
 * Review
 

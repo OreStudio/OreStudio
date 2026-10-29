@@ -384,14 +384,18 @@ def walk(node_class, found, members_of, by_element, path, depth, seen):
         terms.extend(walk(base, found, members_of, by_element, path, depth, seen))
     for r in entry["reads"]:
         terms.append(dict(r, path=path + [r["name"]], element=entry["element"]))
-    for name in entry["dispatch"]:
-        child = by_element.get(name)
-        if child:
-            terms.extend(walk(child, found, members_of, by_element,
-                              path + [name], depth + 1, seen))
-        else:
-            terms.append({"path": path + [name], "element": name, "name": None,
-                          "unresolved": "dispatch with no class"})
+    # A block that holds the parser's alternatives owns them: walking them here
+    # as well records every alternative twice, once under the block that holds it
+    # in the document and once beside it, where the document has no such element.
+    if not any(block.get("dispatch") for block in entry["nested"]):
+        for name in entry["dispatch"]:
+            child = by_element.get(name)
+            if child:
+                terms.extend(walk(child, found, members_of, by_element,
+                                  path + [name], depth + 1, seen))
+            else:
+                terms.append({"path": path + [name], "element": name, "name": None,
+                              "unresolved": "dispatch with no class"})
     for block in entry["nested"]:
         element = block["element"]
         if block.get("dispatch"):
@@ -450,8 +454,11 @@ GUIDE_DIRS = ("Docs/UserGuide/parameterisation", "Docs/UserGuide/curve_configura
 # `\item \lstinline!Name! [Optional]:`, and a bare `\lstinline!Name!:`. Each
 # entry runs to the next entry, so a name quoted inside the prose does not end it.
 ITEM = re.compile(
-    r"^[ \t]*(?:\\item\s+)?(?:\\lstinline!([\w.]+)!|([A-Za-z][\w]*))\s*"
-    r"(?:\[([^\]]*)\])?\s*:\s*(.*?)"
+    r"^[ \t]*(?:\\item\s+)?(?:"
+    r"\\lstinline!(?P<listing>[\w.]+)!"
+    r"|\{\\tt\s+(?P<roman>[\w.]+)\}"
+    r"|(?P<plain>[A-Za-z][\w]*))\s*"
+    r"(?:\[(?P<optional>[^\]]*)\])?\s*:\s*(?P<body>.*?)"
     r"(?=^[ \t]*(?:\\item\s+|\\lstinline!)"
     r"|\\end\{itemize\}|\Z)",
     re.S | re.M)
@@ -546,13 +553,13 @@ def resolve_section(heading, sections):
 def guide_entries(text, path, ore, section):
     """The `\\item Name [Optional]: text` entries of one guide file."""
     for match in ITEM.finditer(text):
-        quoted, plain, optional, body = match.groups()
-        leaf = quoted or plain
-        prose = clean(body)
+        groups = match.groupdict()
+        leaf = groups["listing"] or groups["roman"] or groups["plain"]
+        prose = clean(groups["body"])
         if prose:
             yield (section, leaf), {
                 "text": prose,
-                "optional": (optional or "").strip().lower() == "optional",
+                "optional": (groups["optional"] or "").strip().lower() == "optional",
                 "source_ref": f"{os.path.relpath(path, ore)}:{line_of(text, match.start())}",
             }
 

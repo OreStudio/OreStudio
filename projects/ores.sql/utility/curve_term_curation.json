@@ -1,0 +1,128 @@
+{
+    "YieldCurves/ProjectionCurve": {
+        "label": "Projection curve",
+        "description": "The CurveId of a curve to project floating rates on the instruments underlying the segment's quotes during the bootstrap, which is the curve being bootstrapped when the node is blank or omitted.",
+        "reason": "The guide explains the node in the simple segment's prose and never lists it as an item, so the extractor has no item to read. The same node serves the average OIS segment, whose guide section shows it in its listing and leaves the meaning to the simple segment.",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:241",
+        "curator": "marco",
+        "date": "2026-10-29"
+    },
+    "YieldCurves/ProjectionCurveReceive": {
+        "label": "Projection curve, receive side",
+        "description": "The CurveId of a curve to project the floating rates on the receiving side of a tenor basis segment, for the index with the shorter tenor.",
+        "reason": "The guide explains the node in the tenor basis segment's prose and never lists it as an item, so the extractor has no item to read.",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:366",
+        "curator": "marco",
+        "date": "2026-10-29"
+    },
+    "YieldCurves/ProjectionCurvePay": {
+        "label": "Projection curve, pay side",
+        "description": "The CurveId of a curve to project the floating rates on the pay side of a tenor basis segment.",
+        "reason": "The guide explains the node in the tenor basis segment's prose and never lists it as an item, so the extractor has no item to read.",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:368",
+        "curator": "marco",
+        "date": "2026-10-29"
+    },
+    "YieldCurves/ProjectionCurveShort": {
+        "label": "Projection curve, receive side (deprecated)",
+        "description": "A deprecated spelling of ProjectionCurveReceive, naming the curve that projects the floating rates on the receiving side.",
+        "reason": "The guide states only that the deprecated names are short for receive and long for pay, and never lists them as items.",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:369",
+        "curator": "marco",
+        "date": "2026-10-29"
+    },
+    "YieldCurves/ProjectionCurveLong": {
+        "label": "Projection curve, pay side (deprecated)",
+        "description": "A deprecated spelling of ProjectionCurvePay, naming the curve that projects the floating rates on the pay side.",
+        "reason": "The guide states only that the deprecated names are short for receive and long for pay, and never lists them as items.",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:369",
+        "curator": "marco",
+        "date": "2026-10-29"
+    },
+    "YieldCurves/SpotRate": {
+        "label": "Spot rate quote",
+        "description": "The identifier of a spot FX quote for the segment's currency pair, which ORE looks up in the market data file.",
+        "reason": "The guide explains the node in the cross currency segment's prose and never lists it as an item, so the extractor has no item to read.",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:435",
+        "curator": "marco",
+        "date": "2026-10-29"
+    },
+    "YieldCurves/ProjectionCurveDomestic": {
+        "label": "Projection curve, domestic",
+        "description": "The CurveId of a curve to project the floating rates on the index in the segment's own currency, which is the curve being bootstrapped when the node is blank or omitted.",
+        "reason": "The guide explains the node in the cross currency segment's prose and never lists it as an item, so the extractor has no item to read.",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:436",
+        "curator": "marco",
+        "date": "2026-10-29"
+    },
+    "YieldCurves/ProjectionCurveForeign": {
+        "label": "Projection curve, foreign",
+        "description": "The CurveId of a curve to project the floating rates on the index in the other currency, which is the segment's DiscountCurve when the node is blank or omitted.",
+        "reason": "The guide explains the node in the cross currency segment's prose and never lists it as an item, so the extractor has no item to read.",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:440",
+        "curator": "marco",
+        "date": "2026-10-29"
+    },
+    "YieldCurves/BaseCurve": {
+        "label": "Base curve",
+        "description": "The base curve of a discount ratio segment, the curve whose discount factors the ratio of the numerator and denominator curves scales, stated with its currency as an attribute.",
+        "reason": "The guide names the three curves the ratio works on but writes the base curve as a bare item with an equals sign rather than a colon, so the extractor has no item to read.",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:798",
+        "curator": "marco",
+        "date": "2026-10-29"
+    },
+    "YieldCurves/Weight2": {
+        "label": "Second weight",
+        "description": "The weight of the second reference curve in a weighted average segment.",
+        "reason": "The guide lists this weight under the name Weights where the schema and the parser declare Weight2, so the extractor finds no item for the name the document uses.",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:727",
+        "curator": "marco",
+        "date": "2026-10-29"
+    },
+    "YieldCurves/IborIndex": {
+        "label": "Ibor index",
+        "description": "The Ibor index the fallback segment builds a projection curve for, from a risk free rate and a spread.",
+        "reason": "The guide explains the node in the ibor fallback segment's prose and shows it in that section's listing, and never lists it as an item.",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:765",
+        "curator": "marco",
+        "date": "2026-10-29"
+    },
+    "YieldCurves/RfrCurve": {
+        "label": "Risk free rate curve",
+        "description": "The CurveId of the risk free rate curve the fallback segment projects from.",
+        "reason": "The guide shows the node in the ibor fallback segment's listing and never lists it as an item, so the extractor has no item to read.",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:779",
+        "curator": "marco",
+        "date": "2026-10-29"
+    },
+    "YieldCurves/RfrIndex": {
+        "label": "Risk free rate index",
+        "description": "The risk free rate index of the fallback, read from the ibor fallback configuration when the node is not given.",
+        "reason": "The guide shows the node in the ibor fallback segment's listing and states in the listing's comment when it may be omitted, and never lists it as an item.",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:782",
+        "curator": "marco",
+        "date": "2026-10-29"
+    },
+    "YieldCurves/Spread": {
+        "label": "Spread",
+        "description": "The spread over the risk free rate, read from the ibor fallback configuration when the node is not given.",
+        "reason": "The guide shows the node in the ibor fallback segment's listing and states in the listing's comment when it may be omitted, and never lists it as an item.",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:783",
+        "curator": "marco",
+        "date": "2026-10-29"
+    }
+}

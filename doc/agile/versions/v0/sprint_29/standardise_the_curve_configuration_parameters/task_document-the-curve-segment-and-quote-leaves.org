@@ -1,0 +1,170 @@
+:PROPERTIES:
+:ID: F356BCF2-332B-406A-BEAA-036425E5E8C8
+:END:
+#+title: Task: Document the curve segment and quote leaves
+#+description: The contract carries no words for 15 curve segment leaves, so the screen cannot draw them from data. The ORE guide documents them in the curve configuration chapter, in prose and XML listings rather than in the item entries the extractor reads. Curate them from the chapter that documents them, with the line that says each one, and fix the two extractor defects the work found.
+#+type: task
+#+level: s1
+#+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
+#+owner: marco
+#+branch: feature/document-the-curve-segment-and-quote-leaves
+#+pr: 4069
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every leaf a curve segment or its quotes holds carries its words in the ORE parameter contract, from the ORE guide chapter that documents it, so a screen can draw the leaf from data.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-29                               |
+
+* Acceptance
+
+- Every segment leaf the extractor finds has a contract row: the 15 leaves the guide's parameterisation chapter does not cover are curated from the curve configuration chapter, with the line that documents each one.
+- The one quote leaf the guide stated in roman type, `InflationCurves/Quotes`, has a contract row without being curated by hand, because the extractor reads that typography.
+- The curation states, per entry, the source, the reference into the guide, the curator, the date and the reason, as the row builder requires.
+- The regenerated dataset publishes the new rows, and a query counts them, before and after.
+- The local checks that compare the dataset and the value sets with their sources pass, and the artefact populate is the generator's.
+- A segment leaf is recorded once, under the path the document holds it at, and not beside the block that holds it.
+
+* Plan
+
+Three pieces, in this order.
+
+1. *Read the guide's second typography.* The parameterisation chapter writes an
+   entry as `\item Name: text`, and the curve configuration chapter writes some
+   of them as `\item {\tt Name}: text`. The extractor's item pattern accepts the
+   first and not the second, so 14 leaves reach the contract without words while
+   the guide does say them, and 8 more were taking text from an unrelated
+   chapter that happened to use the same name. Accepting `{\tt Name}` recovers
+   the 14 and gives the 8 their own family's words.
+2. *Record a segment once.* A parser that dispatches on the children of a block
+   (`Segments`) was walked twice: once under the block, where the document puts
+   them, and once beside it, where it does not. The beside-the-block copy put 11
+   wrong paths into the contract. The alternatives belong to the block, so the
+   class's dispatch list is walked at the class's own path only when the class
+   holds no dispatch block.
+3. *Curate what the guide states only in prose.* The 15 segment leaves the guide
+   explains in sentences and XML listings, never in an item, get a curation entry
+   each: a label, one sentence, the guide line that says it, the curator and the
+   date. The curation file is the mechanism the row builder already reads and the
+   local check already names; it did not exist because the guide covered every
+   other leaf.
+
+The rows then flow as they always do: the extractor writes the terms, the row
+builder turns them into parameter rows, and the dataset generator writes the
+artefact.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Curve parameter rows before | 235 | `python3 projects/ores.sql/utility/generate_ore_parameters_dataset.py --check` | a1b5909d37 |
+| Curve parameter rows after | 253 | the same | see =* Result= |
+| Curve leaves with no words before | 199 | `python3 -c "import sys; sys.path.insert(0, 'projects/ores.sql/utility'); import curve_parameter_rows as c; print(len(c.undocumented()))"` | a1b5909d37 |
+| Curve leaves with no words after | 155 | the same | see =* Result= |
+| Segment leaves with no words before | 15 | the same, filtered by `/Segments/` | a1b5909d37 |
+| Segment leaves with no words after | 0 | the same | see =* Result= |
+| Wrong segment paths in the published artefact before | 11 | a walk of the artefact's paths through `curveconfig.xsd` | a1b5909d37 |
+| Wrong segment paths after | 0 | the same | see =* Result= |
+
+* Notes
+
+- *The gap was the extractor, not the guide.* The curve configuration chapter
+  documents the segments it invites a person to write, so the words existed; the
+  extractor's item pattern did not accept `{\tt Name}:`, and its block walk
+  recorded a dispatched segment twice.
+- *The words were already half there.* 11 segment leaves had rows, because their
+  names also appear as items elsewhere. The remaining 15 are the leaves the guide
+  explains in a sentence or only shows in a listing, so the curation says which
+  sentence, with the line.
+- *One leaf name covers two segments.* `YieldCurves/ProjectionCurve` is curated
+  once and serves both the simple segment and the average OIS segment, because
+  the guide gives the meaning once and the average OIS section refers to the
+  simple segment for it.
+- *The guide misnames one leaf.* The weighted average section lists `Weights` as
+  the weight of the second curve where the schema and the parser declare
+  `Weight2`, so the curation states the second weight and its reason says why the
+  name differs.
+- *A path defect was found and is not this task's.* Four published smile paths
+  name a `Dimension` their parent does not declare, because the extractor
+  attributes a block to the class of the last call that names its variable, and
+  `ParametricSmileConfiguration::fromXML` reuses `n` for three blocks. Filed as
+  task [[id:FC161D8C-90E2-4EB2-B9C9-01638F3C0581][Retire the curve parameter paths the schema does not declare]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4069][#4069]] | [reporting] Give the curve segments their words |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The item pattern accepts `\item Name:` and `\item \lstinline!Name!:`, but not `\item {\tt Name}:`, which the parameterisation chapter uses for whole families of leaves. | extract_curve_terms.py | Accept | The pattern names all three forms. 14 leaves gained their guide text, and 8 more stopped taking text from an unrelated chapter (`conventions.tex`, `simulation.tex`) that happened to use the same name. |
+| 2 | A block that holds a parser's alternatives was walked twice: once under the block and once beside it. | extract_curve_terms.py | Accept | The alternatives belong to the block. 26 duplicate paths went, 11 of them published. Checked by walking the artefact's paths through `curveconfig.xsd`: 11 wrong before, 0 after. |
+| 3 | The row builder reads a curation file the tree has never had, and the check names it, so the mechanism was dead. | curve_term_curation.json | Accept | 14 entries covering the 15 segment leaves, each with label, one sentence, the guide line, the curator, the date and the reason. |
+| 4 | The dataset check did not name the curve inputs, so editing the terms or the curation alone would not run it. | local_checks.py | Accept | The curve row builder, the terms, the curation and the extractor are named. |
+| 5 | 155 curve leaves still reach the contract with no words. | ores.parameters | No change | They belong to the `Report`, `BootstrapConfig` and other blocks, not to a segment or a quote, so they are outside this task's acceptance. The count is a measurement so the remainder cannot change unseen. |
+| 6 | Four published `Dimension` paths sit under `ParametricSmileConfiguration/Parameters` and `/Calibration`, where the schema declares no such element. | extract_curve_terms.py | Deferred | A different cause: the extractor attributes a block to the class of the last call that names its variable, and that parser reuses `n` for three blocks. Filed as [[id:FC161D8C-90E2-4EB2-B9C9-01638F3C0581][Retire the curve parameter paths the schema does not declare]], with the evidence. |
+| 7 | `YieldVolatilities/YieldVolatility/Interpolation` is not in the schema, though the ORE code reads it. | curveconfig.xsd | Deferred | The same follow-up task carries it: the check needs the statement that the code reads the node, with the source line, rather than an exemption. |
+| 8 | The guide lists the second weight of a weighted average segment as `Weights`, where the schema and the parser declare `Weight2`. | curve_term_curation.json | Accept | The entry describes the second weight and its reason states why the names differ, so a reader is not left to guess which is right. |
+
+* Result
+
+* Result
+
+Every leaf a curve segment holds now carries its words in the contract, taken
+from the ORE guide chapter that documents the segments.
+
+Three changes got there. The extractor reads the guide's roman item form, which
+recovered 14 leaves and gave 8 more the words of their own family instead of an
+unrelated chapter's. The extractor records a dispatched segment once, under
+`Segments`, which took 11 wrong paths out of the published contract. And the 15
+segment leaves the guide states only in prose or in a listing are curated from
+the line that says each one, in a curation file the row builder already read.
+
+Against the recreated and provisioned environment: the contract holds 253 curve
+leaves, up from 235, and 26 of them are segment leaves, up from 11. No published
+curve path names an element its parent does not declare, where 11 did. The four
+parameter suites that read the contract pass, and the two checks that compare it
+with its sources pass.
+
+What is not done, and is not this task's: 155 curve leaves still have no words,
+in the `Report`, `BootstrapConfig` and other blocks, and four smile paths and one
+volatility path are wrong for a cause of their own. The latter is a task.

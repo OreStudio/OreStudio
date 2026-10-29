@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists engine_settings_changes_tbl_tenant_isolation_policy on "ores_reporting_engine_settings_changes_tbl";
 drop rule if exists ores_reporting_engine_settings_changes_delete_rule on "ores_reporting_engine_settings_changes_tbl";
 drop trigger if exists ores_reporting_engine_settings_changes_insert_trg on "ores_reporting_engine_settings_changes_tbl";
 drop function if exists ores_reporting_engine_settings_changes_insert_fn;

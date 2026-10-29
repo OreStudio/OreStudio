@@ -146,6 +146,7 @@ false
 ** Flags
 :PROPERTIES:
 :tablename: ores_reporting_engine_settings_changes_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Foreign keys

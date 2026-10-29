@@ -18,7 +18,6 @@
  *
  */
 #include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
-#include "ores.dq.api/messaging/lei_entity_protocol.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
@@ -28,6 +27,7 @@
 #include "ores.refdata.api/messaging/commodity_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
+#include "ores.refdata.api/messaging/legal_entity_protocol.hpp"
 #include "ores.refdata.api/messaging/equity_underlying_protocol.hpp"
 #include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
 #include "ores.refdata.api/messaging/netting_set_protocol.hpp"
@@ -288,9 +288,9 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
      * to the DQ dataset rather than to a trading table, so the population reads
      * them from where they live and states the LEI as the reference.
      */
-    ores::dq::messaging::list_lei_entities_request lei_req;
-    lei_req.limit = page;
-    for (const auto& entity : read(lei_req).entities)
+    ores::refdata::messaging::list_legal_entities_request legal_entity_req;
+    legal_entity_req.limit = page;
+    for (const auto& entity : read(legal_entity_req).legal_entities)
         if (!entity.lei.empty())
             scope.credit_reference_entities.push_back(entity.lei);
 

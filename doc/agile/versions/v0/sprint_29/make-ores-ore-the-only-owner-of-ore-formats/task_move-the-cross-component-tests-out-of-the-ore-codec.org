@@ -8,7 +8,7 @@
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
 #+owner: marco
 #+branch: feature/move-the-cross-component-tests-out-of-the-ore-codec
-#+pr:
+#+pr: 4055
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -94,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4055][#4055]] | [ore] Leave the database to the suites that own one |
 
 * Review
 

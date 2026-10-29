@@ -53,7 +53,10 @@ const blotterQuerySchema = z.object({
     view: z.enum(['portfolio', 'counterparty', 'instrument']).default('portfolio'),
     /** The node the list is narrowed to: `book:<id>` or `portfolio:<id>`, empty for the party. */
     node: z.string().trim().max(100).default(''),
-    flat: z.enum(['0', '1']).default('0').transform((value) => value === '1'),
+    flat: z
+        .enum(['0', '1'])
+        .default('0')
+        .transform((value) => value === '1'),
     search: z.string().trim().max(256).default(''),
     offset: z.coerce.number().int().min(0).default(0),
     limit: z.coerce.number().int().min(1).max(MAX_PAGE).default(25),
@@ -90,6 +93,12 @@ const NO_FILTER = {
 
 type Summary = Readonly<Record<string, unknown>>;
 
+/** How many rows one read asks for. The services cap a page; this is under it. */
+const READ_PAGE = 200;
+
+/** Every row the filter matches, read a page at a time. The cap is a stop against a runaway read. */
+const READ_CAP = 20_000;
+
 /** One page of the summaries, with the total the filter matches. */
 async function summaries(
     session: LiveSession,
@@ -121,6 +130,31 @@ async function summaries(
     return { rows: reply.trade_summaries as readonly Summary[], total: reply.total };
 }
 
+/**
+ * Every row a filter matches, newest first.
+ *
+ * The read is paged because the wire states one page at a time, and it is read
+ * whole because the list narrows it after: the summary view has no structure
+ * column, so "the trades no structure holds" cannot be asked of the service.
+ * Closing that gap is the read design's first unit; until then this is right at
+ * any size and reads more than a page should.
+ */
+async function allSummaries(
+    session: LiveSession,
+    filter: Readonly<Record<string, unknown>>,
+    order: { readonly field: string; readonly descending: boolean },
+): Promise<readonly Summary[]> {
+    const rows: Summary[] = [];
+    for (let offset = 0; offset < READ_CAP; offset += READ_PAGE) {
+        const page = await summaries(session, filter, order, offset, READ_PAGE);
+        rows.push(...page.rows);
+        if (page.rows.length < READ_PAGE || rows.length >= page.total) {
+            return rows;
+        }
+    }
+    return rows;
+}
+
 /** A node of the tree the list is narrowed to. Its id says what kind of node it is. */
 interface TreeNode {
     readonly id: string;
@@ -141,7 +175,9 @@ function bookIdsUnder(node: string, books: readonly Summary[]): readonly string[
     if (node.startsWith('book:')) {
         return [node.slice('book:'.length)];
     }
-    return books.filter((book) => text(book['parent_portfolio_id']) === node.slice('portfolio:'.length)).map((book) => text(book['id']));
+    return books
+        .filter((book) => text(book['parent_portfolio_id']) === node.slice('portfolio:'.length))
+        .map((book) => text(book['id']));
 }
 
 export function registerBlotterRoutes(
@@ -162,7 +198,11 @@ export function registerBlotterRoutes(
 
         const [books, portfolios, structures, members] = await Promise.all([
             readAll(session, bookSubjects.list_books_request, 'books', {
-                filter: { parent_portfolio_id: null, id_one_of: null, parent_portfolio_id_one_of: null },
+                filter: {
+                    parent_portfolio_id: null,
+                    id_one_of: null,
+                    parent_portfolio_id_one_of: null,
+                },
                 as_of: null,
             }),
             readAll(session, portfolioSubjects.list_portfolios_request, 'portfolios', {
@@ -206,20 +246,19 @@ export function registerBlotterRoutes(
                           MAX_PAGE,
                       )
                   ).rows;
-        const bookOfTrade = new Map(legRows.map((row) => [text(row['id']), text(row['book_id'])] as const));
+        const bookOfTrade = new Map(
+            legRows.map((row) => [text(row['id']), text(row['book_id'])] as const),
+        );
         const booksOfStructure = new Map<string, readonly string[]>();
         for (const row of structures) {
             const id = text(row['id']);
-            booksOfStructure.set(
-                id,
-                [
-                    ...new Set(
-                        (legsOf.get(id) ?? [])
-                            .map((trade) => bookOfTrade.get(trade) ?? '')
-                            .filter((book) => book !== ''),
-                    ),
-                ],
-            );
+            booksOfStructure.set(id, [
+                ...new Set(
+                    (legsOf.get(id) ?? [])
+                        .map((trade) => bookOfTrade.get(trade) ?? '')
+                        .filter((book) => book !== ''),
+                ),
+            ]);
         }
 
         /* A structure is found by its own reference, and a leg by the structure's. */
@@ -293,32 +332,70 @@ export function registerBlotterRoutes(
         };
         walk('');
 
-        const tree: TreeNode[] = [];
-        for (const node of bare) {
-            const filter =
-                node.kind === 'book'
-                    ? { book_id: node.id.slice('book:'.length) }
-                    : node.kind === 'portfolio'
-                      ? { book_id_one_of: bookIdsUnder(node.id, books) }
-                      : {};
-            tree.push({ ...node, count: (await summaries(session, filter, order, 0, 1)).total });
+        /*
+         * The tree's counts come from the rows already read for the page, grouped
+         * by book: one pass, and no read per node. A row with no book counts at the
+         * party alone.
+         */
+        const everyRow = await allSummaries(session, {}, order);
+        /* A structure counts where it is placed, which is its legs' book or the node holding them. */
+        const placementOf = (row: Summary): string => {
+            if (text(row['row_kind']) !== 'structure') {
+                return text(row['book_id']) === '' ? '' : bookNodeId(text(row['book_id']));
+            }
+            const structureBooks = booksOfStructure.get(text(row['id'])) ?? [];
+            if (structureBooks.length === 0) {
+                return '';
+            }
+            if (structureBooks.length === 1) {
+                return bookNodeId(structureBooks[0] ?? '');
+            }
+            const owners = [
+                ...new Set(
+                    structureBooks.map((id) =>
+                        text(books.find((b) => text(b['id']) === id)?.['parent_portfolio_id']),
+                    ),
+                ),
+            ];
+            return owners.length === 1 && owners[0] !== '' ? portfolioNodeId(owners[0] ?? '') : '';
+        };
+        const byNode = new Map<string, number>();
+        for (const row of everyRow) {
+            const node = placementOf(row);
+            byNode.set(node, (byNode.get(node) ?? 0) + 1);
         }
+        const countUnder = (node: Omit<TreeNode, 'count'>): number => {
+            if (node.kind === 'party') {
+                return everyRow.length;
+            }
+            const own = byNode.get(node.id) ?? 0;
+            if (node.kind === 'book') {
+                return own;
+            }
+            return bookIdsUnder(node.id, books).reduce(
+                (sum, id) => sum + (byNode.get(bookNodeId(id)) ?? 0),
+                own,
+            );
+        };
+        const tree: TreeNode[] = bare.map((node) => ({ ...node, count: countUnder(node) }));
 
         /* The page, narrowed by the node and the search, then by what the list holds. */
         const nodeFilter =
-            query.node === '' ? {} : query.node.startsWith('book:')
-                ? { book_id: query.node.slice('book:'.length) }
-                : { book_id_one_of: bookIdsUnder(query.node, books) };
-        const page = await summaries(
+            query.node === ''
+                ? {}
+                : query.node.startsWith('book:')
+                  ? { book_id: query.node.slice('book:'.length) }
+                  : { book_id_one_of: bookIdsUnder(query.node, books) };
+        const matched = await allSummaries(
             session,
             { ...nodeFilter, ...(query.search === '' ? {} : { search: query.search }) },
             order,
-            0,
-            MAX_PAGE,
         );
-        const kept = page.rows.filter((row) => {
+        const kept = matched.filter((row) => {
             const kind = text(row['row_kind']);
-            return query.flat ? kind === 'trade' : kind === 'structure' || !holderOf.has(text(row['id']));
+            return query.flat
+                ? kind === 'trade'
+                : kind === 'structure' || !holderOf.has(text(row['id']));
         });
         const rows = kept.slice(query.offset, query.offset + query.limit).map((row) => {
             const id = text(row['id']);
@@ -340,6 +417,13 @@ export function registerBlotterRoutes(
             };
         });
 
-        return { tree, rows, total: kept.length, flat: query.flat, view: query.view, node: query.node };
+        return {
+            tree,
+            rows,
+            total: kept.length,
+            flat: query.flat,
+            view: query.view,
+            node: query.node,
+        };
     });
 }

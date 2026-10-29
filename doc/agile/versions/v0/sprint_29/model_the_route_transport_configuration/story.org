@@ -43,3 +43,24 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 * Out of scope
 
 -
+
+* Naming and model
+
+Two concepts, two names. A *driver* is the code that speaks an external
+interface's language: Bloomberg's or LSEG's API, or, for Frankfurter, the code
+inside the synthetic service. Nobody outside engineering needs the word. A
+*connection* is a driver configured as one instance a person knows: Bloomberg
+test, Bloomberg production, Frankfurter. It carries the endpoint, the expected
+rhythm, the poll interval and the backfill window, and its secrets are encrypted
+at rest and write-only on the wire.
+
+A connection reaches *providers*: the ECB, the NY Fed, the publishers whose
+values it delivers. A provider belongs to the connection that delivers it, so a
+publisher reached two ways is two connections over one provider, and the item
+keeps its identity with the connection as provenance.
+
+The last piece is where the values land. A *destination* points the stream at
+the party and the store it fills, so a connection may deliver to the system
+party, or to a tenant, or to both. The prototype covers only the provider and
+its data today; the connection and its destination are the two screens this
+story adds.

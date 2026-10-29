@@ -403,9 +403,15 @@ const DOCUMENT_FAMILIES = [
     'quotes',
 ] as const;
 
-/** The document vector one entity's rows are read from, or the empty name. */
+/**
+ * The document vector each entity's rows are read from, or the empty name.
+ *
+ * The definition is not one of a section's family tables: every section's
+ * entries are definition rows, and the wiring names the definition only among the
+ * leaves, so its vector is stated here.
+ */
 function vectorByEntity(): ReadonlyMap<string, string> {
-    const found = new Map<string, string>();
+    const found = new Map<string, string>([[DEFINITION_ENTITY, 'definitions']]);
     for (const wiring of CURVE_SECTIONS)
         for (const entity of wiring.entities) found.set(entity.entity, entity.vector);
     return found;

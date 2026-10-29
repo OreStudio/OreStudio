@@ -379,6 +379,42 @@ describe('changing a curve configuration', () => {
         expect(rows[0]?.['currency']).toBe('USD');
     });
 
+    it("changes the curve's own description, which lives in the definitions", async () => {
+        const { answer, calls } = await amend(
+            repliesFor({
+                'refdata.v1.curve_configuration_documents.put': {
+                    success: true,
+                    message: '',
+                    id: '',
+                },
+            }),
+            {
+                version: 3,
+                reasonCode: 'common.rectification',
+                commentary: '',
+                changes: [
+                    {
+                        entity: 'curve_definition',
+                        entryId: DEFINITION_ID,
+                        column: 'description',
+                        value: 'USD discount curve, six months',
+                    },
+                ],
+            },
+        );
+
+        expect(answer.statusCode).toBe(204);
+        const saved = calls.find(
+            (call) => call.subject === 'refdata.v1.curve_configuration_documents.put',
+        );
+        const document = (saved?.payload as { document: Record<string, unknown> }).document;
+        const definitions = document['definitions'] as Record<string, unknown>[];
+        expect(definitions).toHaveLength(2);
+        expect(definitions[0]?.['description']).toBe('USD discount curve, six months');
+        expect(definitions[1]?.['description']).toBe('ACME forward curve');
+        expect(document['yield_curves']).toEqual([]);
+    });
+
     it('refuses a value the leaf does not accept', async () => {
         const { answer } = await amend(
             repliesFor(),

@@ -147,8 +147,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 Every leaf a curve segment holds now carries its words in the contract, taken
 from the ORE guide chapter that documents the segments.
 

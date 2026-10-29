@@ -8,7 +8,7 @@
 #+filetags: :data-oriented-design:modeling:refdata:split_the_types_that_carry_too_many_columns:sprint_29:v0:
 #+owner: marco
 #+branch: feature/inventory-the-types-that-carry-too-many-columns
-#+pr:
+#+pr: 4068
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -143,7 +143,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4068][#4068]] | [tooling] Count the members of every persisted type |
 
 * Review
 

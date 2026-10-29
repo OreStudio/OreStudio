@@ -39,14 +39,22 @@ Frankfurter is a supplier that delivers the ECB's data; it is not the publisher.
 Bloomberg is both: the supplier of a session and the publisher of its own values.
 That distinction is the point of the screen.
 
-* The lists
+* The shape: a tree on the left, a list or the details on the right
 
-| Tab | What it draws |
-|-----+---------------|
-| Publishers | The content owners: kind, classes, terms, feeds and suppliers |
-| Suppliers | The delivery tree: supplier → session → feed, with the adapter on the session |
-| Adapters | The code catalogue, read-only: version, description, services, schema, sessions |
-| Feeds | Every feed flat: publisher, session, supplier, service, scope, schedule, state |
+The screen is one page split in two.
+
+- *Left*: the delivery tree, supplier → session → feed, and a second tree of
+  publishers → feeds. A search box filters both. The selected node is marked.
+- *Right*: what the person came to see.
+  - A supplier shows its details and the list of its sessions.
+  - A session shows its transport and its feeds; runtime and history are tabs.
+  - A feed shows its details, then Underlyings, Schedule, Routes and History.
+  - A publisher shows its terms and the list of its feeds.
+  - With nothing selected, the pane is a short overview: the counts, and the
+    reminder that the tree is supplier → session → feed.
+
+The Adapters catalogue is one click from the rail. Nobody configures an adapter;
+they configure a session of one.
 
 * The records
 

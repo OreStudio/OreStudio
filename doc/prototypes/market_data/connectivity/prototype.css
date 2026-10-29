@@ -229,3 +229,66 @@ table.list td.num, table.list td.when { font-family: var(--mono); font-variant-n
 .tree .node { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
 .tree .label { font: 600 .88rem/1.4 var(--sans, system-ui); letter-spacing: 0; text-transform: none; color: var(--ink); }
 .tree .acts { margin-left: auto; display: flex; gap: 8px; }
+
+/* --- Split inspector ---------------------------------------------------- */
+.split {
+  display: grid;
+  grid-template-columns: 330px minmax(0, 1fr);
+  gap: 18px;
+  padding: 0 24px 40px;
+  align-items: start;
+}
+.rail {
+  position: sticky;
+  top: 14px;
+  max-height: calc(100vh - 30px);
+  overflow: auto;
+  padding-right: 10px;
+  border-right: 1px solid var(--line);
+  font-size: .84rem;
+}
+.rail input {
+  width: 100%;
+  background: var(--sunk);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-chip);
+  padding: 4px 8px;
+  font-size: .8rem;
+}
+.rail-section { margin-top: 16px; }
+.rail-section h2 {
+  font: 600 var(--micro)/1.3 var(--mono);
+  letter-spacing: var(--tracking);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 4px;
+}
+.rail a { color: var(--ink); text-decoration: none; }
+.rail a:hover { text-decoration: underline; }
+.rail .sel { background: var(--accent-dim); border-radius: 4px; }
+.rail-link { display: block; margin-top: 18px; font-size: .82rem; color: var(--accent); }
+.pane { min-width: 0; }
+.pane-head { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 10px; }
+.pane-head h1 { font-size: 1.15rem; font-weight: 600; margin: 0; }
+.pane-head .meta { width: 100%; font-size: .8rem; color: var(--ink-muted); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.pane-head .actions { margin-left: auto; display: flex; gap: 6px; }
+.pane .crumbs { margin-bottom: 4px; }
+.pane .tabs { margin: 6px 0 12px; }
+.pane .card { margin-top: 12px; }
+.pane .card:first-of-type { margin-top: 0; }
+.rail details { margin: 1px 0; }
+.rail summary { padding: 2px 4px; }
+.rail ul { margin-left: 12px; }
+.rail li { padding: 1px 0 1px 8px; }
+@media (max-width: 900px) {
+  .split { grid-template-columns: 1fr; }
+  .rail { position: static; max-height: none; border-right: 0; border-bottom: 1px solid var(--line); padding: 0 0 10px; }
+}
+
+/* Tabs in the inspector are links, not buttons. */
+.pane .tabs a.act {
+  background: transparent; border: 0; border-bottom: 2px solid transparent;
+  border-radius: 0; padding: 7px 14px; color: var(--ink-muted);
+}
+.pane .tabs a.act.primary { border-bottom-color: var(--accent); color: var(--ink); }
+.pane-head .crumbs { flex-basis: 100%; }

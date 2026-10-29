@@ -14,140 +14,32 @@
   <a href="../public-rates/">Public rates</a>
 </div>
 
-<header class="page" id="list-header">
+<header class="page">
   <div class="crumbs"><a href="#">Market data</a> / Connectivity</div>
   <div class="title-row">
     <h1>Connectivity</h1>
     <span class="lead">who publishes, who supplies, the sessions we configure, and the feeds that come off them</span>
     <span class="actions"><button class="act" id="refresh">Refresh</button></span>
   </div>
-  <nav class="tabs" role="tablist" aria-label="Connectivity">
-    <button role="tab" data-tab="publishers">Publishers <span class="q">whose data it is</span></button>
-    <button role="tab" data-tab="suppliers">Suppliers <span class="q">who we connect to</span></button>
-    <button role="tab" data-tab="adapters">Adapters <span class="q">what the code provides</span></button>
-    <button role="tab" data-tab="feeds">Feeds <span class="q">publisher on a session</span></button>
-  </nav>
 </header>
 
-<main>
-  <section id="tab-publishers" role="tabpanel" hidden>
-    <div class="card">
-      <div class="card-head"><h2>Publishers</h2><p>whoever owns the ids, the credit and the terms</p></div>
-      <table class="list" id="publishers">
-        <thead><tr><th>Publisher</th><th>Kind</th><th>Classes</th><th>Terms</th><th>Feeds</th><th>Suppliers</th><th class="acts"></th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <div class="card-body faint" id="publishers-note"></div>
-    </div>
-  </section>
+<main class="split">
+  <aside class="rail" aria-label="Delivery tree">
+    <input id="find" placeholder="Find a supplier, publisher, session or feed">
+    <section class="rail-section">
+      <h2>Delivery</h2>
+      <div id="tree"></div>
+    </section>
+    <section class="rail-section">
+      <h2>Publishers</h2>
+      <div id="pubtree"></div>
+    </section>
+    <a class="rail-link" href="?view=adapters">Adapters catalogue →</a>
+  </aside>
 
-  <section id="tab-suppliers" role="tabpanel" hidden>
-    <div class="card">
-      <div class="card-head"><h2>Delivery tree</h2><p>a supplier has sessions; a session offers services; a feed picks one publisher and one service</p></div>
-      <div class="card-body tree" id="tree"></div>
-      <div class="card-body faint" id="suppliers-note"></div>
-    </div>
-  </section>
-
-  <section id="tab-adapters" role="tabpanel" hidden>
-    <div class="card">
-      <div class="card-head"><h2>Adapters</h2><p>the code modules this release provides; nobody adds one from a screen</p></div>
-      <table class="list" id="adapters">
-        <thead><tr><th>Adapter</th><th>Version</th><th>Description</th><th>Classes</th><th>Services</th><th>Configuration schema</th><th>Sessions</th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <div class="card-body faint" id="adapters-note"></div>
-    </div>
-  </section>
-
-  <section id="tab-feeds" role="tabpanel" hidden>
-    <div class="card">
-      <div class="card-head"><h2>Feeds</h2><p>one publisher, on one session, on one service</p></div>
-      <table class="list" id="feeds">
-        <thead><tr><th>Feed</th><th>Publisher</th><th>Session</th><th>Supplier</th><th>Service</th><th>Scope</th><th>Schedule</th><th>State</th><th class="acts"></th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <div class="card-body faint" id="feeds-note"></div>
-    </div>
-  </section>
-
-  <section id="publisher-record" hidden>
-    <div class="crumbs"><a href="?tab=publishers">Market data</a> / <a href="?tab=publishers">Connectivity</a> / <span id="pub-crumb"></span></div>
-    <div class="record-header">
-      <div><h1 id="pub-title"></h1><div class="record-meta" id="pub-meta"></div></div>
-      <span class="actions" id="pub-acts"></span>
-    </div>
-    <nav class="tabs" role="tablist" aria-label="Publisher" id="pub-tabs">
-      <button role="tab" data-pbtab="overview">Overview</button>
-      <button role="tab" data-pbtab="feeds">Feeds</button>
-      <button role="tab" data-pbtab="history">History</button>
-    </nav>
-    <div id="pub-body"></div>
-  </section>
-
-  <section id="supplier-record" hidden>
-    <div class="crumbs"><a href="?tab=suppliers">Market data</a> / <a href="?tab=suppliers">Connectivity</a> / <span id="sup-crumb"></span></div>
-    <div class="record-header">
-      <div><h1 id="sup-title"></h1><div class="record-meta" id="sup-meta"></div></div>
-      <span class="actions" id="sup-acts"></span>
-    </div>
-    <nav class="tabs" role="tablist" aria-label="Supplier" id="sup-tabs">
-      <button role="tab" data-sutab="overview">Overview</button>
-      <button role="tab" data-sutab="sessions">Sessions</button>
-      <button role="tab" data-sutab="history">History</button>
-    </nav>
-    <div id="sup-body"></div>
-  </section>
-
-  <section id="session-record" hidden>
-    <div class="crumbs"><a href="?tab=suppliers">Market data</a> / <a href="?tab=suppliers">Connectivity</a> / <span id="ses-crumb"></span></div>
-    <div class="record-header">
-      <div><h1 id="ses-title"></h1><div class="record-meta" id="ses-meta"></div></div>
-      <span class="actions" id="ses-acts"></span>
-    </div>
-    <nav class="tabs" role="tablist" aria-label="Session" id="ses-tabs">
-      <button role="tab" data-setab="overview">Overview</button>
-      <button role="tab" data-setab="feeds">Feeds</button>
-      <button role="tab" data-setab="runtime">Runtime</button>
-      <button role="tab" data-setab="history">History</button>
-    </nav>
-    <div id="ses-body"></div>
-  </section>
-
-  <section id="feed-record" hidden>
-    <div class="crumbs"><a href="?tab=feeds">Market data</a> / <a href="?tab=feeds">Connectivity</a> / <span id="fd-crumb"></span></div>
-    <div class="record-header">
-      <div><h1 id="fd-title"></h1><div class="record-meta" id="fd-meta"></div></div>
-      <span class="actions" id="fd-acts"></span>
-    </div>
-    <nav class="tabs" role="tablist" aria-label="Feed" id="fd-tabs">
-      <button role="tab" data-ftab="overview">Overview</button>
-      <button role="tab" data-ftab="underlyings">Underlyings</button>
-      <button role="tab" data-ftab="schedule">Schedule</button>
-      <button role="tab" data-ftab="routes">Routes</button>
-      <button role="tab" data-ftab="history">History</button>
-    </nav>
-    <div id="fd-body"></div>
-  </section>
-
-  <section id="add-session" hidden>
-    <div class="crumbs"><a href="?tab=suppliers">Market data</a> / <a href="?tab=suppliers">Connectivity</a> / New session</div>
-    <div class="record-header">
-      <div><h1>New session</h1><div class="record-meta">one configured adapter at a supplier: endpoint, environment, credential and settings</div></div>
-      <span class="actions"><a class="act" href="?tab=suppliers">Cancel</a></span>
-    </div>
-    <div id="add-session-body"></div>
-  </section>
-
-  <section id="add-feed" hidden>
-    <div class="crumbs"><a href="?tab=feeds">Market data</a> / <a href="?tab=feeds">Connectivity</a> / New feed</div>
-    <div class="record-header">
-      <div><h1>New feed</h1><div class="record-meta">a publisher, a session, a service, a scope and a schedule</div></div>
-      <span class="actions"><a class="act" href="?tab=feeds">Cancel</a></span>
-    </div>
-    <div id="add-feed-body"></div>
-  </section>
+  <section class="pane" id="pane" aria-live="polite"></section>
 </main>
+
 <script src="prototype.js"></script>
 </body>
 </html>

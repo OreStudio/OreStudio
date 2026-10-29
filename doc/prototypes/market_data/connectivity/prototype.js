@@ -266,235 +266,187 @@ const fn = {
     },
 };
 
-function hidePanels(except) {
-    document.querySelectorAll('[role="tabpanel"]').forEach((x) => { x.hidden = x.id !== except; });
-    ['#publisher-record', '#supplier-record', '#session-record', '#feed-record', '#add-session', '#add-feed']
-        .forEach((id) => { document.querySelector(id).hidden = true; });
-}
+function esc(t) { return fn.esc(t); }
 
-function renderPublishers() {
-    hidePanels('tab-publishers');
-    document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === 'publishers')));
-    document.querySelector('#publishers tbody').innerHTML = PUBLISHERS.map((p) => {
-        const feeds = fn.feedsOfPublisher(p.code);
-        const suppliers = new Set(feeds.map((f) => fn.session(f.session).supplier));
-        return `<tr>
-          <td class="provider">${fn.esc(p.name)}<div class="faint mono">${p.code} · ${p.kind}</div></td>
-          <td>${p.kind}</td>
-          <td>${p.classes.map((c) => `<span class="badge">${c.toUpperCase()}</span>`).join(' ')}</td>
-          <td>${p.terms.accepted ? `<span class="badge ok">accepted ${p.terms.version}</span>` : '<span class="badge warn">not accepted</span>'}</td>
-          <td class="num">${feeds.length}</td>
-          <td class="num">${suppliers.size}</td>
-          <td class="acts"><a class="act" href="${fn.href({ tab: null, publisher: p.code, pbtab: 'overview' })}">Open</a></td>
-        </tr>`;
-    }).join('');
-    document.querySelector('#publishers-note').textContent =
-        'A publisher owns the ids, the credit and the terms. It may be reached through more than one supplier, and each path is a feed.';
+function itemsLink(cls, href, label, meta) {
+    return `<a class="${cls}" href="${href}">${label}</a>${meta ? ` <span class="faint">${meta}</span>` : ''}`;
 }
 
 function renderTree() {
-    hidePanels('tab-suppliers');
-    document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === 'suppliers')));
+    const sel = selectedNode();
     document.querySelector('#tree').innerHTML = SUPPLIERS.map((sup) => {
         const sessions = fn.sessionsOfSupplier(sup.code);
-        const feeds = sessions.reduce((n, s) => n + fn.feedsOfSession(s.name).length, 0);
-        const node = `<details ${sup.code === 'frankfurter' ? 'open' : ''}>
-          <summary><span class="node"><span class="label">${fn.esc(sup.name)}</span>
-            <span class="faint">${sup.kind} · ${plural(sessions.length, 'session')} · ${plural(feeds, 'feed')}</span>
-            <span class="acts"><a class="act" href="${fn.href({ add_session: null, 'add-session': '1', supplier: sup.code, tab: null })}">New session</a>
-            <a class="act" href="${fn.href({ tab: null, supplier: sup.code, sutab: 'overview' })}">Open</a></span></span></summary>
-          <ul>${sessions.map((s) => {
-            const a = fn.adapter(s.adapter);
-            const fds = fn.feedsOfSession(s.name);
-            return `<li><details ${s.name === 'frankfurter-eu' ? 'open' : ''}>
-              <summary><span class="node"><span class="label mono">${s.name}</span>
-                <span class="faint">${a.code} ${a.version} · ${s.environment} · ${fn.esc(s.endpoint)} · ${fn.state(s)}</span>
-                <span class="acts"><a class="act" href="${fn.href({ add_feed: null, 'add-feed': '1', session: s.name, tab: null })}">Add feed</a>
-                <a class="act" href="${fn.href({ tab: null, session: s.name, setab: 'overview' })}">Open</a></span></span></summary>
-              <ul>${fds.length ? fds.map((f) => {
-                const p = fn.publisher(f.publisher);
-                return `<li><span class="node"><span class="mono">${f.name}</span>
-                  <span class="faint">→ ${fn.esc(p.name)} · ${f.service} · ${f.scope.mode === 'all' ? 'all items' : `${f.scope.items.length} items`} · ${f.schedule.enabled ? fn.esc(f.schedule.rhythm) : 'schedule off'}</span>
-                  <span class="acts"><a class="act" href="${fn.href({ tab: null, feed: f.name, ftab: 'overview' })}">Open</a></span></span></li>`;
-              }).join('') : '<li class="faint">No feed comes off this session yet.</li>'}</ul>
+        const feeds = sessions.reduce((n, x) => n + fn.feedsOfSession(x.name).length, 0);
+        const open = sel && (sel.type === 'supplier' && sel.id === sup.code
+            || sel.type === 'session' && fn.session(sel.id)?.supplier === sup.code
+            || sel.type === 'feed' && fn.session(fn.feed(sel.id)?.session)?.supplier === sup.code);
+        return `<details ${open ? 'open' : ''}>
+          <summary><span class="node"><a class="${sel && sel.type === 'supplier' && sel.id === sup.code ? 'sel' : ''}"
+            href="?supplier=${sup.code}">${esc(sup.name)}</a>
+            <span class="faint">${sup.kind} · ${plural(sessions.length, 'session')} · ${plural(feeds, 'feed')}</span></span></summary>
+          <ul>${sessions.map((x) => {
+            const a = fn.adapter(x.adapter);
+            const fds = fn.feedsOfSession(x.name);
+            const sopen = sel && (sel.type === 'session' && sel.id === x.name || sel.type === 'feed' && fn.feed(sel.id)?.session === x.name);
+            return `<li><details ${sopen ? 'open' : ''}>
+              <summary><span class="node"><a class="${sel && sel.type === 'session' && sel.id === x.name ? 'sel' : ''}"
+                href="?session=${x.name}">${x.name}</a>
+                <span class="faint">${a.code} · ${x.environment} · ${x.runtime.state}</span></span></summary>
+              <ul>${fds.length ? fds.map((f) => `<li><a class="${sel && sel.type === 'feed' && sel.id === f.name ? 'sel' : ''}"
+                href="?feed=${f.name}">${f.name}</a> <span class="faint">→ ${fn.publisher(f.publisher).name} · ${f.service}</span></li>`).join('')
+                : '<li class="faint">no feed yet</li>'}</ul>
             </details></li>`;
-          }).join('') || '<li class="faint">No session for this supplier yet.</li>'}</ul>
+          }).join('') || '<li class="faint">no session yet</li>'}</ul>
         </details>`;
-        return node;
     }).join('');
-    document.querySelector('#suppliers-note').textContent =
-        'The tree is how delivery works: a supplier has sessions, a session offers services, and a feed picks one publisher, one service, a scope and a schedule. The adapter is a property of the session.';
+
+    document.querySelector('#pubtree').innerHTML = PUBLISHERS.map((p) => {
+        const feeds = fn.feedsOfPublisher(p.code);
+        const open = sel && (sel.type === 'publisher' && sel.id === p.code || sel.type === 'feed' && fn.feed(sel.id)?.publisher === p.code);
+        return `<details ${open ? 'open' : ''}>
+          <summary><span class="node"><a class="${sel && sel.type === 'publisher' && sel.id === p.code ? 'sel' : ''}"
+            href="?publisher=${p.code}">${esc(p.name)}</a>
+            <span class="faint">${p.classes.map((c) => c.toUpperCase()).join('/')} · ${plural(feeds.length, 'feed')}</span></span></summary>
+          <ul>${feeds.length ? feeds.map((f) => `<li><a class="${sel && sel.type === 'feed' && sel.id === f.name ? 'sel' : ''}"
+            href="?feed=${f.name}">${f.name}</a> <span class="faint">${f.service} · ${fn.supplier(fn.session(f.session).supplier).name}</span></li>`).join('')
+            : '<li class="faint">no feed yet</li>'}</ul>
+        </details>`;
+    }).join('');
 }
 
-function renderAdapters() {
-    hidePanels('tab-adapters');
-    document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === 'adapters')));
-    document.querySelector('#adapters tbody').innerHTML = ADAPTERS.map((a) => {
-        const sessions = SESSIONS.filter((s) => s.adapter === a.code);
-        return `<tr>
-          <td class="provider">${fn.esc(a.name)}<div class="faint mono">${a.code} · ${a.process}</div></td>
-          <td class="mono">${a.version}</td>
-          <td>${fn.esc(a.description)}</td>
-          <td>${a.classes.map((c) => `<span class="badge">${c.toUpperCase()}</span>`).join(' ')}</td>
-          <td class="faint mono">${a.services.join(', ')}</td>
-          <td class="faint">${a.fields.length ? a.fields.map(([f]) => `<span class="mono">${f}</span>`).join(', ') : 'nothing: the simulator makes its own values'}</td>
-          <td class="num">${sessions.length}</td>
-        </tr>`;
-    }).join('');
-    document.querySelector('#adapters-note').textContent =
-        'The adapters are code. The release installs this catalogue with version, description, services and configuration schema. A person configures a session of one; nobody adds an adapter.';
+function selectedNode() {
+    if (feedName) return { type: 'feed', id: feedName };
+    if (sessionName) return { type: 'session', id: sessionName };
+    if (supplierCode) return { type: 'supplier', id: supplierCode };
+    if (publisherCode) return { type: 'publisher', id: publisherCode };
+    return null;
 }
 
-function renderFeeds() {
-    hidePanels('tab-feeds');
-    document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === 'feeds')));
-    document.querySelector('#feeds tbody').innerHTML = FEEDS.map((f) => {
-        const p = fn.publisher(f.publisher);
-        const s = fn.session(f.session);
-        const sup = fn.supplier(s.supplier);
-        return `<tr>
-          <td class="provider">${f.name}${f.isDefault ? ' <span class="badge">default</span>' : ''}</td>
-          <td>${fn.esc(p.name)}<div class="faint mono">${p.code}</div></td>
-          <td class="mono"><a href="${fn.href({ tab: null, session: f.session, setab: 'overview' })}">${f.session}</a></td>
-          <td>${fn.esc(sup.name)}</td>
-          <td>${f.service}</td>
-          <td>${f.scope.mode === 'all' ? `all ${f.classes.map((c) => c.toUpperCase()).join('/')} items` : `${f.scope.items.length} selected`}</td>
-          <td class="faint">${f.schedule.enabled ? fn.esc(f.schedule.rhythm) : 'off'}</td>
-          <td>${fn.feedState(f)}</td>
-          <td class="acts"><a class="act" href="${fn.href({ tab: null, feed: f.name, ftab: 'overview' })}">Open</a></td>
-        </tr>`;
-    }).join('');
-    document.querySelector('#feeds-note').textContent =
-        'A feed is one publisher, on one session, on one service, with its own provider key, scope and schedule. Its state follows the session; whether its data is fresh is a Public rates question.';
+function paneHeader(crumbs, title, meta, actions) {
+    return `<div class="pane-head">
+      <div class="crumbs">${crumbs}</div>
+      <div><h1>${title}</h1><div class="meta">${meta}</div></div>
+      <span class="actions">${actions}</span>
+    </div>`;
 }
 
-function renderPublisherRecord() {
+function tabLinks(base, links, current) {
+    return `<nav class="tabs" role="tablist">${links.map(([id, label]) =>
+        `<a class="act ${id === current ? 'primary' : ''}" href="${base}&tab=${id}">${label}</a>`).join('')}</nav>`;
+}
+
+const detail = (rows) => `<div class="kv">${rows.map(([k, v]) => `<span class="k">${k}</span><span>${v}</span>`).join('')}</div>`;
+
+function renderDefault() {
+    const feeds = FEEDS.length, sessions = SESSIONS.length;
+    document.querySelector('#pane').innerHTML = paneHeader('Connectivity',
+        'Delivery overview',
+        'pick a supplier, session or feed on the left; the pane shows its list or its details',
+        `<a class="act" href="?view=adapters">Adapters</a>`)
+        + `<div class="card"><div class="card-head"><h2>What Connectivity holds</h2><p>the delivery side of market data</p></div>
+          <div class="card-body"><div class="kv">
+            <span class="k">Publishers</span><span>${PUBLISHERS.length}</span>
+            <span class="k">Suppliers</span><span>${SUPPLIERS.length}</span>
+            <span class="k">Sessions</span><span>${sessions}</span>
+            <span class="k">Feeds</span><span>${feeds}</span>
+            <span class="k">Adapters</span><span>${ADAPTERS.length}</span>
+          </div>
+          <div class="faint" style="margin-top:8px">The tree shows how delivery works: supplier → session → feed. The Publishers tree shows the other axis: a publisher's feeds across suppliers.</div></div></div>`;
+}
+
+function renderAdaptersPane() {
+    document.querySelector('#pane').innerHTML = paneHeader('Connectivity / Adapters',
+        'Adapters', 'the code modules the release provides; read only',
+        `<a class="act" href="?">Back to delivery</a>`)
+        + `<div class="card"><div class="card-head"><h2>Adapter catalogue</h2><p>version, services and the configuration a session must provide</p></div>
+          <table class="list"><thead><tr><th>Adapter</th><th>Version</th><th>Description</th><th>Classes</th><th>Services</th><th>Schema</th><th>Sessions</th></tr></thead><tbody>${ADAPTERS.map((a) => {
+            const sessions = SESSIONS.filter((x) => x.adapter === a.code);
+            return `<tr><td class="provider">${esc(a.name)}<div class="faint mono">${a.code} · ${a.process}</div></td>
+              <td class="mono">${a.version}</td><td>${esc(a.description)}</td>
+              <td>${a.classes.map((c) => `<span class="badge">${c.toUpperCase()}</span>`).join(' ')}</td>
+              <td class="faint mono">${a.services.join(', ')}</td>
+              <td class="faint">${a.fields.length ? a.fields.map(([f]) => `<span class="mono">${f}</span>`).join(', ') : 'nothing'}</td>
+              <td class="num">${sessions.length}</td></tr>`;
+          }).join('')}</tbody></table>
+          <div class="card-body faint">A person configures a session of an adapter, then the feeds that come off it. Nobody adds an adapter from a screen.</div></div>`;
+}
+
+function renderSupplierPane() {
+    const sup = fn.supplier(supplierCode);
+    if (!sup) { location.search = '?'; return; }
+    const sessions = fn.sessionsOfSupplier(sup.code);
+    const feeds = sessions.reduce((n, x) => n + fn.feedsOfSession(x.name).length, 0);
+    document.querySelector('#pane').innerHTML = paneHeader(
+        `Connectivity / Suppliers / ${esc(sup.name)}`, esc(sup.name),
+        `${sup.kind} · contract ${esc(sup.contract)} · ${plural(sessions.length, 'session')} · ${plural(feeds, 'feed')}`,
+        `<a class="act primary" href="?add-session=1&supplier=${sup.code}">New session</a><a class="act" href="#">Contract</a>`)
+        + `<div class="card"><div class="card-head"><h2>Supplier</h2><p>the party we contract with and connect to</p></div>
+          <div class="card-body">${detail([
+            ['Code', `<span class="mono">${sup.code}</span>`],
+            ['Kind', sup.kind],
+            ['Contract', `<span class="mono">${esc(sup.contract)}</span>`],
+            ['Support', esc(sup.support)],
+            ['Description', esc(sup.description)],
+          ])}</div></div>
+          <div class="card"><div class="card-head"><h2>Sessions</h2><p>one configured adapter each; open one to see its feeds</p></div>
+          <table class="list"><thead><tr><th>Session</th><th>Adapter</th><th>Environment</th><th>Endpoint</th><th>Feeds</th><th>State</th><th class="acts"></th></tr></thead><tbody>${sessions.length ? sessions.map((x) => {
+            const a = fn.adapter(x.adapter);
+            return `<tr><td class="mono"><a href="?session=${x.name}">${x.name}</a></td><td>${a.code} <span class="faint">${a.version}</span></td>
+              <td>${x.environment}</td><td class="mono faint">${esc(x.endpoint)}</td>
+              <td class="num">${fn.feedsOfSession(x.name).length}</td><td>${fn.state(x)}</td>
+              <td class="acts"><a class="act" href="?session=${x.name}">Open</a></td></tr>`;
+          }).join('') : '<tr><td colspan="7" class="faint">No session yet.</td></tr>'}</tbody></table></div>`;
+}
+
+function renderPublisherPane() {
     const p = fn.publisher(publisherCode);
-    if (!p) { location.search = fn.href({ tab: 'publishers', publisher: null, pbtab: null }); return; }
-    hidePanels(null);
-    document.querySelector('#publisher-record').hidden = false;
-    document.querySelector('#pub-crumb').textContent = p.name;
-    document.querySelector('#pub-title').textContent = p.name;
-    document.querySelector('#pub-meta').innerHTML = `<span class="mono faint">${p.code}</span> · ${p.kind} · ${p.classes.map((c) => c.toUpperCase()).join(', ')} · ${p.terms.accepted ? `terms ${p.terms.version}` : '<span class="badge warn">not accepted</span>'}`;
-    document.querySelector('#pub-acts').innerHTML = `<a class="act" href="${fn.href({ 'add-feed': '1', publisher: p.code, tab: null, pbtab: null })}">Add a feed</a>
-        <a class="act" href="#">Terms <span class="faint">· design pending</span></a>`;
-    document.querySelectorAll('[data-pbtab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.pbtab === pbtab)));
-    const body = document.querySelector('#pub-body');
-    const detail = (rows) => `<div class="kv">${rows.map(([k, v]) => `<span class="k">${k}</span><span>${v}</span>`).join('')}</div>`;
+    if (!p) { location.search = '?'; return; }
     const feeds = fn.feedsOfPublisher(p.code);
-    const table = `<table class="list"><thead><tr><th>Feed</th><th>Supplier</th><th>Session</th><th>Service</th><th>Classes</th><th>Default</th><th class="acts"></th></tr></thead><tbody>${feeds.length ? feeds.map((f) => {
-        const s = fn.session(f.session); const sup = fn.supplier(s.supplier);
-        return `<tr><td class="mono">${f.name}</td><td>${fn.esc(sup.name)}</td><td class="mono">${f.session}</td><td>${f.service}</td>
-          <td>${f.classes.map((c) => c.toUpperCase()).join(', ')}</td><td>${f.isDefault ? 'yes' : '<span class="faint">no</span>'}</td>
-          <td class="acts"><a class="act" href="${fn.href({ feed: f.name, ftab: 'overview', publisher: null, pbtab: null })}">Open</a></td></tr>`;
-    }).join('') : '<tr><td colspan="7" class="faint">No feed for this publisher yet.</td></tr>'}</tbody></table>`;
-
-    if (pbtab === 'overview') {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Publisher</h2><p>the content owner and its terms</p></div><div class="card-body">${detail([
+    const suppliers = [...new Set(feeds.map((f) => fn.session(f.session).supplier))];
+    document.querySelector('#pane').innerHTML = paneHeader(
+        `Connectivity / Publishers / ${esc(p.name)}`, esc(p.name),
+        `${p.kind} · ${p.classes.map((c) => c.toUpperCase()).join(', ')} · ${plural(feeds.length, 'feed')}`,
+        `<a class="act primary" href="?add-feed=1&publisher=${p.code}">Add a feed</a><a class="act" href="#">Terms</a>`)
+        + `<div class="card"><div class="card-head"><h2>Publisher</h2><p>the content owner and its terms</p></div>
+          <div class="card-body">${detail([
             ['Code', `<span class="mono">${p.code}</span>`],
             ['Kind', p.kind],
             ['Asset classes', p.classes.map((c) => c.toUpperCase()).join(', ')],
             ['Terms', p.terms.accepted ? `accepted ${p.terms.version} by ${p.terms.who} · ${p.terms.at}` : 'not accepted'],
-            ['Feeds', String(feeds.length)],
-            ['Suppliers', [...new Set(feeds.map((f) => fn.session(f.session).supplier))].join(', ') || 'none'],
-        ])}</div></div><div class="card" style="margin-top:12px"><div class="card-head"><h2>Feeds</h2><p>every path to this publisher's values</p></div>${table}</div>`;
-    } else if (pbtab === 'feeds') {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Feeds</h2><p>one per supplier and class, or a test beside production</p>
-          <span class="filters"><a class="act" href="${fn.href({ 'add-feed': '1', publisher: p.code, pbtab: null, tab: null })}">Add a feed</a></span></div>${table}</div>`;
-    } else {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>History</h2><p>the publisher and its feeds</p></div><div class="card-body"><div class="timeline">
-          <div class="row"><span class="at">2026-10-01 09:00</span><span class="what"><b>Publisher created</b> · v1 · by super_admin</span></div>
-          <div class="row"><span class="at">2026-10-18 14:00</span><span class="what"><b>Terms accepted</b> · ${p.terms.version} · by ${p.terms.who}</span></div>
-        </div></div></div>`;
-    }
+            ['Suppliers', suppliers.map((id) => fn.supplier(id).name).join(', ') || 'none'],
+          ])}</div></div>
+          <div class="card"><div class="card-head"><h2>Feeds</h2><p>every path to this publisher's values</p></div>
+          <table class="list"><thead><tr><th>Feed</th><th>Supplier</th><th>Session</th><th>Service</th><th>Classes</th><th>Default</th><th class="acts"></th></tr></thead><tbody>${feeds.length ? feeds.map((f) => {
+            const s = fn.session(f.session); const sup = fn.supplier(s.supplier);
+            return `<tr><td class="mono"><a href="?feed=${f.name}">${f.name}</a></td><td>${esc(sup.name)}</td><td class="mono">${f.session}</td>
+              <td>${f.service}</td><td>${f.classes.map((c) => c.toUpperCase()).join(', ')}</td><td>${f.isDefault ? 'yes' : '<span class="faint">no</span>'}</td>
+              <td class="acts"><a class="act" href="?feed=${f.name}">Open</a></td></tr>`;
+          }).join('') : '<tr><td colspan="7" class="faint">No feed yet.</td></tr>'}</tbody></table></div>`;
 }
 
-function renderSupplierRecord() {
-    const sup = fn.supplier(supplierCode);
-    if (!sup) { location.search = fn.href({ tab: 'suppliers', supplier: null, sutab: null }); return; }
-    hidePanels(null);
-    document.querySelector('#supplier-record').hidden = false;
-    document.querySelector('#sup-crumb').textContent = sup.name;
-    document.querySelector('#sup-title').textContent = sup.name;
-    document.querySelector('#sup-meta').innerHTML = `<span class="mono faint">${sup.code}</span> · ${sup.kind} · contract ${fn.esc(sup.contract)}`;
-    document.querySelector('#sup-acts').innerHTML = `<a class="act" href="${fn.href({ 'add-session': '1', supplier: sup.code, tab: null, sutab: null })}">New session</a>
-        <a class="act" href="#">Contract <span class="faint">· design pending</span></a>`;
-    document.querySelectorAll('[data-sutab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.sutab === sutab)));
-    const body = document.querySelector('#sup-body');
-    const detail = (rows) => `<div class="kv">${rows.map(([k, v]) => `<span class="k">${k}</span><span>${v}</span>`).join('')}</div>`;
-    const sessions = fn.sessionsOfSupplier(sup.code);
-    const table = `<table class="list"><thead><tr><th>Session</th><th>Adapter</th><th>Environment</th><th>Endpoint</th><th>Feeds</th><th>State</th><th class="acts"></th></tr></thead><tbody>${sessions.length ? sessions.map((s) => {
-        const a = fn.adapter(s.adapter);
-        return `<tr><td class="mono">${s.name}</td><td>${a.code} <span class="faint">${a.version}</span></td><td>${s.environment}</td>
-          <td class="mono faint">${fn.esc(s.endpoint)}</td><td class="num">${fn.feedsOfSession(s.name).length}</td><td>${fn.state(s)}</td>
-          <td class="acts"><a class="act" href="${fn.href({ session: s.name, setab: 'overview', supplier: null, sutab: null })}">Open</a></td></tr>`;
-    }).join('') : '<tr><td colspan="7" class="faint">No session for this supplier yet.</td></tr>'}</tbody></table>`;
-
-    if (sutab === 'overview') {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Supplier</h2><p>the party we contract with and connect to</p></div><div class="card-body">${detail([
-            ['Code', `<span class="mono">${sup.code}</span>`],
-            ['Kind', sup.kind],
-            ['Contract', `<span class="mono">${fn.esc(sup.contract)}</span>`],
-            ['Support', fn.esc(sup.support)],
-            ['Description', fn.esc(sup.description)],
-            ['Sessions', String(sessions.length)],
-        ])}</div></div><div class="card" style="margin-top:12px"><div class="card-head"><h2>Sessions</h2><p>one configured adapter each</p></div>${table}</div>`;
-    } else if (sutab === 'sessions') {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Sessions</h2><p>test beside production, or one per region</p>
-          <span class="filters"><a class="act" href="${fn.href({ 'add-session': '1', supplier: sup.code, sutab: null, tab: null })}">New session</a></span></div>${table}</div>`;
-    } else {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>History</h2><p>the supplier and its sessions</p></div><div class="card-body"><div class="timeline">
-          <div class="row"><span class="at">2026-10-01 09:00</span><span class="what"><b>Supplier created</b> · v1 · by super_admin</span></div>
-          <div class="row"><span class="at">2026-10-20 11:12</span><span class="what"><b>Contract recorded</b> · ${fn.esc(sup.contract)} · by super_admin</span></div>
-        </div></div></div>`;
-    }
-}
-
-function renderSessionRecord() {
+function renderSessionPane() {
     const s = fn.session(sessionName);
-    if (!s) { location.search = fn.href({ tab: 'suppliers', session: null, setab: null }); return; }
+    if (!s) { location.search = '?'; return; }
     const sup = fn.supplier(s.supplier);
     const a = fn.adapter(s.adapter);
-    hidePanels(null);
-    document.querySelector('#session-record').hidden = false;
-    document.querySelector('#ses-crumb').textContent = s.name;
-    document.querySelector('#ses-title').textContent = s.name;
-    document.querySelector('#ses-meta').innerHTML = `<span class="mono faint">${s.supplier}</span> · ${a.code} ${a.version} · ${s.environment} · ${fn.state(s)}`;
-    document.querySelector('#ses-acts').innerHTML = `<a class="act" href="#">Edit <span class="faint">· design pending</span></a>
-        <a class="act" href="#">${s.enabled ? 'Stop' : 'Start'}</a>`;
-    document.querySelectorAll('[data-setab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.setab === setab)));
-    const body = document.querySelector('#ses-body');
-    const detail = (rows) => `<div class="kv">${rows.map(([k, v]) => `<span class="k">${k}</span><span>${v}</span>`).join('')}</div>`;
+    const tab = q.get('tab') ?? 'overview';
     const feeds = fn.feedsOfSession(s.name);
-
-    if (setab === 'overview') {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Session</h2><p>one configured adapter at ${fn.esc(sup.name)}</p></div><div class="card-body">${detail([
-            ['Name', `<span class="mono">${s.name}</span>`],
-            ['Supplier', `<a href="${fn.href({ supplier: sup.code, sutab: 'overview', session: null })}">${fn.esc(sup.name)}</a>`],
-            ['Adapter', `<span class="mono">${s.adapter}</span> ${a.version}`],
-            ['Environment', s.environment],
-            ['Endpoint', `<span class="mono">${fn.esc(s.endpoint)}</span>`],
-            ['Credential reference', `<span class="mono">${fn.esc(s.credential)}</span>`],
-            ['Services', s.services.join(', ')],
-            ['Enabled', s.enabled ? 'yes' : 'no'],
-            ['Description', fn.esc(s.description)],
-        ])}<div class="faint" style="margin-top:8px">The endpoint, the credential and the settings are entered once here. A feed adds only its publisher, service, key, scope and schedule.</div></div></div>
-        <div class="card" style="margin-top:12px"><div class="card-head"><h2>Settings</h2><p>the fields the adapter schema asks for</p></div>
-          <table class="list"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Value</th></tr></thead><tbody>${a.fields.length ? a.fields.map(([f, label, req, ex]) =>
-            `<tr><td class="mono">${f}</td><td>${fn.esc(label)}</td><td>${req ? 'yes' : 'no'}</td><td class="mono">${fn.esc(s.settings[f] ?? ex)}</td></tr>`).join('') : '<tr><td colspan="4" class="faint">This adapter needs nothing configured.</td></tr>'}</tbody></table></div>`;
-    } else if (setab === 'feeds') {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Feeds</h2><p>what comes off this session</p>
-          <span class="filters"><a class="act" href="${fn.href({ 'add-feed': '1', session: s.name, setab: null, tab: null })}">Add feed</a></span></div>
-          <table class="list"><thead><tr><th>Feed</th><th>Publisher</th><th>Service</th><th>Provider key</th><th>Scope</th><th>Schedule</th><th class="acts"></th></tr></thead><tbody>${feeds.length ? feeds.map((f) => {
+    const head = paneHeader(`Connectivity / Suppliers / ${esc(sup.name)} / ${s.name}`, s.name,
+        `<span class="mono faint">${s.supplier}</span> · ${a.code} ${a.version} · ${s.environment} · ${fn.state(s)}`,
+        `<a class="act primary" href="?add-feed=1&session=${s.name}">Add feed</a><a class="act" href="#">Edit</a><a class="act" href="#">${s.enabled ? 'Stop' : 'Start'}</a>`);
+    let body = '';
+    if (tab === 'feeds') {
+        body = `<div class="card"><div class="card-head"><h2>Feeds</h2><p>what comes off this session</p></div>
+          <table class="list"><thead><tr><th>Feed</th><th>Publisher</th><th>Service</th><th>Key</th><th>Scope</th><th>Schedule</th><th class="acts"></th></tr></thead><tbody>${feeds.length ? feeds.map((f) => {
             const p = fn.publisher(f.publisher);
-            return `<tr><td class="mono">${f.name}${f.isDefault ? ' <span class="badge">default</span>' : ''}</td><td>${fn.esc(p.name)}</td>
-              <td>${f.service}</td><td class="mono">${fn.esc(f.providerKey)}</td>
+            return `<tr><td class="mono"><a href="?feed=${f.name}">${f.name}</a>${f.isDefault ? ' <span class="badge">default</span>' : ''}</td>
+              <td>${esc(p.name)}</td><td>${f.service}</td><td class="mono">${esc(f.providerKey)}</td>
               <td>${f.scope.mode === 'all' ? 'all' : `${f.scope.items.length} selected`}</td>
-              <td class="faint">${f.schedule.enabled ? fn.esc(f.schedule.rhythm) : 'off'}</td>
-              <td class="acts"><a class="act" href="${fn.href({ feed: f.name, ftab: 'overview', session: null, setab: null })}">Open</a></td></tr>`;
-          }).join('') : '<tr><td colspan="7" class="faint">No feed comes off this session yet.</td></tr>'}</tbody></table></div>`;
-    } else if (setab === 'runtime') {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Runtime</h2><p>the session, as the service sees it</p></div><div class="card-body">${detail([
+              <td class="faint">${f.schedule.enabled ? esc(f.schedule.rhythm) : 'off'}</td>
+              <td class="acts"><a class="act" href="?feed=${f.name}">Open</a></td></tr>`;
+          }).join('') : '<tr><td colspan="7" class="faint">No feed yet.</td></tr>'}</tbody></table></div>`;
+    } else if (tab === 'runtime') {
+        body = `<div class="card"><div class="card-head"><h2>Runtime</h2><p>the session, as the service sees it</p></div><div class="card-body">${detail([
             ['Adapter id', `<span class="mono">${s.name}</span>`],
             ['State', s.runtime.state],
             ['Heartbeat', `<span class="mono">${s.runtime.hb}</span>`],
@@ -502,166 +454,166 @@ function renderSessionRecord() {
             ['Ids refused', String(s.runtime.refused)],
             ['Ids unknown', String(s.runtime.unknown)],
             ['Last tick', s.runtime.lastTick ?? 'never'],
-        ])}<div class="faint" style="margin-top:8px">Health is per session. A publisher that is late while the session serves is a data gap, and Public rates reads it.</div></div></div>`;
-    } else {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>History</h2><p>the shared timeline</p></div><div class="card-body"><div class="timeline">
+        ])}<div class="faint" style="margin-top:8px">Health is per session. A publisher that is late while the session serves is a data gap; Public rates reads it.</div></div></div>`;
+    } else if (tab === 'history') {
+        body = `<div class="card"><div class="card-head"><h2>History</h2><p>the shared timeline</p></div><div class="card-body"><div class="timeline">
           <div class="row"><span class="at">2026-10-01 09:00</span><span class="what"><b>Session created</b> · v1 · by super_admin</span></div>
-          <div class="row"><span class="at">2026-10-20 11:12</span><span class="what"><b>Endpoint changed</b> · ${fn.esc(s.endpoint)} · by super_admin</span></div>
-          <div class="row"><span class="at">2026-10-28 09:00</span><span class="what"><b>Credential rotated</b> · ${fn.esc(s.credential)} · by super_admin</span></div>
+          <div class="row"><span class="at">2026-10-20 11:12</span><span class="what"><b>Endpoint changed</b> · ${esc(s.endpoint)} · by super_admin</span></div>
+          <div class="row"><span class="at">2026-10-28 09:00</span><span class="what"><b>Credential rotated</b> · ${esc(s.credential)} · by super_admin</span></div>
         </div></div></div>`;
+    } else {
+        body = `<div class="card"><div class="card-head"><h2>Session</h2><p>the transport every feed off it shares</p></div><div class="card-body">${detail([
+            ['Name', `<span class="mono">${s.name}</span>`],
+            ['Supplier', `<a href="?supplier=${sup.code}">${esc(sup.name)}</a>`],
+            ['Adapter', `<span class="mono">${s.adapter}</span> ${a.version}`],
+            ['Environment', s.environment],
+            ['Endpoint', `<span class="mono">${esc(s.endpoint)}</span>`],
+            ['Credential reference', `<span class="mono">${esc(s.credential)}</span>`],
+            ['Services', s.services.join(', ')],
+            ['Enabled', s.enabled ? 'yes' : 'no'],
+        ])}</div></div>
+        <div class="card"><div class="card-head"><h2>Settings</h2><p>the fields the adapter schema asks for</p></div>
+          <table class="list"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Value</th></tr></thead><tbody>${a.fields.length ? a.fields.map(([f, label, req, ex]) =>
+            `<tr><td class="mono">${f}</td><td>${esc(label)}</td><td>${req ? 'yes' : 'no'}</td><td class="mono">${esc(s.settings[f] ?? ex)}</td></tr>`).join('') : '<tr><td colspan="4" class="faint">nothing</td></tr>'}</tbody></table></div>`;
     }
+    document.querySelector('#pane').innerHTML = head + tabLinks(`?session=${s.name}`, [['overview', 'Overview'], ['feeds', 'Feeds'], ['runtime', 'Runtime'], ['history', 'History']], tab) + body;
 }
 
-function renderFeedRecord() {
+function renderFeedPane() {
     const f = fn.feed(feedName);
-    if (!f) { location.search = fn.href({ tab: 'feeds', feed: null, ftab: null }); return; }
+    if (!f) { location.search = '?'; return; }
     const p = fn.publisher(f.publisher);
     const s = fn.session(f.session);
     const sup = fn.supplier(s.supplier);
     const a = fn.adapter(s.adapter);
-    hidePanels(null);
-    document.querySelector('#feed-record').hidden = false;
-    document.querySelector('#fd-crumb').textContent = f.name;
-    document.querySelector('#fd-title').textContent = f.name;
-    document.querySelector('#fd-meta').innerHTML = `<span class="mono faint">${f.publisher}</span> · ${f.session} (${a.code}) · ${f.service} · ${f.isDefault ? 'default' : 'not default'} · ${fn.feedState(f)}`;
-    document.querySelector('#fd-acts').innerHTML = `<a class="act" href="#">Edit <span class="faint">· design pending</span></a>
-        <a class="act" href="#">${f.schedule.enabled ? 'Disable schedule' : 'Enable schedule'}</a>`;
-    document.querySelectorAll('[data-ftab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.ftab === ftab)));
-    const body = document.querySelector('#fd-body');
-    const detail = (rows) => `<div class="kv">${rows.map(([k, v]) => `<span class="k">${k}</span><span>${v}</span>`).join('')}</div>`;
-
-    if (ftab === 'overview') {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Feed</h2><p>one publisher on one session and one service</p></div><div class="card-body">${detail([
-            ['Name', `<span class="mono">${f.name}</span>`],
-            ['Publisher', `${fn.esc(p.name)} <span class="faint mono">${p.code}</span>`],
-            ['Supplier', fn.esc(sup.name)],
-            ['Session', `<a class="mono" href="${fn.href({ session: f.session, setab: 'overview', feed: null })}">${f.session}</a> <span class="faint">${a.code} ${a.version} · ${s.environment}</span>`],
-            ['Service', f.service],
-            ['Provider key', `<span class="mono">${fn.esc(f.providerKey)}</span>`],
-            ['Default', f.isDefault ? 'yes' : 'no'],
-            ['Asset classes', f.classes.map((c) => c.toUpperCase()).join(', ')],
-            ['Description', fn.esc(f.description)],
-        ])}<div class="faint" style="margin-top:8px">The session owns the endpoint and the credential. The feed owns the publisher, the service, the provider key, the scope and the schedule.</div></div></div>`;
-    } else if (ftab === 'underlyings') {
-        const rows = f.scope.items.map((item) => `<tr><td class="mono">${fn.esc(item)}</td><td>${f.classes.map((c) => c.toUpperCase()).join(', ')}</td>
+    const tab = q.get('tab') ?? 'overview';
+    const head = paneHeader(`Connectivity / Suppliers / ${esc(sup.name)} / ${s.name} / ${f.name}`, f.name,
+        `<span class="mono faint">${f.publisher}</span> · ${f.session} · ${f.service} · ${f.isDefault ? 'default' : 'not default'} · ${fn.feedState(f)}`,
+        `<a class="act" href="#">Edit</a><a class="act" href="#">${f.schedule.enabled ? 'Disable schedule' : 'Enable schedule'}</a>`);
+    let body = '';
+    if (tab === 'underlyings') {
+        const rows = f.scope.items.map((item) => `<tr><td class="mono">${esc(item)}</td><td>${f.classes.map((c) => c.toUpperCase()).join(', ')}</td>
             <td>${f.scope.mode === 'all' ? '<span class="badge ok">all</span>' : '<span class="badge ok">selected</span>'}</td></tr>`).join('');
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Underlyings</h2><p>what this feed fetches for ${p.code}</p></div>
-          <table class="list"><thead><tr><th>Item</th><th>Class</th><th>Included</th></tr></thead><tbody>${rows || '<tr><td colspan="3" class="faint">No underlying is selected yet.</td></tr>'}</tbody></table>
-          <div class="card-body"><div class="faint">All items of a class, or a chosen set. No item belongs to two feeds of one publisher. Public rates reads this selection; it does not change it.</div></div></div>`;
-    } else if (ftab === 'schedule') {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Schedule</h2><p>the job that asks the session to fetch this feed</p></div><div class="card-body">${detail([
+        body = `<div class="card"><div class="card-head"><h2>Underlyings</h2><p>what this feed fetches for ${p.code}</p></div>
+          <table class="list"><thead><tr><th>Item</th><th>Class</th><th>Included</th></tr></thead><tbody>${rows || '<tr><td colspan="3" class="faint">No item yet.</td></tr>'}</tbody></table>
+          <div class="card-body faint">All items of a class, or a chosen set. No item belongs to two feeds of one publisher. Public rates reads this selection; it does not change it.</div></div>`;
+    } else if (tab === 'schedule') {
+        body = `<div class="card"><div class="card-head"><h2>Schedule</h2><p>the job that asks the session to fetch this feed</p></div><div class="card-body">${detail([
             ['Enabled', f.schedule.enabled ? 'yes' : 'no'],
-            ['Rhythm', fn.esc(f.schedule.rhythm)],
-            ['Scheduler job', `<span class="mono">${fn.esc(f.schedule.job)}</span>`],
+            ['Rhythm', esc(f.schedule.rhythm)],
+            ['Scheduler job', `<span class="mono">${esc(f.schedule.job)}</span>`],
             ['Next run', f.schedule.next],
-            ['Last run', fn.esc(f.schedule.last)],
+            ['Last run', esc(f.schedule.last)],
         ])}<div class="faint" style="margin-top:8px">The service decides the shape: end_of_day is scheduled, real_time is demand driven, historical is a backfill. The Fetch button in Public rates sends the same request now.</div></div></div>`;
-    } else if (ftab === 'routes') {
+    } else if (tab === 'routes') {
         const others = FEEDS.filter((x) => x.publisher === f.publisher && x.name !== f.name);
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>Routes</h2><p>the party that reads this feed, and for which class</p></div><div class="card-body">
-          ${f.routes.length ? `<table class="list"><thead><tr><th>Party</th><th>Publisher</th><th>Asset class</th><th>Feed</th><th>Since</th></tr></thead><tbody>${f.routes.map((r) =>
-            `<tr><td>${r.party}</td><td class="mono">${f.publisher}</td><td>${r.class.toUpperCase()}</td><td class="mono">${f.name}</td><td class="when">2026-10-28</td></tr>`).join('')}</tbody></table>`
+        body = `<div class="card"><div class="card-head"><h2>Routes</h2><p>the party that reads this feed, and for which class</p></div><div class="card-body">
+          ${f.routes.length ? `<table class="list"><thead><tr><th>Party</th><th>Publisher</th><th>Class</th><th>Feed</th></tr></thead><tbody>${f.routes.map((r) =>
+            `<tr><td>${r.party}</td><td class="mono">${f.publisher}</td><td>${r.class.toUpperCase()}</td><td class="mono">${f.name}</td></tr>`).join('')}</tbody></table>`
             : '<div class="notice">No party routes this feed. It is configured but not read.</div>'}
-          <div class="faint" style="margin-top:8px">A party routes one feed for each publisher and asset class. A supplier switch is one new route.</div></div></div>
-          ${others.length ? `<div class="card" style="margin-top:12px"><div class="card-head"><h2>Other feeds of ${p.code}</h2><p>another supplier, or another service</p></div>
+          <div class="faint" style="margin-top:8px">A party routes one feed for each publisher and class. A supplier switch is one new route.</div></div></div>
+          ${others.length ? `<div class="card"><div class="card-head"><h2>Other feeds of ${p.code}</h2><p>another supplier, or another service</p></div>
           <table class="list"><thead><tr><th>Feed</th><th>Supplier</th><th>Session</th><th>Service</th><th>Default</th><th class="acts"></th></tr></thead><tbody>${others.map((x) => {
             const xs = fn.session(x.session); const xsup = fn.supplier(xs.supplier);
-            return `<tr><td class="mono">${x.name}</td><td>${fn.esc(xsup.name)}</td><td class="mono">${x.session}</td><td>${x.service}</td>
-              <td>${x.isDefault ? 'yes' : '<span class="faint">no</span>'}</td>
-              <td class="acts"><a class="act" href="${fn.href({ feed: x.name, ftab: 'overview', tab: null })}">Open</a></td></tr>`;
+            return `<tr><td class="mono"><a href="?feed=${x.name}">${x.name}</a></td><td>${esc(xsup.name)}</td><td class="mono">${x.session}</td><td>${x.service}</td>
+              <td>${x.isDefault ? 'yes' : '<span class="faint">no</span>'}</td><td class="acts"><a class="act" href="?feed=${x.name}">Open</a></td></tr>`;
           }).join('')}</tbody></table></div>` : ''}`;
-    } else {
-        body.innerHTML = `<div class="card"><div class="card-head"><h2>History</h2><p>the shared timeline</p></div><div class="card-body"><div class="timeline">
+    } else if (tab === 'history') {
+        body = `<div class="card"><div class="card-head"><h2>History</h2><p>the shared timeline</p></div><div class="card-body"><div class="timeline">
           <div class="row"><span class="at">2026-10-01 09:00</span><span class="what"><b>Feed created</b> · on ${f.session} · by super_admin</span></div>
           <div class="row"><span class="at">2026-10-20 11:12</span><span class="what"><b>Scope set</b> · ${f.scope.mode === 'all' ? 'all items of the class' : `${f.scope.items.length} items`} · by super_admin</span></div>
-          <div class="row"><span class="at">2026-10-28 09:00</span><span class="what"><b>Schedule set</b> · ${fn.esc(f.schedule.rhythm)} · by super_admin</span></div>
+          <div class="row"><span class="at">2026-10-28 09:00</span><span class="what"><b>Schedule set</b> · ${esc(f.schedule.rhythm)} · by super_admin</span></div>
         </div></div></div>`;
+    } else {
+        body = `<div class="card"><div class="card-head"><h2>Feed</h2><p>one publisher on one session and one service</p></div><div class="card-body">${detail([
+            ['Name', `<span class="mono">${f.name}</span>`],
+            ['Publisher', `${esc(p.name)} <span class="faint mono">${p.code}</span>`],
+            ['Supplier', esc(sup.name)],
+            ['Session', `<a class="mono" href="?session=${f.session}">${f.session}</a> <span class="faint">${a.code} ${a.version} · ${s.environment}</span>`],
+            ['Service', f.service],
+            ['Provider key', `<span class="mono">${esc(f.providerKey)}</span>`],
+            ['Default', f.isDefault ? 'yes' : 'no'],
+            ['Asset classes', f.classes.map((c) => c.toUpperCase()).join(', ')],
+            ['Description', esc(f.description)],
+        ])}<div class="faint" style="margin-top:8px">The session owns the endpoint and the credential. The feed owns the publisher, the service, the key, the scope and the schedule.</div></div></div>`;
     }
+    document.querySelector('#pane').innerHTML = head + tabLinks(`?feed=${f.name}`, [['overview', 'Overview'], ['underlyings', 'Underlyings'], ['schedule', 'Schedule'], ['routes', 'Routes'], ['history', 'History']], tab) + body;
 }
 
 function renderAddSession() {
-    hidePanels(null);
-    document.querySelector('#add-session').hidden = false;
     const sup = fn.supplier(supplierCode) ?? SUPPLIERS[0];
     const a = ADAPTERS[0];
-    document.querySelector('#add-session-body').innerHTML = `<div class="card"><div class="card-head"><h2>1. Supplier and adapter</h2><p>the adapter list is the code the release provides</p></div>
-      <div class="card-body"><div class="fields">
-        <label>Supplier<select>${SUPPLIERS.map((x) => `<option ${x.code === sup.code ? 'selected' : ''}>${fn.esc(x.name)}</option>`).join('')}</select></label>
-        <label>Adapter<select>${ADAPTERS.map((x) => `<option>${x.code} ${x.version} — ${fn.esc(x.description)}</option>`).join('')}</select></label>
-        <label>Name<input value="frankfurter-eu"></label>
-        <label>Environment<select>${ENVS.map((e) => `<option>${e}</option>`).join('')}</select></label>
-      </div></div></div>
-      <div class="card" style="margin-top:12px"><div class="card-head"><h2>2. Endpoint, credential and settings</h2><p>entered once; every feed off this session shares them</p></div>
-      <div class="card-body"><div class="fields">
-        <label>Endpoint<input value="${fn.esc(a.fields[0]?.[3] ?? 'none')}"></label>
-        <label>Credential reference<input value="none"></label>
-        ${a.fields.slice(1).map(([f, label, , ex]) => `<label>${fn.esc(label)}<input value="${fn.esc(ex)}"></label>`).join('')}
-      </div><div class="faint">A secret is a reference. The value is encrypted at rest and never returned by a read.</div></div></div>
-      <div class="card" style="margin-top:12px"><div class="card-body"><div class="foot">
-        <a class="act" href="${fn.href({ tab: 'suppliers', 'add-session': null, supplier: null })}">Cancel</a>
-        <a class="act" href="#">Test connection <span class="faint">· design pending</span></a>
-        <a class="act primary" href="${fn.href({ tab: 'suppliers', 'add-session': null, supplier: null })}">Create session <span class="faint">· design pending</span></a>
-      </div></div></div>`;
+    document.querySelector('#pane').innerHTML = paneHeader(`Connectivity / Suppliers / ${esc(sup.name)} / New session`, 'New session',
+        'one configured adapter at a supplier: environment, endpoint, credential and settings',
+        `<a class="act" href="?supplier=${sup.code}">Cancel</a>`)
+        + `<div class="card"><div class="card-head"><h2>1. Supplier and adapter</h2><p>the adapter list is the code the release provides</p></div>
+          <div class="card-body"><div class="fields">
+            <label>Supplier<select>${SUPPLIERS.map((x) => `<option ${x.code === sup.code ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
+            <label>Adapter<select>${ADAPTERS.map((x) => `<option>${x.code} ${x.version} — ${esc(x.description)}</option>`).join('')}</select></label>
+            <label>Name<input value="frankfurter-eu"></label>
+            <label>Environment<select>${ENVS.map((e) => `<option>${e}</option>`).join('')}</select></label>
+          </div></div></div>
+          <div class="card"><div class="card-head"><h2>2. Endpoint, credential and settings</h2><p>entered once; every feed off this session shares them</p></div>
+          <div class="card-body"><div class="fields">
+            <label>Endpoint<input value="${esc(a.fields[0]?.[3] ?? 'none')}"></label>
+            <label>Credential reference<input value="none"></label>
+            ${a.fields.slice(1).map(([f, label, , ex]) => `<label>${esc(label)}<input value="${esc(ex)}"></label>`).join('')}
+          </div><div class="faint">A secret is a reference. The value is encrypted at rest and never returned by a read.</div></div></div>
+          <div class="card"><div class="card-body"><div class="foot">
+            <a class="act" href="?supplier=${sup.code}">Cancel</a>
+            <a class="act" href="#">Test connection <span class="faint">· design pending</span></a>
+            <a class="act primary" href="?supplier=${sup.code}">Create session <span class="faint">· design pending</span></a>
+          </div></div></div>`;
 }
 
 function renderAddFeed() {
-    hidePanels(null);
-    document.querySelector('#add-feed').hidden = false;
     const p = fn.publisher(publisherCode) ?? PUBLISHERS[0];
-    const fits = SESSIONS.filter((s) => s.enabled && fn.adapter(s.adapter).classes.some((c) => p.classes.includes(c)));
-    document.querySelector('#add-feed-body').innerHTML = `<div class="card"><div class="card-head"><h2>1. Publisher, session and service</h2><p>the session is the supplier's; the feed is ours</p></div>
-      <div class="card-body"><div class="fields">
-        <label>Publisher<select>${PUBLISHERS.map((x) => `<option ${x.code === p.code ? 'selected' : ''}>${fn.esc(x.name)}</option>`).join('')}</select></label>
-        <label>Session<select>${fits.map((s) => `<option>${s.name} — ${s.supplier} · ${s.environment}</option>`).join('')}</select></label>
-        <label>Service<select>${SERVICES.map((s) => `<option>${s}</option>`).join('')}</select></label>
-        <label>Provider key<input value="${p.code.toUpperCase()}"></label>
-        <label>Default<select><option>No</option><option>Yes</option></select></label>
-      </div><div class="faint">Only an enabled session whose adapter fits the publisher's classes is offered.</div></div></div>
-      <div class="card" style="margin-top:12px"><div class="card-head"><h2>2. Underlyings</h2><p>what this feed fetches</p></div>
-      <div class="card-body"><div class="fields">
-        <label>Scope<select><option>All items of the class</option><option>A chosen set</option></select></label>
-        <label>Asset class<select>${p.classes.map((c) => `<option>${c.toUpperCase()}</option>`).join('')}</select></label>
-      </div><div class="faint">No item may belong to two feeds of ${p.code}.</div></div></div>
-      <div class="card" style="margin-top:12px"><div class="card-head"><h2>3. Schedule and route</h2><p>when to fetch, and which party reads it</p></div>
-      <div class="card-body"><div class="fields">
-        <label>Rhythm<select><option>Daily at 16:00 CET</option><option>Continuous, demand driven</option><option>On demand</option></select></label>
-        <label>Party<select><option>System Party</option></select></label>
-        <label>Asset class<select>${p.classes.map((c) => `<option>${c.toUpperCase()}</option>`).join('')}</select></label>
-      </div><div class="faint">The scheduler job is created for the feed. The route is one per party, publisher and class.</div></div></div>
-      <div class="card" style="margin-top:12px"><div class="card-body"><div class="foot">
-        <a class="act" href="${fn.href({ tab: 'feeds', 'add-feed': null, publisher: null })}">Cancel</a>
-        <a class="act primary" href="${fn.href({ tab: 'feeds', 'add-feed': null, publisher: null })}">Create feed <span class="faint">· design pending</span></a>
-      </div></div></div>`;
+    const fits = SESSIONS.filter((x) => x.enabled && fn.adapter(x.adapter).classes.some((c) => p.classes.includes(c)));
+    document.querySelector('#pane').innerHTML = paneHeader(`Connectivity / Publishers / ${esc(p.name)} / New feed`, 'New feed',
+        'a publisher, a session, a service, a scope and a schedule',
+        `<a class="act" href="?publisher=${p.code}">Cancel</a>`)
+        + `<div class="card"><div class="card-head"><h2>1. Publisher, session and service</h2><p>the session is the supplier's; the feed is ours</p></div>
+          <div class="card-body"><div class="fields">
+            <label>Publisher<select>${PUBLISHERS.map((x) => `<option ${x.code === p.code ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
+            <label>Session<select>${fits.map((x) => `<option ${x.name === sessionName ? 'selected' : ''}>${x.name} — ${x.supplier} · ${x.environment}</option>`).join('')}</select></label>
+            <label>Service<select>${SERVICES.map((x) => `<option>${x}</option>`).join('')}</select></label>
+            <label>Provider key<input value="${p.code.toUpperCase()}"></label>
+            <label>Default<select><option>No</option><option>Yes</option></select></label>
+          </div><div class="faint">Only an enabled session whose adapter fits the publisher's classes is offered.</div></div></div>
+          <div class="card"><div class="card-head"><h2>2. Underlyings</h2><p>what this feed fetches</p></div>
+          <div class="card-body"><div class="fields">
+            <label>Scope<select><option>All items of the class</option><option>A chosen set</option></select></label>
+            <label>Asset class<select>${p.classes.map((c) => `<option>${c.toUpperCase()}</option>`).join('')}</select></label>
+          </div><div class="faint">No item may belong to two feeds of ${p.code}.</div></div></div>
+          <div class="card"><div class="card-head"><h2>3. Schedule and route</h2><p>when to fetch, and which party reads it</p></div>
+          <div class="card-body"><div class="fields">
+            <label>Rhythm<select><option>Daily at 16:00 CET</option><option>Continuous, demand driven</option><option>On demand</option></select></label>
+            <label>Party<select><option>System Party</option></select></label>
+            <label>Asset class<select>${p.classes.map((c) => `<option>${c.toUpperCase()}</option>`).join('')}</select></label>
+          </div><div class="faint">The scheduler job is created for the feed. The route is one per party, publisher and class.</div></div></div>
+          <div class="card"><div class="card-body"><div class="foot">
+            <a class="act" href="?publisher=${p.code}">Cancel</a>
+            <a class="act primary" href="?publisher=${p.code}">Create feed <span class="faint">· design pending</span></a>
+          </div></div></div>`;
 }
 
 function wire() {
-    document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => {
-        location.search = fn.href({ tab: b.dataset.tab, publisher: null, pbtab: null, supplier: null, sutab: null,
-            session: null, setab: null, feed: null, ftab: null, 'add-session': null, 'add-feed': null });
-    }));
-    document.querySelectorAll('[data-pbtab]').forEach((b) => b.addEventListener('click', () => {
-        location.search = fn.href({ publisher: publisherCode, pbtab: b.dataset.pbtab, tab: null, 'add-feed': null });
-    }));
-    document.querySelectorAll('[data-sutab]').forEach((b) => b.addEventListener('click', () => {
-        location.search = fn.href({ supplier: supplierCode, sutab: b.dataset.sutab, tab: null, 'add-session': null });
-    }));
-    document.querySelectorAll('[data-setab]').forEach((b) => b.addEventListener('click', () => {
-        location.search = fn.href({ session: sessionName, setab: b.dataset.setab, tab: null, 'add-feed': null });
-    }));
-    document.querySelectorAll('[data-ftab]').forEach((b) => b.addEventListener('click', () => {
-        location.search = fn.href({ feed: feedName, ftab: b.dataset.ftab, tab: null });
-    }));
+    document.querySelector('#find').addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        document.querySelectorAll('#tree > details, #pubtree > details').forEach((d) => {
+            d.style.display = d.textContent.toLowerCase().includes(term) ? '' : 'none';
+        });
+    });
     document.querySelector('#refresh').addEventListener('click', () => location.reload());
 }
 
+renderTree();
 if (addSession) renderAddSession();
 else if (addFeed) renderAddFeed();
-else if (feedName) renderFeedRecord();
-else if (sessionName) renderSessionRecord();
-else if (supplierCode) renderSupplierRecord();
-else if (publisherCode) renderPublisherRecord();
-else if (tab === 'suppliers') renderTree();
-else if (tab === 'adapters') renderAdapters();
-else if (tab === 'feeds') renderFeeds();
-else renderPublishers();
+else if (feedName) renderFeedPane();
+else if (sessionName) renderSessionPane();
+else if (supplierCode) renderSupplierPane();
+else if (publisherCode) renderPublisherPane();
+else if (q.get('view') === 'adapters') renderAdaptersPane();
+else renderDefault();
 wire();

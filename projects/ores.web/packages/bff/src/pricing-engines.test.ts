@@ -1241,6 +1241,41 @@ describe('pricing engine routes', () => {
             });
         });
 
+        it('refuses a document larger than the import reads, by its size', async () => {
+            const { server, sessionId, calls } = buildTestServer(reads);
+            // The import reads at most four megabytes, and the schema says so
+            // before the service is asked.
+            const oversized = 'x'.repeat(4 * 1024 * 1024 + 1);
+            const response = await send(
+                server,
+                sessionId,
+                'POST',
+                '/api/reporting/pricing-engines/ore-import/preview',
+                { content: oversized },
+            );
+            expect(response.statusCode).toBe(400);
+            expect(response.json().message).toContain(
+                'An ORE pricing engines document may be at most 4194304 bytes.',
+            );
+            expect(calls.find((call) => call.subject === PREVIEW_SUBJECT)).toBeUndefined();
+        });
+
+        it('refuses an import of a document larger than the import reads', async () => {
+            const { server, sessionId, calls } = buildTestServer(reads);
+            const response = await send(
+                server,
+                sessionId,
+                'POST',
+                '/api/reporting/pricing-engines/ore-import',
+                {
+                    content: 'x'.repeat(4 * 1024 * 1024 + 1),
+                    intent: { reason_code: 'common.correction', commentary: '' },
+                },
+            );
+            expect(response.statusCode).toBe(400);
+            expect(calls.find((call) => call.subject === IMPORT_SUBJECT)).toBeUndefined();
+        });
+
         it('refuses a preview with no file', async () => {
             const { server, sessionId } = buildTestServer(reads);
             const response = await send(

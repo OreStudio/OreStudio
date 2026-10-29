@@ -25,6 +25,7 @@
 #include "ores.ore.core/domain/pricing_engines_import.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.service/messaging/nats_call.hpp"
+#include "ores.ore.service/messaging/pricing_engines_import_run.hpp"
 #include "ores.reporting.api/domain/file_type_lookup.hpp"
 #include "ores.reporting.api/messaging/configuration_protocol.hpp"
 #include "ores.reporting.api/messaging/file_type_protocol.hpp"
@@ -129,43 +130,24 @@ read_target(ores::nats::service::nats_client& owners,
         nats_call(owners,
                   an::get_pricing_engines_document_request{.configuration_id = configuration_id},
                   error);
-    if (!read || !read->success) {
+    if (!read) {
+        // There is no answer to read a sentence from: the call failed.
         if (error.empty())
-            error = read->message.empty() ? "The pricing engine configuration could not be read." :
-                                            read->message;
+            error = "The pricing engine configuration could not be read.";
+        return {};
+    }
+    if (!read->success) {
+        error = read->message.empty() ? "The pricing engine configuration could not be read." :
+                                        read->message;
         return {};
     }
     return read->document;
 }
 
-/**
- * @brief The key each product is named by in the review, so a refusal of one
- * row is a refusal of a row the person can find.
- */
-std::map<boost::uuids::uuid, std::string>
-keys_of(const ores::analytics::messaging::pricing_engines_document& document) {
-    std::map<boost::uuids::uuid, std::string> keys;
-    std::vector<const ores::analytics::domain::pricing_model_product*> products;
-    for (const auto& product : document.products)
-        products.push_back(&product);
-    std::ranges::sort(products, [](const auto* lhs, const auto* rhs) {
-        if (lhs->position != rhs->position)
-            return lhs->position < rhs->position;
-        return lhs->id < rhs->id;
-    });
-    std::map<std::string, int> counts;
-    for (const auto* product : products) {
-        const auto& type_code = product->pricing_engine_type_code;
-        const auto occurrence = counts[type_code]++;
-        keys[product->id] = std::format("{}#{}", type_code, occurrence);
-    }
-    return keys;
-}
-
 /** A reporting configuration, registered for a document the import creates. */
-std::string create_header(ores::nats::service::nats_client& owners,
-                          const std::string& name,
-                          const ores::utility::domain::change_intent& intent) {
+boost::uuids::uuid create_header(ores::nats::service::nats_client& owners,
+                                 const std::string& name,
+                                 const ores::utility::domain::change_intent& intent) {
     static thread_local ores::utility::uuid::uuid_v7_generator generator;
     const auto id = generator();
     rp::configuration_change change;
@@ -184,28 +166,31 @@ std::string create_header(ores::nats::service::nats_client& owners,
         throw std::runtime_error(reply->result.message.empty() ?
                                      "the configuration could not be registered" :
                                      reply->result.message);
-    return boost::uuids::to_string(id);
+    return id;
 }
 
-/** Undoes the header a failed import created, so a refusal leaves nothing. */
-void remove_header(ores::nats::service::nats_client& owners,
+/**
+ * @brief Undoes the header a failed import created, so a refusal leaves nothing.
+ *
+ * @return Whether the header was removed. A rollback that fails leaves a
+ * configuration nobody asked for, so the caller says so rather than swallowing it.
+ */
+bool remove_header(ores::nats::service::nats_client& owners,
                    const std::string& name,
-                   const ores::utility::domain::change_intent& intent) {
-    std::string error;
-    nats_call(
+                   const ores::utility::domain::change_intent& intent,
+                   std::string& error) {
+    const auto reply = nats_call(
         owners,
         rp::delete_configuration_request{.removal = {.key = {.name = name}}, .intent = intent},
         error);
-}
-
-/// The identifier a request states, or a refusal naming it. The unit is built
-/// with other units of the service, so the name carries this file's own word.
-boost::uuids::uuid configuration_id_of(const std::string& text) {
-    try {
-        return boost::uuids::string_generator()(text);
-    } catch (const std::exception&) {
-        throw std::invalid_argument(std::format("'{}' is not an identifier.", text));
+    if (!reply)
+        return false;
+    if (reply->result.outcome != ores::utility::domain::outcome::ok) {
+        error = reply->result.message.empty() ? "the configuration could not be removed" :
+                                                reply->result.message;
+        return false;
     }
+    return true;
 }
 
 } // namespace
@@ -400,141 +385,56 @@ void pricing_engines_handler::import_pricing_engines(ores::nats::message msg) {
         return;
     }
 
-    import_pricing_engines_response response;
-    const auto file = ores::ore::domain::pricing_engines_import::parse(req->content);
-    if (!file.ok()) {
-        BOOST_LOG_SEV(lg(), info) << "pricing engines import refused | corr=" << correlation_id
-                                  << " " << file.refusal;
-        response.message = file.refusal;
-        reply(nats_, msg, response);
-        return;
-    }
+    auto owners_client = outbound_nats_.with_delegation(ores::nats::service::extract_bearer(msg))
+                             .with_correlation_id(correlation_id);
+    const auto owners = [&]() -> ores::nats::service::nats_client& {
+        return owners_client;
+    };
 
-    const ores::utility::domain::change_intent intent{
-        .reason_code = req->reason_code.empty() ? "system.import" : req->reason_code,
-        .commentary = req->commentary.empty() ? "Imported from an ORE pricing engines document" :
-                                                req->commentary};
-    std::string created_header;
+    // The steps of the import and their order live in one function, so the two
+    // things a review of this operation found — a header registered before a read
+    // that can refuse, and a header left behind when the run threw — are settled
+    // where a test can drive them. This wires each step to its message.
+    const pricing_engines_import_operations operations{
+        .known_types = [&] { return known_product_types(owners()); },
+        .read_target = [&](const std::string& id,
+                           std::string& error) { return read_target(owners(), id, error); },
+        .register_configuration =
+            [&](const std::string& name, const ores::utility::domain::change_intent& intent) {
+                return create_header(owners(), name, intent);
+            },
+        .remove_configuration =
+            [&](const std::string& name, const ores::utility::domain::change_intent& intent) {
+                std::string error;
+                if (!remove_header(owners(), name, intent, error))
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "pricing engines import left a configuration behind | corr="
+                        << correlation_id << " name=" << name << " " << error;
+            },
+        .save =
+            [&](ores::analytics::messaging::pricing_engines_document document) {
+                std::string error;
+                const auto saved = nats_call(
+                    owners(),
+                    an::save_pricing_engines_document_request{.document = std::move(document)},
+                    error);
+                if (!saved)
+                    return an::save_pricing_engines_document_response{
+                        .message = error.empty() ? "The configuration could not be saved." : error};
+                return *saved;
+            },
+    };
+
     try {
-        auto owners = outbound_nats_.with_delegation(ores::nats::service::extract_bearer(msg))
-                          .with_correlation_id(correlation_id);
-
-        // The target: an existing configuration, or one registered here first.
-        // The screen's own create writes the reporting header and then the
-        // document, and both clients of this operation need that order, so the
-        // order lives here rather than in each of them.
-        std::string read_error;
-        auto target = read_target(owners, req->target_configuration_id, read_error);
-        if (!read_error.empty()) {
-            response.message = read_error;
-            reply(nats_, msg, response);
-            return;
-        }
-        std::string configuration_id;
-        std::string name;
-        std::string variant;
-        if (!req->target_configuration_id.empty()) {
-            configuration_id = req->target_configuration_id;
-            name = target.config.name;
-            variant = target.config.config_variant;
-        } else {
-            name = req->new_configuration_name;
-            variant = req->new_configuration_variant;
-            if (name.empty()) {
-                response.message = "A new configuration needs a name.";
-                reply(nats_, msg, response);
-                return;
-            }
-            configuration_id = create_header(owners, name, intent);
-            created_header = name;
-        }
-
-        const auto difference = ores::ore::domain::pricing_engines_import::difference(
-            file, target, known_product_types(owners));
-        auto document =
-            ores::ore::domain::pricing_engines_import::merge(file, target, req->removals_kept);
-
-        const auto configuration = configuration_id_of(configuration_id);
-        if (target.config.name.empty())
-            document.config.id = file.document.config.id;
-        document.config.name = name;
-        document.config.config_variant = variant;
-        document.config.configuration_id = configuration;
-        // The document save carries no reason of its own, so the reason travels
-        // on the rows, which the save keeps when a row names one.
-        for (auto& row : document.products) {
-            row.change_reason_code = intent.reason_code;
-            row.change_commentary = intent.commentary;
-        }
-        for (auto& row : document.parameters) {
-            row.change_reason_code = intent.reason_code;
-            row.change_commentary = intent.commentary;
-        }
-        document.config.change_reason_code = intent.reason_code;
-        document.config.change_commentary = intent.commentary;
-
-        const auto keys = keys_of(document);
-        std::string error;
-        const auto saved =
-            nats_call(owners,
-                      an::save_pricing_engines_document_request{.document = std::move(document)},
-                      error);
-        if (!saved || !error.empty()) {
-            if (!created_header.empty())
-                remove_header(owners, created_header, intent);
-            response.message = error.empty() ? "The configuration could not be saved." : error;
-            reply(nats_, msg, response);
-            return;
-        }
-        if (!saved->success) {
-            if (!created_header.empty())
-                remove_header(owners, created_header, intent);
-            response.message =
-                saved->message.empty() ? "The configuration was refused." : saved->message;
-            for (const auto& problem : saved->problems) {
-                std::string key;
-                if (!problem.product_id.empty()) {
-                    for (const auto& [id, product_key] : keys)
-                        if (boost::uuids::to_string(id) == problem.product_id)
-                            key = problem.parameter_name.empty() ?
-                                      product_key :
-                                      std::format("{}/{}/{}",
-                                                  product_key,
-                                                  problem.parameter_scope,
-                                                  problem.parameter_name);
-                }
-                response.errors.push_back({.key = key, .message = problem.message});
-            }
-            BOOST_LOG_SEV(lg(), warn) << "pricing engines import refused | corr=" << correlation_id
-                                      << " " << response.message;
-            reply(nats_, msg, response);
-            return;
-        }
-
-        response.success = true;
-        response.configuration_id = saved->id;
-        response.configuration_name = name;
-        response.added = difference.added;
-        response.changed = difference.changed;
-        for (const auto& row : difference.rows) {
-            if (row.change != "removed")
-                continue;
-            if (std::ranges::find(req->removals_kept, row.key) != req->removals_kept.end())
-                ++response.kept;
-            else
-                ++response.deleted;
-        }
-        response.message = std::format("Imported: {} added, {} changed, {} deleted, {} kept.",
-                                       response.added,
-                                       response.changed,
-                                       response.deleted,
-                                       response.kept);
-        BOOST_LOG_SEV(lg(), info) << "pricing engines imported | corr=" << correlation_id << " "
-                                  << response.message;
+        const auto response = run_pricing_engines_import(operations, *req);
+        if (response.success)
+            BOOST_LOG_SEV(lg(), info)
+                << "pricing engines imported | corr=" << correlation_id << " " << response.message;
         reply(nats_, msg, response);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "pricing engines import refused | corr=" << correlation_id
                                   << " " << e.what();
+        import_pricing_engines_response response;
         response.message = e.what();
         reply(nats_, msg, response);
     }

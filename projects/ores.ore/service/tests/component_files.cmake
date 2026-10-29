@@ -21,4 +21,5 @@
 # To modify, update the template and regenerate.
 set(files
     "main.cpp"
+    "pricing_engines_import_run_tests.cpp"
 )

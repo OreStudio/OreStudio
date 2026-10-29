@@ -18,12 +18,12 @@
  *
  */
 #include "ores.marketdata.service/app/curve_withdrawal.hpp"
-#include "ores.marketdata.service/app/curve_notices.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
+#include "ores.marketdata.service/app/curve_notices.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/string_generator.hpp>

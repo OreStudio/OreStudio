@@ -191,7 +191,9 @@ message nats_client::do_authenticated_request(std::string_view subject,
          */
         struct renewing_guard {
             bool& flag;
-            ~renewing_guard() { flag = false; }
+            ~renewing_guard() {
+                flag = false;
+            }
         } guard{renewing_};
         renewing_ = true;
         if (session_renewer_() && auth_)

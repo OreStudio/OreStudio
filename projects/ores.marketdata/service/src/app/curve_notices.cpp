@@ -24,8 +24,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.refdata.core/repository/party_repository.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <set>
 #include <stdexcept>
@@ -66,8 +66,7 @@ std::string escape_path(const std::string& value) {
     out.reserve(value.size());
     for (const unsigned char c : value) {
         const bool plain = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
-                           (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '.' ||
-                           c == '~';
+                           (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '.' || c == '~';
         if (plain) {
             out.push_back(static_cast<char>(c));
         } else {
@@ -87,8 +86,7 @@ std::string escape_path(const std::string& value) {
  * it is escaped once here. The bell prefixes the slash, so the route is stated
  * without one.
  */
-std::string curve_name_of(const ores::database::context& ctx,
-                          const domain::curve_publish& record) {
+std::string curve_name_of(const ores::database::context& ctx, const domain::curve_publish& record) {
     repository::market_series_repository repo;
     const auto series = repo.read_latest(ctx, boost::uuids::to_string(record.output_series_id));
     return series.empty() ? "series " + boost::uuids::to_string(record.output_series_id) :
@@ -190,21 +188,20 @@ void raise_notice(const ores::database::context& ctx,
             // states. The read still states the new instant.
             return;
 
-        ores::inbox::messaging::raise_notification_request n{
-            .kind_code = std::string(kind_code),
-            .link_route = link_id,
-            .link_id = "",
-            .arguments = std::move(arguments),
-            .account_ids = {},
-            .audience_permission_code = ""};
+        ores::inbox::messaging::raise_notification_request n{.kind_code = std::string(kind_code),
+                                                             .link_route = link_id,
+                                                             .link_id = "",
+                                                             .arguments = std::move(arguments),
+                                                             .account_ids = {},
+                                                             .audience_permission_code = ""};
         const auto result = center.raise(n, readers, *raiser);
-        BOOST_LOG_SEV(notices_lg(), info) << "Raised " << kind_code << " notice "
-                                          << result.notification_id << " for "
-                                          << result.recipient_count << " reader(s)";
+        BOOST_LOG_SEV(notices_lg(), info)
+            << "Raised " << kind_code << " notice " << result.notification_id << " for "
+            << result.recipient_count << " reader(s)";
     } catch (const std::exception& e) {
         // Telling is never the act: the set moved, and the record says so.
-        BOOST_LOG_SEV(notices_lg(), warn) << "A " << kind_code
-                                          << " notice was not raised: " << e.what();
+        BOOST_LOG_SEV(notices_lg(), warn)
+            << "A " << kind_code << " notice was not raised: " << e.what();
     }
 }
 

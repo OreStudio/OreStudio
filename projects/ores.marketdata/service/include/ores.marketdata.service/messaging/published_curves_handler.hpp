@@ -128,9 +128,8 @@ public:
             log_handler_entry(published_curves_handler_lg(), msg);
         // The withdrawal is the maker's act, and the maker is the permission the
         // withdrawal kind names.
-        const auto req_ctx = context_of(msg,
-                                        service::app::raise_permission_of(
-                                            ctx_, service::app::curve_withdrawal_kind_code));
+        const auto req_ctx = context_of(
+            msg, service::app::raise_permission_of(ctx_, service::app::curve_withdrawal_kind_code));
         if (!req_ctx)
             return;
         auto req = decode<withdraw_curve_request>(msg);

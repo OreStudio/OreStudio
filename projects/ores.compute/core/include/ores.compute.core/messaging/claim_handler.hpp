@@ -202,14 +202,12 @@ private:
         const auto output_path = ores::compute::net::compute_storage::output_path(result_id);
         const auto results_path = ores::compute::net::compute_storage::results_path(result_id);
         const auto logs_path = ores::compute::net::compute_storage::logs_path(result_id);
-        const auto grants =
-            package ?
-                storage_grants_for(package->package_uri,
-                                   workunit->input_uri,
-                                   output_path,
-                                   results_path,
-                                   logs_path) :
-                std::nullopt;
+        const auto grants = package ? storage_grants_for(package->package_uri,
+                                                         workunit->input_uri,
+                                                         output_path,
+                                                         results_path,
+                                                         logs_path) :
+                                      std::nullopt;
         if (!grants) {
             // No node of this platform can ever run it. End it as a failure that a person
             // sees, and take it out of the queue, so it cannot hold the head of the line.

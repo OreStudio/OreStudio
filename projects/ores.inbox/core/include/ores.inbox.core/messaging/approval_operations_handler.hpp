@@ -172,12 +172,11 @@ public:
                 reply(nats_,
                       msg,
                       raise_approval_request_response{
-                          .result = approval_result(outcome::denied,
-                                                    "not_the_maker",
-                                                    "Raising a " + req->kind_code +
-                                                        " request needs the " +
-                                                        *kind->raise_permission_code +
-                                                        " permission.")});
+                          .result = approval_result(
+                              outcome::denied,
+                              "not_the_maker",
+                              "Raising a " + req->kind_code + " request needs the " +
+                                  *kind->raise_permission_code + " permission.")});
                 return;
             }
             if (req->reason.empty()) {

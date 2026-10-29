@@ -140,11 +140,8 @@ const std::set<std::string> unbound = {"simulation",
 }
 
 /*
- * This is the one case in the codec's suite that opens a session, and it does so
- * on purpose: it guards the ORE format coverage, by checking that every
- * configuration type the codec carries names a root element the seed states.
- * The seed belongs to reporting, so the case reads reporting's rows; the
- * roundtrips that write them run in reporting's own suite.
+ * The one case in this suite that opens a session: it guards the ORE format
+ * coverage, which is the codec's, not a component's rows.
  */
 
 TEST_CASE("every seeded configuration type the codec carries names its root element",

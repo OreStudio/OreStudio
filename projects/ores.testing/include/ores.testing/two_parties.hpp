@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TESTING_PARTY_DATABASE_FIXTURE_HPP
-#define ORES_TESTING_PARTY_DATABASE_FIXTURE_HPP
+#ifndef ORES_TESTING_TWO_PARTIES_HPP
+#define ORES_TESTING_TWO_PARTIES_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
@@ -37,8 +37,6 @@ namespace ores::testing {
  * session only the rows of the parties it may see. Each context sees its own
  * party alone, so a row one writes is invisible to the other.
  *
- * It lives here rather than in one suite because the roundtrips that need it
- * run in the suites of the components they exercise.
  */
 struct two_parties {
     boost::uuids::uuid a;

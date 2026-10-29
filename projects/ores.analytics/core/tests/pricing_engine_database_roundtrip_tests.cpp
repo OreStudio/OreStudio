@@ -25,10 +25,10 @@
 #include "ores.ore.core/xml/generated/pricing_engines.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.platform/filesystem/file.hpp"
-#include "ores.testing/party_database_fixture.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.testing/test_files.hpp"
+#include "ores.testing/two_parties.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <algorithm>
@@ -54,6 +54,7 @@ using ores::testing::scoped_database_helper;
 TEST_CASE("pricing_engines_roundtrip_through_the_database",
           "[pricingengines][database][roundtrip]") {
     auto lg(ores::logging::make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "pricing_engines_roundtrip_through_the_database";
     scoped_database_helper h;
 
     // The largest document in the corpus, so the path carries eighty products,
@@ -100,6 +101,8 @@ TEST_CASE("pricing_engines_roundtrip_through_the_database",
 
 TEST_CASE("a party sees only its own pricing engine configuration",
           "[pricingengines][database][roundtrip]") {
+    auto lg(ores::logging::make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "a party sees only its own pricing engine configuration";
     scoped_database_helper h;
     auto parties = ores::testing::make_two_parties(h);
     const auto original = pricing_engine_projection::read(file::read_content(

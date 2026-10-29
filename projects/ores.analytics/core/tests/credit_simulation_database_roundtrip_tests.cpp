@@ -26,10 +26,10 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/credit_simulation_projection.hpp"
 #include "ores.platform/filesystem/file.hpp"
-#include "ores.testing/party_database_fixture.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.testing/test_files.hpp"
+#include "ores.testing/two_parties.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -139,6 +139,8 @@ TEST_CASE("credit_simulation_roundtrip_through_the_database",
 
 TEST_CASE("a party sees only its own credit simulation configuration",
           "[creditsimulation][database][roundtrip]") {
+    auto lg(ores::logging::make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "a party sees only its own credit simulation configuration";
     scoped_database_helper h;
     auto parties = ores::testing::make_two_parties(h);
     const auto original =

@@ -32,6 +32,7 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/conventions_rows.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/database_helper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/database_lifecycle_listener.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/export.hpp"
@@ -49,6 +50,9 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/scoped_environment_override.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/series_classification_rule_seed.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/sql_values_rows.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/stamp_audit.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/test_database_manager.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/test_files.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/test_timeout_listener.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/two_parties.hpp"
 )

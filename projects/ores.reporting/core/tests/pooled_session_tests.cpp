@@ -18,9 +18,11 @@
  *
  */
 #include "ores.database/domain/party_scope.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.reporting.core/repository/configuration_repository.hpp"
-#include "ores.testing/party_database_fixture.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.testing/stamp_audit.hpp"
+#include "ores.testing/two_parties.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -37,28 +39,29 @@
 
 namespace {
 
-ores::reporting::domain::configuration make_header(const boost::uuids::uuid& party) {
+ores::reporting::domain::configuration make_header(const boost::uuids::uuid& party,
+                                                   const std::string& actor) {
     ores::reporting::domain::configuration header;
     header.id = boost::uuids::random_generator()();
     header.name = "pooled session";
     header.configuration_type_code = "risk_report_config";
     header.owning_component = "ores.reporting";
     ores::database::domain::assign_party(header, party);
-    header.modified_by = "test.actor";
-    header.performed_by = "test.actor";
-    header.change_reason_code = "system.test";
-    header.change_commentary = "Written by the test suite.";
+    ores::testing::stamp_audit(header, actor);
     return header;
 }
 
 }
 
 TEST_CASE("a context without a party does not inherit a pooled connection's party",
-          "[ore][session][database]") {
+          "[reporting][session][database]") {
+    auto lg(ores::logging::make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info)
+        << "a context without a party does not inherit a pooled connection's party";
     ores::testing::scoped_database_helper h;
     const auto parties = ores::testing::make_two_parties(h);
     ores::reporting::repository::configuration_repository repo;
-    const auto header = make_header(parties.a);
+    const auto header = make_header(parties.a, h.db_user());
     repo.write(parties.a_context, header);
 
     const auto tenant_only = h.context().with_tenant(h.tenant_id(), "");
@@ -72,11 +75,13 @@ TEST_CASE("a context without a party does not inherit a pooled connection's part
     }
 }
 
-TEST_CASE("an actor holding a quote reaches a pooled session", "[ore][session][database]") {
+TEST_CASE("an actor holding a quote reaches a pooled session", "[reporting][session][database]") {
+    auto lg(ores::logging::make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "an actor holding a quote reaches a pooled session";
     ores::testing::scoped_database_helper h;
     const auto parties = ores::testing::make_two_parties(h);
     const auto ctx = h.context().with_party(h.tenant_id(), parties.a, {parties.a}, "o'brien");
     ores::reporting::repository::configuration_repository repo;
-    const auto header = make_header(parties.a);
+    const auto header = make_header(parties.a, h.db_user());
     CHECK_NOTHROW(repo.write(ctx, header));
 }

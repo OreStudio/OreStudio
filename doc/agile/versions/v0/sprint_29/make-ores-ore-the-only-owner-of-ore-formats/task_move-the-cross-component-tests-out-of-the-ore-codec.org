@@ -2,7 +2,7 @@
 :ID: AD82918C-283A-4C32-9324-BAC29219230A
 :END:
 #+title: Task: Move the cross-component tests out of the ORE codec
-#+description: Nine test files in the codec's suite need a database, and three of them read reporting's tables rather than the codec: the configuration type seed, reporting's configuration repository, and the run store this story deletes.
+#+description: Eight test files in the codec's suite opened a database, and three of them read reporting's tables rather than the codec: the configuration type seed, reporting's configuration repository, and the run store this story deleted.
 #+type: task
 #+level: s1
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
@@ -35,7 +35,7 @@ The ORE codec's suite proves the codec; the roundtrips that cross a component ru
 
 * Acceptance
 
-- No test file in ores.ore.core.tests opens a database session, a repository or a transaction.
+- No test file in ores.ore.core.tests opens a database session, a repository or a transaction, except the configuration type seed check, which the third bullet keeps.
 - The document-to-rows roundtrips run in a suite that owns a database and the components they exercise.
 - The configuration type seed check stays, because it guards ORE format coverage, and it says so.
 
@@ -72,10 +72,10 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Test files in the codec's suite that open a session | 1 (the seed check) | =grep -rln "scoped_database_helper" projects/ores.ore/core/tests/*.cpp= | (this branch) |
 | Test files moved | 7 | =git diff --stat -M origin/main -- '*tests*'= | (this branch) |
-| =ores.ore.core.tests= | passed, 16.79s | =compass test run -- -R ores.ore.core.tests= | (this branch) |
-| =ores.analytics.core.tests= | passed, 14.75s | =compass test run -- -R ores.analytics.core.tests= | (this branch) |
-| =ores.refdata.core.tests= | passed, 134.56s | =compass test run -- -R ores.refdata.core.tests= | (this branch) |
-| =ores.reporting.core.tests= | passed, 49.36s | =compass test run -- -R ores.reporting.core.tests= | (this branch) |
+| =ores.ore.core.tests= | passed, 29.11s | =compass test run -- -R ores.ore.core.tests= | (this branch) |
+| =ores.analytics.core.tests= | passed, 23.34s | =compass test run -- -R ores.analytics.core.tests= | (this branch) |
+| =ores.refdata.core.tests= | passed, 174.68s | =compass test run -- -R ores.refdata.core.tests= | (this branch) |
+| =ores.reporting.core.tests= | passed, 62.35s | =compass test run -- -R ores.reporting.core.tests= | (this branch) |
 
 * Notes
 

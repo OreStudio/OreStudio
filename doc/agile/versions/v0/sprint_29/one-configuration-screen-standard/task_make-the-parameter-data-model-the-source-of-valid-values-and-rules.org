@@ -36,9 +36,9 @@ parameter loses its set.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | The inventory is written, and the value sets for the Setup scope are in. |
+| Now          | The work is done on the branch and proven live. The branch waits for review. |
 | Waiting on   | Nothing.                               |
-| Next         | Read the value set on the engine settings screen, then retire the per-pair columns. |
+| Next         | Review, then merge.                    |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -245,8 +245,104 @@ task and name that file in the Command column.
 | Pricing contract parameters | 251 (61 model, 173 engine, 17 global), 0 without a set | =generate_value_sets.contract_pairs()= and =resolve()= | 92fd6990bc85 |
 | Setup parameters | 15 engine settings, 0 links | =curation/engine-settings-groups.json= and the link rows | 92fd6990bc85 |
 | Setup block parameters with no screen | 54 | =block_parameter_rows.rows()= filtered to =Setup= | 92fd6990bc85 |
+| Sets and links after the change | 224 sets, 727 links | =python3 projects/ores.sql/utility/generate_value_sets.py --check= | 716f3f7c9b |
+| Drawn parameters the gate checks | 266 | =python3 build/scripts/check_parameter_value_sets.py= | 716f3f7c9b |
+| Settings the guide lists and the code typed as text | 15, of which 13 become a set and 2 stay text | =compare pricing_vocabulary.json options with value-sets-code.json= | 92fd6990bc85 |
+| The build | 326 targets, exit 0 | =./compass.sh build= | 178db7241c |
+| The BFF suite | 1139 tests passed | =npx vitest run= in =projects/ores.web/packages/bff= | 178db7241c |
+| The web suite | 2323 tests passed | =npx vitest run= in =projects/ores.web/packages/web= | 178db7241c |
 
 * Notes
+
+** What changed, file by file
+
+| Area | Change |
+|------+--------|
+| =curation/engine-settings-groups.json= | States six =Setup= sets with provenance, and every group setting names its set instead of a kind, words and a range. |
+| =curation/value-sets-guide-enums.json= | New. States the guide's choices for the 13 settings the code could only read as text, and says in the set why two stay text. |
+| =curation/__init__.py= | Loads the engine settings groups and refuses a setting that states a control beside its set, or names a set the file does not state. |
+| =ores.sql/utility/setup_value_sets.py= | New. The =Setup= sets and links, read from the curation. |
+| =ores.sql/utility/generate_value_sets.py= | Adds the =Setup= sets after the curve ones, applies a reviewed file only when it carries its provenance, and gains the guide-enums file. |
+| =ores.sql/utility/generate_engine_settings_groups.py= | Writes only what the group settings table still states. |
+| =ores.sql/create/reporting/reporting_ore_parameter_value_validate_fn_create.sql= | Adds =ores_reporting_number_in_bounds_fn= so a numeric set's floor and ceiling are checked, and uses it for a range. |
+| =ores.reporting/modeling/ores.reporting.engine_settings_group_setting.org= | Loses =kind=, =options=, =minimum= and =maximum=. |
+| =ores.analytics/modeling/ores.analytics.pricing_pair_setting.org= | Loses =kind= and =options=. |
+| =bff/src/engine-settings.ts= | Serves the =Setup= value sets beside each setting and checks a written value against its set. |
+| =bff/src/ore-value-sets.ts= | Serves the set's catalogue as well as its kind, values and bounds. |
+| =bff/src/pricing-engines.ts= | Stops serving the pair setting's =kind= and =options=. |
+| =web/src/parameters/control.ts= | One control mapping for both screens; the engine settings kind mapping is deleted. |
+| =web/src/engineSettings/model.ts= | Reads the value, its bounds and its words from the set. |
+| =web/src/pricingEngines/parts.tsx= | Reads the sensitivity template heading from the set's catalogue, not a =reference= kind. |
+| =build/scripts/check_parameter_value_sets.py= | New. The gate. |
+| =seeder/generate_vocabulary_sql.py= | Stops writing the two columns, and gains =--from-json= so a seed change needs no ORE checkout. |
+| =sql/utility/pricing_parameter_rows.py= | The contract's =format= prose stops listing the choices; the set states them. |
+| =reporting/service/engine_settings_proposal.cpp= | A proposal asks the store's own value set check, and keeps the whole-number width check the apply makes. |
+
+** Where the value set model still cannot state what a per-pair column stated
+
+- *A kind that is also a flag.* =SeparateCallPutVols= accepts =true=, =false=
+  or a regular expression inclusion pattern. A set is one kind, so it cannot say
+  "a switch or a pattern"; it stays =text= and its description says why. The
+  per-pair =select= column could not state it either, and refused a pattern the
+  guide allows, so nothing is lost here.
+- *A vocabulary the evidence states in part.* The guide lists =Bootstrap=,
+  =BestFit= and =None= for =Calibration=, and the documents ORE ships write
+  =Deal=. The set stays =text= with the reason. Making it enumerated would
+  refuse a value the seeded population holds, so the task needs the ORE
+  enumeration read from the source before it narrows.
+- *A per-pair difference.* The per-pair columns could, in principle, state one
+  list for one pair. They never did: every row of a setting carried the same
+  list. The set is keyed by =(scope, name)= and cannot state a difference by
+  pair. If ORE ever needs one, the link becomes keyed by the pair too; that is
+  a model change and no screen needs it today.
+- *A default per pair.* =usual_value= states the value ORE's examples use and is
+  a value, not a rule, so it stays on the pair row. It is not in the set, and a
+  set cannot state it: two pairs may use different example values for one
+  setting.
+- *Documentation prose.* The =format= text of a =Setup= ore parameter still says
+  "A whole number, at least 1." The set is the rule and the prose is
+  documentation a person reads; the pricing contract's prose no longer repeats
+  the choices, and the =Setup= prose could follow in the documentation task.
+
+** Decisions
+
+- *The =Setup= sets share a code where the rule is shared.* Eleven flags take
+  =setup.flag=, and the two fixing lags take =setup.fixing_lag_days=, because a
+  set states a rule and the rule is the same. The alternative, one set per
+  setting, would repeat the same rule fifteen times.
+- *The numeric bounds moved into the shared check.* A =whole= setting stated a
+  floor in the group settings row. The value set states it now, and the function
+  the parameter trigger calls applies it, so a bound is data and one function
+  reads it.
+- *The proposal service asks the database rather than re-reading the tables.*
+  The engine run settings proposal path had its own copy of the rule. It asks
+  =ores_reporting_value_in_set_fn= now, so a proposal is refused with the
+  sentence the store would use, and the whole-number width check the apply makes
+  stays with it.
+- *The check reads the curation and the seed, not a live database.* The gate
+  must run on a pull request, where no environment exists. A stale seed is
+  caught by comparing the curation with the committed script.
+- *The =Setup= block's 54 input-file parameters get no set.* No screen draws
+  them and the contract states their domains. =dateCalendar=, =dateConvention=
+  and =baseCurrency= do name a catalogue vocabulary and are a candidate for a
+  later task; they are recorded here rather than decided silently.
+
+** The live proof, as a person repeats it
+
+1. =compass db recreate -y -k=, then the ACME provisioning script.
+2. =npx tsx tmp/prove-value-sets.ts= in =projects/ores.web=, signed in as
+   =tenant_admin@acme_corporation= (or =adrian.vance@acme_corporation= for the
+   two vocabularies alone). It prints each setting's set, kind, choices and
+   bounds, and exports and previews one pricing engines document.
+3. Add a value to =setup.observation_model= and raise =setup.n_threads'= floor
+   in the database, then run it again: the choices and the floor follow the set.
+4. =npx tsx tmp/prove-write.ts= shows the group write refused below the floor.
+5. =update ores_analytics_pricing_model_product_parameters_tbl ...= with a value
+   outside =calibrationstrategy= is refused by the trigger, naming the value, the
+   setting and the set.
+
+The two scripts are scratch, beside the task rather than in the tree: they sign
+in to a live environment and are not part of a test suite.
 
 * Test Scenarios
 
@@ -272,3 +368,42 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The parameter data model is the one source of a parameter's control and rule,
+on both configuration screens, and a check holds it.
+
+- The value set tables state every parameter's allowed values. 266 parameters a
+  screen draws carry 1 link each, and the 224 sets state an enumerated list, a
+  catalogue, a range, a regular expression, a switch or text.
+- The =Setup= scope joined the contract. Six sets state the fifteen engine run
+  settings' controls, the group settings table lost its copy, and the screen
+  draws and checks from the set through the same fields the pricing screen uses.
+- The per-pair =kind= and =options= columns are gone from the model, the SQL,
+  the C++, the protocol, the TypeScript, the shell recipe and the seed. The
+  compiler found the last reader, a hand-written proposal check, and it asks the
+  store's own function now.
+- Fifteen settings the guide states a vocabulary for stopped being free text:
+  thirteen carry the guide's list, and two stay text with the reason in the set.
+- =build/scripts/check_parameter_value_sets.py= runs in the local gate. It
+  fails on a parameter a screen draws with no set, on a set whose kind cannot
+  hold its rule, on a stale seed, and on a per-pair override column returning.
+  Each of those was proved by breaking it and reading the failure.
+
+Proven live on a recreated, provisioned environment: adding a value to
+=setup.observation_model= in the database added it to the screen's choices, and
+raising the floor of =setup.n_threads= moved the bound the server enforced, with
+no server change. A group write below the floor was refused. A pricing engines
+document exported and previewed with 0 rows added, changed or removed and 0
+issues. A parameter write outside its set was refused by the trigger, naming the
+value, the setting and the set. The retired columns appear in no reply.
+
+Not done here, and stated rather than hidden: the =Setup= block's 54 input-file
+parameters have no set because no screen draws them; three of them name a
+catalogue vocabulary and want a later task. =Calibration= stays text until the
+ORE enumeration can be read from the source, because the guide's list omits a
+value the seeded documents write. The pending provenance columns on the row are
+the story's own task, not this one.
+
+Commits on the branch, in order: the inventory, the =Setup= sets, the guide's
+choices, the engine settings screen reading the set, the retired per-pair
+columns, the gate, and the proposal check.

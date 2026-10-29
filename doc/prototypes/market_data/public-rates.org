@@ -2,7 +2,7 @@
 :ID: 5C1B7E42-9A3D-4F60-B1E8-2D7A4C6F0E93
 :END:
 #+title: Public rates, prototype
-#+description: The public publishers as one screen a person runs: each publisher's terms, freshness and feed on one row, the states told apart, and availability, comparison and fetch drawn before any is built.
+#+description: The public publishers as one screen a person runs: one row per publisher and class, the routed feed and the supplier named, freshness told apart from session state, and availability, comparison and a service-aware fetch.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:market_data:public_rates:
@@ -33,8 +33,8 @@ about the underlying it fixes.
 #+ATTR_HTML: :class hug-leading
 | Surface | Question | Reads |
 |---------+----------+-------|
-| Publishers (list) | Who is arriving? | publishers, feed state, latest fixing per item |
-| Publisher record · Overview | What does this publisher's record say? | publisher, feeds |
+| Publishers (list) | Is each publisher and class arriving? | one row per publisher and class, the routed feed, supplier, service, last fixing and freshness |
+| Publisher record · Overview | What does this publisher read, per class? | publisher terms and the routed feed for each class |
 | Publisher record · Underlyings | Which pairs does it fix, and how far back? | fixings by series |
 | Publisher record · Fixings | What did it publish for this pair, over time? | fixings by series, feed start |
 | Publisher record · History | Who changed it, and when? | publisher history |
@@ -43,13 +43,24 @@ about the underlying it fixes.
 | Compare (area tab) | How far apart are their values? | fixings by series, arithmetic in the page |
 | Fetch (area tab) | Ask for data now | the refresh request, not yet on the contract |
 
-* A publisher, a feed and a route
+* A publisher, a class, a feed and a route
 
 A value belongs to its publisher. A feed is one publisher on one service through
 one session, and the route is the party's choice of one feed for one publisher
 and one asset class. A second feed of the same publisher is another way to the
 same fixing, not a second fixing: the item keeps its identity, and the feed is
 provenance.
+
+The row grain is *publisher and class*, because that is the route's grain and the
+freshness grain. ECB FX and ECB IR are two rows, with two feeds, two suppliers
+and two independent freshness facts. Only the *routed* feed is read; the others
+are alternatives for a supplier switch, and the screen says so.
+
+Freshness is not session state. A feed can read `serving` in Connectivity while
+its last fixing is days old: the session is up and the publisher has not
+published. Public rates shows *fresh*, *late*, *no data* or *no route*, derived
+from the last fixing and the feed's expected rhythm. Session health stays in
+Connectivity, behind a link.
 
 The list carries the count of underlyings, never the pairs themselves: a
 publisher fixes tens or hundreds of pairs, and the record's Underlyings tab is

@@ -150,9 +150,9 @@ example.
 | | Supplier dashboard | The contract, sessions, coverage, feeds needing attention, and recent activity |
 | | Session record | Endpoint, environment, credential, settings, services, runtime, feeds |
 | | Feed record | Publisher, service, publisher key, scope, schedule, routes |
-| Public rates | Publishers | Which publishers are there, what are their terms, and is their data arriving? |
-| | Publisher record | What did it publish, over time, and which feed and supplier serve it? |
-| | Availability | For one underlying, what does each publisher hold, and what gaps does it have? |
+| Public rates | Publishers | Which publisher and class are arriving, through which routed feed, and how fresh? |
+| | Publisher record | What did it publish per class, over time, and which routed feed serves it? |
+| | Availability | For one underlying, what does each publisher hold, through which feed, and what gaps does it have? |
 | | Compare | For one underlying, how far apart are the publishers' values, and which one is off? |
 | | Fetch | Ask for data now: a day or a range, one publisher or all, one pair or every pair |
 

@@ -113,6 +113,29 @@ public:
 
     static document read(std::string_view text, std::string_view origin = {});
     static std::string write(const document& v);
+
+    /**
+     * @brief The as-of date a run document states, when it states one.
+     *
+     * The parameter is read by name, so a document that mentions the name in a
+     * comment, or that writes its attributes in another order, states the same
+     * date as one that does not.
+     *
+     * @return The ISO 8601 date, or nothing when the document states none.
+     * @throws std::invalid_argument if the text is not a run document.
+     */
+    static std::optional<std::string> as_of_date(std::string_view text);
+
+    /**
+     * @brief The same run document, priced at @p date.
+     *
+     * The document is written back through the projection, so the parameters it
+     * states are the ones ORE reads and a parameter the model holds nowhere is
+     * not invented.
+     *
+     * @throws std::invalid_argument if the text is not a run document.
+     */
+    static std::string with_as_of_date(std::string_view text, std::string_view date);
 };
 
 }

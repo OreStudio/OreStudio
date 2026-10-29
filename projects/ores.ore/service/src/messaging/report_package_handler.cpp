@@ -20,8 +20,10 @@
 #include "ores.ore.service/messaging/report_package_handler.hpp"
 #include "ores.iam.client/client/run_token_minter.hpp"
 #include "ores.ore.api/net/ore_storage.hpp"
-#include "ores.ore.core/xml/run_package.hpp"
+#include "ores.ore.core/domain/run_document_projection.hpp"
+#include "ores.ore.core/market/market_data_parser.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
+#include "ores.ore.core/xml/run_package.hpp"
 #include "ores.ore.service/messaging/nats_call.hpp"
 #include "ores.ore.service/messaging/run_configuration_operations.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
@@ -56,64 +58,7 @@ std::string tarball_storage_key(const std::string& instance_id) {
     return ores::ore::net::ore_storage::package_key(instance_id);
 }
 
-/**
- * @brief The latest date a market data body carries, as an ISO 8601 date.
- *
- * ORE's market data lines begin with the date written as YYYYMMDD, so a body
- * with no such line carries no date at all and no run can price from it.
- */
-std::optional<std::string> latest_market_data_date(std::string_view body) {
-    std::string latest;
-    std::size_t first = 0;
-    while (first < body.size()) {
-        const auto end = body.find('\n', first);
-        const auto line = body.substr(
-            first, end == std::string_view::npos ? std::string_view::npos : end - first);
-        if (line.size() >= 9 && line[8] == '\t') {
-            const auto dated = line.substr(0, 8);
-            const auto digits =
-                std::ranges::all_of(dated, [](char c) { return c >= '0' && c <= '9'; });
-            if (digits && std::string(dated) > latest)
-                latest = std::string(dated);
-        }
-        if (end == std::string_view::npos)
-            break;
-        first = end + 1;
-    }
-    if (latest.empty())
-        return std::nullopt;
-    return latest.substr(0, 4) + "-" + latest.substr(4, 2) + "-" + latest.substr(6, 2);
 }
-
-/** The date a run document states as its as-of date, when it states one. */
-std::optional<std::string> asof_date_of(const std::string& ore_xml) {
-    constexpr std::string_view marker = "name=\"asofDate\">";
-    const auto at = ore_xml.find(marker);
-    if (at == std::string::npos)
-        return std::nullopt;
-    const auto from = at + marker.size();
-    const auto to = ore_xml.find('<', from);
-    if (to == std::string::npos || to == from)
-        return std::nullopt;
-    return ore_xml.substr(from, to - from);
-}
-
-/** The run document with its as-of date replaced. */
-std::string with_asof_date(const std::string& ore_xml, const std::string& date) {
-    constexpr std::string_view marker = "name=\"asofDate\">";
-    const auto at = ore_xml.find(marker);
-    if (at == std::string::npos)
-        return ore_xml;
-    const auto from = at + marker.size();
-    const auto to = ore_xml.find('<', from);
-    if (to == std::string::npos)
-        return ore_xml;
-    auto out = ore_xml;
-    out.replace(from, to - from, date);
-    return out;
-}
-
-} // namespace
 
 report_package_handler::report_package_handler(ores::nats::service::client& nats,
                                                ores::database::context ctx,
@@ -213,11 +158,13 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         const auto document = std::ranges::find_if(run_input, [](const auto& entry) {
             return entry.first.ends_with(std::string(ores::ore::xml::run_document_file));
         });
-        const auto requested_date = document != run_input.end() ?
-                                        asof_date_of(document->second).value_or("") :
-                                        std::string{};
-        const auto market_date =
-            latest_market_data_date(std::string_view{market_data.data(), market_data.size()});
+        const auto requested_date =
+            document != run_input.end() ?
+                ores::ore::domain::run_document_projection::as_of_date(document->second)
+                    .value_or("") :
+                std::string{};
+        const auto market_date = ores::ore::market::latest_market_data_date(
+            std::string_view{market_data.data(), market_data.size()});
         // The date the package prices at, which is the run's own when the data
         // carries it, and what the run records on itself below.
         auto priced_date = requested_date;
@@ -227,7 +174,8 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
                 << "The gathered market data ends on " << *market_date << " and the run asked for "
                 << requested_date << ". The run prices at the data's date. Instance "
                 << req.report_instance_id;
-            document->second = with_asof_date(document->second, *market_date);
+            document->second = ores::ore::domain::run_document_projection::with_as_of_date(
+                document->second, *market_date);
             priced_date = *market_date;
         }
 

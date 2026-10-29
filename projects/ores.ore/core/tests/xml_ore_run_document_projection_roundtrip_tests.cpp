@@ -307,3 +307,54 @@ TEST_CASE("a_setup_parameter_that_is_not_a_number_is_refused",
         run_document_projection::map(document("<Parameter name=\"logMask\"></Parameter>")),
         Catch::Matchers::ContainsSubstring("is not an integer"));
 }
+
+TEST_CASE("the as-of date is read where the document states it, not where it is mentioned",
+          "[ore][xml][roundtrip][run_document]") {
+    // A search for the text would read the comment's date.
+    const std::string text = R"(
+<ORE>
+  <Setup>
+    <!-- the run asked for name="asofDate">2020-01-01< before the desk moved it -->
+    <Parameter name="asofDate">2026-01-02</Parameter>
+  </Setup>
+  <Analytics></Analytics>
+</ORE>)";
+
+    const auto date = run_document_projection::as_of_date(text);
+
+    REQUIRE(date.has_value());
+    CHECK(*date == "2026-01-02");
+    CHECK(*run_document_projection::as_of_date(
+              run_document_projection::with_as_of_date(text, "2026-01-05")) == "2026-01-05");
+}
+
+TEST_CASE("a document that writes its attributes in another order states the same date",
+          "[ore][xml][roundtrip][run_document]") {
+    // A search for the text needs the attribute spelled one way; XML allows the
+    // spaces and the quotes to move.
+    const std::string text = R"(
+<ORE>
+  <Setup>
+    <Parameter name = 'asofDate' >2026-01-02</Parameter>
+  </Setup>
+  <Analytics></Analytics>
+</ORE>)";
+
+    const auto date = run_document_projection::as_of_date(text);
+
+    REQUIRE(date.has_value());
+    CHECK(*date == "2026-01-02");
+}
+
+TEST_CASE("a run document that prices at the latest data states no date",
+          "[ore][xml][roundtrip][run_document]") {
+    const std::string text = R"(
+<ORE>
+  <Setup>
+    <Parameter name="inputPath">Input</Parameter>
+  </Setup>
+  <Analytics></Analytics>
+</ORE>)";
+
+    CHECK_FALSE(run_document_projection::as_of_date(text).has_value());
+}

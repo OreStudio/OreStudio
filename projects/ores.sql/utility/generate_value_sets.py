@@ -42,6 +42,8 @@ CODE = os.path.join(ROOT, "projects", "ores.seeder", "datasets", "ore_pricing_en
                     "curation", "value-sets-code.json")
 REVIEW = os.path.join(ROOT, "projects", "ores.seeder", "datasets", "ore_pricing_engines",
                       "curation", "value-sets-review.json")
+GUIDE_ENUMS = os.path.join(ROOT, "projects", "ores.seeder", "datasets", "ore_pricing_engines",
+                           "curation", "value-sets-guide-enums.json")
 OUT = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
                    "reporting_ore_parameter_value_sets_populate.sql")
 
@@ -212,13 +214,35 @@ def keep_guide_catalogues(guide_sets, data):
         data["sets"][name] = dict(entry)
 
 
+def review(path):
+    """A reviewed override, read only when it names its provenance.
+
+    A person settles a disagreement between the guide, the code and the data in
+    a file of its own, and the file states the reason, the source, the source
+    reference, the curator and the date once for every entry it holds. A file
+    that states none of them is a mistake, not a default.
+    """
+    with open(path, encoding="utf-8") as handle:
+        data = json.load(handle)
+    missing = [key for key in ("reason", "source", "source_ref", "curator", "date")
+               if not str(data.get(key) or "").strip()]
+    if missing:
+        raise SystemExit(f"{path} has no {', '.join(missing)}")
+    if data["source"] not in ("ore_guide", "ore_code", "authored", "seed"):
+        raise SystemExit(f"{path} has an unknown source {data['source']!r}")
+    return data
+
+
 def load():
     """The guide's sets, with the code's sets over the top.
 
     The guide states some choices; the code states a setting's type for every
     setting. A code set replaces the guide's set of the same name, except where
     the guide names a catalogue. A guide set no setting names after that is
-    dropped, because its link now points at the set the code states.
+    dropped, because its link now points at the set the code states. A reviewed
+    file is applied last, because a person settling a disagreement is the last
+    word: the review file corrects a type the contract states, and the guide's
+    enumerated sets correct a type the code could only read as a string.
     """
     with open(GUIDE, encoding="utf-8") as handle:
         data = json.load(handle)
@@ -228,10 +252,10 @@ def load():
     data["sets"].update(code["sets"])
     data["links"].update(code["links"])
     keep_guide_catalogues(guide_sets, data)
-    with open(REVIEW, encoding="utf-8") as handle:
-        review = json.load(handle)
-    data["links"].update(review["links"])
-    data["sets"].update(review.get("sets", {}))
+    for path in (REVIEW, GUIDE_ENUMS):
+        reviewed = review(path)
+        data["links"].update(reviewed.get("links", {}))
+        data["sets"].update(reviewed.get("sets", {}))
     named = set(data["links"].values())
     for name in [code_ for code_ in data["sets"] if code_ not in named]:
         del data["sets"][name]

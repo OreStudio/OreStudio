@@ -242,6 +242,8 @@ const FEEDS = [
       routes: [], last: 'now' },
 ];
 
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+
 const fn = {
     esc: (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])),
     href: (changes) => {
@@ -298,7 +300,7 @@ function renderTree() {
         const feeds = sessions.reduce((n, s) => n + fn.feedsOfSession(s.name).length, 0);
         const node = `<details ${sup.code === 'frankfurter' ? 'open' : ''}>
           <summary><span class="node"><span class="label">${fn.esc(sup.name)}</span>
-            <span class="faint">${sup.kind} · ${sessions.length} sessions · ${feeds} feeds</span>
+            <span class="faint">${sup.kind} · ${plural(sessions.length, 'session')} · ${plural(feeds, 'feed')}</span>
             <span class="acts"><a class="act" href="${fn.href({ add_session: null, 'add-session': '1', supplier: sup.code, tab: null })}">New session</a>
             <a class="act" href="${fn.href({ tab: null, supplier: sup.code, sutab: 'overview' })}">Open</a></span></span></summary>
           <ul>${sessions.map((s) => {

@@ -1855,3 +1855,7 @@ tangled into the runnable script library
 * Provider Terms Operations
 
 - [[id:0B96E0C3-F288-537D-94A6-54F411A41E60][How do I run the provider_terms_operations commands from the shell?]]
+
+* Legal Entities
+
+- [[id:82F0BB15-9794-5199-A101-86923D28CADF][How do I run the legal_entities commands from the shell?]]

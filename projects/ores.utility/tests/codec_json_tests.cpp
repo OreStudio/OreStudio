@@ -24,7 +24,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <rfl/json.hpp>
 
-namespace wire = ores::utility::codec::json;
+namespace wire_json = ores::utility::codec::json;
 
 namespace {
 
@@ -34,7 +34,7 @@ namespace {
  * byte.
  */
 template <typename T>
-T through_rfl(const T& v) {
+T through_rfl_json(const T& v) {
     return rfl::json::read<T>(rfl::json::write(v)).value();
 }
 
@@ -43,19 +43,19 @@ T through_rfl(const T& v) {
 TEST_CASE("a uuid's JSON is the string reflect-cpp writes", "[codec][json]") {
     const auto id = boost::uuids::string_generator{}("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
-    CHECK(wire::write(id) == rfl::json::write(id));
-    CHECK(wire::write(id) == "\"3f2504e0-4f89-11d3-9a0c-0305e82c3301\"");
+    CHECK(wire_json::write(id) == rfl::json::write(id));
+    CHECK(wire_json::write(id) == "\"3f2504e0-4f89-11d3-9a0c-0305e82c3301\"");
 
-    CHECK(wire::read<boost::uuids::uuid>(rfl::json::write(id)) == id);
-    CHECK(through_rfl(wire::read<boost::uuids::uuid>(wire::write(id))) == id);
+    CHECK(wire_json::read<boost::uuids::uuid>(rfl::json::write(id)) == id);
+    CHECK(through_rfl_json(wire_json::read<boost::uuids::uuid>(wire_json::write(id))) == id);
 }
 
 TEST_CASE("a nil uuid keeps the all-zero spelling", "[codec][json]") {
     const boost::uuids::uuid nil{};
 
-    CHECK(wire::write(nil) == rfl::json::write(nil));
-    CHECK(wire::write(nil) == "\"00000000-0000-0000-0000-000000000000\"");
-    CHECK(wire::read<boost::uuids::uuid>(wire::write(nil)) == nil);
+    CHECK(wire_json::write(nil) == rfl::json::write(nil));
+    CHECK(wire_json::write(nil) == "\"00000000-0000-0000-0000-000000000000\"");
+    CHECK(wire_json::read<boost::uuids::uuid>(wire_json::write(nil)) == nil);
 }
 
 TEST_CASE("an absent uuid is the format's null", "[codec][json]") {
@@ -63,11 +63,11 @@ TEST_CASE("an absent uuid is the format's null", "[codec][json]") {
     const auto id =
         std::optional(boost::uuids::string_generator{}("3f2504e0-4f89-11d3-9a0c-0305e82c3301"));
 
-    CHECK(wire::write(absent) == rfl::json::write(absent));
-    CHECK(wire::write(absent) == "null");
-    CHECK(wire::write(id) == rfl::json::write(id));
-    CHECK(wire::read<std::optional<boost::uuids::uuid>>(wire::write(absent)) == absent);
-    CHECK(wire::read<std::optional<boost::uuids::uuid>>(wire::write(id)) == id);
+    CHECK(wire_json::write(absent) == rfl::json::write(absent));
+    CHECK(wire_json::write(absent) == "null");
+    CHECK(wire_json::write(id) == rfl::json::write(id));
+    CHECK(wire_json::read<std::optional<boost::uuids::uuid>>(wire_json::write(absent)) == absent);
+    CHECK(wire_json::read<std::optional<boost::uuids::uuid>>(wire_json::write(id)) == id);
 }
 
 TEST_CASE("an array of uuids is an array of the same strings", "[codec][json]") {
@@ -75,19 +75,19 @@ TEST_CASE("an array of uuids is an array of the same strings", "[codec][json]") 
         boost::uuids::string_generator{}("3f2504e0-4f89-11d3-9a0c-0305e82c3301"),
         boost::uuids::string_generator{}("6ba7b810-9dad-11d1-80b4-00c04fd430c8")};
 
-    CHECK(wire::write(ids) == rfl::json::write(ids));
-    CHECK(wire::read<std::vector<boost::uuids::uuid>>(wire::write(ids)) == ids);
+    CHECK(wire_json::write(ids) == rfl::json::write(ids));
+    CHECK(wire_json::read<std::vector<boost::uuids::uuid>>(wire_json::write(ids)) == ids);
 }
 
 TEST_CASE("a string is its own JSON form", "[codec][json]") {
-    CHECK(wire::write(std::string("zürich's \"quote\"")) ==
+    CHECK(wire_json::write(std::string("zürich's \"quote\"")) ==
           rfl::json::write(std::string("zürich's \"quote\"")));
-    CHECK(wire::read<std::string>(wire::write(std::string("zürich's \"quote\""))) ==
+    CHECK(wire_json::read<std::string>(wire_json::write(std::string("zürich's \"quote\""))) ==
           "zürich's \"quote\"");
 }
 
 TEST_CASE("a value of another shape is refused with what it should have been", "[codec][json]") {
-    CHECK_THROWS_AS(wire::read<boost::uuids::uuid>("4"), std::invalid_argument);
-    CHECK_THROWS_AS(wire::read<std::optional<boost::uuids::uuid>>("\"not a uuid\""),
+    CHECK_THROWS_AS(wire_json::read<boost::uuids::uuid>("4"), std::invalid_argument);
+    CHECK_THROWS_AS(wire_json::read<std::optional<boost::uuids::uuid>>("\"not a uuid\""),
                     std::invalid_argument);
 }

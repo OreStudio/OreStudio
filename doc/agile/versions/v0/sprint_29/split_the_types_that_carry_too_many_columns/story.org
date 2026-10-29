@@ -8,7 +8,7 @@
 #+filetags: :data-oriented-design:modeling:refdata:sprint_29:v0:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -23,7 +23,7 @@ So the work is modelling, not compilers. Find the types whose shape the data-ori
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -42,7 +42,7 @@ So the work is modelling, not compilers. Find the types whose shape the data-ori
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:066BEB24-5BFB-4D30-85E2-723E90C75712][Inventory the types that carry too many columns]] | BACKLOG | | | A reproducible inventory of every generated persistent type: member count, column count, the blocks that cluster, and a verdict of what each type should become. |
+| [[id:066BEB24-5BFB-4D30-85E2-723E90C75712][Inventory the types that carry too many columns]] | STARTED | 2026-10-29 | | A reproducible inventory of every generated persistent type: member count, column count, the blocks that cluster, and a verdict of what each type should become. |
 | [[id:9844D039-9694-4290-9A97-3A755770911B][Split the types the inventory names]] | BACKLOG | | | Split, worst first, the persisted types the inventory calls one aggregate over several components, so that each type holds one component. |
 
 * Decisions

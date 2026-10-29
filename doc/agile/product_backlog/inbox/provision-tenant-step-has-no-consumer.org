@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: C4A1ACE8-4A3A-4CA4-8F53-A025AB6585B4
+:END:
+#+title: The provision_tenant step is published and never consumed, leaving a tenant half bootstrapped
+#+description: After a database recreate on merry_newton, compass db recreate then the ACME provisioning script stopped at bootstrap: the tenant_setup_workflow published step 0 (publish_bundle) to iam.v1.ops.provision_tenant_step at 23:11:32 and no service logged receiving it, so the workflow waited 20 minutes and failed, and the tenant stayed in bootstrapping. workflow retry resumed the instance and published the same step again with the same silence. The instance is 14fb17a2-cdda-4d4b-95d6-1b316ff853cf. The system then refuses bootstrap because it is no longer in bootstrap mode, so the tenant cannot be finished and the environment has no usable data. Evidence: journalctl --user -u ores.workflow.service-merry_newton around 23:11:32 shows the step published via stream; the iam service log shows no receipt. Check whether the stream consumer binding survives a recreate, and whether the step should fail loudly instead of waiting 20 minutes.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-29
+#+updated: 2026-10-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -153,6 +153,42 @@ const CURVE: CurveConfiguration = {
                         { element: 'Report', present: true },
                         { element: 'Segments', present: null },
                     ],
+                    collections: [
+                        {
+                            element: 'Segments',
+                            entity: 'curve_segment',
+                            rows: [
+                                {
+                                    id: 'segment-1',
+                                    kind: 'Simple',
+                                    leaves: [
+                                        leaf(
+                                            'Conventions',
+                                            '/CurveConfiguration/YieldCurves/YieldCurve/Segments/Simple/Conventions',
+                                            {
+                                                entity: 'curve_segment',
+                                                column: 'conventions',
+                                                value: 'USD-6M',
+                                                documented: true,
+                                                label: 'Conventions',
+                                            },
+                                        ),
+                                        leaf(
+                                            'ProjectionCurve',
+                                            '/CurveConfiguration/YieldCurves/YieldCurve/Segments/Simple/ProjectionCurve',
+                                            {
+                                                entity: 'curve_segment',
+                                                column: 'projection_curve',
+                                                value: 'USD-3M',
+                                                documented: true,
+                                                label: 'Projection curve',
+                                            },
+                                        ),
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
                 },
             ],
         },
@@ -286,11 +322,22 @@ describe('the curve configuration page', () => {
         expect(words).toContain('Yes');
     });
 
-    it('names the child elements a curve holds', () => {
+    it('draws the rows of the collection a curve holds, with their leaves read', () => {
+        const words = textOf(page('curves'));
+        expect(words).toContain('Its Segments');
+        expect(words).toContain('1 rows');
+        expect(words).toContain('Simple');
+        expect(words).toContain('Projection curve');
+        expect(words).toContain('USD-3M');
+    });
+
+    it('names the child elements a curve holds, and says once the ones it draws rows of', () => {
         const words = textOf(page('curves'));
         expect(words).toContain('Report');
-        expect(words).toContain('Segments');
-        expect(words).toContain('not recorded here');
+        expect(words).toContain('stated');
+        // Segments are drawn as their rows, so the badge row does not name them again.
+        expect(words).toContain('Its Segments');
+        expect(words).not.toContain('not recorded here');
     });
 
     it('names the reports that bind the configuration', () => {

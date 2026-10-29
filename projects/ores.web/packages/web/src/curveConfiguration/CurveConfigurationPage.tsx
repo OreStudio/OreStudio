@@ -86,6 +86,11 @@ function documentationKey(entryId: string, leaf: CurveParameter): string {
     return `${entryId}|${leaf.ore}`;
 }
 
+/** The key of a leaf a collection row holds, which repeats across rows. */
+function rowKey(rowId: string, leaf: CurveParameter): string {
+    return `${rowId}|${leaf.ore}`;
+}
+
 /** The eight characters a person reads to tell one identifier from another. */
 function shortId(id: string): string {
     return id.slice(0, 8);
@@ -454,6 +459,10 @@ function CurveWorkbench({
      * settings are the product's.
      */
     const identity = entry.parameters.filter((leaf) => leaf.entity === 'curve_definition');
+    /* A block the page draws rows of is drawn once, as those rows. */
+    const blocks = entry.blocks.filter(
+        (block) => !entry.collections.some((collection) => collection.element === block.element),
+    );
     const parameters = entry.parameters.filter((leaf) => leaf.entity !== 'curve_definition');
     const visible = parameters.filter((leaf) => !setOnly || leaf.value !== null);
     const gaps = parameters.filter((leaf) => !leaf.documented).length;
@@ -536,6 +545,37 @@ function CurveWorkbench({
             />
         );
     };
+    const toggle = (key: string): void =>
+        setOpened((before) => {
+            const next = new Set(before);
+            if (!next.delete(key)) {
+                next.add(key);
+            }
+            return next;
+        });
+    /*
+     * A collection row is read, not changed in place: the standard draws its rows
+     * as cards and changes them in a dialog, which this page does not offer yet.
+     * Its leaves take the same row and the same documentation as an entry's.
+     */
+    const leaveOfRow =
+        (rowId: string) =>
+        (leaf: CurveParameter): ReactNode => {
+            const key = rowKey(rowId, leaf);
+            return (
+                <LeafRow
+                    key={key}
+                    leaf={leaf}
+                    mode={mode}
+                    open={opened.has(key)}
+                    text={null}
+                    changed={false}
+                    refused={null}
+                    onText={() => undefined}
+                    onToggle={() => toggle(key)}
+                />
+            );
+        };
     /* The edit and its save sit under the two cards, so the count and the reason
        are read where the leaves they apply to are. */
     const foot =
@@ -669,12 +709,50 @@ function CurveWorkbench({
                 ) : (
                     <ul className="divide-y divide-line-subtle">{visible.map(leave)}</ul>
                 )}
-                {entry.blocks.length > 0 && (
+                {entry.collections.map((collection) => (
+                    <div
+                        key={collection.element}
+                        className="space-y-2 border-t border-line-subtle pt-3"
+                    >
+                        <header className="flex flex-wrap items-baseline justify-between gap-2">
+                            <h4 className="text-xs font-medium">
+                                {t('curveConfiguration.curves.collection', {
+                                    element: collection.element,
+                                })}
+                            </h4>
+                            <Tag small>
+                                {t('curveConfiguration.curves.collectionRows', {
+                                    count: String(collection.rows.length),
+                                })}
+                            </Tag>
+                        </header>
+                        <ul className="space-y-3">
+                            {collection.rows.map((row) => (
+                                <li
+                                    key={row.id}
+                                    className="rounded-md border border-line-subtle p-3"
+                                >
+                                    <p className="text-xs font-medium">
+                                        {row.kind === ''
+                                            ? t('curveConfiguration.curves.collectionRow', {
+                                                  id: shortId(row.id),
+                                              })
+                                            : row.kind}
+                                    </p>
+                                    <ul className="divide-y divide-line-subtle">
+                                        {row.leaves.map(leaveOfRow(row.id))}
+                                    </ul>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ))}
+                {blocks.length > 0 && (
                     <div className="flex flex-wrap items-center gap-2 border-t border-line-subtle pt-3">
                         <span className="text-xs text-ink-faint">
                             {t('curveConfiguration.curves.blocks')}
                         </span>
-                        {entry.blocks.map((block) => (
+                        {blocks.map((block) => (
                             <span key={block.element} className="flex items-center gap-1">
                                 <Tag small>{block.element}</Tag>
                                 <span className="text-xs text-ink-faint">

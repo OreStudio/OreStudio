@@ -70,6 +70,24 @@ const blockSchema = z.object({
 
 export type CurveBlock = z.infer<typeof blockSchema>;
 
+/** One row of a child collection, with the leaves the contract names for it. */
+const collectionRowSchema = z.object({
+    id: z.string(),
+    kind: z.string(),
+    leaves: z.array(parameterSchema),
+});
+
+export type CurveCollectionRow = z.infer<typeof collectionRowSchema>;
+
+/** A child collection an entry holds rows of, such as its segments. */
+const collectionSchema = z.object({
+    element: z.string(),
+    entity: z.string(),
+    rows: z.array(collectionRowSchema),
+});
+
+export type CurveCollection = z.infer<typeof collectionSchema>;
+
 /** One curve entry: the definition every family shares, and its own parameters. */
 const entrySchema = z.object({
     id: z.string(),
@@ -79,6 +97,7 @@ const entrySchema = z.object({
     position: z.number(),
     parameters: z.array(parameterSchema),
     blocks: z.array(blockSchema),
+    collections: z.array(collectionSchema),
 });
 
 export type CurveEntry = z.infer<typeof entrySchema>;

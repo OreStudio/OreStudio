@@ -8,7 +8,7 @@
 #+filetags: :marketdata:implementation:model_the_route_transport_configuration:sprint_29:v0:
 #+owner: marco
 #+branch: feature/add-the-adapter-and-supplier-catalogues
-#+pr:
+#+pr: 4067
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4067][#4067]] | [marketdata] Add the adapter and supplier catalogues (WIP) |
 
 * Review
 

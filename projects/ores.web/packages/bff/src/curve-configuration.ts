@@ -42,9 +42,9 @@ import type { LiveSession } from './sessions.js';
 /*
  * One curve configuration, as the ORE element and leaf screen standard draws it.
  *
- * The section list, the each section's entry element and the order the sections
- * are read in come from =curve_section=, so the screen holds no table that names
- * a family. What a column holds is the projection's fact, and it reaches here
+ * The section list, each section's entry element and the order the sections are
+ * read in come from =curve_section=, so the screen holds no table that names a
+ * family. What a column holds is the projection's fact, and it reaches here
  * through =curve-sections.generated.ts=, which the generator reads out of the
  * projection. What a leaf means, and the values it accepts, come from the ORE
  * parameter contract and the value set tables, so the screen holds no ORE text.
@@ -53,6 +53,11 @@ import type { LiveSession } from './sessions.js';
  * the section the entry's definition names. An entry is one =curve_definition=
  * row -- the identifier and the description every family shares -- plus the rows
  * of its own family table, which are joined back to it by =curve_definition_id=.
+ *
+ * A change names leaves, never the document: the route reads the stored document,
+ * changes those leaves, and writes back the families they reach, so the rows a
+ * screen does not draw keep their versions and a save from a stale page is a
+ * conflict rather than an overwrite.
  */
 
 /** The schema the curve configuration's leaves are documented under. */

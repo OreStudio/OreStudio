@@ -62,9 +62,15 @@ import { useTabs } from '../ui/Tabs.js';
  *
  * Every word comes from the server: the sections and their entry elements from
  * the curve section data, each parameter's label, meaning, default and value set
- * from the ORE parameter contract, and each value from the entry's own row. The
- * page reads and does not write, because a save writes the whole thirty-four
- * family document and the guard does not cover the curve tables yet.
+ * from the ORE parameter contract, and each value from the entry's own row.
+ *
+ * A change writes the leaves a person touched and nothing else: the route reads
+ * the stored document, changes those leaves and writes back only the families
+ * they reach, so the rows this page does not draw keep their versions. It states
+ * the version the page read, so a save from a stale page is a conflict the person
+ * reads again, never an overwrite. The blocks an entry holds -- its segments,
+ * quotes and bootstrap -- are named and not yet drawn, so their leaves are not
+ * offered for change.
  */
 
 /** The entity type the history of a curve configuration row is recorded under. */

@@ -390,6 +390,11 @@ if(WIN32)
     # Prevent Windows.h from including the legacy WinSock.h header, which
     # conflicts with WinSock2.h pulled in by Boost.ASIO (socket_types.hpp).
     add_compile_definitions(WIN32_LEAN_AND_MEAN)
+    # Keep Windows.h from defining min and max as function-like macros. A unity
+    # unit that includes Windows.h before reflect-cpp makes
+    # std::numeric_limits<T>::max() expand as a macro call with no arguments,
+    # which fails the build inside rfl's own headers.
+    add_compile_definitions(NOMINMAX)
     if(MSVC)
         # Allow object files with more than 65535 addressable sections.
         # Required by large translation units (e.g. registrar.cpp with many

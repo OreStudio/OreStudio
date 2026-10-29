@@ -1,0 +1,1104 @@
+#+TITLE: Verify the value sets against the ORE 1.8.17 code
+#+SUBTITLE: Audit of the merged parameter value set model against the C++ source
+#+AUTHOR: parameter data model audit
+#+DATE: 2026-10-25
+#+OPTIONS: toc:2 num:nil
+
+* Scope and method
+
+This report compares the merged value set model with the ORE 1.8.17 engine
+source. The source of truth is the C++ code under
+=/home/marco/Vault/Development/ORE/Engine=.
+
+The merged model holds 224 sets and 727 links. The audit covers 217 sets. The
+seven =catalogue= sets hold no values of their own, so this audit does not
+compare them.
+
+The model was built the way the check script builds it:
+
+#+begin_src python
+import sys
+sys.path.insert(0, "projects/ores.sql/utility")
+import generate_value_sets, setup_value_sets
+data = generate_value_sets.load()
+generate_value_sets.resolve(data)
+generate_value_sets.add_conventions(data)
+generate_value_sets.add_curves(data)
+generate_value_sets.add_setup(data)
+#+end_src
+
+For each set, the audit found the parameter that the set serves. It then found
+the code that reads and validates that parameter. A parser with a =QL_FAIL=
+fallback states a fixed list. A =parseBool= call states a boolean. A
+=parseInteger= or =parseReal= call states a number. A =QL_REQUIRE= states a
+bound.
+
+Two conventions apply to every finding:
+
+- A parser that compares =boost::algorithm::to_upper_copy(s)= is
+  case-insensitive. Its list has no exact spelling rule, and the set may use
+  any accepted spelling. A parser that uses a =static map= lookup or an
+  =s == "..."= test is case-sensitive. Its list must use the exact spelling.
+- A parameter that a builder compares with a few string literals is a fixed
+  list for this audit, even when the builder holds no parser. A path, a file
+  name, a separator, a date and a period are free text.
+
+* Findings
+
+** F-01 CalibrationStrategy refuses two values ORE accepts, too narrow
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+- Set code: =calibrationstrategy=
+- Parameter: =ModelParameters/CalibrationStrategy=
+- Set as it stands: enumerated, =CoterminalDealStrike=, =CoterminalATM=,
+  =DeltaGammaAdjusted=, =None=.
+- What ORE accepts: six values. The parser accepts =CoterminalATM=,
+  =CoterminalDealStrike=, =DeltaGammaAdjusted=, =UnderlyingATM=,
+  =UnderlyingDealStrike= and =None=. The enum holds the same six values.
+- Evidence:
+  #+begin_src cpp
+  // OREData/ored/model/irmodeldata.cpp:76
+  CalibrationStrategy parseCalibrationStrategy(const string& s) {
+      if (boost::algorithm::to_upper_copy(s) == "COTERMINALATM")
+          return CalibrationStrategy::CoterminalATM;
+      ...
+      else if (boost::algorithm::to_upper_copy(s) == "UNDERLYINGATM")
+          return CalibrationStrategy::UnderlyingATM;
+      else if (boost::algorithm::to_upper_copy(s) == "UNDERLYINGDEALSTRIKE")
+          return CalibrationStrategy::UnderlyingDealStrike;
+  #+end_src
+  #+begin_src cpp
+  // OREData/ored/model/irmodeldata.hpp:79
+  enum class CalibrationStrategy { CoterminalATM, CoterminalDealStrike,
+      UnderlyingATM, UnderlyingDealStrike, DeltaGammaAdjusted, None };
+  #+end_src
+- Case handling: the parser uses =boost::algorithm::to_upper_copy=. The exact
+  spelling of a set value does not matter to ORE.
+- Direction: too narrow. The screen refuses =UnderlyingATM= and
+  =UnderlyingDealStrike=, and ORE accepts both.
+- Correction: in
+  =projects/ores.seeder/datasets/ore_pricing_engines/curation/value-sets-guide-enums.json=,
+  under =sets=, entry =calibrationstrategy=, add =UnderlyingATM= and
+  =UnderlyingDealStrike= to =values=, with =order= 4 and =order= 5.
+
+** F-02 Scheme refuses GaussLobatto and accepts a value one engine refuses
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+- Set code: =scheme=
+- Parameter: =EngineParameters/Scheme=
+- Set as it stands: enumerated, the nine FDM schemes plus =Segment=:
+  =CrankNicolson=, =Hundsdorfer=, =Douglas=, =CraigSneyd=,
+  =ModifiedCraigSneyd=, =ImplicitEuler=, =ExplicitEuler=, =MethodOfLines=,
+  =TrBDF2=, =Segment=.
+- What ORE accepts: ORE reads =Scheme= in two engine families, and the accepted
+  lists differ.
+
+  The finite difference engines parse nine schemes:
+  #+begin_src cpp
+  // OREData/ored/utilities/parsers.cpp:754
+  FdmSchemeDesc parseFdmSchemeDesc(const std::string& s) {
+      static std::map<std::string, FdmSchemeDesc> m = {
+          {"CrankNicolson", ...}, {"Hundsdorfer", ...}, {"Douglas", ...},
+          {"CraigSneyd", ...}, {"ModifiedCraigSneyd", ...},
+          {"ImplicitEuler", ...}, {"ExplicitEuler", ...},
+          {"MethodOfLines", ...}, {"TrBDF2", ...}};
+  #+end_src
+
+  The variance swap engine accepts =GaussLobatto= and =Segment= only:
+  #+begin_src cpp
+  // OREData/ored/portfolio/builders/varianceswap.hpp:107
+  std::string schemeStr = engineParameter("Scheme", {}, false, "GaussLobatto");
+  if (schemeStr == "GaussLobatto")
+      settings.scheme = ...::Scheme::GaussLobatto;
+  else if (schemeStr == "Segment")
+      settings.scheme = ...::Scheme::Segment;
+  else
+      QL_FAIL("invalid var swap pricing engine parameter Scheme (...)");
+  #+end_src
+- Case handling: both comparison functions are case-sensitive.
+- Direction: too narrow and too wide. The set refuses =GaussLobatto=, which the
+  variance swap engine accepts and uses as its default. The set accepts
+  =Segment=, which every finite difference engine refuses.
+- Correction: in
+  =projects/ores.seeder/datasets/ore_pricing_engines/curation/value-sets-code.json=,
+  under =sets=, entry =scheme=, add =GaussLobatto= to =values=. State in the
+  description that =GaussLobatto= and =Segment= apply to the variance swap
+  engine, and that =Segment= does not apply to a finite difference engine. A
+  single set cannot be exact for a name that two engine families read. The
+  union of the two lists is the closest exact set that the model can hold.
+
+** F-03 Calibration set is text but ORE parses fixed values, wrong kind
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+- Set code: =calibration=
+- Parameter: =ModelParameters/Calibration=
+- Set as it stands: text, no values.
+- What ORE accepts: five values, compared after upper casing.
+  #+begin_src cpp
+  // OREData/ored/model/irmodeldata.cpp:47
+  CalibrationType parseCalibrationType(const string& s) {
+      if (boost::algorithm::to_upper_copy(s) == "BOOTSTRAP")
+      else if (boost::algorithm::to_upper_copy(s) == "BESTFIT")
+      else if (boost::algorithm::to_upper_copy(s) == "FIRSTBESTFITTHENBOOTSTRAP")
+      else if (boost::algorithm::to_upper_copy(s) == "STATISTICALWITHRISKNEUTRALVOLATILITY")
+      else if (boost::algorithm::to_upper_copy(s) == "NONE")
+      else QL_FAIL("Calibration type " << s << " not recognized");
+  #+end_src
+- Case handling: case-insensitive.
+- Direction: wrong kind. The screen shows a text field, so a person can save
+  =Deal= or any other word. ORE refuses that word.
+- Correction: in
+  =projects/ores.seeder/datasets/ore_pricing_engines/curation/value-sets-guide-enums.json=,
+  under =sets=, entry =calibration=, set =source_kind= to =enumerated= and add
+  the five values =Bootstrap=, =BestFit=, =FirstBestFitThenBootstrap=,
+  =StatisticalWithRiskNeutralVolatility= and =None=.
+
+** F-04 Model set is text but the builder holds a fixed list, wrong kind
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+- Set code: =model=
+- Parameter: =ModelParameters/Model=
+- Set as it stands: text, no values.
+- What ORE accepts: five model names. Any other name reaches the final
+  =QL_FAIL=.
+  #+begin_src cpp
+  // OREData/ored/portfolio/builders/scriptedtrade.cpp:276
+  if (modelParam_ == "BlackScholes" && engineParam_ == "MC") {
+  } else if ((modelParam_ == "LocalVolDupire" || modelParam_ == "LocalVolAndreasenHuge") && ...) {
+  } else if (modelParam_ == "Heston" && ...) {
+  } else if (modelParam_ == "GaussianCam" && ...) {
+  } else {
+      QL_FAIL("model '" << modelParam_ << "' / engine '" << engineParam_
+                        << "' not recognised, ...");
+  }
+  #+end_src
+- Case handling: case-sensitive.
+- Direction: wrong kind.
+- Correction: in
+  =projects/ores.seeder/datasets/ore_pricing_engines/curation/value-sets-code.json=,
+  under =sets=, entry =model=, set =source_kind= to =enumerated= and add
+  =BlackScholes=, =LocalVolDupire=, =LocalVolAndreasenHuge=, =Heston= and
+  =GaussianCam=.
+
+** F-05 Engine set is text but the builder holds a fixed list, wrong kind
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+- Set code: =engine=
+- Parameter: =EngineParameters/Engine=
+- Set as it stands: text, no values.
+- What ORE accepts: the values =MC=, =FD=, =AMC= and =AMCCG=. The builder reads
+  the parameter at =scriptedtrade.cpp:126= and fails on any other pairing.
+  #+begin_src cpp
+  // OREData/ored/portfolio/builders/scriptedtrade.cpp:305
+  } else {
+      QL_FAIL("model '" << modelParam_ << "' / engine '" << engineParam_
+                        << "' not recognised, expected BlackScholes/[MC|FD], ...");
+  }
+  #+end_src
+  =AMC= and =AMCCG= are the builder names that set =buildingAmc_= and
+  =buildingAmcCg_= (same file, lines 129-133).
+- Case handling: case-sensitive.
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry =engine=, set
+  =source_kind= to =enumerated= and add =MC=, =FD=, =AMC= and =AMCCG=.
+
+** F-06 Bounds set is text but the variance swap engine holds two values, wrong kind
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+- Set code: =bounds=
+- Parameter: =EngineParameters/Bounds=
+- Set as it stands: text, no values.
+- What ORE accepts: =Fixed= and =PriceThreshold=.
+  #+begin_src cpp
+  // OREData/ored/portfolio/builders/varianceswap.hpp:108
+  std::string boundsStr = engineParameter("Bounds", {}, false, "PriceThreshold");
+  if (boundsStr == "Fixed") ...
+  else if (boundsStr == "PriceThreshold") ...
+  else QL_FAIL("invalid var swap pricing engine parameter Bounds (...)");
+  #+end_src
+- Case handling: case-sensitive.
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry =bounds=, set
+  =source_kind= to =enumerated= and add =Fixed= and =PriceThreshold=.
+
+** F-07 TimingAdjustment set is text but the cap floor builder holds two values, wrong kind
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+- Set code: =timingadjustment=
+- Parameter: =EngineParameters/TimingAdjustment=
+- Set as it stands: text, no values.
+- What ORE accepts: =Black76= and =BivariateLognormal=.
+  #+begin_src cpp
+  // OREData/ored/portfolio/builders/capfloorediborleg.cpp:47
+  typename T::TimingAdjustment timingAdjustment = T::Black76;
+  if (timingAdjustmentStr == "Black76")
+      timingAdjustment = T::Black76;
+  else if (timingAdjustmentStr == "BivariateLognormal")
+      timingAdjustment = T::BivariateLognormal;
+  else QL_FAIL("timing adjustment parameter (...) not recognised.");
+  #+end_src
+- Case handling: case-sensitive.
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry =timingadjustment=,
+  set =source_kind= to =enumerated= and add =Black76= and
+  =BivariateLognormal=.
+
+** F-08 Heston.ProcessDiscretization set is text but ORE holds nine values, wrong kind
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+- Set code: =heston_processdiscretization=
+- Parameter: =EngineParameters/Heston.ProcessDiscretization=
+- Set as it stands: text, no values.
+- What ORE accepts: the nine values that =parseHestonProcessDiscretization=
+  lists.
+  #+begin_src cpp
+  // OREData/ored/utilities/parsers.cpp:1911
+  {"PartialTruncation", ...}, {"FullTruncation", ...}, {"Reflection", ...},
+  {"NonCentralChiSquareVariance", ...}, {"QuadraticExponential", ...},
+  {"QuadraticExponentialMartingale", ...},
+  {"BroadieKayaExactSchemeLobatto", ...},
+  {"BroadieKayaExactSchemeLaguerre", ...},
+  {"BroadieKayaExactSchemeTrapezoidal", ...}
+  #+end_src
+  The call site is =scriptedtrade.cpp:612=.
+- Case handling: case-sensitive.
+- Direction: wrong kind. The set =heston_quantoprocessdiscretization= already
+  holds these nine values as an enumerated set.
+- Correction: in =value-sets-code.json=, under =sets=, entry
+  =heston_processdiscretization=, set =source_kind= to =enumerated= and add the
+  nine values that =heston_quantoprocessdiscretization= holds.
+
+** F-09 Heston.CalibrationMethod set is text but ORE holds four values, wrong kind
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+- Set code: =heston_calibrationmethod=
+- Parameter: =EngineParameters/Heston.CalibrationMethod=
+- Set as it stands: text, no values.
+- What ORE accepts: =ConstantBestFit=, =None=, =PiecewiseBootstrap= and
+  =PiecewiseBestFit=.
+  #+begin_src cpp
+  // OREData/ored/model/hestonmodelcalibration.cpp:588
+  if (calibrationMethod_ == "PiecewiseBootstrap") {
+  ...
+  // OREData/ored/model/hestonmodelcalibration.cpp:622
+  } else if (calibrationMethod_ == "PiecewiseBestFit") {
+  ...
+  // OREData/ored/model/hestonmodelcalibration.cpp:643
+  } else { QL_FAIL("unknown calibration method \"" << calibrationMethod_ << "\""); }
+  #+end_src
+  =ConstantBestFit= and =None= are the two further branches at
+  =hestonmodelbuilder.cpp:74= and =hestonmodelcalibration.cpp:255=.
+- Case handling: case-sensitive.
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry
+  =heston_calibrationmethod=, set =source_kind= to =enumerated= and add the
+  four values.
+
+** F-10 Bootstrap.Mode set is text but ORE holds two values, wrong kind
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+- Set code: =bootstrap_mode=
+- Parameter: =EngineParameters/Bootstrap.Mode=
+- Set as it stands: text, no values.
+- What ORE accepts: =Alternating= and =Simultaneously=.
+  #+begin_src cpp
+  // OREData/ored/portfolio/builders/convertiblebond.cpp:75
+  auto bootstrapModeStr = engineParameter("Bootstrap.Mode", {}, true);
+  if (bootstrapModeStr == "Alternating") ...
+  else if (bootstrapModeStr == "Simultaneously") ...
+  else QL_FAIL("invalid Bootstrap.Mode, expected Alternating or Simultaneously");
+  #+end_src
+- Case handling: case-sensitive.
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry =bootstrap_mode=,
+  set =source_kind= to =enumerated= and add =Alternating= and =Simultaneously=.
+
+** F-11 YieldCurveModel set is text but the CMS builder holds four values, wrong kind
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+- Set code: =yieldcurvemodel=
+- Parameter: =EngineParameters/YieldCurveModel=
+- Set as it stands: text, no values.
+- What ORE accepts: =Standard=, =ExactYield=, =ParallelShifts= and
+  =NonParallelShifts=.
+  #+begin_src cpp
+  // OREData/ored/portfolio/builders/cms.cpp:30
+  GFunctionFactory::YieldCurveModel ycmFromString(const string& s) {
+      if (s == "Standard") ... else if (s == "ExactYield") ...
+      else if (s == "ParallelShifts") ...
+      else if (s == "NonParallelShifts") ...
+      else QL_FAIL("unknown string for YieldCurveModel");
+  }
+  #+end_src
+- Case handling: case-sensitive.
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry =yieldcurvemodel=,
+  set =source_kind= to =enumerated= and add the four values.
+
+** F-12 InfModelType set is text but the builder compares two values, wrong kind
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+- Set code: =infmodeltype=
+- Parameter: =ModelParameters/InfModelType=
+- Set as it stands: text, no values.
+- What ORE accepts: =DK= and =JY=.
+  #+begin_src cpp
+  // OREData/ored/portfolio/builders/scriptedtrade.cpp:580
+  infModelType_ = modelParameter("InfModelType", getModelEngineQualifiers(), false, "DK");
+  // OREData/ored/portfolio/builders/scriptedtrade.cpp:873
+  if (infModelType_ == "DK") { ... }
+  // OREData/ored/model/camcorrelationsfromindexcorrelations.cpp:69
+  if (infModelType == "JY") { ... }
+  #+end_src
+- Case handling: case-sensitive.
+- Direction: wrong kind. A third word passes the reader and then silently takes
+  the =JY= branch or builds no inflation model.
+- Correction: in =value-sets-code.json=, under =sets=, entry =infmodeltype=,
+  set =source_kind= to =enumerated= and add =DK= and =JY=.
+
+** F-13 FloatSpreadMapping set is text but ORE holds three values, wrong kind
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+- Set code: =floatspreadmapping=
+- Parameters: =ModelParameters/FloatSpreadMapping= and
+  =EngineParameters/FloatSpreadMapping=
+- Set as it stands: text, no values.
+- What ORE accepts: =NextCoupon=, =proRata= and =Simple=.
+  #+begin_src cpp
+  // OREData/ored/model/lgmdata.cpp:100
+  QuantExt::AnalyticLgmSwaptionEngine::FloatSpreadMapping parseFloatSpreadMapping(const string& s) {
+      if (boost::algorithm::to_upper_copy(s) == "NEXTCOUPON")
+      else if (boost::algorithm::to_upper_copy(s) == "PRORATA")
+      else if (boost::algorithm::to_upper_copy(s) == "SIMPLE")
+      else QL_FAIL("FloatSpreadMapping '" << s << "' not recognized");
+  }
+  #+end_src
+- Case handling: case-insensitive.
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry
+  =floatspreadmapping=, set =source_kind= to =enumerated= and add =NextCoupon=,
+  =proRata= and =Simple=.
+
+** F-14 IrVolatilityType set is text but ORE holds two values, wrong kind
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+- Set code: =irvolatilitytype=
+- Parameter: =ModelParameters/IrVolatilityType=
+- Set as it stands: text, no values.
+- What ORE accepts: =Hagan= and =HullWhite=.
+  #+begin_src cpp
+  // OREData/ored/model/lgmdata.cpp:81
+  LgmData::VolatilityType parseVolatilityType(const string& s) {
+      if (boost::algorithm::to_upper_copy(s) == "HULLWHITE")
+      else if (boost::algorithm::to_upper_copy(s) == "HAGAN")
+      else QL_FAIL("Volatility type " << s << " not recognized");
+  }
+  #+end_src
+  The call site is =scriptedtrade.cpp:1637=. The set =volatilitytype= already
+  holds these two values.
+- Case handling: case-insensitive.
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry =irvolatilitytype=,
+  set =source_kind= to =enumerated= and add =Hagan= and =HullWhite=.
+
+** F-15 Regression.VarGroupMode set is text but ORE holds two values, wrong kind
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+- Set code: =regression_vargroupmode=
+- Parameter: =EngineParameters/Regression.VarGroupMode=
+- Set as it stands: text, no values.
+- What ORE accepts: =Global= and =Trivial=.
+  #+begin_src cpp
+  // OREData/ored/utilities/parsers.cpp:1657
+  QuantExt::McRegressionModel::VarGroupMode parseVarGroupMode(const std::string& s) {
+      if (s == "Global") ... else if (s == "Trivial") ...
+      else QL_FAIL("VarGroupMode '" << s << "' not recognized, expected Global, Trivial");
+  }
+  #+end_src
+- Case handling: case-sensitive.
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry
+  =regression_vargroupmode=, set =source_kind= to =enumerated= and add =Global=
+  and =Trivial=.
+
+** F-16 GlobalModel set is text but ORE reads a bool, wrong kind
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+- Set code: =globalmodel=
+- Parameter: =ModelParameters/GlobalModel=
+- Set as it stands: text, no values.
+- What ORE accepts: a bool. =parseBool= accepts =Y=, =YES=, =TRUE=, =True=,
+  =true=, =1=, =N=, =NO=, =FALSE=, =False=, =false= and =0=.
+  #+begin_src cpp
+  // OREData/ored/portfolio/flexiswap.cpp:205
+  bool useGlobalModel = parseBool(flexiSwapBuilder->modelParameter("GlobalModel", {}, true));
+  #+end_src
+  The bool parser is =parsers.cpp:153=.
+- Case handling: the bool parser has a fixed spelling list.
+- Direction: wrong kind. The screen shows a text field for a switch.
+- Correction: in =value-sets-code.json=, under =sets=, entry =globalmodel=, set
+  =source_kind= to =boolean= and remove =values=.
+
+** F-17 UseAD set is text but ORE reads a bool, wrong kind
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+- Set code: =usead=
+- Parameter: =EngineParameters/UseAD=
+- Set as it stands: text, no values.
+- What ORE accepts: a bool.
+  #+begin_src cpp
+  // OREData/ored/portfolio/builders/swaption.cpp:125
+  bool useCachedSensis = parseBool(builder->engineParameter("UseAD", {}, true)) && ...;
+  // OREData/ored/portfolio/builders/scriptedtrade.cpp:538
+  useAd_ = parseBool(engineParameter("UseAD", getModelEngineQualifiers(), false, "false"));
+  #+end_src
+- Case handling: the bool parser has a fixed spelling list.
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry =usead=, set
+  =source_kind= to =boolean= and remove =values=.
+
+** F-18 UseIndexCurveForIndexCDS set is text but ORE reads a bool, wrong kind
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+- Set code: =useindexcurveforindexcds=
+- Parameter: =EngineParameters/useIndexCurveForIndexCDS=
+- Set as it stands: text, no values.
+- What ORE accepts: a bool.
+  #+begin_src cpp
+  // OREData/ored/portfolio/cdo.cpp:597
+  bool useIndexCurve =
+      parseBool(cdoEngineBuilder->engineParameter("useIndexCurveForIndexCDS", {}, false, "false"));
+  #+end_src
+- Case handling: the bool parser has a fixed spelling list.
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry
+  =useindexcurveforindexcds=, set =source_kind= to =boolean= and remove
+  =values=.
+
+** F-19 Beta has no lower bound but ORE requires a non-negative value, wrong bounds
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+- Set code: =beta=
+- Parameter: =EngineParameters/beta=
+- Set as it stands: number, no minimum and no maximum.
+- What ORE accepts: any value that is greater than or equal to zero.
+  #+begin_src cpp
+  // OREData/ored/portfolio/builders/commodityswaption.hpp:60
+  Real beta = parseReal(engineParameter("beta"));
+  QL_REQUIRE(beta >= 0.0, "CommoditySwaptionAnalyticalEngineBuilder: beta must be non-negative");
+  #+end_src
+  The same check is at line 79.
+- Direction: wrong bounds. The screen accepts =-0.5=, and ORE refuses it.
+- Correction: in =value-sets-code.json=, under =sets=, entry =beta=, add
+  ="minimum": 0=.
+
+** F-20 Integer sets that ORE stores in a Size have no minimum, wrong bounds
+:PROPERTIES:
+:SEVERITY: High
+:END:
+
+These sets are =integer= with no minimum and no maximum. ORE reads each value
+with =parseInteger= and stores it in a =QuantLib::Size=. A =Size= is unsigned.
+ORE silently converts a negative value to a very large positive value. The value
+set must refuse a negative value.
+
+#+begin_src cpp
+// OREData/ored/utilities/parsers.cpp:145
+Integer parseInteger(const string& s) { ... boost::lexical_cast<Integer>(s.c_str()) ... }
+
+// OREData/ored/portfolio/builders/cdo.hpp:281
+Size nBuckets = parseInteger(engineParameter("buckets"));
+// OREData/ored/portfolio/builders/cdo.hpp:358
+Size nSimulations = parseInteger(engineParameter("nSimulations"));
+// OREData/ored/portfolio/builders/callablebond.cpp:392
+Size stateGridPoints = parseInteger(engineParameter("StateGridPoints"));
+// OREData/ored/portfolio/builders/callablebond.cpp:408
+Size ny = parseInteger(engineParameter("ny"));
+// OREData/ored/portfolio/builders/riskparticipationagreement.cpp:140
+Size maxGapDays = parseInteger(engineParameter("MaxGapDays"));
+#+end_src
+
+The sets and their parameters:
+
+| Set code | Parameter (scope/name) | Evidence |
+|--------------------------+-----------------------------------------------------+------------------------------------|
+| =bins= | =EngineParameters/Bins= | cdo.hpp:281 |
+| =buckets= | =EngineParameters/buckets= | cdo.hpp:281 model |
+| =cashflowgeneration_oncpnmaxsimtimes= | =EngineParameters/CashflowGeneration.OnCpnMaxSimTimes= | callablebond.cpp:480 |
+| =exercisetimestepsperyear= | =EngineParameters/ExerciseTimeStepsPerYear= | callablebond.cpp:380 |
+| =bootstrap_stategridpoints= | =EngineParameters/Bootstrap.StateGridPoints= | convertiblebond.cpp:68 |
+| =bootstrap_timestepsperyear= | =EngineParameters/Bootstrap.TimeStepsPerYear= | convertiblebond.cpp:67 |
+| =heston_maxcalibrationattempts= | =EngineParameters/Heston.MaxCalibrationAttempts= | scriptedtrade.cpp:600 |
+| =maxdiscretisationpoints= | =EngineParameters/MaxDiscretisationPoints= | riskparticipationagreement.cpp:108 |
+| =maxgapdays= | =EngineParameters/MaxGapDays= | riskparticipationagreement.cpp:140 |
+| =nsimulations= | =EngineParameters/nSimulations= | cdo.hpp:358 |
+| =nx= | =EngineParameters/nx= | callablebond.cpp:410 |
+| =ny= | =EngineParameters/ny= | callablebond.cpp:408 |
+| =pricing_samples= | =EngineParameters/Pricing.Samples= | callablebond.cpp:466 |
+| =pricing_stategridpoints= | =EngineParameters/Pricing.StateGridPoints= | convertiblebond.cpp:85 |
+| =pricing_timestepsperyear= | =EngineParameters/Pricing.TimeStepsPerYear= | convertiblebond.cpp:84 |
+| =regressionorder= | =EngineParameters/RegressionOrder= | cliquetoption.cpp:34 |
+| =samples= | =EngineParameters/Samples= | cliquetoption.cpp:33 |
+| =stategridpoints= | =EngineParameters/StateGridPoints= | callablebond.cpp:392 |
+| =timestepsperyear= | =EngineParameters/TimeStepsPerYear= | callablebond.cpp:393 |
+| =training_samples= | =EngineParameters/Training.Samples= | callablebond.cpp:465 |
+| =variancestategridpoints= | =EngineParameters/VarianceStateGridPoints= | scriptedtrade.cpp:648 |
+
+- Direction: wrong bounds. The screen accepts a negative number, and ORE does
+  not reject it. ORE converts it to a huge =Size= and the run behaves wrongly.
+- Correction: in =value-sets-code.json=, under =sets=, add
+  ="minimum": 0= to each entry above. Do not add 0 to the =seed=,
+  =pricing_seed=, =training_seed= and =trainingseed= entries. ORE reads a seed
+  as a signed =long= (=cbo.cpp:45=).
+
+** F-21 TrainingSamples set is text but ORE reads a whole number, wrong kind
+:PROPERTIES:
+:SEVERITY: Medium
+:END:
+
+- Set code: =trainingsamples=
+- Parameter: =EngineParameters/TrainingSamples=
+- Set as it stands: text, no values.
+- What ORE accepts: a whole number.
+  #+begin_src cpp
+  // OREData/ored/portfolio/builders/scriptedtrade.cpp:634
+  if (auto tmp = engineParameter("TrainingSamples", getModelEngineQualifiers(), false, ""); !tmp.empty()) {
+      params_.trainingSamples = parseInteger(tmp);
+  #+end_src
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry =trainingsamples=,
+  set =source_kind= to =integer= and add ="minimum": 0=.
+
+** F-22 RegressionVarianceCutoff set is text but ORE reads a real, wrong kind
+:PROPERTIES:
+:SEVERITY: Medium
+:END:
+
+- Set code: =regressionvariancecutoff=
+- Parameter: =EngineParameters/RegressionVarianceCutoff=
+- Set as it stands: text, no values.
+- What ORE accepts: a real number or an empty string.
+  #+begin_src cpp
+  // OREData/ored/portfolio/builders/callablebond.cpp:477
+  parseRealOrNull(engineParameter("RegressionVarianceCutoff", {}, false, std::string())),
+  #+end_src
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry
+  =regressionvariancecutoff=, set =source_kind= to =number=. Add the
+  description note that an empty value is allowed.
+
+** F-23 IndicatorSmoothingForValues set is text but ORE reads a real, wrong kind
+:PROPERTIES:
+:SEVERITY: Medium
+:END:
+
+- Set code: =indicatorsmoothingforvalues=
+- Parameter: =EngineParameters/IndicatorSmoothingForValues=
+- Set as it stands: text, no values.
+- What ORE accepts: a real number.
+  #+begin_src cpp
+  // OREData/ored/portfolio/builders/scriptedtrade.cpp:552
+  parseReal(engineParameter("IndicatorSmoothingForValues", ..., false, "0.0"));
+  // OREData/ored/portfolio/builders/swaption.cpp:128
+  parseReal(builder->engineParameter("IndicatorSmoothingForValues", {}, false, "0.0")),
+  #+end_src
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry
+  =indicatorsmoothingforvalues=, set =source_kind= to =number=.
+
+** F-24 IndicatorSmoothingForDerivatives set is text but ORE reads a real, wrong kind
+:PROPERTIES:
+:SEVERITY: Medium
+:END:
+
+- Set code: =indicatorsmoothingforderivatives=
+- Parameter: =EngineParameters/IndicatorSmoothingForDerivatives=
+- Set as it stands: text, no values.
+- What ORE accepts: a real number.
+  #+begin_src cpp
+  // OREData/ored/portfolio/builders/scriptedtrade.cpp:554
+  parseReal(engineParameter("IndicatorSmoothingForDerivatives", ..., false, "0.2"));
+  // OREData/ored/portfolio/builders/swaption.cpp:129
+  parseReal(builder->engineParameter("IndicatorSmoothingForDerivatives", {}, false, "0.0")),
+  #+end_src
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry
+  =indicatorsmoothingforderivatives=, set =source_kind= to =number=.
+
+** F-25 SqrtSmoothingForDerivatives set is text but ORE reads a real, wrong kind
+:PROPERTIES:
+:SEVERITY: Medium
+:END:
+
+- Set code: =sqrtsmoothingforderivatives=
+- Parameter: =EngineParameters/SqrtSmoothingForDerivatives=
+- Set as it stands: text, no values.
+- What ORE accepts: a real number.
+  #+begin_src cpp
+  // OREData/ored/portfolio/builders/scriptedtrade.cpp:556
+  parseReal(engineParameter("SqrtSmoothingForDerivatives", ..., false, "1E-8"));
+  // OREData/ored/portfolio/builders/swaption.cpp:130
+  parseReal(builder->engineParameter("SqrtSmoothingForDerivatives", {}, false, "0.0")),
+  #+end_src
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry
+  =sqrtsmoothingforderivatives=, set =source_kind= to =number=.
+
+** F-26 Displacement set is text but ORE reads a real, wrong kind
+:PROPERTIES:
+:SEVERITY: Medium
+:END:
+
+- Set code: =displacement=
+- Parameter: =ModelParameters/Displacement=
+- Set as it stands: text, no values.
+- What ORE accepts: a real number.
+  #+begin_src cpp
+  // OREData/ored/portfolio/builders/vanillaoption.hpp:164
+  auto displacementStr = this->modelParameter("Displacement", {assetName}, false, "0.0");
+  #+end_src
+  The value is then parsed as a real in the same function.
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry =displacement=,
+  set =source_kind= to =number=.
+
+** F-27 IrReversion set is text but ORE reads a real, wrong kind
+:PROPERTIES:
+:SEVERITY: Medium
+:END:
+
+- Set code: =irreversion=
+- Parameters: =ModelParameters/IrReversion= and =ModelParameters/IrReversion_=
+- Set as it stands: text, no values.
+- What ORE accepts: a real number.
+  #+begin_src cpp
+  // OREData/ored/portfolio/builders/scriptedtrade.cpp:1155
+  string revStr = modelParameter("IrReversion_" + ccy, ..., false, "");
+  if (revStr.empty())
+      revStr = modelParameter("IrReversion", ..., false, "");
+  ...
+  irReversions_[ccy] = parseReal(revStr);
+  #+end_src
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry =irreversion=, set
+  =source_kind= to =number=.
+
+** F-28 InfJyRealRateReversion set is text but ORE reads a real, wrong kind
+:PROPERTIES:
+:SEVERITY: Medium
+:END:
+
+- Set code: =infjyrealratereversion=
+- Parameter: =ModelParameters/InfJyRealRateReversion=
+- Set as it stands: text, no values.
+- What ORE accepts: a real number. The sibling times and volumes are comma
+  lists, but the reversion is one value.
+  #+begin_src cpp
+  // OREData/ored/portfolio/builders/scriptedtrade.cpp:1752
+  auto tmp4 = modelParameter("InfJyRealRateReversion", ..., true);
+  ...
+  ReversionParameter realRateRev(..., {parseReal(tmp4)});
+  #+end_src
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry
+  =infjyrealratereversion=, set =source_kind= to =number=.
+
+** F-29 Bootstrap.MesherConcentration set is text but ORE reads a real, wrong kind
+:PROPERTIES:
+:SEVERITY: Medium
+:END:
+
+- Set code: =bootstrap_mesherconcentration=
+- Parameter: =EngineParameters/Bootstrap.MesherConcentration=
+- Set as it stands: text, no values.
+- What ORE accepts: a real number or an empty string.
+  #+begin_src cpp
+  // OREData/ored/portfolio/builders/convertiblebond.cpp:71
+  auto modelMesherConcentrationStr = engineParameter("Bootstrap.MesherConcentration", {}, false, "");
+  if (!modelMesherConcentrationStr.empty())
+      modelMesherConcentration = parseReal(modelMesherConcentrationStr);
+  #+end_src
+- Direction: wrong kind.
+- Correction: in =value-sets-code.json=, under =sets=, entry
+  =bootstrap_mesherconcentration=, set =source_kind= to =number=.
+
+** F-30 Period pattern refuses a signed period ORE accepts, too narrow
+:PROPERTIES:
+:SEVERITY: Medium
+:END:
+
+- Set codes: =convention.period= and =curve.period=
+- Parameters: =convention.period= serves 17 terms, for example
+  =InflationSwap|ObservationLag=, =FXOption|SwitchTenor= and
+  =CrossCurrencyBasis|SpreadTenor=. =curve.period= serves
+  =InflationCapFloorVolatilities|ObservationLag=.
+- Set as it stands: regex, pattern =^([0-9]+[DdWwMmYy])+$=.
+- What ORE accepts: the =QuantLib::PeriodParser= grammar. The grammar takes one
+  or more number-unit pairs and it allows a leading sign.
+  #+begin_src cpp
+  // QuantLib/ql/utilities/dataparsers.cpp:40
+  Period PeriodParser::parse(const std::string& str) {
+      QL_REQUIRE(str.length()>1, ...);
+      ... find_first_of("DdWwMmYy") ...
+  // QuantLib/ql/utilities/dataparsers.cpp:77
+  Size nPos = str.find_first_of("-+0123456789");
+  QL_REQUIRE(nPos<iPos, "no numbers of " << units << " provided");
+  nInteger n = std::stoi(str.substr(nPos,iPos));
+  #+end_src
+- Case handling: the parser accepts an upper case unit and a lower case unit.
+- Direction: too narrow. ORE parses =-3M= and =+1Y=. The pattern refuses both.
+  A negative observation lag is meaningful for an inflation index.
+- Correction: this pattern is this repository's own choice. ORE enforces a
+  parser, not a pattern. In =projects/ores.sql/utility/convention_value_sets.py=,
+  =OWN_SETS=, entry =convention.period=, and in
+  =projects/ores.sql/utility/curve_value_sets.py=, =OWN_SETS=, entry
+  =curve.period=, change =pattern= to =^[+-]?([0-9]+[DdWwMmYy])+$=. A simpler
+  option is to state =text= for these two sets, because ORE holds no pattern.
+
+** F-31 InterpolationMethod refuses one deprecated alias ORE accepts, too narrow
+:PROPERTIES:
+:SEVERITY: Low
+:END:
+
+- Set code: =curve.yield_curve_interpolation_method=
+- Parameter: =YieldCurves|InterpolationMethod=
+- Set as it stands: enumerated, 20 values. It holds =KrugerLogMixedLinearCubic=
+  and =LogMixedLinearCubicNaturalSpline=.
+- What ORE accepts: 21 values. The parser also accepts
+  =DefaultLogMixedLinearCubic= as a deprecated alias of
+  =KrugerLogMixedLinearCubic=.
+  #+begin_src cpp
+  // OREData/ored/marketdata/yieldcurve.cpp:336
+  else if (s == "DefaultLogMixedLinearCubic") // deprecated,for backwards compatibility
+      return YieldCurve::InterpolationMethod::KrugerLogMixedLinearCubic;
+  #+end_src
+- Case handling: case-sensitive.
+- Direction: too narrow. The alias is deprecated, so a configuration should not
+  use it. ORE still accepts it.
+- Correction: the value list is generated from
+  =projects/ores.sql/utility/curve_terms.json=, key =parsers=, entry
+  =parseYieldCurveInterpolationMethod=, list =values=. Add
+  ={"means": "KrugerLogMixedLinearCubic", "value": "DefaultLogMixedLinearCubic"}=
+  and regenerate the terms file.
+
+
+* Summary
+
+The table lists every set that this audit verified, with one verdict for each
+set. The seven =catalogue= sets are not in the table. They hold a relation name
+and no values, so this audit does not compare them.
+
+| Set | Parameter | Kind | Verdict |
+|-----+-----------+------+---------|
+| =calibrationstrategy= | =ModelParameters/CalibrationStrategy= | enumerated | too narrow |
+| =convention.period= | =AverageOIS/FixedTenor (+16)= | regex | too narrow |
+| =curve.period= | =InflationCapFloorVolatilities/ObservationLag= | regex | too narrow |
+| =curve.yield_curve_interpolation_method= | =YieldCurves/InterpolationMethod= | enumerated | too narrow |
+| =scheme= | =EngineParameters/Scheme= | enumerated | too narrow |
+| =bootstrap_mesherconcentration= | =EngineParameters/Bootstrap.MesherConcentration= | text | wrong kind |
+| =bootstrap_mode= | =EngineParameters/Bootstrap.Mode= | text | wrong kind |
+| =bounds= | =EngineParameters/Bounds= | text | wrong kind |
+| =calibration= | =ModelParameters/Calibration= | text | wrong kind |
+| =displacement= | =ModelParameters/Displacement= | text | wrong kind |
+| =engine= | =EngineParameters/Engine= | text | wrong kind |
+| =floatspreadmapping= | =EngineParameters/FloatSpreadMapping (+1)= | text | wrong kind |
+| =globalmodel= | =ModelParameters/GlobalModel= | text | wrong kind |
+| =heston_calibrationmethod= | =EngineParameters/Heston.CalibrationMethod= | text | wrong kind |
+| =heston_processdiscretization= | =EngineParameters/Heston.ProcessDiscretization= | text | wrong kind |
+| =indicatorsmoothingforderivatives= | =EngineParameters/IndicatorSmoothingForDerivatives= | text | wrong kind |
+| =indicatorsmoothingforvalues= | =EngineParameters/IndicatorSmoothingForValues= | text | wrong kind |
+| =infjyrealratereversion= | =ModelParameters/InfJyRealRateReversion= | text | wrong kind |
+| =infmodeltype= | =ModelParameters/InfModelType= | text | wrong kind |
+| =irreversion= | =ModelParameters/IrReversion (+1)= | text | wrong kind |
+| =irvolatilitytype= | =ModelParameters/IrVolatilityType= | text | wrong kind |
+| =model= | =ModelParameters/Model= | text | wrong kind |
+| =regression_vargroupmode= | =EngineParameters/Regression.VarGroupMode= | text | wrong kind |
+| =regressionvariancecutoff= | =EngineParameters/RegressionVarianceCutoff= | text | wrong kind |
+| =sqrtsmoothingforderivatives= | =EngineParameters/SqrtSmoothingForDerivatives= | text | wrong kind |
+| =timingadjustment= | =EngineParameters/TimingAdjustment= | text | wrong kind |
+| =trainingsamples= | =EngineParameters/TrainingSamples= | text | wrong kind |
+| =usead= | =EngineParameters/UseAD= | text | wrong kind |
+| =useindexcurveforindexcds= | =EngineParameters/useIndexCurveForIndexCDS= | text | wrong kind |
+| =yieldcurvemodel= | =EngineParameters/YieldCurveModel= | text | wrong kind |
+| =beta= | =EngineParameters/beta= | number | wrong bounds |
+| =bins= | =EngineParameters/Bins= | integer | wrong bounds |
+| =bootstrap_stategridpoints= | =EngineParameters/Bootstrap.StateGridPoints= | integer | wrong bounds |
+| =bootstrap_timestepsperyear= | =EngineParameters/Bootstrap.TimeStepsPerYear= | integer | wrong bounds |
+| =buckets= | =EngineParameters/buckets= | integer | wrong bounds |
+| =cashflowgeneration_oncpnmaxsimtimes= | =EngineParameters/CashflowGeneration.OnCpnMaxSimTimes= | integer | wrong bounds |
+| =exercisetimestepsperyear= | =EngineParameters/ExerciseTimeStepsPerYear (+1)= | integer | wrong bounds |
+| =heston_maxcalibrationattempts= | =EngineParameters/Heston.MaxCalibrationAttempts= | integer | wrong bounds |
+| =maxdiscretisationpoints= | =EngineParameters/MaxDiscretisationPoints= | integer | wrong bounds |
+| =maxgapdays= | =EngineParameters/MaxGapDays= | integer | wrong bounds |
+| =nsimulations= | =EngineParameters/nSimulations= | integer | wrong bounds |
+| =nx= | =EngineParameters/nx= | integer | wrong bounds |
+| =ny= | =EngineParameters/ny= | integer | wrong bounds |
+| =pricing_samples= | =EngineParameters/Pricing.Samples= | integer | wrong bounds |
+| =pricing_stategridpoints= | =EngineParameters/Pricing.StateGridPoints= | integer | wrong bounds |
+| =pricing_timestepsperyear= | =EngineParameters/Pricing.TimeStepsPerYear= | integer | wrong bounds |
+| =regressionorder= | =EngineParameters/RegressionOrder= | integer | wrong bounds |
+| =samples= | =EngineParameters/Samples (+1)= | integer | wrong bounds |
+| =stategridpoints= | =EngineParameters/StateGridPoints= | integer | wrong bounds |
+| =timestepsperyear= | =EngineParameters/TimeStepsPerYear= | integer | wrong bounds |
+| =training_samples= | =EngineParameters/Training.Samples= | integer | wrong bounds |
+| =variancestategridpoints= | =EngineParameters/VarianceStateGridPoints= | integer | wrong bounds |
+| =calibrationindexterms= | =EngineParameters/calibrationIndexTerms= | text | undecided |
+| =conversion_ratio_discretization_grid= | =EngineParameters/ConversionRatioDiscretizationGrid= | text | undecided |
+| =mctype= | =GlobalParameters/McType= | text | undecided |
+| =runtype= | =GlobalParameters/RunType= | text | undecided |
+| =accuracy= | =EngineParameters/Accuracy= | number | ok |
+| =baseccy= | =ModelParameters/BaseCcy= | text | ok |
+| =bootstrap_calibrationgrid= | =EngineParameters/Bootstrap.CalibrationGrid= | text | ok |
+| =bootstrap_mesherepsilon= | =EngineParameters/Bootstrap.MesherEpsilon= | number | ok |
+| =bootstrap_mesherscaling= | =EngineParameters/Bootstrap.MesherScaling= | number | ok |
+| =bootstraptolerance= | =EngineParameters/BootstrapTolerance= | number | ok |
+| =brownianbridgeordering= | =EngineParameters/BrownianBridgeOrdering= | enumerated | ok |
+| =bsstddevs= | =EngineParameters/BSStdDevs= | number | ok |
+| =buckettimes= | =EngineParameters/BucketTimes= | number | ok |
+| =buckettimesdeltagamma= | =EngineParameters/BucketTimesDeltaGamma= | number | ok |
+| =buckettimesvega= | =EngineParameters/BucketTimesVega= | number | ok |
+| =buckettimesvegaopt= | =EngineParameters/BucketTimesVegaOpt= | number | ok |
+| =buckettimesvegaund= | =EngineParameters/BucketTimesVegaUnd= | number | ok |
+| =calibrationinstrumentspacing= | =ModelParameters/CalibrationInstrumentSpacing= | text | ok |
+| =calibrationmoneyness= | =EngineParameters/CalibrationMoneyness= | number | ok |
+| =callspreadeps= | =EngineParameters/CallSpreadEps= | number | ok |
+| =cashflowgeneration_oncpnaddsimtimescutoff= | =EngineParameters/CashflowGeneration.OnCpnAddSimTimesCutoff= | text | ok |
+| =convention.atm_type= | =FxOption/AtmType= | enumerated | ok |
+| =convention.averaging_data_period= | =CommodityFuture/Period= | enumerated | ok |
+| =convention.bond_price_type= | =BondYield/PriceType= | enumerated | ok |
+| =convention.compounding= | =BondYield/Compounding (+1)= | enumerated | ok |
+| =convention.date_generation_rule= | =CDS/Rule (+1)= | enumerated | ok |
+| =convention.delta_type= | =FxOption/DeltaType= | enumerated | ok |
+| =convention.frequency= | =AverageOIS/FixedFrequency (+12)= | enumerated | ok |
+| =convention.inflation_swap_publication_roll= | =InflationSwap/PublicationRoll= | enumerated | ok |
+| =convention.integer= | =BMABasisSwap/IndexPaymentLag (+18)= | integer | ok |
+| =convention.month= | =CommodityFuture/OneContractMonth= | enumerated | ok |
+| =convention.option_type= | =FxOption/RiskReversalInFavorOf= | enumerated | ok |
+| =convention.sub_periods_coupon_type= | =Swap/SubPeriodsCouponType (+1)= | enumerated | ok |
+| =correlation= | =EngineParameters/Correlation= | number | ok |
+| =credit_reversion= | =ModelParameters/Credit_Reversion= | number | ok |
+| =credit_volatility= | =ModelParameters/Credit_Volatility= | number | ok |
+| =credit_volatilitytimes= | =ModelParameters/Credit_VolatilityTimes= | number | ok |
+| =curve= | =EngineParameters/Curve= | enumerated | ok |
+| =curve.flag= | =BaseCorrelations/CalibrateConstituentsToIndexSpread (+14)= | boolean | ok |
+| =curve.frequency= | =InflationCurves/Frequency= | enumerated | ok |
+| =curve.fx_volatility_time_interpolation= | =FXVolatilities/TimeInterpolation= | enumerated | ok |
+| =curve.integer= | =BaseCorrelations/SettlementDays (+2)= | integer | ok |
+| =curve.number= | =BaseCorrelations/IndexSpread (+6)= | number | ok |
+| =curve.text= | =BaseCorrelations/AdjustForLosses (+152)= | text | ok |
+| =curve.yield_curve_extrapolation_method= | =YieldCurves/ExtrapolationMethod= | enumerated | ok |
+| =curve.yield_curve_interpolation_variable= | =YieldCurves/InterpolationVariable= | enumerated | ok |
+| =dampingsteps= | =EngineParameters/DampingSteps= | integer | ok |
+| =errortolerance= | =EngineParameters/ErrorTolerance= | number | ok |
+| =eta= | =ModelParameters/eta= | number | ok |
+| =externalcomputedevice= | =EngineParameters/ExternalComputeDevice= | text | ok |
+| =fepcurve= | =EngineParameters/FepCurve= | enumerated | ok |
+| =fixedmaxstddevs= | =EngineParameters/FixedMaxStdDevs= | number | ok |
+| =fixedminstddevs= | =EngineParameters/FixedMinStdDevs= | number | ok |
+| =flag= | =CDS/PaysAtDefaultTime (+92)= | boolean | ok |
+| =flatvol= | =EngineParameters/FlatVol= | number | ok |
+| =fxcalibration= | =ModelParameters/FxCalibration= | enumerated | ok |
+| =fxsource= | =ModelParameters/FXSource= | text | ok |
+| =fxvolatility= | =ModelParameters/FxVolatility= | text | ok |
+| =fxvolatilitytimes= | =ModelParameters/FxVolatilityTimes= | text | ok |
+| =gridcoarsening= | =ModelParameters/GridCoarsening= | text | ok |
+| =heston_calibrationexpiries= | =EngineParameters/Heston.CalibrationExpiries= | text | ok |
+| =heston_calibrationvarianceterms= | =EngineParameters/Heston.CalibrationVarianceTerms= | text | ok |
+| =heston_earlyexitthreshold= | =EngineParameters/Heston.EarlyExitThreshold= | number | ok |
+| =heston_initialvalues= | =EngineParameters/Heston.InitialValues= | number | ok |
+| =heston_maxacceptableerror= | =EngineParameters/Heston.MaxAcceptableError= | number | ok |
+| =heston_maximuminitialvalues= | =EngineParameters/Heston.MaximumInitialValues= | number | ok |
+| =heston_quantoprocessdiscretization= | =EngineParameters/Heston.QuantoProcessDiscretization= | enumerated | ok |
+| =heston_relaxedfellerconstraint= | =EngineParameters/Heston.RelaxedFellerConstraint= | number | ok |
+| =infdkvolatility= | =ModelParameters/InfDkVolatility= | number | ok |
+| =infjyindexvol= | =ModelParameters/InfJyIndexVol= | text | ok |
+| =infjyrealratevol= | =ModelParameters/InfJyRealRateVol= | text | ok |
+| =infjyrealtonominalvolratio= | =ModelParameters/InfJyRealToNominalVolRatio= | number | ok |
+| =infjytimes= | =ModelParameters/InfJyTimes= | text | ok |
+| =integrationpoints= | =EngineParameters/IntegrationPoints= | integer | ok |
+| =lossdistributionperiods= | =EngineParameters/LossDistributionPeriods= | text | ok |
+| =lower_rate_bound_log_normal= | =EngineParameters/LowerRateBoundLogNormal= | number | ok |
+| =lower_rate_bound_normal= | =EngineParameters/LowerRateBoundNormal= | number | ok |
+| =lowerlimit= | =EngineParameters/LowerLimit= | number | ok |
+| =max= | =ModelParameters/max= | number | ok |
+| =maxcprmultiplier= | =ModelParameters/MaxCPRMultiplier= | number | ok |
+| =maxiterations= | =EngineParameters/MaxIterations= | integer | ok |
+| =maxpricethresholdsteps= | =EngineParameters/MaxPriceThresholdSteps= | integer | ok |
+| =maxsamples= | =EngineParameters/MaxSamples= | integer | ok |
+| =meanreversion= | =EngineParameters/MeanReversion= | number | ok |
+| =mesherconcentration= | =EngineParameters/MesherConcentration= | number | ok |
+| =mesherepsilon= | =EngineParameters/MesherEpsilon= | number | ok |
+| =meshermaxconcentratingpoints= | =EngineParameters/MesherMaxConcentratingPoints= | integer | ok |
+| =mesherscaling= | =EngineParameters/MesherScaling= | number | ok |
+| =method= | =EngineParameters/method= | enumerated | ok |
+| =min= | =ModelParameters/min= | number | ok |
+| =mincprmultiplier= | =ModelParameters/MinCPRMultiplier= | number | ok |
+| =number= | =CommodityForward/PointsFactor (+2)= | number | ok |
+| =openenddatereplacement= | =ModelParameters/OpenEndDateReplacement= | text | ok |
+| =optionexpiryposition= | =EngineParameters/OptionExpiryPosition= | enumerated | ok |
+| =p= | =ModelParameters/p= | number | ok |
+| =policy= | =EngineParameters/Policy= | enumerated | ok |
+| =polynomtype= | =EngineParameters/PolynomType= | enumerated | ok |
+| =precision= | =EngineParameters/Precision= | number | ok |
+| =pricethreshold= | =EngineParameters/PriceThreshold= | number | ok |
+| =pricethresholdstep= | =EngineParameters/PriceThresholdStep= | number | ok |
+| =pricing_conversionratiodiscretisationgrid= | =EngineParameters/Pricing.ConversionRatioDiscretisationGrid= | number | ok |
+| =pricing_mesherepsilon= | =EngineParameters/Pricing.MesherEpsilon= | number | ok |
+| =pricing_mesherscaling= | =EngineParameters/Pricing.MesherScaling= | number | ok |
+| =pricing_seed= | =EngineParameters/Pricing.Seed= | integer | ok |
+| =pricing_sequence= | =EngineParameters/Pricing.Sequence= | enumerated | ok |
+| =pseudo_currency_base_currency= | =GlobalParameters/PseudoCurrency.BaseCurrency= | text | ok |
+| =pseudo_currency_curve_xag= | =GlobalParameters/PseudoCurrency.Curve.XAG= | text | ok |
+| =pseudo_currency_curve_xau= | =GlobalParameters/PseudoCurrency.Curve.XAU= | text | ok |
+| =pseudo_currency_curve_xpd= | =GlobalParameters/PseudoCurrency.Curve.XPD= | text | ok |
+| =pseudo_currency_curve_xpt= | =GlobalParameters/PseudoCurrency.Curve.XPT= | text | ok |
+| =pseudo_currency_default_correlation= | =GlobalParameters/PseudoCurrency.DefaultCorrelation= | number | ok |
+| =pseudo_currency_fx_index_tag= | =GlobalParameters/PseudoCurrency.FXIndexTag= | text | ok |
+| =pseudo_currency_treat_as_fx= | =GlobalParameters/PseudoCurrency.TreatAsFX= | boolean | ok |
+| =quantocurrencypairs= | =EngineParameters/QuantoCurrencyPairs= | text | ok |
+| =recoveryrategrid= | =ModelParameters/recoveryRateGrid= | text | ok |
+| =recoveryrateprobabilities= | =ModelParameters/recoveryRateProbabilities= | text | ok |
+| =referencecalibrationgrid= | =ModelParameters/ReferenceCalibrationGrid= | text | ok |
+| =regression_maxsimtimeseq= | =EngineParameters/Regression.MaxSimTimesEQ= | integer | ok |
+| =regression_maxsimtimesfx= | =EngineParameters/Regression.MaxSimTimesFX= | integer | ok |
+| =regression_maxsimtimesir= | =EngineParameters/Regression.MaxSimTimesIR= | integer | ok |
+| =regressormodel= | =EngineParameters/RegressorModel= | enumerated | ok |
+| =requiredsamples= | =EngineParameters/RequiredSamples= | integer | ok |
+| =requiredtolerance= | =EngineParameters/RequiredTolerance= | number | ok |
+| =reversion= | =ModelParameters/Reversion= | number | ok |
+| =reversiontype= | =ModelParameters/ReversionType= | enumerated | ok |
+| =salvagingalgorithm= | =EngineParameters/SalvagingAlgorithm= | enumerated | ok |
+| =seed= | =EngineParameters/Seed (+1)= | integer | ok |
+| =sensitivitydecomposition= | =EngineParameters/SensitivityDecomposition= | enumerated | ok |
+| =separatecallputvols= | =EngineParameters/SeparateCallPutVols= | text | ok |
+| =sequencetype= | =EngineParameters/SequenceType= | enumerated | ok |
+| =setup.fixing_lag_days= | =Setup/ignoreFixingLag (+1)= | integer | ok |
+| =setup.flag= | =Setup/buildFailedTrades (+8)= | boolean | ok |
+| =setup.gzip_compression_level= | =Setup/gzipCompressionLevel= | integer | ok |
+| =setup.log_mask= | =Setup/logMask= | integer | ok |
+| =setup.n_threads= | =Setup/nThreads= | integer | ok |
+| =setup.observation_model= | =Setup/observationModel= | enumerated | ok |
+| =shifthorizon= | =ModelParameters/ShiftHorizon= | number | ok |
+| =singleswaptionthreshold= | =EngineParameters/singleSwaptionThreshold= | number | ok |
+| =soboldirectionintegers= | =EngineParameters/SobolDirectionIntegers= | enumerated | ok |
+| =sobolordering= | =EngineParameters/SobolOrdering= | enumerated | ok |
+| =spreadonincomecurve= | =EngineParameters/SpreadOnIncomeCurve= | boolean | ok |
+| =steps= | =EngineParameters/Steps (+1)= | integer | ok |
+| =sx= | =EngineParameters/sx= | number | ok |
+| =sy= | =EngineParameters/sy= | number | ok |
+| =text= | =AverageOIS/FixedCalendar (+110)= | text | ok |
+| =timegridminimumsize= | =EngineParameters/TimeGridMinimumSize= | integer | ok |
+| =timegridperyear= | =EngineParameters/TimeGridPerYear= | integer | ok |
+| =timestepperiod= | =EngineParameters/TimestepPeriod= | text | ok |
+| =tolerance= | =ModelParameters/Tolerance= | number | ok |
+| =training_basisfunction= | =EngineParameters/Training.BasisFunction= | enumerated | ok |
+| =training_basisfunctionorder= | =EngineParameters/Training.BasisFunctionOrder= | integer | ok |
+| =training_seed= | =EngineParameters/Training.Seed= | integer | ok |
+| =training_sequence= | =EngineParameters/Training.Sequence= | enumerated | ok |
+| =trainingseed= | =EngineParameters/TrainingSeed= | integer | ok |
+| =trainingsequencetype= | =EngineParameters/TrainingSequenceType= | enumerated | ok |
+| =treatsecurityspreadascreditspread= | =ModelParameters/TreatSecuritySpreadAsCreditSpread= | boolean | ok |
+| =upper_rate_bound_log_normal= | =EngineParameters/UpperRateBoundLogNormal= | number | ok |
+| =upper_rate_bound_normal= | =EngineParameters/UpperRateBoundNormal= | number | ok |
+| =upperlimit= | =EngineParameters/UpperLimit= | number | ok |
+| =useindexcdspricer= | =EngineParameters/useIndexCDSPricer= | boolean | ok |
+| =vegaratio= | =EngineParameters/VegaRatio= | number | ok |
+| =volatility= | =ModelParameters/Volatility= | number | ok |
+| =volatilitytimes= | =ModelParameters/VolatilityTimes= | number | ok |
+| =volatilitytype= | =ModelParameters/VolatilityType= | enumerated | ok |
+| =xgrid= | =EngineParameters/XGrid= | integer | ok |
+
+Verdict counts for the 217 verified sets:
+
+| Verdict | Count |
+|---------+-------|
+| ok | 161 |
+| too narrow | 5 |
+| wrong kind | 25 |
+| wrong bounds | 22 |
+| undecided | 4 |
+
+* Sets not decided
+
+** =runtype=, parameter =GlobalParameters/RunType=
+
+ORE never reads this value from a configuration and never validates it. ORE
+writes the value itself, for example at =analytic.cpp:243= (=NPV=),
+=xvaanalytic.cpp:573= (=Exposure=), =stresstest.cpp:149= (=Stress=) and
+=sensitivityanalysis.cpp:213= (=SensitivityDelta= or =SensitivityDeltaGamma=).
+The builders compare the value with a few words, for example
+=cdo.hpp:89= and =swaption.cpp:125=. A user can write any word in the XML and
+ORE does not refuse it. The parameter is therefore neither a fixed list nor
+free text. Decide whether the setting belongs in the model at all before a
+value set is authored.
+
+** =mctype=, parameter =GlobalParameters/McType=
+
+ORE sets this value and never parses it. =xvaanalytic.cpp:574= sets =Classic=,
+=xvaanalytic.cpp:986= sets =American=, and =capfloor.cpp:141= compares it with
+=American=. The audit found no reader that accepts or refuses a user value.
+Decide whether the setting belongs in the model before a value set is authored.
+
+** =calibrationindexterms=, parameter =EngineParameters/calibrationIndexTerms=
+
+The audit found no reader of this name in the ORE source. The link may come
+from the ORE guide only. A search of =OREData=, =OREAnalytics= and =QuantExt=
+found no string literal =calibrationIndexTerms=.
+
+** =conversion_ratio_discretization_grid=, parameter
+=EngineParameters/ConversionRatioDiscretizationGrid=
+
+The audit found no reader of this spelling. ORE reads
+=Pricing.ConversionRatioDiscretisationGrid= with an =s= at
+=convertiblebond.cpp:89=, and that name has its own set. The two names look
+like a duplicate. Confirm which name ORE uses before a value set is authored.
+
+* Limits of this audit
+
+- This audit reads the parser and the call site. It does not run ORE.
+- A =number= set that ORE reads as a comma separated list keeps the =number=
+  kind. Examples are =buckettimes=, =calibrationmoneyness=,
+  =heston_initialvalues= and =heston_maximuminitialvalues=. The model has no
+  list kind, so the audit does not report these sets.
+- The audit found no explicit =QL_REQUIRE= bound on a real valued engine
+  parameter other than =beta=.
+- The audit compares the =integer= kind against a =Size= store for the sets in
+  F-20. It did not trace every one of the 46 integer sets to its store type.

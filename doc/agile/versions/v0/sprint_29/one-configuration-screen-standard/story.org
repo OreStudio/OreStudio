@@ -102,6 +102,32 @@ binds.
 - *The journeys and prototypes come first.* The owner signs them off before the
   standard is written and before any code changes. Decided by the owner on
   2026-10-24.
+- *A value set is the one statement of a parameter's control and its rule.* A
+  parameter's allowed values, bounds, pattern and catalogue live in the value
+  set tables and nowhere else. The per-pair =kind= and =options= columns are
+  gone, and so are the four control columns of the group settings table. A
+  screen draws its control from the set, and the write path refuses a value by
+  the same set.
+- *The set states a number's bounds, and one function enforces them.* The
+  parameter trigger and the sign-off proposal path call the same function, so a
+  proposal cannot ask a person to sign a value the store would refuse.
+- *The engine run settings join the contract through the =Setup= scope.* Each of
+  the fifteen settings links to a set by its ORE name, and the screen reads the
+  same fields the pricing screen reads.
+- *A link is keyed by scope and name, not by pair.* A setting that two engine
+  families read differently states the union of the two lists and says so in the
+  set's description. A per-pair difference needs a model change, and no screen
+  needs one today.
+- *A gate keeps the model true.* =check_parameter_value_sets.py= fails when a
+  drawn parameter has no set, when a set breaks its own rule, when the seed is
+  stale, or when a per-pair override column returns.
+- *The set contents are verified against the ORE code, not the guide, and that
+  work is separate.* An audit of the seeded sets against ORE 1.8.17 found 31
+  disagreements: wrong kinds, wrong bounds, and lists that refuse a value ORE
+  accepts. The report is
+  [[file:../../../../analysis/ore-value-set-verification.org][Report: verify the value sets against the ORE code]], and the correction is
+  its own task. A set that states a stricter rule than ORE is not yet a correct
+  set.
 
 * Out of scope
 

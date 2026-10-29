@@ -38,12 +38,56 @@ Each of the five types holds one arm. The option's premium, exercise, fee and pa
 - No row carries a column that belongs to an arm it is not.
 - The two schedule types model the rule block and the date list as separate parts, which the models' own briefs describe.
 - The trading owner confirms each verdict before the split is made; the inventory's reading is put to them, not imposed on their component.
+- Each verdict is an owner-confirmed statement about which invariant each arm holds, and the confirmation is recorded in the task's Result.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** The rules a split obeys
+
+The data-oriented model decides the shape, not the column count. Its rules, and
+the reasons behind them, are in
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] and
+[[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data classification checklist]]; this task applies them and
+does not restate them. In short:
+
+- a type holds one component: fields that share one invariant, hold at one
+  instant, and are keyed by the same key;
+- a part is joined by key and never nested, so the wire carries one typed array
+  per component and no part's fields appear inside another's object;
+- a field read on a different cadence, or by a different screen, job or service,
+  goes with its readers and not with the row it happens to sit in;
+- the classification comes first. A compile error never reclassifies data: if a
+  shape has to be denormalised for a compiler, the classification stays and the
+  denormalisation is recorded;
+- the centre keeps the identity and whatever the parts must agree on. A part one
+  reader needs does not stay on the centre.
+
+** This grouping
+
+Five trading types are one arm of the schema's leg-data choice per row, or a rule
+block and a date list in one row:
+
+| Type | Members | Columns | Why it is more than one component |
+|------+---------+---------+-----------------------------------|
+| =instrument_option= | 33 | 33 | premium, exercise, fee and payment blocks |
+| =bond_leg_rate= | 29 | 29 | one arm of the leg-data choice per row |
+| =bond_issue_leg_rate= | 27 | 27 | the same arms |
+| =instrument_schedule= | 22 | 22 | a rule block or a date list |
+| =bond_issue_leg_schedule= | 20 | 15 | the same choice |
+
+The instrument's own schema already holds option premiums, exercise fees and
+payment dates as separate child rows, so a flat option row repeats that shape
+inside one type.
+
+This is the trading owner's component. The verdicts are the inventory's reading
+and are put to that owner; the task is not started until they confirm them.
+
+** What proves it
+
+- Each arm's fields live in the arm's part, and a row states which arm it is.
+- The rule block and the date list are separate parts, which the models' own
+  briefs already describe.
+- The ORE projection of the traded family is unchanged in what it states.
 
 * Measurements
 

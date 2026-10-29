@@ -38,12 +38,48 @@ A series row says what kind it is, and the identity fields that belong to one ki
 - The series kinds' identity fields are parts, and the series carries the kind.
 - The generated codec and the wire carry one typed array per part.
 - The market data owner confirms the split before it is made.
+- The split is argued from what each kind's identity fields mean, not from the type's width, and the argument is in the task's Result.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** The rules a split obeys
+
+The data-oriented model decides the shape, not the column count. Its rules, and
+the reasons behind them, are in
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] and
+[[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data classification checklist]]; this task applies them and
+does not restate them. In short:
+
+- a type holds one component: fields that share one invariant, hold at one
+  instant, and are keyed by the same key;
+- a part is joined by key and never nested, so the wire carries one typed array
+  per component and no part's fields appear inside another's object;
+- a field read on a different cadence, or by a different screen, job or service,
+  goes with its readers and not with the row it happens to sit in;
+- the classification comes first. A compile error never reclassifies data: if a
+  shape has to be denormalised for a compiler, the classification stays and the
+  denormalisation is recorded;
+- the centre keeps the identity and whatever the parts must agree on. A part one
+  reader needs does not stay on the centre.
+
+** This grouping
+
+=market_series_identity= is the widest type in the tree: 57 members and 54
+nullable columns, one column per identity field of a series kind, and no
+discriminator to say which kind a row is. The kinds are the components, and the
+row is the union of all of them written as nullable columns.
+
+This is the market data owner's component. The verdict is the inventory's
+reading and is put to that owner; the task is not started until they confirm it.
+
+** What proves it
+
+- A series row states its kind, and the fields that belong to one kind live in
+  that kind's part.
+- The codec and the wire carry one typed array per part, joined by the series
+  key.
+- The widest remaining type in the component is inside the inventory's
+  threshold.
 
 * Measurements
 

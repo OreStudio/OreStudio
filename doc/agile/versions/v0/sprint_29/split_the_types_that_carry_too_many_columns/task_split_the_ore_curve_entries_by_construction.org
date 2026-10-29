@@ -38,12 +38,49 @@ Each curve entry holds one construction. The basis curve that exists only when t
 - The basis configuration is its own part, not ten nullable columns behind a flag.
 - No row carries a column that its construction type cannot use.
 - The ORE projection writes one typed array per part and the round trip is byte-identical on the fixtures.
+- Each part is justified by its own invariant rather than by the entry's member count, and the argument is in the task's Result.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** The rules a split obeys
+
+The data-oriented model decides the shape, not the column count. Its rules, and
+the reasons behind them, are in
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] and
+[[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data classification checklist]]; this task applies them and
+does not restate them. In short:
+
+- a type holds one component: fields that share one invariant, hold at one
+  instant, and are keyed by the same key;
+- a part is joined by key and never nested, so the wire carries one typed array
+  per component and no part's fields appear inside another's object;
+- a field read on a different cadence, or by a different screen, job or service,
+  goes with its readers and not with the row it happens to sit in;
+- the classification comes first. A compile error never reclassifies data: if a
+  shape has to be denormalised for a compiler, the classification stays and the
+  denormalisation is recorded;
+- the centre keeps the identity and whatever the parts must agree on. A part one
+  reader needs does not stay on the centre.
+
+** This grouping
+
+Two refdata curve entries are one construction per row:
+
+| Type | Members | Columns | The block that should not be a column |
+|------+---------+---------+---------------------------------------|
+| =default_curve_configuration= | 27 | 27 | =default_curve_type= and one column per construction |
+| =commodity_curve_config= | 24 | 24 | =has_basis_configuration= and ten basis columns |
+
+A default curve is built one of several ways, and the columns that state one way
+are null for the others. A commodity curve either carries a basis configuration
+or does not, and the ten basis columns are meaningless when it does not.
+
+** What proves it
+
+- No row carries a column its own construction cannot use.
+- The basis configuration is one part type with its own invariant: all ten of
+  its fields are set together or the part is absent.
+- The ORE projection round trips byte-identical on the fixtures.
 
 * Measurements
 

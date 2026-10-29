@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: The six split tasks of this story
+#+blocked_since: 2026-10-29
 #+created: 2026-10-29
 #+updated: 2026-10-29
 #+environment:
@@ -29,7 +29,7 @@ The inventory is re-run on the tree the splits produce, and what remains is deci
 | State        | BACKLOG                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | The six split tasks of this story.      |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-29                               |
 
@@ -42,9 +42,44 @@ The inventory is re-run on the tree the splits produce, and what remains is deci
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** What is re-read
+
+The lever again, on the tree the splits produce:
+
+#+begin_src sh :results verbatim
+python3 build/scripts/inventory_entity_columns.py --summary
+#+end_src
+
+Three things come out of it, and each is decided here rather than left for the
+next person:
+
+- the types the first inventory marked =group=, which were deferred on purpose:
+  =csa=, =book_change=, =commodity_instrument=, =inflation_curve_config=,
+  =ir_curve_generation_config= and =dataset=. A group is a block that belongs
+  together inside one component, so each is either grouped or argued down to
+  =keep= with a reason;
+- any type the splits moved across the threshold. A split can widen a type it
+  did not touch — a part's key, or a shared field that moved to the centre — and
+  the inventory is the only thing that notices;
+- the C1202 the story started from. It is checked against the widest remaining
+  entity's binding count, which is its model columns plus the scaffold's eight.
+
+** The rule that ends the story
+
+The story closes when the widest remaining type is a shape
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][the data-oriented model]] allows: one
+component, one key, one invariant. Not when a number is under a threshold -- the
+threshold was a work list, and a type under it can still be two components badly
+joined. If the inventory and the model disagree, the model wins and the report
+says why.
+
+** The rule in code
+
+The inventory is a manual pass, and a manual pass is done once. Before the story
+closes, the three shapes it found are a check a new model fails: a =has_*= flag
+followed by the block it governs, a discriminator followed by one column per
+value, and a pair of per-direction columns. That check belongs in codegen, where
+a model is read, so the next wide type is refused at review with a reason.
 
 * Measurements
 

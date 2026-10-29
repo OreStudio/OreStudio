@@ -43,7 +43,7 @@ So the work is modelling, not compilers. Find the types whose shape the data-ori
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:066BEB24-5BFB-4D30-85E2-723E90C75712][Inventory the types that carry too many columns]] | STARTED | 2026-10-29 | | A reproducible inventory of every generated persistent type: member count, column count, the blocks that cluster, and a verdict of what each type should become. |
-| [[id:9844D039-9694-4290-9A97-3A755770911B][Split the types the inventory names]] | BACKLOG | | | Split, worst first, the persisted types the inventory calls one aggregate over several components, so that each type holds one component. |
+| [[id:9844D039-9694-4290-9A97-3A755770911B][Split the types the inventory names]] | ABANDONED | | | Split, worst first, the persisted types the inventory calls one aggregate over several components, so that each type holds one component. |
 | [[id:8C947D0F-E4AB-41C0-BA1A-C5AFE23A48E9][Split the ORE volatility entries by kind]] | BACKLOG | | | Five refdata volatility entries are one row per kind with a column per kind: cap floor and swaption carry a proxy block behind a flag, FX a smile behind a dimension, inflation cap floor a quote structure, and the volatility config a surface per kind. |
 | [[id:3C77F18B-294C-4C4F-B967-F0862AD107AD][Split the conventions that are still flat]] | BACKLOG | | | The conventions family has a central row and a part per kind, and three kinds never moved onto it: commodity future with five blocks in one row, and the cross currency basis and fix float conventions, each carrying two legs as flat columns. |
 | [[id:98901652-FEC5-4197-BE47-99F0C8453072][Split the curve segment by element]] | BACKLOG | | | curve_segment holds segment_type and twenty columns that exist for one of twelve elements alone: projection curves for simple and tenor basis segments, a discount curve and a spot rate for cross currency ones, a reference curve for zero spread ones. |
@@ -53,6 +53,25 @@ So the work is modelling, not compilers. Find the types whose shape the data-ori
 | [[id:51839336-1AF9-4EFD-84E0-0CB983DC385B][Re-inventory what the splits leave]] | BACKLOG | | | Once the split tasks are done, re-run the inventory and read what is left: the six types the first inventory marked group, any type the splits moved across the threshold, and whether the C1202 the story started from still reproduces. |
 
 * Decisions
+
+- *One task per grouping, 2026-10-29.* The inventory's verdicts fall into groups
+  that are each one unit of work: the five ORE volatility entries (two of which
+  need the same proxy part), the three conventions still off the family's shape,
+  the curve segment, the two ORE curve entries, and the trading and market data
+  types, which belong to their own owners. The single "split the types the
+  inventory names" task is abandoned: it was written before the verdicts existed
+  and would have been a list rather than a unit of work.
+- *The data-oriented model decides the shape, 2026-10-29.* Every split in this
+  story is argued from an invariant, never from a member count. A type holds one
+  component when its fields share one invariant, hold at one instant and are
+  keyed by the same key; a part is joined by key and never nested; a field read
+  on a different cadence or by a different reader goes with its readers. The
+  rules are stated in [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented
+  Design in ORE Studio]] and
+  [[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data classification
+  checklist]], and each task points at them rather than paraphrasing them.
+  A compile error never reclassifies data: C1202 is why the story exists, and it
+  is not the argument any split makes.
 
 * Notes
 

@@ -39,12 +39,59 @@ The three remaining convention kinds are on the family's shape: a central conven
 - Commodity future's expiry anchor, option expiry, power and averaging blocks are parts, not columns of one row.
 - The cross currency basis and fix float conventions model their two legs as parts, as the tenor basis swap kind does.
 - The wire, the ORE projection and the fixtures state one typed array per part.
+- Each part is justified by an invariant it alone holds, and the argument is in the task's Result.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** The rules a split obeys
+
+The data-oriented model decides the shape, not the column count. Its rules, and
+the reasons behind them, are in
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] and
+[[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data classification checklist]]; this task applies them and
+does not restate them. In short:
+
+- a type holds one component: fields that share one invariant, hold at one
+  instant, and are keyed by the same key;
+- a part is joined by key and never nested, so the wire carries one typed array
+  per component and no part's fields appear inside another's object;
+- a field read on a different cadence, or by a different screen, job or service,
+  goes with its readers and not with the row it happens to sit in;
+- the classification comes first. A compile error never reclassifies data: if a
+  shape has to be denormalised for a compiler, the classification stays and the
+  denormalisation is recorded;
+- the centre keeps the identity and whatever the parts must agree on. A part one
+  reader needs does not stay on the centre.
+
+** This grouping
+
+Three convention kinds never moved onto the family's shape. The family's other
+kinds are a central [[id:9477A085-0822-485F-BDF7-3C8F4A306E93][convention]] row
+plus parts; these three are still one flat row each:
+
+| Type | Members | Columns | The blocks that should be parts |
+|------+---------+---------+---------------------------------|
+| =commodity_future_convention= | 53 | 53 | expiry anchor, option expiry, power peak and off-peak, averaging, the ORESmd link |
+| =cross_currency_basis_convention= | 27 | 27 | =flat_*= and =spread_*=, two legs |
+| =cross_currency_fix_float_convention= | 20 | 20 | the fixed and the floating leg |
+
+Each block has its own invariant: the option expiry fields only mean anything
+when the convention states an option expiry, the averaging fields only when the
+future is averaged, and each leg of a cross-currency swap carries its own index,
+tenor and conventions. That is what makes them parts rather than columns.
+
+The target shape is the family's, not a new one: see
+[[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][The atomised entity: a central row and its parts]] and the
+tenor basis swap kind, which already carries a pay/receive and a long/short
+part.
+
+** What proves it
+
+- Only the central convention row carries the kind.
+- A kind-specific block exists in exactly one part, and no other kind's row or
+  part carries it.
+- The ORE projection round trips: the document states the convention once and
+  each part's fields once.
 
 * Measurements
 

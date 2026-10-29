@@ -26,11 +26,11 @@ Each type on the inventory's split list becomes the components the inventory nam
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:066BEB24-5BFB-4D30-85E2-723E90C75712][Inventory the types that carry too many columns]] |
-| Next         | Wait for the inventory's verdicts.     |
+| Now          | Superseded; nothing was started.        |
+| Waiting on   | Nothing: it is replaced.                |
+| Next         | None. The grouping tasks replace it.   |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -105,6 +105,15 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- Abandoned on 2026-10-29, before any work started, and replaced by one task per
+  grouping the inventory's verdicts fall into: the ORE volatility entries, the
+  conventions still flat, the curve segment, the ORE curve entries, the trading
+  instrument parts and the market series identity. A last task re-invents what
+  the splits leave.
+- Its plan is not lost: the shape a split takes, what moves in one change and
+  what proves it are in each replacement task's =* Plan=, and the rules a split
+  obeys are a decision on the story.
 
 * Test Scenarios
 

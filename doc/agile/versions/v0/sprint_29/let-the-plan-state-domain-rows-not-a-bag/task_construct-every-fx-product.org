@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Every routed fx code the planner draws is constructed by a function that names i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,13 @@ Every routed fx code the planner draws is constructed by a function that names i
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+An fx row is the whole instrument: no fact table sits beside it, so the
+table's own cross-column checks are the product's shape. Each constructor
+mirrors the checks of the table it writes, which is where they become
+refusals rather than errors a run discovers.
+
+Seven terms structs, one per table, and one constructor per routed code, with
+the trade type fixed by the constructor.
 
 * Measurements
 
@@ -57,6 +61,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Fx rows before | forward 8, vanilla 4, barrier 12, digital 4, asian 4 | =compass db sql= over the fx tables | =3c8c35620a= |
+| Fx rows after | identical | the same | =3c8c35620a= |
+| Total trades | 829 before and after | =compass db sql= on =ores_trading_trades_tbl= | =3c8c35620a= |
+| =ores.trading.api.tests= | 548 assertions in 147 test cases | the suite binary | =3c8c35620a= |
+| =ores.synthetic.core.tests= | 1741 assertions in 79 test cases | the suite binary | =3c8c35620a= |
 |      |       |         |        |
 
 * Notes
@@ -85,3 +94,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every fx product the planner reaches is constructed by a function that names
+it. The writer holds no fx assembly: it fills the terms, calls the
+constructor, appends the row and stamps the audit columns.
+
+Proved by a provisioning run on a recreated database against a baseline taken
+from the previous build: the population is identical -- forward 8, vanilla 4,
+barrier 12, digital 4, asian 4 -- and the tenant's total trade count is 829
+both times.
+
+The suites are green: =ores.trading.api.tests= at 548 assertions in 147 test
+cases with nine new fx cases, and =ores.synthetic.core.tests= at 1741
+assertions in 79.
+
+* What the constructors now refuse that nothing did before
+
+- a double barrier without two barriers;
+- a barrier type that names an upper barrier without one, or a lower barrier
+  without one, which is the check the store states and the writer did not;
+- a digital without a strike, a touch without a barrier, a double touch with
+  one;
+- an fx swap that buys and sells the same currency;
+- a variance swap whose end is not after its start, or whose strike is not
+  finite and positive;
+- an average forward without an index, and a target redemption forward without
+  a target.
+
+* What the population still does not reach
+
+The planner cycles sixteen fx types but each config states eight trades per
+book, so the cycle stops at the eighth code. FxVarianceSwap, FxAccumulator,
+FxTaRF and the rest of the second half never book, and the same is true of the
+bond and credit families recorded earlier. The constructors for those codes
+exist and are tested; nothing draws them.

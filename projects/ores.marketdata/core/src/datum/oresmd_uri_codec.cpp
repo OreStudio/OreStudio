@@ -19,7 +19,6 @@
  */
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/datum/ore_index_codec.hpp"
-#include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include <boost/url.hpp>
 #include <algorithm>
 #include <format>
@@ -250,11 +249,6 @@ std::expected<market_datum, std::string> oresmd_uri_codec::read(std::string_view
                           market_datum::make(*instrument, *quote, std::move(fields));
     if (!datum)
         return oresmd_uri_codec_refuse(uri, datum.error());
-    if (!series) {
-        if (const auto key = ore_key_codec::write(*datum); !key)
-            return oresmd_uri_codec_refuse(
-                uri, std::format("no ORE key names this datum: {}", key.error()));
-    }
     // One datum has one spelling, so a stored URI can be compared as text: a
     // reordered query or an encoding the writer would not use is refused.
     if (const auto spelling = spelling_of(*datum); spelling != uri)
@@ -263,10 +257,6 @@ std::expected<market_datum, std::string> oresmd_uri_codec::read(std::string_view
 }
 
 std::expected<std::string, std::string> oresmd_uri_codec::write(const market_datum& datum) {
-    if (!datum.is_series()) {
-        if (const auto key = ore_key_codec::write(datum); !key)
-            return std::unexpected(std::format("no ORE key names this datum: {}", key.error()));
-    }
     return spelling_of(datum);
 }
 

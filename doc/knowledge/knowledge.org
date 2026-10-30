@@ -103,6 +103,7 @@ How the codebase is put together.
 | [[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]] | The cron expression, the loop that evaluates it, the firing and its record, and the actions a firing performs |
 | [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] | The pattern language of service interaction: the established patterns the platform uses, by group, with their sources, failure handling and pitfalls |
 | [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] | Producers, the marketdata authority, feed configs, source-independent consumers |
+| [[id:7DFE57DE-70C9-4EB6-AF94-DCEC65ADB494][The ORE XML infrastructure]] | How an ORE document becomes rows and comes back, in six notes: the codec that owns the shape, the mapper's conversion, the export's asymmetry, the three leaf maps, the value sets, and the guards that refuse a value |
 | [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]] | The target state: identities that distinguish observed, generated, derived and published data, and reports that reference published curves |
 | [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]] | The recipe, the quotes it reads, the solve, the checks, the candidate and its publication |
 | [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]] | The market binding names the publish record and the as-of, refuses a set that is not published, and the export builds the XML from the set |

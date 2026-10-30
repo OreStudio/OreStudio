@@ -213,7 +213,7 @@ populated database.
 | =ores_reporting_ore_parameters_tbl= | the per-tenant contract | =(scope, subtype, name)= and a document =xpath= to a domain and its text | the shell check, the screens | the parameter catalogue: keep |
 | =ores_dq_ore_parameters_artefact_tbl= | 2295 | the same data, staged from the guide | the publish functions that fill the contract | a staging area, not a second mapping: keep, and say so |
 | =ores_reporting_ore_parameter_setting_value_sets_tbl= | 756 | =(scope, name)= to a value set | the parameter trigger, the screens, the shell | a link: keep |
-| =ores_reporting_ore_parameter_vocabularies_tbl= | 4 | an ORE element =(schema, element)= to a value set | the curve column guard and the value-set seed | a link: keep |
+| =ores_reporting_ore_parameter_vocabularies_tbl= | 4 | an ORE element =(schema, element)= to a value set | nothing at runtime: the seed writes it, no reader consults it | a statement with no enforcer: consolidate |
 | =ores_refdata_curve_configuration_columns_tbl= | 212 | a curve column =(entity, table, column)= to a document element and =xpath= | the curve value guard | overlaps the vocabularies: consolidate |
 | =ores_refdata_convention_kind_terms_tbl= | 270 | a convention kind term to =(schema, xpath)= | the convention CRUD and the ORE import | overlaps the vocabularies: consolidate |
 | =ores_reporting_engine_settings_group_settings_tbl= | 15 | a part's column to the =Setup= ORE name | the engine run settings screen | a screen inventory, not a document map: keep |
@@ -227,6 +227,16 @@ the vocabularies table. They were built at different times, so a leaf can be
 named in one and missing from another, and a value set can be linked from two
 places with no statement of which wins. That is the same defect the story is
 about, one level up: one fact, several statements.
+
+The overlap is worse than duplication in one direction. Both guards resolve a
+value set through the parameter contract — curve column or convention term to
+=(schema_name, xpath)=, then to the parameter, then to its setting link — so the
+vocabularies table is not on any path a write takes. A rule stated only there is
+stated and not enforced. That is measured, not inferred:
+=grep -rn "ore_parameter_vocabularies" --include=*.cpp --include=*.hpp --include=*.ts --include=*.tsx
+projects/ apps/= returns nothing, and both guards' joins are
+=projects/ores.sql/create/refdata/refdata_curve_configuration_columns_validate_create.sql:43=
+and =refdata_convention_terms_validate_create.sql:51=.
 
 ** What this story needs, and what it does not
 

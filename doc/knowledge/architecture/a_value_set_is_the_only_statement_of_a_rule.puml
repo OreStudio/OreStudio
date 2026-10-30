@@ -1,0 +1,91 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title One set states a rule, and two links find it
+
+hide circle
+skinparam linetype ortho
+top to bottom direction
+
+package "The rule" {
+    entity "ores_reporting_ore_parameter_value_sets_tbl" as sets <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        --
+        * source_kind : text
+        catalogue_code : text
+        minimum : double
+        maximum : double
+        pattern : text
+        * is_ordered : boolean
+    }
+    entity "ores_reporting_ore_parameter_value_set_values_tbl" as values <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        --
+        * value_set_code : text
+        * value : text
+        * label : text
+        * display_order : integer
+        * is_active : boolean
+    }
+    entity "ores_reporting_ore_parameter_value_set_catalogues_tbl" as cats <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        --
+        * relation : text
+        * is_active : boolean
+    }
+}
+
+package "What finds it" {
+    entity "ores_reporting_ore_parameter_setting_value_sets_tbl" as plink <<temporal>> {
+        * code : text <<PK>>\n(Scope:Name)
+        --
+        * scope : text
+        * name : text
+        * value_set_code : text
+    }
+    entity "ores_reporting_ore_parameters_tbl\n(the per-tenant contract)" as params <<temporal>> {
+        * id : uuid <<PK>>
+        --
+        * scope : text
+        * name : text
+        * schema_name : text
+        * xpath : text
+    }
+}
+
+sets ||--o{ values : "enumerated only"
+sets }o--|| cats : "catalogue only"
+plink }o--|| sets : value_set_code
+plink }o--|| params : "scope : name"
+
+note right of sets
+  source_kind is one of nine:
+  enumerated, boolean, integer,
+  number, range, regex, period,
+  text, catalogue.
+end note
+
+note left of values
+  A value is offered on a screen,
+  and an alias points at the value
+  it means. The canonical_value
+  column is the story's next change.
+end note
+
+@enduml

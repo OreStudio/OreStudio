@@ -122,7 +122,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:BE0384AF-AFAA-49B9-B313-19EE86C02733][Test scenario: verify the route from a feed to a published curve]] | PENDING | UI walkthrough: the blueprint, the Check's seven points, the published set, the request as the decider, and a feed started by hand |
+| [[id:BE0384AF-AFAA-49B9-B313-19EE86C02733][Test scenario: verify the route from a feed to a published curve]] | FAILED | 4 of 9 steps failed: the Check's 403 (not reproducible on a fresh session), the published record opened by URI says no set, the request page as seen via the notification, and the Simulator screen's providers read refused. Diagnoses and fixes recorded in the scenario. |
 
 * PRs
 

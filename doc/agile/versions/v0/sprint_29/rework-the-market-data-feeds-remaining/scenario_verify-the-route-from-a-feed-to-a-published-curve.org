@@ -45,7 +45,7 @@ be brought back to it.
 | Parent story  | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
 | Target screen | Market data: Curve blueprints (Check and Published sets), Published curves, Simulator |
 | Clients       |       |
-| State         | PENDING |
+| State         | FAILED |
 
 * Steps
 
@@ -58,6 +58,11 @@ be brought back to it.
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 ** Open the curve blueprint
 
 - Go to *Market data* and then *Curve blueprints*.
@@ -66,6 +71,11 @@ be brought back to it.
   header offers Copy, Edit and Delete.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 
 ** Read the blueprint's details
 
@@ -77,6 +87,11 @@ be brought back to it.
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 ** Read the pillars
 
 - Open the *Pillars* tab.
@@ -86,6 +101,12 @@ be brought back to it.
   =fwd_start=0D&tenor=1D=, and its version.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | i cannot click on the series to see it, e.g. oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D |
+
 
 ** Run the check
 
@@ -100,6 +121,12 @@ be brought back to it.
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | A request did not finish; ; You do not have access to this. (POST /api/curves/compute, request 41b4cce1) |
+
+
 ** Read the published set
 
 - Open the *Published sets* tab.
@@ -107,6 +134,11 @@ be brought back to it.
   =henry.jones=, seven points, and the state =Published=.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 
 ** Open the published curves
 
@@ -117,6 +149,12 @@ be brought back to it.
   and the *History* tab carries the decision that approved the publish.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | There is no  Published curves card |
+
 
 ** Read the request as the decider
 
@@ -129,6 +167,12 @@ be brought back to it.
   History.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | Clicking on the request does not show the request; ; [[file:scenario_verify-the-route-from-a-feed-to-a-published-curve_step8_20261030_122102.png]] |
+
 
 ** Start a feed by hand
 
@@ -143,12 +187,18 @@ be brought back to it.
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | there is no "simulator". in synthetic, i get That did not work, and it should have; ; You were allowed to open this, and the server refused part of it. We checked your access again. Nothing you did caused this.; ; Reference 7eb5ef4a · GET /api/synthetic/providers; ; Try again; Go to Home |
+
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
+| Status        | FAILED |
+| Completed at  | 2026-10-30T12:22:36Z |
 | Branch        |       |
 | Commit        |       |
 | Worktree      |       |

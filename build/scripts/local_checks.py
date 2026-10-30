@@ -495,6 +495,22 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Run the same command with --all to regenerate, then commit.",
     ),
     Check(
+        id="template-sections",
+        title="A mustache section tag stands alone on its line, or its section is one line",
+        argv=("python3",
+              "projects/ores.codegen/scripts/check_template_sections.py"),
+        classes=("codegen", "modeling"),
+        paths=(
+            "projects/ores.codegen/library/templates/*",
+            "projects/ores.codegen/scripts/check_template_sections.py",
+            "projects/ores.codegen/scripts/template_section_baseline.json",
+        ),
+        fix="Put the section's opening and closing tags on their own lines, or"
+            " keep the whole section on one line. The renderer strips only a"
+            " line that holds nothing but a tag, so a shared line leaks a"
+            " newline into every file the template produces.",
+    ),
+    Check(
         id="component-drift",
         title="The components this branch changed match their models, rendered without writing",
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_component_drift.py",

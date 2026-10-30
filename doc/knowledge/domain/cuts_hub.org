@@ -33,7 +33,7 @@ answers a separate question.
 - The *timepoint* fixes the cut. It is the instant held still, with its timezone.
 - The *object* is the body of data the cut fixes. The rest of this note calls it
   the body. It holds the deals, the market data, the reference data, the engine
-  and code versions, and the the taking identity and the authorisation record.
+  and code versions, and the taking identity and the authorisation record.
 
 The label answers which cut is meant. The timepoint answers when it holds. The
 object answers what it holds. A statement that omits one of the three leaves the
@@ -148,8 +148,8 @@ five parts.
   the run reads to turn a deal and a quote into a number.
 - The *engine and the code*. The version of the risk engine and the revision of
   the code that computed the result.
-- The *identity and the authorisation*. The label, the timepoint, the signatory
-  and the version.
+- The *taking identity and the authorisation*. Who took the cut, who
+  authorised it, and when.
 
 The list admits a test. Take a result the cut claims to support and ask which
 changes would make the number differ. Each of the five parts answers yes. A

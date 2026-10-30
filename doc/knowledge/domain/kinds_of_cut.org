@@ -123,7 +123,7 @@ delivered before the day's data settles so that a decision can act on it.
 interval and not the body, since a run that left out an input could not be
 reproduced from what it kept.
 
-*What the occasion gives it.* The instant precedes authorisation, which is entailed
+*What the occasion gives it.* The instant precedes the official authorisation, which is entailed
 by the occasion, since a view that arrived after the official statement would
 serve no decision. Recurrence is intraday, since the view answers a question that
 recurs while the market moves.

@@ -183,6 +183,7 @@
 #include "ores.refdata.core/messaging/calendar_rule_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_rule_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_type_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/cap_floor_proxy_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/cap_floor_volatility_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/cap_floor_volatility_config_registrar.hpp"
 #include "ores.refdata.core/messaging/cashflow_type_history_provider_registrar.hpp"
@@ -268,6 +269,12 @@
 #include "ores.refdata.core/messaging/curve_segment_type_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_volatility_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_volatility_config_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_volatility_constant_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_volatility_curve_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_volatility_delta_surface_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_volatility_kind_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_volatility_proxy_surface_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_volatility_strike_surface_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/day_count_fraction_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/day_counter_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/default_curve_config_history_provider_registrar.hpp"
@@ -349,6 +356,7 @@
 #include "ores.refdata.core/messaging/swap_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/swap_index_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/swap_index_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/swaption_proxy_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/swaption_volatility_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/swaption_volatility_config_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_anchor_history_provider_registrar.hpp"
@@ -824,6 +832,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_yield_curve_config_history_provider(hist_registry);
         register_yield_volatility_config_history_provider(hist_registry);
         register_zero_inflation_index_convention_history_provider(hist_registry);
+        register_cap_floor_proxy_config_history_provider(hist_registry);
+        register_curve_volatility_constant_history_provider(hist_registry);
+        register_curve_volatility_curve_history_provider(hist_registry);
+        register_curve_volatility_delta_surface_history_provider(hist_registry);
+        register_curve_volatility_kind_history_provider(hist_registry);
+        register_curve_volatility_proxy_surface_history_provider(hist_registry);
+        register_curve_volatility_strike_surface_history_provider(hist_registry);
+        register_swaption_proxy_config_history_provider(hist_registry);
 
         subs.push_back(ores::history::messaging::register_history_handlers(
             nats, hist_registry, "refdata", registrar_queue_group, ctx, verifier));

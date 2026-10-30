@@ -26,11 +26,11 @@ The rate planner cycles nine routed types and each seeded rate config states eig
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Fix written, tests green, run blocked. |
-| Waiting on   | Main builds again: #4103 left it unbuildable. |
-| Next         | Provision, then record the PR.         |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance

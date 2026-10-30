@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 8E34C710-6367-46C9-9F65-015FD9B824AE
+:END:
+#+title: Trade Population Weights states a trade-count mix: interest …
+#+description: Trade Population Weights states a trade-count mix: interest rates 42%, fx 25%, equity 12%, credit 6%, commodity 5%, bonds 4%, inflation and scripted 3% each. The seeded configs were never sized to it. On a fresh tenant the mix is rates 27 of 162 (17%), fx 64 (40%), equity 17 (10%), credit 5 (3%), commodity 25 (15%), bonds 24 (15%); inflation and scripted book nothing at all. Each class books one trade per routed code, which is what coverage needs, and a weighted population needs a different rule: the weights set the counts, and the codes are drawn within those counts. Doing that changes the seeded configs for every class at once and needs the weights page's tolerance stated, so it is its own task.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

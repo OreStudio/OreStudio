@@ -36,10 +36,10 @@ parameter loses its set.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | The work is done on the branch and proven live. The branch waits for review. |
+| Now          | The work is done, proven live, and the local gate is green. PR 4090 waits for review. |
 | Waiting on   | Nothing.                               |
 | Next         | Review, then merge.                    |
-| Last touched | 2026-10-29                               |
+| Last touched | 2026-10-30                               |
 
 * Acceptance
 
@@ -245,12 +245,15 @@ task and name that file in the Command column.
 | Pricing contract parameters | 251 (61 model, 173 engine, 17 global), 0 without a set | =generate_value_sets.contract_pairs()= and =resolve()= | 92fd6990bc85 |
 | Setup parameters | 15 engine settings, 0 links | =curation/engine-settings-groups.json= and the link rows | 92fd6990bc85 |
 | Setup block parameters with no screen | 54 | =block_parameter_rows.rows()= filtered to =Setup= | 92fd6990bc85 |
-| Sets and links after the change | 224 sets, 727 links | =python3 projects/ores.sql/utility/generate_value_sets.py --check= | 716f3f7c9b |
-| Drawn parameters the gate checks | 266 | =python3 build/scripts/check_parameter_value_sets.py= | 716f3f7c9b |
+| Sets and links after the change | 224 sets, 755 links | =python3 projects/ores.sql/utility/generate_value_sets.py --check= | a1aa7f6a00 |
+| Drawn parameters the gate checks | 266 | =python3 build/scripts/check_parameter_value_sets.py= | a1aa7f6a00 |
 | Settings the guide lists and the code typed as text | 15, of which 13 become a set and 2 stay text | =compare pricing_vocabulary.json options with value-sets-code.json= | 92fd6990bc85 |
-| The build | 326 targets, exit 0 | =./compass.sh build= | 178db7241c |
-| The BFF suite | 1139 tests passed | =npx vitest run= in =projects/ores.web/packages/bff= | 178db7241c |
-| The web suite | 2323 tests passed | =npx vitest run= in =projects/ores.web/packages/web= | 178db7241c |
+| The build | 325 targets, exit 0 | =./compass.sh build= | 7676e1e237 |
+| The local gate | 54 of 54 checks passed | =python3 build/scripts/local_checks.py --exclude-heavy= | f529c48e72 |
+| The C++ suites | reporting core 970, reporting service 26, analytics core 882, ore core 478353, ore service 49, refdata core 5723, shell reporting 1642, shell analytics 1368, shell refdata 7980 assertions: all pass | the suite binaries under =build/output/linux-clang-release-ninja/publish/bin= | f529c48e72 |
+| The pgTAP suite | 65 files, 623 tests, all pass | =projects/ores.sql/test/run_tests.sh= | ea97288e0d |
+| The BFF suite | 1144 tests passed | =npx vitest run= in =projects/ores.web/packages/bff= | 7676e1e237 |
+| The web suite | 2328 tests passed | =npx vitest run= in =projects/ores.web/packages/web= | 7676e1e237 |
 
 * Notes
 

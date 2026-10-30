@@ -8,7 +8,7 @@
 #+filetags: :marketdata:implementation:build_the_connectivity_screens:sprint_29:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 4156
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -69,13 +69,14 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
+| [[id:4F3C2423-ED21-446F-9004-E82B51B0853F][Walk the connectivity and public rates screens]] | PENDING | Covers both screen areas and the historical fixings download. |
 |          |       |       |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4156][#4156]] | [agile] Walk the new market data screens |
 
 * Review
 

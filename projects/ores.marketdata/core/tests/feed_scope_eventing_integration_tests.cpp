@@ -34,6 +34,7 @@
 #include "ores.marketdata.api/eventing/feed_scope_event.hpp"
 #include "ores.marketdata.api/generators/feed_scope_generator.hpp"
 #include "ores.marketdata.api/messaging/feed_scope_protocol.hpp"
+#include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.core/repository/feed_scope_repository.hpp"
 #include "ores.marketdata.core/service/feed_scope_service.hpp"
 #include "ores.nats/domain/headers.hpp"
@@ -113,7 +114,10 @@ TEST_CASE("write_feed_scope_publishes_an_event", "[eventing][integration]") {
 
     // 3. Write -- triggers the entity's notify trigger -> pg_notify ->
     // the chain wired above -> NATS.
+    // The scope guard resolves the feed in the system tenant's catalogue, and a
+    // test tenant's own feed is not there, so the scope names a seeded one.
     auto v = generate_synthetic_feed_scope(ctx);
+    v.feed_id = ores::marketdata::domain::catalogue_ids::ore_import_feed_id();
     v.change_reason_code = "system.test";
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Feed Scope: " << v;

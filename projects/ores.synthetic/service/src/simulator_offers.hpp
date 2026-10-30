@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_SERVICE_SIMULATOR_OFFERS_HPP
 #define ORES_SYNTHETIC_SERVICE_SIMULATOR_OFFERS_HPP
 
+#include "feed_adapter_targets.hpp"
 #include "feed_kind_registry.hpp"
 #include "generator_runner.hpp"
 #include "ores.database/domain/context.hpp"
@@ -68,23 +69,17 @@ system_generator_offers(const feed_kind_registry& registry,
 
     // The id a provider's own notation writes, and the subject its tick travels on. The simulator
     // never spells an id itself.
-    const auto target_of =
-        [&adapter_id,
-         &faults](const vendor::provider_notation& notation,
-                  const vendor::quote_description& description) -> std::optional<adapter_target> {
-        const auto written = notation.write(description);
-        if (!written)
-            return std::nullopt;
-        return adapter_target{.id = *written,
-                              .subject = ores::marketdata::domain::adapter_ingress_subject(
-                                  adapter_id, written->external_id),
-                              .faults = faults};
+    const auto target_of = [&adapter_id, &faults, &provider_code](
+                               const vendor::quote_description& description)
+        -> std::optional<adapter_target> {
+        return adapter_target_of(adapter_id, provider_code, description, faults);
     };
 
     auto targets = registry.targets(ctx);
     std::ranges::sort(targets, [](const auto& a, const auto& b) {
         return a.row.candidate.feed_config_id < b.row.candidate.feed_config_id;
     });
+    const feed::feed_adapter adapter_for_build{.id = adapter_id, .provider_code = provider_code};
     std::vector<generator_offer> out;
     for (const auto& target : targets) {
         const auto& candidate = target.row.candidate;
@@ -96,16 +91,15 @@ system_generator_offers(const feed_kind_registry& registry,
             continue;
 
         if (candidate.fx_pair && target.row.kind->kind == fx_spot_feed_kind) {
-            const auto written = target_of(*notation,
-                                           vendor::fx_spot_quote{candidate.fx_pair->first,
-                                                                 candidate.fx_pair->second,
-                                                                 notation->primary_side()});
+            const auto written = target_of(
+                vendor::fx_spot_quote{candidate.fx_pair->first, candidate.fx_pair->second,
+                                      notation->primary_side()});
             if (!written)
                 continue;
             const auto adapter = *written;
             out.push_back(generator_offer{
-                .id = adapter.id, .group = {}, .make = [&registry, &build, target, adapter] {
-                    auto outcome = target.row.candidate.build_input();
+                .id = adapter.id, .group = {}, .make = [&registry, &build, target, adapter, adapter_for_build] {
+                    auto outcome = target.row.candidate.build_input(adapter_for_build);
                     if (!outcome.input)
                         throw std::runtime_error(outcome.skip_reason);
                     std::get<fx_spot_feed_build_input>(*outcome.input).adapter = adapter;
@@ -122,7 +116,7 @@ system_generator_offers(const feed_kind_registry& registry,
         std::vector<ir_pillar_quote_target> pillar_targets;
         std::vector<msg::vendor_id> ids;
         for (const auto& pillar : candidate.pillars) {
-            const auto written = target_of(*notation, pillar);
+            const auto written = target_of(pillar);
             if (!written)
                 continue;
             ids.push_back(written->id);
@@ -132,8 +126,8 @@ system_generator_offers(const feed_kind_registry& registry,
         }
         if (pillar_targets.empty())
             continue;
-        auto make = [&registry, &build, target, pillar_targets] {
-            auto outcome = target.row.candidate.build_input();
+        auto make = [&registry, &build, target, pillar_targets, adapter_for_build] {
+            auto outcome = target.row.candidate.build_input(adapter_for_build);
             if (!outcome.input)
                 throw std::runtime_error(outcome.skip_reason);
             std::get<ir_curve_feed_build_input>(*outcome.input).adapter_targets = pillar_targets;

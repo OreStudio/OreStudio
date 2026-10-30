@@ -77,8 +77,14 @@ struct feed_kind_candidate final {
      */
     std::vector<ores::marketdata::vendor::ir_curve_pillar> pillars;
 
-    /** Built lazily: only the start, folder-start and auto-start verbs read it. */
-    std::function<feed_build_outcome()> build_input;
+    /**
+     * @brief Builds the kind's factory input, or says why it cannot.
+     *
+     * The adapter is the one the feed publishes through, and it carries the provider whose
+     * notation writes the ids: that one value decides which vendor ids the feed quotes and
+     * where its ticks travel.
+     */
+    std::function<feed_build_outcome(const feed::feed_adapter& adapter)> build_input;
 };
 
 struct feed_kind;
@@ -196,6 +202,16 @@ public:
         const ores::database::context&)>;
 
     /**
+     * @brief The adapter a feed of @p provider_code publishes through, read from the catalogue.
+     *
+     * Nothing when the catalogue serves no simulated source for the provider. The catalogue
+     * belongs to the market data service, so the lookup reads it through that component's
+     * client and not through this service's tables.
+     */
+    using adapter_lookup_fn = std::function<std::optional<feed::feed_adapter>(
+        std::string_view provider_code)>;
+
+    /**
      * @brief The three reads the registry does on every kind's behalf.
      *
      * None of them is per-kind: the container table is one table with one
@@ -208,10 +224,22 @@ public:
         folder_subtree_fn folder_subtree;
         container_by_id_fn container_by_id;
         containers_fn containers;
+        /**
+         * The adapter lookup. A registry without it builds every feed as a producer with no
+         * adapter, which is what a test that names no catalogue wants; the service always
+         * installs one, so a feed it starts publishes as an adapter.
+         */
+        adapter_lookup_fn adapter_of_provider;
     };
 
-    /** The production registry: the default factory and the three repository reads. */
-    feed_kind_registry();
+    /**
+     * @brief The production registry: the default factory and the three repository reads.
+     *
+     * @param adapter_of_provider The catalogue lookup a feed start uses to find the adapter the
+     * feed publishes through. Nothing builds every feed as a producer with no adapter, which is
+     * what a test registry that names no catalogue wants.
+     */
+    explicit feed_kind_registry(adapter_lookup_fn adapter_of_provider = {});
     /** Test and composition seam. */
     explicit feed_kind_registry(deps d);
 
@@ -300,8 +328,15 @@ private:
     std::map<std::string, feed_kind> kinds_;
 };
 
-/** The process-wide registry: FX spot and IR curves, registered once. */
-feed_kind_registry make_default_feed_kind_registry();
+/**
+ * @brief The process-wide registry: FX spot and IR curves, registered once.
+ *
+ * @param adapter_of_provider The catalogue lookup a feed start uses to find the adapter it
+ * publishes through. The service passes its own; a caller that passes none builds every feed as
+ * a producer with no adapter, which stores no tick.
+ */
+feed_kind_registry make_default_feed_kind_registry(
+    feed_kind_registry::adapter_lookup_fn adapter_of_provider = {});
 
 /**
  * @brief The one simulate envelope: clamp, then step num_paths processes of

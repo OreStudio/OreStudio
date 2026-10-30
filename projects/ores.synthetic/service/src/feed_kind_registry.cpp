@@ -19,6 +19,7 @@
  */
 #include "feed_kind_registry.hpp"
 #include "client_message.hpp"
+#include "feed_adapter_targets.hpp"
 #include "ir_curve_preview_process.hpp"
 #include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.database/service/tenant_context.hpp"
@@ -44,6 +45,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <expected>
 #include <ranges>
 #include <stdexcept>
 #include <utility>
@@ -72,6 +74,32 @@ read_definition_catalogue(const ores::database::context& ctx) {
     return definition_repo.read_latest(sys_ctx);
 }
 
+// The target a feed quotes one description through: the id the provider's notation writes and
+// the ingress subject the tick travels on.
+std::expected<feed::adapter_target, std::string>
+target_for(const feed::feed_adapter& adapter,
+           const ores::marketdata::vendor::quote_description& description) {
+    auto target = adapter_target_of(adapter.id, adapter.provider_code, description);
+    if (!target)
+        return std::unexpected("The notation of provider '" + adapter.provider_code +
+                               "' writes no vendor id for this quote, so the feed cannot say what "
+                               "it quotes.");
+    return std::move(*target);
+}
+
+// The target of one currency pair, whose side is the one the provider's notation prices.
+std::expected<feed::adapter_target, std::string>
+fx_target_for(const feed::feed_adapter& adapter,
+              const ores::synthetic::domain::fx_spot_generation_config& fx) {
+    const auto* notation = ores::marketdata::vendor::notation_of(adapter.provider_code);
+    if (notation == nullptr)
+        return std::unexpected("The catalogue holds no notation for provider '" +
+                               adapter.provider_code + "'.");
+    return target_for(adapter,
+                      ores::marketdata::vendor::fx_spot_quote{
+                          fx.base_currency_code, fx.quote_currency_code, notation->primary_side()});
+}
+
 feed_kind make_fx_spot_kind() {
     using ores::synthetic::feed::fx_spot_feed_build_input;
     using ores::synthetic::feed::fx_spot_feed_kind;
@@ -98,7 +126,7 @@ feed_kind make_fx_spot_kind() {
             c.auto_start = fx.auto_start;
             c.folder_id = fx.folder_id;
             c.fx_pair = std::make_pair(fx.base_currency_code, fx.quote_currency_code);
-            c.build_input = [ctx, fx]() -> feed_build_outcome {
+            c.build_input = [ctx, fx](const feed::feed_adapter& adapter) -> feed_build_outcome {
                 repo::gmm_component_repository comp_repo;
                 std::vector<ores::synthetic::domain::gmm_component> components;
                 for (auto& g : comp_repo.read_latest(ctx))
@@ -113,8 +141,20 @@ feed_kind make_fx_spot_kind() {
                     for (auto& i : repo::fx_spot_fixing_item_repository{}.read_latest(ctx))
                         if (i.fx_spot_config_id == fx.id)
                             fixing_items.push_back(std::move(i));
-                return {.input = feed::feed_build_input{fx_spot_feed_build_input{
-                            fx, std::move(components), {}, std::move(fixing_items)}},
+
+                // The feed quotes the pair in the notation of the adapter's provider, so a feed
+                // started by hand publishes the same ids the demand set names.
+                std::optional<feed::adapter_target> target;
+                if (adapter.has_adapter()) {
+                    auto written = fx_target_for(adapter, fx);
+                    if (!written)
+                        return {.input = std::nullopt, .skip_reason = written.error()};
+                    target = std::move(*written);
+                }
+                return {.input = feed::feed_build_input{
+                            fx_spot_feed_build_input{
+                                fx, std::move(components), std::move(target),
+                                std::move(fixing_items)}},
                         .skip_reason = {}};
             };
             out.push_back(std::move(c));
@@ -200,7 +240,7 @@ feed_kind make_ir_curve_kind() {
                                                                 e.instrument_code,
                                                                 e.start_tenor_code,
                                                                 e.end_tenor_code});
-            c.build_input = [ctx, cfg]() -> feed_build_outcome {
+            c.build_input = [ctx, cfg](const feed::feed_adapter& adapter) -> feed_build_outcome {
                 repo::ir_curve_template_entry_repository entry_repo;
                 std::vector<ores::synthetic::domain::ir_curve_template_entry> entries;
                 for (auto& e : entry_repo.read_latest(ctx))
@@ -231,12 +271,36 @@ feed_kind make_ir_curve_kind() {
                     return {.input = std::nullopt,
                             .skip_reason = "Tenor convention not found: " +
                                            feed::ir_curve_tenor_convention_code(cfg)};
+
+                // One adapter target for each pillar, in the order the entries came in: the curve
+                // publishes every pillar under its own vendor id, as the simulator's offer does.
+                std::vector<feed::ir_pillar_quote_target> targets;
+                if (adapter.has_adapter()) {
+                    targets.reserve(entries.size());
+                    for (const auto& e : entries) {
+                        auto target = target_for(
+                            adapter,
+                            vendor::ir_curve_pillar{cfg.currency_code,
+                                                    cfg.index_family,
+                                                    e.instrument_code,
+                                                    e.start_tenor_code,
+                                                    e.end_tenor_code});
+                        if (!target)
+                            return {.input = std::nullopt, .skip_reason = target.error()};
+                        targets.push_back(feed::ir_pillar_quote_target{
+                            .start_tenor_code = e.start_tenor_code,
+                            .end_tenor_code = e.end_tenor_code,
+                            .target = std::move(*target)});
+                    }
+                }
+
                 return {.input = feed::feed_build_input{ir_curve_feed_build_input{
                             cfg,
                             std::move(entries),
                             std::move(values),
                             read_definition_catalogue(ctx),
-                            *refctx}},
+                            *refctx,
+                            std::move(targets)}},
                         .skip_reason = {}};
             };
             out.push_back(std::move(c));
@@ -272,7 +336,7 @@ feed_kind make_ir_curve_kind() {
 
 }
 
-feed_kind_registry::feed_kind_registry()
+feed_kind_registry::feed_kind_registry(adapter_lookup_fn adapter_of_provider)
     : deps_{.factory = &feed::default_feed_factory(),
             .folder_subtree =
                 [](const ores::database::context& ctx, const boost::uuids::uuid& root_id) {
@@ -296,7 +360,8 @@ feed_kind_registry::feed_kind_registry()
                 [](const ores::database::context& ctx) {
                     namespace repo = ores::synthetic::repository;
                     return repo::market_data_generation_config_repository().read_latest(ctx);
-                }} {}
+                },
+            .adapter_of_provider = std::move(adapter_of_provider)} {}
 
 feed_kind_registry::feed_kind_registry(deps d)
     : deps_(std::move(d)) {}
@@ -427,7 +492,21 @@ feed_start_attempt feed_kind_registry::make_feed(const feed_start_target& target
         return {.feed = {},
                 .failure = "Feed config is not enabled: " + target.row.candidate.feed_config_id};
 
-    const auto outcome = target.row.candidate.build_input();
+    // The adapter the feed publishes through. With a lookup installed a feed whose provider the
+    // catalogue does not serve with a simulated source is refused: nothing would consume its
+    // ticks, and a start that reported success would be a lie about the store.
+    feed::feed_adapter adapter;
+    if (deps_.adapter_of_provider) {
+        const auto found = deps_.adapter_of_provider(target.container_provider_code);
+        if (!found)
+            return {.feed = {},
+                    .failure = "The catalogue holds no simulated source of provider '" +
+                               target.container_provider_code +
+                               "', so this feed has no adapter to publish through."};
+        adapter = *found;
+    }
+
+    const auto outcome = target.row.candidate.build_input(adapter);
     if (!outcome.input)
         return {.feed = {}, .failure = outcome.skip_reason};
 
@@ -445,8 +524,9 @@ void feed_kind_registry::reply_unknown_kind(ores::nats::service::client& nats,
         feed_simulation_result{.success = false, .message = "Unknown feed kind: " + kind});
 }
 
-feed_kind_registry make_default_feed_kind_registry() {
-    feed_kind_registry registry;
+feed_kind_registry make_default_feed_kind_registry(
+    feed_kind_registry::adapter_lookup_fn adapter_of_provider) {
+    feed_kind_registry registry(std::move(adapter_of_provider));
     registry.register_kind(make_fx_spot_kind());
     registry.register_kind(make_ir_curve_kind());
     return registry;

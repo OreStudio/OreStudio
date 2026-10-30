@@ -60,6 +60,7 @@ namespace ores::synthetic::service::app {
 
 using namespace ores::logging;
 namespace ev = ores::eventing;
+namespace feed = ores::synthetic::feed;
 
 namespace {
 constexpr std::string_view service_name = "ores.synthetic.service";
@@ -282,9 +283,33 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         throw;
     }
 
+    // The source a feed publishes as, read from the catalogue through its own client: a start
+    // the demand set does not already serve still needs an adapter, or the ingest drops every
+    // tick it makes. A provider the catalogue serves no simulated source for has none, and a
+    // feed under its collection is refused rather than started silently.
+    const auto adapter_of_provider =
+        [&svc_nats](std::string_view provider_code) -> std::optional<feed::feed_adapter> {
+        try {
+            ores::marketdata::client::market_data_client client(svc_nats);
+            const auto sources = client.list_market_data_sources();
+            if (!sources)
+                return std::nullopt;
+            for (const auto& source : *sources)
+                if (source.provider_code == provider_code && source.kind == "simulated" &&
+                    source.is_default)
+                    return feed::feed_adapter{.id = source.name,
+                                              .provider_code = std::string(provider_code)};
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "The adapter of provider '" << provider_code << "' could not be read: "
+                << e.what();
+        }
+        return std::nullopt;
+    };
+
     // The one per-kind registry: the config-plane dispatch table every
     // control-plane verb reads.
-    const auto registry = make_default_feed_kind_registry();
+    const auto registry = make_default_feed_kind_registry(adapter_of_provider);
 
     // One loop for the whole run. It owns the market, the regime chain and the
     // heat, and decides when every feed ticks, so a busy market lifts every feed

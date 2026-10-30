@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "../src/feed_adapter_targets.hpp"
 #include "../src/generator_runner.hpp"
 #include "../src/simulator_adapter.hpp"
 #include "../src/simulator_offers.hpp"
@@ -663,7 +664,7 @@ svc::feed_kind_candidate fx_candidate(const std::string& id,
     if (!pair.empty())
         if (!pair.empty())
             c.fx_pair = std::make_pair(pair.substr(0, 3), pair.substr(4, 3));
-    c.build_input = []() {
+    c.build_input = [](const ores::synthetic::feed::feed_adapter&) {
         return svc::feed_build_outcome{.input =
                                            ores::synthetic::feed::feed_build_input{
                                                ores::synthetic::feed::fx_spot_feed_build_input{}},
@@ -816,7 +817,7 @@ svc::feed_kind_candidate
 curve_candidate(const std::string& id,
                 const boost::uuids::uuid& container,
                 std::vector<ores::marketdata::vendor::ir_curve_pillar> pillars,
-                std::function<svc::feed_build_outcome()> build_input) {
+                std::function<svc::feed_build_outcome(const ores::synthetic::feed::feed_adapter&)> build_input) {
     svc::feed_kind_candidate c;
     c.feed_config_id = id;
     c.container_id = container;
@@ -943,7 +944,7 @@ TEST_CASE("a curve is offered once for each of its pillars, all under the curve'
             return std::make_shared<idle_generator>(std::make_shared<generator_counters>());
         });
 
-    const auto build_input = [] {
+    const auto build_input = [](const ores::synthetic::feed::feed_adapter&) {
         return svc::feed_build_outcome{
             .input = ores::synthetic::feed::feed_build_input{ir_curve_feed_build_input{}},
             .skip_reason = {}};
@@ -1021,7 +1022,7 @@ TEST_CASE("a curve that is not enabled is offered nothing", "[simulator_adapter]
         "curve-1",
         system_container,
         {vendor::ir_curve_pillar{"USD", "sofr", "DEPO", "SPOT", "3M"}},
-        [] {
+        [](const ores::synthetic::feed::feed_adapter&) {
             return svc::feed_build_outcome{
                 .input = ores::synthetic::feed::feed_build_input{ir_curve_feed_build_input{}},
                 .skip_reason = {}};
@@ -1046,4 +1047,70 @@ TEST_CASE("a curve that is not enabled is offered nothing", "[simulator_adapter]
         .nats = nats, .auth_nats = auth_nats, .scheduler = run.scheduler};
 
     CHECK(svc::system_generator_offers(registry, ctx, build, "demo-a", "demo").empty());
+}
+
+TEST_CASE("a curve publishes only where the ingest listens",
+          "[simulator_adapter][adapter][curve][subjects]") {
+    ores::nats::service::client nats(ores::testing::make_nats_options());
+    nats.connect();
+    const auto adapter_id =
+        "test-feed-subject-" + boost::uuids::to_string(boost::uuids::random_generator()());
+    const auto id = demo_pillar_id("USD", "sofr", "DEPO", "SPOT", "3M");
+
+    ores::analytics::quant::service::manual_run_clock clock(std::chrono::system_clock::now());
+    ores::analytics::quant::service::tick_scheduler idle(clock, {}, 42);
+    const auto make = [&](std::vector<ores::synthetic::feed::ir_pillar_quote_target> targets) {
+        return ores::synthetic::feed::ir_curve_feed(
+            nats,
+            "test.usd.sofr." + adapter_id,
+            "synthetic.v1.ops.tick.test.usd.sofr." + adapter_id,
+            "USD",
+            "1D",
+            "discount",
+            std::make_unique<flat_curve_process>(),
+            ores::analytics::quant::domain::arrival_spec{.mode = "periodic",
+                                                         .ticks_per_hour = 3600},
+            {resolved_pillar("SPOT", "3M", "DEPOSIT", 0, 90)},
+            idle,
+            1.0,
+            1.0,
+            std::move(targets));
+    };
+
+    // A pillar that serves an adapter travels on the adapter's ingress, which is the family the
+    // market data ingest maps, stores and delivers.
+    const auto serving = make({{.start_tenor_code = "SPOT",
+                                .end_tenor_code = "3M",
+                                .target = {.id = id,
+                                           .subject = domain::adapter_ingress_subject(
+                                               adapter_id, id.external_id)}}});
+    CHECK(serving.published_subject() ==
+          domain::adapter_ingress_subject(adapter_id, id.external_id));
+    CHECK(domain::ingest_consumes(serving.published_subject()));
+
+    // A pillar with no adapter still publishes on the producers' family, which the same loop
+    // subscribes to, so a feed is never silent to the store.
+    const auto bare = make({});
+    CHECK(bare.published_subject() == bare.nats_subject());
+    CHECK(domain::ingest_consumes(bare.published_subject()));
+    CHECK_FALSE(domain::ingest_consumes(domain::feed_display_subject_for("bloomberg-a")));
+}
+
+TEST_CASE("a_feed_quotes_the_id_its_provider_writes",
+          "[simulator_adapter][adapter][subjects]") {
+    namespace vendor = ores::marketdata::vendor;
+    // The one place a feed and the simulator both take a vendor id from: the notation of the
+    // provider, with the subject the ingest consumes.
+    const auto target = ores::synthetic::service::adapter_target_of(
+        "demo-a", "demo", vendor::ir_curve_pillar{"USD", "sofr", "DEPO", "SPOT", "3M"});
+    REQUIRE(target.has_value());
+    CHECK(target->id.id_scheme == "demo_key");
+    CHECK(target->id.external_id == "USD/sofr/DEPO/SPOT/3M");
+    CHECK(target->subject == domain::adapter_ingress_subject("demo-a", "USD/sofr/DEPO/SPOT/3M"));
+    CHECK(domain::ingest_consumes(target->subject));
+
+    // A provider with no notation writes no id, so a feed of it has nothing to quote.
+    CHECK_FALSE(ores::synthetic::service::adapter_target_of(
+                    "ice-a", "ice", vendor::ir_curve_pillar{"USD", "sofr", "DEPO", "SPOT", "3M"})
+                    .has_value());
 }

@@ -75,6 +75,24 @@ struct feed_build_context final {
 };
 
 /**
+ * @brief The adapter a feed publishes through: a source of the catalogue and its provider.
+ *
+ * A feed publishes as an adapter of its collection's provider, so the market data ingest maps,
+ * stores and delivers its ticks. An empty id means the feed publishes as a producer with no
+ * adapter, which only a feed built outside a catalogue collection does.
+ */
+struct feed_adapter final {
+    /// The name of the source, which is the adapter id the ingest reads. Empty means none.
+    std::string id;
+    /// The provider whose notation writes the ids the feed quotes.
+    std::string provider_code;
+
+    [[nodiscard]] bool has_adapter() const {
+        return !id.empty();
+    }
+};
+
+/**
  * @brief Build inputs for the FX spot producer: its persisted config plus the gmm_component
  * rows that define the mixture process.
  */
@@ -103,8 +121,7 @@ struct fx_spot_feed_build_input final {
 /**
  * @brief Build inputs for the IR curve producer: its persisted config, the template-entry and
  * parameter-value rows grouped by the caller, the parameter-definitions catalogue, the refdata
- * context resolved for the config's tenor convention, and the binding mode that decides its
- * publish subject.
+ * context resolved for the config's tenor convention, and the adapter target of each pillar.
  */
 struct ir_curve_feed_build_input final {
     ores::synthetic::domain::ir_curve_generation_config config;

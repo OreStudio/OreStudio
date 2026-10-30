@@ -20,6 +20,7 @@
 #include "ores.marketdata.api/domain/adapter_subjects.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
+#include <vector>
 
 using namespace ores::marketdata::domain;
 
@@ -115,4 +116,42 @@ TEST_CASE("a_subject_that_is_not_a_heartbeat_gives_no_adapter", "[domain][adapte
     CHECK_FALSE(adapter_heartbeat_subject_adapter("marketdata.v1.adapters..heartbeat").has_value());
     CHECK_FALSE(
         adapter_heartbeat_subject_adapter("marketdata.v1.adapters.a b.heartbeat").has_value());
+}
+
+TEST_CASE("the_ingest_consumes_an_adapters_tick_and_a_producers_tick",
+          "[domain][adapter_subjects][ingest]") {
+    using namespace ores::marketdata::domain;
+    // The two families a publisher may use: the ingress of an adapter, and the producers that
+    // name no adapter.
+    CHECK(ingest_consumes(adapter_ingress_subject("bloomberg-a", "EURUSD Curncy")));
+    CHECK(ingest_consumes(synthetic_tick_subject_for("synthetic.bloomberg.usdsofr")));
+
+    // A control message, another family, and the environment-prefixed form are none of them a
+    // subject the loop reads.
+    CHECK_FALSE(ingest_consumes(adapter_announce_subject()));
+    CHECK_FALSE(ingest_consumes(adapter_demand_subject("bloomberg-a")));
+    CHECK_FALSE(ingest_consumes(feed_display_subject_for("bloomberg-a")));
+    CHECK_FALSE(ingest_consumes("synthetic.v1.ops.tick"));
+}
+
+TEST_CASE("the_ingest_subscribes_to_exactly_its_two_subject_families",
+          "[domain][adapter_subjects][ingest]") {
+    using namespace ores::marketdata::domain;
+    CHECK(ingest_subject_wildcards() ==
+          std::vector<std::string>{"synthetic.v1.ops.tick.>", "marketdata.v1.ingress.>"});
+    CHECK(ingest_producer_subject_all() == "synthetic.v1.ops.tick.>");
+    CHECK(ingest_adapter_subject_all() == adapter_ingress_subject_all());
+}
+
+TEST_CASE("a_wildcard_covers_one_token_or_more_and_a_star_covers_exactly_one",
+          "[domain][adapter_subjects][ingest]") {
+    using namespace ores::marketdata::domain;
+    CHECK(subject_matches("a.>", "a.b"));
+    CHECK(subject_matches("a.>", "a.b.c"));
+    CHECK_FALSE(subject_matches("a.>", "a"));
+    CHECK_FALSE(subject_matches("a.>", "a."));
+    CHECK(subject_matches("a.*.c", "a.b.c"));
+    CHECK_FALSE(subject_matches("a.*.c", "a.b.b.c"));
+    CHECK(subject_matches("a.b", "a.b"));
+    CHECK_FALSE(subject_matches("a.b", "a.b.c"));
 }

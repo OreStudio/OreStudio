@@ -157,7 +157,7 @@ stub_candidate(const std::string& id, const std::string& source, const std::stri
     c.enabled = true;
     c.auto_start = true;
     c.folder_id = uuid_of(folder);
-    c.build_input = []() {
+    c.build_input = [](const ores::synthetic::feed::feed_adapter&) {
         return ores::synthetic::service::feed_build_outcome{
             .input =
                 ores::synthetic::feed::feed_build_input{

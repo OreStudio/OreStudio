@@ -215,11 +215,23 @@ std::string ir_curve_feed::tick(const ores::analytics::quant::service::tick_cont
         nats_.publish(nats_subject_, ores::nats::default_wire_codec().encode(tick));
     }
     if (n == 1 || n % 100 == 0) {
+        // The subject a pillar with an adapter target went out on, taken from the pillar's own
+        // target rather than from the producer subject the feed does not use for it. The log is
+        // what a person reads to find out where the feed's ticks are, so it names the family the
+        // ticks actually travelled on.
         BOOST_LOG_SEV(ir_curve_feed_lg(), info)
-            << "SYNTHETIC CURVE PUBLISH: subject='" << nats_subject_ << "' source='" << source_name_
-            << "' batch=" << n << " points=" << entries_.size();
+            << "SYNTHETIC CURVE PUBLISH: source='" << source_name_
+            << "' batch=" << n << " points=" << entries_.size()
+            << " subject='" << published_subject() << "'";
     }
     return std::to_string(entries_.size());
+}
+
+const std::string& ir_curve_feed::published_subject() const {
+    for (const auto& target : adapter_targets_)
+        if (target)
+            return target->target.subject;
+    return nats_subject_;
 }
 
 void ir_curve_feed::stop() {

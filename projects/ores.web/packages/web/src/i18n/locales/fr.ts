@@ -5199,7 +5199,7 @@ const fr: SourceCatalogue = {
                 subscriptions: 'Souscriptions',
                 subscriptionsBody:
                     'Les fournisseurs qu’une partie prend, avec les droits qu’elle détient, et la source qui sert chacun.',
-                synthetic: 'Simulateur',
+                synthetic: 'Synthétique',
                 syntheticBody:
                     'Les flux que la plateforme génère : ce qui tourne par fournisseur, et chaque flux à démarrer et à arrêter.',
                 evolutionBody:

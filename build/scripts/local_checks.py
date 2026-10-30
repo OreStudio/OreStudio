@@ -496,7 +496,7 @@ CATALOGUE: tuple[Check, ...] = (
     ),
     Check(
         id="template-sections",
-        title="A mustache section tag stands alone on its line, or its section is one line",
+        title="A mustache line holds one section tag, so the renderer can strip it",
         argv=("python3",
               "projects/ores.codegen/scripts/check_template_sections.py"),
         classes=("codegen", "modeling"),
@@ -505,9 +505,8 @@ CATALOGUE: tuple[Check, ...] = (
             "projects/ores.codegen/scripts/check_template_sections.py",
             "projects/ores.codegen/scripts/template_section_baseline.json",
         ),
-        fix="Put the section's opening and closing tags on their own lines, or"
-            " keep the whole section on one line. The renderer strips only a"
-            " line that holds nothing but a tag, so a shared line leaks a"
+        fix="Give each section tag its own line. The renderer strips a line that"
+            " holds nothing but one tag, so a line chaining several tags leaks a"
             " newline into every file the template produces.",
     ),
     Check(

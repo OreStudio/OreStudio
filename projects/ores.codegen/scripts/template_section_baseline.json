@@ -1,18 +1,5 @@
 {
     "templates": {
-        "cpp_domain_type_codec.hpp.mustache": 8,
-        "cpp_domain_type_entity.hpp.mustache": 15,
-        "cpp_domain_type_repository.cpp.mustache": 8,
-        "cpp_domain_type_repository.hpp.mustache": 6,
-        "cpp_nats_handler.hpp.mustache": 4,
-        "cpp_nats_integration_test.cpp.mustache": 3,
-        "cpp_protocol.hpp.mustache": 2,
-        "cpp_shell_operation_implementation.cpp.mustache": 1,
-        "shell_recipe.org.mustache": 1,
-        "sql_outcome_functions_create.mustache": 1,
-        "sql_schema_domain_entity_create.mustache": 49,
-        "sql_schema_junction_create.mustache": 13,
-        "sql_schema_notify_trigger.mustache": 2,
-        "sql_schema_table_create.mustache": 4
+        "cpp_domain_type_entity.hpp.mustache": 8
     }
 }

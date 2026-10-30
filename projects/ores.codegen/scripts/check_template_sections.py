@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
-"""A mustache section tag stands alone on its line, or its section is one line.
+"""A line of section tags holds one tag, so the renderer can strip it.
 
-The renderer strips a line that holds nothing but a section tag, so a section
-that renders nothing emits no text and no newline. A tag that shares its line
-with other tags or with text is not stripped: the newline around it is emitted
-whatever the section does, and a template whose sections nest on one line leaks
-one blank line per empty section.
+The renderer strips a line that holds nothing but a *single* section tag, and
+only when the tag stands alone. A line that chains several tags,
+= {{^a}}{{^b}}{{^c}} =, is not stripped: its newline survives whether the
+condition holds or not, so an empty chain leaks a blank line into every file the
+template produces.
 
-That leak is not cosmetic. A template edit that changes how many such newlines
-survive alters every file the template produces, so a two-byte change rewrites
-an estate -- twice now, from a protocol header and from the field-group gate,
-where 26 trading headers came back changed for no stated reason.
+That is the mechanical half of the leak class. The other half is a blank line
+left outside a section in the template, which no static rule can judge: it
+renders as a blank line whenever the section is empty, and whether that is
+wanted depends on the template's intent. The chained-tag rule is what a scanner
+can prove, so it is what this check states; a rendered-output test for the
+second half belongs beside the template that needs it, as the protocol header
+has one.
 
-The rule is checked against a baseline while the templates that predate it are
-cleaned up: the baseline holds the number of offending section pairs per file,
-and the check fails when a file grows past it, and when a file falls below it,
-because a baseline nobody shrinks is a hiding place.
+The rule is checked against a baseline while the one template that predates it
+is cleaned up: the baseline holds the count per file, and the check fails when a
+file grows past it, and when a file falls below it, because a baseline nobody
+shrinks is a hiding place.
 
 Usage: check_template_sections.py [--templates <dir>] [--baseline <file>]
 """
@@ -42,10 +45,15 @@ def alone(text, start, end):
     return not text[line_start:start].strip() and not text[end:line_end].strip()
 
 
-def hazards(text):
-    """The section pairs whose tags do not stand alone on their lines."""
-    found = []
+def chained_lines(text):
+    """The lines that hold more than one section tag and nothing else.
+
+    Each is a hint that survived the strip the renderer gives a lone tag, and the
+    line is a hazard when the section it opens or closes spans more than one line.
+    """
+    found = set()
     stack = []
+    pairs = []
     for match in TAG.finditer(text):
         kind, name = match.group(1), match.group(2).strip()
         if kind in "#^":
@@ -55,13 +63,20 @@ def hazards(text):
             if stack[index][0] != name:
                 continue
             _, open_start, open_end = stack.pop(index)
-            one_line = text.count("\n", 0, open_start) == text.count("\n", 0, match.start())
-            if one_line:
-                break
-            if not (alone(text, open_start, open_end) and alone(text, match.start(), match.end())):
-                found.append(text.count("\n", 0, open_start) + 1)
+            pairs.append((open_start, open_end, match.start(), match.end()))
             break
-    return found
+    for open_start, open_end, close_start, close_end in pairs:
+        if text.count("\n", 0, open_start) == text.count("\n", 0, close_start):
+            continue
+        for start, end in ((open_start, open_end), (close_start, close_end)):
+            line_start = text.rfind("\n", 0, start) + 1
+            line_end = text.find("\n", end)
+            line_end = len(text) if line_end < 0 else line_end
+            line = text[line_start:line_end]
+            if len(TAG.findall(line)) < 2 or TAG.sub("", line).strip():
+                continue
+            found.add(text.count("\n", 0, start) + 1)
+    return sorted(found)
 
 
 def census(directory):
@@ -71,7 +86,7 @@ def census(directory):
             continue
         with open(os.path.join(directory, path), encoding="utf-8") as handle:
             text = handle.read()
-        lines = hazards(text)
+        lines = chained_lines(text)
         if lines:
             found[path] = {"count": len(lines), "lines": lines[:5]}
     return found
@@ -103,22 +118,21 @@ def main():
         allowed = baseline.get(name, 0)
         if body["count"] > allowed:
             problems.append(
-                f"{name}: {body['count']} section pair(s) share a line with other"
-                f" text, {allowed} allowed; a line {body['lines'][0]} of the"
-                " template. Put each tag on its own line, or keep the whole"
-                " section on one line")
+                f"{name}: {body['count']} line(s) chain several section tags,"
+                f" {allowed} allowed; line {body['lines'][0]} of the template."
+                " Give each tag its own line, so the renderer can strip it")
     for name, allowed in sorted(baseline.items()):
         found_count = found.get(name, {}).get("count", 0)
         if found_count < allowed:
             problems.append(
-                f"{name}: {found_count} section pair(s) share a line, below the"
-                f" baseline's {allowed}; shrink the baseline rather than leave"
-                " room for the next one")
+                f"{name}: {found_count} chained line(s), below the baseline's"
+                f" {allowed}; shrink the baseline rather than leave room for the"
+                " next one")
     for problem in problems:
         print(problem)
-    print(f"{len(found)} of the templates hold {sum(b['count'] for b in found.values())}"
-          f" offending pair(s); baseline covers {sum(baseline.values())},"
-          f" {len(problems)} problem(s)")
+    print(f"{len(found)} of the templates chain section tags on a line,"
+          f" {sum(b['count'] for b in found.values())} line(s) in all; the baseline"
+          f" covers {sum(baseline.values())}, {len(problems)} problem(s)")
     return 1 if problems else 0
 
 

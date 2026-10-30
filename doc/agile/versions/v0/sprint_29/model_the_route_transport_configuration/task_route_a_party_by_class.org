@@ -26,11 +26,11 @@ A party routes one feed for each publisher and asset class.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -57,7 +57,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Route pgtap cases | 5/5 pass | =run_tests.sh marketdata_routes_by_class_test.sql= | c65cee27ad |
+| Catalogue pgtap cases | 17/17 pass | =run_tests.sh marketdata_routes_by_class_test.sql marketdata_feeds_test.sql marketdata_feed_scopes_test.sql= | c65cee27ad |
+| Repository catalogue tests | 9 cases, 19 assertions | =ores.marketdata.core.tests "[repository][catalogue]"= | c65cee27ad |
+| Ingest loop tests | 11 cases, 1226 assertions | =ores.marketdata.service.tests "[app][feed_ingest_loop]"= | c65cee27ad |
+| Build | green | =./compass.sh build= | c65cee27ad |
 
 * Notes
 
@@ -85,3 +89,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** Outcome
+
+The route key is (party, publisher, class). The route stores =publisher_code=
+and =asset_class=, and the unique index over the three is the rule: a party has
+one route for a publisher and class.
+
+A route's feed must belong to the publisher, and, when the feed declares a
+scope, the scope must serve the class. A feed without scope rows, such as a
+simulator feed, is not constrained by the class check yet.
+
+The existing routes migrate: the four public publishers route at FX and the
+curve route at IR. The runtime follows the key: the demand calculator, usage
+planner, ingest loop and IAM provisioning read and write publisher and class.

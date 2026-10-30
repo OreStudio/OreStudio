@@ -136,7 +136,8 @@ route_builder& route_builder::max_body(std::uint64_t bytes) {
     return *this;
 }
 
-route_builder& route_builder::sink(std::function<std::unique_ptr<domain::body_sink>()> factory) {
+route_builder& route_builder::sink(
+    std::function<std::unique_ptr<domain::body_sink>(const domain::http_request&)> factory) {
     sink_ = std::move(factory);
     return *this;
 }

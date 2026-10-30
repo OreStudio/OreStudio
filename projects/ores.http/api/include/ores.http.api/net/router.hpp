@@ -78,7 +78,8 @@ public:
      * A route that states no sink reads its body into the request. One that
      * states a factory gets a sink per request, filled in chunks by the session.
      */
-    route_builder& sink(std::function<std::unique_ptr<domain::body_sink>()> factory);
+    route_builder&
+    sink(std::function<std::unique_ptr<domain::body_sink>(const domain::http_request&)> factory);
 
     /**
      * @brief Sets OpenAPI summary.
@@ -184,7 +185,7 @@ private:
     std::vector<std::string> tags_;
     std::vector<domain::query_param> query_params_;
     std::uint64_t max_body_size_ = 0;
-    std::function<std::unique_ptr<domain::body_sink>()> sink_;
+    std::function<std::unique_ptr<domain::body_sink>(const domain::http_request&)> sink_;
     std::optional<domain::request_body_schema> body_schema_;
     std::optional<domain::response_schema> success_response_schema_;
 };

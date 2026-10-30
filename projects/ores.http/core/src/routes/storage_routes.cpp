@@ -20,6 +20,7 @@
 #include "ores.http.core/routes/storage_routes.hpp"
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
+#include "ores.http.core/routes/storage_upload_sink.hpp"
 #include "ores.iam.api/domain/permission_codes.hpp"
 #include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.utility/crypto/sha256.hpp"
@@ -173,10 +174,11 @@ void storage_routes::register_routes(
                            * The one route whose body is an engine package, a job's
                            * input or a run's output. Every other route keeps the
                            * server's small default, so a body bomb costs a
-                           * refusal. Streaming this body rather than buffering it
-                           * is increment A3.
+                           * refusal. This one is streamed to a part file, so the
+                           * object costs a chunk and not itself.
                            */
                           .max_body(max_upload_bytes_)
+                          .sink([this](const http_request& req) { return make_upload_sink(req); })
                           .handler([this](const http_request& req) { return handle_put(req); })
                           .build());
 
@@ -277,14 +279,31 @@ asio::awaitable<http_response> storage_routes::handle_put(const http_request& re
 
     BOOST_LOG_SEV(lg(), debug) << "PUT " << bucket << "/" << key;
 
-    try {
-        store_.put(bucket, key, req.body);
-        const auto sha256 = ores::utility::crypto::sha256::hex_digest(req.body);
-        co_return http_response::json(R"({"success":true,"sha256":")" + sha256 + R"("})");
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "PUT error: " << e.what();
-        co_return http_response::internal_error(e.what());
+    /*
+     * The bytes are already on disk: the session streamed them into the sink
+     * while this handler had not run yet, and publishing is what puts the object
+     * at its key. A handler that answers without publishing discards them.
+     */
+    auto* sink = dynamic_cast<storage_upload_sink*>(req.sink);
+    if (sink == nullptr) {
+        BOOST_LOG_SEV(lg(), error)
+            << "PUT " << bucket << "/" << key << " arrived without a streamed body";
+        co_return http_response::internal_error("The upload was not streamed.");
     }
+
+    if (!sink->publish()) {
+        BOOST_LOG_SEV(lg(), error) << "PUT " << bucket << "/" << key << " could not be published";
+        co_return http_response::internal_error("The object could not be stored.");
+    }
+
+    co_return http_response::json(R"({"success":true,"sha256":")" + sink->digest() +
+                                  R"(","bytes":)" + std::to_string(sink->byte_count()) + "}");
+}
+
+std::unique_ptr<::ores::http::domain::body_sink>
+storage_routes::make_upload_sink(const http_request& req) const {
+    return std::make_unique<storage_upload_sink>(
+        store_, req.get_path_param("bucket"), req.get_path_param("key"));
 }
 
 asio::awaitable<http_response> storage_routes::handle_get(const http_request& req) {

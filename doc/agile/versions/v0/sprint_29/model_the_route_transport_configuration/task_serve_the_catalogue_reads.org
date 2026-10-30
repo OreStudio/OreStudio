@@ -8,7 +8,7 @@
 #+filetags: :marketdata:implementation:model_the_route_transport_configuration:sprint_29:v0:
 #+owner: marco
 #+branch: feature/serve-the-catalogue-reads
-#+pr: 4122
+#+pr: 4135
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -78,6 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4135][#4135]] | [codegen] Render the drift check without writing |
 | [[https://github.com/OreStudio/OreStudio/pull/4122][#4122]] | [marketdata] Serve and test the catalogue reads |
 
 * Review

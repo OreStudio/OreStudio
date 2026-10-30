@@ -204,8 +204,41 @@ via its "Verifies task" field.
 
 * Review
 
+Self-reviewed, because the =@claude= trigger errors after zero seconds on this
+repository. Each row is a finding from that pass and what became of it.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A =wire_traits= specialisation defined in the type's own translation unit is invisible to every other unit, so those units keep reflect-cpp: an ODR violation with no diagnostic | generated codec header | Changed | The specialisation is stated in a header every sender includes. |
+| 2 | Four free functions named =to_json=, =from_json=, ... cannot coexist in one namespace: two types differing only in what they return are a redefinition | generated codec header | Changed | They are static members of a =<type>_codec= struct instead. |
+| 3 | Editing the shared =_json_io= archetypes would regenerate every domain header in the estate and force a full sweep | facet node | Changed | The codec is a new opt-in facet, so a component joins one entity at a time. |
+| 4 | =object::write_json= passed a temporary's =c_str()= as the member name, and yyjson's mutable API stores the pointer rather than copying it | struct_codec.hpp | Fixed | Rendered unmapped memory as keys wherever the freed bytes did not survive. |
+| 5 | reflect-cpp omits an empty optional from a JSON object and carries it as nil in MessagePack, so one rule for both formats was wrong in one of them | struct_codec.hpp | Fixed | Both stated in one place, and both readers accept an absent member. |
+| 6 | The carriers covered only text; a model states versions, display orders and flags | json_codec.hpp, msgpack_codec.hpp | Added | An integer is the format's number, a truth value its own word. |
+| 7 | A grouped entity would render an empty field list -- a codec that encodes nothing -- rather than refusing | codec_impl template | Added | =static_assert= names the shape no template in the facet covers. |
+| 8 | The field list repeats the class header's member order, and the two templates can drift | codec_impl template | Noted | The per-type byte comparison fails the moment they part. |
+| 9 | The unity build collides on a file-local field list named the same in every unit | codec_impl template | Fixed | The name carries the type. |
+| 10 | The round-trip assertion compared against the value the encoding started from, which the wire's microsecond resolution cannot preserve | domain_codec_tests.cpp | Fixed | The reader is compared with reflect-cpp's reader on the same bytes. |
+| 11 | =dataset_dependency= has no model, so nothing generates its codec, and it had no value equality for a round trip | dataset_dependency_codec.*, dataset_dependency.hpp | Added | Hand-written, same shape as the generated ones. |
+| 12 | The gate's =cmake-sources= and =physical-inventory= were red for this branch | trading list, inventories | Fixed | The trading header list had been stale since the commit that added the header. |
 
 * Result
+
+ores.dq's twenty-six domain types state their own wire form, in both formats,
+generated from the model where there is a model and by hand where there is not;
+each one's bytes are compared with reflect-cpp's, in both formats, on a value
+the component's own generator produced. =ores::nats::wire_codec= reaches them
+through the =wire_traits= seam, which is proved on a real dq type in both
+formats and on the seam's own stand-in for the direction a dq type cannot yet
+take.
+
+The full local suite is 97 of 98 suites green. The one failure is
+=ores.refdata.core.tests='s curve-configuration round trip, which reads through
+=ores.ore='s projection: no =ores.ore=, =ores.refdata= or =ores.sql= file
+differs from =origin/main= on this branch, and =ores.ore= includes none of the
+codec helpers that changed, so that failure is main's and is reported on the PR
+rather than fixed here.
+
+Next in this component: the protocol archetypes, so that =catalog_event= and
+=list_catalogs_response= carry a field list too and dq's actual NATS traffic
+stops going through reflect-cpp.

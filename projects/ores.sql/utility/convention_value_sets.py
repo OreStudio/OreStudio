@@ -98,7 +98,7 @@ OWN_SETS = {
         "name": "Period",
         "description": "A period such as 2D, 3M or 1Y6M, which the ORE code parses as a period.",
         "source_kind": "regex",
-        "pattern": "^([0-9]+[DdWwMmYy])+$",
+        "pattern": "^[+-]?([0-9]+[DdWwMmYy])+$",
         "is_ordered": False,
     },
 }

@@ -83,7 +83,42 @@ select code as value, description as label, true as is_active
 from ores_refdata_day_counters_tbl
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+/**
+ * The spellings ORE accepts for a business day convention.
+ *
+ * ORE's parser maps 27 spellings onto seven conventions, and a document states
+ * one of the spellings. The registry holds the conventions, so the spellings
+ * are stated here, once, as the crosswalk the catalogue relation exposes: a
+ * document that says F and a document that says Following are the same rule.
+ */
 create or replace view ores_refdata_business_day_convention_catalogue_v as
-select code as value, name as label, true as is_active
-from ores_refdata_business_day_convention_types_tbl
-where valid_to = ores_utility_infinity_timestamp_fn();
+with spelling(convention, value) as (
+    values
+        ('Following', 'F'),
+        ('Following', 'Following'),
+        ('Following', 'FOLLOWING'),
+        ('Modified Following', 'MF'),
+        ('Modified Following', 'ModifiedFollowing'),
+        ('Modified Following', 'Modified Following'),
+        ('Modified Following', 'MODIFIEDF'),
+        ('Modified Following', 'MODFOLLOWING'),
+        ('Preceding', 'P'),
+        ('Preceding', 'Preceding'),
+        ('Preceding', 'PRECEDING'),
+        ('Modified Preceding', 'MP'),
+        ('Modified Preceding', 'ModifiedPreceding'),
+        ('Modified Preceding', 'Modified Preceding'),
+        ('Modified Preceding', 'MODIFIEDP'),
+        ('Unadjusted', 'U'),
+        ('Unadjusted', 'Unadjusted'),
+        ('Unadjusted', 'INDIFF'),
+        ('Unadjusted', 'NONE'),
+        ('Unadjusted', 'NotApplicable'),
+        ('Half-Month Modified Following', 'HalfMonthModifiedFollowing'),
+        ('Half-Month Modified Following', 'HMMF'),
+        ('Half-Month Modified Following', 'Half Month Modified Following'),
+        ('Half-Month Modified Following', 'HALFMONTHMF'),
+        ('Half-Month Modified Following', 'HalfMonthMF'),
+        ('Nearest', 'NEAREST')
+)
+select value, convention as label, true as is_active from spelling;

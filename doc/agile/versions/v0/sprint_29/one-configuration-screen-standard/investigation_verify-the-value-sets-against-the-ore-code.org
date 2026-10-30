@@ -818,7 +818,34 @@ The sets and their parameters:
   and regenerate the terms file.
 
 
-* Summary
+* Corrections to this audit, made when the findings were applied
+
+The findings were applied in [[id:6282679D-A8A2-44BA-895D-CEBBA62E0E88][Correct the value sets against the ORE code]]. Three do not hold as written.
+
+** F-04 and F-05 are not applied: Model and Engine name a builder, not a fixed list
+
+The evidence is one builder's comparison for a scripted trade. The same element
+names a builder from ORE's registry for every other product type, and the
+registry holds far more names than the five a scripted trade accepts. The
+seeded population states LGM, BlackScholesMerton, DiscountedCashflows,
+CrossAssetModel, GarmanKohlhagen and eleven more, and the valid name depends on
+the product type. A set of five would refuse every valid interest rate
+configuration, so both sets stay text and their descriptions say what they name.
+
+** F-03 is applied in part: Calibration is text for a reason the audit missed
+
+The IR and FX builders read it through =parseCalibrationType=, which accepts five
+values. The scripted trade builder stores the same parameter as a plain string
+with a default of =Deal= and never compares it, so no list bounds it there. The
+union of a five-value list and an unvalidated string is text, and the set says so.
+
+** The business day convention catalogue now states ORE's spellings
+
+The audit did not reach the catalogue contents. ORE's parser maps 26 spellings
+onto seven conventions, and the registry holds the seven; the catalogue view
+states the crosswalk, so a document that says =F= and one that says =Following=
+are the same rule. The day counter registry already held ORE's spellings.
+
 
 The table lists every set that this audit verified, with one verdict for each
 set. The seven =catalogue= sets are not in the table. They hold a relation name

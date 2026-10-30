@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 6282679D-A8A2-44BA-895D-CEBBA62E0E88
+:END:
+#+title: Task: Correct the value sets against the ORE code
+#+description: The audit of the seeded sets found disagreements with ORE 1.8.17: sets that state text where ORE parses a fixed list or a switch, lists that refuse a value ORE accepts, and bounds ORE enforces that no set states. This task corrects the curation, restores the two catalogue sets whose registry could not check a document, and keeps the model honest about the two names ORE's builder registry decides.
+#+type: task
+#+level: s1
+#+filetags: :one-configuration-screen-standard:sprint_29:v0:
+#+owner: marco
+#+branch: feature/correct-the-value-sets-against-the-ore-code
+#+pr: 4106
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every seeded value set states what ORE 1.8.17 accepts for its parameter, and the two catalogue sets that were text because their registry held words now check a document again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4106][#4106]] | [reporting] Correct the value sets against the ORE code |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The audit's findings are applied, and the three that do not hold are stated in
+the investigation with their evidence.
+
+- Eleven sets that stated text became the list or the switch ORE reads:
+  =bounds=, =timingadjustment=, =bootstrap_mode=, =yieldcurvemodel=,
+  =infmodeltype=, =floatspreadmapping=, =irvolatilitytype=,
+  =regression_vargroupmode=, =heston_calibrationmethod=,
+  =heston_processdiscretization= and =trainingsamples=; =globalmodel=,
+  =usead= and =useindexcurveforindexcds= became boolean sets.
+- Nine sets that stated text became numbers: =displacement=, =irreversion=,
+  =infjyrealratereversion=, =bootstrap_mesherconcentration=,
+  =regressionvariancecutoff= and the three smoothing settings.
+- The bounds ORE enforces are stated: =beta= and 21 whole numbers stored in a
+  QuantLib =Size= take a floor of 0, and the four seeds are left signed, as
+  ORE reads them.
+- =calibrationstrategy= gained =UnderlyingATM= and =UnderlyingDealStrike=, and
+  =scheme= gained =GaussLobatto= with its description naming the two engine
+  families the union serves.
+- The period patterns accept a signed period, and the interpolation method set
+  gained the deprecated =DefaultLogMixedLinearCubic= alias.
+- =curve.business_day_convention= and =curve.day_counter= are catalogue sets
+  again. The business day convention catalogue states the 26 spellings ORE's
+  parser maps onto seven conventions, and the day counter registry already
+  held ORE's spellings.
+
+Not applied, and recorded with the evidence: =Model= and =Engine= (the
+population holds fifteen or more builder names and the valid one depends on the
+product type) and =Calibration= (five values in the IR builders, an unvalidated
+string in a scripted trade).
+
+Verified live: the catalogue views answer 26 and 71 values, the guard accepts
+=F= and =Following= and refuses =XX=, and =ore_parameter_settings check=
+answers OK over 266 drawn parameters. The nine C++ suites and the 639-test
+pgTAP suite pass.

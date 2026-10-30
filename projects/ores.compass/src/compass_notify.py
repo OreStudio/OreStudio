@@ -208,6 +208,19 @@ def shell_binary(project_root, env):
     return binary
 
 
+def first_sentence(text: str, limit: int = 180) -> str:
+    """The first sentence of a description, shortened to one bell line."""
+    passage = " ".join((text or "").split())
+    if not passage:
+        return ""
+    end = passage.find(". ")
+    sentence = passage[: end + 1] if end >= 0 else passage
+    if len(sentence) <= limit:
+        return sentence
+    cut = sentence[:limit].rsplit(" ", 1)[0]
+    return cut + "…"
+
+
 def raise_script(kind_code, link_route, link_id, recipients, arguments):
     """The shell command that raises the notification, as one line of a script.
 
@@ -350,7 +363,9 @@ def run(argv, project_root, env_file=None):
         if title.startswith(prefix):
             title = title[len(prefix):].strip()
             break
-    reason = args.reason or doc.description or "no reason given"
+    # The notice names the scenario and one line of what it is: the full
+    # description belongs on the scenario page, not in a bell item.
+    summary = args.reason or first_sentence(doc.description) or "no reason given"
     # The message names the raiser the way a person reads it, so the tenant is
     # not repeated in it: the notification already belongs to that tenant.
     raiser_name = sender_address.partition("@")[0]
@@ -360,7 +375,7 @@ def run(argv, project_root, env_file=None):
         link_route=link_route,
         link_id="",
         recipients=[recipient_id],
-        arguments={"scenario": title, "reason": reason, "raiser": raiser_name},
+        arguments={"scenario": title, "reason": summary, "raiser": raiser_name},
     )
 
     web_port = env.get("ORES_WEB_PORT", "")

@@ -189,7 +189,7 @@ export function NotificationBell(): ReactNode {
                                             className={`mt-1.5 size-2 shrink-0 rounded-full ${notification.readAt === null ? 'bg-accent' : 'bg-transparent'}`}
                                         />
                                         <span className="min-w-0 flex-1">
-                                            <span className="block text-ink">
+                                            <span className="line-clamp-3 block text-ink">
                                                 {t(notification.messageKey, valuesOf(notification))}
                                             </span>
                                             <span className="block text-xs text-ink-faint">

@@ -141,8 +141,8 @@ void market_observation_commands::register_commands(cli::Menu& root_menu, nats_c
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <party_id> <series_id> <observation_datetime> <oresmd_uri> <value> <source> "
-        "<source_id> <reason> <commentary>");
+        "add <party_id> <series_id> <observation_datetime> <oresmd_uri> <value> <source> <feed_id> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -150,7 +150,7 @@ void market_observation_commands::register_commands(cli::Menu& root_menu, nats_c
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <party_id> <series_id> <observation_datetime> <oresmd_uri> <value> <source> "
-        "<source_id> <reason> <commentary> [--version <n>]");
+        "<feed_id> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -158,7 +158,7 @@ void market_observation_commands::register_commands(cli::Menu& root_menu, nats_c
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <party_id> <series_id> <observation_datetime> <oresmd_uri> "
-        "<value> <source> <source_id> <reason> <commentary>");
+        "<value> <source> <feed_id> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -365,7 +365,7 @@ void market_observation_commands::process_add(std::ostream& out,
         market_observation_read_token(
             req.change.write.source, parsed->positionals[next++], "source");
         market_observation_read_token(
-            req.change.write.source_id, parsed->positionals[next++], "source_id");
+            req.change.write.feed_id, parsed->positionals[next++], "feed_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -427,7 +427,7 @@ void market_observation_commands::process_set(std::ostream& out,
         market_observation_read_token(
             req.change.write.source, parsed->positionals[next++], "source");
         market_observation_read_token(
-            req.change.write.source_id, parsed->positionals[next++], "source_id");
+            req.change.write.feed_id, parsed->positionals[next++], "feed_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -503,7 +503,7 @@ void market_observation_commands::process_put_many(std::ostream& out,
             market_observation_read_token(
                 change.write.source, parsed->positionals[next++], "source");
             market_observation_read_token(
-                change.write.source_id, parsed->positionals[next++], "source_id");
+                change.write.feed_id, parsed->positionals[next++], "feed_id");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

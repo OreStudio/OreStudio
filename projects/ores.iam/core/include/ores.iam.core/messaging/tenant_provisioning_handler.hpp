@@ -47,7 +47,7 @@
 #include "ores.iam.core/service/tenant_provisioning_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
-#include "ores.marketdata.api/messaging/market_data_source_protocol.hpp"
+#include "ores.marketdata.api/messaging/feed_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/route_protocol.hpp"
@@ -1952,17 +1952,17 @@ private:
     static boost::uuids::uuid find_source_id(internal_request_client& client,
                                              const std::string& provider,
                                              const std::string& source) {
-        marketdata::messaging::list_market_data_sources_request request;
+        marketdata::messaging::list_feeds_request request;
         request.limit = 1000;
         const auto response = client.request(request);
         if (response.result.outcome != ores::utility::domain::outcome::ok)
-            throw std::runtime_error("The market data sources were not read: " +
+            throw std::runtime_error("The market data feeds were not read: " +
                                      response.result.message);
-        for (const auto& candidate : response.sources)
-            if (candidate.name == source && candidate.provider_code == provider)
+        for (const auto& candidate : response.feeds)
+            if (candidate.name == source && candidate.publisher_code == provider)
                 return candidate.id;
-        throw std::runtime_error("The catalogue holds no source '" + source +
-                                 "' of the provider '" + provider + "'.");
+        throw std::runtime_error("The catalogue holds no feed '" + source + "' of the provider '" +
+                                 provider + "'.");
     }
 
     // Gives one party a subscription to a provider and a route to a source. The
@@ -2020,7 +2020,7 @@ private:
             put.change.write.id = uuid_gen();
             put.change.write.party_id = party_id;
             put.change.write.provider_code = provider;
-            put.change.write.source_id = source_id;
+            put.change.write.feed_id = source_id;
             put.change.precondition.kind = ores::utility::domain::precondition_kind::any;
             put.intent.reason_code = "system.new_record";
             put.intent.commentary =

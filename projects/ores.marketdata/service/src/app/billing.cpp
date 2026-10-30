@@ -43,7 +43,7 @@ bool overlaps(std::chrono::system_clock::time_point from,
 bool applies(const domain::rate_card_component& c,
              const boost::uuids::uuid& source,
              const billing_period& p) {
-    return c.source_id == source && c.effective_from < p.to &&
+    return c.feed_id == source && c.effective_from < p.to &&
            (!c.effective_to || *c.effective_to > p.from);
 }
 
@@ -62,7 +62,7 @@ counted count_events(const boost::uuids::uuid& source,
                      const billing_period& p) {
     counted c;
     for (const auto& i : events.subscriptions) {
-        if (i.source_id != source || !overlaps(i.interval_from, i.interval_to, p))
+        if (i.feed_id != source || !overlaps(i.interval_from, i.interval_to, p))
             continue;
         const auto party = key_of(i.tenant_id, i.party_id);
         c.subscribers.insert(party);
@@ -72,13 +72,13 @@ counted count_events(const boost::uuids::uuid& source,
             c.holders["derived"].insert(party);
     }
     for (const auto& d : events.demands) {
-        if (d.source_id != source || !overlaps(d.interval_from, d.interval_to, p))
+        if (d.feed_id != source || !overlaps(d.interval_from, d.interval_to, p))
             continue;
         c.instruments.insert(d.oresmd_uri);
         c.demanders[d.oresmd_uri].insert(key_of(d.tenant_id, d.party_id));
     }
     for (const auto& n : events.deliveries) {
-        if (n.source_id != source || n.period_start < p.from || n.period_start >= p.to)
+        if (n.feed_id != source || n.period_start < p.from || n.period_start >= p.to)
             continue;
         c.ticks[key_of(n.tenant_id, n.party_id)] += n.deliveries;
         c.total_ticks += n.deliveries;
@@ -127,7 +127,7 @@ std::vector<std::int64_t> split_weighted(std::int64_t total,
     return out;
 }
 
-bill_report make_report(const std::vector<domain::market_data_source>& sources,
+bill_report make_report(const std::vector<domain::feed>& sources,
                         const std::vector<domain::rate_card_component>& card,
                         const usage_events& events,
                         const billing_period& period,
@@ -148,14 +148,14 @@ bill_report make_report(const std::vector<domain::market_data_source>& sources,
     return report;
 }
 
-source_bill rate_source(const domain::market_data_source& source,
+source_bill rate_source(const domain::feed& source,
                         const std::vector<domain::rate_card_component>& card,
                         const usage_events& events,
                         const billing_period& period) {
     source_bill bill;
-    bill.source_id = source.id;
+    bill.feed_id = source.id;
     bill.source_name = source.name;
-    bill.shadow = source.kind == "simulated";
+    bill.shadow = source.session_code == "synthetic-local";
     bill.period = period;
 
     const auto c = count_events(source.id, events, period);
@@ -214,7 +214,7 @@ source_bill rate_source(const domain::market_data_source& source,
 
 allocation allocate(const source_bill& bill, const usage_events& events) {
     allocation result;
-    const auto c = count_events(bill.source_id, events, bill.period);
+    const auto c = count_events(bill.feed_id, events, bill.period);
 
     // The tenant of a party, which the key keeps as a uuid.
     std::map<party_key, ores::utility::uuid::tenant_id> tenants;
@@ -280,7 +280,7 @@ allocation allocate(const source_bill& bill, const usage_events& events) {
         party_charge charge;
         charge.tenant_id = tenants.at(party);
         charge.party_id = party.second;
-        charge.source_id = bill.source_id;
+        charge.feed_id = bill.feed_id;
         charge.driver = driver;
         charge.licence_right = right;
         charge.total_micros = amount;

@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <source_id> <driver> <licence_right> <effective_from> <currency> <charge_micros>
+     * @brief add <feed_id> <driver> <licence_right> <effective_from> <currency> <charge_micros>
      * <effective_to> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
@@ -95,7 +95,7 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <source_id> <driver> <licence_right> <effective_from> <currency>
+     * @brief set <id> <feed_id> <driver> <licence_right> <effective_from> <currency>
      * <charge_micros> <effective_to> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
@@ -103,7 +103,7 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <source_id> <driver> <licence_right> <effective_from>
+     * @brief put-many --count <n> <id> <feed_id> <driver> <licence_right> <effective_from>
      * <currency> <charge_micros> <effective_to> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,

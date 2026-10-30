@@ -1708,10 +1708,6 @@ tangled into the runnable script library
 
 - [[id:9709DEFB-9C32-5E00-8CA0-6B926ED00ED6][How do I run the market_data_mappings commands from the shell?]]
 
-* Market Data Sources
-
-- [[id:AA656F86-F1EE-5EAE-B25A-759568DC3081][How do I run the market_data_sources commands from the shell?]]
-
 * Market Data Vendor Instruments
 
 - [[id:97318D73-729E-5159-B52B-09CD37F9921D][How do I run the market_data_vendor_instruments commands from the shell?]]
@@ -1867,3 +1863,7 @@ tangled into the runnable script library
 * Suppliers
 
 - [[id:47A5B305-2152-5AAA-9F3E-BFE01CB5D13B][How do I run the suppliers commands from the shell?]]
+
+* Feeds
+
+- [[id:18B72F94-FD3D-59F8-8984-8883D47B57B8][How do I run the feeds commands from the shell?]]

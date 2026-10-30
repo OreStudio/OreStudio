@@ -209,7 +209,7 @@ begin
 
         insert into ores_marketdata_market_observations_tbl (
             id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value,
-            source, source_id,
+            source, feed_id,
             valid_from, valid_to
         ) values (
             gen_random_uuid(), p_target_tenant_id, v_target_party_id, v_series_id,

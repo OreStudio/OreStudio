@@ -336,8 +336,8 @@ import_service::import(const messaging::import_market_data_request& req) {
                              "reversed relative to refdata's canonical currency pair." :
                              "not the canonical spelling of this key."));
 
-                const auto series = find_or_create_series(
-                    core::classification_key_of(named->datum), named->series_uri);
+                const auto series = find_or_create_series(core::classification_key_of(named->datum),
+                                                          named->series_uri);
 
                 // The file declares the shape of every series it carries, from
                 // the keys it names. The series datum comes from the first key
@@ -359,7 +359,7 @@ import_service::import(const messaging::import_market_data_request& req) {
                 obs.observation_datetime = std::chrono::sys_days{d.date};
                 obs.oresmd_uri = named->datum_uri;
                 obs.source = req.source;
-                obs.source_id = domain::catalogue_ids::ore_import_source_id();
+                obs.feed_id = domain::catalogue_ids::ore_import_feed_id();
                 obs.value = d.value;
                 observations.push_back(std::move(obs));
             }

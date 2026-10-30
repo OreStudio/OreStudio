@@ -26,7 +26,7 @@
 #include "ores.marketdata.api/messaging/billing_operation_protocol.hpp"
 #include "ores.marketdata.core/repository/delivery_count_repository.hpp"
 #include "ores.marketdata.core/repository/demand_interval_repository.hpp"
-#include "ores.marketdata.core/repository/market_data_source_repository.hpp"
+#include "ores.marketdata.core/repository/feed_repository.hpp"
 #include "ores.marketdata.core/repository/rate_card_component_repository.hpp"
 #include "ores.marketdata.core/repository/subscription_interval_repository.hpp"
 #include "ores.marketdata.service/app/billing.hpp"
@@ -92,8 +92,7 @@ public:
         try {
             const auto system_ctx =
                 ores::database::service::tenant_context::with_system_tenant(ctx_);
-            const auto sources =
-                repository::market_data_source_repository{}.read_latest(system_ctx);
+            const auto sources = repository::feed_repository{}.read_latest(system_ctx);
             const auto card = repository::rate_card_component_repository{}.read_latest(system_ctx);
             ores::marketdata::service::app::usage_events events;
             events.subscriptions =
@@ -109,7 +108,7 @@ public:
             if (system) {
                 for (const auto& b : report.bills) {
                     source_bill_view view;
-                    view.source_id = b.source_id;
+                    view.feed_id = b.feed_id;
                     view.source_name = b.source_name;
                     view.currency = b.currency;
                     view.shadow = b.shadow;
@@ -129,7 +128,7 @@ public:
                     continue;
                 resp.party_charges.push_back({c.tenant_id.to_string(),
                                               c.party_id,
-                                              c.source_id,
+                                              c.feed_id,
                                               c.driver,
                                               c.licence_right,
                                               c.total_micros});

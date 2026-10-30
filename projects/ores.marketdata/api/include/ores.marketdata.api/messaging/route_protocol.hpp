@@ -43,7 +43,7 @@ struct route_write {
     boost::uuids::uuid id;
     boost::uuids::uuid party_id;
     std::string provider_code;
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
 };
 
 struct route_change {
@@ -64,11 +64,11 @@ struct route_lookup {
 struct routes_filter {
     std::optional<boost::uuids::uuid> party_id;
     std::optional<std::string> provider_code;
-    std::optional<boost::uuids::uuid> source_id;
+    std::optional<boost::uuids::uuid> feed_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
     std::optional<std::vector<std::string>> provider_code_one_of;
-    std::optional<std::vector<boost::uuids::uuid>> source_id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> feed_id_one_of;
 };
 
 struct route_event {

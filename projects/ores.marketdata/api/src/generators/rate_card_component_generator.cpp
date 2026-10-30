@@ -45,7 +45,7 @@ generate_synthetic_rate_card_component(utility::generation::generation_context& 
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
-    r.source_id = ctx.generate_uuid();
+    r.feed_id = ctx.generate_uuid();
     r.driver = std::string("per_party");
     r.licence_right = std::string("");
     r.effective_from = std::chrono::system_clock::now();

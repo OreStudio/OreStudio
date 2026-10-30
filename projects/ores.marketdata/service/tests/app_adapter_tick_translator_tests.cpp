@@ -35,8 +35,8 @@ const std::string eur_usd_spot = "oresmd://fx/EUR?type=quote&instrument=fx_spot&
 const std::string ecb_eur_usd_fixing = "oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD";
 
 struct catalogue {
-    ores::marketdata::domain::market_data_source live;
-    ores::marketdata::domain::market_data_source simulated;
+    ores::marketdata::domain::feed live;
+    ores::marketdata::domain::feed simulated;
     ores::marketdata::domain::market_data_vendor_instrument instrument;
     ores::marketdata::domain::market_data_mapping mapping;
     std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
@@ -45,12 +45,12 @@ struct catalogue {
         boost::uuids::random_generator gen;
         live.id = gen();
         live.name = "bloomberg-live";
-        live.provider_code = "bloomberg";
-        live.kind = "live";
+        live.publisher_code = "bloomberg";
+        live.session_code = "frankfurter-eu";
         simulated.id = gen();
         simulated.name = "bloomberg-sim";
-        simulated.provider_code = "bloomberg";
-        simulated.kind = "simulated";
+        simulated.publisher_code = "bloomberg";
+        simulated.session_code = "synthetic-local";
         instrument.id = gen();
         instrument.provider_code = "bloomberg";
         instrument.id_scheme = "bbg_ticker";
@@ -93,7 +93,7 @@ TEST_CASE("a_mapped_tick_becomes_the_tick_of_its_item_and_source",
     CHECK(out->tick.source == "bloomberg-live");
     CHECK(out->tick.observation_time == c.now - 1s);
     CHECK(out->provider_code == "bloomberg");
-    CHECK(out->source_id == c.live.id);
+    CHECK(out->feed_id == c.live.id);
 }
 
 TEST_CASE("a_live_and_a_simulated_source_take_the_same_path", "[app][adapter_tick_translator]") {
@@ -109,7 +109,7 @@ TEST_CASE("a_live_and_a_simulated_source_take_the_same_path", "[app][adapter_tic
     CHECK(live->tick.value == simulated->tick.value);
     CHECK(live->tick.observation_time == simulated->tick.observation_time);
     CHECK(live->provider_code == simulated->provider_code);
-    CHECK(live->source_id != simulated->source_id);
+    CHECK(live->feed_id != simulated->feed_id);
 }
 
 TEST_CASE("a_tick_with_no_vendor_instrument_is_unmapped", "[app][adapter_tick_translator]") {

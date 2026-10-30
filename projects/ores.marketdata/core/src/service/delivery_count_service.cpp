@@ -107,7 +107,7 @@ domain::delivery_count delivery_count_to_domain(const messaging::delivery_count_
     v.oresmd_uri = write.oresmd_uri;
     v.period_start = write.period_start;
     v.flushed_at = write.flushed_at;
-    v.source_id = write.source_id;
+    v.feed_id = write.feed_id;
     v.deliveries = write.deliveries;
     return v;
 }
@@ -141,10 +141,10 @@ messaging::list_delivery_counts_response delivery_count_service::list_delivery_c
                                  {.field = "provider_code_one_of", .limit = "1000"});
         return response;
     }
-    if (request.filter && request.filter->source_id_one_of &&
-        request.filter->source_id_one_of->size() > 1000) {
+    if (request.filter && request.filter->feed_id_one_of &&
+        request.filter->feed_id_one_of->size() > 1000) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "source_id_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large, {.field = "feed_id_one_of", .limit = "1000"});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's

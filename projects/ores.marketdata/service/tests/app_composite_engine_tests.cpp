@@ -207,11 +207,11 @@ TEST_CASE("the_demand_and_the_metering_of_a_composite_include_its_inputs",
                      std::string("bbg_ticker"),
                      std::string("EURUSD Curncy")},
           std::tuple{std::string("lseg"), lseg_eur, std::string("ric"), std::string("EURGBP=")}}) {
-        ores::marketdata::domain::market_data_source source;
+        ores::marketdata::domain::feed source;
         source.id = gen();
         source.name = provider + "-sim";
-        source.provider_code = provider;
-        c.sources.push_back(source);
+        source.publisher_code = provider;
+        c.feeds.push_back(source);
 
         ores::marketdata::domain::market_data_vendor_instrument v;
         v.id = gen();
@@ -233,7 +233,7 @@ TEST_CASE("the_demand_and_the_metering_of_a_composite_include_its_inputs",
         r.id = gen();
         r.party_id = party;
         r.provider_code = provider;
-        r.source_id = source.id;
+        r.feed_id = source.id;
         c.routes.push_back(r);
 
         ores::marketdata::domain::subscription s;

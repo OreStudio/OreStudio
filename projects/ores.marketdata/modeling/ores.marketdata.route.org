@@ -73,7 +73,7 @@ References =provider.code=: the provider the route serves. With the party it is 
 std::string("bloomberg")
 #+end_src
 
-** source_id
+** feed_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
@@ -81,7 +81,7 @@ std::string("bloomberg")
 :nullable: false
 :END:
 
-References =market_data_source.id=: the source that serves the party. The source belongs to the provider of the route.
+References =feed.id=: the source that serves the party. The source belongs to the provider of the route.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()
@@ -130,14 +130,14 @@ ctx.generate_uuid()
     -- The source belongs to the provider of the route. Sources are rows of the
     -- system tenant, which every tenant reads.
     if not exists (
-        select 1 from ores_marketdata_market_data_sources_tbl
+        select 1 from ores_marketdata_feeds_tbl
         where tenant_id in (NEW.tenant_id, ores_utility_system_tenant_id_fn())
-          and id = NEW.source_id
-          and provider_code = NEW.provider_code
+          and id = NEW.feed_id
+          and publisher_code = NEW.provider_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid route: source % is not a source of provider %.',
-            NEW.source_id, NEW.provider_code
+            NEW.feed_id, NEW.provider_code
             using errcode = '23514';
     end if;
 
@@ -224,14 +224,14 @@ route_repository::read_latest_all_tenants(context ctx) {
 | field         | label    | widget       | type      | is_key | is_required | placeholder         |
 |---------------+----------+--------------+-----------+--------+-------------+---------------------|
 | provider_code | Provider | providerEdit | line_edit | true   | true        | Enter provider code |
-| source_id     | Source   | sourceEdit   | line_edit |        | true        | Enter source id     |
+| feed_id     | Feed     | feedEdit     | line_edit |        | true        | Enter feed id       |
 
 *** Columns
 
 | enum_name    | field         | header      | type   | width |
 |--------------+---------------+-------------+--------+-------|
 | ProviderCode | provider_code | Provider    | string | 140   |
-| SourceId     | source_id     | Source      | string | 300   |
+| SourceId     | feed_id     | Source      | string | 300   |
 | Version      | version       | Version     | int    | 80    |
 | ModifiedBy   | modified_by   | Modified By | string | 120   |
 

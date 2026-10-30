@@ -50,7 +50,7 @@ domain::rate_card_component rate_card_component_mapper::map(const rate_card_comp
     r.version = v.version;
     r.tenant_id = v.tenant_id;
     r.id = v.id;
-    r.source_id = v.source_id;
+    r.feed_id = v.feed_id;
     r.driver = v.driver;
     r.licence_right = v.licence_right;
     r.effective_from = v.effective_from;
@@ -74,7 +74,7 @@ rate_card_component_entity rate_card_component_mapper::map(const domain::rate_ca
     r.id = v.id;
     r.tenant_id = v.tenant_id;
     r.version = v.version;
-    r.source_id = v.source_id;
+    r.feed_id = v.feed_id;
     r.driver = v.driver;
     r.licence_right = v.licence_right;
     r.effective_from = v.effective_from;

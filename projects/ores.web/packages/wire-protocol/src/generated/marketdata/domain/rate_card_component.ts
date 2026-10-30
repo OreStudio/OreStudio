@@ -34,7 +34,7 @@ export interface RateCardComponent {
     version: number;
     tenant_id: string;
     id: string;
-    source_id: string;
+    feed_id: string;
     driver: string;
     licence_right: string;
     effective_from: string;

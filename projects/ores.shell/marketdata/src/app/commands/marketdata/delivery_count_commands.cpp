@@ -141,7 +141,7 @@ void delivery_count_commands::register_commands(cli::Menu& root_menu, nats_clien
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <party_id> <provider_code> <oresmd_uri> <period_start> <flushed_at> <source_id> "
+        "add <party_id> <provider_code> <oresmd_uri> <period_start> <flushed_at> <feed_id> "
         "<deliveries> <reason> <commentary>");
 
     menu->Insert(
@@ -149,7 +149,7 @@ void delivery_count_commands::register_commands(cli::Menu& root_menu, nats_clien
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <party_id> <provider_code> <oresmd_uri> <period_start> <flushed_at> <source_id> "
+        "set <id> <party_id> <provider_code> <oresmd_uri> <period_start> <flushed_at> <feed_id> "
         "<deliveries> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
@@ -158,7 +158,7 @@ void delivery_count_commands::register_commands(cli::Menu& root_menu, nats_clien
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <party_id> <provider_code> <oresmd_uri> <period_start> "
-        "<flushed_at> <source_id> <deliveries> <reason> <commentary>");
+        "<flushed_at> <feed_id> <deliveries> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -369,8 +369,7 @@ void delivery_count_commands::process_add(std::ostream& out,
             req.change.write.period_start, parsed->positionals[next++], "period_start");
         delivery_count_read_token(
             req.change.write.flushed_at, parsed->positionals[next++], "flushed_at");
-        delivery_count_read_token(
-            req.change.write.source_id, parsed->positionals[next++], "source_id");
+        delivery_count_read_token(req.change.write.feed_id, parsed->positionals[next++], "feed_id");
         delivery_count_read_token(
             req.change.write.deliveries, parsed->positionals[next++], "deliveries");
         req.intent.reason_code = parsed->positionals[next++];
@@ -431,8 +430,7 @@ void delivery_count_commands::process_set(std::ostream& out,
             req.change.write.period_start, parsed->positionals[next++], "period_start");
         delivery_count_read_token(
             req.change.write.flushed_at, parsed->positionals[next++], "flushed_at");
-        delivery_count_read_token(
-            req.change.write.source_id, parsed->positionals[next++], "source_id");
+        delivery_count_read_token(req.change.write.feed_id, parsed->positionals[next++], "feed_id");
         delivery_count_read_token(
             req.change.write.deliveries, parsed->positionals[next++], "deliveries");
         req.intent.reason_code = parsed->positionals[next++];
@@ -507,8 +505,7 @@ void delivery_count_commands::process_put_many(std::ostream& out,
                 change.write.period_start, parsed->positionals[next++], "period_start");
             delivery_count_read_token(
                 change.write.flushed_at, parsed->positionals[next++], "flushed_at");
-            delivery_count_read_token(
-                change.write.source_id, parsed->positionals[next++], "source_id");
+            delivery_count_read_token(change.write.feed_id, parsed->positionals[next++], "feed_id");
             delivery_count_read_token(
                 change.write.deliveries, parsed->positionals[next++], "deliveries");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

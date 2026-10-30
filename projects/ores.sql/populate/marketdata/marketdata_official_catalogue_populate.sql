@@ -61,27 +61,27 @@ do nothing;
 
 \echo '--- Official Rates Sources ---'
 
-insert into ores_marketdata_market_data_sources_tbl (
-    id, tenant_id, version, name, provider_code, kind, is_default, description,
-    modified_by, performed_by, change_reason_code, change_commentary
+insert into ores_marketdata_feeds_tbl (
+    id, tenant_id, version, name, publisher_code, session_code, service, provider_key,
+    is_default, description, modified_by, performed_by, change_reason_code, change_commentary
 )
 values
     ('1cf1232c-7ce2-54f3-b55f-c57793caf5af', ores_utility_system_tenant_id_fn(), 0,
-     'ecb-frankfurter', 'ecb', 'live', true,
+     'ecb-frankfurter', 'ecb', 'frankfurter-eu', 'end_of_day', 'ECB', true,
      'The rates of European Central Bank read through Frankfurter by the official rates adapter.',
-     current_user, current_user, 'system.initial_load', 'Initial population of the official rates sources'),
+     current_user, current_user, 'system.initial_load', 'Initial population of the official rates feeds'),
     ('da7d3d48-48af-5359-938e-9a6f0d7168e2', ores_utility_system_tenant_id_fn(), 0,
-     'imf-frankfurter', 'imf', 'live', true,
+     'imf-frankfurter', 'imf', 'frankfurter-eu', 'end_of_day', 'IMF', true,
      'The rates of International Monetary Fund read through Frankfurter by the official rates adapter.',
-     current_user, current_user, 'system.initial_load', 'Initial population of the official rates sources'),
+     current_user, current_user, 'system.initial_load', 'Initial population of the official rates feeds'),
     ('c0e15d2f-abeb-57a7-ab42-0f60bcc89d82', ores_utility_system_tenant_id_fn(), 0,
-     'boc-frankfurter', 'boc', 'live', true,
+     'boc-frankfurter', 'boc', 'frankfurter-eu', 'end_of_day', 'BOC', true,
      'The rates of Bank of Canada read through Frankfurter by the official rates adapter.',
-     current_user, current_user, 'system.initial_load', 'Initial population of the official rates sources'),
+     current_user, current_user, 'system.initial_load', 'Initial population of the official rates feeds'),
     ('46fe8046-7d3a-59fa-80b8-1bf9ef7901fd', ores_utility_system_tenant_id_fn(), 0,
-     'tcmb-frankfurter', 'tcmb', 'live', true,
+     'tcmb-frankfurter', 'tcmb', 'frankfurter-eu', 'end_of_day', 'TCMB', true,
      'The rates of Central Bank of the Republic of Türkiye read through Frankfurter by the official rates adapter.',
-     current_user, current_user, 'system.initial_load', 'Initial population of the official rates sources')
+     current_user, current_user, 'system.initial_load', 'Initial population of the official rates feeds')
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
@@ -299,7 +299,7 @@ begin
         'The system party takes the official rates of ECB for the calibration'
     ) on conflict do nothing;
     insert into ores_marketdata_routes_tbl (
-        id, tenant_id, version, party_id, provider_code, source_id,
+        id, tenant_id, version, party_id, provider_code, feed_id,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'f5269153-1cd6-5a5d-bf07-f986533e85f9', ores_utility_system_tenant_id_fn(), 0, v_party, 'ecb', '1cf1232c-7ce2-54f3-b55f-c57793caf5af',
@@ -316,7 +316,7 @@ begin
         'The system party takes the official rates of IMF for the calibration'
     ) on conflict do nothing;
     insert into ores_marketdata_routes_tbl (
-        id, tenant_id, version, party_id, provider_code, source_id,
+        id, tenant_id, version, party_id, provider_code, feed_id,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         '20873ae1-2a31-52d8-91b0-f2d29d544cb7', ores_utility_system_tenant_id_fn(), 0, v_party, 'imf', 'da7d3d48-48af-5359-938e-9a6f0d7168e2',
@@ -333,7 +333,7 @@ begin
         'The system party takes the official rates of BOC for the calibration'
     ) on conflict do nothing;
     insert into ores_marketdata_routes_tbl (
-        id, tenant_id, version, party_id, provider_code, source_id,
+        id, tenant_id, version, party_id, provider_code, feed_id,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         '180372bf-05a9-5e6c-8aba-81e2d04507ff', ores_utility_system_tenant_id_fn(), 0, v_party, 'boc', 'c0e15d2f-abeb-57a7-ab42-0f60bcc89d82',
@@ -350,7 +350,7 @@ begin
         'The system party takes the official rates of TCMB for the calibration'
     ) on conflict do nothing;
     insert into ores_marketdata_routes_tbl (
-        id, tenant_id, version, party_id, provider_code, source_id,
+        id, tenant_id, version, party_id, provider_code, feed_id,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         '59aa9dce-52b3-57d6-823e-c6aad4fc62aa', ores_utility_system_tenant_id_fn(), 0, v_party, 'tcmb', '46fe8046-7d3a-59fa-80b8-1bf9ef7901fd',

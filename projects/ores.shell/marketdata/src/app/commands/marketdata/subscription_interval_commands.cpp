@@ -141,7 +141,7 @@ void subscription_interval_commands::register_commands(cli::Menu& root_menu, nat
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <party_id> <provider_code> <interval_from> <source_id> <display> <non_display> "
+        "add <party_id> <provider_code> <interval_from> <feed_id> <display> <non_display> "
         "<derived> <interval_to> <reason> <commentary>");
 
     menu->Insert(
@@ -149,7 +149,7 @@ void subscription_interval_commands::register_commands(cli::Menu& root_menu, nat
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <party_id> <provider_code> <interval_from> <source_id> <display> <non_display> "
+        "set <id> <party_id> <provider_code> <interval_from> <feed_id> <display> <non_display> "
         "<derived> <interval_to> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
@@ -157,8 +157,8 @@ void subscription_interval_commands::register_commands(cli::Menu& root_menu, nat
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <party_id> <provider_code> <interval_from> <source_id> "
-        "<display> <non_display> <derived> <interval_to> <reason> <commentary>");
+        "put-many --count <n> <id> <party_id> <provider_code> <interval_from> <feed_id> <display> "
+        "<non_display> <derived> <interval_to> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -368,7 +368,7 @@ void subscription_interval_commands::process_add(std::ostream& out,
         subscription_interval_read_token(
             req.change.write.interval_from, parsed->positionals[next++], "interval_from");
         subscription_interval_read_token(
-            req.change.write.source_id, parsed->positionals[next++], "source_id");
+            req.change.write.feed_id, parsed->positionals[next++], "feed_id");
         subscription_interval_read_token(
             req.change.write.display, parsed->positionals[next++], "display");
         subscription_interval_read_token(
@@ -432,7 +432,7 @@ void subscription_interval_commands::process_set(std::ostream& out,
         subscription_interval_read_token(
             req.change.write.interval_from, parsed->positionals[next++], "interval_from");
         subscription_interval_read_token(
-            req.change.write.source_id, parsed->positionals[next++], "source_id");
+            req.change.write.feed_id, parsed->positionals[next++], "feed_id");
         subscription_interval_read_token(
             req.change.write.display, parsed->positionals[next++], "display");
         subscription_interval_read_token(
@@ -510,7 +510,7 @@ void subscription_interval_commands::process_put_many(std::ostream& out,
             subscription_interval_read_token(
                 change.write.interval_from, parsed->positionals[next++], "interval_from");
             subscription_interval_read_token(
-                change.write.source_id, parsed->positionals[next++], "source_id");
+                change.write.feed_id, parsed->positionals[next++], "feed_id");
             subscription_interval_read_token(
                 change.write.display, parsed->positionals[next++], "display");
             subscription_interval_read_token(

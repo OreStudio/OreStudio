@@ -60,7 +60,7 @@ struct subscription_interval_entity {
 
     db_timestamp interval_from;
 
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
     bool display = false;
     bool non_display = false;
     bool derived = false;
@@ -84,7 +84,7 @@ struct subscription_interval_entity {
                query_builder::bind("party_id", &e::party_id) |
                query_builder::bind("provider_code", &e::provider_code) |
                query_builder::bind("interval_from", &e::interval_from) |
-               query_builder::bind("source_id", &e::source_id) |
+               query_builder::bind("feed_id", &e::feed_id) |
                query_builder::bind("display", &e::display) |
                query_builder::bind("non_display", &e::non_display) |
                query_builder::bind("derived", &e::derived) |

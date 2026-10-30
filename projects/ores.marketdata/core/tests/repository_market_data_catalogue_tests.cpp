@@ -19,16 +19,16 @@
  */
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/feed.hpp"
 #include "ores.marketdata.api/domain/market_data_mapping.hpp"
-#include "ores.marketdata.api/domain/market_data_source.hpp"
 #include "ores.marketdata.api/domain/market_data_vendor_instrument.hpp"
 #include "ores.marketdata.api/domain/provider.hpp"
+#include "ores.marketdata.api/generators/feed_generator.hpp"
 #include "ores.marketdata.api/generators/market_data_mapping_generator.hpp"
-#include "ores.marketdata.api/generators/market_data_source_generator.hpp"
 #include "ores.marketdata.api/generators/market_data_vendor_instrument_generator.hpp"
 #include "ores.marketdata.api/generators/provider_generator.hpp"
+#include "ores.marketdata.core/repository/feed_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
-#include "ores.marketdata.core/repository/market_data_source_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_vendor_instrument_repository.hpp"
 #include "ores.marketdata.core/repository/provider_repository.hpp"
 #include "ores.testing/database_helper.hpp"
@@ -50,7 +50,7 @@ using namespace ores::marketdata::generators;
 using ores::testing::database_helper;
 using ores::marketdata::repository::market_data_mapping_repository;
 using ores::marketdata::repository::provider_repository;
-using ores::marketdata::repository::market_data_source_repository;
+using ores::marketdata::repository::feed_repository;
 using ores::marketdata::repository::market_data_vendor_instrument_repository;
 
 using ores::database::service::tenant_context;
@@ -69,40 +69,42 @@ TEST_CASE("write_and_read_a_provider", "[repository][catalogue]") {
     CHECK(read.front().kind == p.kind);
 }
 
-TEST_CASE("a_provider_has_at_most_one_default_source", "[repository][catalogue]") {
+TEST_CASE("a_publisher_has_at_most_one_default_feed", "[repository][catalogue]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
-    market_data_source_repository repo;
-    auto first = generate_synthetic_market_data_source(ctx);
-    first.provider_code = "bloomberg";
-    first.kind = "live";
+    feed_repository repo;
+    auto first = generate_synthetic_feed(ctx);
+    first.publisher_code = "bloomberg";
+    first.session_code = "frankfurter-eu";
+    first.service = "real_time";
     first.is_default = true;
     repo.write(h.context(), first);
 
-    auto second = generate_synthetic_market_data_source(ctx);
-    second.provider_code = "bloomberg";
-    second.kind = "simulated";
+    auto second = generate_synthetic_feed(ctx);
+    second.publisher_code = "bloomberg";
+    second.session_code = "frankfurter-eu";
+    second.service = "real_time";
     second.is_default = false;
     CHECK_NOTHROW(repo.write(h.context(), second));
 
-    auto rival = generate_synthetic_market_data_source(ctx);
-    rival.provider_code = "bloomberg";
-    rival.kind = "simulated";
+    auto rival = generate_synthetic_feed(ctx);
+    rival.publisher_code = "bloomberg";
+    rival.session_code = "frankfurter-eu";
+    rival.service = "real_time";
     rival.is_default = true;
     CHECK_THROWS_WITH(repo.write(h.context(), rival),
                       Catch::Matchers::ContainsSubstring(unique_violation));
 }
 
-TEST_CASE("a_source_kind_must_be_in_the_vocabulary", "[repository][catalogue]") {
+TEST_CASE("a_feed_service_must_be_in_the_vocabulary", "[repository][catalogue]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
-    market_data_source_repository repo;
-    auto s = generate_synthetic_market_data_source(ctx);
-    s.kind = "not_a_kind";
-    CHECK_THROWS_WITH(repo.write(h.context(), s),
-                      Catch::Matchers::ContainsSubstring("Invalid source_kind"));
+    feed_repository repo;
+    auto s = generate_synthetic_feed(ctx);
+    s.service = "not_a_service";
+    CHECK_THROWS(repo.write(h.context(), s));
 }
 
 TEST_CASE("a_vendor_instrument_identity_is_unique", "[repository][catalogue]") {

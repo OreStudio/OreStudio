@@ -52,7 +52,7 @@ generate_synthetic_demand_interval(utility::generation::generation_context& ctx)
     r.oresmd_uri = std::string("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD") +
                    "-" + std::to_string(idx);
     r.interval_from = std::chrono::system_clock::now();
-    r.source_id = ctx.generate_uuid();
+    r.feed_id = ctx.generate_uuid();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

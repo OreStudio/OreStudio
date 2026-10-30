@@ -48,7 +48,7 @@ generate_synthetic_subscription_interval(utility::generation::generation_context
     r.party_id = ctx.generate_uuid();
     r.provider_code = std::string("bloomberg");
     r.interval_from = std::chrono::system_clock::now();
-    r.source_id = ctx.generate_uuid();
+    r.feed_id = ctx.generate_uuid();
     r.display = true;
     r.non_display = false;
     r.derived = false;

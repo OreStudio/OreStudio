@@ -23,9 +23,9 @@
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.core/repository/feed_repository.hpp"
 #include "ores.marketdata.core/repository/live_tenant_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
-#include "ores.marketdata.core/repository/market_data_source_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_vendor_instrument_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/route_repository.hpp"
@@ -175,7 +175,7 @@ consumer consumer_of(const domain::route& route, const std::string& source_name)
     c.party_id = route.party_id;
     c.source_name = source_name;
     c.provider_code = route.provider_code;
-    c.source_id = route.source_id;
+    c.feed_id = route.feed_id;
     return c;
 }
 
@@ -187,7 +187,7 @@ void feed_ingest_loop::refresh() {
     // The catalogue belongs to the system tenant, and the routes to each party. A route makes
     // its party a consumer of the source it names.
     const auto system_ctx = ores::database::service::tenant_context::with_system_tenant(ctx_);
-    auto sources = repository::market_data_source_repository{}.read_latest(system_ctx);
+    auto sources = repository::feed_repository{}.read_latest(system_ctx);
     auto instruments =
         repository::market_data_vendor_instrument_repository{}.read_latest(system_ctx);
     auto mappings = repository::market_data_mapping_repository{}.read_latest(system_ctx);
@@ -195,8 +195,7 @@ void feed_ingest_loop::refresh() {
     keep_live_tenants(routes, repository::live_tenant_repository{}.read(ctx_));
     std::size_t routed = 0;
     for (const auto& route : routes) {
-        const auto source =
-            std::ranges::find(sources, route.source_id, &domain::market_data_source::id);
+        const auto source = std::ranges::find(sources, route.feed_id, &domain::feed::id);
         if (source == sources.end())
             continue;
         wanted->by_source[source->name].push_back(consumer_of(route, source->name));
@@ -660,7 +659,7 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
             counts.push_back({delivery_key{c.tenant_id,
                                            c.party_id,
                                            c.provider_code,
-                                           c.source_id,
+                                           c.feed_id,
                                            std::string(at.second),
                                            period},
                               count});
@@ -775,7 +774,7 @@ void feed_ingest_loop::prepare_rows(prepared_batch& batch) {
         row.ts = tick.observation_time;
         row.coord = coord_of[i];
         row.value = it.plan->value;
-        row.source_id = it.target->source_text;
+        row.feed_id = it.target->source_text;
         const auto at = row_at.try_emplace(
             row_key{it.series_id, coord_of[i], row.ts.time_since_epoch().count()},
             batch.rows.size());
@@ -886,7 +885,8 @@ boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context
     auto existing =
         series_repo.read_latest_by_key(tenant_ctx, series_uri, owner.provider_code, party);
     if (existing.empty()) {
-        const auto cl = classifier_for(tenant_ctx)->classify(core::classification_key_of(named.datum));
+        const auto cl =
+            classifier_for(tenant_ctx)->classify(core::classification_key_of(named.datum));
         BOOST_LOG_SEV(lg(), info) << "Creating market series " << series_uri;
 
         auto series = create_feed_series(

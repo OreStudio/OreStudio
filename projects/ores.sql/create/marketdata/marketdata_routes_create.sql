@@ -40,7 +40,7 @@ create table if not exists "ores_marketdata_routes_tbl" (
     "version" integer not null,
     "party_id" uuid not null,
     "provider_code" text not null,
-    "source_id" uuid not null,
+    "feed_id" uuid not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -103,14 +103,14 @@ begin
     -- The source belongs to the provider of the route. Sources are rows of the
     -- system tenant, which every tenant reads.
     if not exists (
-        select 1 from ores_marketdata_market_data_sources_tbl
+        select 1 from ores_marketdata_feeds_tbl
         where tenant_id in (NEW.tenant_id, ores_utility_system_tenant_id_fn())
-          and id = NEW.source_id
-          and provider_code = NEW.provider_code
+          and id = NEW.feed_id
+          and publisher_code = NEW.provider_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid route: source % is not a source of provider %.',
-            NEW.source_id, NEW.provider_code
+            NEW.feed_id, NEW.provider_code
             using errcode = '23514';
     end if;
     -- Validate change_reason_code

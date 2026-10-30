@@ -46,7 +46,7 @@ struct app_usage_planner_fixture {
         subscription_state s;
         s.party_id = party;
         s.provider_code = "bloomberg";
-        s.source_id = source;
+        s.feed_id = source;
         s.display = true;
         s.derived = derived;
         return s;
@@ -59,7 +59,7 @@ struct app_usage_planner_fixture {
         i.tenant_id = s.tenant_id;
         i.party_id = s.party_id;
         i.provider_code = s.provider_code;
-        i.source_id = s.source_id;
+        i.feed_id = s.feed_id;
         i.display = s.display;
         i.non_display = s.non_display;
         i.derived = s.derived;
@@ -71,7 +71,7 @@ struct app_usage_planner_fixture {
         demand_state d;
         d.party_id = party;
         d.provider_code = "bloomberg";
-        d.source_id = sim;
+        d.feed_id = sim;
         d.oresmd_uri = uri;
         return d;
     }
@@ -82,7 +82,7 @@ struct app_usage_planner_fixture {
         i.tenant_id = d.tenant_id;
         i.party_id = d.party_id;
         i.provider_code = d.provider_code;
-        i.source_id = d.source_id;
+        i.feed_id = d.feed_id;
         i.oresmd_uri = d.oresmd_uri;
         i.interval_from = now - 1h;
         return i;
@@ -100,7 +100,7 @@ TEST_CASE("a_new_route_with_a_subscription_opens_an_interval", "[app][usage_plan
     CHECK(plan.to_close.empty());
     CHECK(plan.to_open.front().interval_from == f.now);
     CHECK_FALSE(plan.to_open.front().interval_to.has_value());
-    CHECK(plan.to_open.front().source_id == f.sim);
+    CHECK(plan.to_open.front().feed_id == f.sim);
     CHECK(plan.to_open.front().display);
 }
 
@@ -135,8 +135,8 @@ TEST_CASE("a_change_of_source_closes_one_interval_and_opens_the_next", "[app][us
 
     REQUIRE(plan.to_close.size() == 1);
     REQUIRE(plan.to_open.size() == 1);
-    CHECK(plan.to_close.front().source_id == f.sim);
-    CHECK(plan.to_open.front().source_id == f.live);
+    CHECK(plan.to_close.front().feed_id == f.sim);
+    CHECK(plan.to_open.front().feed_id == f.live);
     CHECK(plan.to_open.front().interval_from == plan.to_close.front().interval_to);
 }
 
@@ -214,7 +214,7 @@ TEST_CASE("the_states_come_from_the_routes_that_hold_a_subscription_with_a_right
     ores::marketdata::domain::route routed;
     routed.party_id = f.party;
     routed.provider_code = "bloomberg";
-    routed.source_id = f.sim;
+    routed.feed_id = f.sim;
     ores::marketdata::domain::route unsubscribed = routed;
     unsubscribed.party_id = f.gen();
     c.routes = {routed, unsubscribed};
@@ -229,7 +229,7 @@ TEST_CASE("the_states_come_from_the_routes_that_hold_a_subscription_with_a_right
 
     REQUIRE(states.size() == 1);
     CHECK(states.front().party_id == f.party);
-    CHECK(states.front().source_id == f.sim);
+    CHECK(states.front().feed_id == f.sim);
     CHECK(states.front().display);
     CHECK(states.front().derived);
     CHECK_FALSE(states.front().non_display);

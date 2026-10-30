@@ -34,7 +34,7 @@ export interface RateCardComponentKey {
 
 export interface RateCardComponentWrite {
     id: string;
-    source_id: string;
+    feed_id: string;
     driver: string;
     licence_right: string;
     effective_from: string;
@@ -59,10 +59,10 @@ export interface RateCardComponentLookup {
 }
 
 export interface RateCardComponentsFilter {
-    source_id: string | null;
+    feed_id: string | null;
     driver: string | null;
     id_one_of: string[] | null;
-    source_id_one_of: string[] | null;
+    feed_id_one_of: string[] | null;
     driver_one_of: string[] | null;
 }
 

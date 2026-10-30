@@ -46,7 +46,7 @@ domain::route generate_synthetic_route(utility::generation::generation_context& 
     r.id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
     r.provider_code = std::string("bloomberg");
-    r.source_id = ctx.generate_uuid();
+    r.feed_id = ctx.generate_uuid();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

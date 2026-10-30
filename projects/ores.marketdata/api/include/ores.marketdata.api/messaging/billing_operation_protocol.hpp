@@ -51,7 +51,7 @@ struct bill_line_view {
  * bill of a live source, and nobody pays it.
  */
 struct source_bill_view {
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
     std::string source_name;
     std::string currency;
     bool shadow = false;
@@ -65,7 +65,7 @@ struct source_bill_view {
 struct party_charge_view {
     std::string tenant_id;
     boost::uuids::uuid party_id;
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
     std::string driver;
     std::string licence_right;
     std::int64_t total_micros = 0;

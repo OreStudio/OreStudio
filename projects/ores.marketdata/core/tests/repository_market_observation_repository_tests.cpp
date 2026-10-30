@@ -122,18 +122,17 @@ TEST_CASE("a_series_keeps_one_history_across_the_sources_that_produced_it", "[re
     auto written = generate_synthetic_market_observations(2, ctx);
     for (auto& o : written)
         o.series_id = s.id;
-    written[0].source_id = ores::marketdata::domain::catalogue_ids::ore_import_source_id();
-    written[1].source_id = ores::marketdata::domain::catalogue_ids::ore_derived_source_id();
+    written[0].feed_id = ores::marketdata::domain::catalogue_ids::ore_import_feed_id();
+    written[1].feed_id = ores::marketdata::domain::catalogue_ids::ore_derived_feed_id();
     obs_repo.insert(h.context(), written);
 
     const auto read = obs_repo.read_latest_for_series(h.context(), s.id);
     REQUIRE(read.size() == 2);
     CHECK(std::ranges::count_if(read, [](const auto& r) {
-              return r.source_id == ores::marketdata::domain::catalogue_ids::ore_import_source_id();
+              return r.feed_id == ores::marketdata::domain::catalogue_ids::ore_import_feed_id();
           }) == 1);
     CHECK(std::ranges::count_if(read, [](const auto& r) {
-              return r.source_id ==
-                     ores::marketdata::domain::catalogue_ids::ore_derived_source_id();
+              return r.feed_id == ores::marketdata::domain::catalogue_ids::ore_derived_feed_id();
           }) == 1);
 }
 

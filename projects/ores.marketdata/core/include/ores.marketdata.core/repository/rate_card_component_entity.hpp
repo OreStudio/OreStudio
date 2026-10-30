@@ -53,7 +53,7 @@ struct rate_card_component_entity {
     boost::uuids::uuid id;
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
 
 
     std::string driver;
@@ -82,7 +82,7 @@ struct rate_card_component_entity {
         return query_builder::columns<e>() | query_builder::key("id", &e::id) |
                query_builder::bind("tenant_id", &e::tenant_id) |
                query_builder::bind("version", &e::version) |
-               query_builder::bind("source_id", &e::source_id) |
+               query_builder::bind("feed_id", &e::feed_id) |
                query_builder::bind("driver", &e::driver) |
                query_builder::bind("licence_right", &e::licence_right) |
                query_builder::bind("effective_from", &e::effective_from) |

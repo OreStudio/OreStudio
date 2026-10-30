@@ -54,7 +54,7 @@ subscription_interval_mapper::map(const subscription_interval_entity& v) {
     r.party_id = v.party_id;
     r.provider_code = v.provider_code;
     r.interval_from = v.interval_from;
-    r.source_id = v.source_id;
+    r.feed_id = v.feed_id;
     r.display = v.display;
     r.non_display = v.non_display;
     r.derived = v.derived;
@@ -80,7 +80,7 @@ subscription_interval_mapper::map(const domain::subscription_interval& v) {
     r.party_id = v.party_id;
     r.provider_code = v.provider_code;
     r.interval_from = v.interval_from;
-    r.source_id = v.source_id;
+    r.feed_id = v.feed_id;
     r.display = v.display;
     r.non_display = v.non_display;
     r.derived = v.derived;

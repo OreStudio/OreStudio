@@ -716,8 +716,8 @@ entity "marketdata" as marketdata {
   ores_marketdata_curve_publishes_tbl
   ores_marketdata_delivery_counts_tbl
   ores_marketdata_demand_intervals_tbl
+  ores_marketdata_feeds_tbl
   ores_marketdata_market_data_mappings_tbl
-  ores_marketdata_market_data_sources_tbl
   ores_marketdata_market_data_vendor_instruments_tbl
   ores_marketdata_market_fixings_tbl
   ores_marketdata_market_observations_tbl

@@ -221,7 +221,7 @@ package "marketdata" #E3F2FD {
         * oresmd_uri : text
         * period_start : timestamptz
         * flushed_at : timestamptz
-        * source_id : uuid <<FK>>
+        * feed_id : uuid <<FK>>
         * deliveries : bigint
         * modified_by : text
         * performed_by : text
@@ -251,7 +251,7 @@ package "marketdata" #E3F2FD {
         * provider_code : text
         * oresmd_uri : text
         * interval_from : timestamptz
-        * source_id : uuid <<FK>>
+        * feed_id : uuid <<FK>>
           interval_to : timestamptz
         * modified_by : text
         * performed_by : text
@@ -271,6 +271,43 @@ package "marketdata" #E3F2FD {
     signal for the adapter and a billing fact for the vendor: a live adapter pays for the items in the set.
     The service opens an interval when an item enters the demand of a party and closes it when the item
     leaves, or when the party stops being served by the source.
+    end note
+
+    entity ores_marketdata_feeds_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text
+        * publisher_code : text
+        * session_code : text
+        * service : text
+        * provider_key : text
+        * is_default : boolean
+        * description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_feeds_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Feed Table
+    A feed binds a publisher to a session and a service. The publisher owns the
+    values and their terms; the session says how they arrive; the service says
+    whether they arrive live, delayed, at the end of the day or as a reference
+    set. The provider_key is the publisher's own name for the data it serves,
+    such as the ECB key Frankfurter reads.
+    A publisher can have several feeds at once. A party reaches one of them through
+    a route, never through the publisher. One feed of each publisher is the default,
+    and a new subscription routes to it.
+    The system tenant and the system party own the rows. Every tenant reads them and
+    only the system tenant writes them.
     end note
 
     entity ores_marketdata_market_data_mappings_tbl <<temporal>> #C6F0D8 {
@@ -303,40 +340,6 @@ package "marketdata" #E3F2FD {
     A mapping holds for a period. A vendor instrument has at most one mapping that starts
     at a given instant. The system tenant and the system party own the rows. Every
     tenant reads them and only the system tenant writes them.
-    end note
-
-    entity ores_marketdata_market_data_sources_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
-        --
-        * version : integer
-        * name : text
-        * provider_code : text
-        * kind : text
-        * is_default : boolean
-        * description : text
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_marketdata_market_data_sources_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    Market Data Source Table
-    A source is one adapter instance of a provider: bloomberg-a and
-    bloomberg-b are two sources of the provider bloomberg. Its kind says how the
-    adapter gets its values and is data a person can read. No code in the pipeline
-    branches on it. The name is a label and no code parses it.
-    A provider can have several sources at once. A party reaches one of them through a
-    route, never through the provider. One source of each provider is the default, and a
-    new subscription routes to it.
-    The system tenant and the system party own the rows. Every tenant reads them and
-    only the system tenant writes them.
     end note
 
     entity ores_marketdata_market_data_vendor_instruments_tbl <<temporal>> #C6F0D8 {
@@ -410,7 +413,7 @@ package "marketdata" #E3F2FD {
         * oresmd_uri : text
         * value : text
           source : text
-        * source_id : uuid <<FK>>
+        * feed_id : uuid <<FK>>
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
@@ -707,7 +710,7 @@ package "marketdata" #E3F2FD {
         * id : uuid <<PK>>
         --
         * version : integer
-        * source_id : uuid <<FK>>
+        * feed_id : uuid <<FK>>
         * driver : text
         * licence_right : text
         * effective_from : timestamptz
@@ -742,7 +745,7 @@ package "marketdata" #E3F2FD {
         * version : integer
         * party_id : uuid <<FK>>
         * provider_code : text
-        * source_id : uuid <<FK>>
+        * feed_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -926,7 +929,7 @@ package "marketdata" #E3F2FD {
         * party_id : uuid <<FK>>
         * provider_code : text
         * interval_from : timestamptz
-        * source_id : uuid <<FK>>
+        * feed_id : uuid <<FK>>
         * display : boolean
         * non_display : boolean
         * derived : boolean
@@ -1046,7 +1049,7 @@ package "marketdata" #E3F2FD {
         * ts : timestamptz
         * coord : smallint
         * value : double
-        * source_id : uuid <<FK>>
+        * feed_id : uuid <<FK>>
     }
 
     note right of ores_marketdata_ticks_tbl

@@ -44,7 +44,7 @@ struct delivery_key {
     ores::utility::uuid::tenant_id tenant_id = ores::utility::uuid::tenant_id::system();
     boost::uuids::uuid party_id;
     std::string provider_code;
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
     std::string oresmd_uri;
     std::chrono::system_clock::time_point period_start;
 
@@ -52,12 +52,12 @@ struct delivery_key {
         return std::make_tuple(tenant_id.to_uuid(),
                                party_id,
                                provider_code,
-                               source_id,
+                               feed_id,
                                oresmd_uri,
                                period_start) < std::make_tuple(other.tenant_id.to_uuid(),
                                                                other.party_id,
                                                                other.provider_code,
-                                                               other.source_id,
+                                                               other.feed_id,
                                                                other.oresmd_uri,
                                                                other.period_start);
     }

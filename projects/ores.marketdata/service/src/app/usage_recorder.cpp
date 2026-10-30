@@ -131,7 +131,7 @@ void usage_recorder::flush(std::chrono::system_clock::time_point now) {
         row.tenant_id = c.key.tenant_id;
         row.party_id = c.key.party_id;
         row.provider_code = c.key.provider_code;
-        row.source_id = c.key.source_id;
+        row.feed_id = c.key.feed_id;
         row.oresmd_uri = c.key.oresmd_uri;
         row.period_start = c.key.period_start;
         row.flushed_at = now;

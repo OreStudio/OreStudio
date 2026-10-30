@@ -25,8 +25,8 @@
 #endif
 
 #include "ores.marketdata.api/domain/adapter_limits.hpp"
+#include "ores.marketdata.api/domain/feed.hpp"
 #include "ores.marketdata.api/domain/market_data_mapping.hpp"
-#include "ores.marketdata.api/domain/market_data_source.hpp"
 #include "ores.marketdata.api/domain/market_data_vendor_instrument.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
@@ -83,7 +83,7 @@ struct translated_tick {
     messaging::market_tick tick;
     tick_class kind = tick_class::quote;
     std::string provider_code;
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
 };
 
 /**
@@ -111,7 +111,7 @@ public:
     /// The largest absolute value a tick may carry.
     static constexpr double max_abs_value = domain::adapter_limits::max_abs_value;
 
-    adapter_tick_translator(std::vector<domain::market_data_source> sources,
+    adapter_tick_translator(std::vector<domain::feed> sources,
                             std::vector<domain::market_data_vendor_instrument> instruments,
                             std::vector<domain::market_data_mapping> mappings);
 
@@ -148,7 +148,7 @@ private:
           std::chrono::system_clock::time_point now);
     void count(std::string_view adapter_id, adapter_tick_drop reason);
 
-    std::unordered_map<std::string, domain::market_data_source> sources_;
+    std::unordered_map<std::string, domain::feed> sources_;
     std::map<instrument_key, std::vector<domain::market_data_mapping>> mappings_;
     /// The items of the mappings that are indices, whose ticks are fixings.
     std::set<std::string> fixing_items_;

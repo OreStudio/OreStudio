@@ -102,12 +102,11 @@ struct market_observation final {
     std::string source;
 
     /**
-     * @brief References market_data_source.id -- the catalogue source that produced this
-     * observation. It is information. The series key does not contain it, so a party that switches
-     * the source of a provider keeps one history and each observation says which source it came
-     * from.
+     * @brief References feed.id -- the catalogue source that produced this observation. It is
+     * information. The series key does not contain it, so a party that switches the source of a
+     * provider keeps one history and each observation says which source it came from.
      */
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
 
     /**
      * @brief Value equality.

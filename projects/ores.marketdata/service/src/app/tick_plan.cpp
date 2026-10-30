@@ -49,7 +49,7 @@ std::shared_ptr<const std::vector<tick_target>> make_targets(const std::vector<c
         auto tenant = c.tenant_id.to_string();
         auto party = boost::uuids::to_string(c.party_id);
         auto subject = domain::market_tick_subject(tenant, party, named.uri);
-        auto source = boost::uuids::to_string(c.source_id);
+        auto source = boost::uuids::to_string(c.feed_id);
         targets->push_back(
             {c, std::move(subject), std::move(tenant), std::move(party), std::move(source)});
     }

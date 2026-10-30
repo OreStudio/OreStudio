@@ -73,7 +73,7 @@ public:
             return;
         }
         if (!ores::service::messaging::has_permission(*req_ctx_expected,
-                                                      "marketdata::market_data_sources:read")) {
+                                                      "marketdata::feeds:read")) {
             ores::service::messaging::error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }

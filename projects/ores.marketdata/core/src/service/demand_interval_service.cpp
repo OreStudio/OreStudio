@@ -106,7 +106,7 @@ domain::demand_interval demand_interval_to_domain(const messaging::demand_interv
     v.provider_code = write.provider_code;
     v.oresmd_uri = write.oresmd_uri;
     v.interval_from = write.interval_from;
-    v.source_id = write.source_id;
+    v.feed_id = write.feed_id;
     v.interval_to = write.interval_to;
     return v;
 }
@@ -140,10 +140,10 @@ messaging::list_demand_intervals_response demand_interval_service::list_demand_i
                                  {.field = "provider_code_one_of", .limit = "1000"});
         return response;
     }
-    if (request.filter && request.filter->source_id_one_of &&
-        request.filter->source_id_one_of->size() > 1000) {
+    if (request.filter && request.filter->feed_id_one_of &&
+        request.filter->feed_id_one_of->size() > 1000) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "source_id_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large, {.field = "feed_id_one_of", .limit = "1000"});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's

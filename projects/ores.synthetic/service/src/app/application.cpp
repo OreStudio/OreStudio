@@ -77,7 +77,7 @@ struct simulated_adapter final {
 // The simulator is the implementation of that kind, so it is the one place that reads the kind.
 // The catalogue belongs to marketdata, so the sources come through its client.
 std::vector<simulated_adapter>
-make_adapters(const std::vector<ores::marketdata::domain::market_data_source>& sources,
+make_adapters(const std::vector<ores::marketdata::domain::feed>& sources,
               const ores::database::context& db_ctx,
               ores::nats::service::client& nats,
               generator_fleet& generators,
@@ -86,7 +86,7 @@ make_adapters(const std::vector<ores::marketdata::domain::market_data_source>& s
               const std::shared_ptr<ores::synthetic::feed::fault_state>& faults) {
     std::vector<simulated_adapter> out;
     for (const auto& source : sources) {
-        if (source.kind != "simulated")
+        if (source.session_code != "synthetic-local")
             continue;
         simulated_adapter one;
         one.runner = std::make_unique<generator_runner>(
@@ -95,14 +95,14 @@ make_adapters(const std::vector<ores::marketdata::domain::market_data_source>& s
              ctx = db_ctx,
              faults,
              name = source.name,
-             provider = source.provider_code] {
+             provider = source.publisher_code] {
                 return system_generator_offers(registry, ctx, build, name, provider, faults);
             },
             &generators.running_names());
         one.adapter = std::make_unique<simulator_adapter>(nats,
                                                           *one.runner,
                                                           source.name,
-                                                          source.provider_code,
+                                                          source.publisher_code,
                                                           simulator_adapter_timing{},
                                                           faults);
         out.push_back(std::move(one));
@@ -150,7 +150,7 @@ public:
 
 private:
     // Builds and starts every adapter before any is kept, so a failed start leaves none running.
-    void start_all(const std::vector<ores::marketdata::domain::market_data_source>& sources) {
+    void start_all(const std::vector<ores::marketdata::domain::feed>& sources) {
         auto built =
             make_adapters(sources, db_ctx_, nats_, generators_, registry_, build_, faults_);
         std::size_t attempted = 0;
@@ -189,7 +189,7 @@ private:
             std::string failure;
             try {
                 ores::marketdata::client::market_data_client client(svc_nats_);
-                const auto sources = client.list_market_data_sources();
+                const auto sources = client.list_feeds();
                 if (sources) {
                     start_all(*sources);
                     return;
@@ -300,9 +300,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                     return feed::feed_adapter{.id = source.name,
                                               .provider_code = std::string(provider_code)};
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "The adapter of provider '" << provider_code << "' could not be read: "
-                << e.what();
+            BOOST_LOG_SEV(lg(), warn) << "The adapter of provider '" << provider_code
+                                      << "' could not be read: " << e.what();
         }
         return std::nullopt;
     };

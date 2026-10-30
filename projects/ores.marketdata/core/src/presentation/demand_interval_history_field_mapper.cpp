@@ -44,7 +44,7 @@ render_demand_interval_fields(const domain::demand_interval& v) {
     fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri});
     fields.push_back({.name = "Interval From",
                       .value = ores::platform::time::datetime::to_iso8601_utc(v.interval_from)});
-    fields.push_back({.name = "Source ID", .value = boost::uuids::to_string(v.source_id)});
+    fields.push_back({.name = "Feed ID", .value = boost::uuids::to_string(v.feed_id)});
     fields.push_back({.name = "Interval To",
                       .value = v.interval_to ?
                                    ores::platform::time::datetime::to_iso8601_utc(*v.interval_to) :

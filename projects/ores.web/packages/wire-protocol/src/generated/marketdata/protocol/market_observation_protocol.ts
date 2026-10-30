@@ -41,7 +41,7 @@ export interface MarketObservationWrite {
     oresmd_uri: string;
     value: string;
     source: string;
-    source_id: string;
+    feed_id: string;
 }
 
 export interface MarketObservationChange {

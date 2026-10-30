@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_CLIENT_MARKET_DATA_CLIENT_HPP
 #define ORES_MARKETDATA_CLIENT_MARKET_DATA_CLIENT_HPP
 
-#include "ores.marketdata.api/domain/market_data_source.hpp"
+#include "ores.marketdata.api/domain/feed.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/messaging/fixing_read_operations_protocol.hpp"
@@ -152,11 +152,10 @@ public:
     /**
      * @brief The sources of the catalogue, every kind and every provider.
      *
-     * Sends marketdata.v1.market_data_sources.list. The catalogue belongs to marketdata, so an
+     * Sends marketdata.v1.feeds.list. The catalogue belongs to marketdata, so an
      * adapter that needs to know its sources asks here and reads no table of marketdata.
      */
-    [[nodiscard]] std::expected<std::vector<domain::market_data_source>, std::string>
-    list_market_data_sources();
+    [[nodiscard]] std::expected<std::vector<domain::feed>, std::string> list_feeds();
 
 private:
     ores::nats::service::nats_client& nats_;

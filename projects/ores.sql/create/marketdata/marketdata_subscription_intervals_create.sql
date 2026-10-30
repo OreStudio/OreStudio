@@ -40,7 +40,7 @@ create table if not exists "ores_marketdata_subscription_intervals_tbl" (
     "party_id" uuid not null,
     "provider_code" text not null,
     "interval_from" timestamp with time zone not null,
-    "source_id" uuid not null,
+    "feed_id" uuid not null,
     "display" boolean not null,
     "non_display" boolean not null,
     "derived" boolean not null,

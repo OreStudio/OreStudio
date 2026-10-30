@@ -45,7 +45,7 @@ auto usage_planner_key_of(const subscription_state& s) {
     return std::make_tuple(s.tenant_id.to_string(),
                            s.party_id,
                            s.provider_code,
-                           s.source_id,
+                           s.feed_id,
                            s.display,
                            s.non_display,
                            s.derived);
@@ -55,7 +55,7 @@ auto usage_planner_key_of(const domain::subscription_interval& i) {
     return std::make_tuple(i.tenant_id.to_string(),
                            i.party_id,
                            i.provider_code,
-                           i.source_id,
+                           i.feed_id,
                            i.display,
                            i.non_display,
                            i.derived);
@@ -63,12 +63,12 @@ auto usage_planner_key_of(const domain::subscription_interval& i) {
 
 auto usage_planner_key_of(const demand_state& s) {
     return std::make_tuple(
-        s.tenant_id.to_uuid(), s.party_id, s.provider_code, s.source_id, s.oresmd_uri);
+        s.tenant_id.to_uuid(), s.party_id, s.provider_code, s.feed_id, s.oresmd_uri);
 }
 
 auto usage_planner_key_of(const domain::demand_interval& i) {
     return std::make_tuple(
-        i.tenant_id.to_uuid(), i.party_id, i.provider_code, i.source_id, i.oresmd_uri);
+        i.tenant_id.to_uuid(), i.party_id, i.provider_code, i.feed_id, i.oresmd_uri);
 }
 
 }
@@ -85,7 +85,7 @@ std::vector<subscription_state> subscription_states(const demand_catalogue& cata
             out.push_back({route.tenant_id,
                            route.party_id,
                            route.provider_code,
-                           route.source_id,
+                           route.feed_id,
                            s.display,
                            s.non_display,
                            s.derived});
@@ -101,7 +101,7 @@ std::vector<demand_state> demand_states(const std::vector<party_demand>& demand)
         if (!d.entitled)
             continue;
         for (const auto& [uri, ids] : d.items)
-            out.push_back({d.tenant_id, d.party_id, d.provider_code, d.source_id, uri});
+            out.push_back({d.tenant_id, d.party_id, d.provider_code, d.feed_id, uri});
     }
     return out;
 }
@@ -139,7 +139,7 @@ plan_subscription_intervals(const std::vector<subscription_state>& now_state,
         i.tenant_id = s.tenant_id;
         i.party_id = s.party_id;
         i.provider_code = s.provider_code;
-        i.source_id = s.source_id;
+        i.feed_id = s.feed_id;
         i.display = s.display;
         i.non_display = s.non_display;
         i.derived = s.derived;
@@ -187,7 +187,7 @@ plan_demand_intervals(const std::vector<demand_state>& now_state,
         i.tenant_id = s.tenant_id;
         i.party_id = s.party_id;
         i.provider_code = s.provider_code;
-        i.source_id = s.source_id;
+        i.feed_id = s.feed_id;
         i.oresmd_uri = s.oresmd_uri;
         i.interval_from = now;
         stamp(i, actor, opened_reason, "The item entered the demand of the party.");

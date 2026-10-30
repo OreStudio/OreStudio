@@ -44,7 +44,7 @@ struct subscription_interval_write {
     boost::uuids::uuid party_id;
     std::string provider_code;
     std::chrono::system_clock::time_point interval_from;
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
     bool display;
     bool non_display;
     bool derived;
@@ -69,11 +69,11 @@ struct subscription_interval_lookup {
 struct subscription_intervals_filter {
     std::optional<boost::uuids::uuid> party_id;
     std::optional<std::string> provider_code;
-    std::optional<boost::uuids::uuid> source_id;
+    std::optional<boost::uuids::uuid> feed_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
     std::optional<std::vector<std::string>> provider_code_one_of;
-    std::optional<std::vector<boost::uuids::uuid>> source_id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> feed_id_one_of;
 };
 
 struct subscription_interval_event {

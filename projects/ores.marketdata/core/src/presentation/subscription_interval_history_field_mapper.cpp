@@ -43,7 +43,7 @@ render_subscription_interval_fields(const domain::subscription_interval& v) {
     fields.push_back({.name = "Provider Code", .value = v.provider_code});
     fields.push_back({.name = "Interval From",
                       .value = ores::platform::time::datetime::to_iso8601_utc(v.interval_from)});
-    fields.push_back({.name = "Source ID", .value = boost::uuids::to_string(v.source_id)});
+    fields.push_back({.name = "Feed ID", .value = boost::uuids::to_string(v.feed_id)});
     fields.push_back({.name = "Display", .value = v.display ? "true" : "false"});
     fields.push_back({.name = "Non Display", .value = v.non_display ? "true" : "false"});
     fields.push_back({.name = "Derived", .value = v.derived ? "true" : "false"});

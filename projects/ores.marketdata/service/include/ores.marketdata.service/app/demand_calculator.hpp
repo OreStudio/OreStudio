@@ -24,8 +24,8 @@
 #    pragma once
 #endif
 
+#include "ores.marketdata.api/domain/feed.hpp"
 #include "ores.marketdata.api/domain/market_data_mapping.hpp"
-#include "ores.marketdata.api/domain/market_data_source.hpp"
 #include "ores.marketdata.api/domain/market_data_vendor_instrument.hpp"
 #include "ores.marketdata.api/domain/provider.hpp"
 #include "ores.marketdata.api/domain/route.hpp"
@@ -50,7 +50,7 @@ namespace ores::marketdata::service::app {
 struct demand_catalogue {
     /// The providers, whose terms decide whether their sources are asked for anything.
     std::vector<domain::provider> providers;
-    std::vector<domain::market_data_source> sources;
+    std::vector<domain::feed> feeds;
     std::vector<domain::market_data_vendor_instrument> instruments;
     std::vector<domain::market_data_mapping> mappings;
     std::vector<domain::route> routes;
@@ -90,7 +90,7 @@ struct party_demand {
     ores::utility::uuid::tenant_id tenant_id = ores::utility::uuid::tenant_id::system();
     boost::uuids::uuid party_id;
     std::string provider_code;
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
     /// The name of the source, which is the id of its adapter.
     std::string adapter_id;
     bool entitled = false;

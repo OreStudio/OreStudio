@@ -70,16 +70,15 @@ std::vector<party_demand> compute_party_demand(const demand_catalogue& catalogue
 
     std::vector<party_demand> out;
     for (const auto& route : catalogue.routes) {
-        const auto source =
-            std::ranges::find(catalogue.sources, route.source_id, &domain::market_data_source::id);
-        if (source == catalogue.sources.end())
+        const auto source = std::ranges::find(catalogue.feeds, route.feed_id, &domain::feed::id);
+        if (source == catalogue.feeds.end())
             continue;
 
         party_demand demand;
         demand.tenant_id = route.tenant_id;
         demand.party_id = route.party_id;
         demand.provider_code = route.provider_code;
-        demand.source_id = route.source_id;
+        demand.feed_id = route.feed_id;
         demand.adapter_id = source->name;
         const auto provider =
             std::ranges::find(catalogue.providers, route.provider_code, &domain::provider::code);

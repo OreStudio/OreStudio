@@ -38,7 +38,7 @@ export interface DemandInterval {
     provider_code: string;
     oresmd_uri: string;
     interval_from: string;
-    source_id: string;
+    feed_id: string;
     interval_to: string | null;
     modified_by: string;
     performed_by: string;

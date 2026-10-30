@@ -93,7 +93,7 @@ select ok(
 );
 
 select ok(
-    exists(select 1 from ores_marketdata_market_data_sources_tbl s
+    exists(select 1 from ores_marketdata_feeds_tbl s
            where s.name = 'bloomberg-a' and s.provider_code = 'bloomberg'
              and s.valid_to = ores_utility_infinity_timestamp_fn()),
     'the catalogue holds the source bloomberg-a of the provider bloomberg that the Acme profile routes to'

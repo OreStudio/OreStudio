@@ -94,9 +94,9 @@ route_filter_condition(const std::optional<messaging::routes_filter>& filter) {
     if (filter->provider_code)
         r.push_back(query_builder::equals("provider_code",
                                           query_builder::filter_value(*filter->provider_code)));
-    if (filter->source_id)
+    if (filter->feed_id)
         r.push_back(
-            query_builder::equals("source_id", query_builder::filter_value(*filter->source_id)));
+            query_builder::equals("feed_id", query_builder::filter_value(*filter->feed_id)));
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
@@ -115,11 +115,11 @@ route_filter_condition(const std::optional<messaging::routes_filter>& filter) {
             values.push_back(query_builder::filter_value(v));
         r.push_back(query_builder::one_of("provider_code", std::move(values)));
     }
-    if (filter->source_id_one_of) {
+    if (filter->feed_id_one_of) {
         std::vector<query_builder::value> values;
-        for (const auto& v : *filter->source_id_one_of)
+        for (const auto& v : *filter->feed_id_one_of)
             values.push_back(query_builder::filter_value(v));
-        r.push_back(query_builder::one_of("source_id", std::move(values)));
+        r.push_back(query_builder::one_of("feed_id", std::move(values)));
     }
     return query_builder::all_of(std::move(r));
 }

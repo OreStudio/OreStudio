@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata:implementation:model_the_route_transport_configuration:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/turn-the-source-into-a-feed
+#+pr: 4103
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The existing source becomes a feed bound to a publisher, a session and a service
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -41,9 +41,31 @@ The existing source becomes a feed bound to a publisher, a session and a service
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The source entity is reshaped into the feed rather than joined by a second
+table. A source was already one adapter instance of a provider; the feed is the
+same row with the two facts a source lacked: the session that carries it and the
+service it offers.
+
+The model keeps the surrogate id, because routes and ticks already key on it,
+and keeps the unique name, because the adapter announces that name and the
+screens show it. =provider_code= becomes =publisher_code=, the =kind= column and
+its lookup are removed, and =session_code=, =service= and =provider_key= are
+added. =is_default= stays: one feed of a publisher is the one a new subscription
+routes to.
+
+The rows are migrated in the populate scripts, not by an ALTER: the database is
+built from the scripts, and the old sources are seeds. One Frankfurter session
+carries the four public feeds (=ecb=, =boc=, =imf=, =tcmb=) with =end_of_day=;
+the simulated feeds get the simulator session and =real_time=; the derived and
+import feeds get their own internal session.
+
+The runtime follows the rename mechanically: =market_data_source= becomes
+=feed=, =source_id= becomes =feed_id=, and the demand calculator, tick
+translator, usage planner and ingest loop read the feed. The generated entity
+carries the new names; the hand-written service files are renamed with them.
+
+The routes migrate from =source_id= to =feed_id=, keeping their party and
+publisher. Their key changes to (party, publisher, class) in the later task.
 
 * Measurements
 
@@ -57,9 +79,40 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Feeds seeded | 10 | =select count(*) from ores_marketdata_feeds_tbl= | be79de12f3 |
+| Sessions seeded | 2 | =select count(*) from ores_marketdata_sessions_tbl= | be79de12f3 |
+| Feed pgtap cases | 6/6 pass | =run_tests.sh marketdata_feeds_test.sql= | be79de12f3 |
+| Session pgtap cases | 7/7 pass | =run_tests.sh marketdata_session_settings_validation_test.sql= | be79de12f3 |
+| Catalogue pgtap cases | 9/9 pass | =run_tests.sh marketdata_catalogue_publish_test.sql= | be79de12f3 |
+| Catalogue repository tests | 9 cases, 19 assertions | =ores.marketdata.core.tests "[repository][catalogue]"= | be79de12f3 |
+| Service app tests | 152/153; the one failure passes alone | =ores.marketdata.service.tests "[app]"= | be79de12f3 |
+| Simulator announce tests | 4 cases, 34 assertions | =ores.synthetic.service.tests "[simulator_adapter][adapter]"= | be79de12f3 |
+| Non-heavy gate | 46/46 pass | =./compass.sh check --exclude-heavy= | be79de12f3 |
 
 * Notes
+
+Work in progress. The model is now =ores.marketdata.feed= (same id, new file),
+the feed entity is generated, the old =market_data_source= generated files are
+removed, and a mechanical rename (=market_data_source= -> =feed=,
+=source_id= -> =feed_id=) ran across the marketdata tree and its SQL.
+
+Done: the model, the generated entity, the removal of the old generated files,
+the mechanical rename, the session and feed seeds, the runtime rename, and the
+cross-component call sites (client, synthetic service, IAM provisioning).
+
+The =ores.marketdata.service= target compiles. Remaining, in order:
+
+1. Whole-tree build; fix any remaining =kind= or =provider_code= use in tests
+   and the shell adapter.
+2. Hand-written reference trigger for =session_code= (the generated trigger
+   validates =publisher_code= only), with its drop and includes.
+3. Recreate the database; pgtap for the ten feeds, the four public ones through
+   =frankfurter-eu=, the one-default-per-publisher rule and the session
+   reference.
+4. Regenerate the ER diagrams; run the gate; close the task; raise the PR.
+
+The source-kind lookup belongs to refdata and is now unused by marketdata; it
+is left in place rather than deleted from another component.
 
 * Test Scenarios
 
@@ -76,7 +129,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4103][#4103]] | [marketdata] Turn the source into a feed |
 
 * Review
 
@@ -85,3 +138,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** Outcome
+
+The source table and domain are the feed: same id and unique name,
+=publisher_code= in place of =provider_code=, =session_code=, =service= and
+=provider_key= added, and =kind= removed. The model file is
+=ores.marketdata.feed.org=; the generated source files are gone.
+
+Ten feeds are seeded. The four public feeds run through =frankfurter-eu= at
+=end_of_day= with their publisher keys (=ECB=, =BOC=, =IMF=, =TCMB=); the
+simulated and internal feeds run through =synthetic-local= at =real_time=.
+A hand-written trigger validates the session against the system-tenant
+catalogue, and the default index keeps one default feed per publisher.
+
+The runtime follows the rename: the demand catalogue, tick translator, billing,
+the market data client, the synthetic service and the IAM provisioning handler
+read feeds. Billing treats a feed on the synthetic session as a shadow bill.

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 18B72F94-FD3D-59F8-8984-8883D47B57B8
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the feeds commands from the shell?
+#+description: Every command the feeds submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:feeds:
+
+This file documents the feeds resource at the shell, one section per command. Every command is a subcommand of =feeds=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 77F34F42-3EEE-5225-9BFD-6F8733938F5C
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+feeds list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.feeds.list=.
+
+#+name: feeds-list
+#+begin_src ores-shell :tangle feeds-list.ores :exports none
+feeds list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 2AD4ED1D-A890-514E-BD70-9D5454049744
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+feeds get <name>
+#+end_example
+
+It is addressed at =marketdata.v1.feeds.get=.
+
+#+name: feeds-get
+#+begin_src ores-shell :tangle feeds-get.ores :exports none
+feeds get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 09F9EACF-95BB-5050-A438-338D75F3EF87
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+feeds get-many <name>
+#+end_example
+
+It is addressed at =marketdata.v1.feeds.get_many=.
+
+#+name: feeds-get-many
+#+begin_src ores-shell :tangle feeds-get-many.ores :exports none
+feeds get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: FA2009F6-940C-56D3-8ADB-83B1624BDA2F
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+feeds add <name> <publisher_code> <session_code> <service> <provider_key> <is_default> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.feeds.put=.
+
+#+name: feeds-add
+#+begin_src ores-shell :tangle feeds-add.ores :exports none
+feeds add __none__ __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 6EA97CCC-1769-5A12-BF6E-B8069A361BC2
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+feeds set <id> <name> <publisher_code> <session_code> <service> <provider_key> <is_default> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.feeds.put=.
+
+#+name: feeds-set
+#+begin_src ores-shell :tangle feeds-set.ores :exports none
+feeds set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: C89E8C1F-D8EE-5A96-B1F7-E9B5B1DADDF6
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+feeds put-many --count <n> <id> <name> <publisher_code> <session_code> <service> <provider_key> <is_default> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.feeds.put_many=.
+
+#+name: feeds-put-many
+#+begin_src ores-shell :tangle feeds-put-many.ores :exports none
+feeds put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: D80ECF1F-87FF-5CCD-BA40-04899FCA2086
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+feeds delete <name> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.feeds.delete=.
+
+#+name: feeds-delete
+#+begin_src ores-shell :tangle feeds-delete.ores :exports none
+feeds delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 02BB4DA5-F1F8-5E30-8956-7B822FD9E91D
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+feeds delete-many <name> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.feeds.delete_many=.
+
+#+name: feeds-delete-many
+#+begin_src ores-shell :tangle feeds-delete-many.ores :exports none
+feeds delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: C143FB07-D74A-529F-846B-E4536C98D279
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+feeds versions <name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.feeds_versions.list=.
+
+#+name: feeds-versions
+#+begin_src ores-shell :tangle feeds-versions.ores :exports none
+feeds versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: D697B150-351A-5E3D-BD69-82B0FB275EFD
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+feeds version <name> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.feeds_versions.get=.
+
+#+name: feeds-version
+#+begin_src ores-shell :tangle feeds-version.ores :exports none
+feeds version __none__ --version 1
+#+end_src
+

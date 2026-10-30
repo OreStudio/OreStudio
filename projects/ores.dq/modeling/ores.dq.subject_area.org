@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: FE30471F-CE4C-4056-B5AA-D7E2FBC3464A
 :END:
 #+title: ores.dq.subject_area

@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: EA2A5788-C332-44CF-B773-83E3D89790A7
 :END:
 #+title: ores.dq.treatment_dimension

@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 0057C557-B1F3-477E-8919-2E7390E8FB51
 :END:
 #+title: ores.dq.fsm_transition

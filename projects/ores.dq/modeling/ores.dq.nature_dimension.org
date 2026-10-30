@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 39B8858F-7724-4AE2-B4A9-C8B3817748CE
 :END:
 #+title: ores.dq.nature_dimension

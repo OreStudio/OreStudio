@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 2DC7CB2C-EF21-4E55-BB05-07F42DF5BD8B
 :END:
 #+title: ores.dq.dataset_bundle

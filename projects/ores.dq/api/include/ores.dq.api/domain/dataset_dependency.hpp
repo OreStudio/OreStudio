@@ -86,6 +86,11 @@ struct dataset_dependency final {
      * @brief Timestamp when this dependency was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    /**
+     * @brief Value equality, on the same terms as a generated entity's.
+     */
+    friend bool operator==(const dataset_dependency&, const dataset_dependency&) = default;
 };
 
 }

@@ -280,6 +280,7 @@ the page that owns it.
 - [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]] — why every book that revalues together shares one centre's market data.
 - [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][Business Centre]] — the coded trading location a book carries in place of a cut.
 - [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — what a structure note is and why this order is authored rather than computed.
+- [[id:6810B313-1BE8-4889-A3C0-30174ADCBEDD][Naming the cut]] — why the general concept keeps the word cut, what each component is called, and what a change of term would cost.
 
 * References
 

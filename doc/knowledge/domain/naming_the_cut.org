@@ -1,0 +1,185 @@
+:PROPERTIES:
+:ID: 6810B313-1BE8-4889-A3C0-30174ADCBEDD
+:END:
+#+title: Naming the cut
+#+description: The naming decision for the cuts cluster: what the prior art calls the fixed body of a valuation, why the word cut is kept for the general concept, what each component is called, and what a change of term would cost.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:cut:naming:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+* Summary
+
+The cluster keeps the word *cut* for the general concept and qualifies it for
+everything narrower. The recommendation is a *cut* for the label, the timepoint
+and the body together, a *market data cut* for the market data component, a
+*trade cut* for the deal component, and a *cut code*, always with the second word,
+for the option-expiry sense. The candidate *snapshot* is rejected because this
+repository already uses it for two other things, both of which are reads rather
+than fixed bodies. The prior art, which is surveyed below, names the market data
+component and leaves the whole body unnamed, so the choice is ours and rests on
+the collision argument rather than on precedent.
+
+* The prior art
+
+** OpenGamma Strata
+
+Strata models the fixed set of market data a calculation reads as a first-class
+type and calls it *market data*. The package description states the subject:
+
+#+begin_quote
+Market data is used to capture the current market, such as quotes, FX rates,
+discount curves, forward curves and volatilities.
+#+end_quote
+
+and names the type:
+
+#+begin_quote
+The main market data interface is MarketData which is keyed by MarketDataId.
+#+end_quote
+
+The implementation is described in the same package as "An immutable set of
+market data", and an observable carries the source it came from, which the
+package lists as `ObservableSource`
+([[https://strata.opengamma.io/apidocs/com/opengamma/strata/data/package-summary.html][Strata
+package com.opengamma.strata.data]]).
+
+Three facts follow. Strata names the component rather than the whole body: there
+is no type for the deals, the settings and the engine version taken together.
+The name of the component is *market data*, which is the phrase this cluster uses
+for its component. And the word *snapshot* does not appear in the package at all,
+which means a snapshot is a term this repository introduced rather than a term
+the prior art supplies.
+
+** Murex
+
+Murex publishes the architecture of MX.3 and lists a *market data server* among
+the orchestration services, beside position, limits, collateral, XVA and
+simulation servers. The same page reports "real-time and end-of-day value at risk
+calculations"
+([[https://www.murex.com/en/solutions/technology/mx3-architecture][Murex, MX.3
+architecture]]).
+
+The vocabulary is instructive for what it omits. The vendor names a server that
+serves market data, and names *end of day* as a time at which computation
+happens. No public page of that material names the fixed body of a valuation as
+an object with a name of its own.
+
+** Calypso
+
+No public Calypso page that I could read names the concept. The searches returned
+recruitment material and third-party summaries rather than vendor documentation,
+and I did not use them. The finding is therefore a gap in the record and not
+evidence either way.
+
+** Regulators and industry sources
+
+The public sources this cluster already cites name processes and instants, and
+they do not name the fixed body. A prudential standard names the independent
+price verification process and its admissible sources; a central bank publishes
+one reference rate per day, at a stated time; a settlement system publishes the
+start and end of its business day. Each of these supplies a time, a source or a
+process. None supplies a term for the body a valuation reads.
+
+* Both senses in the industry
+
+The same word carries an expiry sense and a valuation sense in dealing practice.
+An FX option expires at a time of day that the market names, and the cut code is
+that name; a valuation day ends at a cut, and the cut fixes the day's data. Our
+own cut code page records that we hold no public source which fixes the expiry
+times, so the expiry sense is reported here as practice rather than as a cited
+fact.
+
+The systems surveyed above resolve the collision by never using the bare word for
+the expiry sense. They speak of the market data a calculation reads, and of the
+end of the day as a time. The collision in our cluster is therefore a collision
+of our own making, and it has a grammatical remedy.
+
+* The decision
+
+| Object                        | Term             |
+|-------------------------------+------------------|
+| The general concept           | cut              |
+| The market data component     | market data cut  |
+| The deal component            | trade cut        |
+| The option-expiry sense       | cut code         |
+
+The rule that keeps the words apart is that the bare *cut* names the general
+concept, and every narrower object carries a qualifier. *Cut code* is the only
+use in which the word names a time rather than a body, and the qualifier marks
+it.
+
+* Why not snapshot
+
+*Snapshot* is the strongest candidate and the one to reject, for a reason internal
+to this repository. The word already names two things here, and neither is a cut.
+[[id:CEC7844C-B3AE-4858-BF67-71F511007F82][Market Data Snapshot]] names the
+resolution-side concept, a set of identifiers resolved into values.
+[[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]] names the
+stored-data reads, and its subject is what a read returns from rows that already
+exist. Adopting *snapshot* for the general concept would give the repository three
+meanings for one word, and the two existing meanings are exactly the things the
+cluster's hub distinguishes the cut from.
+
+A second argument is semantic. A snapshot is a capture of state at a moment. The
+body of a cut includes the engine version, the code revision and the settings,
+which are inputs to the computation rather than state that a market moved through.
+A word that describes a capture of state therefore under-describes the object the
+hub argues for.
+
+* The other candidates
+
+- *Market data snapshot* names the component, and this cluster calls that the
+  market data cut. It also carries the collision above.
+- *Valuation snapshot* is close to the concept, and it retains the snapshot
+  collision and adds nothing that *cut* lacks.
+- *EOD snapshot* and *close-of-business snapshot* name a kind. They exclude the
+  flash cut, the start of day cut and the instant a process names, so neither can
+  stand for the concept.
+- *As-of snapshot* names the read, and this repository uses as-of for the stored
+  data read rather than for a fixed body.
+- *Valuation point* names the instant and not the body. In fund regulation the
+  phrase names the moment at which the value of the scheme property is
+  determined, which is a time, and adopting it would import that narrower meaning
+  into a term that must cover the body, the label and the authorisation.
+
+* What a change of term would cost
+
+If the cluster moved to another word, the work would run as follows.
+
+- Five knowledge pages would be renamed and rewritten:
+  [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]],
+  [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]],
+  [[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]],
+  [[id:19630B5D-A163-42B5-B9C4-61A87BAE8F5F][Trade cut]] and
+  [[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][The option-expiry cut code]].
+- Twelve documents outside the cluster link the hub, and each link would be
+  rewritten: the knowledge index, the two snapshot notes, the pricing
+  configuration, the market data architecture, risk reporting, report processing,
+  the reports index, the binding decision and its journey, the backlog story and
+  this task's page.
+- The backlog story designs an entity named for a cut, so the entity, its
+  columns and its foreign key would change with the term.
+- The glossary on the hub would be rewritten, and the qualifier rule above would
+  be replaced by whatever disambiguation the new word needs.
+
+The cost is bounded and it is not the reason to keep the word. The reason is that
+no candidate improves on *cut* while surviving the two snapshot meanings already
+in the repository.
+
+* See also
+
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the structure note this note advises, which states the concept the word names.
+- [[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][The option-expiry cut code]] — the second sense, and the reason the qualifier rule exists.
+- [[id:CEC7844C-B3AE-4858-BF67-71F511007F82][Market Data Snapshot]] — the first of the two meanings that rule out *snapshot*.
+- [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]] — the second of them.
+- [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — the settings whose naming the body's name must not disturb.
+
+* References
+
+1. [[https://strata.opengamma.io/apidocs/com/opengamma/strata/data/package-summary.html][OpenGamma Strata, package com.opengamma.strata.data]]. Read: it describes market data as capturing "the current market", names MarketData keyed by MarketDataId as the main interface, and describes ImmutableMarketData as "An immutable set of market data". The word snapshot does not occur in the package.
+2. [[https://www.murex.com/en/solutions/technology/mx3-architecture][Murex, MX.3 architecture]]. Read: the orchestration layer lists a "Market data server", and the page reports "real-time and end-of-day value at risk calculations".
+3. [[https://www.legislation.gov.uk/eur/2016/101/chapter/I][EBA RTS (EU) 2016/101]], Article 3. Already read for the cluster: it names the independent price verification process and its admissible sources, and names no fixed body.
+4. [[https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html][European Central Bank, euro foreign exchange reference rates]]. Already read: one rate per pair published each working day at a stated time.
+5. [[https://www.federalreserve.gov/paymentsystems/fedfunds_about.htm][Fedwire Funds Services]]. Already read: the stated start and end of one centre's business day.

@@ -5,7 +5,7 @@
 #+description: compass add capture writes the capture document but does not regenerate the bucket index, so a capture can exist without appearing in the backlog. The two this story filed on bonds and credit were in that state. Regenerate the index and record what the tooling does and does not do.
 #+type: task
 #+level: s1
-#+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
+#+filetags: :open_sprint_29:sprint_29:v0:
 #+owner: marco
 #+branch: feature/wire-the-captures-into-the-backlog-index
 #+pr: 4047
@@ -16,7 +16,7 @@
 #+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7295CBC5-402C-45D4-9888-4C795AFF883C][Open sprint 29]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ A capture this story files is findable in the backlog it belongs to.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
+| Parent story | [[id:7295CBC5-402C-45D4-9888-4C795AFF883C][Open sprint 29]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |

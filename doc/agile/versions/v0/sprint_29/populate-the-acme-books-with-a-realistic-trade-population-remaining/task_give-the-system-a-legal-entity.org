@@ -5,7 +5,7 @@
 #+description: A credit trade must reference a legal entity by LEI, and the system has nowhere to put one: the 38,213 LEI rows sit in a DQ artefact under the system tenant, a party session cannot read them, and the publication that does exist turns them into counterparties, which carry a name and no LEI. Model the legal entity where a party can reference it.
 #+type: task
 #+level: s1
-#+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
+#+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/give-the-system-a-legal-entity
 #+pr: 4099
@@ -16,7 +16,7 @@
 #+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ A party can reference a legal entity by LEI. A credit trade states an LEI the te
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
+| Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |

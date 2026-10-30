@@ -21,17 +21,22 @@ A trade has one description, in the domain. The planner draws a product and cons
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | STARTED                                |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started.                       |
+| Now           | Closed. The plan states rows for all six families. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-28                               |
+| Next          | None; population coverage continues in its own story. |
+| Last touched  | 2026-10-30                             |
 
 * Acceptance
 
-- No =*_terms= bag remains, and the plan states the domain's own rows.
-- Every routed product is constructed by a named constructor that states what that product is, and that constructor cannot fill a column the product does not have.
+- The plan carries no =*_terms= bag: the slot states domain rows, and the
+  writer persists them. Each planner keeps a struct of what it draws, which is
+  the generator's own shape and not what a slot carries.
+- Every product the planners draw is constructed by a named constructor that
+  states what that product is, and that constructor cannot fill a column the
+  product does not have. Which products a population draws is a coverage
+  question and lives in [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population]].
 - The writer persists and no longer translates.
 - The families that book today still book, proved by a provisioning run and not by a unit test alone.
 
@@ -40,19 +45,13 @@ A trade has one description, in the domain. The planner draws a product and cons
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:0FF2943A-687E-434A-A673-ACD9C10CEF06][Scaffold story: Let the plan state domain rows, not a bag]] | DONE | 2026-10-28 | 2026-10-28 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:E68EF41E-CF67-4B93-9787-E24D278FAFBB][Implement Let the plan state domain rows, not a bag]] | BACKLOG | | | Initial task for: Let the plan state domain rows, not a bag |
 | [[id:1702F734-593F-4BE2-AC4D-10BCC6C3822C][Construct one product properly]] | DONE | 2026-10-28 | 2026-10-28 | Prove the story's shape on one product before five families move. Add a named constructor for EquityCliquetOption beside the equity option instrument type, make the writer build that product through it, and show that a frequency cannot be stated on a product that has none. |
 | [[id:E3D9AF40-C60F-47D7-AFD0-EF76D9C11A50][Construct every commodity product by shape]] | DONE | | 2026-10-28 | The commodity writer copies every field of the bag into one row for all twenty-five codes, and the table has no cross-column check to stop a forward carrying a barrier. Give each code a named constructor whose terms hold only the columns its shape states, so a mixture cannot be assembled. |
-| [[id:244591FF-582C-4710-BC6D-EBA5D536F36E][Charter a book and a config for the commodity population]] | DONE | 2026-10-28 | 2026-10-28 | No ACME book trades commodities, so the family cannot be booked and its constructors are never reached by a run. Charter a commodity book for the UK entity and a generate_trades config that reaches every routed code, so the family books and its constructor can be proved. |
 | [[id:0F633A30-454C-46CD-A9EB-D223DFC8879D][Give the commodity products their own facts where the family can state them]] | DONE | 2026-10-28 | 2026-10-29 | The commodity constructors fixed each product's shape, but several products are drawn as a plainer shape than they are: the Asian option states no averaging, and the basket products state no members even though the family has a constituent table nothing writes to. Give those products their own facts, and record the ones the family still cannot state. |
 | [[id:FF69E606-2005-49B4-A2B8-61DAF46EC623][Construct every bond product by name]] | ABANDONED | 2026-10-29 | | The bond writer assembles one table's rows from the terms bag for ten routed codes. Give each code a constructor that states its own facts, so the bond family joins equity and commodities in constructing rather than assembling, and the bag has one fewer family to carry. |
 | [[id:6B662C92-C3ED-437C-8EDF-68FCF351A86C][Construct every rate product by name]] | DONE | 2026-10-29 | 2026-10-29 | Eight rate products are drawn from one terms bag and translated into a header row plus fact rows by a writer arm several hundred lines long. Give each product a constructor that states its own facts, and let the writer hand over what it is given. |
 | [[id:E82DB114-E0E0-406C-8372-2BE99B8F6E8E][Construct every fx product by name]] | DONE | 2026-10-29 | 2026-10-29 | The fx writer is the last family that assembles products from the terms bag, across six instrument tables and sixteen routed codes. Give each drawn code a constructor, so every family bookable today constructs rather than assembles and the bag has one family left. |
-| [[id:F950CA7A-1CF9-4C57-A089-5CAC01619E5B][Wire the captures into the backlog index]] | DONE | | 2026-10-29 | compass add capture writes the capture document but does not regenerate the bucket index, so a capture can exist without appearing in the backlog. The two this story filed on bonds and credit were in that state. Regenerate the index and record what the tooling does and does not do. |
 | [[id:196C254E-7632-4F8B-93FF-33B3A4E0C9D4][State what a credit reference entity is]] | DONE | 2026-10-29 | 2026-10-29 | The credit writer and its routing exist and the credit catalogue is seeded, but no ACME party has a credit generation config, so a provisioned tenant holds no credit trades at all. Measured on a recreated database: zero rows in the credit instrument table, and the demo profile seeds bond, commodity, equity, fx and interest_rates only. Unlike commodities, which were chartered in the same sprint, credit has neither a book nor a config. |
-| [[id:09DAA144-047F-4191-8D21-AC32C11F4289][The bond population books one product of ten]] | BACKLOG | | | Ten trade types route to the bond instrument table. The planner draws exactly one of them, a plain Bond, so every one of the twenty-four bond trades in a provisioned tenant is a Bond and the other nine codes never appear. The family's own fact rows -- the option, the repo, the future, the total return swap, the ASCOT, the callable's call dates, the convertible's conversion targets -- are all empty, because the writer fills only the instrument header. A tenant therefore cannot see a bond option, a repo or a convertible, and nothing says so. |
-| [[id:E089FF36-13AC-44C8-8AF3-6D8B4E6403BC][Populate the credit family]] | DONE | | 2026-10-29 | Credit has a routed table, catalogue rows and four seeded books, and nothing that writes it: no credit trade planner and no writer arm. Draw its five products, resolve reference entities from the DQ lei_entity dataset, and prove the family books. |
-| [[id:E692198E-97E6-44A4-9EE1-2C566DDFC831][Give the system a legal entity]] | DONE | | 2026-10-30 | A credit trade must reference a legal entity by LEI, and the system has nowhere to put one: the 38,213 LEI rows sit in a DQ artefact under the system tenant, a party session cannot read them, and the publication that does exist turns them into counterparties, which carry a name and no LEI. Model the legal entity where a party can reference it. |
 | [[id:67CB95D1-7D9C-42A6-8CAE-3D80ABC308A7][Flip bond onto its rows]] | DONE | | 2026-10-29 | The first family to stop carrying a bag. The slot gains an instrument batch, the bond planner constructs its instrument, and the writer persists it. The security stays in the bag until the next slice, because the run writes the issue before it books the trade. |
 | [[id:CFA53C73-DC4B-45DC-AC3F-CCC25931F8D2][Flip commodity onto its rows]] | DONE | 2026-10-30 | 2026-10-30 | Twenty-five commodity codes construct today, but the planner still fills a bag and the writer translates it. Move that translation into the planner so the plan carries the rows, and the writer only persists them. |
 | [[id:A6630FE3-8B74-4DA5-B303-A091F852CE26][Flip rates onto its rows]] | DONE | 2026-10-30 | 2026-10-30 | Ten rate codes construct today, but the planner still fills a bag and the writer translates it. Move that translation into the planner so the plan carries the rows, and the writer only persists them. |
@@ -71,6 +70,22 @@ A trade has one description, in the domain. The planner draws a product and cons
   proves itself with a run, so there is never a state where nothing books.
 - *The config and the scope stay.* They are the generator's own language and
   they do not describe trades.
+- *The drawing struct stays, under the family's name.* =trade_terms= and the
+  slot's =terms= are deleted, so the plan states rows and nothing else. Each
+  planner still holds a struct of what it draws; that is the generator's
+  vocabulary, it never reaches a slot, and its comment says so.
+- *A slot that states rows holds no bag at all.* The bag's variant defaulted to
+  its first alternative, which was a bond, so a family that stopped filling it
+  read as a bond with empty terms and the run stopped at the bond issue table.
+  The variant held =std::monostate= first while any bag remained, and then the
+  variant itself was deleted with the last one.
+- *A flip is a move, not a redesign.* Each family books the same rows after it
+  flips, and the provisioning run is the proof: a changed count is a defect in
+  the move rather than a decision.
+- *Which products a planner draws is a population question.* A family that
+  draws one of its ten codes still cannot produce the other nine, but that is
+  what a population covers, not what a plan states, so it is tracked in the
+  population story.
 
 * Out of scope
 

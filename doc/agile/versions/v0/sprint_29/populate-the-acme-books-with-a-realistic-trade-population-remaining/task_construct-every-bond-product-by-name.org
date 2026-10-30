@@ -26,11 +26,11 @@ Every bond code that routes to the bond instrument table has a named constructor
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Whole tree green; unit tests green.    |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge, then draw the codes.            |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance

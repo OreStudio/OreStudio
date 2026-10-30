@@ -14,6 +14,15 @@ a cut must hold, the components the body divides into, and the order in which to
 read the pages. The classification of kinds is a page of its own. Return to
 [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
+* Summary
+
+A *cut* fixes a body of data at one timepoint. The purpose of a cut in this
+repository is single: to provide a valuation that is fully reproducible. The
+body therefore holds everything the valuation reads, which includes the deals,
+the market data, the reference data, and the versions of the engine and of the
+code that computed the result. The kinds of cut record the occasion a cut is
+taken for, and the components record the two halves of the body.
+
 * The definition
 
 A *cut* fixes a body of data at one timepoint. Three parts follow, and each
@@ -38,25 +47,97 @@ follows from that.
 
 * The kinds
 
-A kind states what a cut is for, and the purpose fixes the body and the instant.
-The classification, and the argument for it, is on
-[[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]], which places each
-kind under its purpose and relates it to the components below.
+A kind records the occasion a cut is taken for. The purpose is single and fixes
+the body; the kind fixes the instant, the recurrence and the centre, and the use
+the result is put to. The classification, and the argument for it, is on
+[[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]].
 
-* The body a cut must hold
+* The purpose and the body
 
-The definition fixes a body of data without saying how large that body is. The
-size follows from the purpose, and for an EOD cut the purpose is to reproduce an
-official valuation.
+Within ORE Studio the purpose of a cut is single: to provide a valuation that is
+fully reproducible. An official report, a verification of prices, and a view for
+a desk are uses a cut is put to, and every one of them is served by a valuation
+only if that valuation can be reproduced. The single purpose contains the
+others, which is why the body has one size and not several.
 
-The argument has three premises. A valuation is determined by its inputs. Two
-runs over the same deals and the same quotes produce different numbers when the
-day count, the calendar or the valuation settings differ. Those settings are
-therefore inputs to the valuation in the same sense that the quotes are. It
-follows that a cut holding the deals and the quotes while leaving the settings
-free cannot reproduce the valuation it claims to have produced.
+The size of the body follows from that purpose and from nothing else. The
+argument has three steps, and a public statement supports each of them.
 
-An EOD cut therefore holds four parts.
+The first step fixes what reproducibility is. A computation is reproduced when
+the same software runs on the same input data and returns the same result:
+
+#+begin_quote
+running the same software on the same input data and obtaining the same results
+#+end_quote
+
+The sentence is Claerbout's definition, quoted by Plesser
+([[https://pmc.ncbi.nlm.nih.gov/articles/PMC5778115/][Plesser, *Reproducibility
+vs. Replicability*]]). It places the software inside the condition rather than
+beside it.
+
+The second step establishes that the software and its settings are inputs. A
+change to a program can change its output, and the change need not be large:
+
+#+begin_quote
+Even the slightest change to a computer program can have large intended or
+unintended consequences.
+#+end_quote
+
+That sentence is Sandve et al.'s fourth rule
+([[https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1003285][Sandve
+et al., *Ten Simple Rules for Reproducible Computational Research*]]). The same
+paper states what must therefore be recorded:
+
+#+begin_quote
+If the step is performed by a computer program, the critical details include the
+name and version of the program, as well as the exact parameters and inputs that
+were used.
+#+end_quote
+
+and, for the version specifically:
+
+#+begin_quote
+In order to exactly reproduce a given result, it may be necessary to use programs
+in the exact versions used originally.
+#+end_quote
+
+The third step establishes that the environment around the code enters as well.
+The Turing Way states the requirement in one sentence:
+
+#+begin_quote
+In order for research to be reproducible, the computational environment that it
+was conducted in must be captured in such a way that others can replicate it.
+#+end_quote
+
+and gives the mechanism with an example in which the same script returns two
+answers:
+
+#+begin_quote
+Therefore this simple script returns different answers depending on the
+computational environment in which it is run.
+#+end_quote
+
+The philosophical literature draws the same boundary around computation. The
+Stanford Encyclopedia of Philosophy describes computational reproducibility as
+
+#+begin_quote
+reproducing particular analysis outcomes from the same data set using the same
+code and software
+#+end_quote
+
+adding that this is the most common form of it. Plesser, whose paper is the
+source of the Claerbout sentence, states the practical consequence in his own
+words:
+
+#+begin_quote
+I consider it to be essential to preserve artifacts such as software, scripts,
+and input data underlying computational science publications.
+#+end_quote
+
+The three steps share one conclusion. Data, code, settings and environment belong
+to one class: each is an input whose variation changes the output. A cut holds
+the valuation's inputs, so it holds that class in full. A cut therefore holds
+five parts.
 
 - The *deals*. The population the valuation values.
 - The *market data*. Spots, curves, forward points, volatility surfaces,
@@ -64,13 +145,25 @@ An EOD cut therefore holds four parts.
 - The *reference data*. The conventions, the calendars and holiday sets, the
   valuation and pricing settings, the curve configurations, and anything else
   the run reads to turn a deal and a quote into a number.
+- The *engine and the code*. The version of the risk engine and the revision of
+  the code that computed the result.
 - The *identity and the authorisation*. The label, the timepoint, the signatory
   and the version.
 
-A cut that holds the first two alone answers the question "which deals and which
-rates", and reproducibility requires the wider question, "everything this run
-read". The narrower object is the object of a component, and the component pages
-below treat it as such.
+The list admits a test. Take a result the cut claims to support and ask which
+changes would make the number differ. Each of the five parts answers yes. A
+proposed field that answers no is provenance about the run, and provenance is
+worth keeping, but the body is the set of things whose variation moves the
+number.
+
+A cut that fixed the data and omitted the engine version would hold a body from
+which its own result does not follow. The omission survives casual review
+because the halves read as one variable and one constant: the market moves, and
+the software waits. The software waits only until the next deployment.
+
+The component pages below take the two data halves of this body. The settings,
+the engine and the code have pages of their own, and this cluster holds them
+because the cut records them.
 
 * Components and their order
 
@@ -126,9 +219,17 @@ expires on its expiry date, fixing an instant rather than a population.
 
 * What the sources establish
 
-Three claims in this cluster have a public source, and each is recorded on the
-page that makes it. The admissible sources of an independent price verification
-rest on a prudential standard
+The purpose of a cut, and the size of the body that follows from it, rest on the
+reproducible-research literature quoted in [[*The purpose and the body][The
+purpose and the body]]: Claerbout's definition as reported by Plesser, Sandve et
+al.'s rules on programs, versions and parameters, the Turing Way's account of the
+computational environment, and the Stanford Encyclopedia's definition of
+computational reproducibility. Each quotation is reproduced exactly and carries
+its URL.
+
+Three further claims in the cluster have a public source, and each is recorded on
+the page that makes it. The admissible sources of an independent price
+verification rest on a prudential standard
 ([[https://www.legislation.gov.uk/eur/2016/101/chapter/I][EBA RTS (EU) 2016/101]], Article 3), and the stated open and close of a
 centre's business day rests on one settlement system's published hours
 ([[https://www.federalreserve.gov/paymentsystems/fedfunds_about.htm][Fedwire Funds Service]]); both appear in
@@ -153,7 +254,9 @@ to. Practice at a particular firm is a matter for that firm's own record.
 | Label                              | The name of a cut: a code, a reference date, a version       |
 | Timepoint                          | The instant a cut fixes, with its timezone                   |
 | Object                             | The body of data a cut fixes                                 |
-| Kind                               | The purpose a cut serves, which classifies it and fixes its body and instant |
+| Purpose                            | The single end a cut serves: a valuation that can be reproduced |
+| Kind                               | The occasion a cut is taken for, which fixes its instant, recurrence and centre |
+| Reproducibility                    | The property that a valuation recomputed from the inputs its cut fixed returns the same result |
 | Authorisation                      | The sign-off that makes a cut official and immutable         |
 | Trade cut                          | The component of a cut that fixes the deal population        |
 | Market data cut                    | The component of a cut that fixes the market data            |
@@ -170,7 +273,7 @@ the page that owns it.
 * See also
 
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this structure note hangs from.
-- [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — states the reproducibility contract from the settings side, the half of the cut's body this cluster leaves to it.
+- [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — states the reproducibility contract from the settings side, which this cluster holds in the body and leaves the meaning of to that page.
 - [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]] — the binding that names a published set and leaves the deal population unbound, which is the dependency this cluster answers.
 - [[id:4B4ED152-1670-4E81-895A-24D747382D4C][Model market data cuts as proper ORE Studio reference data]] — the story that designs the cut time as reference data.
 - [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — the entity a cut would be assigned to.
@@ -183,3 +286,7 @@ the page that owns it.
 1. [[https://www.legislation.gov.uk/eur/2016/101/chapter/I][Commission Delegated Regulation (EU) 2016/101 on prudent valuation]], Chapter I, Article 3. Verified: the independent price verification process is named, and consensus service data, tradable broker quotes, exchange prices and counterparty collateral valuations are accepted as sources.
 2. [[https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html][European Central Bank, euro foreign exchange reference rates]]. Verified: one reference rate per pair is published around 16:00 CET each working day, after a concertation procedure among central banks.
 3. [[https://www.federalreserve.gov/paymentsystems/fedfunds_about.htm][Board of Governors of the Federal Reserve System, Fedwire Funds Services]]. Verified: the business day starts at 21:00 ET on the preceding calendar day, ends at 19:00 ET, and the deadline for third-party transfers is 18:45 ET.
+4. [[https://pmc.ncbi.nlm.nih.gov/articles/PMC5778115/][Hans E. Plesser, *Reproducibility vs. Replicability: A Brief History of a Confused Terminology*, Frontiers in Neuroinformatics 11:76 (2018)]]. Verified: it quotes Claerbout's definition of reproducing as "running the same software on the same input data and obtaining the same results", and states that preserving the software, the scripts and the input data is essential.
+5. [[https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1003285][Geir Kjetil Sandve, Anton Nekrutenko, James Taylor and Eivind Hovig, *Ten Simple Rules for Reproducible Computational Research*, PLOS Computational Biology 9(10): e1003285 (2013)]]. Verified: rule 1 requires "the name and version of the program, as well as the exact parameters and inputs that were used"; rule 3 requires the exact versions of the programs used; rule 4 states that the slightest change to a program can have large consequences.
+6. [[https://plato.stanford.edu/entries/scientific-reproducibility/][Stanford Encyclopedia of Philosophy, *Reproducibility of Scientific Results*]]. Verified: computational reproducibility is described as "reproducing particular analysis outcomes from the same data set using the same code and software", and as the most common form of reproducibility in computational disciplines.
+7. [[https://book.the-turing-way.org/reproducible-research/renv/][The Turing Way, *Reproducible Environments*]]. Verified: the computational environment must be captured for research to be reproducible, the environment comprises the operating system, the software and its versions and configurations, and the same script returns different answers in different environments.

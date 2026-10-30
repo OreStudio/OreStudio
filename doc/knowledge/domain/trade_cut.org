@@ -26,8 +26,10 @@ is worth and a missing deal makes that statement false. The population must be
 identified as of the instant, because a deal's state, its book and its terms
 change, and the record must say which version each of those facts had. The
 population also carries its authorisation, since an unsigned population is a
-candidate. A query over the trade store yields a population and carries none of
-these properties with it.
+candidate. The deals are one half of the body; the market data, the settings and
+the engine version are recorded beside them, as the
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note sets out. A query over
+the trade store yields a population and carries none of these properties with it.
 
 * What it fixes
 

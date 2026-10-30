@@ -26,6 +26,9 @@ verification is defended value by value. The set must be reproducible from rules
 and store state, because a set a person assembled records an outcome without the
 procedure that produced it. A published set records one curve at one as-of, which
 places it as provenance for part of this component rather than for the whole cut.
+The component is one half of the body; the settings and the version of the
+engine are recorded beside it, as the
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note sets out.
 
 * What it fixes
 

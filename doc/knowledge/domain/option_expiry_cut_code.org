@@ -112,7 +112,7 @@ them.
 * See also
 
 - [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the structure note that orders this cluster, and where to read this page in it.
-- [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — the classification by purpose, against which this page states an instant rather than a purpose.
+- [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — the classification by occasion, against which this page states an instant rather than an occasion.
 - [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency Pairs]] — the hub for the pair the code is a property of.
 - [[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][Currency pair and currency entity fields]] — the field list that names the cut code and the override.
 - [[id:E1EE950D-FC22-4DAB-A93F-8B2A15196031][ores.refdata.currency_pair]] — the model that does not carry the field yet.

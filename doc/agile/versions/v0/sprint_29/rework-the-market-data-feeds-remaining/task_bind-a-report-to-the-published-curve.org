@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/bind-a-report-to-the-published-curve
-#+pr:
+#+pr: 4134
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4134][#4134]] | [doc] Design the report's binding to a published curve, and the cut it needs |
 
 * Review
 

@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 42D42A1C-92CD-47D8-BC14-A5AA88DED206
+:END:
+#+title: Task: Close the flip story and move coverage to the population story
+#+description: The flip story's tasks are terminal but the story is not closed, and four tasks in it belong to population coverage rather than to what a plan states. Move them, delete two stale docs, rewrite the acceptance to match the arc, and close.
+#+type: task
+#+level: s1
+#+filetags: :open_sprint_29:sprint_29:v0:
+#+owner: marco
+#+branch: chore/tidy-the-population-stories
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7295CBC5-402C-45D4-9888-4C795AFF883C][Open sprint 29]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The flip story closes with only the tasks its arc owns, and every task that belongs to coverage lives in the coverage story.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:7295CBC5-402C-45D4-9888-4C795AFF883C][Open sprint 29]] |
+| Now          | Done; the flip story is closed.        |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-10-30                             |
+
+* Acceptance
+
+- The flip story lists no open task and its sprint row says DONE.
+- The coverage, legal entity and capture-index tasks live in the stories whose arcs they serve.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The flip story closed with six tasks that belong to its arc — the scaffold, the
+two construction shapes, the commodity facts, the credit reference type, the six
+family flips and the bond security — and four that belong to coverage left it:
+the bond product gap, the commodity charter, the credit family and the legal
+entity. They live in the population story now.
+
+The capture-index task went to this story, where the agile index is wired.
+
+Two documents were deleted: the population story held a second, unstarted copy
+of the credit task under the same branch as the delivered one, and the flip
+story held the unused scaffold task every story is born with. Neither had an
+inbound link from anywhere but the story table that named it.
+
+The flip story's acceptance was rewritten to claim what the arc delivers: every
+product a planner *draws* is constructed by name. Whether a planner draws all
+the codes its family routes is a coverage question, and it is now stated there
+rather than implied here.

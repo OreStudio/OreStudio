@@ -26,11 +26,11 @@ The shell starts, and the legal entity unit is registered once, in its place.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] |
-| Now          | Fixed and proven: the shell starts.    |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Record the PR.                         |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                             |
 
 * Acceptance

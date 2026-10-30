@@ -39,7 +39,7 @@ tick_row sample_row() {
     row.series_id = "cccccccc-cccc-cccc-cccc-cccccccccccc";
     row.ts = sys_days{2026y / October / 21} + 10h + 30min + 5s + 123456us;
     row.value = 1.0845;
-    row.source_id = "dddddddd-dddd-dddd-dddd-dddddddddddd";
+    row.feed_id = "dddddddd-dddd-dddd-dddd-dddddddddddd";
     return row;
 }
 

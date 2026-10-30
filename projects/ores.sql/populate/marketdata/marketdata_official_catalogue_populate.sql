@@ -61,7 +61,7 @@ do nothing;
 
 \echo '--- Official Rates Sources ---'
 
-insert into ores_marketdata_market_data_sources_tbl (
+insert into ores_marketdata_feeds_tbl (
     id, tenant_id, version, name, provider_code, kind, is_default, description,
     modified_by, performed_by, change_reason_code, change_commentary
 )
@@ -299,7 +299,7 @@ begin
         'The system party takes the official rates of ECB for the calibration'
     ) on conflict do nothing;
     insert into ores_marketdata_routes_tbl (
-        id, tenant_id, version, party_id, provider_code, source_id,
+        id, tenant_id, version, party_id, provider_code, feed_id,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'f5269153-1cd6-5a5d-bf07-f986533e85f9', ores_utility_system_tenant_id_fn(), 0, v_party, 'ecb', '1cf1232c-7ce2-54f3-b55f-c57793caf5af',
@@ -316,7 +316,7 @@ begin
         'The system party takes the official rates of IMF for the calibration'
     ) on conflict do nothing;
     insert into ores_marketdata_routes_tbl (
-        id, tenant_id, version, party_id, provider_code, source_id,
+        id, tenant_id, version, party_id, provider_code, feed_id,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         '20873ae1-2a31-52d8-91b0-f2d29d544cb7', ores_utility_system_tenant_id_fn(), 0, v_party, 'imf', 'da7d3d48-48af-5359-938e-9a6f0d7168e2',
@@ -333,7 +333,7 @@ begin
         'The system party takes the official rates of BOC for the calibration'
     ) on conflict do nothing;
     insert into ores_marketdata_routes_tbl (
-        id, tenant_id, version, party_id, provider_code, source_id,
+        id, tenant_id, version, party_id, provider_code, feed_id,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         '180372bf-05a9-5e6c-8aba-81e2d04507ff', ores_utility_system_tenant_id_fn(), 0, v_party, 'boc', 'c0e15d2f-abeb-57a7-ab42-0f60bcc89d82',
@@ -350,7 +350,7 @@ begin
         'The system party takes the official rates of TCMB for the calibration'
     ) on conflict do nothing;
     insert into ores_marketdata_routes_tbl (
-        id, tenant_id, version, party_id, provider_code, source_id,
+        id, tenant_id, version, party_id, provider_code, feed_id,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         '59aa9dce-52b3-57d6-823e-c6aad4fc62aa', ores_utility_system_tenant_id_fn(), 0, v_party, 'tcmb', '46fe8046-7d3a-59fa-80b8-1bf9ef7901fd',

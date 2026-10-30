@@ -79,27 +79,27 @@ inline constexpr std::string_view ore_derived_source = "437b14be-6443-4492-b421-
 inline constexpr std::string_view composite_provider = "composite";
 inline constexpr std::string_view composite_derived_source = "615e89cb-6a9c-46fb-beac-5b6d9b47a8ec";
 
-inline boost::uuids::uuid composite_derived_source_id() {
+inline boost::uuids::uuid composite_derived_feed_id() {
     return boost::uuids::string_generator{}(std::string(composite_derived_source));
 }
 
-inline boost::uuids::uuid ore_import_source_id() {
+inline boost::uuids::uuid ore_import_feed_id() {
     return boost::uuids::string_generator{}(std::string(ore_import_source));
 }
 
-inline boost::uuids::uuid ore_derived_source_id() {
+inline boost::uuids::uuid ore_derived_feed_id() {
     return boost::uuids::string_generator{}(std::string(ore_derived_source));
 }
 
-inline boost::uuids::uuid bloomberg_a_source_id() {
+inline boost::uuids::uuid bloomberg_a_feed_id() {
     return boost::uuids::string_generator{}(std::string(bloomberg_a_source));
 }
 
-inline boost::uuids::uuid lseg_a_source_id() {
+inline boost::uuids::uuid lseg_a_feed_id() {
     return boost::uuids::string_generator{}(std::string(lseg_a_source));
 }
 
-inline boost::uuids::uuid demo_a_source_id() {
+inline boost::uuids::uuid demo_a_feed_id() {
     return boost::uuids::string_generator{}(std::string(demo_a_source));
 }
 
@@ -107,13 +107,13 @@ inline boost::uuids::uuid demo_a_source_id() {
  * @brief The id of the simulated source of a provider, or nothing for a provider the simulator
  * does not stand for.
  */
-inline std::optional<boost::uuids::uuid> simulated_source_id_for(std::string_view provider) {
+inline std::optional<boost::uuids::uuid> simulated_feed_id_for(std::string_view provider) {
     if (provider == bloomberg_provider)
-        return bloomberg_a_source_id();
+        return bloomberg_a_feed_id();
     if (provider == lseg_provider)
-        return lseg_a_source_id();
+        return lseg_a_feed_id();
     if (provider == demo_provider)
-        return demo_a_source_id();
+        return demo_a_feed_id();
     return std::nullopt;
 }
 

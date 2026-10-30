@@ -47,7 +47,7 @@ struct subscription_state {
     ores::utility::uuid::tenant_id tenant_id = ores::utility::uuid::tenant_id::system();
     boost::uuids::uuid party_id;
     std::string provider_code;
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
     bool display = false;
     bool non_display = false;
     bool derived = false;
@@ -60,7 +60,7 @@ struct demand_state {
     ores::utility::uuid::tenant_id tenant_id = ores::utility::uuid::tenant_id::system();
     boost::uuids::uuid party_id;
     std::string provider_code;
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
     std::string oresmd_uri;
 };
 

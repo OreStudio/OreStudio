@@ -107,7 +107,7 @@ market_observation_to_domain(const messaging::market_observation_write& write) {
     v.oresmd_uri = write.oresmd_uri;
     v.value = write.value;
     v.source = write.source;
-    v.source_id = write.source_id;
+    v.feed_id = write.feed_id;
     return v;
 }
 

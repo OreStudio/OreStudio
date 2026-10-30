@@ -127,7 +127,7 @@ TEST_CASE("a_route_needs_a_subscription", route_tags) {
     route_repository routes;
     auto r = generate_synthetic_route(ctx);
     r.provider_code = "ore";
-    r.source_id = catalogue::ore_import_source_id();
+    r.feed_id = catalogue::ore_import_feed_id();
     CHECK_THROWS_WITH(routes.write(h.context(), r),
                       Catch::Matchers::ContainsSubstring("holds no subscription"));
 }
@@ -143,7 +143,7 @@ TEST_CASE("a_route_names_a_source_of_its_provider", route_tags) {
     auto r = generate_synthetic_route(ctx);
     r.party_id = s.party_id;
     r.provider_code = "bloomberg";
-    r.source_id = catalogue::ore_import_source_id();
+    r.feed_id = catalogue::ore_import_feed_id();
     CHECK_THROWS_WITH(routes.write(h.context(), r),
                       Catch::Matchers::ContainsSubstring("is not a source of provider"));
 }
@@ -159,12 +159,12 @@ TEST_CASE("a_party_has_one_route_for_a_provider", route_tags) {
     auto first = generate_synthetic_route(ctx);
     first.party_id = s.party_id;
     first.provider_code = "ore";
-    first.source_id = catalogue::ore_import_source_id();
+    first.feed_id = catalogue::ore_import_feed_id();
     routes.write(h.context(), first);
 
     auto second = first;
     second.id = ctx.generate_uuid();
-    second.source_id = catalogue::ore_derived_source_id();
+    second.feed_id = catalogue::ore_derived_feed_id();
     CHECK_THROWS_WITH(routes.write(h.context(), second),
                       Catch::Matchers::ContainsSubstring(unique_violation));
 }
@@ -180,19 +180,19 @@ TEST_CASE("a_party_changes_its_route_and_keeps_the_history", route_tags) {
     auto r = generate_synthetic_route(ctx);
     r.party_id = s.party_id;
     r.provider_code = "ore";
-    r.source_id = catalogue::ore_import_source_id();
+    r.feed_id = catalogue::ore_import_feed_id();
     routes.write(h.context(), r);
 
     const auto id = boost::uuids::to_string(r.id);
     auto current = routes.read_latest(h.context(), id);
     REQUIRE(current.size() == 1);
-    current.front().source_id = catalogue::ore_derived_source_id();
+    current.front().feed_id = catalogue::ore_derived_feed_id();
     current.front().change_reason_code = "system.test";
     routes.write(h.context(), current.front());
 
     const auto latest = routes.read_latest(h.context(), id);
     REQUIRE(latest.size() == 1);
-    CHECK(latest.front().source_id == catalogue::ore_derived_source_id());
+    CHECK(latest.front().feed_id == catalogue::ore_derived_feed_id());
     CHECK(routes.read_all(h.context(), id).size() == 2);
 }
 
@@ -207,7 +207,7 @@ TEST_CASE("a_route_cannot_move_to_a_provider_without_a_subscription", route_tags
     auto r = generate_synthetic_route(ctx);
     r.party_id = s.party_id;
     r.provider_code = "ore";
-    r.source_id = catalogue::ore_import_source_id();
+    r.feed_id = catalogue::ore_import_feed_id();
     routes.write(h.context(), r);
 
     const auto id = boost::uuids::to_string(r.id);
@@ -229,7 +229,7 @@ TEST_CASE("a_system_tenant_session_reads_no_route_of_another_tenant", route_tags
     auto r = generate_synthetic_route(ctx);
     r.party_id = s.party_id;
     r.provider_code = "ore";
-    r.source_id = catalogue::ore_import_source_id();
+    r.feed_id = catalogue::ore_import_feed_id();
     routes.write(h.context(), r);
     const auto id = boost::uuids::to_string(r.id);
 

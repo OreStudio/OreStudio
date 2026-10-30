@@ -38,8 +38,8 @@ struct app_demand_calculator_world {
     demand_catalogue c;
     boost::uuids::random_generator gen;
     std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-    ores::marketdata::domain::market_data_source sim;
-    ores::marketdata::domain::market_data_source live;
+    ores::marketdata::domain::feed sim;
+    ores::marketdata::domain::feed live;
 
     app_demand_calculator_world() {
         sim.id = gen();
@@ -70,7 +70,7 @@ struct app_demand_calculator_world {
         c.mappings.push_back(m);
     }
 
-    boost::uuids::uuid party_routed_to(const ores::marketdata::domain::market_data_source& source,
+    boost::uuids::uuid party_routed_to(const ores::marketdata::domain::feed& source,
                                        bool subscribed = true,
                                        bool derived_only = false) {
         const auto party = gen();
@@ -78,7 +78,7 @@ struct app_demand_calculator_world {
         r.id = gen();
         r.party_id = party;
         r.provider_code = source.provider_code;
-        r.source_id = source.id;
+        r.feed_id = source.id;
         c.routes.push_back(r);
         if (subscribed) {
             ores::marketdata::domain::subscription s;
@@ -278,7 +278,7 @@ TEST_CASE("the_inputs_of_a_composite_join_the_demand", "[app][demand_calculator]
 TEST_CASE("a_route_to_a_source_the_catalogue_lacks_adds_nothing", "[app][demand_calculator]") {
     app_demand_calculator_world w;
     w.party_routed_to(w.sim);
-    w.c.routes.front().source_id = w.gen();
+    w.c.routes.front().feed_id = w.gen();
 
     const auto result = compute_demand(w.c, w.now);
 

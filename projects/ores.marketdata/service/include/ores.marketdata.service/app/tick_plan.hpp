@@ -77,7 +77,7 @@ struct consumer final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     boost::uuids::uuid party_id;
     std::string provider_code;
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
     std::string source_name;
 
     bool operator==(const consumer& other) const = default;

@@ -63,7 +63,7 @@ struct demand_interval_entity {
 
     db_timestamp interval_from;
 
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
     std::optional<db_timestamp> interval_to;
     std::string modified_by;
     std::string performed_by;
@@ -85,7 +85,7 @@ struct demand_interval_entity {
                query_builder::bind("provider_code", &e::provider_code) |
                query_builder::bind("oresmd_uri", &e::oresmd_uri) |
                query_builder::bind("interval_from", &e::interval_from) |
-               query_builder::bind("source_id", &e::source_id) |
+               query_builder::bind("feed_id", &e::feed_id) |
                query_builder::bind("interval_to", &e::interval_to) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

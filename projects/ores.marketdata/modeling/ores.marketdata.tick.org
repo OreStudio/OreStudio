@@ -90,13 +90,13 @@ The datum's coordinate: the number the series gives one datum URI.
 
 The value of the datum at the instant.
 
-** source_id
+** feed_id
 :PROPERTIES:
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :END:
 
-Reference to =ores_marketdata_market_data_sources_tbl(id)= -- the source that
+Reference to =ores_marketdata_feeds_tbl(id)= -- the source that
 produced this tick.
 
 * SQL

@@ -40,7 +40,7 @@ create table if not exists "ores_marketdata_delivery_counts_tbl" (
     "oresmd_uri" text not null,
     "period_start" timestamp with time zone not null,
     "flushed_at" timestamp with time zone not null,
-    "source_id" uuid not null,
+    "feed_id" uuid not null,
     "deliveries" bigint not null,
     "modified_by" text not null,
     "performed_by" text not null,

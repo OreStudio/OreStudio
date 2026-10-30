@@ -39,7 +39,7 @@ render_rate_card_component_fields(const domain::rate_card_component& v) {
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
-    fields.push_back({.name = "Source ID", .value = boost::uuids::to_string(v.source_id)});
+    fields.push_back({.name = "Source ID", .value = boost::uuids::to_string(v.feed_id)});
     fields.push_back({.name = "Driver", .value = v.driver});
     fields.push_back({.name = "Licence Right", .value = v.licence_right});
     fields.push_back({.name = "Effective From",

@@ -54,7 +54,7 @@ domain::delivery_count delivery_count_mapper::map(const delivery_count_entity& v
     r.oresmd_uri = v.oresmd_uri;
     r.period_start = v.period_start;
     r.flushed_at = v.flushed_at;
-    r.source_id = v.source_id;
+    r.feed_id = v.feed_id;
     r.deliveries = v.deliveries;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -78,7 +78,7 @@ delivery_count_entity delivery_count_mapper::map(const domain::delivery_count& v
     r.oresmd_uri = v.oresmd_uri;
     r.period_start = v.period_start;
     r.flushed_at = v.flushed_at;
-    r.source_id = v.source_id;
+    r.feed_id = v.feed_id;
     r.deliveries = v.deliveries;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

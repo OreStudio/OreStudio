@@ -53,8 +53,8 @@
 \ir ./marketdata_suppliers_notify_trigger_create.sql
 \ir ./marketdata_providers_create.sql
 \ir ./marketdata_providers_notify_trigger_create.sql
-\ir ./marketdata_market_data_sources_create.sql
-\ir ./marketdata_market_data_sources_notify_trigger_create.sql
+\ir ./marketdata_feeds_create.sql
+\ir ./marketdata_feeds_notify_trigger_create.sql
 \ir ./marketdata_sessions_create.sql
 \ir ./marketdata_sessions_notify_trigger_create.sql
 \ir ./marketdata_sessions_settings_validate_trigger_create.sql

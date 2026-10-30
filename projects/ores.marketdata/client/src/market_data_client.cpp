@@ -18,7 +18,7 @@
  *
  */
 #include "ores.marketdata.client/market_data_client.hpp"
-#include "ores.marketdata.api/messaging/market_data_source_protocol.hpp"
+#include "ores.marketdata.api/messaging/feed_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
@@ -259,9 +259,9 @@ market_data_client::save_observations(const std::vector<domain::market_observati
     return count;
 }
 
-std::expected<std::vector<domain::market_data_source>, std::string>
-market_data_client::list_market_data_sources() {
-    messaging::list_market_data_sources_request req;
+std::expected<std::vector<domain::feed>, std::string>
+market_data_client::list_feeds() {
+    messaging::list_feeds_request req;
     req.limit = all_rows;
     auto resp = send(nats_, req);
     if (!resp)

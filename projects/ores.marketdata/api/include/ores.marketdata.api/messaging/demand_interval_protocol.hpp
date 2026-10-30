@@ -45,7 +45,7 @@ struct demand_interval_write {
     std::string provider_code;
     std::string oresmd_uri;
     std::chrono::system_clock::time_point interval_from;
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
     std::optional<std::chrono::system_clock::time_point> interval_to;
 };
 
@@ -67,11 +67,11 @@ struct demand_interval_lookup {
 struct demand_intervals_filter {
     std::optional<boost::uuids::uuid> party_id;
     std::optional<std::string> provider_code;
-    std::optional<boost::uuids::uuid> source_id;
+    std::optional<boost::uuids::uuid> feed_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
     std::optional<std::vector<std::string>> provider_code_one_of;
-    std::optional<std::vector<boost::uuids::uuid>> source_id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> feed_id_one_of;
 };
 
 struct demand_interval_event {

@@ -45,7 +45,7 @@ render_delivery_count_fields(const domain::delivery_count& v) {
                       .value = ores::platform::time::datetime::to_iso8601_utc(v.period_start)});
     fields.push_back({.name = "Flushed At",
                       .value = ores::platform::time::datetime::to_iso8601_utc(v.flushed_at)});
-    fields.push_back({.name = "Source ID", .value = boost::uuids::to_string(v.source_id)});
+    fields.push_back({.name = "Source ID", .value = boost::uuids::to_string(v.feed_id)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

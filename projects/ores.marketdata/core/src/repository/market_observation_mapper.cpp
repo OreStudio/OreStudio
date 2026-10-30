@@ -55,7 +55,7 @@ domain::market_observation market_observation_mapper::map(const market_observati
     r.oresmd_uri = v.oresmd_uri;
     r.value = v.value;
     r.source = v.source.value_or("");
-    r.source_id = v.source_id;
+    r.feed_id = v.feed_id;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -73,7 +73,7 @@ market_observation_entity market_observation_mapper::map(const domain::market_ob
     r.oresmd_uri = v.oresmd_uri;
     r.value = v.value;
     r.source = v.source.empty() ? std::nullopt : std::optional(v.source);
-    r.source_id = v.source_id;
+    r.feed_id = v.feed_id;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

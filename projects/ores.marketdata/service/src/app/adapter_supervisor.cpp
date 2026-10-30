@@ -24,7 +24,7 @@
 #include "ores.marketdata.core/repository/adapter_repository.hpp"
 #include "ores.marketdata.core/repository/live_tenant_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
-#include "ores.marketdata.core/repository/market_data_source_repository.hpp"
+#include "ores.marketdata.core/repository/feed_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_vendor_instrument_repository.hpp"
 #include "ores.marketdata.core/repository/provider_repository.hpp"
 #include "ores.marketdata.core/repository/route_repository.hpp"
@@ -96,7 +96,7 @@ void adapter_supervisor::refresh() {
     next->catalogue.providers = repository::provider_repository{}.read_latest(system_ctx);
     for (const auto& provider : next->catalogue.providers)
         next->providers.insert(provider.code);
-    next->catalogue.sources = repository::market_data_source_repository{}.read_latest(system_ctx);
+    next->catalogue.sources = repository::feed_repository{}.read_latest(system_ctx);
     next->catalogue.instruments =
         repository::market_data_vendor_instrument_repository{}.read_latest(system_ctx);
     next->catalogue.mappings = repository::market_data_mapping_repository{}.read_latest(system_ctx);
@@ -113,7 +113,7 @@ void adapter_supervisor::refresh() {
     for (const auto& source : next->catalogue.sources)
         source_names.emplace(source.id, source.name);
     for (const auto& route : next->catalogue.routes)
-        if (const auto found = source_names.find(route.source_id); found != source_names.end())
+        if (const auto found = source_names.find(route.feed_id); found != source_names.end())
             ++next->routes_by_source[found->second];
 
     {

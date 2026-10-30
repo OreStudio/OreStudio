@@ -331,7 +331,7 @@ void curve_republish_service::republish(context ctx,
         obs.oresmd_uri = datum_uri;
         obs.value = std::format("{:.17g}", point.discount_factor);
         obs.source = "ir_curve_bootstrap:" + boost::uuids::to_string(config.id);
-        obs.source_id = domain::catalogue_ids::ore_derived_source_id();
+        obs.feed_id = domain::catalogue_ids::ore_derived_feed_id();
         observations.push_back(std::move(obs));
 
         // A rerun over the same (series, as_of, point_id) natural key must reuse the prior

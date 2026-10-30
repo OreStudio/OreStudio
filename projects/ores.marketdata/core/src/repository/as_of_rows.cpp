@@ -85,7 +85,7 @@ as_of_observation(const as_of_row& row, std::size_t first, std::string_view read
     e.oresmd_uri = row[first + 5].value_or("");
     e.value = row[first + 6].value_or("");
     e.source = row[first + 7];
-    e.source_id = parse_uuid(row[first + 8], "source_id", read);
+    e.feed_id = parse_uuid(row[first + 8], "feed_id", read);
     e.valid_from = parse_timestamp(row[first + 9], "valid_from", read);
     e.valid_to = parse_timestamp(row[first + 10], "valid_to", read);
     return e;

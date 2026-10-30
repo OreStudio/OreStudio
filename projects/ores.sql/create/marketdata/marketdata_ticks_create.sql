@@ -55,7 +55,7 @@ create table if not exists "ores_marketdata_ticks_tbl" (
     "ts" timestamp with time zone not null,
     "coord" smallint not null,
     "value" double precision not null,
-    "source_id" uuid not null
+    "feed_id" uuid not null
 );
 
 create index if not exists marketdata_ticks_series_ts_idx

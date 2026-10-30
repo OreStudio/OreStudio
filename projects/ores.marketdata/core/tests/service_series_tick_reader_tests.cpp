@@ -114,7 +114,7 @@ void insert_many_ticks(const owned_series& o,
         o.owner,
         "WITH ins AS ("
         "  INSERT INTO ores_marketdata_ticks_tbl "
-        "    (tenant_id, party_id, series_id, ts, coord, value, source_id) "
+        "    (tenant_id, party_id, series_id, ts, coord, value, feed_id) "
         "  SELECT $1::uuid, $2::uuid, $3::uuid, $4::timestamptz + n * interval '1 second', "
         "         $5::smallint, n::float8, $6::uuid "
         "  FROM generate_series(0, $7::int - 1) AS n "
@@ -125,7 +125,7 @@ void insert_many_ticks(const owned_series& o,
          boost::uuids::to_string(o.series.id),
          ores::platform::time::datetime::to_iso8601_utc(first),
          std::to_string(o.number),
-         boost::uuids::to_string(ores::marketdata::domain::catalogue_ids::ore_import_source_id()),
+         boost::uuids::to_string(ores::marketdata::domain::catalogue_ids::ore_import_feed_id()),
          std::to_string(count)},
         lg,
         "inserting many ticks");

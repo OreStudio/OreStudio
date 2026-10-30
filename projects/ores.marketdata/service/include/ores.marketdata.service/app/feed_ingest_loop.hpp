@@ -300,7 +300,7 @@ private:
     /// finishes with the one it started with.
     std::shared_ptr<adapter_tick_translator> translator_ =
         std::make_shared<adapter_tick_translator>(
-            std::vector<domain::market_data_source>{},
+            std::vector<domain::feed>{},
             std::vector<domain::market_data_vendor_instrument>{},
             std::vector<domain::market_data_mapping>{});
     /// Adapter and reason pairs already reported as dropped, so each is reported once per

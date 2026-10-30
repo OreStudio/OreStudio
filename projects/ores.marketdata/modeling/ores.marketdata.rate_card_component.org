@@ -42,7 +42,7 @@ lines as a live one. The system tenant owns the cards, because the platform owns
 
 Surrogate UUID uniquely identifying this component.
 
-** source_id
+** feed_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
@@ -51,7 +51,7 @@ Surrogate UUID uniquely identifying this component.
 :nullable: false
 :END:
 
-References =market_data_source.id=: the source whose vendor charges this way. A rate card belongs to a source.
+References =feed.id=: the source whose vendor charges this way. A rate card belongs to a source.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()

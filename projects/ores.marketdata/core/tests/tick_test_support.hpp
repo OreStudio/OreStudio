@@ -80,7 +80,7 @@ inline void insert_tick(ores::database::context ctx,
     ores::database::repository::execute_parameterized_multi_column_query(
         ctx,
         "INSERT INTO ores_marketdata_ticks_tbl (tenant_id, party_id, series_id, ts, coord, value, "
-        "source_id) "
+        "feed_id) "
         "VALUES ($1::uuid, $2::uuid, $3::uuid, $4::timestamptz, $5::smallint, $6::float8, "
         "        $7::uuid) "
         "RETURNING 1",
@@ -90,7 +90,7 @@ inline void insert_tick(ores::database::context ctx,
          ores::platform::time::datetime::to_iso8601_utc(ts),
          std::to_string(coord),
          std::format("{}", value),
-         boost::uuids::to_string(ores::marketdata::domain::catalogue_ids::ore_import_source_id())},
+         boost::uuids::to_string(ores::marketdata::domain::catalogue_ids::ore_import_feed_id())},
         lg,
         "inserting a tick");
 }

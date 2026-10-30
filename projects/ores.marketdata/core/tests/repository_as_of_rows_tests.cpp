@@ -67,7 +67,7 @@ TEST_CASE("an_as_of_row_maps_every_observation_column", "[repository][as_of]") {
                              std::string("2b64b4b0-1c4b-4a0e-9a2f-3d5e6f7a8b9c")));
     CHECK(e.value == "1.0845");
     CHECK_FALSE(e.source.has_value());
-    CHECK(e.source_id == boost::lexical_cast<boost::uuids::uuid>(
+    CHECK(e.feed_id == boost::lexical_cast<boost::uuids::uuid>(
                              std::string("26772cc0-57d6-4fac-be36-2ae75eb56b6b")));
     CHECK(e.valid_from == ores::database::pq::parse_timestamp_text("2026-10-05 09:00:00+00"));
     CHECK(e.valid_to == db_timestamp::max());

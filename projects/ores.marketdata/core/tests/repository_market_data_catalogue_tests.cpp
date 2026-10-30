@@ -20,15 +20,15 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_data_mapping.hpp"
-#include "ores.marketdata.api/domain/market_data_source.hpp"
+#include "ores.marketdata.api/domain/feed.hpp"
 #include "ores.marketdata.api/domain/market_data_vendor_instrument.hpp"
 #include "ores.marketdata.api/domain/provider.hpp"
 #include "ores.marketdata.api/generators/market_data_mapping_generator.hpp"
-#include "ores.marketdata.api/generators/market_data_source_generator.hpp"
+#include "ores.marketdata.api/generators/feed_generator.hpp"
 #include "ores.marketdata.api/generators/market_data_vendor_instrument_generator.hpp"
 #include "ores.marketdata.api/generators/provider_generator.hpp"
 #include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
-#include "ores.marketdata.core/repository/market_data_source_repository.hpp"
+#include "ores.marketdata.core/repository/feed_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_vendor_instrument_repository.hpp"
 #include "ores.marketdata.core/repository/provider_repository.hpp"
 #include "ores.testing/database_helper.hpp"
@@ -50,7 +50,7 @@ using namespace ores::marketdata::generators;
 using ores::testing::database_helper;
 using ores::marketdata::repository::market_data_mapping_repository;
 using ores::marketdata::repository::provider_repository;
-using ores::marketdata::repository::market_data_source_repository;
+using ores::marketdata::repository::feed_repository;
 using ores::marketdata::repository::market_data_vendor_instrument_repository;
 
 using ores::database::service::tenant_context;
@@ -73,20 +73,20 @@ TEST_CASE("a_provider_has_at_most_one_default_source", "[repository][catalogue]"
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
-    market_data_source_repository repo;
-    auto first = generate_synthetic_market_data_source(ctx);
+    feed_repository repo;
+    auto first = generate_synthetic_feed(ctx);
     first.provider_code = "bloomberg";
     first.kind = "live";
     first.is_default = true;
     repo.write(h.context(), first);
 
-    auto second = generate_synthetic_market_data_source(ctx);
+    auto second = generate_synthetic_feed(ctx);
     second.provider_code = "bloomberg";
     second.kind = "simulated";
     second.is_default = false;
     CHECK_NOTHROW(repo.write(h.context(), second));
 
-    auto rival = generate_synthetic_market_data_source(ctx);
+    auto rival = generate_synthetic_feed(ctx);
     rival.provider_code = "bloomberg";
     rival.kind = "simulated";
     rival.is_default = true;
@@ -98,8 +98,8 @@ TEST_CASE("a_source_kind_must_be_in_the_vocabulary", "[repository][catalogue]") 
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
-    market_data_source_repository repo;
-    auto s = generate_synthetic_market_data_source(ctx);
+    feed_repository repo;
+    auto s = generate_synthetic_feed(ctx);
     s.kind = "not_a_kind";
     CHECK_THROWS_WITH(repo.write(h.context(), s),
                       Catch::Matchers::ContainsSubstring("Invalid source_kind"));

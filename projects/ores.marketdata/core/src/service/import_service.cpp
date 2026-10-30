@@ -359,7 +359,7 @@ import_service::import(const messaging::import_market_data_request& req) {
                 obs.observation_datetime = std::chrono::sys_days{d.date};
                 obs.oresmd_uri = named->datum_uri;
                 obs.source = req.source;
-                obs.source_id = domain::catalogue_ids::ore_import_source_id();
+                obs.feed_id = domain::catalogue_ids::ore_import_feed_id();
                 obs.value = d.value;
                 observations.push_back(std::move(obs));
             }

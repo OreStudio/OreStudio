@@ -65,7 +65,7 @@ struct delivery_count_entity {
 
     db_timestamp flushed_at;
 
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
     std::int64_t deliveries = 0;
     std::string modified_by;
     std::string performed_by;
@@ -88,7 +88,7 @@ struct delivery_count_entity {
                query_builder::bind("oresmd_uri", &e::oresmd_uri) |
                query_builder::bind("period_start", &e::period_start) |
                query_builder::bind("flushed_at", &e::flushed_at) |
-               query_builder::bind("source_id", &e::source_id) |
+               query_builder::bind("feed_id", &e::feed_id) |
                query_builder::bind("deliveries", &e::deliveries) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

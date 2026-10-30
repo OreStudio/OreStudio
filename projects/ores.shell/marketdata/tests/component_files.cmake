@@ -29,7 +29,7 @@ set(files
     "demand_interval_commands_tests.cpp"
     "main.cpp"
     "market_data_mapping_commands_tests.cpp"
-    "market_data_source_commands_tests.cpp"
+    "feed_commands_tests.cpp"
     "market_data_vendor_instrument_commands_tests.cpp"
     "market_fixing_commands_tests.cpp"
     "market_observation_commands_tests.cpp"

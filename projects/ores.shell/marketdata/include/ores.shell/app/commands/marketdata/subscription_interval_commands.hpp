@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <party_id> <provider_code> <interval_from> <source_id> <display> <non_display>
+     * @brief add <party_id> <provider_code> <interval_from> <feed_id> <display> <non_display>
      * <derived> <interval_to> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
@@ -95,7 +95,7 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <party_id> <provider_code> <interval_from> <source_id> <display>
+     * @brief set <id> <party_id> <provider_code> <interval_from> <feed_id> <display>
      * <non_display> <derived> <interval_to> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
@@ -103,7 +103,7 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <party_id> <provider_code> <interval_from> <source_id>
+     * @brief put-many --count <n> <id> <party_id> <provider_code> <interval_from> <feed_id>
      * <display> <non_display> <derived> <interval_to> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,

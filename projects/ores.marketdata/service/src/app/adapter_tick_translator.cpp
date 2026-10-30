@@ -43,7 +43,7 @@ std::string_view to_string(adapter_tick_drop reason) {
 }
 
 adapter_tick_translator::adapter_tick_translator(
-    std::vector<domain::market_data_source> sources,
+    std::vector<domain::feed> sources,
     std::vector<domain::market_data_vendor_instrument> instruments,
     std::vector<domain::market_data_mapping> mappings) {
     for (auto& source : sources) {
@@ -128,7 +128,7 @@ adapter_tick_translator::check(std::string_view adapter_id,
     out.tick.observation_time = tick.vendor_time;
     out.tick.source = source->second.name;
     out.provider_code = source->second.provider_code;
-    out.source_id = source->second.id;
+    out.feed_id = source->second.id;
     return out;
 }
 

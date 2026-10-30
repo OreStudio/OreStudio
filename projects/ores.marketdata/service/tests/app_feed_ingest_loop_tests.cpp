@@ -21,13 +21,13 @@
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/generators/market_data_mapping_generator.hpp"
-#include "ores.marketdata.api/generators/market_data_source_generator.hpp"
+#include "ores.marketdata.api/generators/feed_generator.hpp"
 #include "ores.marketdata.api/generators/market_data_vendor_instrument_generator.hpp"
 #include "ores.marketdata.api/generators/route_generator.hpp"
 #include "ores.marketdata.api/generators/subscription_generator.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
-#include "ores.marketdata.core/repository/market_data_source_repository.hpp"
+#include "ores.marketdata.core/repository/feed_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_vendor_instrument_repository.hpp"
 #include "ores.marketdata.core/repository/market_fixing_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
@@ -160,7 +160,7 @@ struct app_feed_ingest_loop_fixture {
         // ingest loop reads the catalogue from.
         const auto system_ctx =
             ores::database::service::tenant_context::with_system_tenant(h.context());
-        auto src = generators::generate_synthetic_market_data_source(gen);
+        auto src = generators::generate_synthetic_feed(gen);
         src.name = source;
         src.provider_code = "ore";
         src.kind = "simulated";
@@ -172,7 +172,7 @@ struct app_feed_ingest_loop_fixture {
         src.performed_by = h.db_user();
         src.change_reason_code = "system.test";
         src.change_commentary = "Route fixture source";
-        repository::market_data_source_repository{}.write(system_ctx, src);
+        repository::feed_repository{}.write(system_ctx, src);
 
         auto sub = generators::generate_synthetic_subscription(gen);
         sub.tenant_id = h.tenant_id();
@@ -189,7 +189,7 @@ struct app_feed_ingest_loop_fixture {
         r.tenant_id = h.tenant_id();
         r.party_id = party_id;
         r.provider_code = "ore";
-        r.source_id = src.id;
+        r.feed_id = src.id;
         r.modified_by = h.db_user();
         r.performed_by = h.db_user();
         r.change_reason_code = "system.test";
@@ -820,7 +820,7 @@ TEST_CASE("burst_a_bare_copy_of_the_tick_writer", "[.][burst]") {
     const auto tenant = f.h.tenant_id().to_string();
     const auto party = boost::uuids::to_string(f.party_id);
     const auto source =
-        boost::uuids::to_string(ores::marketdata::domain::catalogue_ids::ore_derived_source_id());
+        boost::uuids::to_string(ores::marketdata::domain::catalogue_ids::ore_derived_feed_id());
     for (int rep = 1; rep <= burst_repetitions; ++rep) {
         const auto base = std::chrono::system_clock::now();
         std::vector<ores::marketdata::service::app::tick_row> rows(burst_ticks);
@@ -831,7 +831,7 @@ TEST_CASE("burst_a_bare_copy_of_the_tick_writer", "[.][burst]") {
             rows[i].ts = base + std::chrono::microseconds(i);
             rows[i].coord = 1;
             rows[i].value = 999.0;
-            rows[i].source_id = source;
+            rows[i].feed_id = source;
         }
         const auto start = burst_clock::now();
         writer->write(rows);

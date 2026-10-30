@@ -53,7 +53,7 @@ generate_synthetic_delivery_count(utility::generation::generation_context& ctx) 
                    "-" + std::to_string(idx);
     r.period_start = std::chrono::system_clock::now();
     r.flushed_at = std::chrono::system_clock::now();
-    r.source_id = ctx.generate_uuid();
+    r.feed_id = ctx.generate_uuid();
     r.deliveries = faker::number::integer(1, 1000);
     r.modified_by = modified_by;
     r.performed_by = modified_by;

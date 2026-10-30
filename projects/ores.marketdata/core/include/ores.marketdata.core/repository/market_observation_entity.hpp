@@ -63,7 +63,7 @@ struct market_observation_entity {
 
     std::string value;
     std::optional<std::string> source;
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
     db_timestamp valid_from = db_timestamp::max();
     db_timestamp valid_to = db_timestamp::max();
 
@@ -80,7 +80,7 @@ struct market_observation_entity {
                query_builder::bind("observation_datetime", &e::observation_datetime) |
                query_builder::bind("oresmd_uri", &e::oresmd_uri) |
                query_builder::bind("value", &e::value) | query_builder::bind("source", &e::source) |
-               query_builder::bind("source_id", &e::source_id) |
+               query_builder::bind("feed_id", &e::feed_id) |
                query_builder::bind("valid_from", &e::valid_from) |
                query_builder::bind("valid_to", &e::valid_to);
     }

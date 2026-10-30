@@ -34,8 +34,8 @@ struct world {
     std::chrono::system_clock::time_point from =
         std::chrono::floor<std::chrono::hours>(std::chrono::system_clock::now()) - 48h;
     std::chrono::system_clock::time_point to = from + 24h;
-    ores::marketdata::domain::market_data_source live;
-    ores::marketdata::domain::market_data_source simulated;
+    ores::marketdata::domain::feed live;
+    ores::marketdata::domain::feed simulated;
     std::vector<ores::marketdata::domain::rate_card_component> card;
     usage_events events;
     boost::uuids::uuid alice = gen();
@@ -54,13 +54,13 @@ struct world {
         return {from, to};
     }
 
-    void component(const ores::marketdata::domain::market_data_source& source,
+    void component(const ores::marketdata::domain::feed& source,
                    const std::string& driver,
                    std::int64_t charge,
                    const std::string& right = "") {
         ores::marketdata::domain::rate_card_component c;
         c.id = gen();
-        c.source_id = source.id;
+        c.feed_id = source.id;
         c.driver = driver;
         c.licence_right = right;
         c.currency = "USD";
@@ -70,13 +70,13 @@ struct world {
     }
 
     void subscribes(const boost::uuids::uuid& party,
-                    const ores::marketdata::domain::market_data_source& source,
+                    const ores::marketdata::domain::feed& source,
                     bool non_display = false,
                     bool derived = false) {
         ores::marketdata::domain::subscription_interval i;
         i.id = gen();
         i.party_id = party;
-        i.source_id = source.id;
+        i.feed_id = source.id;
         i.provider_code = "bloomberg";
         i.display = true;
         i.non_display = non_display;
@@ -86,12 +86,12 @@ struct world {
     }
 
     void demands(const boost::uuids::uuid& party,
-                 const ores::marketdata::domain::market_data_source& source,
+                 const ores::marketdata::domain::feed& source,
                  const std::string& uri) {
         ores::marketdata::domain::demand_interval i;
         i.id = gen();
         i.party_id = party;
-        i.source_id = source.id;
+        i.feed_id = source.id;
         i.provider_code = "bloomberg";
         i.oresmd_uri = uri;
         i.interval_from = from - 1h;
@@ -99,12 +99,12 @@ struct world {
     }
 
     void delivered(const boost::uuids::uuid& party,
-                   const ores::marketdata::domain::market_data_source& source,
+                   const ores::marketdata::domain::feed& source,
                    std::int64_t count) {
         ores::marketdata::domain::delivery_count n;
         n.id = gen();
         n.party_id = party;
-        n.source_id = source.id;
+        n.feed_id = source.id;
         n.provider_code = "bloomberg";
         n.oresmd_uri = "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD";
         n.period_start = from + 1h;

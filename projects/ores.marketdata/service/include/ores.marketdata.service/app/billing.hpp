@@ -26,7 +26,7 @@
 
 #include "ores.marketdata.api/domain/delivery_count.hpp"
 #include "ores.marketdata.api/domain/demand_interval.hpp"
-#include "ores.marketdata.api/domain/market_data_source.hpp"
+#include "ores.marketdata.api/domain/feed.hpp"
 #include "ores.marketdata.api/domain/rate_card_component.hpp"
 #include "ores.marketdata.api/domain/subscription_interval.hpp"
 #include "ores.marketdata.service/export.hpp"
@@ -69,7 +69,7 @@ struct bill_line {
  * and changes no line and no amount.
  */
 struct source_bill {
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
     std::string source_name;
     std::string currency;
     bool shadow = false;
@@ -82,7 +82,7 @@ struct source_bill {
 struct party_charge {
     ores::utility::uuid::tenant_id tenant_id = ores::utility::uuid::tenant_id::system();
     boost::uuids::uuid party_id;
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
     std::string driver;
     std::string licence_right;
     std::int64_t total_micros = 0;
@@ -118,7 +118,7 @@ split_weighted(std::int64_t total, const std::vector<std::int64_t>& weights);
  * source. The kind of the source is read to label the bill and nowhere else.
  */
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT source_bill
-rate_source(const domain::market_data_source& source,
+rate_source(const domain::feed& source,
             const std::vector<domain::rate_card_component>& card,
             const usage_events& events,
             const billing_period& period);
@@ -150,7 +150,7 @@ struct bill_report {
  * @p source_name selects every source, and a name selects the source of that name.
  */
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT bill_report
-make_report(const std::vector<domain::market_data_source>& sources,
+make_report(const std::vector<domain::feed>& sources,
             const std::vector<domain::rate_card_component>& card,
             const usage_events& events,
             const billing_period& period,

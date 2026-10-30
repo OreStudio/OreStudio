@@ -87,10 +87,10 @@ struct delivery_count final {
     std::chrono::system_clock::time_point flushed_at;
 
     /**
-     * @brief References market_data_source.id: the source that served the party when the event
+     * @brief References feed.id: the source that served the party when the event
      * happened. A rate card is on the source, so the rating step needs it.
      */
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
 
     /**
      * @brief How many ticks of the item the fan-out delivered to the party in the hour, since the

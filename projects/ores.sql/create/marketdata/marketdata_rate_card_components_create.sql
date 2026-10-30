@@ -37,7 +37,7 @@ create table if not exists "ores_marketdata_rate_card_components_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
-    "source_id" uuid not null,
+    "feed_id" uuid not null,
     "driver" text not null,
     "licence_right" text not null,
     "effective_from" timestamp with time zone not null,
@@ -66,8 +66,8 @@ create table if not exists "ores_marketdata_rate_card_components_tbl" (
 );
 
 -- Composite natural key: unique combination for active records
-create unique index if not exists rate_card_components_source_id_driver_licence_right_effective_from_uniq_idx
-on "ores_marketdata_rate_card_components_tbl" (tenant_id, source_id, driver, licence_right, effective_from)
+create unique index if not exists rate_card_components_feed_id_driver_licence_right_effective_from_uniq_idx
+on "ores_marketdata_rate_card_components_tbl" (tenant_id, feed_id, driver, licence_right, effective_from)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency

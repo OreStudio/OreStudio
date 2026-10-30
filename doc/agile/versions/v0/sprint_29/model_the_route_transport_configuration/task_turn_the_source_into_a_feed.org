@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata:implementation:model_the_route_transport_configuration:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/turn-the-source-into-a-feed
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The existing source becomes a feed bound to a publisher, a session and a service
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,31 @@ The existing source becomes a feed bound to a publisher, a session and a service
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The source entity is reshaped into the feed rather than joined by a second
+table. A source was already one adapter instance of a provider; the feed is the
+same row with the two facts a source lacked: the session that carries it and the
+service it offers.
+
+The model keeps the surrogate id, because routes and ticks already key on it,
+and keeps the unique name, because the adapter announces that name and the
+screens show it. =provider_code= becomes =publisher_code=, the =kind= column and
+its lookup are removed, and =session_code=, =service= and =provider_key= are
+added. =is_default= stays: one feed of a publisher is the one a new subscription
+routes to.
+
+The rows are migrated in the populate scripts, not by an ALTER: the database is
+built from the scripts, and the old sources are seeds. One Frankfurter session
+carries the four public feeds (=ecb=, =boc=, =imf=, =tcmb=) with =end_of_day=;
+the simulated feeds get the simulator session and =real_time=; the derived and
+import feeds get their own internal session.
+
+The runtime follows the rename mechanically: =market_data_source= becomes
+=feed=, =source_id= becomes =feed_id=, and the demand calculator, tick
+translator, usage planner and ingest loop read the feed. The generated entity
+carries the new names; the hand-written service files are renamed with them.
+
+The routes migrate from =source_id= to =feed_id=, keeping their party and
+publisher. Their key changes to (party, publisher, class) in the later task.
 
 * Measurements
 
@@ -60,6 +82,25 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+Work in progress. The model is now =ores.marketdata.feed= (same id, new file),
+the feed entity is generated, the old =market_data_source= generated files are
+removed, and a mechanical rename (=market_data_source= -> =feed=,
+=source_id= -> =feed_id=) ran across the marketdata tree and its SQL.
+
+Remaining, in order:
+
+1. Replace both source seeds with a session seed and feed rows: the four public
+   feeds through =frankfurter-eu= (=end_of_day=, keys =ECB=, =BOC=, =IMF=,
+   =TCMB=), the simulated and internal feeds through =synthetic-local=
+   (=real_time=).
+2. Rename =provider_code= to =publisher_code= in the feed's consumers and the
+   route model; remove the =kind= reads.
+3. Regenerate marketdata at every address, then the shell adapter, and compile.
+4. Rework the runtime's source assumptions: adapter announce names map to
+   feeds, route =feed_id=, usage/billing reads.
+5. Delete the source-kind entity and its uses.
+6. Tests: pgtap for the feed rows and the default rule; runtime tests.
 
 * Test Scenarios
 

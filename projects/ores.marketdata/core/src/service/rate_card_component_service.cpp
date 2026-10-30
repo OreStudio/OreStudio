@@ -104,7 +104,7 @@ domain::rate_card_component
 rate_card_component_to_domain(const messaging::rate_card_component_write& write) {
     domain::rate_card_component v;
     v.id = write.id;
-    v.source_id = write.source_id;
+    v.feed_id = write.feed_id;
     v.driver = write.driver;
     v.licence_right = write.licence_right;
     v.effective_from = write.effective_from;
@@ -132,10 +132,10 @@ rate_card_component_service::list_rate_card_components(
             refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
         return response;
     }
-    if (request.filter && request.filter->source_id_one_of &&
-        request.filter->source_id_one_of->size() > 1000) {
+    if (request.filter && request.filter->feed_id_one_of &&
+        request.filter->feed_id_one_of->size() > 1000) {
         response.result =
-            refuse(outcome_code::filter_too_large, {.field = "source_id_one_of", .limit = "1000"});
+            refuse(outcome_code::filter_too_large, {.field = "feed_id_one_of", .limit = "1000"});
         return response;
     }
     if (request.filter && request.filter->driver_one_of &&

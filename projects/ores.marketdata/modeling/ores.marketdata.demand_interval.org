@@ -72,7 +72,7 @@ References =provider.code=: the provider whose feed the event is about.
 std::string("bloomberg")
 #+end_src
 
-** source_id
+** feed_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
@@ -80,7 +80,7 @@ std::string("bloomberg")
 :nullable: false
 :END:
 
-References =market_data_source.id=: the source that served the party when the event happened. A rate card is on the source, so the rating step needs it.
+References =feed.id=: the source that served the party when the event happened. A rate card is on the source, so the rating step needs it.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()
@@ -239,7 +239,7 @@ demand_interval_repository::read_latest_all_tenants(context ctx) {
 |--------------+---------------+----------+--------+-------|
 | OresmdUri    | oresmd_uri    | Item     | string | 400   |
 | ProviderCode | provider_code | Provider | string | 140   |
-| SourceId     | source_id     | Source   | string | 300   |
+| SourceId     | feed_id     | Source   | string | 300   |
 | Version      | version       | Version  | int    | 80    |
 
 * See also

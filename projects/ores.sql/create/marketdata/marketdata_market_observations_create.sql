@@ -47,7 +47,7 @@ create table if not exists "ores_marketdata_market_observations_tbl" (
     "oresmd_uri" text not null,
     "value" text not null,
     "source" text null,
-    "source_id" uuid not null,
+    "feed_id" uuid not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
     primary key (id, observation_datetime),
@@ -68,7 +68,7 @@ on "ores_marketdata_market_observations_tbl" (tenant_id, party_id, series_id, ob
 create index if not exists market_observations_observations_tenant_datetime_idx
 on "ores_marketdata_market_observations_tbl" (tenant_id, party_id, observation_datetime desc);
 
-create index if not exists market_observations_observations_source_idx
+create index if not exists market_observations_observations_feed_idx
 on "ores_marketdata_market_observations_tbl" (tenant_id, party_id, source, observation_datetime desc)
 where source is not null;
 

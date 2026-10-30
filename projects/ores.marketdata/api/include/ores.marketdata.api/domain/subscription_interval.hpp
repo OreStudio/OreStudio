@@ -82,10 +82,10 @@ struct subscription_interval final {
     std::chrono::system_clock::time_point interval_from;
 
     /**
-     * @brief References market_data_source.id: the source that served the party when the event
+     * @brief References feed.id: the source that served the party when the event
      * happened. A rate card is on the source, so the rating step needs it.
      */
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
 
     /**
      * @brief The subscription held the display right during the interval.

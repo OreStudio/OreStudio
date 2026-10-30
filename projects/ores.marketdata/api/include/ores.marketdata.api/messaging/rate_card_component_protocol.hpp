@@ -41,7 +41,7 @@ struct rate_card_component_key {
 
 struct rate_card_component_write {
     boost::uuids::uuid id;
-    boost::uuids::uuid source_id;
+    boost::uuids::uuid feed_id;
     std::string driver;
     std::string licence_right;
     std::chrono::system_clock::time_point effective_from;
@@ -66,10 +66,10 @@ struct rate_card_component_lookup {
 };
 
 struct rate_card_components_filter {
-    std::optional<boost::uuids::uuid> source_id;
+    std::optional<boost::uuids::uuid> feed_id;
     std::optional<std::string> driver;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
-    std::optional<std::vector<boost::uuids::uuid>> source_id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> feed_id_one_of;
     std::optional<std::vector<std::string>> driver_one_of;
 };
 

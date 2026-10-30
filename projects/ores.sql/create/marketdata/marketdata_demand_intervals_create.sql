@@ -40,7 +40,7 @@ create table if not exists "ores_marketdata_demand_intervals_tbl" (
     "provider_code" text not null,
     "oresmd_uri" text not null,
     "interval_from" timestamp with time zone not null,
-    "source_id" uuid not null,
+    "feed_id" uuid not null,
     "interval_to" timestamp with time zone null,
     "modified_by" text not null,
     "performed_by" text not null,

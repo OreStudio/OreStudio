@@ -141,7 +141,7 @@ void rate_card_component_commands::register_commands(cli::Menu& root_menu, nats_
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <source_id> <driver> <licence_right> <effective_from> <currency> <charge_micros> "
+        "add <feed_id> <driver> <licence_right> <effective_from> <currency> <charge_micros> "
         "<effective_to> <reason> <commentary>");
 
     menu->Insert(
@@ -149,7 +149,7 @@ void rate_card_component_commands::register_commands(cli::Menu& root_menu, nats_
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <source_id> <driver> <licence_right> <effective_from> <currency> <charge_micros> "
+        "set <id> <feed_id> <driver> <licence_right> <effective_from> <currency> <charge_micros> "
         "<effective_to> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
@@ -157,7 +157,7 @@ void rate_card_component_commands::register_commands(cli::Menu& root_menu, nats_
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <source_id> <driver> <licence_right> <effective_from> "
+        "put-many --count <n> <id> <feed_id> <driver> <licence_right> <effective_from> "
         "<currency> <charge_micros> <effective_to> <reason> <commentary>");
 
     menu->Insert(
@@ -360,7 +360,7 @@ void rate_card_component_commands::process_add(std::ostream& out,
         }
         req.change.write.id = boost::uuids::random_generator()();
         rate_card_component_read_token(
-            req.change.write.source_id, parsed->positionals[next++], "source_id");
+            req.change.write.feed_id, parsed->positionals[next++], "feed_id");
         rate_card_component_read_token(
             req.change.write.driver, parsed->positionals[next++], "driver");
         rate_card_component_read_token(
@@ -422,7 +422,7 @@ void rate_card_component_commands::process_set(std::ostream& out,
         }
         rate_card_component_read_token(req.change.write.id, parsed->positionals[next++], "id");
         rate_card_component_read_token(
-            req.change.write.source_id, parsed->positionals[next++], "source_id");
+            req.change.write.feed_id, parsed->positionals[next++], "feed_id");
         rate_card_component_read_token(
             req.change.write.driver, parsed->positionals[next++], "driver");
         rate_card_component_read_token(
@@ -498,7 +498,7 @@ void rate_card_component_commands::process_put_many(std::ostream& out,
             messaging::rate_card_component_change change;
             rate_card_component_read_token(change.write.id, parsed->positionals[next++], "id");
             rate_card_component_read_token(
-                change.write.source_id, parsed->positionals[next++], "source_id");
+                change.write.feed_id, parsed->positionals[next++], "feed_id");
             rate_card_component_read_token(
                 change.write.driver, parsed->positionals[next++], "driver");
             rate_card_component_read_token(

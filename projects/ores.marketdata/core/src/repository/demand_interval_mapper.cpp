@@ -54,7 +54,7 @@ domain::demand_interval demand_interval_mapper::map(const demand_interval_entity
     r.provider_code = v.provider_code;
     r.oresmd_uri = v.oresmd_uri;
     r.interval_from = v.interval_from;
-    r.source_id = v.source_id;
+    r.feed_id = v.feed_id;
     r.interval_to = v.interval_to;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -77,7 +77,7 @@ demand_interval_entity demand_interval_mapper::map(const domain::demand_interval
     r.provider_code = v.provider_code;
     r.oresmd_uri = v.oresmd_uri;
     r.interval_from = v.interval_from;
-    r.source_id = v.source_id;
+    r.feed_id = v.feed_id;
     r.interval_to = v.interval_to;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

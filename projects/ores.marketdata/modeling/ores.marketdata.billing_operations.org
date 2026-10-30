@@ -94,7 +94,7 @@ What the platform owes the vendor of one source for a period.
  */
 #+end_src
 
-*** source_id
+*** feed_id
 :PROPERTIES:
 :cpp_type: boost::uuids::uuid
 :END:
@@ -162,7 +162,7 @@ The tenant of the party.
 
 The party.
 
-*** source_id
+*** feed_id
 :PROPERTIES:
 :cpp_type: boost::uuids::uuid
 :END:

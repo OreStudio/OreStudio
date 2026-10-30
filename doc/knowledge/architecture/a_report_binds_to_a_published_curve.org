@@ -135,11 +135,11 @@ all is refused before the engine is reached, in the same words the screen uses.
 
 - Which deal population the run valued. The binding names the curve and the
   as-of and says nothing about the trades, so a report that must state both
-  needs a second binding, to a cut. A cut is a fixed population of deals and
-  market data with its own identity and authorisation, and this repository does
-  not model one, so this decision depends on a concept that does not exist yet.
-  [[id:13BA8962-47D5-4EF3-A9B8-D4E2404AC815][Market data cuts]] states what a
-  cut holds and what would have to be built.
+  needs a second binding, to a cut. A cut is a label for a timepoint and the
+  object it fixes, and this repository models neither the identity nor the
+  authorisation, so this decision depends on a concept that does not exist yet.
+  [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] states what a cut must hold
+  and what would have to be built.
 - Whether a binding may name more than one set, for a report that needs several
   curves. The first slice binds one set per role, and the prototype draws one row
   per role and refuses nothing: a role that needs a list is not drawn.
@@ -171,4 +171,4 @@ all is refused before the engine is reached, in the same words the screen uses.
 - [[id:3FCDF005-AE5B-42AF-A053-BFEBAEDAD6AD][Bind a report to a published curve]] — the journey that draws this decision from the person's side
 - [[id:3E207A59-C1F8-429C-BA23-99DBAEB6EA5E][Market bindings prototype]] — the screen the decision implies, with what it settles and what it leaves open
 - [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]]
-- [[id:13BA8962-47D5-4EF3-A9B8-D4E2404AC815][Market data cuts]] — the population this binding does not name, and the dependency that leaves the report unable to state a cut
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the structure note for the cluster: a cut is a label for a timepoint and the object it fixes, which is the object this binding does not name

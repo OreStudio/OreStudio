@@ -85,13 +85,20 @@ via its "Verifies task" field.
 
 * Result
 
-A durable knowledge page defines a market data cut: doc/knowledge/domain/market_data_cuts.org.
+A durable reference for cuts, as a structure note and three child pages.
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] states the general notion,
+the kinds and the composition, and beneath it sit
+[[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]],
+[[id:19630B5D-A163-42B5-B9C4-61A87BAE8F5F][Trade cut]] and
+[[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][The option-expiry cut code]]. The
+single page this task first produced was split into those pages at the product
+owner's direction, and its verified content moved with it.
 
-- The page carries both senses of the word, what a cut is, the deal cut and the
-  market data cut, the four kinds, the end of day process and its rate overrides,
-  multiple centres, what a cut holds, profiles, one cut per book, option-expiry
-  cut codes, audit and rerun, our position, a glossary and references. No
-  notebook is referenced and no vendor or bank system appears.
+- The cluster carries both senses of the word, what a cut is, the deal cut and
+  the market data cut, the four kinds, the end of day process and its rate
+  overrides, multiple centres, what a cut holds, profiles, one cut per book,
+  option-expiry cut codes, audit and rerun, our position, a glossary and
+  references. No notebook is referenced and no vendor or bank system appears.
 - Every non-repository claim rests on a public source fetched and read while
   writing: EBA RTS (EU) 2016/101 Art. 3 for independent price verification and
   its accepted sources; the ECB euro reference rates for an official daily rate;
@@ -107,14 +114,20 @@ A durable knowledge page defines a market data cut: doc/knowledge/domain/market_
   a definition with no implementation; the cut time as a designed lookup with no
   table; the population as unmodelled; the report binding as unable to name the
   population.
-- Registered in the knowledge index and linked from the snapshot notes, the
-  pricing configuration, the backlog story and the report-binding design, where
-  the cut is now the first open item.
+- The hub is registered in the knowledge index as a hub, and linked from the two
+  snapshot notes, the pricing configuration, the market data architecture hub,
+  risk reporting, report processing, the reports index, the report-binding
+  design and its journey, the market bindings prototype and the backlog story.
+  Each child links the hub back, and the structure note check passes.
+- The report binding's open question now points at the hub: a binding names a
+  published set and cannot name the population, so the cut model is the
+  binding's missing foundation.
 
-Checks: compass lint valid; the org link check 0 unresolved; compass site page
-published the seven touched pages with no failures. Open on the page: the option
-cut times, whether a book may hold more than one cut, and whether the story's cut
-time and a population cut are one entity.
+Checks: compass lint valid; the org link check 0 unresolved; the structure note
+back-link check green across 25 notes; compass site page published the sixteen
+touched pages with no failures. Open on the pages: the option cut times, whether
+a book may hold more than one cut, and whether the story's cut time and a
+population cut are one entity.
 
 The consequence for the report binding: binding a population needs a cut that
 does not exist yet, so the cut model is the binding's foundation.

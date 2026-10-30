@@ -27,10 +27,12 @@ timezone) that =currency_pair= and anything else needing a cut can
 soft-FK against.
 
 The concept behind the word is in
-[[id:13BA8962-47D5-4EF3-A9B8-D4E2404AC815][Market data cuts]], which also
-states what this story does not cover: a cut as a fixed population of deals and
-market data, with its own authorisation and version. This story designs the cut
-time as reference data and nothing more.
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]], the structure note that
+gathers the market data component, the deal component and the expiry sense this
+story's cut time belongs to. That note also states what this story does not
+cover: a cut as the whole fixed world a valuation runs against, with its own
+authorisation and version. This story designs the cut time as reference data and
+nothing more.
 
 * Status
 

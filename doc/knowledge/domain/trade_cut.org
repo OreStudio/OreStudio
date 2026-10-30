@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 19630B5D-A163-42B5-B9C4-61A87BAE8F5F
+:END:
+#+title: Trade cut
+#+description: The deal population component of a cut: the deals a valuation reads at the timepoint, what the population must hold, the state and book each deal carries, and where ORE Studio stands against it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:trade:cut:valuation:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+This page is the deal component of a cut, one of the objects a
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][cut]] can fix. The
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] structure note states the
+general notion, the kinds and the composition; this page states what the deal
+half of the object holds.
+
+* Summary
+
+A trade cut is the *deal population* an object fixes at the timepoint: every
+live deal as it stands at that instant, with the state it holds, the book it
+belongs to, and the corrections applied before the cut was authorised. It is
+frozen by its own act, because deals keep arriving and keep being corrected
+while the day is still open. A deal links to another deal, and a population that
+froze one without the other would leave a valuation reading half a position. It
+is not the same thing as a query over the trade store, because a query has no
+identity, nobody signed it, and its answer moves as rows are corrected.
+
+* What it fixes
+
+- *The deals*. Every live deal at the instant, by identity and by the version
+  that was current.
+- *The state each holds*. Live, expired, fixed or settled, as it stood at the
+  cut, so a settled deal is not read as a live one.
+- *The book and the centre*. Which book owns the deal, and therefore which
+  centre's market data it values against.
+- *The corrections*. Any manual correction a person applied before
+  authorisation, with the reason.
+- *The linked deals*. A deal and the deal it links to are captured together, so
+  a hedge and its hedgee cannot land in different populations.
+- *The identity and the authorisation*. The label, the timepoint, who signed it,
+  and the version.
+
+A population that answers only the first of these is a report of the trade
+store, and not a cut.
+
+* Why it is its own act
+
+The hub states our working convention that the deals are frozen first and the
+market data second. The reason the deal half needs its own act is that its
+review is different in kind. A person reviews a population for completeness and
+for deals that do not look like what the desk booked. Nobody reviews rates that
+way, and nobody reviews a deal by comparing it to a curve.
+
+* Where ORE Studio stands
+
+Deals are stored as versioned rows. Each row carries an identity, a version and
+the interval it was current for, in
+[[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade]], so a past state
+of the store can be reconstructed by a query.
+
+A query is not a trade cut. It has no identity of its own, nobody signed it, and
+two calls at two moments can answer differently as rows are corrected. Nothing
+in the repository holds a population that was fixed at an instant and approved.
+
+The nearest object we have is per run, not per day. A report's trade population
+is partitioned into trade sets, recorded against the run, and each set's market
+data is resolved at its as-of. See
+[[id:AC05783F-3917-4401-902B-40C5277300A7][Gather each trade set and its market data]].
+That is a package assembled for one run. It is not the day's population signed
+once and reused by every report.
+
+* What the sources establish
+
+Nothing on this page rests on an external source. The definitions are ours and
+the statements about our system link the model and the story that show them. The
+hub lists which claims in the cluster are our working convention.
+
+* See also
+
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the hub for what a trade is, how it is classified and how it lives.
+- [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]] — the link between a deal and the deal it depends on, which a population must capture together.
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]] — the partitions a population is cut into for a run.
+- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the states a deal moves through, which the cut records as they stood.
+- [[id:AC05783F-3917-4401-902B-40C5277300A7][Gather each trade set and its market data]] — the run-scoped package we do have.

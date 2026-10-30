@@ -31,7 +31,7 @@ Pricing configurations exist because:
    explained, not hidden.
 3. Valuations must be reproducible. All model configuration used for a
    valuation must be snapshotted alongside the
-   [[id:13BA8962-47D5-4EF3-A9B8-D4E2404AC815][market data cut]] and the deal
+   [[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][market data cut]] and the deal
    population.
 
 The pricing configuration is what makes it possible to re-run a historical
@@ -247,8 +247,8 @@ Given these five inputs, the engine must produce the same output. This is the
 core reproducibility contract.
 
 The first two are what a cut freezes, and this repository has neither as a
-stored object. See [[id:13BA8962-47D5-4EF3-A9B8-D4E2404AC815][Market data cuts]]
-for what a cut holds and where ORE Studio stands against it.
+stored object. See [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] for what a
+cut must hold and where ORE Studio stands against it.
 
 *ORE Studio*: The equivalent inputs are the ORE XML files (=ore.xml=,
 =pricingengines.xml=, =market.xml=, =portfolio.xml=) plus the market data
@@ -310,3 +310,7 @@ bounds that feed into the reserve calculations described in
                   + Pricing Configuration Snapshot
                   + Instance Overrides
 #+end_example
+
+* See also
+
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the structure note for the cluster: a cut fixes the deals, the market data and the settings a valuation reads, and these settings are the part this page owns.

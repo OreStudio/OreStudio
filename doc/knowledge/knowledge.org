@@ -72,6 +72,7 @@ Finance concepts the codebase relies on.
 | [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] | Cash centralisation, and the spot and ledger sweep types built on it |
 | [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] | The processes behind the quant generators: Wiener, Ito, and the mean-reverting family |
 | [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] | How a tick becomes a stored observation, how a config becomes a running synthetic feed, the verbs and screens that drive it, and the vendor and stored data side |
+| [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] | The label, the timepoint and the object a cut fixes; the kinds of cut; the data a cut must freeze, reference data included; the market data, deal and expiry components |
 
 ** Topics with no hub yet
 
@@ -79,7 +80,7 @@ These have several pages and no page that gathers them, so they are
 named here until one exists.
 
 - Risk and valuation: [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]], [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]], [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]],
-  [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE model configuration]], [[id:13BA8962-47D5-4EF3-A9B8-D4E2404AC815][Market data cuts]] and [[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][Compute Engine]].
+  [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE model configuration]] and [[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][Compute Engine]].
 - Front office: [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]], [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]],
   [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business Unit]] and the [[id:36B8F463-121F-42D6-8048-3C62C21AF557][trading and banking book boundary]].
 - Data quality: [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data quality]], the DQ-6 dimensions as we apply them.

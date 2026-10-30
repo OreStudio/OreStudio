@@ -356,3 +356,4 @@ the decision's "explicit historical as-of".
 - [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] — the area the tab belongs to.
 - [[file:index.org][Reporting prototypes]] — the group page and the row that records what this prototype argues.
 - [[file:../index.org][Prototypes]] — the method and the rules that hold for every group.
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]] — the structure note that orders this cluster, and where to read this page in it.

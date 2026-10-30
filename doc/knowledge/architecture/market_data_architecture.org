@@ -234,3 +234,4 @@ and at saying which parts of a new asset class are config and which are code.
 - [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — completes: how an adapter or an authority is built.
 - [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — completes: the typed per variant config pattern.
 - [[id:3FCDF005-AE5B-42AF-A053-BFEBAEDAD6AD][Bind a report to a published curve]] — the reader's end of this cluster: the binding that makes a published set the market a report prices from, and the refusals that keep a candidate out of a run.
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — completes: the fixed world a report prices from once the published set is bound, and the deal population this binding still leaves unnamed.

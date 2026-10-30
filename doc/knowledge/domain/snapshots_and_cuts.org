@@ -158,10 +158,11 @@ resolution-side concept, a requirement satisfied from identifiers. This note
 is about the stored data, a read of rows that already exist. The two share a
 word and nothing else.
 
-A cut is a third thing and is neither of these. It is a fixed population of
-deals and market data with its own identity and authorisation, and the as-of
-read above is one of the pieces a cut would need rather than a cut itself. See
-[[id:13BA8962-47D5-4EF3-A9B8-D4E2404AC815][Market data cuts]].
+A cut is a third thing and is neither of these. It is a label for a timepoint
+and the object it fixes, and the object is everything the valuation read,
+including the reference data that gives the deals and the quotes their meaning.
+The as-of read above is one of the pieces such a cut would need, and not a cut
+itself. See [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]].
 
 ** Facts the code shape does not show
 
@@ -181,7 +182,7 @@ read above is one of the pieces a cut would need rather than a cut itself. See
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:CEC7844C-B3AE-4858-BF67-71F511007F82][Market Data Snapshot]], the resolution-side snapshot this note is not about.
-- [[id:13BA8962-47D5-4EF3-A9B8-D4E2404AC815][Market data cuts]], the fixed population of deals and market data this read is one piece of.
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]], the structure note for the cluster: a cut is a label for a timepoint and the object it fixes, and this read is one piece of such an object.
 - [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], what the reads return rows from.
 - [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]], the read of tick history that these reads are not.
 - The handlers are =curve_snapshot_handler=, =series_slice_handler= and

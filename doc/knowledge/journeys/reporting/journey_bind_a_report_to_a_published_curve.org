@@ -384,3 +384,4 @@ work this journey needs.
 - [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against.
 - [[id:1787BDF4-EF8D-4636-AFD8-A94BB89EEEBB][Task: Bind a report to the published curve]] — the work that owns it.
 - [[id:3E207A59-C1F8-429C-BA23-99DBAEB6EA5E][Market bindings prototype]] — the screen this journey argues for.
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the fixed world the bound set is one part of, and the deal population this journey leaves unnamed.

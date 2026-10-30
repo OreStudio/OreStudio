@@ -27,22 +27,20 @@
 #include "ores.refdata.api/messaging/commodity_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
-#include "ores.refdata.api/messaging/legal_entity_protocol.hpp"
 #include "ores.refdata.api/messaging/equity_underlying_protocol.hpp"
 #include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
+#include "ores.refdata.api/messaging/legal_entity_protocol.hpp"
 #include "ores.refdata.api/messaging/netting_set_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_book_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_counterparty_protocol.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
+#include "ores.trading.api/domain/bond_instruments.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
-#include "ores.trading.api/domain/bond_instruments.hpp"
 #include "ores.trading.api/domain/commodity_instruments.hpp"
 #include "ores.trading.api/domain/credit_instruments.hpp"
-#include "ores.trading.api/domain/rate_instruments.hpp"
 #include "ores.trading.api/domain/equity_instruments.hpp"
-#include "ores.trading.api/domain/fx_instruments.hpp"
 #include "ores.trading.api/domain/flexi_swap_instrument.hpp"
 #include "ores.trading.api/domain/fra_instrument.hpp"
 #include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
@@ -50,9 +48,11 @@
 #include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_instruments.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
+#include "ores.trading.api/domain/rate_instruments.hpp"
 #include "ores.trading.api/domain/swaption_instrument.hpp"
 #include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
 #include "ores.trading.api/messaging/structure_member_protocol.hpp"
@@ -601,7 +601,7 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             row.instrument.audit.change_commentary = "Generated trade population.";
             book_req.instruments.bond_instruments.push_back(row);
         }
-    } else     if (const auto* bond = std::get_if<domain::bond_terms>(&slot.terms)) {
+    } else if (const auto* bond = std::get_if<domain::bond_terms>(&slot.terms)) {
         ores::trading::domain::bond_instrument_data row;
         row.instrument.issue_id = bond->issue_id;
         row.instrument.notional =
@@ -790,8 +790,7 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
         common.fixed.payer = true;
         common.floating.leg_type_code = "Floating";
         common.floating.day_count_fraction_code = rate->floating_day_count_fraction_code;
-        common.floating.business_day_convention_code =
-            rate->floating_business_day_convention_code;
+        common.floating.business_day_convention_code = rate->floating_business_day_convention_code;
         common.floating.payment_frequency_code = rate->floating_payment_frequency_code;
         common.floating.floating_index_code = rate->floating_index_code;
         common.floating.currency =
@@ -816,7 +815,9 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             if (type == "Swaption") {
                 tdom::rate_swaption_terms terms{common,
                                                 rate->expiry_date.value_or(rate->start_date),
-                                                direction, "European", "Cash"};
+                                                direction,
+                                                "European",
+                                                "Cash"};
                 return tdom::construct_rate_swaption(terms);
             }
             if (type == "CallableSwap")
@@ -825,7 +826,8 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
                 return tdom::construct_rate_knock_out_swap(
                     tdom::rate_knock_out_swap_terms{common, rate->start_date, "UpAndOut"});
             if (type == "FlexiSwap")
-                return tdom::construct_rate_flexi_swap(tdom::rate_flexi_swap_terms{common, direction});
+                return tdom::construct_rate_flexi_swap(
+                    tdom::rate_flexi_swap_terms{common, direction});
             if (type == "BalanceGuaranteedSwap")
                 return tdom::construct_rate_balance_guaranteed_swap(
                     tdom::rate_balance_guaranteed_swap_terms{common, slot.internal_identifier});
@@ -1176,8 +1178,8 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
         const auto money = [](double value) {
             return tdom::decimal::from_double(value).value();
         };
-        const auto maybe_money = [&money](std::optional<double> value)
-            -> std::optional<tdom::decimal> {
+        const auto maybe_money =
+            [&money](std::optional<double> value) -> std::optional<tdom::decimal> {
             if (!value.has_value())
                 return std::nullopt;
             return money(*value);
@@ -1197,15 +1199,15 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
          */
         if (type == "FxForward" || type == "FxSwap") {
             tdom::fx_forward_terms terms{legs, fx->value_date, fx->settlement};
-            auto row = type == "FxForward" ? tdom::construct_fx_forward(terms)
-                                           : tdom::construct_fx_swap(terms);
+            auto row = type == "FxForward" ? tdom::construct_fx_forward(terms) :
+                                             tdom::construct_fx_swap(terms);
             row.description = "Generated FX trade.";
             row.audit.change_reason_code = std::string(population_reason);
             row.audit.change_commentary = "Generated trade population.";
             book_req.instruments.fx_forward_instruments.push_back(row);
         } else if (type == "FxOption") {
-            tdom::fx_vanilla_option_terms terms{legs, fx->option_type, fx->expiry_date,
-                                                fx->exercise_style, fx->settlement};
+            tdom::fx_vanilla_option_terms terms{
+                legs, fx->option_type, fx->expiry_date, fx->exercise_style, fx->settlement};
             auto row = tdom::construct_fx_option(terms);
             row.description = "Generated FX trade.";
             row.audit.change_reason_code = std::string(population_reason);

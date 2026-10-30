@@ -254,16 +254,16 @@ std::optional<group_row> read_fixings(const ores::database::context& ctx,
     if (rows.empty())
         return std::nullopt;
     const auto& r = rows.front();
-    return group_row{.id = r.id,
-                     .version = r.version,
-                     .party_id = r.party_id,
-                     .values = {{"imply_todays_fixings", text_of(r.imply_todays_fixings)},
-                                {"include_todays_cash_flows", text_of(r.include_todays_cash_flows)},
-                                {"include_reference_date_events",
-                                 text_of(r.include_reference_date_events)},
-                                {"enrich_index_fixings", text_of(r.enrich_index_fixings)},
-                                {"ignore_fixing_lag", text_of(r.ignore_fixing_lag)},
-                                {"ignore_fixing_lead", text_of(r.ignore_fixing_lead)}}};
+    return group_row{
+        .id = r.id,
+        .version = r.version,
+        .party_id = r.party_id,
+        .values = {{"imply_todays_fixings", text_of(r.imply_todays_fixings)},
+                   {"include_todays_cash_flows", text_of(r.include_todays_cash_flows)},
+                   {"include_reference_date_events", text_of(r.include_reference_date_events)},
+                   {"enrich_index_fixings", text_of(r.enrich_index_fixings)},
+                   {"ignore_fixing_lag", text_of(r.ignore_fixing_lag)},
+                   {"ignore_fixing_lead", text_of(r.ignore_fixing_lead)}}};
 }
 
 std::optional<group_row> read_building(const ores::database::context& ctx,
@@ -274,17 +274,16 @@ std::optional<group_row> read_building(const ores::database::context& ctx,
     if (rows.empty())
         return std::nullopt;
     const auto& r = rows.front();
-    return group_row{.id = r.id,
-                     .version = r.version,
-                     .party_id = r.party_id,
-                     .values = {{"observation_model", text_of(r.observation_model)},
-                                {"lazy_market_building", text_of(r.lazy_market_building)},
-                                {"build_failed_trades", text_of(r.build_failed_trades)},
-                                {"continue_on_error", text_of(r.continue_on_error)},
-                                {"use_at_par_coupons_curves",
-                                 text_of(r.use_at_par_coupons_curves)},
-                                {"use_at_par_coupons_trades",
-                                 text_of(r.use_at_par_coupons_trades)}}};
+    return group_row{
+        .id = r.id,
+        .version = r.version,
+        .party_id = r.party_id,
+        .values = {{"observation_model", text_of(r.observation_model)},
+                   {"lazy_market_building", text_of(r.lazy_market_building)},
+                   {"build_failed_trades", text_of(r.build_failed_trades)},
+                   {"continue_on_error", text_of(r.continue_on_error)},
+                   {"use_at_par_coupons_curves", text_of(r.use_at_par_coupons_curves)},
+                   {"use_at_par_coupons_trades", text_of(r.use_at_par_coupons_trades)}}};
 }
 
 std::optional<group_row> read_execution(const ores::database::context& ctx,
@@ -300,8 +299,7 @@ std::optional<group_row> read_execution(const ores::database::context& ctx,
                      .party_id = r.party_id,
                      .values = {{"n_threads", text_of(r.n_threads)},
                                 {"log_mask", text_of(r.log_mask)},
-                                {"gzip_compression_level",
-                                 text_of(r.gzip_compression_level)}}};
+                                {"gzip_compression_level", text_of(r.gzip_compression_level)}}};
 }
 
 void write_fixings(const ores::database::context& ctx,
@@ -475,8 +473,7 @@ void write_group(const ores::database::context& ctx,
                  const std::optional<group_row>& row_in_force,
                  const value_map& values,
                  const std::string& reason) {
-    part_of(group_code).write(
-        ctx, engine_settings_id, party_id, row_in_force, values, reason);
+    part_of(group_code).write(ctx, engine_settings_id, party_id, row_in_force, values, reason);
 }
 
 /**
@@ -844,8 +841,7 @@ std::vector<std::string> engine_settings_proposal_service::refusals(const std::s
         const auto group_rows = rows_of_group(rows, code);
         if (group_rows.empty())
             continue;
-        const auto in_force =
-            version_of(row_at(ctx_, code, group_rows.front().engine_settings_id));
+        const auto in_force = version_of(row_at(ctx_, code, group_rows.front().engine_settings_id));
         if (in_force != group_rows.front().base_version) {
             out.push_back("The " + code +
                           " group has moved since the proposal was raised: it is "

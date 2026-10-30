@@ -41,12 +41,12 @@ using settings_t = reporting::domain::risk_report_config;
 // projection is a rename table rather than forty branches.
 struct text_binding {
     std::string_view parameter;
-    std::optional<std::string> settings_t::* member;
+    std::optional<std::string> settings_t::*member;
 };
 
 struct required_binding {
     std::string_view parameter;
-    std::string settings_t::* member;
+    std::string settings_t::*member;
 };
 
 const std::array<text_binding, 4> text_bindings = {{
@@ -94,8 +94,8 @@ constexpr std::array<std::string_view, 4> observation_models = {
 
 template <typename Part>
 engine_binding flag_binding(std::string_view parameter,
-                            std::optional<Part> engine_t::* part,
-                            std::optional<bool> Part::* member) {
+                            std::optional<Part> engine_t::*part,
+                            std::optional<bool> Part::*member) {
     return {parameter,
             [=](engine_t& e, const std::string& v) {
                 auto& p = e.*part;
@@ -112,8 +112,8 @@ engine_binding flag_binding(std::string_view parameter,
 
 template <typename Part>
 engine_binding int_binding(std::string_view parameter,
-                           std::optional<Part> engine_t::* part,
-                           std::optional<int> Part::* member) {
+                           std::optional<Part> engine_t::*part,
+                           std::optional<int> Part::*member) {
     return {parameter,
             [=](engine_t& e, const std::string& v) {
                 auto& p = e.*part;

@@ -25,8 +25,8 @@
 #include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_forward_instrument.hpp"
-#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/range_bound.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <array>
@@ -90,14 +90,16 @@ inline constexpr auto lower_barrier_types =
     throw fx_product_error("An " + std::string(product) + " states " + std::string(fact) + ".");
 }
 
-inline void require_text(std::string_view product, std::string_view fact,
-                         const std::string& value) {
+inline void
+require_text(std::string_view product, std::string_view fact, const std::string& value) {
     if (value.empty())
         refuse(product, fact);
 }
 
-inline void require_one_of(std::string_view product, std::string_view fact,
-                           const std::string& value, std::span<const std::string_view> allowed) {
+inline void require_one_of(std::string_view product,
+                           std::string_view fact,
+                           const std::string& value,
+                           std::span<const std::string_view> allowed) {
     if (!states_one_of(value, allowed))
         refuse(product, fact);
 }
@@ -107,13 +109,14 @@ inline void require_money(std::string_view product, std::string_view fact, const
         refuse(product, fact);
 }
 
-inline void require_date(std::string_view product, std::string_view fact,
-                         std::chrono::year_month_day value) {
+inline void
+require_date(std::string_view product, std::string_view fact, std::chrono::year_month_day value) {
     if (value == std::chrono::year_month_day{})
         refuse(product, fact);
 }
 
-inline void require_positive_optional(std::string_view product, std::string_view fact,
+inline void require_positive_optional(std::string_view product,
+                                      std::string_view fact,
                                       const std::optional<decimal>& value) {
     if (value.has_value() && !(*value > decimal{}))
         refuse(product, fact);
@@ -280,8 +283,10 @@ inline Row legs_row(std::string_view product, const fx_legs_terms& legs) {
 /**
  * @brief The barrier rules the store states, as refusals.
  */
-inline void require_barrier_shape(std::string_view product, bool double_barrier,
-                                  const std::string& barrier_type, const std::optional<decimal>& lower,
+inline void require_barrier_shape(std::string_view product,
+                                  bool double_barrier,
+                                  const std::string& barrier_type,
+                                  const std::optional<decimal>& lower,
                                   const std::optional<decimal>& upper) {
     using namespace fx_terms;
     require_positive_optional(product, "a positive lower barrier", lower);
@@ -337,15 +342,16 @@ construct_fx_option(const fx_vanilla_option_terms& terms) {
 
 namespace fx_builders {
 
-inline fx_barrier_option_instrument
-barrier_row(std::string_view product, const std::string& trade_type_code, bool double_barrier,
-            const fx_barrier_option_terms& terms) {
+inline fx_barrier_option_instrument barrier_row(std::string_view product,
+                                                const std::string& trade_type_code,
+                                                bool double_barrier,
+                                                const fx_barrier_option_terms& terms) {
     using namespace fx_terms;
     auto row = legs_row<fx_barrier_option_instrument>(product, terms.legs);
     require_one_of(product, "a Call or Put option type", terms.option_type, option_types);
     require_date(product, "an expiry date", terms.expiry_date);
-    require_barrier_shape(product, double_barrier, terms.barrier_type, terms.lower_barrier,
-                          terms.upper_barrier);
+    require_barrier_shape(
+        product, double_barrier, terms.barrier_type, terms.lower_barrier, terms.upper_barrier);
     row.identity.trade_type_code = trade_type_code;
     row.option_type = terms.option_type;
     row.expiry_date = terms.expiry_date;
@@ -366,20 +372,20 @@ construct_fx_barrier_option(const fx_barrier_option_terms& terms) {
 
 [[nodiscard]] inline fx_barrier_option_instrument
 construct_fx_double_barrier_option(const fx_barrier_option_terms& terms) {
-    return fx_builders::barrier_row("fx double barrier option", "FxDoubleBarrierOption", true,
-                                    terms);
+    return fx_builders::barrier_row(
+        "fx double barrier option", "FxDoubleBarrierOption", true, terms);
 }
 
 [[nodiscard]] inline fx_barrier_option_instrument
 construct_fx_european_barrier_option(const fx_barrier_option_terms& terms) {
-    return fx_builders::barrier_row("fx European barrier option", "FxEuropeanBarrierOption",
-                                    false, terms);
+    return fx_builders::barrier_row(
+        "fx European barrier option", "FxEuropeanBarrierOption", false, terms);
 }
 
 [[nodiscard]] inline fx_barrier_option_instrument
 construct_fx_generic_barrier_option(const fx_barrier_option_terms& terms) {
-    return fx_builders::barrier_row("fx generic barrier option", "FxGenericBarrierOption", false,
-                                    terms);
+    return fx_builders::barrier_row(
+        "fx generic barrier option", "FxGenericBarrierOption", false, terms);
 }
 
 [[nodiscard]] inline fx_barrier_option_instrument
@@ -389,9 +395,11 @@ construct_fx_kiko_barrier_option(const fx_barrier_option_terms& terms) {
 
 namespace fx_builders {
 
-inline fx_digital_option_instrument
-digital_row(std::string_view product, const std::string& trade_type_code, bool needs_strike,
-            bool needs_two_barriers, const fx_digital_option_terms& terms) {
+inline fx_digital_option_instrument digital_row(std::string_view product,
+                                                const std::string& trade_type_code,
+                                                bool needs_strike,
+                                                bool needs_two_barriers,
+                                                const fx_digital_option_terms& terms) {
     using namespace fx_terms;
     require_text(product, "a foreign currency", terms.foreign_currency);
     require_text(product, "a domestic currency", terms.domestic_currency);
@@ -442,21 +450,21 @@ construct_fx_touch_option(const fx_digital_option_terms& terms) {
 
 [[nodiscard]] inline fx_digital_option_instrument
 construct_fx_double_touch_option(const fx_digital_option_terms& terms) {
-    return fx_builders::digital_row("fx double touch option", "FxDoubleTouchOption", false, true,
-                                    terms);
+    return fx_builders::digital_row(
+        "fx double touch option", "FxDoubleTouchOption", false, true, terms);
 }
 
 [[nodiscard]] inline fx_digital_option_instrument
 construct_fx_digital_barrier_option(const fx_digital_option_terms& terms) {
-    return fx_builders::digital_row("fx digital barrier option", "FxDigitalBarrierOption", true,
-                                    false, terms);
+    return fx_builders::digital_row(
+        "fx digital barrier option", "FxDigitalBarrierOption", true, false, terms);
 }
 
 namespace fx_builders {
 
-inline fx_asian_forward_instrument
-asian_row(std::string_view product, const std::string& trade_type_code,
-          const fx_asian_forward_terms& terms) {
+inline fx_asian_forward_instrument asian_row(std::string_view product,
+                                             const std::string& trade_type_code,
+                                             const fx_asian_forward_terms& terms) {
     using namespace fx_terms;
     require_text(product, "an fx index", terms.fx_index);
     require_text(product, "a reference currency", terms.reference_currency);
@@ -489,14 +497,18 @@ construct_fx_average_forward(const fx_asian_forward_terms& terms) {
 [[nodiscard]] inline fx_asian_forward_instrument
 construct_fx_target_redemption_forward(const fx_tarf_terms& terms) {
     using namespace fx_terms;
-    fx_asian_forward_terms shared{terms.fx_index,       terms.reference_currency,
-                                  terms.reference_notional, terms.settlement_currency,
-                                  terms.settlement_notional, terms.payment_date,
-                                  terms.long_short,     terms.currency,
-                                  terms.fixing_amount,  terms.strike};
+    fx_asian_forward_terms shared{terms.fx_index,
+                                  terms.reference_currency,
+                                  terms.reference_notional,
+                                  terms.settlement_currency,
+                                  terms.settlement_notional,
+                                  terms.payment_date,
+                                  terms.long_short,
+                                  terms.currency,
+                                  terms.fixing_amount,
+                                  terms.strike};
     auto row = fx_builders::asian_row("fx target redemption forward", "FxTaRF", shared);
-    require_money("fx target redemption forward", "a positive target amount",
-                  terms.target_amount);
+    require_money("fx target redemption forward", "a positive target amount", terms.target_amount);
     row.target_amount = terms.target_amount;
     return row;
 }
@@ -510,8 +522,7 @@ construct_fx_variance_swap(const fx_variance_swap_terms& terms) {
         refuse("fx variance swap", "an end date after its start");
     require_text("fx variance swap", "a currency", terms.currency);
     require_text("fx variance swap", "an underlying", terms.underlying_code);
-    require_one_of("fx variance swap", "a Long or Short direction", terms.long_short,
-                   directions);
+    require_one_of("fx variance swap", "a Long or Short direction", terms.long_short, directions);
     require_money("fx variance swap", "a positive notional", terms.notional);
     if (!(terms.strike > 0.0) || !std::isfinite(terms.strike))
         refuse("fx variance swap", "a finite, positive strike");
@@ -538,8 +549,8 @@ construct_fx_accumulator(const fx_accumulator_terms& terms) {
     require_one_of("fx accumulator", "a Long or Short direction", terms.long_short, directions);
     require_date("fx accumulator", "a start date", terms.start_date);
     require_money("fx accumulator", "a positive strike", terms.strike);
-    require_positive_optional("fx accumulator", "a positive knock out barrier",
-                              terms.knock_out_barrier);
+    require_positive_optional(
+        "fx accumulator", "a positive knock out barrier", terms.knock_out_barrier);
 
     fx_accumulator_product built;
     built.row.identity.trade_type_code = "FxAccumulator";

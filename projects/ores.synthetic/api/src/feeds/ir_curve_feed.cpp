@@ -127,8 +127,8 @@ ir_curve_feed::ir_curve_feed(
             throw std::invalid_argument("ir_curve_feed: the pillar " + e.start_tenor_code + " to " +
                                         e.point_id + " has no item: " + uri.error());
         datum_uris_.push_back(*uri);
-        auto series =
-            ores::marketdata::datum::oresmd_uri_codec::write(ores::marketdata::datum::series_of(*made));
+        auto series = ores::marketdata::datum::oresmd_uri_codec::write(
+            ores::marketdata::datum::series_of(*made));
         if (!series)
             throw std::invalid_argument("ir_curve_feed: the pillar " + e.start_tenor_code + " to " +
                                         e.point_id + " has no series: " + series.error());

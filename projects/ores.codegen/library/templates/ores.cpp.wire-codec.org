@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: EDCD6B28-B9D8-4D69-A30D-3B503B9838AB
+:END:
+#+title: ores.cpp.wire-codec
+#+description: A domain type's own JSON and MessagePack functions, generated from its field list.
+#+type: facet
+#+model_types: domain_entity junction
+#+default: disabled
+#+level: cross
+#+facet_group: ores.cpp
+#+filetags: :codegen:physical-space:cpp:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+
+This page is the node for the =ores.cpp.wire-codec= facet of the codegen
+template library, part of the [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype
+below is documented, and holds its =mustache= source, in its own
+linked page — this page is the facet-level summary and the routing
+table to them.
+
+* Summary
+
+Two templates generating a type's wire codec: the header that states the four
+functions and the =wire_traits= specialisation that names them, and the
+translation unit that holds the field list and the four definitions.
+
+* The ores.cpp.wire-codec facet
+
+Disabled by default (=#+default: disabled=): a component opts in one entity at
+a time by enabling the facet in the entity's own =:PROPERTIES:= drawer with
+=:ores.cpp.wire-codec.enabled: true=.
+
+The opt-in is per entity rather than per component because the codec states
+every member of the type, and a member whose type has no carrier cannot be
+encoded. A component joins as its models are covered, which is the same order
+the story that introduced this facet states: one component at a time, with
+reflect-cpp kept underneath the whole estate until the last one has moved.
+
+* Mustache incantations
+
+The field list repeats the member order =cpp_domain_type_class.hpp.mustache=
+declares, and it has to: the JSON is a list of members in declaration order, so
+a list that disagreed with the struct would encode a different object. The
+repetition is deliberate and is guarded by the per-type byte comparison, which
+fails the moment the two orders part -- one test per type, in both formats,
+against what reflect-cpp writes for the same value.
+
+A member the model marks =:no_wire:= is absent from the field list, which is
+what =rfl::Skip= does for the reflector this replaces.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:9A5DB007-BF55-43DC-9C2F-479A501BA44A][ores.cpp.wire-codec.codec_header]] | Declares a type's four wire functions and the wire_traits specialisation naming them. =wire-codec= facet. |
+| [[id:82D600B6-D48F-4BED-B4CB-BFF0DFCEC5B0][ores.cpp.wire-codec.codec_impl]] | States a type's field list and defines its four wire functions over it. =wire-codec= facet. |
+
+* See also
+
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
+- [[id:6D061F78-B9C2-461A-87A8-CCD65F73BA5F][ores.cpp.domain.json_io_header]] — the streaming form of the same type, which
+  this facet does not replace: the two coexist until the reflector is deleted.

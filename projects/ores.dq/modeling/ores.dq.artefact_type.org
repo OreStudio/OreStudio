@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 6D8510CF-B977-4126-9051-5BFA9DE929B3
 :END:
 #+title: ores.dq.artefact_type

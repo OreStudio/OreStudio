@@ -8,7 +8,7 @@
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
 #+branch: feature/make-the-parameter-data-model-the-source-of-valid-values-and-rules
-#+pr: 4090
+#+pr: 4102
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -362,6 +362,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4102][#4102]] | [agile] Close the parameter model task |
 | [[https://github.com/OreStudio/OreStudio/pull/4090][#4090]] | [reporting] Make the value set the one statement of a parameter's rule |
 
 * Review

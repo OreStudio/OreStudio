@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/collect-the-snags-from-testing-the-curve-screens
-#+pr:
+#+pr: 4096
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -134,7 +134,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4096][#4096]] | [agile] Walk the curve screens, and the snags the walk leaves |
 
 * Review
 

@@ -9,7 +9,6 @@
 #+owner: marco
 #+branch: feature/refuse-a-body-past-the-server-ceiling
 #+pr: 4110
-#+blocked_on: review
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
@@ -31,11 +30,11 @@ govern the body alone.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:8945F7D2-8623-407A-998C-8245ACD1DD8B][Bound the memory a request body may cost]] |
-| Now          | The session reads the headers under no body limit and the ceiling is tested. |
+| Now          | Nothing; #4110 is merged. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge, then increment A3 streams the accepted body. |
+| Next         | Increment A3 streams the accepted body and takes the 256 MiB upload under 1 MiB of RSS. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -119,4 +118,14 @@ via its "Verifies task" field.
 
 * Result
 
-Not yet closed: the branch waits on review in #4110.
+The session reads the request headers under no body limit, resolves the route, and
+applies the route's limit capped by the server ceiling to the body alone. A body
+that declares more than the ceiling gets 413 instead of a closed connection. A
+route that states less than the ceiling refuses past its own limit, and a body past
+a megabyte still arrives on a route that states the room for it. The test client
+returns nothing when the server answers nothing, so a silent close can no longer
+pass as status 200.
+
+The ceiling case posts a body that is inside the route's stated limit and past the
+ceiling, so the clamp is the only thing that can refuse it. Deleting the clamp
+fails the case.

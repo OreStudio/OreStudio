@@ -89,6 +89,14 @@ the business day convention picker raised: a value is *offered* when its
 canonical is empty, and an alias is *accepted* but not offered. One attribute,
 one rule, and the change to ORE is a row.
 
+The mapping tables the tree already holds select the set: the row in
+=ores_reporting_ore_parameter_setting_value_sets_tbl= resolves a parameter, and
+the row in =ores_reporting_ore_parameter_vocabularies_tbl= resolves a curve or
+convention leaf element, to the one set that states its values. So the
+conversion needs no new mapping table and no compiled map: it needs the
+canonical pointer inside the values of the set the link already names. That is
+why this placement is a column and not a table.
+
 *** B. A crosswalk table per entity
 
 A =*_spellings_tbl= beside each registry, in the shape of
@@ -199,7 +207,10 @@ Proposed, and confirmed or corrected when the census lands.
 - *The value set states the canonical form.* A value is canonical when its
   =canonical_value= is empty, and an alias states the value it means. The set
   therefore answers three questions with one statement: what is accepted, what a
-  rendering means, and what a screen offers.
+  rendering means, and what a screen offers. The links already in the tree —
+  =ores_reporting_ore_parameter_setting_value_sets_tbl= for a parameter and
+  =ores_reporting_ore_parameter_vocabularies_tbl= for a leaf — are what find the
+  set, so no new mapping table is added.
 - *The canonical form is the spelling ORE's own writer emits.* For a convention
   that is =Following=; for a flag, =true= and =false=; for a case-insensitive
   word, the mixed case the engine's enum states. The engine's writer is the

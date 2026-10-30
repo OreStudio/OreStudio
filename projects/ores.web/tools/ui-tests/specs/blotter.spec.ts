@@ -24,6 +24,7 @@ test('the blotter reads trades and structures by book, and flattens to the legs'
     await expect(party).toBeVisible();
     const partyCount = Number((await party.innerText()).match(/(\d+)\s*$/)?.[1] ?? '0');
     expect(partyCount).toBeGreaterThan(0);
+    await page.screenshot({ path: 'shots/blotter-portfolio.png', fullPage: true });
 
     // The top list holds both kinds: a structure row states a reference, and a
     // trade row states one too.
@@ -49,6 +50,7 @@ test('the blotter reads trades and structures by book, and flattens to the legs'
         timeout: 20_000,
     });
     await expect(rows.first()).toBeVisible();
+    await page.screenshot({ path: 'shots/blotter-flat.png', fullPage: true });
 
     // Back to the top list: the legs are gone again.
     await page.getByLabel('Flat').uncheck();
@@ -56,5 +58,10 @@ test('the blotter reads trades and structures by book, and flattens to the legs'
 
     // The counterparty grouping is the same rows by another topology.
     await page.getByLabel('Grouping').selectOption('counterparty');
-    await expect(rail.getByRole('button').nth(1)).toBeVisible({ timeout: 20_000 });
+    // The rail is the counterparties the rows face now, not the books: the read
+    // answers both, so the wait is for a name only the counterparty request has.
+    await expect(rail.getByRole('button', { name: /BPCE|LLOYDS|NATWEST/ }).first()).toBeVisible({
+        timeout: 20_000,
+    });
+    await page.screenshot({ path: 'shots/blotter-counterparty.png', fullPage: true });
 });

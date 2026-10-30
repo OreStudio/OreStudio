@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
-#+updated: 2026-10-25
+#+updated: 2026-10-30
 #+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -337,7 +337,7 @@ task and name that file in the Command column.
    =tenant_admin@acme_corporation= (or =adrian.vance@acme_corporation= for the
    two vocabularies alone). It prints each setting's set, kind, choices and
    bounds, and exports and previews one pricing engines document.
-3. Add a value to =setup.observation_model= and raise =setup.n_threads'= floor
+3. Add a value to =setup.observation_model= and raise the floor of =setup.n_threads=
    in the database, then run it again: the choices and the floor follow the set.
 4. =npx tsx tmp/prove-write.ts= shows the group write refused below the floor.
 5. =update ores_analytics_pricing_model_product_parameters_tbl ...= with a value
@@ -388,9 +388,20 @@ on both configuration screens, and a check holds it.
 - Fifteen settings the guide states a vocabulary for stopped being free text:
   thirteen carry the guide's list, and two stay text with the reason in the set.
 - =build/scripts/check_parameter_value_sets.py= runs in the local gate. It
-  fails on a parameter a screen draws with no set, on a set whose kind cannot
-  hold its rule, on a stale seed, and on a per-pair override column returning.
-  Each of those was proved by breaking it and reading the failure.
+  fails on a parameter a screen draws with no set, on a set whose own kind
+  cannot hold its rule (a floor above its ceiling, an empty or duplicated list,
+  an unregistered catalogue, a patternless expression), on a bound or a list
+  written as a column check on an engine settings part, and on a read of the
+  retired per-pair column. Each was proved by breaking it and reading the
+  failure. The seeded script is compared with its sources exactly by
+  =generate_value_sets.py --check=, which owns that test.
+- The engine run settings' rule lives only in the set: the part tables lost
+  their column checks and carry a guard that asks the verdict function, and the
+  ORE run document codec lost its own list of observation models.
+- =ore_parameter_settings check= reports the 266 parameters the screens draw,
+  the engine run settings among them, and answers OK when every one names a set
+  of a kind its domain takes. It refuses to judge a database whose ORE parameter
+  contract is not published, and says so.
 
 Proven live on a recreated, provisioned environment: adding a value to
 =setup.observation_model= in the database added it to the screen's choices, and

@@ -1,47 +1,32 @@
-#+TITLE: Verify the value sets against the ORE 1.8.17 code
-#+SUBTITLE: Audit of the merged parameter value set model against the C++ source
-#+AUTHOR: parameter data model audit
-#+DATE: 2026-10-25
-#+OPTIONS: toc:2 num:nil
+:PROPERTIES:
+:ID: C84DD732-37A9-4C3D-9950-E5090FE00B69
+:END:
+#+title: Investigation: Verify the value sets against the ORE code
+#+description: An audit of every seeded value set against the ORE 1.8.17 C++ source: what each set states, what the code accepts, and the disagreements that make a set refuse a value ORE takes.
+#+type: investigation
+#+level: s1
+#+filetags: :one-configuration-screen-standard:sprint_29:v0:
+#+created: 2026-10-30
+#+updated: 2026-10-30
 
-* Scope and method
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into An audit of every seeded value set against the ORE 1.8.17 C++ source: what each set states, what the code accepts, and the disagreements that make a set refuse a value ORE takes..
 
-This report compares the merged value set model with the ORE 1.8.17 engine
-source. The source of truth is the C++ code under
-=/home/marco/Vault/Development/ORE/Engine=.
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
 
-The merged model holds 224 sets and 727 links. The audit covers 217 sets. The
-seven =catalogue= sets hold no values of their own, so this audit does not
-compare them.
+* Context
 
-The model was built the way the check script builds it:
+The value sets state every parameter's allowed values. This audit asks a
+different question from the branch that introduced them: does a set state what
+ORE actually accepts? It compares every seeded set with the C++ that reads the
+parameter, and it records the disagreements.
 
-#+begin_src python
-import sys
-sys.path.insert(0, "projects/ores.sql/utility")
-import generate_value_sets, setup_value_sets
-data = generate_value_sets.load()
-generate_value_sets.resolve(data)
-generate_value_sets.add_conventions(data)
-generate_value_sets.add_curves(data)
-generate_value_sets.add_setup(data)
-#+end_src
+* Methodology
 
-For each set, the audit found the parameter that the set serves. It then found
-the code that reads and validates that parameter. A parser with a =QL_FAIL=
-fallback states a fixed list. A =parseBool= call states a boolean. A
-=parseInteger= or =parseReal= call states a number. A =QL_REQUIRE= states a
-bound.
-
-Two conventions apply to every finding:
-
-- A parser that compares =boost::algorithm::to_upper_copy(s)= is
-  case-insensitive. Its list has no exact spelling rule, and the set may use
-  any accepted spelling. A parser that uses a =static map= lookup or an
-  =s == "..."= test is case-sensitive. Its list must use the exact spelling.
-- A parameter that a builder compares with a few string literals is a fixed
-  list for this audit, even when the builder holds no parser. A path, a file
-  name, a separator, a date and a period are free text.
+Every set whose kind can hold a rule was compared with the code. The merged
+model was built from the curation, every parameter's readers were found in the
+source, and each set was compared with what those readers accept: a list, a
+bound, a switch, a pattern or free text. The code is the authority, not the ORE
+user guide.
 
 * Findings
 

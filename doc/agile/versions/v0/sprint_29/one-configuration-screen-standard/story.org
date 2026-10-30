@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :web:ux:reporting:configuration:sprint_29:v0:
 #+created: 2026-10-24
-#+updated: 2026-10-24
+#+updated: 2026-10-30
 #+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -125,7 +125,7 @@ binds.
   work is separate.* An audit of the seeded sets against ORE 1.8.17 found 31
   disagreements: wrong kinds, wrong bounds, and lists that refuse a value ORE
   accepts. The report is
-  [[file:../../../../analysis/ore-value-set-verification.org][Report: verify the value sets against the ORE code]], and the correction is
+  [[id:C84DD732-37A9-4C3D-9950-E5090FE00B69][Investigation: Verify the value sets against the ORE code]], and the correction is
   its own task. A set that states a stricter rule than ORE is not yet a correct
   set.
 

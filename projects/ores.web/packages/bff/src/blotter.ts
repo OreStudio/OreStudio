@@ -314,9 +314,45 @@ export function registerBlotterRoutes(
                 holderOf.set(trade, text(member['structure_id']));
             }
         }
-        const legsOf = new Map<string, string[]>();
+        /*
+         * A structure may hold another structure, and the legs of the inner one
+         * are as much the outer one's as its own: a structure's books and dates
+         * are the trades under it at any depth. The walk is memoized and stops on
+         * a structure it has already opened, so a malformed ring cannot hang it.
+         */
+        const structureIds = new Set(structures.map((row) => text(row['id'])));
+        const innerOf = new Map<string, string[]>();
+        const tradesOf = new Map<string, string[]>();
         for (const [trade, structure] of holderOf) {
-            legsOf.set(structure, [...(legsOf.get(structure) ?? []), trade]);
+            if (structureIds.has(trade)) {
+                innerOf.set(structure, [...(innerOf.get(structure) ?? []), trade]);
+            } else {
+                tradesOf.set(structure, [...(tradesOf.get(structure) ?? []), trade]);
+            }
+        }
+        const heldBy = new Map<string, readonly string[]>();
+        const tradesUnder = (
+            id: string,
+            open: ReadonlySet<string> = new Set(),
+        ): readonly string[] => {
+            const held = heldBy.get(id);
+            if (held !== undefined) {
+                return held;
+            }
+            if (open.has(id)) {
+                return [];
+            }
+            const deeper = new Set([...open, id]);
+            const trades = [
+                ...(tradesOf.get(id) ?? []),
+                ...(innerOf.get(id) ?? []).flatMap((inner) => tradesUnder(inner, deeper)),
+            ];
+            heldBy.set(id, trades);
+            return trades;
+        };
+        const legsOf = new Map<string, readonly string[]>();
+        for (const id of structureIds) {
+            legsOf.set(id, tradesUnder(id));
         }
 
         /*

@@ -20,6 +20,7 @@
 #ifndef ORES_HTTP_DOMAIN_HTTP_REQUEST_HPP
 #define ORES_HTTP_DOMAIN_HTTP_REQUEST_HPP
 
+#include "ores.http.api/domain/body_sink.hpp"
 #include "ores.http.api/domain/http_method.hpp"
 #include "ores.http.api/export.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
@@ -61,8 +62,24 @@ struct ORES_HTTP_API_EXPORT http_request final {
 
     /**
      * @brief Request body.
+     *
+     * Empty on a route that streamed its body, because the bytes went to the
+     * sink instead.
      */
     std::string body;
+
+    /**
+     * @brief The number of bytes the body carried, buffered or streamed.
+     */
+    std::uint64_t body_bytes = 0;
+
+    /**
+     * @brief The sink the body was streamed into, when the route asked for one.
+     *
+     * Null on a buffered route. The session owns the sink and it outlives the
+     * handler call, so the handler may commit or abort it.
+     */
+    body_sink* sink = nullptr;
 
     /**
      * @brief Remote endpoint address.

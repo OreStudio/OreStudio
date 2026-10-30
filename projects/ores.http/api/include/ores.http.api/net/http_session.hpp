@@ -34,7 +34,9 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
+#include <unordered_map>
 
 namespace ores::http::net {
 
@@ -80,8 +82,44 @@ private:
         return instance;
     }
 
+    /**
+     * @brief What the body of a request became, once it has been read.
+     *
+     * The bytes went to a sink or into content, never both. The route and the
+     * parameters are here because the route is resolved before the body is read,
+     * so the limit and the sink are known first, and there is no reason to match
+     * the path twice.
+     */
+    struct request_body final {
+        std::optional<domain::route> route;
+        std::unordered_map<std::string, std::string> path_params;
+        std::string content;
+        std::uint64_t byte_count = 0;
+        domain::body_sink* sink = nullptr;
+    };
+
+    /**
+     * @brief The result of reading a body: whether it arrived whole.
+     */
+    enum class body_outcome { complete, too_large, destination_failed };
+
     boost::asio::awaitable<void>
-    handle_request(boost::beast::http::request<boost::beast::http::string_body> req);
+    handle_request(boost::beast::http::request<boost::beast::http::string_body> req,
+                   request_body body);
+
+    /**
+     * @brief Reads the body in chunks into the sink, or into content when the
+     * route takes no sink.
+     *
+     * The parser holds one chunk at a time, so memory is the chunk and not the
+     * body. A chunk that never arrives is closed on the request timeout, so a
+     * stalled upload cannot hold a connection and a worker for the life of the
+     * process.
+     */
+    boost::asio::awaitable<body_outcome>
+    read_body(boost::beast::http::request_parser<boost::beast::http::buffer_body>& parser,
+              domain::body_sink* sink,
+              request_body& body);
 
     /**
      * @brief The most this request's body may be, given the route it addresses.
@@ -91,8 +129,7 @@ private:
      * default, an upload route states its own, and the server's ceiling caps
      * both.
      */
-    [[nodiscard]] std::uint64_t
-    body_limit_for(const boost::beast::http::request<boost::beast::http::string_body>& req);
+    [[nodiscard]] std::uint64_t body_limit_for(const std::optional<domain::route>& route) const;
 
     domain::http_request
     convert_request(const boost::beast::http::request<boost::beast::http::string_body>& req);

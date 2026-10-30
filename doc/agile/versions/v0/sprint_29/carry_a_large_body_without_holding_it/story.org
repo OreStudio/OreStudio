@@ -40,7 +40,7 @@ The design states the approach in its *File transfer* section.
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Start the first task: the session reads a body in chunks for a route that asks for them. |
+| Next          | Review #4137, then move the storage routes onto the sink. |
 | Last touched  | 2026-10-30                               |
 
 * Acceptance
@@ -63,18 +63,22 @@ The design states the approach in its *File transfer* section.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:123A7AA3-82BF-4401-B9DC-EC6E046A8CD3][Take the body in chunks]] | BACKLOG | | | Give a route a way to say it wants its body in chunks, and give the session a read loop that hands them on through a bounded channel, under the same limit and a stall deadline. |
+| [[id:123A7AA3-82BF-4401-B9DC-EC6E046A8CD3][Take the body in chunks]] | STARTED | 2026-10-30 | | Give a route a way to say it wants its body in chunks, and give the session a read loop that hands them on through a bounded channel, under the same limit and a stall deadline. |
 | [[id:4DE53635-7236-40D7-A86F-26508A186245][Move the storage upload onto the stream]] | BACKLOG | | | Write the upload through the chunk channel to a temporary file and rename it when the body ends, and serve the download from the file with a fixed buffer. |
 | [[id:266C40A0-CD75-4974-B54C-468BA5E4AE24][Prove the resident cost of an upload]] | BACKLOG | | | Measure the gateway's own resident memory across a 256 MiB upload, and run the grid wrapper's transfer tests against the streamed routes. |
 
 * Decisions
 
-- The session reads the socket, and the handler consumes from a bounded channel.
-  Reading must happen on the executor that owns the socket, and the handler runs on
-  a worker thread; handing the parser to the handler, or letting the handler read
-  the socket from the pool, breaks that ownership.
-- The chunk window is the bound. A window that fills blocks the reader, so a slow
-  destination costs throughput and not memory.
+- The session reads the socket and hands each chunk to a sink the route supplies,
+  on the connection's own executor. Letting the handler read the socket, or handing
+  it the parser, would move the read off the executor that owns the socket; a
+  channel between the two would buy concurrency the destination does not need.
+- The chunk is the memory bound, and nothing more: the sink runs inline on the
+  connection's executor, so a slow sink costs the connections that share that
+  executor, which is the trade taken here because the destination is a local file.
+- The sink outlives the handler call, and the session holds a guard that discards
+  an unpublished sink, so a refused, failed or abandoned request leaves nothing
+  behind and no error path has to remember to clean up.
 - Streaming is opt-in per route, because a JSON route is simpler to serve from one
   string and nothing gains from a channel there.
 

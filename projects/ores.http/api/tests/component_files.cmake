@@ -26,6 +26,7 @@ set(files
     "http_response_tests.cpp"
     "http_server_blocking_tests.cpp"
     "http_server_options_tests.cpp"
+    "http_streamed_body_tests.cpp"
     "main.cpp"
     "route_tests.cpp"
     "router_tests.cpp"

@@ -25,10 +25,23 @@
 #include <boost/url/parse.hpp>
 #include <boost/url/url_view.hpp>
 #include <algorithm>
+#include <string_view>
+#include <vector>
 
 namespace ores::http::net {
 
 using namespace ores::logging;
+
+namespace {
+
+/// The request target without its query string, which is what a route matches.
+std::string route_path(std::string_view target) {
+    const auto query = target.find('?');
+    return std::string(query == std::string_view::npos ? target : target.substr(0, query));
+}
+
+}
+
 namespace beast = boost::beast;
 namespace http = beast::http;
 namespace asio = boost::asio;
@@ -61,18 +74,25 @@ asio::awaitable<void> http_session::run() {
     try {
         for (;;) {
             /*
-             * The headers are read first, on their own, so the body limit can be
-             * decided by the route the request addresses before any of the body
-             * is held. Reading the message whole would force one limit on every
-             * route: small enough for a JSON call is too small for an engine
-             * package, and large enough for a package is a body bomb everywhere
-             * else. So the parser carries no body limit while the headers are
-             * read: Beast compares the declared length against that limit as the
-             * headers finish, and a limit here would end the session over a body
-             * it has not read. The route's limit is set below, once the route is
-             * known, and it is the one that governs the body.
+             * The stream applies this timeout to every operation that follows,
+             * so it bounds each header read, each body chunk and each write on
+             * this connection. A handler that ran for longer than the timeout
+             * does not leave the next request with an expired clock.
              */
-            http::request_parser<http::string_body> parser;
+            stream_.expires_after(options_.request_timeout);
+            /*
+             * The headers are read first, on their own, so the limit and the sink
+             * can be decided by the route the request addresses before any of the
+             * body is read. Reading the message whole would force one limit on
+             * every route: small enough for a JSON call is too small for an
+             * engine package, and large enough for a package is a body bomb
+             * everywhere else. So the parser carries no body limit while the
+             * headers are read: Beast compares the declared length against that
+             * limit as the headers finish, and a limit here would end the session
+             * over a body it has not read. The route's limit is set below, once
+             * the route is known, and it is the one that governs the body.
+             */
+            http::request_parser<http::buffer_body> parser;
             parser.header_limit(options_.max_header_size);
             parser.body_limit(boost::none);
             co_await http::async_read_header(stream_, buffer_, parser, asio::use_awaitable);
@@ -84,12 +104,21 @@ asio::awaitable<void> http_session::run() {
             BOOST_LOG_SEV(lg(), debug) << "Received request: " << parser.get().method_string()
                                        << " " << subject << " from " << remote_address_;
 
-            const auto limit = body_limit_for(parser.get());
+            /*
+             * The route is resolved before the body, because the limit and the
+             * sink both come from it, and matching once keeps the pattern off the
+             * path the body takes.
+             */
+            request_body body;
+            body.route = router_->match(
+                convert_method(parser.get().method()), route_path(subject), body.path_params);
+            const auto limit = body_limit_for(body.route);
 
             /*
              * The refusal is written here, not by the failed read, so the caller
-             * is told why instead of watching the socket close. It answers both
-             * the declared size below and the chunked body that declares none.
+             * is told why instead of watching the socket close. It answers the
+             * declared size below, the chunked body that declares none, and the
+             * stream that runs past the limit.
              */
             const auto refuse_too_large =
                 [this, version, &subject](std::uint64_t size) -> asio::awaitable<void> {
@@ -99,6 +128,20 @@ asio::awaitable<void> http_session::run() {
                     domain::http_status::payload_too_large,
                     "The request body is larger than this route accepts.");
                 auto beast_resp = convert_response(too_large, version, false);
+                co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+            };
+
+            /*
+             * A destination that cannot take the bytes is a fault here, not a
+             * fault of the request, so it is answered as one.
+             */
+            const auto refuse_destination = [this, version, &subject]() -> asio::awaitable<void> {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Refusing " << subject << ": the body could not be written where it goes";
+                auto failed =
+                    domain::http_response::error(domain::http_status::internal_server_error,
+                                                 "The request body could not be stored.");
+                auto beast_resp = convert_response(failed, version, false);
                 co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
             };
 
@@ -116,24 +159,57 @@ asio::awaitable<void> http_session::run() {
             }
 
             parser.body_limit(limit);
-            auto body_too_large = false;
-            try {
-                co_await http::async_read(stream_, buffer_, parser, asio::use_awaitable);
-            } catch (const boost::system::system_error& e) {
-                // A chunked body declares no length, so it is caught here rather
-                // than above, and it is still a refusal with a reason.
-                if (e.code() != http::error::body_limit)
-                    throw;
-                body_too_large = true;
-            }
 
-            if (body_too_large) {
-                co_await refuse_too_large(limit);
+            /*
+             * The sink belongs to this request, so a session that keeps its
+             * connection holds nothing once the request is answered.
+             */
+            std::unique_ptr<domain::body_sink> sink;
+            if (body.route && body.route->sink) {
+                sink = body.route->sink();
+                if (!sink) {
+                    // A route that states a sink and produces none must not
+                    // quietly read the body into memory instead.
+                    co_await refuse_destination();
+                    break;
+                }
+            }
+            body.sink = sink.get();
+
+            /*
+             * Every path that does not publish leaves the bytes discarded, and the
+             * guard is what makes that true of the refused, the failed and the
+             * abandoned request alike. abort() does nothing once published.
+             */
+            struct discard_unless_published final {
+                domain::body_sink* sink;
+                ~discard_unless_published() {
+                    if (sink != nullptr)
+                        sink->abort();
+                }
+            } discard_guard{body.sink};
+
+            const auto outcome = co_await read_body(parser, body.sink, body);
+            if (outcome != body_outcome::complete) {
+                if (outcome == body_outcome::too_large)
+                    co_await refuse_too_large(limit);
+                else
+                    co_await refuse_destination();
                 break;
             }
 
-            auto req = parser.release();
-            co_await handle_request(std::move(req));
+            /*
+             * The parser releases a message whose body is a buffer the next read
+             * reuses, and the body has already been consumed, so only the header
+             * half is carried on.
+             */
+            auto streamed = parser.release();
+            http::request<http::string_body> req;
+            req.base() = streamed.base();
+            co_await handle_request(std::move(req), std::move(body));
+            if (body.sink != nullptr && !body.sink->published())
+                BOOST_LOG_SEV(lg(), warn)
+                    << "The handler for " << subject << " answered without publishing its body";
 
             if (!keep_alive) {
                 BOOST_LOG_SEV(lg(), debug) << "Client requested connection close";
@@ -157,35 +233,78 @@ asio::awaitable<void> http_session::run() {
     stream_.socket().shutdown(asio::ip::tcp::socket::shutdown_send, ec);
 }
 
-std::uint64_t http_session::body_limit_for(const http::request<http::string_body>& req) {
+asio::awaitable<http_session::body_outcome> http_session::read_body(
+    http::request_parser<http::buffer_body>& parser, domain::body_sink* sink, request_body& body) {
+    /*
+     * One chunk at a time, so the body costs the chunk and not itself. The buffer
+     * belongs to this call, so a session that is idle between requests holds no
+     * body memory at all.
+     */
+    auto chunk = std::vector<char>(options_.body_chunk_size);
+
+    while (!parser.is_done()) {
+        auto& view = parser.get().body();
+        view.data = chunk.data();
+        view.size = chunk.size();
+
+        /*
+         * No deadline is set here: the stream arms its own timeout for every
+         * operation, so each read gets the full request timeout. That bounds the
+         * gap between chunks and not the length of the transfer, which is what a
+         * large body needs, and a client that stops sending is closed rather than
+         * held.
+         */
+        try {
+            co_await http::async_read_some(stream_, buffer_, parser, asio::use_awaitable);
+        } catch (const boost::system::system_error& e) {
+            if (e.code() == http::error::need_buffer) {
+                // The chunk filled, which is the loop going round again.
+            } else if (e.code() == http::error::body_limit) {
+                co_return body_outcome::too_large;
+            } else {
+                throw;
+            }
+        }
+
+        const auto taken = chunk.size() - view.size;
+        body.byte_count += taken;
+        if (taken == 0)
+            continue;
+
+        if (sink != nullptr) {
+            if (!sink->consume(std::string_view(chunk.data(), taken)))
+                co_return body_outcome::destination_failed;
+        } else {
+            body.content.append(chunk.data(), taken);
+        }
+    }
+
+    if (sink != nullptr && !sink->finish())
+        co_return body_outcome::destination_failed;
+
+    co_return body_outcome::complete;
+}
+
+std::uint64_t http_session::body_limit_for(const std::optional<domain::route>& route) const {
     const auto ceiling = options_.max_body_size;
     const auto fallback = std::min<std::uint64_t>(options_.default_max_body_size, ceiling);
-
-    auto path = std::string(req.target());
-    const auto query_pos = path.find('?');
-    if (query_pos != std::string::npos)
-        path = path.substr(0, query_pos);
-
-    std::unordered_map<std::string, std::string> path_params;
-    const auto matched = router_->match(convert_method(req.method()), path, path_params);
-    if (!matched)
+    if (!route)
         return fallback;
 
     const auto stated =
-        matched->max_body_size == 0 ? options_.default_max_body_size : matched->max_body_size;
+        route->max_body_size == 0 ? options_.default_max_body_size : route->max_body_size;
     return std::min<std::uint64_t>(stated, ceiling);
 }
 
-asio::awaitable<void> http_session::handle_request(http::request<http::string_body> req) {
+asio::awaitable<void> http_session::handle_request(http::request<http::string_body> req,
+                                                   request_body body) {
 
     auto domain_req = convert_request(req);
+    domain_req.body = std::move(body.content);
+    domain_req.body_bytes = body.byte_count;
+    domain_req.sink = body.sink;
 
-    // Extract path without query string
-    std::string path = domain_req.target;
-    auto query_pos = path.find('?');
-    if (query_pos != std::string::npos) {
-        path = path.substr(0, query_pos);
-    }
+    const auto path = route_path(domain_req.target);
 
     BOOST_LOG_SEV(lg(), trace) << "Processing request path: " << path
                                << " method: " << static_cast<int>(domain_req.method);
@@ -205,9 +324,8 @@ asio::awaitable<void> http_session::handle_request(http::request<http::string_bo
         co_return;
     }
 
-    // Match route
-    std::unordered_map<std::string, std::string> path_params;
-    auto matched = router_->match(domain_req.method, path, path_params);
+    // The route was resolved before the body was read.
+    auto matched = std::move(body.route);
 
     if (!matched) {
         BOOST_LOG_SEV(lg(), debug)
@@ -218,7 +336,7 @@ asio::awaitable<void> http_session::handle_request(http::request<http::string_bo
         co_return;
     }
 
-    domain_req.path_params = std::move(path_params);
+    domain_req.path_params = std::move(body.path_params);
 
     BOOST_LOG_SEV(lg(), debug) << "Route matched: " << matched->pattern;
 
@@ -344,7 +462,8 @@ asio::awaitable<void> http_session::handle_request(http::request<http::string_bo
             bytes_callback_(*domain_req.authenticated_user->session_id,
                             *domain_req.authenticated_user->session_start_time,
                             response.body.size(),
-                            domain_req.body.size());
+                            domain_req.sink != nullptr ? domain_req.body_bytes :
+                                                         domain_req.body.size());
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn) << "Failed to update session bytes: " << e.what();
         }

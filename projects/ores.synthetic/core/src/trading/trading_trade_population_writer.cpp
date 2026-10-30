@@ -413,6 +413,12 @@ void trading_trade_population_writer::ensure_issue(const domain::trade_populatio
     req.amounts = slot.bond_issue_leg_amounts;
     req.rates = slot.bond_issue_leg_rates;
     req.schedules = slot.bond_issue_leg_schedules;
+    /*
+     * A callable security's calls and a convertible's targets are the issue's
+     * own rows, so they cross with it and not with the trade.
+     */
+    req.call_dates = slot.bond_issue_call_dates;
+    req.conversion_targets = slot.bond_issue_conversion_targets;
 
     const auto mark = [&](auto& row) {
         row.change_reason_code = reason;
@@ -525,11 +531,29 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             book_req.instruments.commodity_basket_constituents.push_back(constituent);
         }
     } else if (!slot.instruments.bond_instruments.empty()) {
+        /*
+         * The header is not the product: what makes a repo a repo, or a future a
+         * future, is the row set beside it. Each is stamped flat, as its table
+         * states its audit columns.
+         */
         for (auto row : slot.instruments.bond_instruments) {
             row.instrument.audit.change_reason_code = std::string(population_reason);
             row.instrument.audit.change_commentary = "Generated trade population.";
             book_req.instruments.bond_instruments.push_back(row);
         }
+        const auto append_bond_facts = [&](const auto& rows, auto& into) {
+            for (auto row : rows) {
+                row.change_reason_code = std::string(population_reason);
+                row.change_commentary = "Generated trade population.";
+                into.push_back(row);
+            }
+        };
+        append_bond_facts(slot.instruments.bond_options, book_req.instruments.bond_options);
+        append_bond_facts(slot.instruments.bond_forwards, book_req.instruments.bond_forwards);
+        append_bond_facts(slot.instruments.bond_futures, book_req.instruments.bond_futures);
+        append_bond_facts(slot.instruments.bond_repos, book_req.instruments.bond_repos);
+        append_bond_facts(slot.instruments.bond_trs, book_req.instruments.bond_trs);
+        append_bond_facts(slot.instruments.ascots, book_req.instruments.ascots);
     } else if (!slot.instruments.rate_instruments.empty()) {
         /*
          * The rows were built in the planner, so the writer states the audit
@@ -674,12 +698,6 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
         append_children(slot.instruments.equity_position_option_underlyings,
                         book_req.instruments.equity_position_option_underlyings);
         append_children(slot.instruments.range_bounds, book_req.instruments.range_bounds);
-    } else if (!slot.instruments.bond_instruments.empty()) {
-        for (auto row : slot.instruments.bond_instruments) {
-            row.instrument.audit.change_reason_code = std::string(population_reason);
-            row.instrument.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.bond_instruments.push_back(row);
-        }
     } else if (!slot.instruments.credit_instruments.empty()) {
         for (auto row : slot.instruments.credit_instruments) {
             row.audit.change_reason_code = std::string(population_reason);

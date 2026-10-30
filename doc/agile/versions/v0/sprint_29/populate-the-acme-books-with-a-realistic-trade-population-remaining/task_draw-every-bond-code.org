@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 6A312257-E1EA-4034-89F7-DE942E8F3D0B
+:END:
+#+title: Task: Draw every bond code and state its facts
+#+description: The bond planner draws one code of the eleven the catalogue routes to the bond instrument table, so a tenant holds only plain bonds and every other bond fact table is empty. Draw all eleven, construct each through its named constructor, persist the facts the plan carries, and prove it with a provisioning run.
+#+type: task
+#+level: s1
+#+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/draw-every-bond-code
+#+pr: 4145
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A provisioned tenant holds every bond code the catalogue routes, each with the fact rows its product states.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- The planner draws every bond code the catalogue routes and constructs each through its own constructor.
+- The writer persists the product's facts and the security's call dates and conversion targets.
+- A provisioning run books every code and fills every bond fact table.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Bond codes drawn | 10 of 10 routed | =select trade_type_code, count(*) from ores_trading_bond_instruments_tbl group by 1= | worktree |
+| Bond instrument rows | 40 (was 24) | =select count(*) ...= | worktree |
+| Option / forward / future / repo / trs / ascot rows | 4 each (was 0) | their tables | worktree |
+| Call dates | 2 | =ores_trading_bond_issue_call_dates_tbl= | worktree |
+| Conversion targets | 1 | =ores_trading_bond_issue_conversion_targets_tbl= | worktree |
+| Bond issues | 21 (was 16) | =ores_trading_bond_issues_tbl= | worktree |
+| Trade rows, latest version | 178 (was 162) | =select count(distinct id) from ores_trading_trades_tbl where valid_to = ...= | worktree |
+| Planner suite | 2,050 assertions in 82 cases | =publish/bin/ores.synthetic.core.tests= | worktree |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4145][#4145]] | [synthetic] Draw every bond code and state its facts |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The bond planner draws the ten codes the catalogue routes to the bond instrument
+table, constructs each through its own constructor, and the writer persists what
+the plan states. A provisioned tenant now holds every one of them, four trades
+each across its four bond books, with the facts their tables expect: four
+options, four forwards, four futures, four repos, four total return swaps and
+four asset swapped convertibles, two call dates on the callable security and one
+conversion target on the convertible. The tenant holds 178 trades where it held
+162.
+
+Three things came out of the work and are recorded rather than hidden.
+
+- BondFutureOption is not routed. The catalogue states it as a bond product and
+  leaves its instrument column empty, so no table can hold it and the planner
+  must not draw it. Its constructor is written and never reached until the
+  catalogue routes it, which is captured.
+- The writer carried two `bond_instruments` branches in one dispatch chain, the
+  second unreachable. The duplicate went with this change.
+- The store states a repo's type as Fixed or Floating, not the word the ORE
+  document uses, and the first run was refused by that check. The planner draws
+  from the store's own set.
+
+The population's mix moves again: bonds are 40 of 178 trades, 22% against the 4%
+Trade Population Weights states. Sizing every class to the weights remains its
+own captured task.

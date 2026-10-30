@@ -203,8 +203,13 @@ cross join (values
     -- trades and foreign exchange, each into the book that entity keeps for that
     -- business; the group holds only an intercompany book and a hedge book, so it
     -- books bonds and foreign exchange and no rates. The set is chosen so no
-    -- class dominates: a class books six or eight trades into its own book. The book count and the population size are the config's,
-    -- so a tenant that wants a thinner book changes a row and not the generator.
+    -- class dominates. Each config states one trade per code its planner
+    -- cycles, because the planner draws the codes by the slot's position: a
+    -- config shorter than the list states a prefix of it and never reaches the
+    -- codes past that point. So bonds book ten, rates nine and foreign
+    -- exchange sixteen per config. The book count and the population size are
+    -- the config's, so a tenant that wants a thinner book changes a row and not
+    -- the generator, and gives up the codes past its slot count by doing so.
     -- The counterparties are the entity's own tradeable links, which is why the
     -- step resolves them rather than the row naming them. No anchor is stated:
     -- the population is meant to sit relative to the present, so it is anchored
@@ -214,7 +219,7 @@ cross join (values
          "description": "The bonds the group books, in its intercompany book.",
          "asset_class_code": "bond", "book": "Group Intercompany Loans",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 6, "structures_per_book": 2},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 10, "structures_per_book": 2},
                 {"party": "Acme Corporation Plc", "name": "ACME ACMCOR FX",
          "description": "The foreign exchange trades the group books, in its hedge book.",
          "asset_class_code": "fx", "book": "Group FX Hedges",
@@ -224,7 +229,7 @@ cross join (values
          "description": "The bonds the UK entity books, in its own bonds book.",
          "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 45, "trades_per_book": 6, "structures_per_book": 2},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 45, "trades_per_book": 10, "structures_per_book": 2},
         {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK rates",
          "description": "The interest rate trades the UK entity books, in its sterling swaps book.",
          "asset_class_code": "interest_rates", "book": "GBP Vanilla Swaps",
@@ -254,7 +259,7 @@ cross join (values
          "description": "The bonds the US entity books, in its own bonds book.",
          "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 48, "trades_per_book": 6, "structures_per_book": 2},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 48, "trades_per_book": 10, "structures_per_book": 2},
         {"party": "ACME Corporation US Inc", "name": "ACME ACCOUS rates",
          "description": "The interest rate trades the US entity books, in its dollar swaps book.",
          "asset_class_code": "interest_rates", "book": "USD Vanilla Swaps",
@@ -269,7 +274,7 @@ cross join (values
          "description": "The bonds the Hong Kong entity books, in its own bonds book.",
          "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 51, "trades_per_book": 6, "structures_per_book": 2},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 51, "trades_per_book": 10, "structures_per_book": 2},
         {"party": "ACME Corporation HK Ltd", "name": "ACME ACCOHK rates",
          "description": "The interest rate trades the Hong Kong entity books, in its Hong Kong dollar swaps book.",
          "asset_class_code": "interest_rates", "book": "HKD Vanilla Swaps",

@@ -122,6 +122,14 @@ domain::trade_generation_scope bond_scope() {
     scope.as_of_date = std::chrono::year{2026} / 1 / 2;
     scope.seed = 7;
     scope.trades_per_book = scene_trades_per_book;
+    /*
+     * A convertible bond states the share it may convert into, so every bond
+     * scope needs the equity catalogue the writer loads for it.
+     */
+    scope.equity_underlyings = {
+        domain::equity_underlying_reference{.code = "GB0005405286",
+                                            .kind = "share",
+                                            .currency = "GBP"}};
     scope.book_ids = {bond_book, second_book};
     scope.counterparty_ids = {bank, second_bank};
     scope.issuer_ids = {bank, second_bank};
@@ -583,11 +591,12 @@ TEST_CASE("a_scope_naming_no_book_counterparty_or_trader_is_refused", "[trade_po
 }
 
 TEST_CASE("a_family_the_generator_does_not_cover_is_refused_by_name", "[trade_population]") {
-    // Equity has no planner, so it is the class the registry refuses by name.
-    auto equity = bond_scope();
-    equity.asset_class_code = "equity";
+    // Inflation has no planner yet, so it is the class the registry refuses by
+    // name. Equity used to serve this case until its planner was written.
+    auto inflation = bond_scope();
+    inflation.asset_class_code = "inflation";
 
-    CHECK_THROWS_WITH(plan_of(equity), Catch::Matchers::ContainsSubstring("equity"));
+    CHECK_THROWS_WITH(plan_of(inflation), Catch::Matchers::ContainsSubstring("inflation"));
 }
 
 /*
@@ -623,9 +632,14 @@ std::uint64_t envelope_hash(const std::string& rendered) {
 }
 
 TEST_CASE("the_envelope_of_a_bond_plan_is_the_one_that_was_agreed", "[trade_population]") {
-    // Recorded from the planner as it stood before the envelope was extracted,
-    // so this case fails if the extraction changed anything a slot states.
-    CHECK(envelope_hash(render_envelope(plan_of(bond_scope()))) == 9368398884618711992ULL);
+    /*
+     * Recorded from the planner as it stood before the envelope was extracted,
+     * so this case fails if the extraction changed anything a slot states. The
+     * value moved once since, deliberately: the bond planner now draws every
+     * code the catalogue routes rather than a plain Bond alone, and the trade
+     * type is part of the envelope.
+     */
+    CHECK(envelope_hash(render_envelope(plan_of(bond_scope()))) == 15911127303722676035ULL);
 }
 
 TEST_CASE("a_rate_population_states_two_legs_of_one_currency", "[trade_population]") {

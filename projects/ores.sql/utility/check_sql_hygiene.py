@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """SQL hygiene checks that create/drop pairing cannot see.
 
-Two defects shipped through every existing gate and were found by a
+Three defects shipped through every existing gate and were found by a
 database recreation and a seed failure instead:
 
 * An unterminated block comment. PostgreSQL *nests* ``/* */``, so a doc
@@ -14,7 +14,14 @@ database recreation and a seed failure instead:
   PostgreSQL accepts the repeats as no-ops, so the table silently loses
   the shape the generator intended and nothing reports it.
 
-A third check covers DDL that cannot run twice. A ``create trigger`` that
+* A comment between two string literals. PostgreSQL concatenates two
+  constants separated only by whitespace, and a comment is not
+  whitespace, so the comment ends the concatenation. A block comment
+  written inside a long ``format()`` string turns the rest of the string
+  into an argument or a syntax error, and the recreation stops. This one
+  also shipped through every gate.
+
+A fourth check covers DDL that cannot run twice. A ``create trigger`` that
 does not say ``or replace``, a ``create policy`` with no preceding ``drop
 policy if exists``, or a ``create table`` with no ``if not exists`` is fine
 on a fresh database and stops the second ``setup_schema.sql`` run. The
@@ -101,6 +108,100 @@ def duplicate_indexes(text):
         )
         seen[key] = seen.get(key, 0) + 1
     return [(*key, count) for key, count in seen.items() if count > 1]
+
+
+def _after_quoted(text, i, quote):
+    """The offset just past the quoted run that starts at ``i``.
+
+    A doubled quote stands for the quote itself, in a string and in an
+    identifier alike, so the run ends only on a lone one.
+    """
+    n = len(text)
+    j = i + 1
+    while j < n:
+        if text[j] == quote:
+            if text.startswith(quote * 2, j):
+                j += 2
+                continue
+            return j + 1
+        j += 1
+    return n
+
+
+def _after_block_comment(text, i):
+    """The offset just past the block comment that starts at ``i``."""
+    n = len(text)
+    depth = 1
+    j = i + 2
+    while j < n:
+        if text.startswith("/*", j):
+            depth += 1
+            j += 2
+            continue
+        if text.startswith("*/", j):
+            depth -= 1
+            j += 2
+            if depth == 0:
+                return j
+            continue
+        j += 1
+    return n
+
+
+def split_concatenation(text):
+    """Comments that stand between two string literals, as offsets.
+
+    PostgreSQL joins two constants separated only by whitespace, so the
+    literals either side of the comment were meant to be one string. The
+    comment ends the join, and the server reads the rest as an argument or
+    reports a syntax error. A dollar-quoted body is scanned as well, because
+    a function's body is SQL the server runs; the offsets it yields are
+    shifted to name the file's own lines.
+    """
+    problems = []
+    i, n = 0, len(text)
+    while i < n:
+        if text.startswith("--", i):
+            end = text.find("\n", i)
+            i = n if end < 0 else end
+            continue
+        if text.startswith("/*", i):
+            i = _after_block_comment(text, i)
+            continue
+        tag = DOLLAR.match(text, i)
+        if tag:
+            body = i + len(tag.group(0))
+            end = text.find(tag.group(0), body)
+            body_end = n if end < 0 else end
+            problems.extend(body + off for off in split_concatenation(text[body:body_end]))
+            i = n if end < 0 else end + len(tag.group(0))
+            continue
+        if text[i] == '"':
+            i = _after_quoted(text, i, '"')
+            continue
+        if text[i] != "'":
+            i += 1
+            continue
+
+        i = _after_quoted(text, i, "'")
+        j, comment_at = i, -1
+        while j < n:
+            if text[j] in " \t\r\n":
+                j += 1
+                continue
+            if text.startswith("--", j):
+                comment_at = j if comment_at < 0 else comment_at
+                end = text.find("\n", j)
+                j = n if end < 0 else end + 1
+                continue
+            if text.startswith("/*", j):
+                comment_at = j if comment_at < 0 else comment_at
+                j = _after_block_comment(text, j)
+                continue
+            break
+        if comment_at >= 0 and j < n and text[j] == "'":
+            problems.append(comment_at)
+    return problems
 
 
 def mask_non_code(text):
@@ -283,6 +384,11 @@ def main(dirs):
             problems.append(
                 f"{path}: index {name} on {table} ({columns}) is defined {count} times"
             )
+        for offset in split_concatenation(text):
+            problems.append(
+                f"{path}:{line_of(text, offset)}: a comment splits two string literals;"
+                " PostgreSQL joins them only across whitespace, so move the comment"
+                " above the statement")
         for offset, why in not_re_runnable(text):
             problems.append(f"{path}:{line_of(text, offset)}: {why}; a second run would fail")
     for problem in problems:

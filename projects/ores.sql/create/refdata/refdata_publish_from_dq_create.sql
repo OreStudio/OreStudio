@@ -5253,6 +5253,11 @@ begin
 
         -- The publish's own parameters cannot stay bare identifiers in an
         -- EXECUTE string: format() interpolates them as literals instead.
+        --
+        -- The insert ends in an on conflict do nothing, so a convention whose
+        -- identity is already live is a skip. The not exists guard below keeps
+        -- a republish from staging the row again, and the version unique index
+        -- is the statement's own guarantee when the guard does not see it.
         execute format(
             'insert into %1$I (tenant_id, %2$s version, %3$s modified_by, '
                 'performed_by, change_reason_code, change_commentary) '
@@ -5265,12 +5270,6 @@ begin
                   'where o.tenant_id = %8$L::uuid%7$s '
                     'and o.id = a.id '
                     'and o.valid_to = ores_utility_infinity_timestamp_fn()) '
-            /*
-             * The guard above keeps a republish from staging the row again, and
-             * the version unique index is the statement's own guarantee: a
-             * published convention whose identity is already live is a skip,
-             * whether the guard saw it or not.
-             */
             'on conflict do nothing',
             v_target, v_party_target, v_cols, v_party_expr, v_commentary,
             v_artefact, v_party_cond,

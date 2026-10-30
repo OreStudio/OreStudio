@@ -26,11 +26,11 @@ A session is a row: supplier, adapter, environment, endpoint, credential referen
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance

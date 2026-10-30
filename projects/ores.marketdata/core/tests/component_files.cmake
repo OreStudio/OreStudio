@@ -56,6 +56,7 @@ set(files
     "repository_subscription_route_tests.cpp"
     "repository_tick_reads_tests.cpp"
     "series_classification_rule_eventing_integration_tests.cpp"
+    "service_catalogue_read_tests.cpp"
     "service_corpus_import_tests.cpp"
     "service_fixing_reader_tests.cpp"
     "service_import_party_series_tests.cpp"

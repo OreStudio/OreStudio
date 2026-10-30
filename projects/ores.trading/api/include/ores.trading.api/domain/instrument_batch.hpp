@@ -28,11 +28,6 @@
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche_notional.hpp"
-#include "ores.trading.api/domain/bond_issue.hpp"
-#include "ores.trading.api/domain/bond_issue_leg.hpp"
-#include "ores.trading.api/domain/bond_issue_leg_amount.hpp"
-#include "ores.trading.api/domain/bond_issue_leg_rate.hpp"
-#include "ores.trading.api/domain/bond_issue_leg_schedule.hpp"
 #include "ores.trading.api/domain/bond_instrument_data.hpp"
 #include "ores.trading.api/domain/callable_swap_call_date.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
@@ -111,18 +106,6 @@ struct instrument_batch {
      * @brief The bond_instrument_data rows, keyed by trade id.
      */
     std::vector<bond_instrument_data> bond_instruments;
-    /**
-     * @brief The security a bond trade is written against, and its children.
-     *
-     * A bond states a security before it states a trade, so the batch carries
-     * the issue and its rows beside the instrument. The rows are the ones the
-     * composite write takes, in the same order and with the same meanings.
-     */
-    std::vector<bond_issue> bond_issues;
-    std::vector<bond_issue_leg> bond_issue_legs;
-    std::vector<bond_issue_leg_amount> bond_issue_leg_amounts;
-    std::vector<bond_issue_leg_rate> bond_issue_leg_rates;
-    std::vector<bond_issue_leg_schedule> bond_issue_leg_schedules;
     /**
      * @brief The commodity_instrument rows, keyed by trade id.
      */

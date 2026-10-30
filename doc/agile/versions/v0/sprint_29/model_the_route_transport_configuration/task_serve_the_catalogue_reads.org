@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata:implementation:model_the_route_transport_configuration:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-catalogue-reads
+#+pr: 4122
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Publishers, suppliers, adapters, sessions and feeds are readable through the API
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -56,7 +56,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Read service tests | 5 cases, 25 assertions | =ores.marketdata.core.tests "[service][catalogue]"= | 131e481887 |
+| Read permission pgtap | 6/6 pass | =run_tests.sh marketdata_catalogue_read_permissions_test.sql= | 131e481887 |
+| Build | green | =./compass.sh build= | 131e481887 |
+| Checks | green | =./compass.sh check --exclude-heavy= | 131e481887 |
 
 * Notes
 
@@ -75,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4122][#4122]] | [marketdata] Serve and test the catalogue reads |
 
 * Review
 
@@ -84,3 +87,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** Outcome
+
+Each catalogue entity has a list and a single read that the service serves:
+publisher, supplier, adapter, session and feed. A test calls both for each
+entity, so a read cannot quietly disappear.
+
+The five read permissions are seeded, and the Viewer role holds all five, so
+the Connectivity screen can read the catalogue without a write grant. A pgtap
+suite states the permissions, the Viewer grants and the rows a screen reads.
+
+The generated reads already existed; this task proves them and closes the
+permission gap for suppliers, adapters and sessions.

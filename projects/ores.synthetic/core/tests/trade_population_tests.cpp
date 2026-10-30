@@ -57,10 +57,38 @@ domain::trade_population_plan plan_of(const domain::trade_generation_scope& scop
  * The bond facts a slot carries. The slot states the keys every family shares
  * and its own family's terms, so a case that reads a bond fact says so.
  */
-const domain::bond_terms& bond_of(const domain::trade_population_slot& slot) {
-    return std::get<domain::bond_terms>(slot.terms);
-}
 
+/*
+ * What a bond slot states, read from its rows. A bond states a security before
+ * it states a trade, so the case reads the issue and its schedule rather than a
+ * bag: the term a security has is the distance its schedule spans.
+ */
+struct bond_view final {
+    std::string security_id;
+    boost::uuids::uuid issue_id;
+    boost::uuids::uuid issuer_id;
+    std::chrono::year_month_day issue_date;
+    std::chrono::year_month_day maturity_date;
+    std::uint32_t tenor_years = 0;
+};
+
+bond_view bond_of(const domain::trade_population_slot& slot) {
+    const auto& issue = slot.instruments.bond_issues.front();
+    const auto& schedule = slot.instruments.bond_issue_leg_schedules.front();
+    bond_view view;
+    view.security_id = issue.security_id;
+    view.issue_id = issue.issue_id;
+    view.issuer_id = boost::uuids::string_generator()(issue.issuer);
+    view.issue_date = *issue.issue_date;
+    view.maturity_date = *schedule.end_date;
+    const auto days = std::chrono::sys_days{view.maturity_date} -
+                      std::chrono::sys_days{view.issue_date};
+    view.tenor_years = static_cast<std::uint32_t>(std::chrono::duration_cast<std::chrono::days>(
+                                                      days)
+                                                      .count() /
+                                                  365);
+    return view;
+}
 
 const boost::uuids::uuid config_id =
     boost::uuids::string_generator()("0cd68b09-6ebc-4180-a298-0cc386590f31");
@@ -249,8 +277,6 @@ TEST_CASE("a_credit_slot_states_its_row_and_names_a_legal_entity", "[trade_popul
 
     REQUIRE(!plan.slots.empty());
     for (const auto& slot : plan.slots) {
-        // The family states its row and no bag.
-        REQUIRE(std::holds_alternative<std::monostate>(slot.terms));
         REQUIRE(slot.instruments.credit_instruments.size() == 1u);
         const auto& row = slot.instruments.credit_instruments.front();
         // The row states the party boundary and no trade type: the trade states
@@ -353,7 +379,6 @@ TEST_CASE("an_equity_slot_names_an_underlying_the_catalogue_holds", "[trade_popu
          * The family states its rows and no bag: one header row per slot, in
          * the table its type routes to.
          */
-        REQUIRE(std::holds_alternative<std::monostate>(slot.terms));
         REQUIRE(header_rows_of(slot) == 1u);
         const auto underlying = underlying_of(slot);
         if (underlying.empty()) {
@@ -422,7 +447,6 @@ TEST_CASE("a_commodity_slot_states_its_own_rows_and_names_a_catalogue_commodity"
          * writer persists. A slot with no bag must not read as any family,
          * and the bond writer takes the first alternative it finds.
          */
-        REQUIRE(std::holds_alternative<std::monostate>(slot.terms));
         REQUIRE(slot.instruments.commodity_instruments.size() == 1u);
         const auto& row = slot.instruments.commodity_instruments.front();
         REQUIRE_FALSE(row.commodity_code.empty());
@@ -443,11 +467,27 @@ TEST_CASE("a_commodity_population_with_no_catalogue_is_refused", "[trade_populat
     CHECK_THROWS_WITH(plan_of(empty), Catch::Matchers::ContainsSubstring("catalogue"));
 }
 
-TEST_CASE("a_bond_slot_still_states_bond_terms", "[trade_population]") {
+TEST_CASE("a_bond_slot_states_its_instrument_and_its_security", "[trade_population]") {
     const auto plan = plan_of(bond_scope());
 
-    for (const auto& slot : plan.slots)
-        REQUIRE(std::holds_alternative<domain::bond_terms>(slot.terms));
+    for (const auto& slot : plan.slots) {
+        /*
+         * A bond states a security before it states a trade, so the batch
+         * carries the issue with the rows the composite write takes.
+         */
+        REQUIRE(slot.instruments.bond_instruments.size() == 1u);
+        REQUIRE(slot.instruments.bond_issues.size() == 1u);
+        const auto& issue = slot.instruments.bond_issues.front();
+        REQUIRE_FALSE(issue.security_id.empty());
+        CHECK(issue.issue_id == slot.instruments.bond_instruments.front().instrument.issue_id);
+        REQUIRE(slot.instruments.bond_issue_legs.size() == 1u);
+        REQUIRE(slot.instruments.bond_issue_leg_rates.size() == 1u);
+        REQUIRE(slot.instruments.bond_issue_leg_schedules.size() == 1u);
+        // A notional and a coupon, which is the pair the engine prices.
+        REQUIRE(slot.instruments.bond_issue_leg_amounts.size() == 2u);
+        REQUIRE(slot.instruments.bond_issue_leg_amounts.front().amount_role == "notional");
+        REQUIRE(slot.instruments.bond_issue_leg_amounts.back().amount_role == "rate");
+    }
 }
 
 TEST_CASE("a_bond_scope_states_one_trade_per_slot_across_its_books", "[trade_population]") {
@@ -468,10 +508,12 @@ TEST_CASE("the_same_scope_states_the_same_population_twice", "[trade_population]
     for (std::size_t i = 0; i < once.slots.size(); ++i) {
         REQUIRE(once.slots[i].trade_id == twice.slots[i].trade_id);
         REQUIRE(once.slots[i].internal_identifier == twice.slots[i].internal_identifier);
-        REQUIRE(bond_of(once.slots[i]).security_id == bond_of(twice.slots[i]).security_id);
+        REQUIRE(once.slots[i].instruments.bond_issues.front().security_id ==
+                twice.slots[i].instruments.bond_issues.front().security_id);
         REQUIRE(once.slots[i].notional == twice.slots[i].notional);
         REQUIRE(once.slots[i].trade_date == twice.slots[i].trade_date);
-        REQUIRE(bond_of(once.slots[i]).maturity_date == bond_of(twice.slots[i]).maturity_date);
+        REQUIRE(once.slots[i].instruments.bond_issue_leg_schedules.front().end_date ==
+                twice.slots[i].instruments.bond_issue_leg_schedules.front().end_date);
     }
 }
 
@@ -496,8 +538,8 @@ TEST_CASE("every_trade_date_derives_from_the_as_of_anchor", "[trade_population]"
 
     REQUIRE(first.slots.front().trade_date < second.slots.front().trade_date);
 
-    REQUIRE(bond_of(first.slots.front()).maturity_date <
-            bond_of(second.slots.front()).maturity_date);
+    REQUIRE(first.slots.front().instruments.bond_issue_leg_schedules.front().end_date <
+            second.slots.front().instruments.bond_issue_leg_schedules.front().end_date);
 }
 
 TEST_CASE("a_tenor_or_notional_band_that_does_not_order_is_refused", "[trade_population]") {
@@ -586,7 +628,6 @@ TEST_CASE("a_rate_population_states_two_legs_of_one_currency", "[trade_populatio
          * The family states its rows and no bag: the legs, the amounts, the
          * rates and the strikes are what the writer persists.
          */
-        REQUIRE(std::holds_alternative<std::monostate>(slot.terms));
         REQUIRE(slot.instruments.rate_instruments.size() == 1u);
         REQUIRE(slot.instruments.swap_legs.size() == 2u);
         REQUIRE(slot.instruments.swap_leg_amounts.size() == 2u);
@@ -658,7 +699,6 @@ TEST_CASE("an_fx_population_states_the_row_its_type_routes_to", "[trade_populati
          * The family states its rows and no bag: exactly one routed row per
          * slot, and it is the row the type belongs to.
          */
-        REQUIRE(std::holds_alternative<std::monostate>(slot.terms));
         const auto& type = slot.trade_type_code;
         const auto& batch = slot.instruments;
 
@@ -752,8 +792,14 @@ TEST_CASE("the_notional_of_every_slot_sits_in_the_band", "[trade_population]") {
     for (const auto& slot : plan.slots) {
         REQUIRE(slot.notional >= scope.min_notional);
         REQUIRE(slot.notional <= scope.max_notional);
-        REQUIRE(bond_of(slot).tenor_years >= 1);
-        REQUIRE(bond_of(slot).tenor_years <= 10);
+        // The security's term is the distance its schedule spans.
+        const auto& schedule = slot.instruments.bond_issue_leg_schedules.front();
+        REQUIRE(schedule.start_date.has_value());
+        REQUIRE(schedule.end_date.has_value());
+        const auto days = std::chrono::sys_days{*schedule.end_date} -
+                          std::chrono::sys_days{*schedule.start_date};
+        CHECK(days.count() >= 300);
+        CHECK(days.count() <= 3700);
     }
 }
 

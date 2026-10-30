@@ -27,7 +27,6 @@
 #include <cstdint>
 #include <optional>
 #include <string>
-#include <variant>
 #include <vector>
 
 namespace ores::synthetic::domain {
@@ -200,7 +199,7 @@ struct trade_generation_scope final {
 };
 
 /**
- * @brief The facts a bond slot carries and no other family does.
+ * @brief The facts the bond planner draws, before it states its security and instrument.
  *
  * A bond is a security, so its terms are the security's and not the trade's:
  * several trades of one security state the same issue and the same maturity.
@@ -547,14 +546,6 @@ struct equity_terms final {
     std::vector<equity_range_bound> range_bounds;
 };
 
-/**
- * @brief The bag a family fills while it still draws facts rather than rows.
- *
- * The monostate comes first so a slot whose family states its rows holds no
- * bag at all. Without it the variant's default is the first alternative, and
- * a slot that states rows would read as a bond with empty terms.
- */
-using trade_terms = std::variant<std::monostate, bond_terms>;
 
 /**
  * @brief One trade the population states, with every reference already
@@ -580,13 +571,6 @@ struct trade_population_slot final {
     double notional = 0.0;
     std::string currency;
     bool intra_group = false;
-    /**
-     * @brief The facts that belong to this slot's own family, and to no other.
-     *
-     * A family that states rows holds the monostate here, so nothing reads its
-     * empty slot as facts of another family.
-     */
-    trade_terms terms;
     /**
      * @brief The domain rows this slot states, when its family has been flipped.
      *

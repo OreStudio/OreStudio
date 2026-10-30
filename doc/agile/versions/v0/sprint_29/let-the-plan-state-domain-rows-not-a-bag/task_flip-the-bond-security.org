@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The bond planner states the security the trade holds, and the writer sends it wi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
-| Now          | Not yet started.                       |
+| Now          | Flipped and proven on a fresh tenant.  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-29                               |
+| Next         | Record the PR, then close the story.   |
+| Last touched | 2026-10-30                             |
 
 * Acceptance
 
@@ -57,7 +57,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Bond instrument rows | 24 | =select count(*) from ores_trading_bond_instruments_tbl= | worktree |
+| Bond issues | 16, one per security | =select count(distinct security_id) from ores_trading_bond_issues_tbl= | worktree |
+| Issue legs / rates / schedules | 16 each | the matching tables | worktree |
+| Issue amounts | 32, a notional and a coupon each | =ores_trading_bond_issue_leg_amounts_tbl= | worktree |
+| Instruments with no issue | 0 | =... where not exists (select 1 from ... issues ...)= | worktree |
+| Trade rows, latest version | 127 | =select count(distinct id) from ores_trading_trades_tbl where valid_to = ...= | worktree |
+| Planner suite | 2,041 assertions in 80 cases | =publish/bin/ores.synthetic.core.tests= | worktree |
 
 * Notes
 
@@ -102,3 +108,29 @@ with the issue's own identifiers.
 The instrument flip kept =terms= precisely because this coupling exists, and the
 planner's tests caught it. Moving the security is the step that lets
 =bond_terms= leave the plan, so it is the step that starts deleting the bag.
+
+The bond security states its rows. The planner builds the issue with its leg, its
+notional and its coupon, its rate and its schedule rule, and puts them in the
+batch beside the instrument; the writer packs them into the composite write,
+stamps every row and sends. It decides nothing about the issue now: the terms
+were drawn where the security was drawn.
+
+The bag is deleted. `trade_terms` and the slot's `terms` member are gone, every
+family's planner keeps its own drawing struct, and the writer's dispatch has no
+bag arm left. That was the story's endgame: the slot states rows, and one
+structure describes each family's drawing rather than what a slot carries.
+
+The population is unchanged: 24 bond instrument rows, 16 issues with a leg, a
+rate, a schedule and a notional-plus-coupon pair each, no instrument without its
+issue, and 127 trades in total.
+
+One number moved and the record should say so. An earlier run on the same
+population counted 18 issue rows where this one counts 16. The issue table is
+versioned and that count includes every version, so a re-written issue adds a
+row; the current run holds sixteen securities, sixteen live issues and no
+orphan instrument, and no test or provisioning step depends on the version
+count. It is noted rather than explained because the earlier database is gone.
+
+The task document reached this branch late: the story listed the row, but the
+doc itself was never merged from its scaffold branch, so the table held a row
+with no link until this PR brought the doc with it.

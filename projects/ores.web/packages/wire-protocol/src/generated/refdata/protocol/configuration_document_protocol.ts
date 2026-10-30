@@ -122,6 +122,18 @@ export interface CurveConfigurationDocument {
  */
 export interface SaveCurveConfigurationDocumentRequest {
     document: CurveConfigurationDocument;
+    /**
+     * @brief The reason every row this save writes carries.
+     *
+     * An amendment states why it was made, and the rows of the new version take
+     * that reason rather than the one the document was imported with. Empty
+     * leaves the store's own reason, which is the create case.
+     */
+    reason_code: string;
+    /**
+     * @brief The words that go with the reason, empty when the reason needs none.
+     */
+    commentary: string;
 }
 
 /**

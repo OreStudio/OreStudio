@@ -149,7 +149,9 @@ struct save_curve_configuration_document_request {
      * leaves the store's own reason, which is the create case.
      */
     std::string reason_code;
-    /** The words that go with the reason, empty when the reason needs none. */
+    /**
+     * @brief The words that go with the reason, empty when the reason needs none.
+     */
     std::string commentary;
 };
 

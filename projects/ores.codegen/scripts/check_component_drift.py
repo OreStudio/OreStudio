@@ -432,6 +432,18 @@ def _touched_files(base: str) -> set:
     return touched
 
 
+def _decides_every_component(path: str) -> bool:
+    """Whether a changed path can alter what every component generates.
+
+    The generator and its templates decide every component's output, so a
+    change under them is a change to all of it. A check's own ratchet data
+    states what the tree is allowed to hold; it reads the output and writes
+    none, so it selects no component and the branch's models do.
+    """
+    return path.startswith(("projects/ores.codegen/src/",
+                            "projects/ores.codegen/library/"))
+
+
 def _touched_components(touched: set, components: list) -> list:
     """The components this branch's models belong to.
 
@@ -443,7 +455,7 @@ def _touched_components(touched: set, components: list) -> list:
     component a stray generated file belongs to, and a wrong guess would hide
     the drift the check exists to find.
     """
-    if any(path.startswith("projects/ores.codegen/") for path in touched):
+    if any(_decides_every_component(path) for path in touched):
         return list(components)
     modelling = [path for path in touched
                  if "/modeling/" in path and path.endswith(".org")]

@@ -58,7 +58,8 @@ export function notificationRoute(notification: InboxNotificationView): string {
 }
 
 /**
- * The bell: what has happened, and how much of it is unread.
+ * The bell: the unread notices, and how many there are. A read notice leaves the
+ * list; the record of what was told is the notification's own row, not the bell.
  *
  * The count sits on every screen, so it is read on a timer rather than pushed:
  * the client's own default already reads it again when the window takes focus,
@@ -82,7 +83,7 @@ export function NotificationBell(): ReactNode {
     });
     const list = useQuery({
         queryKey: ['notifications'],
-        queryFn: () => api.myNotifications({ unreadOnly: false, offset: 0, limit: LISTED }),
+        queryFn: () => api.myNotifications({ unreadOnly: true, offset: 0, limit: LISTED }),
         refetchInterval: POLL_MS,
     });
     const count = unread.data ?? 0;

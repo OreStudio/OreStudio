@@ -1,0 +1,379 @@
+:PROPERTIES:
+:ID: F549E23F-74A5-4A96-BC50-4845B1ABD460
+:END:
+#+title: The cut prototype
+#+description: The cuts screens before they are built: the list with the day's states, the cut's record with the body it fixed and the authorisation, the take flow with its gaps, the picker that refuses an unauthorised cut, the run that names the cut and reproduces, and the named cut times of Reference data.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:cut:valuation:reporting:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+| Item          | Where                                    |
+|---------------+------------------------------------------|
+| Prototype     | [[file:the-cut/][the prototype]]      |
+| Gemini review | none                                     |
+| Group         | [[file:index.org][Cuts prototypes]]      |
+
+* Summary
+
+The screens a cut needs, as one plain page with seven surfaces: the cuts list, the
+cut's record page, the take flow, the picker that consumes a cut, the run that
+names one, and the named cut times of Reference data with the record of one.
+
+The page draws the model
+[[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices
+from]] states, and it does not restate the argument for it. It takes the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] for the
+shape of the list and the record, the
+[[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]] for
+the tab that holds the cut a report prices from, and the
+[[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][report binding decision]] for the
+picker, the refusals and the run's card.
+
+It is throwaway. It reads no service, it holds no session, and every value on it
+is mock data. It exists because the journeys settle what a cut *is* and nothing
+yet settles what a person *sees* while taking one, being refused one, or reading
+what a run priced from.
+
+* Detail
+
+** The question
+
+The decision note settles the record: the facts, the states, the permissions, the
+identity and the second binding. It does not settle the screens, and the screens
+are where the model lives or dies:
+
+1. Where do the cuts live, so that a person who asks what a result was computed
+   from finds them?
+2. What does a body that cannot be assembled look like, and what may a person do
+   with it?
+3. What does a cut look like in every state, and how does a person tell a body
+   that awaits a signature from one that holds none?
+4. How is a cut chosen for a report, and what does the refusal say when the cut
+   cannot be used?
+5. What does a run say about the body it priced from, and can a person tell a
+   reproduction from a movement?
+6. What is a named cut time, where does a person read one, and what does the take
+   read from it?
+
+The prototype answers all six, and the notes below say what each answer costs.
+
+** The surfaces
+
+Switch with the bottom bar, or with the query string. The default is the list.
+
+| Surface | Query | What it draws |
+|---------+-------+---------------|
+| The cuts list | =?surface=list= | The cuts of the scope: label, kind, timepoint, state, taker, authoriser, runs. The empty state, the loading state and the server's error |
+| The cut's record | =?surface=record= | The label as the title, the state, the four tabs: *The body*, *Authorisation*, *Runs*, *History* |
+| The take flow | =?surface=take&step=1= | Four steps on a rail: the kind and the instant, the body with its gaps, the review against the previous cut, the press that takes and raises |
+| The picker | =?surface=pick= | The cuts of the party over the run settings tab that names one, with the state and the refusal in the footer |
+| The run | =?surface=run= | The run's page: the runs and the body each met, the card naming the cut, and the comparison verdict |
+| The cut times | =?surface=times= | The reference data list: the code, the time of day, the timezone, the centre and the kinds each serves |
+| A cut time | =?surface=time= | The record page of one: the fields, what uses it, the history |
+
+The list is the home of the journey that takes a cut, and the record is the home
+of the journey that audits one. The picker and the run are the second journey's.
+
+** Why the cuts live in Reporting, and the cut times in Reference data
+
+The [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] asks one
+question of a screen: which topic would a person look in? A cut exists for one
+purpose, the valuation a run computes, and a person who asks what a number was
+computed from looks where the reports are. So the list, the record and the take
+flow take the trail Home, Reporting, Cuts, and the run settings tab that names a
+cut sits among the configuration's own tabs.
+
+Two placements are rejected. Market data holds the feeds and curves that change by
+the minute, and a cut changes once a day and is not a price. Trades holds what the
+tenant holds and does with a trade, and a cut is not a trade. The reference data
+the take reads is the opposite case: a named cut time is a list that changes by
+the month, so it sits in Reference data among the currencies and calendars, and
+the option-expiry sense of the word reads the same list.
+
+The prototype adds no area and no card, because the menu page's rule is that a
+screen is added to an area page as a card when the screen exists. The page states
+the area and the trail, and the card follows the build.
+
+** The list, and the day's states
+
+The table is the standard's list with one column of the design's own: *State*
+draws the derived state as a badge, and under it the fact that qualifies it — a
+superseded cut says when it was replaced, and a taken cut says which part it waits
+on. Two columns answer the question the cluster exists for: *Taker* and
+*Authoriser*, and the count of *Runs* that priced from the body.
+
+The default order is the timepoint, newest first, because the person reading the
+list is asking which body the next run will price from. A superseded cut sits
+under the one that replaced it and stays in the list: the runs that priced from it
+still reproduce from it, so hiding it would hide the provenance of a result.
+
+The state badges follow
+[[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]]. Grey is an inactive
+record, so *Draft* and *Superseded* are grey. Blue is pending, so *Taken* is blue.
+Green is *Authorised*. Red is a body that failed, so *Incomplete* and *Refused* are
+red. The flash cut draws *Indicative* in violet, which is the classification
+family, because a flash result is not a failed one and not a signed one either.
+
+One notice sits under the table when a cut is not consumable, and it names each
+cut and its state. A person who sees it knows the reports of the scope are refused
+before they try to run one.
+
+** The record, and the four tabs**
+
+*The body* is the design's own tab, and it draws the five parts the
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note argues for: the deals
+with their counts and states, the market data as a fixed snapshot with its sets,
+values and fixings, the reference data by version, the engine and the code, and
+the taking identity. A sixth panel draws the identity: the derived label, the
+kind, the timepoint with its timezone, the cut time it read, and the take ordinal.
+
+The gap list is drawn where a body could not be assembled, as a table of part,
+item, why it stands and what closes it. The shape is the one thing in this
+prototype that no rule covers, and the note names it as the candidate for a
+standard: a configuration's import lists what it could not read, and this lists
+what an assembly could not fill, with the same three facts — the item, the reason
+and the remedy.
+
+*Authorisation* draws the two acts, the part that decides, the decider, the
+instant and the comment, and it states the four-eyes rule as a fact rather than a
+warning. *Runs* draws the runs that priced from the body, which is the question a
+person asks before a cut is superseded. *History* is the shared timeline, and it
+is short: the body is immutable once taken, so a taken cut has two entries and no
+more.
+
+** The take flow, and why it is four steps**
+
+The take is the one place where a rail earns its place: it is four acts over one
+body rather than one edit, and the review is the point of the exercise. The rail
+reads: Kind and timepoint, The body, Review, Take and authorise.
+
+Step 2 is where the design has teeth. Every part is drawn with its state — closed
+or open — and the gaps sit under the table in full. *Save as a draft* appears in
+place of *Take the cut* while a gap stands, and the rule under the buttons says
+why: a decider would be asked to sign a body that does not meet the definition.
+
+Step 3 reviews the body against the previous cut of the same kind and scope,
+because the movement between two cuts is what the day's reports state: the deals
+that entered, the deals that left, the states that moved, the values that moved
+and the versions that changed.
+
+Step 4 draws what the press did, not a success message: the body frozen at an
+instant, the request raised for a named part, the cut in *Taken*, and the
+statement that the taker cannot authorise it. The button is not drawn, which is
+the standard's rule for an action a person may not take.
+
+** The picker, and the two refusals**
+
+The picker is the record standard's =RecordPicker= over cuts, and it follows the
+binding decision's findings: the shared picker reads its whole kind once and draws
+no state, so the screen needs a =CutPicker= or the shared one needs a filtered
+form and a state cell.
+
+The footer is where a state becomes a sentence. An authorised cut offers *Price
+from this cut* and states that the run prices from the body and from nothing else.
+A superseded cut is offered with the sentence that a rerun reproduces an earlier
+result from it and a new run should normally name the cut in use, and the button
+says *anyway* — the published-set pin is not repeated here, because a cut is a
+record of an instant and not a value in use.
+
+The two refusals are drawn in full. A taken cut is refused with the part it waits
+on. An incomplete cut is refused with its gap count and where the gaps are read. A
+refused cut is refused with its reason and the statement that the remedy is a new
+take. The flash cut is not refused: its authorisation is pending by its occasion,
+the footer says so, and the button offers an indicative body.
+
+** The run, and the comparison**
+
+The run's page carries the binding decision's card, read through the cut: the
+label, the kind, the timepoint, the scope, the counts, the taker, the authoriser
+and the engine version, and under it the market roles inside the body with their
+publish records.
+
+Below the card sits the comparison, and it is one of three verdicts. *Reproduced*
+draws the two runs' figures as equal and says they are one result computed twice.
+*Differs* draws the figures that moved, and says the body and the engine are the
+same, so the difference is a defect and not a movement of the market. *Cannot be
+compared* names one of three reasons: the engine version differs, a part of the
+body is no longer served, or the body was retaken. That third verdict is what an
+auditor writes down, so it is stated as a sentence and not as a red mark.
+
+The strip above the runs switches between all eight outcomes — three verdicts,
+three reasons and two refusals — because a reviewer cannot judge the design from
+the happy path.
+
+** The named cut times**
+
+The reference data surface is a standard list and a standard record. The list
+draws the code and name, the time of day, the timezone, the centre, the kinds the
+cut time serves and the counts of what uses it. The record carries the fields, the
+daylight-saving rule, what uses the row, and its history, and it states the rule
+that a cut time cannot be deleted while a book or a pair names it.
+
+Three callers are drawn, and only one of them exists as a field: a book's centre,
+a currency pair's planned =default_cut_code=, and the cuts that fixed an instant
+at it. The page states that the times are our convention and no public source
+fixes them, which is the position the cluster records.
+
+** The states**
+
+Switch with the bottom bar, or with the query string. The two axes are the surface
+and the state of the world.
+
+| Surface | State | What it shows |
+|---------+-------+---------------|
+| List | =?surface=list= | The day as it stands: an authorised cut in use, a superseded predecessor, an indicative flash, an incomplete body, a cut awaiting its signature, and a refusal |
+| List | =?surface=list&case=none= | No cuts at all: the empty state, and the sentence that a day with no cut is not a fault |
+| List | =?surface=list&case=draft= | One cut in *Draft*, taken but with no body fixed |
+| List | =?surface=list&case=incomplete= | One cut in *Incomplete* |
+| List | =?surface=list&case=taken= | One cut awaiting its signature |
+| List | =?surface=list&case=refused= | One cut whose authorisation was refused |
+| List | =?surface=list&case=superseded= | A cut and the one that replaced it |
+| List | =?surface=list&case=indicative= | The flash cut of the day |
+| List | =?surface=list&case=loading= | Loading, in the table's body |
+| List | =?surface=list&case=error= | The server's words and *Retry*, and never a modal box |
+| Record | =?surface=record= | An authorised cut and its body |
+| Record | =?surface=record&case=incomplete= | The gaps, drawn in full, and no *Take* on the screen |
+| Record | =?surface=record&case=taken&tab=auth= | A cut awaiting its signature, the four-eyes sentence, and the part it waits on |
+| Record | =?surface=record&case=refused= | A refusal, the reason, and the statement that the remedy is a new take |
+| Record | =?surface=record&case=superseded= | A superseded cut, and the runs that still rest on it |
+| Record | =?surface=record&case=indicative= | The flash cut, indicative by its occasion |
+| Record | =?surface=record&tab=runs= | The runs that priced from the body |
+| Record | =?surface=record&tab=history= | The two acts, and the statement that the body is immutable |
+| Take | =?surface=take&step=1= | The kinds, the instant, the derived label and the scope |
+| Take | =?surface=take&step=1&case=indicative= | The flash kind, with an instant the process names |
+| Take | =?surface=take&step=2= | The body assembled, every part closed |
+| Take | =?surface=take&step=2&case=incomplete= | The body with three gaps, and *Save as a draft* in place of *Take* |
+| Take | =?surface=take&step=3= | The review against the previous cut |
+| Take | =?surface=take&step=4= | The press: the body frozen, the request raised, the taker refused the decision |
+| Take | =?surface=take&case=none= | A party with no centre, and what would give it one |
+| Picker | =?surface=pick= | The cuts of the party, and the footer's default |
+| Picker | =?surface=pick&pick=c1= | An authorised cut chosen, and the bind |
+| Picker | =?surface=pick&case=taken&pick=c5= | A taken cut chosen, and the refusal |
+| Picker | =?surface=pick&case=incomplete&pick=c4= | An incomplete cut chosen, and the refusal |
+| Picker | =?surface=pick&case=refused&pick=c6= | A refused cut chosen, and the refusal |
+| Picker | =?surface=pick&case=superseded&pick=c2= | A superseded cut chosen, offered with its sentence |
+| Picker | =?surface=pick&case=indicative&pick=c3= | The flash cut chosen, and the indicative offer |
+| Picker | =?surface=pick&case=none= | No cut to pick, and the sentence that says why |
+| Run | =?surface=run= | The run that priced, the card, and *Reproduced* |
+| Run | =?surface=run&verdict=differs= | The figures that moved, and the statement that the body and the engine did not |
+| Run | =?surface=run&verdict=cannot-engine= | The engine version differs |
+| Run | =?surface=run&verdict=cannot-part= | A part of the body is no longer served |
+| Run | =?surface=run&verdict=cannot-retake= | The body was retaken |
+| Run | =?surface=run&verdict=refused-taken= | A run refused because the cut is taken and unauthorised |
+| Run | =?surface=run&verdict=refused-incomplete= | A run refused because the body has gaps |
+| Run | =?surface=run&verdict=refused= | A run refused because the configuration names no cut |
+| Cut times | =?surface=times= | The list of named cut times, and the times are our convention |
+| A cut time | =?surface=time= | One cut time: the fields, what uses it, the history |
+
+** Driving it
+
+The bottom bar switches the surface and the state, and the query string carries
+the difference from the default, so any pair can be linked. A row of the cuts list
+opens the cut. A row of the picker writes =?pick=. A row of the cut times opens
+the record. The run's strip writes =?verdict=. A kind chosen at step 1 draws the
+instant that kind fixes.
+
+** What is fake
+
+Everything on the page is mock data: the party, its three books, its six cuts,
+their labels, takers, authorisers and instants, the twelve hundred and eighty-four
+deals, the three thousand nine hundred and twelve market data values, the seven
+published sets, the eight runs and their figures, the six cut times and their
+counts. There is no server, no session, no framework and no build step. A press
+writes nothing; the query string is the only state, and a reload returns the page
+as it was.
+
+The mock tenant's clock is 07 October 2026, 09:00 UTC, which is the clock the
+[[id:3E207A59-C1F8-429C-BA23-99DBAEB6EA5E][market bindings prototype]] uses. The
+published sets the market data half names are that prototype's own fixtures moved
+on a day, so the two pages agree about ACME London's USD-SOFR-3M curve: the set
+published on 06 October at 16:00 and in use, publish record =8f2a4c19=.
+
+The reviewer should know three assumptions. The scope is a book group of the
+London centre, which the decision note takes as the convention and leaves open.
+The end of day cut of 06 October is the one a report names, because the close of
+07 October has not happened at the mock clock. And the authorisation part is
+=finance= for the end of day kind and =market_risk= for the verification and flash
+kinds, which are the parts the inbox already seeds.
+
+** Where the code lives
+
+The prototype is =doc/prototypes/cuts/the-cut/index.html=: one file, with its CSS
+and its JavaScript inline, no framework, no =prototype.css=, no =prototype.js=,
+and no build step. The site build copies the directory as it stands and adds
+nothing to it.
+
+The product screens would live here:
+
+| Part | Where |
+|------+-------|
+| The cuts list | =/reporting/cuts=, a record list under =projects/ores.web/packages/web/src/reporting/= |
+| The cut's record | =/reporting/cuts/:id=, the record page with its four tabs |
+| The take flow | =/reporting/cuts/take=, a workflow with a rail, listed in the Workflows menu of the list header |
+| The picker | A =CutPicker= beside =RecordPicker=, reading a new cuts read through a new BFF route |
+| The run settings tab | A tab of the run settings record page, one row naming the cut |
+| The run's card | The run's page, reading the cut the run recorded |
+| The comparison | The run's page, reading both runs' figures |
+| The cut times | =/refdata/cut-times= and =/refdata/cut-times/:code=, a record list and page |
+| The store | A new component for cuts, which does not exist |
+
+The operations exist except where the design note says they do not. The inbox's
+=raise_approval= and =decide_approval= are the platform's, the published reads are
+=ores.marketdata='s, and every cuts read and write is missing.
+
+** The verdict
+
+Open. It is offered for sign-off with the decision it draws.
+
+The design to sign off is: cuts in Reporting with the list, the record and the
+four-step take; the body drawn as five parts with a gap table that stops the take;
+the six states derived and drawn in the UX Language's colours; the picker refusing
+a taken, incomplete or refused cut and offering an indicative flash; the run's
+card read through the cut and its comparison in three verdicts; and the named cut
+times as reference data in Reference data.
+
+** What it does not settle
+
+*The gap table as a standard.* The prototype defines a shape — part, item, why it
+stands, what closes it — and no rule covers it. Whether it joins the record screen
+standard as a shared panel, or stays the take's own, is open.
+
+*The comparison's figures.* The verdict is drawn from two runs' figures, and no
+operation reads a run's figures as rows: the run gives the location of an archive.
+The prototype draws the comparison the design needs and states the gap on the
+card.
+
+*The scope.* A cut of one book group is drawn. Whether a group report prices from
+one cut of the group, or from a composition of the cuts of its books, is the
+decision note's open question and the screen does not answer it.
+
+*The cut time's callers.* Three callers are drawn: a book, a currency pair and the
+cuts taken. Only the third would exist with the cut, and the pair's field is
+planned and unbuilt. Whether the centre a book carries is a cut time or a separate
+centre record is open, and the
+[[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][Business Centre]] page owns it.
+
+*Two doors to the same refusal.* The picker refuses a cut and the run refuses it
+again. Whether the configuration should warn before a run is scheduled — a cut
+that is not consumable on the day a scheduled run fires — belongs to the schedule's
+journey and is not settled here.
+
+*The flash cut's indicative mark.* The violet badge is a proposal. No badge
+definition holds the word, so the build would draw the unmapped fallback until the
+seed gains it.
+
+*See also.*
+
+- [[id:E840111E-AA2F-4746-8D49-A1D73742925E][Take a cut]] — the journey the list, the take flow and the record draw.
+- [[id:9123193E-352D-4F46-8174-7763FA0A44CD][Price a report from a cut]] — the journey the picker and the run draw.
+- [[id:8BD41683-EFA1-467A-B170-BE7041A745D7][Rerun and audit a cut]] — the journey the record's *Runs* tab and the comparison draw.
+- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] — the decision the screens serve.
+- [[id:3E207A59-C1F8-429C-BA23-99DBAEB6EA5E][Market bindings prototype]] — the picker, the card and the fixtures this page continues.
+- [[id:654E4DFD-FD96-4A65-A350-AC8DD3F87BE0][Published curves prototype]] — the published sets the market data half fixes.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the list, the record, the picker, the states and the refusals.
+- [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]] — the tab that holds the cut a report prices from.
+- [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] — the area and the trail of every surface.
+- [[file:index.org][Cuts prototypes]] — the group page and the row that records what this prototype argues.
+- [[file:../index.org][Prototypes]] — the method and the rules that hold for every group.

@@ -1,0 +1,74 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 2 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - REPORTING: RERUN AND AUDIT A CUT</b>
+  Home > Reporting > Cuts > EOD.ACME-LONDON.2026-10-06
+  --
+  <b>EOD.ACME-LONDON.2026-10-06</b> | Read only | [ Run it again ] | version 1
+  End of day, 06 Oct 2026 16:00Z, Europe/London, ACME London - LDN rates books
+  THE BODY | AUTHORISATION | RUNS | HISTORY
+  --
+  <b>THE BODY, PART BY PART</b>
+  The deals: 1,284 in the population, 1,196 live, 88 expired or settled, 3 corrections.
+  LDN-RATES-FX, LDN-RATES-IRS, LDN-RATES-BASIS: every book revalues on London.
+  The market data: a fixed snapshot. 7 published sets, 3,912 values, 148 fixings, centre London.
+  The reference data: conventions v14, calendars v22, curve configurations v31, settings v9.
+  The engine and the code: ORE-Studio-7.1, wrapper v1.2.0, build a1f3c9e.
+  The taking identity: m.oduya, ACME London, 06 Oct 2026 16:41Z.
+  The identity: label, kind, timepoint, timezone, cut time CUT-LONDON-1600, ordinal 1.
+  --
+  <b>THE AUTHORISATION: TWO ACTS AND ONE RULE</b>
+  {#
+    Act | Account | Instant | What it did
+    Taken | m.oduya | 06 Oct 16:41Z | the body was fixed and the request raised
+    Authorised | a.reyes | 06 Oct 17:12Z | Finance approved request 4b7c1e02
+  }
+  The taker cannot authorise: the inbox refuses a decision by the person who raised
+  the request, and one person approves a request once. Two people, one body.
+  The label names the kind, the scope and the date: it says nothing about who signed.
+  --
+  <b>THE RUNS THAT REST ON THIS BODY</b>
+  {#
+    Run | Report | State | Engine version | Comparison
+    #4823 | NPV | COMPLETED | ORE-Studio-7.1 | reproduced with #4819
+    #4822 | Headline Position | COMPLETED WITH ERRORS | ORE-Studio-7.1 | not compared
+    #4819 | Board Risk Dashboard | COMPLETED | ORE-Studio-7.1 | the original run
+  }
+  A run refused before the engine is not in this list: a refusal is not a result.
+  --
+  <b>THE RERUN, AND THE THREE ANSWERS</b>
+  <color:#22c55e>REPRODUCED.</color> #4819 and #4823 share the cut and the engine, and every figure is
+  equal: they are one result computed twice.
+  <color:#ef4444>DIFFERS.</color> NPV total moved by 0.67 on the same body and the same engine.
+  <color:#eab308>CANNOT BE COMPARED.</color> The engine version differs (7.0 against 7.1); a part of the
+  body is no longer served; or the body was retaken, in which case both labels are named.
+  --
+  <b>THE DAY, READ ACROSS CUTS</b>
+  {#
+    Cut | State | Runs resting on it
+    EOD.ACME-LONDON.2026-10-06 | AUTHORISED | 3
+    EOD.ACME-LONDON.2026-10-05 | SUPERSEDED | 2
+  }
+  A superseded cut keeps its runs and its authorisation: the question before a retake
+  is what already rests on the body about to be replaced, and the answer is a list.
+}
+
+@enduml

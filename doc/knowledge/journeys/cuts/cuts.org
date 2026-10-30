@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: E9A7D292-593C-4E72-8C1B-109F3DE38241
+:END:
+#+title: Cuts journeys
+#+description: Taking a cut, pricing a report from one, and rerunning and auditing one: the journeys that fix the body of a valuation at a timepoint and consume it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:cut:valuation:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+A cut fixes a body of data at one timepoint so that a valuation can be
+reproduced. Three journeys cover a person's side of that:
+[[id:E840111E-AA2F-4746-8D49-A1D73742925E][taking one]],
+[[id:9123193E-352D-4F46-8174-7763FA0A44CD][pricing a report from one]], and
+[[id:8BD41683-EFA1-467A-B170-BE7041A745D7][rerunning and auditing one]].
+The domain is on [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]], and the
+model the screens imply is on
+[[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices
+from]].
+
+The three read as one answer. The take fixes a body and has it signed; the run
+names the cut and prices from it; the audit reproduces a figure from it or says
+why it cannot. A cut that nobody consumes is a day's paperwork, and a run that
+names no cut is a number whose production no screen can account for, which is
+what the [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][report binding decision]]
+records when it says that a binding to a curve leaves the deal population open.
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:E840111E-AA2F-4746-8D49-A1D73742925E][Take a cut]] | finance, market-risk, trading-desk | Choose the kind and its timepoint, assemble the body, review what it holds against the previous cut, take it, and have a second person authorise it — or read the gaps that stop it |
+| [[id:9123193E-352D-4F46-8174-7763FA0A44CD][Price a report from a cut]] | market-risk, tenant administrator | Name the cut a report prices from, read what it holds and who signed it, be refused a cut that is not consumable, run the report, and read the card that names the cut and says whether the run reproduced |
+| [[id:8BD41683-EFA1-467A-B170-BE7041A745D7][Rerun and audit a cut]] | auditor, market-risk, engineer | The body, the two acts, the runs that rested on the cut, and a rerun compared with its original in one of three verdicts |
+
+Two of the three write: the take writes the cut and raises its authorisation, and
+a rerun writes a run. The audit writes nothing, and the cut it reads is immutable
+once taken.
+
+* What a cut is here
+
+The cluster states it. A cut holds the deals, the market data, the reference
+data, the engine and code versions, and the taking identity and the
+authorisation. The occasion a cut is taken for classifies it, and the purpose —
+a valuation that can be reproduced — fixes the body for every occasion, so a
+flash cut and an end of day cut hold the same five parts.
+
+Two facts about our system shape all three journeys. No cut exists today: no
+component, no table, no read and no screen. And where a cut would fix a body, the
+repository holds a read that re-resolves: the curve snapshot read carries no
+as-of, and the trade store's intervals are rewritten when a correction arrives.
+The journeys therefore name operations that do not exist, and each says so in its
+*What is missing* section rather than drawing a screen the server cannot answer.
+
+* The states, in one place
+
+A cut is drawn in one of six states, and the derivation is on
+[[id:F6362451-D569-4609-97A3-F1C785AAAF02][the decision note]]. The three
+journeys use the same words, and the same words appear on the screens.
+
+#+ATTR_HTML: :class hug-leading
+| State | The person's reading | The run's answer |
+|-------+----------------------+------------------|
+| Draft | The take began and no body is fixed yet | Nothing |
+| Incomplete | The body could not be assembled, and the gaps say why | Nothing, and the gaps name the remedy |
+| Taken | The body is fixed and nobody has signed it | Nothing, and the refusal names the request it waits on |
+| Authorised | A second person signed the body | It prices from the cut |
+| Refused | The signature was refused, with the reason | Nothing; the remedy is a new take |
+| Superseded | A later cut of the same kind and scope replaced it | It prices from the cut, and says a later cut is in use |
+
+* Who reaches the screens
+
+#+ATTR_HTML: :class hug-leading
+| Actor | What they read | What they change |
+|-------+----------------+------------------|
+| finance | The cuts of their party, the body's parts, the gaps, and the requests they must decide | Take a cut; authorise one they did not take |
+| market-risk | The same rows, and the independent verification cut they take | Take a cut; authorise one they did not take; choose the cut a report prices from |
+| trading-desk | The flash cut of the day and the runs that priced from it | Take a flash cut |
+| auditor | Every cut, its acts, its runs and the comparison of a rerun | Nothing |
+| engineer | A comparison that differs, and the versions on each side | Nothing; the remedy is a change to the engine, which is another journey |
+
+The reads are =reporting::cuts:read= and =reporting::report_instances:read=, the
+take is =reporting::cuts:take=, and the decision is the inbox part's permission,
+which the seeded =finance= part names. The three names are proposals, and the
+[[id:F6362451-D569-4609-97A3-F1C785AAAF02][decision note]] states why they take
+the shape they do.
+
+* Where the screens are
+
+The area is Reporting, because a cut exists for the run that consumes it and a
+person who asks what a result was computed from looks where the reports are. The
+trail of the list is Home, Reporting, Cuts; the record adds the label; the take
+flow is a workflow at =/reporting/cuts/take=, listed in the Workflows menu of the
+list header as the [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]]
+requires.
+
+The opposite placement is rejected rather than unconsidered. Market data holds the
+prices and curves that change by the minute, and a cut changes once a day and is
+not a price; Trades holds what the tenant holds and does with a trade, and a cut
+is not a trade. The reference data the take reads — the named cut times — is a
+list that changes by the month and sits in Reference data, which is the one area
+for such a list.
+
+No BFF route serves reporting and no reporting screen exists, so every surface
+these journeys name is new. Each journey records that gap, and the prototype draws
+what the screens would be.
+
+* The prototype
+
+The [[file:../../prototypes/cuts/the-cut/][the cut prototype]] draws all
+three journeys, with [[file:../../prototypes/cuts/the-cut.org][its design note]]
+beside it. It is one plain page: the cuts list, the cut's record, the take flow,
+the picker that consumes a cut, the run that names one, and the named cut times
+of Reference data. Every state the three journeys name is behind the query string.
+
+* Related
+
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the cluster: the definition, the purpose and the body.
+- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] — the states, the permissions, the identity and the second binding.
+- [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — the occasions the take offers.
+- [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]] — the first binding, and the hole the cut fills.
+- [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the group whose report, run and configuration screens these extend.
+- [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]] — the approval the authorisation uses.
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index this group belongs to.
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist these journeys are written against.
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the standard the screens follow.
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — where the prototype is inventoried.
+- [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] — the area and the trail the screens take.

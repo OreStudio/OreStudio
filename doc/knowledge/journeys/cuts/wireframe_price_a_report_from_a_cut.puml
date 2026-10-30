@@ -1,0 +1,77 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 2 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - REPORTING: THE CUT A REPORT PRICES FROM</b>
+  Home > Reporting > Run settings > Acme official EOD run settings > The cut it prices from
+  --
+  <b>ACME OFFICIAL EOD RUN SETTINGS</b> | Editable | version 9
+  run settings, party ACME London, bound by 4 reports
+  Details | Global parameters | Settings | Market bindings | THE CUT IT PRICES FROM | Used by | History
+  It decides which fixed body each run of this configuration values. It does not
+  decide which published set each market role resolves to, nor the valuation date.
+  --
+  <b>THE PICKER OVER CUTS</b>
+  [ search the label or the scope ] [ Kind: all v ] [ State: all v ]
+  {#
+    Cut | Kind | Timepoint | State | Taker | Authoriser | Holdings
+    EOD.ACME-LONDON.2026-10-06 | EOD | 06 Oct 16:00Z | AUTHORISED | m.oduya | a.reyes | 1,284 / 3,912
+    EOD.ACME-LONDON.2026-10-05 | EOD | 05 Oct 16:00Z | SUPERSEDED | m.oduya | a.reyes | 1,281 / 3,908
+    FLASH.ACME-LONDON.2026-10-07 | FLASH | 07 Oct 07:40Z | INDICATIVE | j.silva | - | 1,287 / 3,920
+    IPV.ACME-LONDON.2026-10-06 | IPV | 06 Oct 16:00Z | TAKEN | j.silva | - | 1,284 / 3,912
+    EOD.ACME-LONDON.2026-10-07 | EOD | 07 Oct 16:00Z | INCOMPLETE | m.oduya | - | 1,284 / -
+    EOD.ACME-LONDON.2026-10-04 | EOD | 04 Oct 16:00Z | REFUSED | m.oduya | a.reyes | 1,276 / 3,901
+  }
+  --
+  <b>THE REFUSALS, IN THE DIALOG'S FOOTER</b>
+  <color:#ef4444>A TAKEN CUT IS REFUSED.</color> That cut is taken and nobody has authorised it.
+  The body is fixed and no run may price from it. The request waits on Market Risk.
+  <color:#ef4444>AN INCOMPLETE BODY IS REFUSED.</color> That cut holds no complete body. The gaps
+  are on the cut's page, and the take resumes once they are closed.
+  <color:#ef4444>A REFUSED CUT IS REFUSED.</color> The authorisation was refused, and the remedy is a
+  new take rather than a second decision.
+  A SUPERSEDED CUT IS OFFERED: a rerun reproduces an earlier result from it, and the
+  button says "anyway". No pin is needed, because a cut is a record of an instant.
+  AN INDICATIVE FLASH CUT IS OFFERED: its authorisation is pending by its occasion, and
+  every result priced from it is marked indicative. [ Price from this cut ]
+  --
+  <b>THE RUN: REFUSED, AND THE RUN THAT PRICED</b>
+  {#
+    Run | Body the run resolves | State | Comparison
+    #4831 | the cut IPV.ACME-LONDON.2026-10-06, taken | REFUSED | refused before the engine
+    #4823 | EOD.ACME-LONDON.2026-10-06 | COMPLETED | compared with #4819
+    #4822 | EOD.ACME-LONDON.2026-10-06 | COMPLETED WITH ERRORS | not compared
+  }
+  THE CUT IT PRICED FROM: label, kind, timepoint, scope, deals valued, values read,
+  taken by m.oduya, authorised by a.reyes at 06 Oct 17:12Z, engine ORE-Studio-7.1.
+  The market roles inside the body: pricing to USD-SOFR-3M at 06 Oct 16:00Z, publish
+  record 8f2a4c19; simulation to EUR-ESTR-6M, publish record 2c40f8d1.
+  Read from the run, never from the configuration.
+  --
+  <b>THE COMPARISON, IN THREE VERDICTS</b>
+  <color:#22c55e>REPRODUCED.</color> One result computed twice: the same cut, the same engine, and
+  every figure equal.
+  <color:#ef4444>DIFFERS.</color> The body and the engine are the same and the result moved, which is a
+  defect in the engine or in the code, and the first figure that differs is named.
+  <color:#eab308>CANNOT BE COMPARED.</color> One of three reasons: the engine version differs, a part
+  of the body is no longer served, or the body was retaken. An auditor writes it down.
+}
+
+@enduml

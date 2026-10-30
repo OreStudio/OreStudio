@@ -1,0 +1,373 @@
+:PROPERTIES:
+:ID: E840111E-AA2F-4746-8D49-A1D73742925E
+:END:
+#+title: User Journey: Take a cut
+#+description: A finance officer chooses the kind and the timepoint, assembles the body of the day's cut, reviews what it holds, takes it and has it authorised, or reads the gaps that stop it.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:cut:valuation:market_data:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A finance officer chooses the kind and the timepoint, assembles the body of the day's cut, reviews what it holds, takes it and has it authorised, or reads the gaps that stop it.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+The decision behind it is
+[[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices
+from]]: a cut records the body it fixed and the two acts that made it, its state
+is derived from those facts, and the person who takes one cannot authorise it.
+The [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] structure note fixes
+what the body must hold, and
+[[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] fixes what each
+occasion contributes.
+
+* Goal
+
+"The centre has closed and the day's reports are waiting on a body of data nobody
+has fixed. I want to say which cut this is, see exactly what it holds before I
+commit it, be told plainly and early when a part cannot be assembled, and have
+somebody else sign it off so the numbers the reports show can be reproduced next
+year. When it is authorised I want the cut to be an object I can point at, and not
+a date that means something different tomorrow."
+
+The journey is done when the cut holds a body, a second person has authorised it,
+and the cut's page says so — or when the body cannot be assembled and the page
+says why, in items a person can chase.
+
+* Actor and trigger
+
+A finance officer runs this journey for the end of day kind, and a market-risk
+owner for the independent price verification. Both act inside their own party and
+inside their own tenant, on the books whose centre they own. A desk runs the same
+journey for a flash cut at an instant it states.
+
+Three permissions decide what the person sees. Assembling and taking a cut needs
+=reporting::cuts:take=, which is the raise permission of the authorisation
+request. Reading the cut and its gaps needs =reporting::cuts:read=. Authorising
+one needs =inbox::approvals:decide_finance=, which is the part
+[[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]] seeds, and the
+person who took the cut does not hold it for that cut. A person who may not take
+a cut is drawn no button, as the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] requires.
+The Reporting area is drawn for a person who holds =reporting::report_definitions:read=, which is the read the area already asks for; the Cuts card inside it is drawn for =reporting::cuts:read=.
+
+The trigger is the close of a business day, or a correction that moves the day's
+population after its cut was taken. The person opens the cuts list because the
+reports of the day cannot run, or because the deal cut must be retaken until the
+population is clean, as the [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]]
+note records. The journey ends on the cut's page, in a state the page draws.
+
+This journey takes a cut and has it authorised. It does not approve or withdraw a
+published curve — those are
+[[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]]
+and [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published
+curve]] — and it does not run a report:
+[[id:9123193E-352D-4F46-8174-7763FA0A44CD][Price a report from a cut]] is the
+journey that does. It does not author a convention, a calendar or a curve
+configuration: it reads the version in force and records it.
+
+* Steps
+
+** Step 1: reach the cuts, and read where the day stands
+
+1. *Open Cuts.* The area is Reporting, and the trail is Home, Reporting, Cuts. The
+   list is the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard's]]
+   list: a search over the label and the scope, a filter on the kind and a filter
+   on the state, the shared pager, and *Take a cut* as the primary button, drawn
+   only for a person who may take one.
+
+   | Column | What it holds |
+   |--------+---------------|
+   | Cut | The derived label, monospace, and the scope under it |
+   | Kind | The occasion: End of day, Independent verification, Flash, Start of day, or the process that named the instant |
+   | Timepoint | The instant, exact, with its timezone, because it is what the body is fixed at |
+   | State | The derived state: Draft, Incomplete, Taken, Authorised, Refused or Superseded |
+   | Taker | The account that took the cut |
+   | Authoriser | The account that decided it, and the decision beside it |
+   | Runs | How many runs priced from it, right-aligned |
+
+2. *Read the day.* The default order is the timepoint, newest first, so the day's
+   cut is the first row. A superseded cut sits under the one that replaced it and
+   says so, because the person reading the list is asking which body the next run
+   will price from.
+3. *Read what is missing.* A day with no cut for the centre yet says *There are no
+   cuts for this scope yet.* and offers *Take a cut*. The sentence is the list's
+   empty state, and it is the one state that must not read as a fault.
+
+** Step 2: choose the kind and the timepoint
+
+4. *Press Take a cut.* The take is a guided sequence of four steps, because it
+   fixes a body across four parts and the review is the point of it. Its rail is
+   the [[id:6A63AAC7-4869-493A-97E7-55B919874784][journey runtime's]], and its
+   address is =/reporting/cuts/take=.
+5. *Choose the kind.* The first step offers the kinds the party may take. Each row
+   is a kind, the instant it fixes and what it is for, in the words of
+   [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]]. The end of day kind
+   offers the centre's close, the start of day kind the centre's open, and the
+   flash and process kinds an instant the person states. A kind the party has no
+   centre for is not offered, and the step says which centre each kind would use.
+6. *Fix the timepoint.* For the end of day kind the timepoint is the close of the
+   centre the scope revalues against, read from the cut times reference data and
+   drawn so the person reads it rather than types it. For a flash cut or a cut a
+   process names, the instant is stated with its timezone, and the step refuses a
+   time in the future, because a body cannot be fixed at an instant that has not
+   happened.
+   The label is derived beside the fields and never typed: the kind, the scope and
+   the date, exactly as
+   [[id:F6362451-D569-4609-97A3-F1C785AAAF02][the decision note]] derives it.
+7. *Read the scope.* The step states the books the cut will value and the rates
+   centre whose market data it will read. The scope is a fact and not a choice at
+   the take: it is the set of books that revalue together, and a scope spanning two
+   centres is refused here rather than discovered at the assembly.
+
+** Step 3: assemble the body, and read the gaps
+
+8. *Assemble.* The second step runs the assembly and draws one row per part of the
+   body. Each row is a part, what the assembly resolved, and its state.
+
+   | Part | What the row holds |
+   |------+-------------------|
+   | The deals | The population at the timepoint: the deal count, how many are live, expired, fixed or settled, the books they belong to, and the corrections inside the body |
+   | The market data | The fixed snapshot: the published sets each market role resolves to, their publish records and as-of, the fixings in force, and the value count |
+   | The reference data | The versions in force of the conventions, the calendars, the curve configurations and the engine run settings the run reads |
+   | The engine and the code | The engine version and the wrapper version the work will run, and the code revision of the services that assembled the body |
+   | The taking identity | The account, the party, and the instant the body was fixed |
+
+9. *Read a gap, where a part cannot be assembled.* The step does not fail as a
+   whole. Each part that cannot be closed is drawn with the item, the reason and
+   the remedy, and the take offers *Save as a draft* in place of *Take the cut*.
+
+   | Gap | The reason | The remedy the row names |
+   |-----+------------+--------------------------|
+   | A series with no value at or before the instant | The store holds no observation for the series, so the snapshot would carry a hole | Publish a set for the series, or state an instant at which the store holds one |
+   | A deal at no version | The population read returned a row with no version current at the instant | Correct the deal, or state why it is absent |
+   | A curve in the candidate state | Nobody approved the set, so a valuation cannot price from it | [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] |
+   | No engine version recorded | Nothing in the store names the version that would compute the result | Register the app version, or name the version the run will use |
+   | A scope spanning two centres | The books read two centres' market data, so one market data half cannot value them | Take a cut per centre, or narrow the scope |
+
+10. *Save the draft, and leave.* A body that cannot be assembled is kept as a
+    draft in the *Incomplete* state, with every gap beside the part it belongs to.
+    The step states what happens next: no run may price from the cut, and the take
+    is resumed from the cut's page once the gaps are closed. The person is not
+    asked to remember the list, because the list is the record.
+
+** Step 4: review the body against the previous cut
+
+11. *Review what the cut holds.* The third step is the review, in the shape the
+    [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]]
+    uses for a configuration's review: the counts, the differences from the
+    previous cut of the same kind and scope, and the sentence that states what the
+    cut decides and what it does not.
+12. *Read the differences.* A cut is read against its predecessor, because the
+    movement between two cuts is what the day's reports state. The step lists the
+    deals that entered the population, the deals that left it, the deals whose
+    state moved, the market data items whose value moved, and the reference data
+    versions that changed. A cut with no predecessor says so and draws no
+    difference.
+13. *Read what it decides.* One sentence, in the standard's words: it fixes the
+    body one valuation reads and it records the engine and the code, so a later run
+    of the same cut with the same engine reproduces its result. It does not decide
+    the day's prices, the conventions or how a product is priced: it records what
+    was in force.
+
+** Step 5: take the cut, which raises the authorisation
+
+14. *Press Take the cut.* The press writes the body and raises the authorisation
+    request in one act, as
+    [[id:F6362451-D569-4609-97A3-F1C785AAAF02][the decision note]] requires. The
+    cut moves to *Taken* and the request moves into the inbox of the part the kind
+    names. The dialog states what the press did: the body is frozen, no field
+    changes from here, and the request is with the deciders.
+15. *Read the state before authorisation.* The cut's page states it in one
+    sentence: the body is fixed and nobody has signed it, so no run may price from
+    it. *Authorise* is not drawn for the taker, and the reason is stated rather
+    than left to a refusal: a person cannot authorise the cut they took.
+
+** Step 6: authorise, or read the refusal
+
+16. *Decide, as the decider.* The decider opens the request from Requests, and the
+    request's page draws the body's four counts and the gap list, which is empty
+    for a taken cut. *Approve* and *Refuse* are drawn for the part's holder who is
+    not the taker. *Refuse* needs a reason.
+17. *Read the authorisation on the cut.* When the part approves, the cut moves to
+    *Authorised*, the instant and the decider are recorded, and the previous cut of
+    the same kind and scope moves to *Superseded*. The page states all three facts
+    and links the authorisation request, so the signature is readable from the cut
+    rather than inferred from it.
+18. *Read the refusal.* A refused authorisation moves the cut to *Refused*, keeps
+    the body readable, and states that no second decision can be taken on it. The
+    remedy is a new take, which the page offers as *Take it again*, and the new cut
+    carries the next ordinal in its label.
+
+** The audit of the take**
+
+19. *Read the cut's history.* The record's *History* tab is the shared timeline:
+    the two acts, each with its account and instant, and the body's own facts. The
+    body is immutable once taken, so the history of a taken cut has two entries and
+    no more.
+20. *Read who is waiting.* The cut's page names the request, the part that must
+    decide it and the account it waits on, so a person chasing an authorisation
+    knows whom to ask.
+
+* Screens and wireframes
+
+Three surfaces: the cuts list, the take flow with its four steps, and the cut's
+record page.
+
+The list is the standard's. The take flow is the one place where a rail of steps
+earns its place, because the work is four acts over one body rather than one edit:
+the kind and the instant, the assembly with its gaps, the review against the
+previous cut, and the press that takes and raises. The record page is the
+standard's record page with four tabs: *The body*, *Authorisation*, *Runs* and
+*History*.
+
+The judgement, per step, against
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][the record screen standard]].
+
+#+ATTR_HTML: :class hug-leading
+| Step | Shape on the screen | Judgement |
+|------+---------------------+-----------|
+| 1 to 3, the list | The standard's list, its filters and its empty state | A standard record list, RS-LIST-01 to RS-LIST-22 |
+| 4 to 7, kind and timepoint | A workflow's first step: a table of kinds, a stated instant, the derived label | A step that keeps state across replies, so a workflow under the Workflows menu, as the standard's RS-LIST-03 allows |
+| 8 to 10, the assembly | A panel per part, and a gap list beside it | No rule draws a gap list yet; the prototype defines it and [[*What is missing][What is missing]] records it |
+| 11 to 13, the review | The configuration standard's review: counts, differences, one sentence | A step of the same workflow |
+| 14, the take | A confirmation that states what the press freezes | RS-WRITE-17 to RS-WRITE-19 apply by analogy: one dialog, one press, the record opened after |
+| 15 to 18, the authorisation | The record's *Authorisation* tab, and the inbox's own request page | The inbox owns the decision screen; the cut draws the outcome and links the request |
+| 19 to 20, the history | The shared timeline | RS-HIST-01 |
+
+#+caption: The take flow and the cut record: the kinds and the instant, the body assembled with a gap, the review against the previous cut, the press that takes and raises, and the record in each state.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/cuts/wireframe_take_a_cut.png]]
+
+* Prototype
+
+The [[file:../../prototypes/cuts/the-cut/][the cut prototype]] draws this
+journey, and [[file:../../prototypes/cuts/the-cut.org][its design note]] says
+what it argues, which states it draws and what is fake. It belongs at
+=doc/prototypes/cuts/the-cut/=.
+
+It is one plain page with six surfaces behind the query string: the cuts list,
+the cut's record, the take flow, the picker that consumes a cut, the run that
+names one, and the named cut times reference data. For this journey it draws a
+day with no cut, a draft, an incomplete body with its gaps, a taken cut with no
+authorisation, an authorised cut, a refused cut and a superseded cut. Every value
+on it is a fixture, and the page says so.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| the cut | The label, the kind, the timepoint, the scope, the parts, the gaps, and the two acts. No model exists: the record this journey draws is the one the decision note describes | [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] |
+| =curve_publish= | The publish record and the as-of of each set the market data half fixes, and the state a set holds | [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] |
+| =trade= | The deal population at the instant, by identity and version | [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade]] |
+| =book= | The books the scope holds, and the classification that decides whether they revalue together | [[id:5A63B4D1-0F55-468B-B734-A5DC37B26DC4][ores.refdata.book]] |
+| =party= | The owner of the cut, of the books and of the published sets | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+| =configuration= | The version in force of the engine run settings and the curve configurations the body records | [[id:6B3D9E27-5C41-4A86-8F19-2E7B0D4C6A53][ores.reporting.configuration]] |
+| =app_version= | The engine version and the wrapper version the body records | [[id:1E563104-6F89-4858-9395-D869A7E817A6][ores.compute.app_version]] |
+| =approval_request= | The authorisation the take raises, its part, its decision and its state | [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] |
+
+The row this journey writes is the cut, and no table holds it. The two acts are
+the write: the take writes the body and the request together, and the decision
+writes the authorisation. The build order follows the platform's own: the model,
+then the store, then the operations, and the screens last.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Steps 1 to 3, the list | List the cuts of a party, with the state, the taker and the authoriser | =reporting.v1.cuts.list= | missing |
+| Step 7, the scope | Read the books of a scope and the centre they revalue against | =reporting.v1.cuts.read_scope= | missing |
+| Step 8, the deals | Read the deal population at the instant, by identity and version | (no read answers a population at an as-of; =reporting.v1.ops.gather_trades= reads the population a run values today) | missing |
+| Step 8, the market data | Resolve every market role to its published set at the instant, and read the set's points | =marketdata.v1.ops.list_published_curves= and =marketdata.v1.ops.get_published_curve_sets= | exists; the resolution to a fixed snapshot is missing |
+| Step 8, the fixings | Read the authorised fixings whose date falls on or before the instant | =marketdata.v1.ops.get_fixing_window= | exists |
+| Step 8, the reference data | Read the versions in force of the configurations the run reads | =reporting.v1.configurations.get= and the versions reads of each kind | exists |
+| Step 8, the engine | Read the engine version and the wrapper version | =compute.v1.app_versions.get= | exists |
+| Step 8, the code revision | Read the revision of the services that assembled the body | (nothing records the service build) | missing |
+| Steps 8 to 10, the assembly | Assemble the body, answer every part and every gap, and write nothing | =reporting.v1.ops.preview_cut= | missing |
+| Step 10, the draft | Save an incomplete body and its gaps | =reporting.v1.cuts.put= | missing |
+| Step 14, the take | Freeze the body and raise its authorisation in one act | =reporting.v1.ops.take_cut= | missing |
+| Steps 16 to 18, the authorisation | Raise, decide and read the request | =inbox.v1.ops.raise_approval=, =inbox.v1.ops.decide_approval=, =inbox.v1.approval_requests.get= | exists |
+| Step 19, the history | Read the versions of a cut | =reporting.v1.cuts_versions.list= | missing |
+| The screen itself | Read and write cuts from the browser | (no BFF route serves cuts) | missing |
+
+The take is one call and not three, because the body, the request and the cut's
+state land together or not at all. A take that wrote the body and then raised the
+request would leave a cut nobody is asked to sign.
+
+* What is missing
+
+1. *No cut entity and no component.* No cut component exists, no table holds a
+   cut, and no service answers a read of one. The decision note settles what the
+   record must hold; the model, the store and the operations are the work that
+   follows.
+2. *No read answers a population at an as-of.* The trade store is versioned, so a
+   query over its intervals reconstructs a past state, and no operation exposes
+   it. The [[id:19630B5D-A163-42B5-B9C4-61A87BAE8F5F][Trade cut]] page states the
+   second half of the gap: the interval a row states is rewritten when a
+   correction arrives, so a re-run of the same query returns a different body.
+   The cut therefore copies the population it fixed, and the copy has no home
+   yet.
+3. *No fixed market data snapshot.* The
+   [[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]] page records that
+   =marketdata.v1.curve_snapshot.get= re-resolves on every call and carries no
+   as-of, and that the resolution-side snapshot exists as a definition and no
+   entity. A cut records the identity of a snapshot that nothing materialises.
+4. *Nothing records the service build.* The engine version survives because a
+   workunit names an app version. The revision of the services that gathered the
+   body does not survive anywhere, and a result reproduced from a different build
+   of the gathering code is not reproduced from the same software, which is the
+   condition the [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note quotes.
+5. *No gap list exists anywhere.* A configuration's import lists what it could not
+   read, and nothing lists what an assembly could not fill. The screen needs one,
+   and the prototype defines the shape the standard would take.
+6. *The kind is not a closed vocabulary in the store.* The four occasions are
+   stated in a knowledge page and in no table. A kind held as a code in a
+   populated list is the smaller change, and the decision note names it as
+   following work rather than settling it.
+7. *No route and no screen.* No BFF route serves reporting, and no reporting screen
+   exists in the web application, so the cuts list, the take flow and the record
+   are all new.
+8. *The cut times reference data does not exist.* The close of a centre's business
+   day is a fact a person needs and no table holds it for our centres. The
+   prototype draws the reference data the take reads, and the
+   [[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][option-expiry cut code]] page
+   states the row the expiry sense needs from the same list.
+
+* Related journeys
+
+- [[id:9123193E-352D-4F46-8174-7763FA0A44CD][Price a report from a cut]] — what the cut is taken for, and the gate it meets when it is not authorised.
+- [[id:8BD41683-EFA1-467A-B170-BE7041A745D7][Rerun and audit a cut]] — the runs that price from this cut, and the reproduction of one of them.
+- [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] — the remedy for a curve that is still a candidate, which is one of the gaps.
+- [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] — the decision the gap waits on, and the same inbox this journey's authorisation uses.
+- [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] — the act that makes a set the market data half can fix.
+- [[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign off a pricing engine change]] — the same approval machinery, drawn for a change rather than for a body.
+- [[id:3FCDF005-AE5B-42AF-A053-BFEBAEDAD6AD][Bind a report to a published curve]] — the other half of what a run names, and where the cut is chosen.
+- [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]] — the change that makes a cut stale before it is taken.
+
+* Related knowledge
+
+- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] — the decision this journey draws.
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the definition, the purpose and the body.
+- [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — the kinds, what each fixes and the flash kind's pending authorisation.
+- [[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]] — the half of the body this journey assembles from published sets.
+- [[id:19630B5D-A163-42B5-B9C4-61A87BAE8F5F][Trade cut]] — the half it assembles from the versioned trade store.
+- [[id:6810B313-1BE8-4889-A3C0-30174ADCBEDD][Naming the cut]] — why the label is qualified and why the word is kept.
+- [[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][The option-expiry cut code]] — the reference row a cut time is, and the second sense of the word.
+- [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]] — why a scope revalues against one centre.
+- [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]] — the parts and the decision the authorisation uses.
+
+* See also
+
+- [[id:E9A7D292-593C-4E72-8C1B-109F3DE38241][Cuts journeys]] — the group this journey belongs to.
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the list, the record page, the writes and the states.
+- [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] — the area and the trail.
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the state colours and the access mark.
+- [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] — the journey that stands up the centre a cut time belongs to.

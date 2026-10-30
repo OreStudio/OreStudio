@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 7D484E3A-86B9-4A59-89E5-B6754096742D
+:END:
+#+title: Cuts prototypes
+#+description: The prototype that answers to the cuts journeys: the list, the record, the take flow, the picker, the run and the named cut times, and what each surface argues.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:index:ui:cut:valuation:reporting:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+* Summary
+
+A cut fixes a body of data at one timepoint so that a valuation can be reproduced.
+Three journeys describe the person's side of that — taking a cut, pricing a report
+from one, and rerunning and auditing one — and no cut exists in the application
+today: no component, no table, no read and no screen.
+
+One prototype answers to the group. It draws every surface the three journeys
+name, and it settles what the design note cannot: what a body that could not be
+assembled looks like, what each state of a cut reads as on a screen, what a picker
+says when it refuses a cut, and what a run states about the body it priced from.
+
+The conventions the take reads — the named cut times — have no prototype of their
+own. They are two surfaces of the same page, because a person taking a cut reads a
+cut time and a person maintaining one changes it, and the two are never on screen
+at the same moment.
+
+[[file:../index.org][Prototypes]] is the top page and the only inventory.
+
+* One decision, and the surfaces it forces
+
+The journeys are not a screen plan. Read one to one they would give a list, a
+record, a take flow, a picker, a run card and a reference list, which is what this
+page draws, but the grouping is what the decision note argues: a cut is a record
+with a derived state, an authorisation that is the inbox's, and a second binding
+that a run names.
+
+The prototype therefore turns on one question — *what does a person need to see to
+trust a body they did not assemble?* — and every surface is one answer to it: the
+counts of the parts, the gaps where a part stands open, the two accounts of the two
+acts, the runs that already rest on the body, and the verdict on a reproduction.
+
+#+ATTR_HTML: :class hug-leading
+| Prototype | What it argues | Open it | Review |
+|-----------+----------------+---------+--------|
+| [[file:the-cut.org][The cut]] | The screens a cut needs, in one page with seven surfaces. The list draws the six states with the taker, the authoriser and the count of runs, and the default order is the timepoint so the cut in use is the first row. The record draws the body as the five parts the cluster argues for, a gap table where a part could not be filled, the two acts with the four-eyes rule stated as a fact, the runs that rest on the body, and a history that is two entries because a taken body is immutable. The take is four steps on a rail, and the second step is where the body is refused: no *Take the cut* is drawn while a gap stands, and the draft keeps the gaps because the list is what a person chases. The picker refuses a taken, an incomplete and a refused cut in the same words the run uses, offers a superseded cut with its sentence, and does not refuse a flash cut whose authorisation is pending by its occasion. The run's page carries the card that names the cut, read from the run and never from the configuration, and below it a comparison in three verdicts — reproduced, differs, and cannot be compared for one of three reasons — with all eight outcomes one strip away. The named cut times are a standard list and a standard record in Reference data, and the take reads the close from them. | [[file:the-cut/][prototype]] | none |
+
+* What it settles
+
+The prototype settles four things the decision note left to the screens.
+
+*The gaps are drawn where the body is.* A body that cannot be assembled is kept,
+not thrown away, and its gaps are drawn as a table of part, item, why it stands and
+what closes it. The take offers a draft in place of a take, and the record reads
+the same table. The alternative — a take that fails with one message — was not
+drawn, because it loses the list a person acts on.
+
+*The state is drawn as two facts, not one.* The badge carries the derived state,
+and a line under it carries the fact that qualifies it: which part a taken cut
+waits on, and when a superseded cut was replaced. A screen that drew only the
+badge would make a cut awaiting a signature look like one that holds none.
+
+*The refusals are one sentence in two places.* The picker refuses a cut where it
+is picked, and the run refuses the same body in the same words before the engine is
+reached. Neither offers a way past a refusal except the remedy the state names: an
+authorisation, or a new take, or a change to the configuration.
+
+*A reproduction is a sentence before it is a number.* The comparison states what
+was reproduced and what the two runs shared — the body and the engine — before it
+shows a figure. That ordering is what makes the third verdict usable: an auditor
+writes the reason down, and the figures are what follow from it.
+
+* What none of them settle
+
+Whether the gap table becomes a shared part of the standard, or stays the take's
+own. Whether the comparison reads a run's archive into figures, or the run records
+its figures as rows when it completes. And whether the cut's scope is one book
+group, as drawn, or a composition of the cuts of its books.
+
+* Adding a prototype
+
+Follow [[file:../index.org][Prototypes]], which has the one way. A prototype here
+is a static page, never a route in =ores.web=, and it carries a design note at
+=doc/prototypes/cuts/<name>.org= that this page links.
+
+* See also
+
+- [[file:../index.org][Prototypes]] — every prototype, grouped by journey.
+- [[file:../../knowledge/journeys/cuts/cuts.org][Cuts journeys]] — the journeys these answer to.
+- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] — the decision the prototype draws.
+- [[id:3E207A59-C1F8-429C-BA23-99DBAEB6EA5E][Market bindings prototype]] — the picker and the card this prototype continues.

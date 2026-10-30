@@ -1,0 +1,92 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 2 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - REPORTING: TAKE A CUT</b>
+  Home > Reporting > Cuts > Take a cut
+  --
+  <b>TAKE A CUT</b> | Editable
+  Four steps over one body. Nothing is fixed until the last press, and the press
+  raises the authorisation with the body.
+  (1) Kind and timepoint  (2) The body  (3) Review  (4) Take and authorise
+  --
+  <b>STEP 1: THE KIND AND THE INSTANT</b>
+  {#
+    Kind | What it fixes | What it is for
+    EOD | the centre's close, 16:00 Europe/London | the day's official revaluation
+    SOD | the centre's open, 08:00 Europe/London | opening a day from a known reference
+    IPV | the close of the cut it is built on | testing our marks against outside values
+    FLASH | an instant the process names | an indicative view while the day moves
+  }
+  Close of the London centre: 06 Oct 2026 16:00Z | Timezone: Europe/London
+  Cut time: CUT-LONDON-1600, read from the reference data and drawn, never typed.
+  Label, derived from the kind, the scope and the date: EOD.ACME-LONDON.2026-10-06
+  Scope: ACME London - LDN rates books, three books, one centre.
+  A scope spanning two centres is refused here, not discovered at the assembly.
+  --
+  <b>STEP 2: THE BODY ASSEMBLED, AND THE GAPS THAT STOP IT</b>
+  {#
+    Part | State | What it holds
+    The deals | CLOSED | 1,284 deals, 1,196 live, 88 expired or settled, 3 corrections
+    The market data | OPEN | 6 of 7 sets resolved, 0 values
+    The reference data | CLOSED | conventions v14, calendars v22, curves v31, settings v9
+    The engine and the code | OPEN | ORE-Studio-7.1, wrapper v1.2.0, build none
+    The taking identity | CLOSED | m.oduya, ACME London, 07 Oct 2026 08:15Z
+  }
+  <color:#eab308>3 GAPS STOP THIS BODY.</color> They do not fail the take: the draft keeps them.
+  {#
+    Part | Item | Why it stands | What closes it
+    Market data | USD-SOFR-3M | no observation at or before the instant | publish a set
+    Deals | IRS-2048-0117 | no version current at the instant | correct the deal
+    Engine | the service build | nothing records the build | register the build
+  }
+  [ Cancel ] [ Save as a draft ]     <- no Take is drawn while a gap stands
+  --
+  <b>STEP 3: THE REVIEW AGAINST THE PREVIOUS CUT</b>
+  {#
+    What | Previous cut | This cut | Movement
+    Deals in the population | 1,281 | 1,284 | +3
+    Deals that left | - | 2 | +2
+    Market data values | 3,908 | 3,912 | +4
+    Curve configurations | v30 | v31 | moved
+  }
+  <b>It decides</b> which body one valuation reads, and it records the engine and the code.
+  <b>It does not decide</b> the day's prices, the conventions, or how a product is priced.
+  --
+  <b>STEP 4: THE PRESS, AND THE STATE IT LEAVES</b>
+  TAKEN. The body is frozen, request 4b7c1e02 was raised for Finance, and the cut is
+  EOD.ACME-LONDON.2026-10-06. No run may price from it until somebody signs it.
+  <color:#ef4444>YOU CANNOT AUTHORISE THIS CUT.</color> You took it: the inbox refuses a decision
+  by the person who raised the request, so another person holding the part must decide.
+  --
+  <b>THE CUT'S RECORD, IN EVERY STATE</b>
+  {#
+    Cut | Timepoint | State | Taker | Authoriser
+    EOD.ACME-LONDON.2026-10-06 | 06 Oct 16:00Z | AUTHORISED | m.oduya | a.reyes
+    EOD.ACME-LONDON.2026-10-05 | 05 Oct 16:00Z | SUPERSEDED | m.oduya | a.reyes
+    FLASH.ACME-LONDON.2026-10-07 | 07 Oct 07:40Z | INDICATIVE | j.silva | -
+    EOD.ACME-LONDON.2026-10-07 | 07 Oct 16:00Z | INCOMPLETE | m.oduya | -
+    IPV.ACME-LONDON.2026-10-06 | 06 Oct 16:00Z | TAKEN | j.silva | -
+    EOD.ACME-LONDON.2026-10-04 | 04 Oct 16:00Z | REFUSED | m.oduya | a.reyes
+  }
+  The tabs of one cut: The body, Authorisation, Runs, History.
+}
+
+@enduml

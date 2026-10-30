@@ -27,6 +27,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
+#include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <memory>
@@ -53,11 +54,16 @@ namespace {
 struct streamed_sink_record final {
     std::string bytes;
     std::size_t chunks = 0;
-    bool finished = false;
-    bool committed = false;
-    bool aborted = false;
+    /// The session thread sets these after the response, so they are atomic and
+    /// the assertions wait for them rather than reading them the instant the
+    /// client sees the answer.
+    std::atomic<bool> finished{false};
+    std::atomic<bool> published{false};
+    std::atomic<bool> discarded{false};
     /// Set before the request, to make the destination refuse the first chunk.
     bool refuse_chunks = false;
+    /// Set before the request, to make the bytes fail to complete.
+    bool refuse_finish = false;
 };
 
 /**
@@ -68,7 +74,8 @@ public:
     explicit streamed_recording_sink(std::shared_ptr<streamed_sink_record> record)
         : record_(std::move(record)) {}
 
-    bool consume(std::string_view chunk) override {
+protected:
+    bool consume_chunk(std::string_view chunk) override {
         if (record_->refuse_chunks)
             return false;
         record_->bytes.append(chunk);
@@ -76,18 +83,18 @@ public:
         return true;
     }
 
-    bool finish() override {
+    bool finish_body() override {
         record_->finished = true;
+        return !record_->refuse_finish;
+    }
+
+    bool publish_chunk() override {
+        record_->published = true;
         return true;
     }
 
-    bool commit() override {
-        record_->committed = true;
-        return true;
-    }
-
-    void abort() override {
-        record_->aborted = true;
+    void discard() noexcept override {
+        record_->discarded.store(true);
     }
 
 private:
@@ -223,13 +230,65 @@ post_chunked_in_pieces(std::uint16_t port,
     return res;
 }
 
-/// A handler that commits the sink and reports what it received.
+/**
+ * @brief What became of a connection that declared a body and then went quiet.
+ */
+enum class stall_outcome { closed, answered, held };
+
+/**
+ * @brief Sends headers that declare a body, sends none of it, and reads.
+ *
+ * The server must close the connection on its own deadline rather than hold it.
+ * A read that times out means the server was still waiting, which is the failure.
+ */
+stall_outcome
+stall_after_headers(std::uint16_t port, std::uint64_t declared, std::chrono::milliseconds wait) {
+    asio::io_context io;
+    beast::tcp_stream stream(io);
+    beast::error_code ec;
+    stream.expires_after(wait);
+
+    const auto address = asio::ip::make_address("127.0.0.1", ec);
+    if (ec)
+        return stall_outcome::held;
+    stream.connect(asio::ip::tcp::endpoint(address, port), ec);
+    if (ec)
+        return stall_outcome::held;
+
+    const auto head =
+        "POST /stream HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Length: " + std::to_string(declared) +
+        "\r\n\r\n";
+    asio::write(stream, asio::buffer(head), ec);
+    if (ec)
+        return stall_outcome::held;
+
+    beast::flat_buffer buffer;
+    http::response<http::string_body> res;
+    http::read(stream, buffer, res, ec);
+    if (!ec)
+        return stall_outcome::answered;
+    if (ec == beast::error::timeout)
+        return stall_outcome::held;
+    return stall_outcome::closed;
+}
+
+/**
+ * @brief Waits for a flag the session sets after it has answered.
+ */
+bool wait_until(const std::atomic<bool>& flag, std::chrono::milliseconds budget) {
+    const auto deadline = std::chrono::steady_clock::now() + budget;
+    while (!flag.load() && std::chrono::steady_clock::now() < deadline)
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    return flag.load();
+}
+
+/// A handler that publishes the sink and reports what it received.
 request_handler streamed_echo(const std::shared_ptr<streamed_sink_record>& record) {
     return [record](const http_request& req) -> asio::awaitable<http_response> {
         if (req.sink == nullptr)
             co_return http_response::error(http_status::internal_server_error,
                                            "The route has no sink.");
-        if (!req.sink->commit())
+        if (!req.sink->publish())
             co_return http_response::error(http_status::internal_server_error,
                                            "The bytes could not be published.");
         co_return http_response::json(R"({"bytes":)" + std::to_string(req.body_bytes) +
@@ -269,9 +328,9 @@ TEST_CASE("a_route_with_a_sink_receives_the_body_in_chunks", "[http_streamed_bod
     REQUIRE(record->bytes.size() == 200 * 1024);
     // A body larger than one chunk arrives in more than one piece.
     REQUIRE(record->chunks > 1);
-    REQUIRE(record->finished);
-    REQUIRE(record->committed);
-    REQUIRE(!record->aborted);
+    REQUIRE(record->finished.load());
+    REQUIRE(record->published.load());
+    REQUIRE(!record->discarded.load());
 }
 
 TEST_CASE("a_streamed_body_past_the_limit_is_refused", "[http_streamed_body]") {
@@ -306,7 +365,7 @@ TEST_CASE("a_streamed_body_past_the_limit_is_refused", "[http_streamed_body]") {
      */
     REQUIRE(record->chunks == 0);
     REQUIRE(record->bytes.empty());
-    REQUIRE(!record->committed);
+    REQUIRE(!record->published.load());
 }
 
 TEST_CASE("a_stream_that_runs_past_the_limit_is_refused_and_discarded", "[http_streamed_body]") {
@@ -335,10 +394,13 @@ TEST_CASE("a_stream_that_runs_past_the_limit_is_refused_and_discarded", "[http_s
 
     REQUIRE(refused.has_value());
     REQUIRE(refused->result_int() == 413);
-    // The sink took the first chunks, and what it took is discarded.
+    /*
+     * The sink took the first chunks. Nothing publishes them, and the sink's
+     * destructor is what discards them.
+     */
     REQUIRE(record->chunks > 0);
-    REQUIRE(record->aborted);
-    REQUIRE(!record->committed);
+    REQUIRE(wait_until(record->discarded, std::chrono::seconds(2)));
+    REQUIRE(!record->published.load());
 }
 
 TEST_CASE("a_destination_that_refuses_a_chunk_is_answered_500", "[http_streamed_body]") {
@@ -368,8 +430,71 @@ TEST_CASE("a_destination_that_refuses_a_chunk_is_answered_500", "[http_streamed_
 
     REQUIRE(failed.has_value());
     REQUIRE(failed->result_int() == 500);
-    REQUIRE(record->aborted);
-    REQUIRE(!record->committed);
+    REQUIRE(wait_until(record->discarded, std::chrono::seconds(2)));
+    REQUIRE(!record->published.load());
+}
+
+TEST_CASE("a_body_that_stops_arriving_is_closed_on_the_deadline", "[http_streamed_body]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a stalled body does not hold the connection";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+    options.request_timeout = std::chrono::seconds(1);
+
+    auto record = std::make_shared<streamed_sink_record>();
+    streaming_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(
+        router->post("/stream")
+            .summary("Take a streamed body")
+            .auth_optional()
+            .max_body(1024 * 1024)
+            .sink([record] { return std::make_unique<streamed_recording_sink>(record); })
+            .handler(streamed_echo(record))
+            .build());
+
+    // The body is declared and never sent, so the read waits for a chunk that
+    // does not come. The read budget is longer than the server's deadline, so a
+    // timeout here would mean the server was still waiting.
+    const auto outcome = stall_after_headers(fixture.port(), 100000, std::chrono::seconds(5));
+
+    REQUIRE(outcome == stall_outcome::closed);
+    REQUIRE(wait_until(record->discarded, std::chrono::seconds(2)));
+    REQUIRE(!record->published.load());
+}
+
+TEST_CASE("bytes_that_cannot_be_completed_are_answered_500", "[http_streamed_body]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a sink which cannot finish is a 500";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+
+    auto record = std::make_shared<streamed_sink_record>();
+    record->refuse_finish = true;
+    streaming_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(
+        router->post("/stream")
+            .summary("Take a streamed body")
+            .auth_optional()
+            .max_body(1024 * 1024)
+            .sink([record] { return std::make_unique<streamed_recording_sink>(record); })
+            .handler(streamed_echo(record))
+            .build());
+
+    const auto failed =
+        post_streamed(fixture.port(), "/stream", std::string(4096, 'x'), std::chrono::seconds(5));
+
+    REQUIRE(failed.has_value());
+    REQUIRE(failed->result_int() == 500);
+    REQUIRE(wait_until(record->discarded, std::chrono::seconds(2)));
+    REQUIRE(!record->published.load());
 }
 
 TEST_CASE("a_route_without_a_sink_still_receives_its_whole_body", "[http_streamed_body]") {

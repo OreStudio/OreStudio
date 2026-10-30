@@ -2,7 +2,7 @@
 :ID: 123A7AA3-82BF-4401-B9DC-EC6E046A8CD3
 :END:
 #+title: Task: Take the body in chunks
-#+description: Give a route a way to say it wants its body in chunks, and give the session a read loop that hands them on through a bounded channel, under the same limit and a stall deadline.
+#+description: Give a route a way to say where its body goes, and give the session a read loop that hands the body on in chunks. Keep the same limit, and give the transfer a stall deadline.
 #+type: task
 #+level: s1
 #+filetags: :carry_a_large_body_without_holding_it:sprint_29:v0:
@@ -10,6 +10,7 @@
 #+branch: feature/take-the-body-in-chunks
 #+pr: 4137
 #+blocked_on: review
+#+blocked_since: 2026-10-30 20:30
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
@@ -30,36 +31,37 @@ needs a read loop that hands the chunks on instead of collecting them.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:8550935B-A0F4-4BAD-95F3-D3E03B45E044][Carry a large body without holding it]] |
-| Now          | The session reads chunked bodies and routes them to a sink. |
-| Waiting on   | Nothing.                               |
+| Now          | The session reads bodies in chunks and hands them to the route's sink. |
+| Waiting on   | The review of #4137.                   |
 | Next         | Review, then the storage routes move onto the sink. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
 
-- A route states that it takes its body in chunks, and the session reads it with a
-  parser that holds one chunk at a time.
-- The chunks reach the handler through a bounded channel, so the socket stays on the
-  executor that owns it and the handler stays on its worker.
+- A route states where its body goes, and the session reads it with a parser that
+  holds one chunk at a time.
+- The chunks reach the sink on the executor that owns the socket, so the socket is
+  never touched from the handler's thread.
 - The per-route limit and the ceiling apply unchanged, and a declared or chunked
   body past them is answered 413.
-- A body that stops arriving is closed on a stall deadline and its worker returns.
+- A body that stops arriving is closed on the stream's deadline and its worker
+  returns.
 - A buffered route behaves exactly as it does today.
-- A test streams more bytes than the window holds and reads back the same bytes.
+- A test streams more bytes than one chunk and reads back the same bytes.
 
 * Plan
 
-1. Add a chunk channel: a bounded queue of fixed-size buffers with a producer side
-   the session fills and a consumer side the handler drains, and a stop that either
-   side can raise.
-2. Add =route::streams_body= and a read loop in =http_session= that parses with
-   =buffer_body=, fills the channel, and reuses the limit and refusal path already
-   there.
-3. Give the handler the consumer through =http_request=, so the existing handler
+1. Add =domain::body_sink=: consume a chunk, finish the bytes, publish them to keep
+   them, discard them otherwise.
+2. Add =route::sink= as a factory, and a read loop in =http_session= that parses
+   with =buffer_body=, hands each chunk to the sink, and reuses the limit and
+   refusal path already there.
+3. Give the handler the sink through =http_request=, so the existing handler
    signature and the generated route units are untouched.
-4. Hold the channel depth and chunk size in =http_server_options=, and close on the
-   stall deadline with the timer the session already owns.
-5. Test the bytes, the limit, the stall and the window.
+4. Hold the chunk size in =http_server_options=, and let the session hold a guard
+   that discards an unpublished sink.
+5. Test the bytes, the limit, the stall, the destination's refusals and the
+   buffered path.
 
 * Measurements
 
@@ -73,16 +75,19 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| =ores.http.api= test cases | 94 cases, 285 assertions, all passing | =./ores.http.api.tests= | =#4110= |
-| Streamed body cases | 5 cases, 25 assertions, all passing | =./ores.http.api.tests "[http_streamed_body]"= | =#4110= |
+| =ores.http.api= test cases | 96 cases, 292 assertions, all passing | =./ores.http.api.tests= | =#4137= |
+| Streamed body cases | 7 cases, 32 assertions, all passing | =./ores.http.api.tests "[http_streamed_body]"= | =#4137= |
 
 * Notes
 
-- The read is one loop for every route: a buffered route is a sink that appends to
-  a string, so the buffered and streamed paths cannot drift apart.
+- One parser loop serves every route. It branches once, on whether a sink exists:
+  the streamed route hands the chunk on, the buffered route appends it to a string.
 - A body declared past the limit is refused before a sink exists, so nothing is
   taken and nothing is discarded. A body that runs past it mid-stream is taken in
   part and then discarded, which the chunked case covers.
+- The stream applies its timeout to every read, so a stalled body is closed without
+  the session setting a second deadline. That was measured: with the per-chunk arm
+  removed the stall case still passes, and the arm was removed.
 - =ores.trading='s generated batch header lost the bond members on =main=, so
   =ores.synthetic= does not compile and =ores.http.core= cannot be built without
   it. The header was restored from =b3a78b33ba^= for the build and the change was

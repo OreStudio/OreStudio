@@ -74,6 +74,13 @@ asio::awaitable<void> http_session::run() {
     try {
         for (;;) {
             /*
+             * The stream applies this timeout to every operation that follows,
+             * so it bounds each header read, each body chunk and each write on
+             * this connection. A handler that ran for longer than the timeout
+             * does not leave the next request with an expired clock.
+             */
+            stream_.expires_after(options_.request_timeout);
+            /*
              * The headers are read first, on their own, so the limit and the sink
              * can be decided by the route the request addresses before any of the
              * body is read. Reading the message whole would force one limit on
@@ -158,14 +165,32 @@ asio::awaitable<void> http_session::run() {
              * connection holds nothing once the request is answered.
              */
             std::unique_ptr<domain::body_sink> sink;
-            if (body.route && body.route->sink)
+            if (body.route && body.route->sink) {
                 sink = body.route->sink();
+                if (!sink) {
+                    // A route that states a sink and produces none must not
+                    // quietly read the body into memory instead.
+                    co_await refuse_destination();
+                    break;
+                }
+            }
             body.sink = sink.get();
+
+            /*
+             * Every path that does not publish leaves the bytes discarded, and the
+             * guard is what makes that true of the refused, the failed and the
+             * abandoned request alike. abort() does nothing once published.
+             */
+            struct discard_unless_published final {
+                domain::body_sink* sink;
+                ~discard_unless_published() {
+                    if (sink != nullptr)
+                        sink->abort();
+                }
+            } discard_guard{body.sink};
 
             const auto outcome = co_await read_body(parser, body.sink, body);
             if (outcome != body_outcome::complete) {
-                if (body.sink != nullptr)
-                    body.sink->abort();
                 if (outcome == body_outcome::too_large)
                     co_await refuse_too_large(limit);
                 else
@@ -173,10 +198,18 @@ asio::awaitable<void> http_session::run() {
                 break;
             }
 
+            /*
+             * The parser releases a message whose body is a buffer the next read
+             * reuses, and the body has already been consumed, so only the header
+             * half is carried on.
+             */
             auto streamed = parser.release();
             http::request<http::string_body> req;
             req.base() = streamed.base();
             co_await handle_request(std::move(req), std::move(body));
+            if (body.sink != nullptr && !body.sink->published())
+                BOOST_LOG_SEV(lg(), warn)
+                    << "The handler for " << subject << " answered without publishing its body";
 
             if (!keep_alive) {
                 BOOST_LOG_SEV(lg(), debug) << "Client requested connection close";
@@ -207,7 +240,7 @@ asio::awaitable<http_session::body_outcome> http_session::read_body(
      * belongs to this call, so a session that is idle between requests holds no
      * body memory at all.
      */
-    auto chunk = std::vector<char>(64 * 1024);
+    auto chunk = std::vector<char>(options_.body_chunk_size);
 
     while (!parser.is_done()) {
         auto& view = parser.get().body();
@@ -215,11 +248,12 @@ asio::awaitable<http_session::body_outcome> http_session::read_body(
         view.size = chunk.size();
 
         /*
-         * The deadline is the gap between chunks, not the length of the whole
-         * transfer: a large object may take as long as it takes, and a client
-         * that stops sending is closed rather than held.
+         * No deadline is set here: the stream arms its own timeout for every
+         * operation, so each read gets the full request timeout. That bounds the
+         * gap between chunks and not the length of the transfer, which is what a
+         * large body needs, and a client that stops sending is closed rather than
+         * held.
          */
-        stream_.expires_after(options_.request_timeout);
         try {
             co_await http::async_read_some(stream_, buffer_, parser, asio::use_awaitable);
         } catch (const boost::system::system_error& e) {
@@ -270,12 +304,7 @@ asio::awaitable<void> http_session::handle_request(http::request<http::string_bo
     domain_req.body_bytes = body.byte_count;
     domain_req.sink = body.sink;
 
-    // Extract path without query string
-    std::string path = domain_req.target;
-    auto query_pos = path.find('?');
-    if (query_pos != std::string::npos) {
-        path = path.substr(0, query_pos);
-    }
+    const auto path = route_path(domain_req.target);
 
     BOOST_LOG_SEV(lg(), trace) << "Processing request path: " << path
                                << " method: " << static_cast<int>(domain_req.method);
@@ -433,7 +462,8 @@ asio::awaitable<void> http_session::handle_request(http::request<http::string_bo
             bytes_callback_(*domain_req.authenticated_user->session_id,
                             *domain_req.authenticated_user->session_start_time,
                             response.body.size(),
-                            domain_req.body_bytes);
+                            domain_req.sink != nullptr ? domain_req.body_bytes :
+                                                         domain_req.body.size());
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn) << "Failed to update session bytes: " << e.what();
         }

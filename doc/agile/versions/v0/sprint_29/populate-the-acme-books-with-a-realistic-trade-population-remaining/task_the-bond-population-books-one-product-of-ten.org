@@ -5,7 +5,7 @@
 #+description: Ten trade types route to the bond instrument table. The planner draws exactly one of them, a plain Bond, so every one of the twenty-four bond trades in a provisioned tenant is a Bond and the other nine codes never appear. The family's own fact rows -- the option, the repo, the future, the total return swap, the ASCOT, the callable's call dates, the convertible's conversion targets -- are all empty, because the writer fills only the instrument header. A tenant therefore cannot see a bond option, a repo or a convertible, and nothing says so.
 #+type: task
 #+level: s1
-#+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
+#+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Ten trade types route to the bond instrument table. The planner draws exactly on
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
+| Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

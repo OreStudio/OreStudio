@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8945F7D2-8623-407A-998C-8245ACD1DD8B][Bound the memory a request body may cost]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,11 +29,11 @@ limit fit the route and, later, lets the body be streamed.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8945F7D2-8623-407A-998C-8245ACD1DD8B][Bound the memory a request body may cost]] |
-| Now          | Implemented and green.                 |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR that carries it.           |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -93,3 +93,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The session reads the headers on their own, resolves the route the request
+addresses, and reads the body under that route's limit. A route that states none
+gets the server's 1 MiB default; the server's ceiling caps every route. The
+existing suites stayed green through the split read.
+

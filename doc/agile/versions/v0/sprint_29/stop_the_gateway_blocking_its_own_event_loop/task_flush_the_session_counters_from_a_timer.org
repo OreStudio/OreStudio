@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB95B09C-1AF5-4171-8824-EB9ED45B197F][Stop the gateway blocking its own event loop]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -35,11 +35,11 @@ a worker thread, and the number written is the running total.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AB95B09C-1AF5-4171-8824-EB9ED45B197F][Stop the gateway blocking its own event loop]] |
-| Now          | Implemented and green; PR outstanding. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR with the worker pool task. |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -125,3 +125,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A session's byte totals are kept in memory and written once per flush interval
+from a worker, and what is written is the running total rather than the size of
+the last request. A quiet session costs no write, a failed write is retried with
+the same total, and shutdown writes what is pending.
+
+The column keeps its documented meaning, so =update_bytes= keeps =set= semantics
+and =ores.iam= is untouched: the fix is in what the gateway sends.
+

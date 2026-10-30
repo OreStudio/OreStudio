@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB95B09C-1AF5-4171-8824-EB9ED45B197F][Stop the gateway blocking its own event loop]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -35,11 +35,11 @@ request is refused with 503 rather than queued without limit.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AB95B09C-1AF5-4171-8824-EB9ED45B197F][Stop the gateway blocking its own event loop]] |
-| Now          | Implemented and green; PR outstanding. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR, then move to the counters.|
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -127,3 +127,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A route handler now runs on a bounded pool of worker threads and the connection
+is resumed with its result, so no I/O thread blocks on a downstream request. The
+pool states its thread count and its in-flight cap, refuses with 503 at the cap
+rather than queueing, and reports how many requests it holds.
+
+The proof is an integration test that starts a server, blocks one handler and
+reads =/health= under a 500 ms deadline. With the pool removed from
+=http_server='s constructor the same test never answers, because the blocked
+handler holds the only I/O thread. That was checked before the pool was restored,
+so the test fails when the fix is reverted.
+

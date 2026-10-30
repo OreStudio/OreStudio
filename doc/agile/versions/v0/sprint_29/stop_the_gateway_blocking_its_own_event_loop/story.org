@@ -36,11 +36,11 @@ This is increment A1 of
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Both tasks are implemented and green; one PR carries them. |
+| Now           | Both tasks are done and the worker pool and counters are in place. |
 | Waiting on    | Nothing.                               |
-| Next          | Open the PR, then close the story when it merges. |
+| Next          | Merged. The next increment takes over. |
 | Last touched  | 2026-10-29                               |
 
 * Acceptance
@@ -60,8 +60,8 @@ This is increment A1 of
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:34ACA4F4-F78E-406A-843D-5A5332A62B6C][Dispatch handler work onto a bounded worker pool]] | STARTED | 2026-10-29 | | Hand the matched route's handler to a fixed pool of worker threads and await its result on the connection's executor, so a blocking NATS or database call never runs on an I/O thread. Bound the queue and answer 503 when it is saturated. |
-| [[id:D703270B-40F4-43D2-B976-D557FEBC82CA][Flush the session counters from a timer]] | STARTED | 2026-10-29 | | The session byte counters are written to PostgreSQL synchronously after every authenticated request. Accumulate them in memory and flush them from one timer, so the write leaves the request path and the number of writes is bounded by the flush interval rather than by the request rate. |
+| [[id:34ACA4F4-F78E-406A-843D-5A5332A62B6C][Dispatch handler work onto a bounded worker pool]] | DONE | 2026-10-29 | 2026-10-30 | Hand the matched route's handler to a fixed pool of worker threads and await its result on the connection's executor, so a blocking NATS or database call never runs on an I/O thread. Bound the queue and answer 503 when it is saturated. |
+| [[id:D703270B-40F4-43D2-B976-D557FEBC82CA][Flush the session counters from a timer]] | DONE | 2026-10-29 | 2026-10-30 | The session byte counters are written to PostgreSQL synchronously after every authenticated request. Accumulate them in memory and flush them from one timer, so the write leaves the request path and the number of writes is bounded by the flush interval rather than by the request rate. |
 
 * Decisions
 

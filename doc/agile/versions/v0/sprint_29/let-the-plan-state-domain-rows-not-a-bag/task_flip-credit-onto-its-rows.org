@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 80649240-E5CD-46DE-9ECE-55603FD60CC0
+:END:
+#+title: Task: Flip credit onto its rows
+#+description: Six credit products construct today, but the planner still fills a bag and the writer translates it. Move that translation into the planner so the plan carries the row, and the writer only persists it.
+#+type: task
+#+level: s1
+#+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
+#+owner: marco
+#+branch: feature/flip-credit-onto-its-rows
+#+pr: 4094
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A credit trade states its row in the plan, and the writer translates nothing for the family.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- The planner builds the credit row each type routes to.
+- The writer's credit arm is gone and the batch is persisted with its audit columns stamped.
+- A provisioning run books the same credit rows as before the flip: one each of the five products the seeded population draws.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Credit instrument rows | 5 | =select count(*) from ores_trading_credit_instruments_tbl= | worktree |
+| Products drawn | 5, one each | =select trade_type, count(distinct id) ... group by 1= | worktree |
+| Reference type | LEI on every row, 20 characters | =select reference_entity_id_type, count(*), min(char_length(...)) ...= | worktree |
+| Trade rows, latest version | 127 | =select count(distinct id) from ores_trading_trades_tbl where valid_to = ...= | worktree |
+| Planner suite | 1,937 assertions in 80 cases | =publish/bin/ores.synthetic.core.tests= | worktree |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4094][#4094]] | [synthetic] Let a credit trade state its row |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The credit family states its row. The planner builds the row each type routes to
+and the writer persists it, which leaves the writer's dispatch with one bag arm:
+the bond security's.
+
+The population is unchanged: five rows, one for each of the five products the
+seeded population draws, every one of them referencing a legal entity by LEI of
+twenty characters, and 127 trades in total.
+
+The family had no planner test, because it had no planner until the population
+work gave it one; the flip adds the first. It asserts one row per slot, the type
+that routes it, and the LEI reference, so the family that motivated the legal
+entity model is now covered where it is drawn rather than only in a provisioning
+run.

@@ -763,37 +763,15 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
         row.instrument.audit.change_reason_code = std::string(population_reason);
         row.instrument.audit.change_commentary = "Generated trade population.";
         book_req.instruments.bond_instruments.push_back(row);
-    } else if (const auto* credit = std::get_if<domain::credit_terms>(&slot.terms)) {
-        namespace tdom = ores::trading::domain;
-        tdom::credit_common_terms terms;
-        terms.trade_type_code = slot.trade_type_code;
-        terms.reference_entity_id_type = credit->reference_entity_id_type;
-        terms.reference_entity_id = credit->reference_entity_id;
-        terms.start_date = credit->start_date;
-        terms.maturity_date = credit->maturity_date;
-
-        const auto& type = slot.trade_type_code;
-        auto row = [&] {
-            if (type == "CreditDefaultSwap")
-                return tdom::construct_credit_default_swap(terms);
-            if (type == "IndexCreditDefaultSwap")
-                return tdom::construct_index_credit_default_swap(terms);
-            if (type == "IndexCreditDefaultSwapOption")
-                return tdom::construct_index_credit_default_swap_option(terms);
-            if (type == "CreditLinkedSwap")
-                return tdom::construct_credit_linked_swap(terms);
-            if (type == "RiskParticipationAgreement")
-                return tdom::construct_risk_participation_agreement(terms);
-            return tdom::construct_synthetic_cdo(terms);
-        }();
-        row.description = "Generated credit trade.";
-        row.audit.change_reason_code = std::string(population_reason);
-        row.audit.change_commentary = "Generated trade population.";
-        book_req.instruments.credit_instruments.push_back(row);
-
+    } else if (!slot.instruments.credit_instruments.empty()) {
+        for (auto row : slot.instruments.credit_instruments) {
+            row.audit.change_reason_code = std::string(population_reason);
+            row.audit.change_commentary = "Generated trade population.";
+            book_req.instruments.credit_instruments.push_back(row);
+        }
     } else {
         throw trade_population_write_error(
-            "The slot states no terms this writer knows how to book.");
+            "The slot states no rows this writer knows how to book.");
     }
 
     /*

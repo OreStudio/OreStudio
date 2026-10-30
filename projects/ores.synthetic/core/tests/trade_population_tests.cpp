@@ -236,6 +236,35 @@ domain::trade_generation_scope equity_scope() {
     return scope;
 }
 
+domain::trade_generation_scope credit_scope() {
+    auto scope = bond_scope();
+    scope.asset_class_code = "credit";
+    scope.trades_per_book = 4;
+    scope.credit_reference_entities = {"529900T8BM49AURSDO55", "5493001KJTIIGC8Y1R12"};
+    return scope;
+}
+
+TEST_CASE("a_credit_slot_states_its_row_and_names_a_legal_entity", "[trade_population]") {
+    const auto plan = plan_of(credit_scope());
+
+    REQUIRE(!plan.slots.empty());
+    for (const auto& slot : plan.slots) {
+        // The family states its row and no bag.
+        REQUIRE(std::holds_alternative<std::monostate>(slot.terms));
+        REQUIRE(slot.instruments.credit_instruments.size() == 1u);
+        const auto& row = slot.instruments.credit_instruments.front();
+        // The row states the party boundary and no trade type: the trade states
+        // that one.
+        CHECK_FALSE(row.reference_entity_id_type.empty());
+        /*
+         * A credit trade names a party by one identifier, and the reference is
+         * the LEI the dataset holds.
+         */
+        CHECK(row.reference_entity_id_type == "LEI");
+        CHECK(row.reference_entity_id.size() == 20u);
+    }
+}
+
 TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", "[trade_population]") {
     auto wide = commodity_scope();
     wide.trades_per_book = 25;

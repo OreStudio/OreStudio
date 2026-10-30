@@ -33,6 +33,22 @@ test('the blotter reads trades and structures by book, and flattens to the legs'
     const firstReference = (await rows.first().locator('td').first().innerText()).trim();
     expect(firstReference).not.toBe('');
 
+    // The date is one line, and the table fits the panel: what cannot fit is
+    // shortened with an ellipsis rather than wrapped, so the columns after it are
+    // not pushed off the screen.
+    const dateCell = rows.first().locator('td').nth(4);
+    expect((await dateCell.innerText()).trim()).toMatch(/^(\d{4}-\d{2}-\d{2}|—)$/);
+    expect(
+        await dateCell.locator('span').first().evaluate((el) => getComputedStyle(el).whiteSpace),
+    ).toBe('nowrap');
+    const fits = async (): Promise<boolean> =>
+        page.evaluate(() => {
+            const table = document.querySelector('table');
+            const box = table?.parentElement;
+            return table !== null && box != null && table.scrollWidth <= box.clientWidth;
+        });
+    expect(await fits()).toBe(true);
+
     // Narrowing to a node keeps the list and its count in step: the first page
     // holds as many rows as the node counted, unless the page is shorter.
     const node = rail.getByRole('button').nth(1);
@@ -62,6 +78,8 @@ test('the blotter reads trades and structures by book, and flattens to the legs'
         timeout: 20_000,
     });
     await expect(rows.first()).toBeVisible();
+    // The extra column still leaves the table inside the panel.
+    expect(await fits()).toBe(true);
     await page.screenshot({ path: 'shots/blotter-flat.png', fullPage: true });
 
     // Back to the top list: the legs are gone again.

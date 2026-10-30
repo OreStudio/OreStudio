@@ -190,7 +190,8 @@ export function BlotterPage(): ReactNode {
             cell: (row) => (
                 <>
                     <Link
-                        className="text-accent-bright hover:underline"
+                        className="block max-w-[8.5rem] truncate text-accent-bright hover:underline"
+                        title={row.reference || row.id}
                         to={
                             row.row_kind === 'structure'
                                 ? `${PATHS.structures}/${encodeURIComponent(row.reference || row.id)}`
@@ -215,7 +216,14 @@ export function BlotterPage(): ReactNode {
             header: t('trading.blotter.structureColumn'),
             mono: true,
             hidden: !flat,
-            cell: (row) => row.structure_reference || '—',
+            cell: (row) =>
+                row.structure_reference === '' ? (
+                    '—'
+                ) : (
+                    <span className="block max-w-[7rem] truncate" title={row.structure_reference}>
+                        {row.structure_reference}
+                    </span>
+                ),
         },
         {
             /*
@@ -232,9 +240,11 @@ export function BlotterPage(): ReactNode {
                     return '—';
                 }
                 return (
-                    <Tooltip text={row.instrument_type_name || row.instrument_type}>
-                        {code.toUpperCase()}
-                    </Tooltip>
+                    <span className="whitespace-nowrap">
+                        <Tooltip text={row.instrument_type_name || row.instrument_type}>
+                            {code.toUpperCase()}
+                        </Tooltip>
+                    </span>
                 );
             },
         },
@@ -251,9 +261,15 @@ export function BlotterPage(): ReactNode {
                     return '—';
                 }
                 return row.book_id === '' ? (
-                    row.book_name
+                    <span className="block max-w-[8rem] truncate" title={row.book_name}>
+                        {row.book_name}
+                    </span>
                 ) : (
-                    <Link className="hover:underline" to={bookPath(row.book_id)}>
+                    <Link
+                        className="block max-w-[8rem] truncate hover:underline"
+                        title={row.book_name}
+                        to={bookPath(row.book_id)}
+                    >
                         {row.book_name}
                     </Link>
                 );
@@ -266,7 +282,11 @@ export function BlotterPage(): ReactNode {
                 row.counterparty_id === '' ? (
                     '—'
                 ) : (
-                    <Link className="hover:underline" to={counterpartyPath(row.counterparty_id)}>
+                    <Link
+                        className="block max-w-[9rem] truncate hover:underline"
+                        title={row.counterparty_name}
+                        to={counterpartyPath(row.counterparty_id)}
+                    >
                         {row.counterparty_name || '—'}
                     </Link>
                 ),
@@ -276,13 +296,17 @@ export function BlotterPage(): ReactNode {
             header: t('trading.blotter.date'),
             mono: true,
             sort: 'trade_date',
-            cell: (row) => row.trade_date || '—',
+            cell: (row) => (
+                <span className="block w-[5rem] whitespace-nowrap tabular-nums">
+                    {row.trade_date || '—'}
+                </span>
+            ),
         },
         {
             id: 'state',
             header: t('trading.blotter.state'),
             sort: 'status',
-            cell: (row) => row.status || '—',
+            cell: (row) => <span className="whitespace-nowrap">{row.status || '—'}</span>,
         },
     ];
 

@@ -26,6 +26,7 @@ import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/
 import { subjects as portfolioSubjects } from '@ores/wire-protocol/generated/refdata/protocol/portfolio_protocol';
 import { subjects as memberSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_member_protocol';
 import { subjects as tradeIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
+import { subjects as instrumentCodeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/instrument_code_protocol';
 import { subjects as tradeTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_type_protocol';
 import { subjects as structureIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_identifier_protocol';
 import { subjects as structureSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_protocol';
@@ -265,8 +266,10 @@ interface BlotterRow {
     readonly instrument_type: string;
     /** The instrument's own name, as a person reads it: a tooltip's text. */
     readonly instrument_type_name: string;
-    /** The product the type belongs to: swap, fx, bond, and the other families. */
+    /** The instrument code a desk quotes: BGS, CAPFLR, CDS. */
     readonly product_code: string;
+    /** The instrument's own name, which the code stands for. */
+    readonly product_name: string;
     readonly book_id: string;
     readonly book_name: string;
     readonly counterparty_id: string;
@@ -292,35 +295,49 @@ export function registerBlotterRoutes(
         const query = input(blotterQuerySchema, request.query);
         const order = { field: query.sort, descending: query.descending };
 
-        const [books, portfolios, structures, members, counterparties, types] = await Promise.all([
-            readAll(session, bookSubjects.list_books_request, 'books', {
-                filter: {
-                    parent_portfolio_id: null,
-                    id_one_of: null,
-                    parent_portfolio_id_one_of: null,
-                },
-                as_of: null,
-            }),
-            readAll(session, portfolioSubjects.list_portfolios_request, 'portfolios', {
-                filter: { sandbox_id: null, id_one_of: null, sandbox_id_one_of: null },
-                as_of: null,
-            }),
-            readAll(session, structureSubjects.list_structures_request, 'structures', {
-                filter: { id_one_of: null },
-                as_of: null,
-            }),
-            readAll(session, memberSubjects.list_structure_members_request, 'members', {
-                filter: { trade_id_one_of: null },
-                as_of: null,
-            }),
-            readAll(session, counterpartySubjects.list_counterparties_request, 'counterparties', {
-                filter: null,
-                as_of: null,
-            }),
-            readAll(session, tradeTypeSubjects.list_trade_types_request, 'types', {
-                filter: { code_one_of: null },
-            }),
-        ]);
+        const [books, portfolios, structures, members, counterparties, types, instruments] =
+            await Promise.all([
+                readAll(session, bookSubjects.list_books_request, 'books', {
+                    filter: {
+                        parent_portfolio_id: null,
+                        id_one_of: null,
+                        parent_portfolio_id_one_of: null,
+                    },
+                    as_of: null,
+                }),
+                readAll(session, portfolioSubjects.list_portfolios_request, 'portfolios', {
+                    filter: { sandbox_id: null, id_one_of: null, sandbox_id_one_of: null },
+                    as_of: null,
+                }),
+                readAll(session, structureSubjects.list_structures_request, 'structures', {
+                    filter: { id_one_of: null },
+                    as_of: null,
+                }),
+                readAll(session, memberSubjects.list_structure_members_request, 'members', {
+                    filter: { trade_id_one_of: null },
+                    as_of: null,
+                }),
+                readAll(
+                    session,
+                    counterpartySubjects.list_counterparties_request,
+                    'counterparties',
+                    {
+                        filter: null,
+                        as_of: null,
+                    },
+                ),
+                readAll(session, tradeTypeSubjects.list_trade_types_request, 'types', {
+                    filter: { code_one_of: null },
+                }),
+                readAll(
+                    session,
+                    instrumentCodeSubjects.list_instrument_codes_request,
+                    'instruments',
+                    {
+                        filter: { code_one_of: null },
+                    },
+                ),
+            ]);
 
         /*
          * The name a type is known by, so the list states the instrument a desk
@@ -336,9 +353,21 @@ export function registerBlotterRoutes(
                     ] as const,
             ),
         );
-        const productCodeOf = new Map(
-            types.map((row) => [text(row['code']), text(row['product_type'])] as const),
-        );
+        /*
+         * The code a desk quotes is the instrument code, not the asset class: the
+         * catalogue maps the ORE trade type to its short code (BGS, CAPFLR, IRS),
+         * and carries the instrument's own name beside it.
+         */
+        const productCodeOf = new Map<string, string>();
+        const productNameOf = new Map<string, string>();
+        for (const row of instruments) {
+            const tradeType = text(row['ore_trade_type']);
+            if (tradeType === '') {
+                continue;
+            }
+            productCodeOf.set(tradeType, text(row['code']));
+            productNameOf.set(tradeType, text(row['name']));
+        }
 
         /* Which structure holds which trade. */
         const holderOf = new Map<string, string>();
@@ -754,6 +783,7 @@ export function registerBlotterRoutes(
                         kind === 'structure'
                             ? text(row['instrument_type'])
                             : (productCodeOf.get(text(row['instrument_type'])) ?? ''),
+                    product_name: productNameOf.get(text(row['instrument_type'])) ?? '',
                     book_id: text(row['book_id']),
                     book_name:
                         kind === 'structure'

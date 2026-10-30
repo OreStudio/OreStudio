@@ -53,8 +53,10 @@ export interface BlotterRow {
     readonly instrument_type: string;
     /** The name the type is known by, which a tooltip states in full. */
     readonly instrument_type_name: string;
-    /** The product the type belongs to, which the list shows: swap, fx, bond. */
+    /** The instrument code a desk quotes, which the list shows: BGS, CAPFLR, CDS. */
     readonly product_code: string;
+    /** The instrument's own name, which the code stands for. */
+    readonly product_name: string;
     readonly book_id: string;
     readonly book_name: string;
     readonly counterparty_id: string;
@@ -101,6 +103,7 @@ const rowSchema = z.looseObject({
     instrument_type: z.string().default(''),
     instrument_type_name: z.string().default(''),
     product_code: z.string().default(''),
+    product_name: z.string().default(''),
     book_id: z.string().default(''),
     book_name: z.string().default(''),
     counterparty_id: z.string().default(''),

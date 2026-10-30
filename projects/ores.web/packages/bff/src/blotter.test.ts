@@ -67,6 +67,7 @@ const subjects = {
     identifiers: 'trading.v1.structure_identifiers.list',
     tradeIdentifiers: 'trading.v1.trade_identifiers.list',
     tradeTypes: 'trading.v1.trade_types.list',
+    instrumentCodes: 'refdata.v1.instrument_codes.list',
     summaries: 'trading.v1.trade_summaries.list',
 };
 
@@ -234,6 +235,13 @@ function replies(): Readonly<Record<string, unknown>> {
             types: [{ code: 'Swap', description: 'Interest Rate Swap', product_type: 'swap' }],
             total: 1,
         },
+        [subjects.instrumentCodes]: {
+            result: ok,
+            instruments: [
+                { code: 'IRS', name: 'Interest Rate Swap', ore_trade_type: 'Swap' },
+            ],
+            total: 1,
+        },
         [subjects.summaries]: { result: ok, trade_summaries: rows(), total: rows().length },
     };
 }
@@ -359,7 +367,8 @@ describe('the blotter read', () => {
         expect(body.rows[1]).toMatchObject({
             instrument_type: 'Swap',
             instrument_type_name: 'Interest Rate Swap',
-            product_code: 'swap',
+            product_code: 'IRS',
+            product_name: 'Interest Rate Swap',
         });
     });
 

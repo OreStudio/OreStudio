@@ -241,7 +241,11 @@ export function BlotterPage(): ReactNode {
                 }
                 return (
                     <span className="whitespace-nowrap">
-                        <Tooltip text={row.instrument_type_name || row.instrument_type}>
+                        <Tooltip
+                            text={
+                                row.product_name || row.instrument_type_name || row.instrument_type
+                            }
+                        >
                             {code.toUpperCase()}
                         </Tooltip>
                     </span>

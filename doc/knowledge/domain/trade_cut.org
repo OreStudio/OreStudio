@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 19630B5D-A163-42B5-B9C4-61A87BAE8F5F
+:END:
+#+title: Trade cut
+#+description: The deal population component of a cut: the deals a valuation values at the timepoint, the properties the population must carry, why it is fixed by its own act, and where ORE Studio stands against it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:trade:cut:valuation:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+This page states the deal component of a cut. The
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] structure note gives the
+definition, the kinds and the body; this page takes the half of the body that
+carries the deals.
+
+* Summary
+
+A trade cut holds the deal population a valuation values at the timepoint: every
+live deal as it stands at that instant, with the state it holds, the book it
+belongs to, and the corrections applied before the cut was authorised. It is one
+half of the body, and the market data, the reference data, the settings and the
+engine version are recorded beside it, as the
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note sets out. Two properties
+follow from the purpose of a cut. The population must be complete, because a
+valuation states what a book is worth and a missing deal makes that statement
+false. It must also be identified as of the instant and carry its authorisation,
+because a deal's state, book and terms change, and because an unsigned population
+is a candidate.
+
+* What it fixes
+
+- *The deals*. Every live deal at the instant, by identity and by the version
+  that was current.
+- *The state each holds*. Live, expired, fixed or settled as it stood at the
+  cut, since the state enters the valuation and a settled deal valued as live
+  reports a position the book no longer has.
+- *The book and the centre*. The book that owns the deal, which selects the
+  centre's market data the deal values against.
+- *The corrections*. Any manual correction applied before authorisation, with
+  the reason, since a correction changes the number and therefore belongs inside
+  the body rather than in a log beside it.
+- *The linked deals*. A deal and the deal it links to, captured together,
+  because the value of a hedge depends on the position it hedges and a
+  population holding one of the pair reads half the position.
+- *The identity and the authorisation*. The label, the timepoint, the signatory
+  and the version.
+
+A record of the first entry alone reports the trade store at a moment. The
+remaining entries are what turn that report into a statement a valuation can
+rely on.
+
+* Why the component is a separate act
+
+The hub states our working convention that the deals are fixed first and the
+market data second. The division of labour explains the order. The two
+components differ in owner, in review and in mode of failure. A deal is reviewed
+by comparing it with what the desk booked, which is an act of completeness and
+identification. A rate is reviewed by comparing it with an external source,
+which is an act of verification. A reviewer of deals holds no view on a curve,
+and a reviewer of curves holds no view on a booking. One act covering both would
+place the two reviews in one signature, and the resulting signature would certify
+work that no single party performed.
+
+The order follows from the same premises. The market data set exists to value the
+deals, so the population must be settled before the final rates are committed,
+and a provisional market data set serves the review in the interval.
+
+* Where ORE Studio stands
+
+Deals are stored as versioned rows. Each row carries an identity, a version and
+the interval for which it was current, in
+[[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade]], so the store can
+reconstruct a past state through a query over those intervals.
+
+A query yields a population and satisfies the definition only in part. It fixes
+a body of deals at an instant, which is the first constraint. It supplies none of
+the properties the purpose requires: the query carries no identity of its own, no
+party signs it, and the interval a row states is rewritten when a correction
+arrives, so two executions of the same query at different moments can return
+different bodies. The repository therefore holds the reconstruction and leaves
+the identity and the approval unbuilt.
+
+The nearest object in the repository is scoped to a run rather than to a day. A
+report's trade population is partitioned into trade sets, recorded against the
+run, and each set's market data is resolved at its as-of. See
+[[id:AC05783F-3917-4401-902B-40C5277300A7][Gather each trade set and its market data]].
+That object fixes a body of deals at an instant for one run and records it. The
+day's population, signed once and reused by every report of that day, is a
+different object, and the repository holds the first.
+
+* What the sources establish
+
+No claim on this page rests on an external source. The definitions are ours, and
+the statements about our system link the model and the story that show them. The
+hub records which claims in the cluster are our working convention.
+
+* See also
+
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — the classification of the kinds that hold this component, and what each of them is for.
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the hub for what a trade is, how it is classified and how it lives.
+- [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]] — the link between a deal and the deal it depends on, which a population captures together.
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]] — the partitions a population is cut into for a run.
+- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the states a deal moves through, which the cut records as they stood.
+- [[id:AC05783F-3917-4401-902B-40C5277300A7][Gather each trade set and its market data]] — the run-scoped package the repository holds.

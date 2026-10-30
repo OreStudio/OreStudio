@@ -26,6 +26,14 @@ story: a small lookup entity (code, name, description, cut time,
 timezone) that =currency_pair= and anything else needing a cut can
 soft-FK against.
 
+The concept behind the word is in
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]], the structure note that
+gathers the market data component, the deal component and the expiry sense this
+story's cut time belongs to. That note also states what this story does not
+cover: a cut as the whole fixed world a valuation runs against, with its own
+authorisation and version. This story designs the cut time as reference data and
+nothing more.
+
 * Status
 
 | Field         | Value                                  |

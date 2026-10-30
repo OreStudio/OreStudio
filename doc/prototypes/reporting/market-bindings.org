@@ -1,0 +1,349 @@
+:PROPERTIES:
+:ID: 3E207A59-C1F8-429C-BA23-99DBAEB6EA5E
+:END:
+#+title: Market bindings prototype
+#+description: The report configuration's market bindings screen before it is built: the roles and the published curve each binds, the picker of published sets by curve, party and as-of with its state, the refusals for a candidate and an ended set, the explicit historical as-of, and the run that names the publish record it priced from.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:marketdata:publish:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+| Item          | Where                                            |
+|---------------+--------------------------------------------------|
+| Prototype     | [[file:market-bindings/][the prototype]]          |
+| Gemini review | none                                             |
+| Group         | [[file:index.org][Reporting prototypes]]          |
+
+* Summary
+
+The market bindings of a report's run settings, as one plain page with four
+surfaces: the report page that is the way in, the *Market bindings* tab of the
+run settings configuration, the picker over the published sets, and the run that
+names the publish record it priced from.
+
+The page draws the five settlements that
+[[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][the decision note]] states, and it
+does not restate the argument for any of them. It takes the
+[[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]] for
+the shape, because the rows are a collection of the run settings configuration,
+and it draws the row, the picker, the refusals, the pin and the run's card as
+that decision implies them.
+
+It is throwaway. It reads no service, it holds no session, and every value on it
+is mock data. It exists because the journeys settle what a binding *is* and
+nothing yet settles what a person *sees* while making one, being refused one, or
+reading what a run priced from.
+
+* Detail
+
+** The question
+
+The decision is
+[[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]].
+It settles the record: the binding names the publish record and the as-of, the
+export enforces the published state, the XML is built from the set, and the name
+is derived. It does not settle the screen, and the screen is where the decision
+lives or dies:
+
+1. Where does the binding live, so that a person finds it from the report they
+   are reading? The rows hang off the run settings configuration, and the report
+   binds that configuration in a slot.
+2. What does a role with no binding look like, and what does it mean for the next
+   run?
+3. How does a person see that the set they are about to bind is a candidate, or
+   one that ended last night?
+4. How does a person ask, on purpose, for a rerun to reproduce an old number?
+5. Where does the run say which set it used, given that the binding can move
+   afterwards?
+
+The prototype answers all five, and the notes below say what each answer costs.
+
+** The surfaces
+
+Switch with the bottom bar, or with the query string. The default is the tab.
+
+| Surface | Query | What it draws |
+|---------+-------+---------------|
+| The report page | =?surface=report= | The report's *Market and pricing* tab: the market kind, the run settings, the state of the pricing role, the latest run, and the door to the bindings |
+| The tab | =?surface=tab= | The run settings configuration's *Market bindings* tab: the roles, the sets, the notes, the save |
+| The picker | =?surface=pick= | The published sets of the party, the two toggles, the state, and the refusal or the bind in its footer |
+| The run | =?surface=run= | The run's page: the refusals, the runs of the report and the market each met, and the card naming the set the last successful run priced from |
+
+The tab is the screen's home, and the other three are how a person reaches it and
+what comes out of it. The trail is Home, Reporting, Run settings, the
+configuration's name, then *Market bindings*: the configuration is the middle of
+the breadcrumb because that is what the rows belong to, and the report page is a
+second door rather than the trail's root.
+
+** Why the tab, and not a screen of its own
+
+A binding row is a repeated element with its own identity, versioned with the
+configuration it belongs to, written in one document with the rest of that
+configuration's markets. That is the standard's *collection*, and a collection is
+a tab of the record page, changed in a dialog per row, saved once for the
+document. A screen of its own would need its own list, its own pager, its own
+states and its own save, and it would still write the same rows.
+
+So the tab follows the standard as it stands, with one thing the standard's tab
+table does not name: the tab order lists *Details*, *Global parameters*, the
+sections, *Used by* and *History*, and this is a section of the kind, so the tab
+sits among the sections, after *Settings* and before *Used by*. The kind declares
+it as a section named *Market bindings* and not *Markets*, because the screen
+says what the person does with the rows and never the ORE element's name.
+
+** The tab
+
+The header is the standard's: the configuration's name as the title, the lead
+line with the kind, the version, the party and the count of reports that bind it,
+the access mark, and *Refresh*.
+
+The table is the collection. One row for each market role the run declares, in
+the order the run document writes them.
+
+| Column | What it holds |
+|--------|---------------|
+| Role | The ORE market name, monospace, and the first column |
+| Published curve | The curve's code, and the party under it. The same code in two parties is two curves |
+| As-of | The instant the set was built at, exact, because it is what the run prices at |
+| State | The binding's own verdict — Published, Historical, Refused, Ended, No binding — with the set's stored state in small text under it |
+| Publisher | The account that applied the approval, and a dash for a set nobody approved |
+| Published | The published instant, relative, with the exact value on hover |
+| Points | How many pillars the set holds, right-aligned |
+| Writes | The market configuration name the ORE document will carry, monospace, derived from the curve and the party |
+
+Two columns carry the argument. *State* draws the verdict first and the stored
+state second, because =superseded= and *the set this run would use has ended* are
+different facts and a person needs the second; and *Writes* is drawn so that the
+derived name is visible without being editable, which is the decision made legible
+in a column rather than in a paragraph.
+
+A role with no binding says *No published curve bound* across the row and offers
+*Bind a set*. Below the table, one notice says what that means: the run names no
+published curve for that role, so it is refused before it starts.
+
+** The picker
+
+The picker is the record standard's =RecordPicker= over a different subject. It
+reads =marketdata.v1.ops.list_published_curves=, so the party, the search and the
+two toggles are the server's filter and not a filter of the page.
+
+| Column | What it holds |
+|--------|---------------|
+| Curve | The curve configuration's code, monospace, and under it when an ended set left use |
+| Party | The party the set belongs to |
+| Published as-of | The instant the set was built at, exact |
+| State | Published, Withdrawn, Superseded or Candidate, as its badge |
+| Publisher | The account that applied the approval, and a dash for a candidate |
+| Points | How many pillars the set holds, right-aligned |
+
+The two toggles are the published-curve list's own words, *Show candidates* and
+*Show ended sets*, and neither is on by default: the sets a desk prices from are
+the whole table until the person asks otherwise. A row the person chose stays in
+the table even when the toggles would hide its kind, so the refusal has something
+to point at.
+
+The footer is where the state becomes a sentence. A row in the published state
+offers *Bind this set*, and states that the publish record is written into the
+binding and no name is typed. A candidate is refused. An ended set is refused and
+offers the pin.
+
+** The two refusals, and the one route past the second
+
+The refusals are the design's teeth, so they are drawn in full.
+
+*A candidate.* "That set is a candidate. Nobody has approved it, so a run cannot
+price from it. Ask for the publish to be approved, or pick the published set."
+The refusal names the curve, the party and the as-of, so a person knows which set
+to chase, and it does not offer a way to bind it: nothing on the screen writes a
+candidate, and *Bind* is not drawn. The screen refuses what the run would refuse,
+for the same reason.
+
+*An ended set.* The refusal names the state, the instant it ended and, for a
+superseded set, the as-of of the set that replaced it. It then offers the one
+route past it: *Price from this set at its as-of,* with the set's own as-of
+stated. The offer says what it does — the binding names a historical as-of, and
+every run of this configuration prices from that set at that instant until
+somebody changes it — and it says why: it is the only way a rerun reproduces an
+earlier result.
+
+Ticking it and binding writes =priced_as_of= beside =publish_id=. The tab then
+draws the row *Historical*, the set's state under it, and a notice that the set
+ended and the run prices from it on purpose. The run says the same sentence when
+it finishes.
+
+*The pin is on the binding and not on the run.* A run dialog that asked for an
+as-of would have to remember the answer somewhere, and the answer would be the
+same for every run of that configuration until somebody changed it. On the
+binding, the choice is visible on the screen a person reads before they run, and
+it is a version in the configuration's history.
+
+** The run
+
+The run's page is
+[[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]]'s,
+with one card added and one sentence changed.
+
+The card is *The market it priced from*. It names the role, the curve and the
+party, the as-of the run priced at, the state of the set at the time, the
+publisher, the published instant, the publish record and the points read. It is
+read from the run and never from the binding, and the card says so in its own
+subtitle: the binding may have moved since, and a result that moved with it would
+be unreadable.
+
+A run that was refused draws no such card and says why in the run's own words:
+the set was a candidate, or the set ended and the binding names no as-of, or the
+configuration binds no set to the role. *Refused before the engine was reached*
+is stated, because a person must not read a refusal as a failed valuation.
+
+The run list above the card is the proof that the pair can be read together: one
+row per run with the market it resolved, and each row of a run that priced is a
+row a person can follow to the set.
+
+** The states**
+
+Switch with the bottom bar, or with the query string. The two axes are the
+surface and the state of the world.
+
+| Surface | State | What it shows |
+|---------+-------+---------------|
+| All | =?case=the default= | The pricing role bound to the set in use, the simulation role bound to nothing |
+| Report page | =?surface=report= | The door: the report's market, the run settings, the state of the pricing role, the latest run |
+| Tab | =?surface=tab= | The published binding, its publisher, the derived name and the reach |
+| Tab | =?surface=tab&case=none= | No binding at all: both roles unbound, and the notice that every run is refused |
+| Tab | =?surface=tab&case=candidate= | A binding that names a candidate, drawn as *Refused* with the sentence, and *Change it* |
+| Tab | =?surface=tab&case=ended= | A binding whose set has ended, drawn as *Ended*, with the pin offered |
+| Tab | =?surface=tab&case=pinned= | The same set pinned at its as-of, drawn as *Historical*, with the notice that says why |
+| Tab | =?surface=tab&case=loading= | Loading, in the body of the tab |
+| Tab | =?surface=tab&case=error= | The server's words and *Retry*, and never a modal box |
+| Picker | =?surface=pick&pick=s1= | A published set chosen, and *Bind this set* |
+| Picker | =?surface=pick&pick=s5= | A candidate chosen, and the refusal |
+| Picker | =?surface=pick&pick=s2= | An ended set chosen, the refusal, and the pin's box |
+| Picker | =?surface=pick&pick=s2&pin=1= | The pin ticked, and *Bind it as historical* |
+| Picker | =?surface=pick&show=all= | Candidates and ended sets drawn beside the sets in use |
+| Run | =?surface=run= | The run that priced, and the card that names its set |
+| Run | =?surface=run&case=ended= | A run refused for an ended set with no as-of, and the last run that priced |
+| Run | =?surface=run&case=candidate= | A run refused for a candidate |
+| Run | =?surface=run&case=none= | A run refused because no set is bound |
+| Run | =?surface=run&case=pinned= | The run that priced from the ended set at its historical as-of |
+
+** Driving it
+
+The bottom bar switches the surface and the state, and the query string carries
+the difference from the default, so any pair can be linked. A row of the picker
+writes =?pick=. The two toggles write =?show=. A role's *Change* opens the picker
+on the set that role names. A role's *Clear* draws the no-binding state, so a
+reviewer can read what the screen says after it.
+
+Three gaps are drawn on the page rather than hidden: the picker that must be a
+new part, the role that is a free string with no vocabulary, and the run that
+cannot yet name a publish record.
+
+** What is fake
+
+Everything on the page is mock data: the configuration, its seven versions, the
+four reports bound to it, the two market roles, the seven published sets, their
+publishers and instants, the runs and their refusals are hard-coded literals.
+There is no server, no session, no framework and no build step. A save, a bind or
+a clear writes nothing; the query string is the only state, and a reload returns
+the page as it was.
+
+The sets are the published-curves prototype's own fixtures, moved on a day, so
+the two pages agree about ACME London's USD-SOFR-3M curve: the set published on
+06 October 16:00 and in use, the set it superseded at 05 October 16:00, and the
+candidate raised on the morning of 07 October. The mock tenant's clock is
+07 October 2026, 09:00 UTC.
+
+The reviewer should know three assumptions. The party is ACME London and only its
+sets are offered; a set of ACME New York exists in the fixture so the party's
+scope is visible as a rule and not as an accident. The run settings configuration
+is drawn with the version and the reach a real one would carry, and the reports
+that bind it are the seeded ones. And the market roles are =pricing= and
+=simulation=: the first is bound throughout and the second is the unbound case.
+
+** Where the code lives
+
+The prototype is =doc/prototypes/reporting/market-bindings/index.html=: one file,
+with its CSS and its JavaScript inline, no framework, no =prototype.css=, no
+=prototype.js=, and no build step. The site build copies the directory as it
+stands and adds nothing to it.
+
+The product screens would live here:
+
+| Part | Where |
+|------+-------|
+| The *Market bindings* tab | A section of the run settings record page under =projects/ores.web/packages/web/src/reporting/=, declared by the kind beside its other sections |
+| The picker | A =PublishedCurvePicker= beside =RecordPicker=, or a filtered mode on the shared picker with a cell for the derived state |
+| The row table | =PartsPanel=, the shared part table of the record standard, which draws a collection's rows in a configuration tab |
+| The bind | =reporting.v1.configuration_market_bindings.put_many= behind one save, with =publish_id= and =priced_as_of= in place of the free name |
+| The published read | =marketdata.v1.ops.list_published_curves= and =get_published_curve_sets=, served to the browser by a new route under =bff/src/= |
+| The run's card | The run's own page, reading the publish record the run recorded |
+| The report's door | The *Market and pricing* tab of the report page, which the configuration screen standard's words already describe |
+| The route | =/reporting/run-settings/:key?tab=market-bindings= in =AppRoutes.tsx=, and a path in =shell/paths.ts= |
+
+The operations exist except where the note says they do not:
+=configuration_market_bindings.list_by_configuration_id=, =.put_many= and
+=configuration_market_bindings_versions.list= are the generated subjects, and the
+two published reads are =ores.marketdata='s. The write's payload changes, and the
+resolution of a binding to a set at a run does not exist at all.
+
+** The verdict
+
+Open. It is offered for sign-off with the decision it draws.
+
+The design to sign off is: the bindings as a *Market bindings* tab of the run
+settings configuration, with the role, the set's curve and party, the as-of, the
+verdict and the derived name in the row; the picker as the published-curve read
+with the two toggles and the state; the candidate refused and the ended set
+refused with the pin as its only route; the pin on the binding and not on the
+run; the run's card naming the publish record it priced from; and the run
+refusing, in the binding's own words, before the engine is reached.
+
+** What it does not settle
+
+*The role's vocabulary.* =role= is a free string in ORE's schema and no
+vocabulary table holds the market names a run may use. The screen draws the codes
+the run document carries and says the list is not a vocabulary. Whether reporting
+holds a role table, or reads the roles the seeded run documents use, is open.
+
+*The derived name's spelling.* The decision says the name is derived and no rule
+states how the curve, the party and the as-of fold into a name =todaysmarket.xml=
+accepts. The *Writes* column draws =USD-SOFR-3M.ACME-London= as an illustration
+and the note does not claim it is the rule. The export owns the spelling, and the
+column must read back whatever the export writes.
+
+*One set per role.* The decision's first slice binds one set per role, and the
+screen draws exactly that. A report that needs several curves for one role — a
+curve per currency, say — is not drawn and not refused; whether a role holds a
+list, or a role is split into one role per curve family, is the decision's open
+question and the screen leaves it open.
+
+*Cross-party sets.* The picker offers the configuration's party and no other, on
+the rule that the same curve code in two parties is two curves. Whether a report
+may ever price from another party's set — a group desk reading a subsidiary's
+curve — is open, and the party filter is drawn as a select so the answer can be a
+single rule rather than a new screen.
+
+*A binding that ends after the run.* A set can end between the run and the person
+reading it. The run's card names the state the set holds now, and the prototype
+draws a superseded set there. Whether the card should name the state *when the
+run priced* as well as the state now is open; the first is not readable from a
+run today.
+
+*What a scheduled run does with a refused binding.* A refusal that nobody
+watches must reach somebody. The prototype draws the refusal in the run's output
+message and stops there. Whether a refused scheduled run also raises a notice, or
+marks the definition, belongs to the schedule's journey and is not settled here.
+
+*See also.*
+
+- [[id:3FCDF005-AE5B-42AF-A053-BFEBAEDAD6AD][Bind a report to a published curve]] — the journey this prototype draws.
+- [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]] — the decision the screen serves.
+- [[id:654E4DFD-FD96-4A65-A350-AC8DD3F87BE0][Published curves prototype]] — the list and the record page the picker's rows come from, and the fixtures this page shares.
+- [[id:25EEA1CB-4F65-4789-8A55-8C29556092A0][Curve blueprints prototype]] — the *Published sets* tab a person reads before binding one.
+- [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]] — the list, the tabs, the collection, the reach and the lifecycle.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the picker, the cells, the states, the writes and the refusals.
+- [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] — the area the tab belongs to.
+- [[file:index.org][Reporting prototypes]] — the group page and the row that records what this prototype argues.
+- [[file:../index.org][Prototypes]] — the method and the rules that hold for every group.
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]] — the structure note that orders this cluster, and where to read this page in it.

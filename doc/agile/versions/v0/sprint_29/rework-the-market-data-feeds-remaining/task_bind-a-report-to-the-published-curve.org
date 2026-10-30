@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 1787BDF4-EF8D-4636-AFD8-A94BB89EEEBB
+:END:
+#+title: Task: Bind a report to the published curve
+#+description: The signed-off target says a report references the published set; today it reads a curve configuration document.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/bind-a-report-to-the-published-curve
+#+pr: 4134
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A report's market binding names the published set, only a published set is consumable, and the ORE XML is built from it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- A report's market binding names the publish record, the as-of and the series, and refuses a set that is not published.
+- The ORE export builds the XML from the published set, so a report's curve is the published curve.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4134][#4134]] | [doc] Design the report's binding to a published curve, and the cut it needs |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The binding is designed, and the cut it depends on is defined.
+
+- The decision: doc/knowledge/architecture/a_report_binds_to_a_published_curve.org.
+  The binding names the publish record and the as-of under its market role; the
+  export refuses a set that is not published; the ORE XML is built from the set;
+  the market configuration name is derived.
+- The journey: doc/knowledge/journeys/reporting/journey_bind_a_report_to_a_published_curve.org,
+  with the Market bindings tab, the five row verdicts, the picker, the refusals,
+  the pinned as-of and the run that names the set.
+- The prototype: doc/prototypes/reporting/market-bindings/, four surfaces and
+  seven states, reviewed and signed off.
+- The dependency: the cut. The side quest ported the concept and the
+  reproducibility purpose into doc/knowledge/domain/cuts_hub.org and its
+  children (kinds_of_cut, market_data_cut, trade_cut, option_expiry_cut_code),
+  with the naming decision in naming_the_cut.org. A report cannot name a cut
+  until the cut model exists.
+- The two-axis review was run and its findings closed: the body stated once
+  (five parts, the taking identity and the authorisation record, a pre-official
+  kind records authorisation as pending), vendors confined to the naming note,
+  the journey's verdicts and subject corrected, the scenario set to PENDING with
+  a real commit, the unrelated edits reverted, the repetition reduced, and the
+  summaries corrected.
+- Checks: compass lint valid, org links 0 unresolved, structure notes green
+  across 25 notes, prototype inventory 98 prototypes, site pages published with
+  no failures.
+- The test scenario remains PENDING: the screen and the read pass, the manual
+  hand-start click-through is outstanding.
+
+The implementation of the binding waits on the cut model. The report binding's
+next work is the cut entity (the named cut time as reference data, the
+population, the engine version).

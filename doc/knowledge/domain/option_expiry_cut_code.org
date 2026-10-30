@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9
+:END:
+#+title: The option-expiry cut code
+#+description: A cut code names the time of day at which an option expires: why an expiry needs an instant, what the label is, why the instant enters the price, how the label relates to the cut time and timezone, and where ORE Studio stands.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:fx:cut:valuation:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+This page states the expiry sense of a cut. The
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] structure note gives the
+definition and the body, and the
+[[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] page classifies the
+purposes a cut serves. This page takes the same shape of label and timepoint
+into the instant at which an option expires.
+
+* Summary
+
+A cut code is a label for the time of day at which an FX option expires on its
+expiry date. The definition of a cut names a body of data and an instant, and the
+expiry supplies the instant for one contract. A date contains many instants and
+the payout depends on one, so the market settles the indeterminacy with a name
+chosen per currency pair, and the timezone says which clock reads it. A reference
+row holds the name beside the time and the timezone, and the repository holds the
+design of that row rather than the row.
+
+* Why an expiry needs an instant
+
+An FX option is a contract whose payout depends on a rate observed at its expiry.
+An expiry date identifies a day, and a day contains a range of instants. The
+observation therefore needs one instant within the day, and the contract's value
+depends on which instant the parties meant.
+
+The dependence has three sources, and each states a mechanism rather than a
+symptom.
+
+- *Remaining life.* The time value of an option is a function of the time left to
+  expiry. Two instants on the same date leave different amounts of life, so they
+  produce different values, and the difference grows as expiry approaches.
+- *Observation of the barrier.* A barrier is monitored to an instant while the
+  option expires at an instant. Where the two instants differ, a rate observed
+  between them changes whether the barrier was touched and whether the option
+  ends in the money.
+- *The surface's tenor.* Volatility is quoted at tenors measured to the expiry
+  instant. A surface quoted to one instant prices a contract expiring at another
+  with an error that is small, systematic and attributable to the mismatch.
+
+* What the label is
+
+The market names the expiry instant once per currency pair rather than once per
+trade. A cut code is that name, and the naming convention explains the rest of
+its behaviour. Because the name attaches to the pair, every option on the pair
+inherits it, and a contract whose terms specify a different instant carries an
+override.
+
+The override is a fact worth recording. It changes the instant at which the
+contract is observed, and therefore changes the set of market data the contract
+reads. A trade carrying an override is priced on a different clock from its
+pair's other trades, and a reader who compares the trade with its neighbours
+needs to know that.
+
+* The label and the cut time
+
+The label and the time are two facts, and a system that stores one without the
+other can neither apply the convention nor explain it. The *cut code* is the
+name. The *cut time* is the time of day the name resolves to, with its timezone.
+
+A reference row holds the name, the time and the timezone together. The row has
+a function: it translates a name that market participants use into an instant a
+valuation can compute with, and it does so in one place rather than in each
+consumer.
+
+* What the label fixes, and what it leaves open
+
+The label fixes an instant for one contract. Measured against the definition of a
+cut, it supplies the timepoint and leaves the body of data unstated. A cut code
+therefore belongs in this cluster as the third sense of the word: the same shape
+of label and instant, applied to the expiry of an instrument rather than to the
+data a valuation reads. A cut code on a trade and a market data cut on a book
+answer two independent questions, since neither constrains the other.
+
+* Where ORE Studio stands
+
+The repository holds the cut code as designed reference data. The design is a
+lookup entity carrying code, name, description, cut time and timezone, referenced
+by =currency_pair.default_cut_code= and by any other field that needs a cut time,
+in
+[[id:4B4ED152-1670-4E81-895A-24D747382D4C][Model market data cuts as proper ORE Studio reference data]].
+The same story records that no entity, table or foreign key target exists, and
+that the field was removed from the currency pair rather than kept as free text
+until a target could be referenced.
+
+The model confirms the position.
+[[id:E1EE950D-FC22-4DAB-A93F-8B2A15196031][ores.refdata.currency_pair]]
+carries the pair's identity, its classification and its conventions, and carries
+no cut field.
+
+The field list that states what the pair should carry, and why an override of the
+default deserves a flag, is on
+[[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][Currency pair and currency entity fields]].
+
+* What the sources establish
+
+No claim on this page rests on an external source. The times themselves are
+market convention, the page records no table of them, and the definitions are
+ours. The statements about the repository link the model and the story that show
+them.
+
+* See also
+
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — the classification by occasion, against which this page states an instant rather than an occasion.
+- [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency Pairs]] — the hub for the pair the code is a property of.
+- [[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][Currency pair and currency entity fields]] — the field list that names the cut code and the override.
+- [[id:E1EE950D-FC22-4DAB-A93F-8B2A15196031][ores.refdata.currency_pair]] — the model that does not carry the field yet.
+- [[id:4B4ED152-1670-4E81-895A-24D747382D4C][Model market data cuts as proper ORE Studio reference data]] — the story that designs the code, its cut time and its timezone.
+- [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — the surface whose tenors are measured to the expiry instant.

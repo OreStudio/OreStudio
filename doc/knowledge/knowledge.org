@@ -72,6 +72,7 @@ Finance concepts the codebase relies on.
 | [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] | Cash centralisation, and the spot and ledger sweep types built on it |
 | [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] | The processes behind the quant generators: Wiener, Ito, and the mean-reverting family |
 | [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] | How a tick becomes a stored observation, how a config becomes a running synthetic feed, the verbs and screens that drive it, and the vendor and stored data side |
+| [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] | The label, the timepoint and the object a cut fixes; the kinds of cut; the data a cut must freeze, reference data included; the market data, deal and expiry components |
 
 ** Topics with no hub yet
 
@@ -104,6 +105,7 @@ How the codebase is put together.
 | [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] | Producers, the marketdata authority, feed configs, source-independent consumers |
 | [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]] | The target state: identities that distinguish observed, generated, derived and published data, and reports that reference published curves |
 | [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]] | The recipe, the quotes it reads, the solve, the checks, the candidate and its publication |
+| [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]] | The market binding names the publish record and the as-of, refuses a set that is not published, and the export builds the XML from the set |
 | [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] | The system of record, object storage, the durable stream and the caches, and what each one owns |
 | [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] | Connections, the transaction API, bounded handlers, the tick store and its writers, and the numbers each reports |
 | [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL Architecture]] | Schema layout, roles, session settings, bitemporal design |

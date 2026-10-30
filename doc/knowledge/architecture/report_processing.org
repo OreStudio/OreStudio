@@ -130,3 +130,7 @@ run writes and does not choose the store.
 neighbours own what the engine's configuration documents mean. Pre-processing
 produces them; what a curve configuration or a pricing configuration should
 contain is decided there.
+
+* See also
+
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the fixed world a run reads: the deals, the market data and the reference data a report run must carry if it is to be reproducible.

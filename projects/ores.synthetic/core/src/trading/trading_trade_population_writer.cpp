@@ -392,9 +392,9 @@ trading_trade_population_writer::read_trade(const boost::uuids::uuid& trade_id) 
 }
 
 void trading_trade_population_writer::ensure_issue(const domain::trade_population_slot& slot) {
-    if (slot.instruments.bond_issues.empty())
+    if (!slot.bond_issue)
         return;
-    const auto& issue_row = slot.instruments.bond_issues.front();
+    const auto& issue_row = *slot.bond_issue;
     if (issues_written_.contains(issue_row.issue_id))
         return;
 
@@ -409,10 +409,10 @@ void trading_trade_population_writer::ensure_issue(const domain::trade_populatio
      */
     ores::trading::messaging::put_bond_issue_composite_request req;
     req.issue = issue_row;
-    req.legs = slot.instruments.bond_issue_legs;
-    req.amounts = slot.instruments.bond_issue_leg_amounts;
-    req.rates = slot.instruments.bond_issue_leg_rates;
-    req.schedules = slot.instruments.bond_issue_leg_schedules;
+    req.legs = slot.bond_issue_legs;
+    req.amounts = slot.bond_issue_leg_amounts;
+    req.rates = slot.bond_issue_leg_rates;
+    req.schedules = slot.bond_issue_leg_schedules;
 
     const auto mark = [&](auto& row) {
         row.change_reason_code = reason;

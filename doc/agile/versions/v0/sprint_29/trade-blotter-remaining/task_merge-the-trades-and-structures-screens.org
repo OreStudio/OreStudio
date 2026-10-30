@@ -39,11 +39,11 @@ follows the decision, and the screen follows the prototype.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | The read, the screen and the removal are in: one screen answers Trading, and both old addresses redirect to it. |
+| Now          | Nothing. |
 | Waiting on   | Marco's review of the screen, which the merge rule holds until he has looked. |
-| Next         | Review, then merge. Then the two named read gaps: a structure column the page can filter on and one grouped read for the figures. |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance

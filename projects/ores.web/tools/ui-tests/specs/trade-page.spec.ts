@@ -12,13 +12,12 @@ import { signIn } from './support/sign-in';
 test('a trade opens its own page and every tab answers', async ({ page }) => {
     await signIn(page);
 
-    await page.goto('/trading/trades');
+    await page.goto('/trading/blotter');
+    await page.getByLabel('Flat').check();
     const firstRow = page.locator('tbody tr').first();
     await expect(firstRow).toBeVisible();
-    // The row holds links of its own, and a click in the middle of it follows
-    // whichever one is under the pointer. The identifier is not a link, so a
-    // click there opens the trade as a person expects.
-    await firstRow.locator('td').first().click();
+    // The identifier is the link to the trade, and it is what a person clicks.
+    await firstRow.locator('td').first().getByRole('link').first().click();
 
     await expect(page).toHaveURL(/\/trading\/trades\/[0-9a-f-]{36}$/);
     await expect(page.getByRole('tab', { name: 'Details' })).toBeVisible();

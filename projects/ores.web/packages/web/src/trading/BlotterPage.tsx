@@ -25,7 +25,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { blotter, type BlotterNode, type BlotterRow, type BlotterView } from '../api/blotter.js';
 import { RecordList, type ListColumn, type ListSource } from '../refdata/RecordList.js';
 import { Button, Select, Tag } from '../ui/Primitives.js';
-import { PATHS, tradePath } from '../shell/paths.js';
+import { bookPath, counterpartyPath, PATHS, tradePath } from '../shell/paths.js';
 import { useAreaParts } from '../shell/AreaTrail.js';
 
 /** The sorts the read answers, in the order the table offers them. */
@@ -204,12 +204,26 @@ export function BlotterPage(): ReactNode {
             id: 'book',
             header: t('trading.blotter.book'),
             mono: true,
-            cell: (row) => row.book_name || '—',
+            cell: (row) =>
+                row.book_id === '' ? (
+                    '—'
+                ) : (
+                    <Link className="hover:underline" to={bookPath(row.book_id)}>
+                        {row.book_name || '—'}
+                    </Link>
+                ),
         },
         {
             id: 'counterparty',
             header: t('trading.blotter.counterparty'),
-            cell: (row) => row.counterparty_name || '—',
+            cell: (row) =>
+                row.counterparty_id === '' ? (
+                    '—'
+                ) : (
+                    <Link className="hover:underline" to={counterpartyPath(row.counterparty_id)}>
+                        {row.counterparty_name || '—'}
+                    </Link>
+                ),
         },
         {
             id: 'date',
@@ -273,6 +287,15 @@ export function BlotterPage(): ReactNode {
                                 />
                                 {t('trading.blotter.flat')}
                             </label>
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                onClick={() => {
+                                    void navigate(PATHS.groupStructures);
+                                }}
+                            >
+                                {t('trading.group.open')}
+                            </Button>
                             <Button
                                 type="button"
                                 variant="secondary"

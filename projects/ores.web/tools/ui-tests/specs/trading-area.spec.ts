@@ -7,7 +7,7 @@ import { signIn } from './support/sign-in';
  * entry of its own.
  */
 
-test('the menu offers Trading and its page offers the trade list', async ({ page }) => {
+test('the menu offers Trading and its page offers the blotter', async ({ page }) => {
     await signIn(page);
 
     await page.getByRole('link', { name: 'Trading', exact: true }).first().click();
@@ -15,9 +15,9 @@ test('the menu offers Trading and its page offers the trade list', async ({ page
     await expect(page.getByRole('heading', { name: 'Trading', level: 1 })).toBeVisible();
 
     await page
-        .getByRole('link', { name: /Trades/ })
+        .getByRole('link', { name: /Trade blotter/ })
         .first()
         .click();
-    await expect(page).toHaveURL(/\/trading\/trades$/);
-    await expect(page.getByRole('heading', { name: 'Trades', level: 1 })).toBeVisible();
+    await expect(page).toHaveURL(/\/trading\/blotter$/);
+    await expect(page.getByRole('heading', { name: 'Trade blotter', level: 1 })).toBeVisible();
 });

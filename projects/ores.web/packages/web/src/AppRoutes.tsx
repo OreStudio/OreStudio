@@ -97,10 +97,8 @@ import { BookTradePage } from './trading/BookTradePage.js';
 import { BlotterPage } from './trading/BlotterPage.js';
 import { GroupStructuresPage } from './trading/GroupStructuresPage.js';
 import { StructurePage } from './trading/StructurePage.js';
-import { StructuresPage } from './trading/StructuresPage.js';
 import { TradePage } from './trading/TradePage.js';
 import { TradingPage } from './trading/TradingPage.js';
-import { TradesPage } from './trading/TradesPage.js';
 import { CalendarPage, CalendarsPage } from './refdata/calendars.js';
 import { TenorResolutionPage } from './refdata/TenorResolutionPage.js';
 import { CurrencyPairPage, CurrencyPairsPage } from './refdata/currencyPairs.js';
@@ -1224,18 +1222,7 @@ export function AppRoutes({
                     'workspace',
                 )}
             />
-            <Route
-                path={PATHS.trades}
-                element={signedIn(
-                    gate.version,
-                    session,
-                    shell,
-                    () => (
-                        <TradesPage />
-                    ),
-                    'workspace',
-                )}
-            />
+            <Route path={PATHS.trades} element={<Navigate to={PATHS.blotter} replace />} />
             <Route
                 path={PATHS.newTrade}
                 element={signedIn(
@@ -1272,18 +1259,7 @@ export function AppRoutes({
                     'workspace',
                 )}
             />
-            <Route
-                path={PATHS.structures}
-                element={signedIn(
-                    gate.version,
-                    session,
-                    shell,
-                    () => (
-                        <StructuresPage />
-                    ),
-                    'workspace',
-                )}
-            />
+            <Route path={PATHS.structures} element={<Navigate to={PATHS.blotter} replace />} />
             <Route
                 path={PATHS.groupStructures}
                 element={signedIn(

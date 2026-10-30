@@ -170,6 +170,11 @@ export function gridNodePath(hostId: string): string {
  * sees several definitions of one name. The id is the primary key, so the
  * address names one record exactly.
  */
+/** The page of one structure, named by its reference so a link carries what a person reads. */
+export function structurePath(reference: string): string {
+    return `${PATHS.structures}/${encodeURIComponent(reference)}`;
+}
+
 /** The page of one trade. */
 export function tradePath(id: string): string {
     return `/trading/trades/${encodeURIComponent(id)}`;

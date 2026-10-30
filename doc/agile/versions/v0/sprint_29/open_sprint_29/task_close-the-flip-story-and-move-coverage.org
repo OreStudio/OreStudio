@@ -26,11 +26,11 @@ The flip story closes with only the tasks its arc owns, and every task that belo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7295CBC5-402C-45D4-9888-4C795AFF883C][Open sprint 29]] |
-| Now          | Done; the flip story is closed.        |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | None.                                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                             |
 
 * Acceptance

@@ -102,8 +102,14 @@ export function PublishedCurvePage(): ReactNode {
             }),
     });
 
+    /*
+     * The address may be the curve's code or the series URI: the list links the
+     * code, a notification links the published URI, and both name the same set.
+     */
     const rows = (matches.data?.sets ?? []).filter(
-        (row) => row.curve === curve && (party === '' || row.party === party),
+        (row) =>
+            (row.curve === curve || row.series_uri === curve) &&
+            (party === '' || row.party === party),
     );
     const seriesId = rows[0]?.series_id ?? '';
     const count = Number(search.get('count') ?? DEFAULT_OVERLAY_SETS);

@@ -5125,7 +5125,7 @@ export const en: SourceCatalogue = {
                 subscriptions: 'Subscriptions',
                 subscriptionsBody:
                     'The providers a party takes, with the rights it holds, and the source that serves each one.',
-                synthetic: 'Synthetic',
+                synthetic: 'Simulator',
                 syntheticBody:
                     'The feeds the platform generates: what runs by provider, and every feed to start and stop.',
                 evolutionBody:

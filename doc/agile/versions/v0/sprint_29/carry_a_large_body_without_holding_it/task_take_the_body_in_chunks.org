@@ -8,8 +8,8 @@
 #+filetags: :carry_a_large_body_without_holding_it:sprint_29:v0:
 #+owner: marco
 #+branch: feature/take-the-body-in-chunks
-#+pr:
-#+blocked_on:
+#+pr: 4137
+#+blocked_on: review
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#4137](https://github.com/OreStudio/OreStudio/pull/4137) | [http] Take the body in chunks for a route that asks |
 
 * Review
 

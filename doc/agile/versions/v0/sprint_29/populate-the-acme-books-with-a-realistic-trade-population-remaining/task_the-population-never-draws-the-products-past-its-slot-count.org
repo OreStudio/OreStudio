@@ -98,35 +98,12 @@ via its "Verifies task" field.
 
 * Result
 
-* Promoted from capture
-
-Captured 2026-10-30 in the product backlog; promoted preserving the UUID.
-
-** See also
-
--
-
 The same defect keeps two fx products out of the population. The fx planner
 cycles sixteen routed types and each seeded fx config states eight slots, so
 the last eight types are never drawn: a provisioned tenant holds no fx variance
 swap and no fx accumulator, though both construct and both route. The rate
 family is the case that was measured first; the fault is one rule, stated once
 in each planner, and the fix belongs to both.
-
-The fix is written and its tests pass: the seeded rate configs state nine trades
-and the fx configs sixteen, which is one per routed code, and the planner tests
-state the rule and name the knock-out swap, the fx variance swap and the fx
-accumulator as the codes a short config was missing.
-
-The provisioning run has not been made. Main does not compile since #4103
-merged: =ores.synthetic.service= still calls
-=market_data_client::list_market_data_sources()=, which that merge removed in
-favour of =list_feeds()= returning a =feed= row, and a provisioned database has
-no feeds table at all. The rename is half finished, so this is not a caller
-rename that another branch can patch: reverting the WIP commit 84605bcf70
-conflicts in fifty files.
-
-Until main builds, this task cannot produce the run its acceptance asks for.
 
 A planner draws its routed codes by the slot's position, so a config that states
 fewer slots than its family routes states a prefix of the list and the codes past
@@ -157,3 +134,12 @@ Two consequences worth stating rather than leaving to a reader.
 - A tenant that wants a thinner book still can, by lowering trades_per_book; it
   gives up the codes past its slot count by doing so. The seed comment says this
   where the configs are stated, so the trade-off is written where it is made.
+
+* Promoted from capture
+
+Captured 2026-10-30 in the product backlog; promoted preserving the UUID.
+
+** See also
+
+-
+

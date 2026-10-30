@@ -26,6 +26,10 @@ std::ostream& operator<<(std::ostream& s, const http_server_options& v) {
     s << "http_server_options {" << " address: " << v.address << " port: " << v.port
       << " max_connections: " << v.max_connections
       << " request_timeout: " << v.request_timeout.count() << "s"
+      << " worker_threads: " << v.worker_threads
+      << " max_inflight_requests: " << v.max_inflight_requests
+      << " bytes_flush_interval: " << v.bytes_flush_interval.count() << "s"
+      << " bytes_retain: " << v.bytes_retain.count() << "s"
       << " enable_ssl: " << (v.enable_ssl ? "true" : "false")
       << " certificate_file: " << v.certificate_file
       << " enable_cors: " << (v.enable_cors ? "true" : "false")

@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: AB95B09C-1AF5-4171-8824-EB9ED45B197F
+:END:
+#+title: Story: Stop the gateway blocking its own event loop
+#+description: A handler forwards to the owning service over NATS with a synchronous call on the single io_context thread, so one slow service stalls every connection, and the per-request session counter write blocks the same thread on the database. Run handler work on a bounded worker pool and flush the counters from a timer, so no I/O thread ever blocks.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Connections and handlers share one thread today. A route that forwards to a
+service blocks that thread inside =request_sync=, with a 30 s default timeout,
+and the session byte counters run a synchronous PostgreSQL write on the same
+thread after every authenticated request. One slow service therefore stalls every
+connection on the server, including the ones that only read a file or answer
+=/health=, and a busy request rate turns the counter write into a database round
+trip per request.
+
+After this story, no I/O thread blocks. Handler work runs on a bounded pool of
+worker threads and resumes the connection's coroutine when it finishes, and the
+counters accumulate in memory and flush on a timer. The behaviour the caller sees
+is the same, except that one slow service now costs latency for the requests that
+depend on it and nothing for the ones that do not.
+
+This is increment A1 of
+[[id:2E504EF1-F812-4D83-BD21-AE97162A1ABC][One HTTP Server: designing ores.http to replace the web BFF]].
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Both tasks are done and the worker pool and counters are in place. |
+| Waiting on    | Nothing.                               |
+| Next          | Merged. The next increment takes over. |
+| Last touched  | 2026-10-29                               |
+
+* Acceptance
+
+- A route handler never executes on an I/O thread. A test fails if one does.
+- A downstream service that takes 2 s to answer moves neither =/health= nor a
+  static file, measured by a test that stalls the service and reads both.
+- The worker pool is bounded: queue depth and thread count are configuration, and
+  a saturated pool answers 503 instead of growing.
+- The handler's timeout is enforced by the gateway and is shorter than the pool's
+  patience, so a hung service cannot hold a worker for the life of the process.
+- No session counter write runs on an I/O thread. The counters accumulate in
+  memory and flush on a timer, and a restart loses at most one flush interval.
+- The existing route tests and the =ores.http= integration suite stay green.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:34ACA4F4-F78E-406A-843D-5A5332A62B6C][Dispatch handler work onto a bounded worker pool]] | DONE | 2026-10-29 | 2026-10-30 | Hand the matched route's handler to a fixed pool of worker threads and await its result on the connection's executor, so a blocking NATS or database call never runs on an I/O thread. Bound the queue and answer 503 when it is saturated. |
+| [[id:D703270B-40F4-43D2-B976-D557FEBC82CA][Flush the session counters from a timer]] | DONE | 2026-10-29 | 2026-10-30 | The session byte counters are written to PostgreSQL synchronously after every authenticated request. Accumulate them in memory and flush them from one timer, so the write leaves the request path and the number of writes is bounded by the flush interval rather than by the request rate. |
+
+* Decisions
+
+- Handler work moves to a worker pool rather than rewriting the 24 generated
+  route units to asynchronous NATS calls. The generated units keep calling
+  =authenticated_request= synchronously; what changes is where that call runs.
+  This is the smaller change, it fixes the stall, and it leaves the per-call
+  asynchronous path to R1 where the route table is rewritten anyway.
+
+* Out of scope
+
+-

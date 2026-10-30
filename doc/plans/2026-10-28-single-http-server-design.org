@@ -1,0 +1,1395 @@
+:PROPERTIES:
+:ID: 2E504EF1-F812-4D83-BD21-AE97162A1ABC
+:END:
+# -*- mode: org; indent-tabs-mode: nil -*-
+#+title: One HTTP Server: designing ores.http to replace the web BFF
+#+DATE: 2026-10-28
+#+AUTHOR: Marco Craveiro
+#+STATUS: PROPOSED
+#+description: Design for a single C++ HTTP server that serves the browser, the machine clients and the event stream over plain HTTP and TLS, replacing the Fastify BFF. Covers the thread model, data-oriented storage, cookie sessions, the event hub, TLS, codegen, security and the migration path.
+
+* 1. The decision this document argues for
+
+One process serves every HTTP caller. Its name is =ores.http=.
+
+1. *One binary, two listeners, one route table.* It serves the SPA bundle, the
+   browser JSON API, the machine REST API, the event stream and file transfer,
+   on plain HTTP and on TLS, from the same handlers and the same session store.
+2. *The Fastify BFF is deleted*, not kept beside it. There is no browser
+   component and no second process. The gateway gains the capabilities the
+   browser forces — a cookie credential, a change stream, static serving — as
+   generic capabilities that any client may use.
+3. *The shape the screens revealed is kept.* A view that weaves several entities
+   into one answer is a composed view: a first-class read model with a name in
+   domain language, a published schema, an owner and a cache policy. It is not
+   residue to be deleted, and it is not a page payload either (11.1).
+4. *The caller is not in the contract.* A machine client and a browser reach the
+   same operation through the same route. The credential and the representation
+   are negotiated; neither appears in the URL or the schema.
+5. *The URL publishes domain areas, not component names.* =/api/v1/iam/sessions=
+   is wrong, because =iam= is an implementation word. =/api/v1/auth/sessions= is
+   right, and the area-to-component mapping is declared, so a refactor cannot
+   break a client (11.2).
+6. *It must hold 100,000 concurrent connections* with bounded memory, and do it
+   on a handful of cores. That is a design ceiling, not a forecast: Section 4.4
+   sets out what the evidence actually says about connection counts today.
+
+The rest of this document says how, and what must change to get there.
+
+* 2. What exists today
+
+** 2.1 ores.http
+
+A gateway: terminate HTTP, authenticate, forward to the owning service over
+NATS. It holds no service, repository or database context, so it cannot decide
+anything the service decides. Twenty-four generated route units hold 108 route
+handlers over assets, core, iam and refdata, under =/api/v1/<component>/<plural>=.
+It is deployed as =ores.http.server= on =ORES_HTTP_PORT= (21601 in this
+checkout).
+
+The parts that matter for this design:
+
+| Property | Today | Where |
+|---|---|---|
+| Threads | one; =io_ctx.run()= on the main thread, no pool, no strand | =projects/ores.http/server/src/main.cpp:70-79= |
+| Connection cap | =max_connections = 100=, enforced by accept then close | =api/include/ores.http.api/net/http_server_options.hpp:48=, =api/src/net/http_server.cpp:124-130= |
+| Accept | one coroutine loop, one accept in flight | =api/src/net/http_server.cpp:113-161= |
+| Timeout | one absolute 30 s budget armed once per session; a keep-alive connection cannot outlive it | =api/src/net/http_session.cpp:56= |
+| Route match | linear scan, one =std::regex_match= per route, and a full copy of the winning route per request | =api/src/net/router.cpp:230-251= |
+| Handler shape | =std::function<awaitable<http_response>(const http_request&)>=: no socket, no executor, no stream | =api/include/ores.http.api/domain/route.hpp:81= |
+| Streaming | not representable; the response owns a =std::string= and =prepare_payload()= always sets Content-Length | =api/src/net/http_session.cpp:278-296= |
+| Push path | none: a session is a detached coroutine with no registry, and =stop()= cannot reach it | =api/src/net/http_server.cpp:136-177= |
+| TLS | *not implemented*: =enable_ssl=, =certificate_file= and =private_key_file= are parsed and read by nothing. Section 6.12 designs it. | =api/include/ores.http.api/net/http_server_options.hpp:78-88= |
+| NATS from a handler | synchronous =request_sync= on the event-loop thread, 30 s default | =projects/ores.nats/include/ores.nats/service/nats_client.hpp:224= |
+| NATS from a coroutine | =client::request= spawns a detached =std::thread= per call | =projects/ores.nats/src/service/client.cpp:792-800= |
+| NATS subscription cost | one cnats dispatcher thread per subscription | =projects/ores.nats/src/service/client.cpp:349-391= |
+| Database write per request | the session byte counters update runs synchronously on the event loop | =server/src/app/application.cpp:114-127= |
+| Wire encode | returns a fresh =std::vector<std::byte>= per message | =projects/ores.nats/include/ores.nats/domain/wire_codec.hpp:61-73= |
+| Body limit | 256 MiB for every route, no 413 on overflow | =api/include/ores.http.api/net/http_server_options.hpp:62= |
+| CORS default | =*=, and every =OPTIONS= short-circuits to 204 before routing | =http_server_options.hpp:98=, =http_session.cpp:109-121= |
+| Response headers | =std::unordered_map<std::string,std::string>= per response | =api/include/ores.http.api/domain/http_response.hpp:42= |
+| Rate limiting | =ores.service::rate_limiter= exists and the HTTP layer does not use it | =projects/ores.service/include/ores.service/service/rate_limiter.hpp= |
+| Metrics | log lines only; =active_connections_= is a counter with no export | =api/src/net/http_server.cpp:121= |
+
+Two corrections to what one might assume:
+
+*The gateway is not asynchronous in the way that matters.* Handlers are
+=asio::awaitable=, but the NATS call inside them is =request_sync=, which blocks
+the single io_context thread for up to 30 s. The coroutine is a wrapper around a
+blocking call. One slow service stalls every connection, including the ones only
+serving static files.
+
+*TLS is a dead option.* The fields exist and the parser does not even read them.
+Everything is plaintext HTTP/1.1 today. That is not acceptable for a server that
+faces the internet, so 6.12 designs both listeners rather than leaving the
+options as decoration.
+
+Every row above is correct for a stateless gateway at low connection counts and
+wrong for the target. They are the work.
+
+** 2.2 The BFF
+
+Node 22 and Fastify, 292 =/api= routes across 36 modules, 26.9k lines of
+non-test source and 34.2k lines of tests. It serves the React bundle, which is
+124.8k lines and 214 routes: the browser is the thing that defines the surface.
+
+What it does that the gateway does not:
+
+- *Session custody.* An opaque identifier in an HttpOnly cookie
+  (=ores_web_session_<environment>=, per environment so two ports on one host
+  cannot overwrite each other), hashed in memory, with the bearer token and the
+  party scope held server side (packages/bff/src/sessions.ts).
+- *One SSE stream per session*, =GET /api/events=, plus =POST /api/events/watch=
+  to declare what a screen shows (packages/bff/src/server.ts:2926 and :2968).
+- *A shared subscription registry* keyed by =(component, entity)=, refcounted,
+  filtered by tenant and by the parties a session works in, coalesced into
+  150 ms windows with at most 20 record keys per message.
+- *Request shaping*: pagination, search, sort, joins and journey composites that
+  the canonical protocol does not express.
+- *Static serving* of the built bundle, an image cache, rate limiting, client-log
+  ingest, structured logs.
+- *Two file-backed domains.* The agile board, sprint charts and work trees, and
+  the QA scenario documents, read the checkout's =doc/= tree and shell out to
+  =git= (packages/bff/src/agile/file-agile-store.ts, scenarios/file-scenario-store.ts,
+  agile/work-trees.ts). Twelve routes touch no service at all.
+
+That last one is the exception that proves the rule. None of the rest is
+business logic; all of it is transport and custody. That is exactly the set of
+jobs a gateway should grow into, and the file-backed twelve are the set it should
+not.
+
+** 2.3 What is already shared
+
+The two sides are not foreign to each other. Both speak the same org models
+through =ores.codegen=, the same msgpack protocol, the same subject names, the
+same error envelope. Both already delegate the caller's token:
+=ores.http= through =nats_client::with_delegation=, the BFF through a per-session
+NATS connection. =ores.service= already provides the host runner, the rate
+limiter, the request context, the heartbeat publisher and systemd notification.
+
+The important distinction is between the *contract layer* and the *transport
+layer*. The contract layer is shared and in good shape. The transport layer is
+not: the C++ server is single-threaded, blocking inside its handlers, capped at
+100 connections, and has no way to write a response in pieces. That gap, and not
+the contract, is the whole of the work in Section 6.
+
+* 3. Why one server, and not two
+
+Each argument below is a cost we pay today and stop paying.
+
+| Cost today | Why it exists | Disappears when |
+|---|---|---|
+| Two authentication implementations | one C++ JWT path, one TypeScript cookie path | one server owns both profiles |
+| Two route tables over the same operations | generated C++ units and hand-written TS routes | one manifest |
+| Two contracts for one payload | the browser parses with =@ores/wire-protocol/browser=, the BFF with =@ores/contracts= | generated types from one model |
+| An extra network hop for every resource the gateway already projects | browser to BFF to NATS | browser reaches the gateway directly |
+| Two base images, two runtime dependencies, two upgrade paths | Node and C++ | one build artefact |
+| Two sets of logs to correlate for one user action | pino and Boost.Log | one journal, one session id |
+| Two services in the fleet to size, monitor and restart | =ores.http.server= and =ores.web.service= | one unit |
+| The browser path is not containerised at all | the Podman path publishes =ORES_HTTP_PORT=, =ORES_NATS_PORT= and the monitor port, and never =ORES_WEB_PORT= | the published HTTP port carries the browser too |
+
+That last row is worth expanding, because it is an operational argument rather
+than a tidiness argument. =docker/run-pod.sh= publishes three ports and the BFF
+is not one of them; the web service exists only as a host systemd unit. One
+server means the deployment story for the browser becomes the deployment story
+for every other service: one unit, one health check, one image, and a port block
+that grows by one number for TLS. It also means the grid wrapper's
+=--http-base-url= and the browser's origin reach the same process, which removes
+a whole class of configuration drift.
+
+The counter-argument is real and must be stated: TypeScript is faster to change
+than C++. Section 13 addresses how to keep that advantage without a second
+server.
+
+* 4. Requirements
+
+** 4.1 Functional
+
+| # | Requirement |
+|---|---|
+| F1 | Serve the built SPA bundle from =packages/web/dist=, with cache headers and a history fallback |
+| F2 | Cookie credential: create a session, read it, end it, switch party, with the bearer token held server side. The credential is a transport capability; a machine client may use it too |
+| F3 | Bearer credential: JWT per request, no session |
+| F4 | A change stream any client may consume, one long-lived stream per session, with watch declarations and a documented representation |
+| F5 | The generated REST projection of every opted-in operation, with OpenAPI |
+| F6 | Aggregate views, where a screen needs several resources in one call: each is a documented resource with a schema, an owner and a cache policy, or it is not added |
+| F7 | Upload and download of large artefacts by streaming, with flow control |
+| F8 | Health, readiness and metrics endpoints |
+| F9 | Structured logging with a session id and a correlation id |
+| F10 | Rate limiting per account and per address, and per-session limits on watches and streams |
+| F11 | Graceful shutdown: stop accepting, drain in-flight requests, close streams with a reason |
+| F12 | One route table that serves both authentication profiles without duplicating a handler |
+| F13 | Both schemes: a TLS listener that serves everything, and a plain listener in =serve=, =redirect= or =off= mode |
+| F14 | Certificate reload that does not drop a live connection |
+
+** 4.2 Non-functional
+
+| # | Requirement | Number |
+|---|---|---|
+| N1 | Concurrent connections and throughput | 100,000 idle streams, and 10,000 requests a second sustained alongside them |
+| N2 | Userspace memory at 100,000 connections | under 1.5 GiB plaintext; TLS costs more (4.3) |
+| N3 | Added latency at p99 for a JSON request | under 1 ms over the service's own time |
+| N4 | Event fan-out | 1 event to 10,000 watchers in under 50 ms |
+| N5 | Cold start to accepting connections | under 2 s |
+| N6 | Cores used at 100,000 idle connections | 1 busy, the rest idle |
+| N7 | Zero allocations on the read and write path for a request already seen | asserted by benchmark |
+| N8 | Build time for a route change | under 60 s incremental |
+| N9 | Blocking calls on an I/O thread | zero, at any connection count |
+
+** 4.3 Capacity model
+
+The arithmetic behind N1 and N2. Per idle stream connection:
+
+| Item | Bytes |
+|---|---|
+| Read buffer, fixed | 512 |
+| Write ring, fixed | 4,096 |
+| Connection state, parser, timer index, handle | 256 |
+| Session record, amortised over one connection | 256 |
+| *Userspace total* | *≈ 5.1 KiB* |
+| Kernel socket and buffers, with =SO_SNDBUF= trimmed | ≈ 3 KiB |
+
+| Connections | Userspace | With kernel |
+|---|---|---|
+| 1,000 | 5 MiB | 8 MiB |
+| 10,000 | 51 MiB | 81 MiB |
+| 100,000 | 512 MiB | 812 MiB |
+
+*TLS changes that arithmetic, and the change is large.* An OpenSSL 3 SSL object
+plus its read and write BIOs costs roughly 20-40 KiB per idle connection, and
+that dwarfs everything else in the table:
+
+| Connections | Plaintext | TLS, at 25 KiB each | TLS, with a proxy in front |
+|---|---|---|---|
+| 1,000 | 5 MiB | 30 MiB | 5 MiB |
+| 10,000 | 51 MiB | 300 MiB | 51 MiB |
+| 100,000 | 512 MiB | 3.0 GiB | 512 MiB |
+
+So the 1.5 GiB budget holds for plaintext at 100,000, holds for TLS at tens of
+thousands, and does not hold for both at once. Section 6.12 says what to do about
+it, and the answer is not to wish the number smaller: it is to measure it in
+=connection_bench= and to choose where TLS terminates.
+
+File descriptors: one per connection plus a working margin. The unit needs
+=LimitNOFILE=131072= at minimum and 1,048,576 to leave headroom. Confirm with
+=sysctl fs.file-max= and =net.core.somaxconn=.
+
+This is why the write ring is small and bounded: a slow client is a client we
+conflate for, not a client we buffer for (Section 6.6).
+
+** 4.4 What the evidence says the connection count is
+
+The 100,000 target needs an honest basis, because the repository does not
+support the number as a forecast. It is worth stating what it does support.
+
+| Caller | How it connects today | Plausible concurrent count |
+|---|---|---|
+| Browser sessions | one HTTP/1.1 connection carrying one SSE stream, plus short requests | hundreds per deployment |
+| Grid wrappers | NATS for the control plane; HTTP to =ores.http= for packages, inputs and outputs, one request per object per job | tens: =:replicas: 5= per environment, =nproc-1= per host, 19-22 observed |
+| Machine clients | REST with a bearer token | unknown, small |
+
+Three facts settle the question:
+
+1. *Grid engines are not an HTTP control-plane load.* A wrapper holds no user
+   JWT and speaks =compute.v1.ops.claim_work=, =heartbeat=, =node_sample= and a
+   =work_available= doorbell over NATS. It reaches HTTP only to move bytes, with
+   a capability token minted for one assignment. Nothing in the tree suggests
+   thousands of them, let alone hundreds of thousands.
+2. *The 100,000 figure in this project is feeds, not connections.*
+   =doc/agile/product_backlog/next/run_the_market_data_path_at_one_hundred_thousand_feeds.org=
+   asks for about 29,000 source ticks a second at 100,000 feeds and four times
+   that in an active market. That load travels on NATS, not on HTTP.
+3. *No HTTP target exists anywhere.* No document states a connection count, a
+   latency budget or a throughput target for =ores.http=, and =benchmarks/=
+   measures XML parsing only.
+
+So the requirement stands as a *design ceiling*: build for 100,000 so that the
+architecture has no cliff at 1,000, and so that the number is a config value and
+not a rewrite. Design to it; do not staff to it. The sizing arithmetic in 4.3 is
+what makes the decision cheap either way.
+
+One consequence of that evidence is worth stating early, because it cuts against
+the framing that started this work: *the grid is not an argument for HTTP
+streaming.* It is an argument for large-file transfer with flow control, on the
+same server and the same port, which this design also provides (Section 6.7).
+
+* 5. Design principles
+
+*P1. One process, one session store, one contract.* A deployment has one
+addressable service: one binary, one route table, one cookie, one journal. It may
+listen twice, plain and TLS, and both listeners are the same server.
+
+*P2. Thread per core, no shared mutable state.* Each core owns its io_context,
+its acceptor, its connection slots and its arenas. Cross-core work is a message,
+never a lock. Where the kernel can do the load balancing, let it: =SO_REUSEPORT=.
+
+*P3. Handles, not pointers.* A connection is an index and a generation counter.
+Slots live in chunks, never move, and are reused. No =shared_ptr= on a socket,
+no refcount atomics on a hot path.
+
+*P4. No allocation on the hot path.* Per-core arenas reset per request. Buffers
+are owned by the connection and reused. A path that allocates is a bug the
+benchmark finds.
+
+*P5. Generate the shape, hand-write the decision.* If a route is a projection of
+one operation, generate it. If it composes several calls or shapes a payload for
+a screen, hand-write the body. The *table* stays generated either way, so the
+contract cannot drift.
+
+*P6. Authenticate at the boundary; authorise in the service.* The gateway proves
+who called. The service decides whether they may. This is the existing charter
+and it does not change. What changes is that the gateway now has two ways to
+prove identity.
+
+*P7. Backpressure everywhere; bounded memory, always.* Every queue has a cap and
+a stated policy for the cap. For events the policy is conflation, because a
+change notification is a time and idempotent by construction.
+
+*P8. Measure, then optimise.* The benchmark exists before the fast path does.
+Section 10 states the numbers to beat.
+
+* 6. Architecture
+
+** 6.1 Process, threads and accept
+
+#+begin_src text
+                    ┌──────────────────────────────────────┐
+   kernel           │  N cores, each with its own          │
+   ┌────────┐       │  ┌────────────────────────────────┐  │
+   │ accept │──SO_REUSEPORT──▶ core 0: io_context,   │  │
+   │ queue  │       │  │        acceptor, slots, arena │  │
+   └────────┘       │  ├────────────────────────────────┤  │
+                    │  │ core 1: io_context, ...        │  │
+                    │  └────────────────────────────────┘  │
+                    │  one NATS connection (shared)        │
+                    │  one NATS dispatch thread            │
+                    │  one timer thread for the 150 ms tick│
+                    └──────────────────────────────────────┘
+#+end_src
+
+- *N io_contexts, one per core.* N defaults to =min(hardware_concurrency, 8)=
+  and is configurable. A connection is bound to the core that accepted it for
+  its whole life.
+- *SO_REUSEPORT on every acceptor.* The kernel hashes the 4-tuple to a core, so
+  accepts are spread without a shared accept mutex or a cross-thread handoff.
+- *No strands.* Strands exist to serialise access from many threads. With one
+  thread per connection there is nothing to serialise, and a strand is a
+  per-handler allocation and an indirect call in the hot path.
+- *Cross-core delivery is a queue, not a lock.* The event hub runs on the NATS
+  dispatch thread; it pushes a batch handle to each owning core's
+  =boost::asio::post= queue. The core appends to its connections' rings.
+- *One NATS connection with per-request delegation.* =with_delegation= shares the
+  underlying connection and injects =X-Delegated-Authorization= per request, so
+  100,000 sessions need one NATS connection, not 100,000. The BFF opens one per
+  signed-in browser; that decision does not survive the port.
+- *A real asynchronous request path.* The existing =nats_client= request methods
+  are synchronous, and =client::request= spawns a detached thread per call. So
+  the gateway gets a request path of its own: either cnats' asynchronous request
+  API driven by one completion thread, or a fixed pool of NATS worker threads
+  with futures handed back to the owning core. Either way the I/O thread never
+  blocks, and the request timeout is enforced by a timer on the core, not by the
+  worker.
+- *No database work on an I/O thread.* The session byte counters are aggregate
+  per core and flushed by one writer thread on a timer, the way the market-data
+  ingest loop already batches. This removes the synchronous PostgreSQL write that
+  runs after every authenticated request today.
+
+** 6.2 Connection lifecycle
+
+#+begin_src text
+accept ─▶ slot acquire ─▶ read headers ─▶ route match ─▶ auth profile
+   │                                                        │
+   │                            ┌───────────────────────────┴─────────┐
+   │                            ▼                                     ▼
+   │                     request handler (coroutine)            stream handler
+   │                       await NATS round trip                (state machine)
+   │                            │                                     │
+   └────────────────────────────┴──────▶ write pump ◀─────────── append ─┘
+                                          │
+                                     async_write ─▶ slot release (on close)
+#+end_src
+
+Per connection the server keeps three arrays, indexed by the same slot. The hot
+state is contiguous so a poll event touches one cache line.
+
+#+begin_src cpp
+// Array 1: hot. Touched on every event.
+struct connection_hot {
+    std::uint32_t generation;
+    std::uint32_t socket;      // native handle, or an index into the socket array
+    std::uint16_t write_head;  // ring offsets, masked to the ring size
+    std::uint16_t write_tail;
+    std::uint8_t  state;       // reading, dispatching, writing, streaming, closing
+    std::uint8_t  profile;     // anonymous, session, bearer
+    std::uint16_t core;
+    session_handle session;    // invalid for anonymous and bearer
+};
+
+// Array 2: buffers. Fixed and inline, so a connection allocates nothing.
+struct connection_buffers {
+    beast::http::request_parser<beast::http::empty_body> parser;
+    std::array<std::byte, 512>  read;
+    std::array<std::byte, 4096> write;   // the ring
+};
+
+// Array 3: cold. Touched on transition only.
+struct connection_cold {
+    timer_handle idle_timer;
+    std::uint32_t remote_address;
+    std::uint16_t remote_port;
+    std::uint8_t  stream_kind;   // none, sse, websocket, file
+};
+#+end_src
+
+The three arrays are chunked in blocks of 4096 slots, so a handle stays valid
+while a block is reused, and a slot is three index lookups rather than one
+pointer chase.
+
+The ring is inline and not a pointer on purpose. A =std::unique_ptr<std::byte[]>
+per connection would be one allocation per connection and one more cache miss per
+event, which is exactly what this layout exists to avoid.
+
+#+begin_src cpp
+struct connection_handle {
+    std::uint32_t index : 24;      // up to 16.7 M slots
+    std::uint32_t generation : 8;  // wraps; a stale handle is rejected, not followed
+};
+#+end_src
+
+*Write pump.* There is exactly one in-flight =async_write= per connection. An
+append either starts it or does nothing, because the ring already holds the
+bytes. This is what keeps a slow client from creating a queue of futures, and it
+is what makes conflation possible: the ring is small, so being behind is visible
+immediately.
+
+** 6.3 Data layout: data-oriented, not object-oriented
+
+The rules, applied concretely:
+
+1. *Separate hot from cold.* Section 6.2. The state machine touches one line;
+   the buffer and the ring live behind a pointer that is only read when work
+   starts.
+2. *Batch by access pattern.* The 150 ms tick walks a *dirty list* of entities,
+   not every subscription. Serialisation happens once per batch, not once per
+   event.
+3. *Prefer indices to pointers.* Connections, sessions and subscriptions are all
+   handles into chunked arrays. A handle survives a rehash and a reconnect.
+4. *Small contiguous beats a hash map.* A route's watchers are usually one to
+   four; the watch list is an intrusive list in an arena, iterated linearly.
+5. *Keep the working set per core small.* Nothing shared. Counters are per core,
+   padded to a cache line, summed only when exported.
+6. *No =std::function= in the dispatcher.* Handlers are a function pointer plus
+   a =void*= context, or a template instantiation. =std::function= is an
+   allocation and an indirect call that the optimiser cannot see through.
+7. *Timers are a wheel, not n asio timers.* One hierarchical timing wheel per
+   core handles idle timeouts, session expiry and stream keep-alives. 100,000
+   asio timers is 100,000 heap entries and 100,000 cancellations at shutdown.
+
+#+begin_src cpp
+// One wheel per core, ticked by one timerfd. O(1) insert, O(1) cancel.
+class timer_wheel {
+public:
+    timer_handle schedule(std::chrono::milliseconds delay, timer_callback cb,
+                          void* ctx) noexcept;
+    void cancel(timer_handle h) noexcept;
+    void expire(std::chrono::steady_clock::time_point now) noexcept;
+private:
+    static constexpr std::size_t slots_per_level = 512;
+    // level 0: 1 ms, level 1: 512 ms, level 2: ~4 min, level 3: hours
+    std::array<std::vector<wheel_entry>, slots_per_level> level0_;
+};
+
+// One open-addressed map for every watcher in the process, keyed by the batch key.
+struct batch_key {
+    std::uint64_t tenant_id;
+    std::uint32_t component_hash;
+    std::uint32_t entity_hash;
+    bool operator==(const batch_key&) const = default;
+};
+#+end_src
+
+** 6.4 Routing
+
+Today the router scans every route and runs a regular expression per candidate
+(router.cpp:230-251), then copies the winner. At the 300-odd routes a merged
+table would hold, and 10,000 requests a second, that is millions of pattern
+comparisons a second for nothing.
+
+Replace it with a trie built once at startup from a generated manifest:
+
+#+begin_src cpp
+struct route_entry {
+    std::string_view method;          // interned, compared as an enum
+    std::string_view path_template;   // "/api/v1/refdata/currencies/{iso_code}"
+    std::uint16_t segment_count;
+    auth_profile profile;             // anonymous | session | bearer
+    body_limit body;
+    handler_fn handler;               // free function, not std::function
+};
+
+// Generated. Sorted, so the trie is a static table and the build is a scan.
+inline constexpr std::array<route_entry, n_routes> route_table = { ... };
+#+end_src
+
+Matching walks the path segments through a compiled trie in O(segments), and a
+literal segment beats a parameter in the same node, so =/api/session= never
+loses to =/api/{resource}=.
+
+The manifest is the single contract (Section 8). It produces:
+
+- the C++ route table,
+- =openapi.json=,
+- the TypeScript client and its validators,
+- a route list for the tests and the benchmark.
+
+** 6.5 Authentication: one pipeline, three profiles
+
+A route declares its profile. The pipeline is the same for both; only the proof
+of identity differs.
+
+| Profile | Proof | Where the token lives | Used by |
+|---|---|---|---|
+| =anonymous= | none | none | sign in, bootstrap, health, static |
+| =session= | a cookie holding an opaque identifier | server memory, never the browser | the SPA |
+| =bearer= | =Authorization: Bearer= JWT, RS256 | the caller | machine clients, grid engines |
+
+*Session store.*
+
+- The cookie carries a 256-bit random identifier. The store keys on its SHA-256,
+  so a memory dump is not a set of usable credentials.
+- The record holds the bearer token, the party scope, the tenant, the account,
+  the creation time and the last use.
+- Sliding expiry, in the timing wheel. A session that expires is evicted and its
+  subscriptions are refcount-decremented in the same step.
+- Sign in mints a new identifier (no fixation). Privilege change rotates it.
+- Cookie flags: =HttpOnly=, =SameSite=Lax=, =Secure= when the deployment has TLS.
+  The name takes the =__Host-= prefix when it is =Secure=, because the prefix
+  requires it; over plain HTTP the prefix-less name of today is used. Keep the
+  per-environment suffix the BFF uses (=ores_web_session_<environment>=), so two
+  deployments on one host cannot overwrite each other.
+
+*Delegation that cannot be forgotten.* The reason the BFF opens one NATS
+connection per session is that a shared connection with a forgotten token would
+silently act as the service identity. Make that unrepresentable:
+
+#+begin_src cpp
+// A user-scoped call cannot be made without a token. The type enforces it.
+class delegated_call {
+public:
+    delegated_call(nats_client& nats, std::string token);   // token required
+    boost::asio::awaitable<message> request(std::string_view subject,
+                                            std::span<const std::byte> body);
+private:
+    nats_client client_;   // built with with_delegation(token)
+};
+
+// Session-bearing routes receive this, never the raw client. A function
+// pointer and a context, not a std::function, as 6.3 requires.
+using route_handler = awaitable<http_response> (*)(const http_request&,
+                                                   delegated_call&);
+#+end_src
+
+*Bearer verification.* RS256 only, algorithm pinned, =iss= and =aud= checked, the
+JWKS cached and refreshed on an unknown =kid=. A refused token is 401 with no
+detail. The verification cost (tens of microseconds) is paid once per request for
+machine clients, and never for browser sessions, which is why the session path is
+not merely a cache: it is a different proof.
+
+*CSRF.* A cookie-only request is not proof of intent. Every unsafe method
+(=POST=, =PUT=, =PATCH=, =DELETE=) on a =session= route must carry an =Origin=
+matching the deployment's own, and a custom =X-Ores-Request= header that a
+cross-site form cannot set. SameSite=Lax is the second line, not the first.
+
+*Authorisation.* Mostly unchanged: the service checks the permission, against the
+token the gateway delegated. But "the gateway authorises nobody" is not quite
+true today, and the port must not pretend otherwise. The BFF has four narrow
+boundaries, and each has to be reproduced deliberately or dropped deliberately:
+
+| Boundary | What it does | Port decision |
+|---|---|---|
+| =requireDeploymentRead= | cross-tenant reads (tenants, services, grid, bus, logs) require =installation::deployment:read=, re-read per call so a lost grant stops the next request | keep: one permission read per cross-tenant route, not per request |
+| Session mode | the party list is refused for a system-administration session, derived from the tenant | keep: it is a rendering rule, and cheap |
+| Self versus other | the call site picks the self read or the admin read for the same data | keep as a route concern, not an auth rule |
+| Tenant enter and exit | a cross-tenant read runs inside the target tenant; refused entry is 403, a failure inside is carried as itself | keep: it is the only safe way to reach another tenant |
+
+Everything else stays the service's. The gateway reads no permission table of
+its own and caches none.
+
+** 6.6 The event hub
+
+The hardest part, and the reason the BFF exists.
+
+*Shape.* One shared NATS connection and *one* subscription for the whole
+process, over the events root: =*.v1.*_events.>=. The hub routes each message in
+process by =(component, resource)=.
+
+One subscription and not one per entity. cnats delivers a callback subscription
+on a library thread of its own — the client's own comment says the handler runs
+"on a NATS library thread" (client.cpp:351) — so a subscription per
+=(tenant, entity)= would be hundreds of threads doing nothing but waiting. A
+wildcard costs one thread and one decode per event, which is the work the BFF
+already does per subscription.
+
+The wildcard has a second benefit the per-entity design cannot have: the hub sees
+every event in one place, so the dirty list and the tick are one structure rather
+than one timer per subscription. If a thread count under load shows cnats
+multiplexes after all, the wildcard is still the right shape for that reason.
+
+Watchers are refcounted per batch key, so the process holds a batch only while
+somebody watches it, but the subscription itself stays open for the life of the
+process. That is the trade: one always-open wildcard, no subscription churn, no
+thread per tenant.
+
+The event arrives on the NATS dispatch thread. The hub does not serialise per
+session; it serialises once per batch and copies a finished frame into each
+watching connection's ring.
+
+#+begin_src text
+NATS event  ──▶ mark dirty (entity, tenant, at)  ──▶ 150 ms tick
+                                                        │
+                             per dirty entity:  build the batch
+                             ├─ keys, capped at 20
+                             ├─ group watchers by party bucket
+                             └─ serialise one SSE frame per bucket
+                                                        │
+                             per watching session: memcpy the frame into its
+                             ring, post to the owner core, start the write pump
+#+end_src
+
+*Why 150 ms is cheap.* It is one timer for the whole process, and the batch is
+built from a dirty list, so the cost per tick is proportional to what changed,
+not to what is watched.
+
+*Filtering.* The subject is the same for every tenant, so every event reaches
+the hub and each carries its tenant in the envelope. A session hears its own
+tenant and the system tenant; a member hears only the parties it works in; an
+administrator hears every party of its tenant. Party filtering changes the
+payload (the key list), which is why serialisation is per party bucket and not
+per entity.
+
+*The constants, carried over exactly.* =BATCH_WINDOW_MS = 150=, =MAX_KEYS = 20=,
+a watch declaration of at most 50 entries, and both names validated against
+=^[a-z][a-z0-9_]*$= so a browser cannot widen a watch with a wildcard. The window
+is armed by the first event and not extended, so a long burst is a series of
+windows and not one. Changing any of these four numbers is a client-facing
+behaviour change, and the tests must pin them.
+
+*Conflation, and why it is safe.* The payload is a *time*, not a list. A client
+that misses three frames needs one fact: that something changed after its load
+began. So a connection that is behind does not grow a queue; the pending batch
+for each watched entity is overwritten. The ring is 4 KiB and holds one frame
+per watched entity at most.
+
+*Two things the BFF does not have, and the port adds.* It sends no keep-alive
+comment on an idle stream, and it has no resume. Both are cheap and both matter
+once the stream is the interface's only push channel:
+
+- *Keep-alive.* One comment line every 15 s, from the timing wheel. It is what
+  keeps an idle stream distinguishable from a dead one behind a proxy.
+- *Resume.* Core NATS has no replay. A reconnecting client sends =Last-Event-ID=.
+  If the gap is inside the hub's short retention the hub replays; otherwise it
+  sends =resync= once, and the client marks every open screen stale. That is
+  exactly the semantics the client already implements, so no per-connection
+  history is stored.
+
+*Catch-up on watch.* =buffered_subscription= retains the last n messages per
+subject with a thread-safe snapshot. A session that opens a screen after a change
+gets a correct "changed at" without a full reload, and a new watcher does not
+need a subscription of its own to obtain it. Because the raw snapshot copies
+under a mutex, the hub takes it once per (component, entity) and shares the
+result, not once per session.
+
+*Backpressure policy, stated.* A frame that cannot be appended because the ring
+is full is dropped for that entity, and the entity is marked dirty so the next
+tick rebuilds it. A client that is persistently behind is closed after a stated
+number of consecutive drops, and the client reconnects and resyncs. Dropping is
+safe here and would not be for an ordered command stream.
+
+*One bug to fix rather than port.* Destroying a session does not remove its
+watches. The hub is cleared only when the stream socket closes, so a destroyed
+session with an open stream keeps receiving events. In C++ the session and the
+watch entry share a handle, and destroying one invalidates the other by
+construction (Section 6.3), which is the better fix than a second cleanup path.
+
+** 6.7 Streaming responses
+
+SSE first. It is HTTP/1.1, it rides the same pipeline, it reconnects by itself,
+and it is one direction, which is all the design needs.
+
+- A stream handler never returns a =http_response=. It hijacks the connection:
+  the write pump stops treating the ring as one response and starts treating it
+  as a frame queue.
+- Response headers: =Content-Type: text/event-stream=, =Cache-Control: no-cache,
+  =X-Accel-Buffering: no=.
+- Idle keep-alive: one comment line — a single colon followed by a blank line —
+  every 15 s, from the timing wheel. This is what keeps a NATS-to-browser path
+  truthful in the presence of proxies.
+- No request deadline on a stream. The keep-alive resets the idle timer, so a
+  healthy stream is never idle for more than 15 s; a stream that cannot be
+  written to for the stall deadline is closed, because that is a dead client and
+  not a quiet market.
+
+*File transfer.* The grid already moves every package, input, output and log
+through this server over =/api/v1/storage/{bucket}/{key}=, with a capability
+token minted for one assignment. Today that path buffers: =store_.put(bucket, key,
+req.body)= takes the whole body, so a 256 MiB upload costs 256 MiB resident per
+concurrent connection, and the BFF by contrast never holds a file.
+
+The port streams in both directions:
+
+- *Upload* consumes a =beast::http::buffer_body= through a file writer with a
+  bounded window, so memory is bounded by the window and not by the object.
+- *Download* serves with =boost::asio::stream_file= and a fixed buffer, so a
+  large object costs a buffer and not an object.
+- *Both* enforce a per-route byte limit and a stall deadline, and both report
+  progress to the timing wheel so an abandoned transfer is reclaimed.
+
+This is the one place where "100,000 connections" and "one very large file" meet,
+and it is why the write ring is bounded rather than elastic.
+
+*WebSocket.* Beast 1.92 ships it, =boost-beast= is already a dependency, and no
+new port is needed. Do not adopt it yet. It buys bidirectional traffic the design
+does not need, and it costs a second protocol to test and to secure. The place it
+will earn its keep is a future interactive grid console, and the connection slot
+already carries a protocol byte for it.
+
+*The HTTP/1.1 limit.* Beast has no HTTP/2. A browser allows six connections per
+origin, and a tab holds one for its stream. One tab is fine; ten tabs are ten
+streams across ten connection pools and still fine; a shared kiosk is not. Two
+mitigations, in order: (a) one stream per *session*, shared by tabs through a
+=BroadcastChannel= in the SPA; (b) an HTTP/2 or HTTP/3 proxy in front, which is a
+deployment option and not a code change. State (a) as the default and (b) as the
+escape hatch. Section 6.12 makes the same proxy serve as the answer to the TLS
+memory question, so the two decisions reinforce each other.
+
+** 6.8 Static assets
+
+- One =immutable= cache header for hashed filenames, =no-cache= for =index.html=.
+- Sent from an open file descriptor with =boost::asio::stream_file=, not read into
+  a buffer, so a 5 MiB asset does not cost 5 MiB of connection memory.
+- Path resolution is a table lookup against the manifest of built files, not a
+  string join, so =..= cannot escape the root.
+- Compression at build time, not per request. Serve the =.br= file when the
+  client offers it.
+
+** 6.9 Serialisation
+
+Two allocation problems, both on the hot path:
+
+1. =wire_codec::encode= returns a fresh =std::vector<std::byte>= per call. Add an
+   encode-into-buffer overload driven by a per-core scratch buffer that is reset
+   per request.
+2. rfl writes into a container it owns. Wrap the writer so the destination is the
+   connection's ring or the core's scratch, and keep the rfl types unchanged.
+
+The codec takes a =std::span<const std::byte>= and does not copy the encoded
+bytes. The copy has already happened by then: cnats hands over a buffer and
+=extract_message= copies the subject, the reply, the data and every header into
+owned containers. That is one allocation and one memcpy per message, and it is
+worth attacking, but it belongs to =ores.nats= and to a later phase. Keep the
+decoded message alive for the request's lifetime and copy nothing again unless a
+route reshapes it.
+
+** 6.10 Observability
+
+- Counters, per core, cache-line padded: accepted, closed, requests by profile,
+  requests by status class, drops, current connections and streams.
+- Histograms: request duration (with and without the service time), fan-out batch
+  size, tick duration, ring occupancy at drop.
+- One log line per request, with session id, correlation id, route, status and
+  duration; a stream logs start, end and reason.
+- The existing =ores.telemetry= and Boost.Log conventions carry over, so the
+  journal keeps one shape. Publish the counters as a fire-and-forget sample on a
+  timer (Section 11); the message does not exist yet and has to be added.
+
+** 6.11 Shutdown and drain
+
+Today =stop()= closes the acceptor, logs the live connection count, and leaves
+every session running until the process exits. For a server holding long-lived
+streams that is a mass disconnect with no explanation and no chance to say why.
+
+The drain sequence, bounded by a deadline:
+
+1. Stop accepting: close every acceptor, so new connections are refused by the
+   kernel rather than by us.
+2. Tell streams: write one final =event: shutdown= frame to every stream, then
+   close it with a normal close. A client that understands it reconnects once,
+   with backoff.
+3. Drain requests: stop admitting new requests, let in-flight handlers finish,
+   and close idle keep-alive connections with =Connection: close=.
+4. Flush the counter writer and the session store, publish one last telemetry
+   sample, then stop the io_contexts.
+5. If the deadline passes, close the rest and log how many were cut off. A drain
+   that can hang is a deployment that cannot roll.
+
+** 6.12 TLS: two listeners, one pipeline
+
+This server faces the internet, so TLS is not an option to consider later. It is
+part of the design. Both schemes are supported, in one process, on two listeners,
+behind one route table and one session store.
+
+| Listener | Default port | Purpose | Policy |
+|---|---|---|---|
+| plain | =--port=, 21601 here | loopback, the grid wrapper's local transfers, health probes | =serve=, =redirect= or =off= |
+| TLS | =--tls-port=, new in the port block | the internet surface: browsers and machine clients | always serves |
+
+The port block is allocated per worktree, one number at a time from
+=ORES_BASE_PORT=. Adding a scheme adds a number to that block; it does not add a
+service. The block already has overlapping names for one number
+(=ORES_HTTP_PORT=, =ORES_HTTP_SERVER_PORT= and
+=ORES_CONTROLLER_SERVICE_HTTP_PORT= all name 21601), so the new one is added as a
+distinct =ORES_HTTP_TLS_PORT= and the overlap is left to the backlogged
+port-consistency task rather than made worse here.
+
+*One SSL_CTX for the process.* Session tickets and the server-side session cache
+live in the context, so a resumed handshake works whichever core accepts the
+connection. Certificate reload swaps the context, not the listeners.
+
+*Two stream types, one pipeline.* The hot array from Section 6.2 is identical for
+both schemes. The stream lives in the cold array as a tagged union, so there is
+no virtual call per event and no allocation per connection:
+
+#+begin_src cpp
+using plain_stream = beast::tcp_stream;
+using tls_stream   = beast::ssl_stream<beast::tcp_stream>;
+using stream_variant = std::variant<plain_stream, tls_stream>;
+
+// Cold storage. Two alternatives, so a variant beats a vtable: no allocation,
+// no indirect call, and the compiler sees both paths.
+struct connection_cold {
+    stream_variant stream;
+    timer_handle handshake_deadline;
+    timer_handle idle_timer;
+    std::uint32_t remote_address;
+    std::uint16_t remote_port;
+    std::uint8_t  stream_kind;
+    bool tls;
+};
+#+end_src
+
+*Handshake, bounded.* =async_handshake(server)= runs on the owning core with its
+own deadline from the timing wheel (default 10 s) and a per-core cap on
+concurrent handshakes. A connection above the cap waits in the accept backlog or
+is refused; it never occupies an unbounded slot. This is the TLS-era equivalent
+of slowloris and it is why the handshake deadline is separate from the idle one.
+
+*Protocol policy.* TLS 1.2 minimum, TLS 1.3 preferred; TLS 1.0 and 1.1 refused,
+renegotiation refused, compression off, NULL and export suites impossible. ALPN
+advertises =http/1.1= and nothing else: Beast has no HTTP/2, and advertising =h2=
+would make a browser speak a protocol this server cannot answer.
+
+*Resumption is not a nicety at scale.* TLS 1.3 tickets plus a session cache sized
+to the expected connection count. A resumed handshake is one round trip and skips
+the asymmetric operation, which is the difference between a few hundred and
+several thousand handshakes a second on one core.
+
+*Keys and certificates.* ECDSA P-256 preferred, because signing is cheap; RSA-2048
+accepted for compatibility. Certificate and key from files with mode 0600, or
+from the environment for the container path. The key never appears in a log line
+and never in an error body. The existing service mains already call
+=OPENSSL_cleanup()= at exit, which is the right habit to keep.
+
+*Reload without a restart.* SIGHUP, or a control message on the bus, builds a new
+SSL_CTX and swaps it; existing connections keep their session and finish it, and
+the old context is released when its last connection closes. Renewing a
+certificate then costs zero dropped streams. Issuing the certificate is out of
+scope; renewing it without an outage is not.
+
+*What the plain listener is for.* The grid wrapper reaches this server at
+=--http-base-url=, which is =http://localhost:${ORES_HTTP_PORT}= in every
+wrapper unit, and systemd and the container probe reach /health the same way.
+Three modes keep that working without exposing a plaintext surface:
+
+| Mode | Behaviour |
+|---|---|
+| =serve= | Serve every route. Development only, and the default today must change |
+| =redirect= | 301 to the TLS origin for everything except =/health= and loopback clients |
+| =off= | No listener at all |
+
+The default for a deployment that names a certificate is =redirect=.
+
+*Session cookies are TLS-only.* A =session= route never sets a cookie on a plain
+connection. On TLS the cookie is =Secure= and therefore carries the =__Host-=
+prefix (6.5). A plaintext response may carry a redirect and nothing else.
+
+*Where TLS terminates at 100,000 connections.* Both answers are supported, and
+the choice is a deployment decision, not a code change:
+
+| Terminates | Wins | Costs |
+|---|---|---|
+| In process | no hop, one config, one place to reload a certificate | about 3 GiB of SSL objects at 100,000 idle connections (4.3) |
+| At a proxy | keeps the process small, adds HTTP/2 and connection absorption | a hop and a configuration file to keep in step |
+
+Recommend in process as the default, and a proxy once the count passes roughly
+20,000 or when HTTP/2 is wanted. That is also the answer to the HTTP/1.1
+six-connection limit in 6.7: the same proxy solves both.
+
+*Client certificates.* Browsers do not need them. The machine surface already
+carries a bearer token or a capability token, and mTLS would push certificate
+lifecycle onto every caller. Do not add mTLS without a caller that requires it.
+
+*Tests.* A self-signed certificate generated per test run, a TLS listener in the
+integration suite, a test that a plain request to the TLS port fails closed, a
+test that a certificate reload leaves a live stream connected, and a handshake
+flood test that asserts the per-core cap holds.
+
+* 7. Where coroutines earn their place
+
+Coroutines are a tool here, not a constraint. The rule: *use them where control
+flow is the hard part; do not use them where allocation is the hard part.*
+
+| Place | Coroutine? | Why |
+|---|---|---|
+| Startup, shutdown, drain | Yes | Sequential logic over several subsystems, run once |
+| Request handler | Yes | auth, call, shape, reply: linear code, one frame per request |
+| NATS request | Yes at the call site | The handler reads as a straight line; the completion comes from a worker and the frame is the handler's, not the transport's |
+| Connection read loop | No | One frame per connection for hours, and read is already a state machine |
+| Write pump | No | The hot path: append, one in-flight write, no frame churn |
+| Idle SSE stream | No | 100,000 suspended frames for no gain |
+| Event fan-out | No | Pure loops over flat arrays; a coroutine would add nothing |
+| Tests and tools | Yes | Sequential assertions read better |
+
+Costs worth knowing:
+
+- An =asio::awaitable= frame is allocated with the handler allocator. A per-core
+  recycling allocator removes the malloc; the frame still costs its size and its
+  restore. Measured, not assumed.
+- Clang can elide the frame (HALO) only when the coroutine's lifetime is fully
+  visible to the caller. Do not count on it for a long-lived loop.
+- A coroutine per request is a fine default: requests are short, and the frame is
+  the same order as the JSON body.
+
+If the benchmark in Section 10 shows the request frame costing more than 2% of
+end-to-end latency, revisit it. Not before.
+
+* 8. Codegen: one model, four artefacts
+
+** 8.1 Today
+
+=ores.cpp.http-route= projects one entity onto one route unit: header, source and
+tests, one route per derived verb, opt-in and disabled by default. =ores.ts.protocol=
+and =ores.ts.domain= emit the TypeScript wire types and entity shapes. The two
+sides are generated from the same org models, but the *route list* is not.
+
+** 8.2 The rule
+
+> Generate the shape. Hand-write the decision.
+
+| Situation | Generate | Hand-write |
+|---|---|---|
+| One operation, one call, one reply | whole route unit | nothing |
+| Several calls, or a payload reshaped for a screen | route skeleton, types, validation, manifest entry | the body |
+| A stream | frame types, manifest entry | the state machine |
+| Session, static, health, ops | nothing | everything |
+
+** 8.3 New facets
+
+1. *=ores.http.manifest=*. Reads every opted-in operation model, plus every
+   hand-written unit's declaration, and emits:
+   - =http_route_table.generated.cpp= — the static table the trie is built from,
+   - =openapi.generated.json= — replacing the runtime registry,
+   - =routes.generated.ts= — the route constants the client imports,
+   - =route_manifest.generated.org= — the document the recipes are written against.
+2. *=ores.ts.client=*. From the same models, emit typed client functions and
+   runtime validators. This closes the split the web README calls unfinished:
+   the browser would validate with generated validators, not hand-written Zod,
+   and the BFF's =@ores/contracts= package retires with it.
+3. *=ores.http.resource=*. For a hand-written resource — a composed view, or a
+   session that mints a credential — emit the skeleton: method, the published
+   area rather than the component name, profile, request type, response type, and
+   the manifest entry. The body is a
+   hand-written function the template leaves a stub for, so the route table stays
+   complete and the TypeScript client stays in step. The template is about the
+   shape of a resource, and knows nothing about callers.
+
+** 8.4 What must never be generated
+
+Authorisation, session handling, the event hub, stream framing, and error
+mapping. These are decisions, and a generated decision is a decision nobody can
+find six months later. They live in hand-written units — session and cookie in
+=auth=, the hub and framing in =stream=, error mapping once in =domain= — and the
+manifest records their routes so the table stays complete.
+
+* 9. Security
+
+| Threat | Mitigation | Enforced in |
+|---|---|---|
+| Token theft through XSS | token never leaves the server; =HttpOnly= cookie | session store |
+| CSRF on a cookie route | =Origin= check plus a required custom header on unsafe methods | router, before the handler |
+| Session fixation | new identifier on sign in and on privilege change | session store |
+| Stolen cookie replay | =Secure=, the =__Host-= prefix when secure, sliding expiry, rotation on privilege change | session store |
+| Cross-tenant event leak | one wildcard subscription, filtered in process by the envelope's tenant; a batch never spans tenants; an event with no tenant reaches nobody | event hub |
+| JWT confusion | RS256 pinned, =iss=/=aud= checked, =none= rejected, unknown =kid= refreshes JWKS then fails closed | bearer profile |
+| Body bomb | per-route body limit, default 1 MiB; uploads stream and are bounded by type | router, before the read |
+| Slowloris | header deadline and body deadline, both from the timing wheel | connection state machine |
+| Connection exhaustion | per-address connection cap, per-account stream cap, per-session watch cap (50) | admission, before a slot is held |
+| Path traversal | static paths resolve through the built-file manifest, not string joins | static handler |
+| Header injection | header values validated against a character set at construction | response builder |
+| Log injection through client logs | one line per entry, fields escaped, length capped | client-log route |
+| Authz drift | the gateway holds no permission table; the service enforces | by construction |
+| Denial through a slow consumer | bounded ring, conflation, stated drop policy, then close | write pump |
+
+Three properties of the current surface must change before it faces a browser or
+the internet:
+
+1. =cors_allowed_origins = "*"= becomes an explicit allowlist, and the blanket
+   =OPTIONS= short-circuit gives way to a per-route preflight.
+2. =max_body_size = 256 MiB= becomes a per-route limit, with a 413 on overflow
+   instead of a silent close.
+3. *TLS is built, not promised.* Two listeners, TLS 1.2 minimum with 1.3
+   preferred, resumption on, a bounded handshake, and a certificate reload that
+   does not drop a live stream (6.12). The =enable_ssl= field that nothing reads
+   is removed, not left as decoration.
+
+* 10. The efficiency budget
+
+| Path | Cost | Notes |
+|---|---|---|
+| Parse a request | ~1 µs | Beast, no allocation with a reused parser |
+| Route match | ~100 ns | trie, 5 segments |
+| Session lookup | ~100 ns | hash on a 32-byte key |
+| Authenticate a bearer | 20-60 µs | RS256 verify; machine clients only |
+| Service round trip | 100 µs - 10 ms | dominates everything |
+| Serialise a reply | 1-5 µs | rfl into a reused buffer |
+| Fan-out frame build | 1-3 µs per batch | once per entity per tick |
+| Fan-out per watcher | ~100 ns | memcpy into a ring |
+
+The conclusion is uncomfortable and worth stating plainly: *the HTTP layer is
+never where latency lives.* The reason to write it in C++ is not speed per
+request. It is memory per connection, one stack instead of two, and one contract
+instead of two.
+
+** 10.1 The one place the gateway does waste work
+
+There is a real efficiency finding, and it is not in the transport. The BFF
+amplifies reads:
+
+| Route | Round trips | Why |
+|---|---|---|
+| =GET /api/accounts= | 1 | the shape to keep |
+| =PUT /api/me/profile= | 2 | read, then write |
+| =PUT /api/accounts/:id/contact-information= | 2 | read, then write |
+| =GET /api/tenors/catalogue= | 3 | three sequential paged reads at 1,000 rows a page |
+| =GET /api/tenants= | N + 4 | a page, the types, the setup runs, a second count for hidden test tenants, then one step-progress read per tenant |
+| =GET /api/overview= | N + 8 | five list reads, two run reads, one name read, then one step-progress read per described run |
+
+Note what this table does *not* say. It does not say the views are wrong. The
+estate summary and the blotter are exactly the composed views 11.1 keeps, and
+their questions are good ones. What is wrong is the computation: N+8 round trips
+per page load instead of one answer from the service that owns the question.
+
+So the port keeps the view and fixes the computation. A step-progress read per
+run becomes one call. A read-then-write becomes one operation the service owns.
+Where the service cannot change yet, the gateway batches its own reads behind one
+request and the view carries a cache policy, so the cost is paid once and not on
+every poll. Porting the shapes unchanged would make the new server as
+inefficient as the old one, only in a faster language; deleting the shapes would
+throw away the only real account of how the data has to be consumed.
+
+** 10.2 The benchmark plan
+
+=benchmarks/= today holds one suite, XML parsing: a hand-rolled best-of-five
+loop, cachegrind for the cache axis, results appended to =history.tsv=, and a CI
+gate that fails when a watched input moved without a recorded row. The HTTP
+benchmarks follow that shape rather than inventing a framework, because the
+reporting and the gate already work.
+
+1. *connection_bench*: open 1, 10 and 100 thousand idle streams; record RSS, file
+   descriptors and CPU per core. Asserts N1, N2, N6.
+2. *request_bench*: a loopback route with no NATS call; record p50/p99/p999 and
+   allocation counts. Asserts N3 and N7.
+3. *fanout_bench*: one synthetic event to 10,000 watchers; record tick to last
+   byte written. Asserts N4.
+4. *stream_bench*: 10,000 streams receiving one frame a second for an hour;
+   record RSS at start and end. Asserts that conflation holds and memory is flat.
+
+Each records into =history.tsv= with the same long-form columns, so
+=compare.py= works unchanged, and the nightly run fails when a target regresses
+by more than the noise floor stated in the suite's README.
+
+* 11. Module layout
+
+One binary, four compiled units, no second process.
+
+| Unit | Contains | Kind |
+|---|---|---|
+| =ores.http.api= | =net= (socket, connection, write pump, timer wheel), =routing= (trie, manifest), =domain= (request, response, route), =auth= (jwt, cookie credential, sessions), =stream= (sse, ws, file transfer), =static=, =tls= (context, handshake, reload), =messaging= (the non-blocking NATS request path), =openapi= | api |
+| =ores.http.{iam,refdata,assets,core,...}= | the generated route units, unchanged, plus the hand-written composed views that belong to that domain | adapter |
+| =ores.http.server= | one binary: config, wiring, the route table, health and metrics | service |
+
+There is no =ores.http.web=, and the absence is deliberate. An earlier draft of
+this document put the cookie, the event hub, the static bundle and the composite
+views into a browser adapter. That was wrong: it made the API's shape depend on
+who called it, and it invented a component whose only definition was its caller.
+Section 11.1 replaces it with a test that does not mention the caller at all.
+
+Two additions that are not obvious from that table:
+
+*The twelve file-backed routes belong to neither side.* The agile board, sprint
+charts, work trees and QA scenarios read the checkout's =doc/= tree and shell out
+to =git=. That is not a gateway's job in either language, and the port is the
+moment to decide: move them behind a service, or keep them as an explicit
+filesystem adapter with its own directory and its own risk note. They must not be
+smuggled into the HTTP core or dressed up as resources they are not.
+
+*Telemetry needs one new message.* =service_sample= carries identity and a
+timestamp and no counters, so connection counts and fan-out rates have nowhere to
+go. Add a fire-and-forget sample in the established style — a timer, one publish
+a minute, counters read by difference — rather than exporting from the log. The
+design note for it already exists as intent
+(=doc/knowledge/architecture/every_queue_and_session_reports_its_own_numbers.org=),
+and this is the component that will fill it.
+
+** 11.1 Three kinds of thing, and a fourth that is not an API
+
+The question that decides where a route lives is not *who calls it*. It is *what
+it is*. There are four answers, and only three of them are an API.
+
+*1. A resource.* It names a domain object or a collection of them, and it does to
+that object what HTTP says it may: read, list, create, replace, remove, read a
+version. Its shape comes from the protocol model. A machine client and a browser
+reach it the same way; only the credential and the representation differ.
+
+*2. A composed view.* A read model. It answers a question a person actually
+asks — what is the state of my estate, what is on my blotter, what is waiting for
+my approval, how is the grid doing — by weaving several entities into one
+answer. *The composition is domain design, not presentation.* The screens found
+the questions; the API names them and documents them, and a CLI or a report can
+call the same view.
+
+*3. A transport capability.* Not a domain object at all; something a client may
+ask of the connection. Four exist: a cookie credential instead of a bearer
+header, a change stream instead of a poll, the built bundle and its assets, and
+the liveness and metrics endpoints. None is browser-specific in its contract.
+
+*4. A rendering concern, which is not an API.* Display order, colour, label text,
+preformatted strings, translated copy, and booleans whose only purpose is to hide
+a widget. This is the line the old BFF crossed, and it is the only line that
+matters. It belongs in the client, and a route that exists to serve it does not
+belong in the contract.
+
+| Surface | Kind | Where it goes |
+|---|---|---|
+| =/api/v1/reference-data/currencies=, the trading, reporting, market-data and grid collections | resource | generated units, unchanged |
+| =POST /api/v1/auth/sessions=, =DELETE .../sessions/{id}= | resource: a session is a thing | hand-written in =ores.iam=, because it mints a credential |
+| =GET /api/v1/tenancy/estate=, =GET /api/v1/trading/blotter=, =GET /api/v1/workflow/inbox= | composed view | hand-written beside the generated units of the owning component |
+| =GET /api/me/...= | resource, as a documented alias for the authenticated principal | hand-written per component |
+| the cookie on that response | transport capability | =auth= in the core |
+| =GET /api/v1/changes/{component}/{entity}= with =Accept: text/event-stream= | transport capability | =stream= in the core |
+| the built bundle and its assets, =/health=, =/metrics= | transport capability | =static= and =server= |
+| =GET /api/refdata/:resource= | not an API: a router that hides the schema | dies; the generated collection per resource already exists |
+| a payload carrying =displayColour=, =isButtonVisible=, =formattedLabel= | a rendering concern, not an API | the client |
+
+*A composed view is legitimate only when it satisfies all four of these.* Without
+them it is the old BFF again, whatever it is called.
+
+1. *A name in domain language.* "Estate summary", "blotter", "approval inbox".
+   Not "overview", not a page title, not a route that exists because a component
+   above it renders a grid.
+2. *A published schema.* In =openapi.json=, generated from a model rather than
+   assembled by hand in the handler, so the TypeScript client and the tests read
+   the same shape.
+3. *An owner.* The component that answers the question, in the same place its
+   resources live. A view that spans components still has one owner — the one
+   that cannot give the answer alone does not own it.
+4. *A stated computation and a cache policy.* One service call where possible; a
+   documented batch where not; an =ETag= and a freshness rule so a screen that
+   polls does not pay for the composition every time. N+8 round trips per page
+   load, which is what =/api/overview= does today, is not a design, it is an
+   unmetered cost.
+
+*Three tests for the review.* Apply them to every route:
+
+1. *Is the caller in the URL or the shape?* If a route exists only because a
+   browser calls it, the difference belongs in a credential or an =Accept= value.
+   The exception is a documented =me= alias, which is an ordinary REST idiom.
+2. *Would a second client use it?* A composed view survives this test, because a
+   CLI wants the blotter as much as a screen does. A payload of widget flags does
+   not survive it.
+3. *Does it contain a word only a widget understands?* Colour, layout, order for
+   display, translated text, "show". If yes, the field does not ship.
+
+*What the two earlier drafts got wrong, in opposite directions.* The first made
+the API's shape depend on the caller, which produced a browser component and a
+browser-only route set. The second over-corrected and called every composed view
+"residue", which throws away the most valuable thing the web work produced: a
+tested account of how the data has to be consumed. The correct position is in the
+middle, and it is the one above. *The screen told us the question. The API answers
+it in domain language, and the delivery mechanism is negotiated separately.*
+
+** 11.2 The URL is a contract, not a package name
+
+Should a client see =/api/v1/iam/sessions=? No.
+
+=iam= is the name of an internal component and of an architecture pattern.
+Neither is a promise to a client. The URL is the most expensive thing in the
+system to change: clients cache it, documentation quotes it, scripts and
+bookmarks embed it. A refactor that moves a handler between components must not
+move a URL, and today it would.
+
+So the published namespace is its own artefact: a short list of domain areas,
+declared in the manifest, each mapped to an owning component. Today that mapping
+is close to one to one, and that is a consequence of a sensible decomposition,
+not a rule to be enforced in reverse.
+
+| Published area | Owned today by | Example |
+|---|---|---|
+| =/api/v1/auth= | ores.iam | =POST /api/v1/auth/sessions= |
+| =/api/v1/tenancy= | ores.iam | =GET /api/v1/tenancy/tenants= |
+| =/api/v1/reference-data= | ores.refdata | =GET /api/v1/reference-data/currencies= |
+| =/api/v1/market-data=, =/api/v1/trading=, =/api/v1/reporting=, =/api/v1/workflow=, =/api/v1/grid= | their components | =GET /api/v1/trading/blotter= |
+| =/api/v1/changes= | the gateway core | =GET /api/v1/changes/trading/book= |
+
+Four rules follow, and the first is a codegen change:
+
+- A component may own several areas: =ores.iam= publishes both =auth= and
+  =tenancy=. Areas are not derived from components, and the two lists are allowed
+  to diverge.
+- Moving a handler between components never changes a URL.
+- Renaming an area is a versioned change with a redirect for a stated period,
+  because the old URL is somebody's bookmark.
+- The route template takes the area from the model's declaration, not from
+  ={component}=. Today =ores.cpp.http-route= writes =/api/v1/<component>/<plural>=
+  from the component name, which is exactly the leak this section removes.
+
+*Shape belongs in the contract; delivery is negotiated.* Two lists, and a field
+in the wrong list is a design bug:
+
+| Shape: in the URL and the schema | Delivery: a header or a query, never the URL |
+|---|---|
+| the resource's identity and its area | the credential: bearer or cookie |
+| its fields, its composed view, its defaults | the representation: =application/json= or =text/event-stream= |
+| the collection's sortable and searchable fields | the sort, the search, the page window |
+| its version and its history | the cache validator: =ETag=, =If-None-Match= |
+| its permission requirements | compression, TLS, connection reuse |
+
+The test: if changing it changes the meaning of the resource, it is shape and it
+is in the contract. If a different client could ask for something different of
+the same resource, it is delivery and it is negotiated.
+
+* 12. Increments
+
+The work is delivered in increments that each land green and each leave the
+system working: the BFF keeps serving the browser the whole time, and the C++
+path joins the deployment behind a flag or a prefix until it has earned the
+traffic.
+
+** 12.1 How the order was chosen
+
+Four rules, in priority order.
+
+1. *Fix what is broken before building what is missing.* Two defects in today's
+   gateway hurt now: a handler blocks the single I/O thread on every NATS call,
+   and a large upload is held whole in memory. Neither needs any of the new
+   design to fix, and each is a small, provable change. They come first.
+2. *Prove the shape before optimising for scale.* The riskiest question is not
+   "can it hold 100,000 connections" — that is understood engineering. It is "can
+   a browser sign in, list and receive changes from this server, on the routes the
+   API says it should". A thin skeleton answers that early and cheaply.
+3. *Design the contract in parallel, not in sequence.* The classification and the
+   area map need no code and gate the porting work. They start on day one.
+4. *Harden with something working to measure.* The per-core net layer, TLS and
+   the route table come after the skeleton, when a real client and a real
+   benchmark exist to judge them.
+
+** 12.2 The increments
+
+Each row is a story. S is a few days, M is one to two weeks, L is more.
+
+| Id | Increment | Delivers | Exit criterion | Depends on | Size |
+|---|---|---|---|---|---|
+| A1 | Non-blocking upstream calls | the handler never blocks an I/O thread; the session counters are flushed off the loop | a 2 s downstream stall moves neither =/health= nor a static file; request_bench p99 is unchanged | none | M |
+| A2 | Bounded request bodies | streamed request bodies, a per-route limit, and a 413 instead of a silent close | a 256 MiB upload peaks under 1 MiB of gateway RSS; an over-limit body gets 413 | none | S |
+| A3 | File transfer | streaming upload and download on the storage routes, with a stall deadline | the grid wrapper's transfer tests pass; no object is buffered whole | A2 | M |
+| C1 | Classification and area map | every route classified with 11.1; the published area list; each composed view named with its owner | an inventory table reviewed and approved; the manifest's source of truth agreed | none | M |
+| B1 | Response streaming and the bundle | a handler can write headers and chunks and hold the connection; the SPA bundle with its history fallback and cache headers; =/health= and =/metrics= | =curl -N= receives an event stream; the bundle is served by the C++ server | A1 | M |
+| B2 | The cookie door | the session store, the cookie credential, =POST= and =DELETE /api/v1/auth/sessions=, the =me= alias | a script signs in on C++, reuses the cookie, and no token appears in a browser payload | B1 | M |
+| B3 | The change stream | the wildcard subscription, the dirty list and tick, coalescing, the party filter, conflation, keep-alive, resume, =/api/v1/changes= | two sessions in two tenants stay isolated; a bulk import arrives as one frame; a dropped stream resyncs | B2 | L |
+| S1 | The walking skeleton | one screen served end to end by C++: sign in, one list, the change stream | a real screen works against C++, behind a flag, with the BFF still serving everything else | B3 | S |
+| N1 | The net layer | per-core accept with =SO_REUSEPORT=, the slot tables, the write pump, the timer wheel, the per-core arenas | 100,000 idle streams inside the 4.3 budget; the existing routes stay green | S1 | L |
+| N2 | TLS | both listeners, the stream variant, handshake caps and deadlines, certificate reload, the plain listener's three modes | the TLS bench records the real per-connection cost; reload keeps a live stream; the flood test holds the cap | N1 | M |
+| R1 | The route table | the trie, the per-route profile and limits, one error mapper, the CORS allowlist | no regular expression on the hot path; one error envelope across every route | N1 | M |
+| K1 | Area-based codegen | the route template reads the published area; the manifest emits the route table, =openapi.json= and the TypeScript client; a drift check | regeneration is stable and gated; one screen imports the generated client | C1 | M |
+| P1..Pn | Port by traffic | one domain per increment, in the measured order | that prefix is served by C++, the BFF logs zero for it, and its tests are green | S1, N2, R1, K1 | S each |
+| V1..Vn | The composed views | each view with its four obligations: name, schema, owner, computation and cache policy | the screen makes one call; the N+1 is gone; the =ETag= is exercised | C1, and the P that owns the data | M each |
+| X1 | The file-backed twelve | a decision and an owner for the agile and QA routes | they live somewhere justified, or they are deleted | C1 | S |
+| Z1 | Delete the BFF | the Fastify process, its unit, its fleet entry and =@ores/contracts= | the BFF's logs are silent, the unit is gone, and the fleet has one HTTP service | every P | S |
+
+Three of these carry more risk than their size suggests, and should be split
+before they are started if the estimate holds: B3 (the hub is concurrent state),
+N1 (the net layer touches every connection), and V1..Vn (each view needs a
+service-side read model, which is not HTTP work).
+
+** 12.3 What makes an increment done
+
+Every increment, without exception:
+
+- The full local gate is green, and the increment's own test fails if the
+  increment is reverted.
+- A benchmark exists for anything the increment claims about cost, and its number
+  is recorded in =benchmarks/history.tsv=.
+- The section of this document that the increment changes is amended in the same
+  change, so the document never describes a system that no longer exists.
+- The increment is revertible on its own. If it needs a flag to be safe, the flag
+  is added and its removal is a named follow-up.
+
+** 12.4 Cutover mechanics
+
+The cutover does not wait for the end. It starts at S1 and grows one prefix at a
+time.
+
+- *One cookie name, two servers.* Both run against the same NATS, the same
+  subject prefix and the same session cookie, so a browser that signs in against
+  either is signed in for both while the cutover lasts.
+- *One reverse proxy in front.* The proxy decides per prefix whether
+  =/api/v1/...= goes to the BFF or to the C++ server. A cutover is one line, and a
+  rollback is the same line removed.
+- *Traffic decides the order.* The ranked route list from C1 sets the sequence,
+  and each prefix is cut over only when its increment's exit criterion is met.
+- *The BFF is deleted last, and by evidence.* Not by plan date: when its logs
+  carry no traffic for a full working week.
+
+* 13. Alternatives considered
+
+*Keep the BFF and add nothing.* Cheapest today, and it leaves every cost in
+Section 3 in place, including the duplicate contract that keeps drifting.
+
+*A second binary, =ores.http.web=.* Rejected. It doubles the deployment, splits
+the session store from the event hub across a process boundary, and adds the hop
+this design removes. The component boundary is kept; the process boundary is not.
+
+*A reverse proxy for SSE and static only.* Useful and orthogonal. It does not
+remove the duplication, and it adds a thing to configure per deployment. Keep it
+as an option for HTTP/2, TLS offload and connection absorption.
+
+*gRPC or Connect instead of REST.* Rejected for the browser: SSE over HTTP/1.1 is
+simpler and already specified by the client design. The codegen argument is
+already satisfied by the manifest.
+
+*Embed a JavaScript runtime to reuse the BFF.* Rejected. It keeps the TypeScript
+and adds an interpreter, a GC and a new attack surface to a security boundary.
+
+* 14. Risks and open questions
+
+| Risk | Weight | Mitigation |
+|---|---|---|
+| Beast has no HTTP/2, so a tab costs one connection | Medium | one stream per session across tabs; proxy option for HTTP/2 |
+| 292 routes is a large port | High | traffic ranking in Phase 0; generate the mechanical ones; the composed views are the real work |
+| C++ iteration is slower than TypeScript | High | the manifest removes the drift; unity builds and ccache keep the loop short; prototypes stay in TS |
+| Cookie and CSRF parity during cutover | Medium | one cookie name, one session store, cutover per prefix, the existing verifier scripts |
+| One process is a large blast radius | Medium | per-route limits, per-core isolation, a watchdog, and the drain path |
+| Conflation hides a lost event | Low | the payload is a time; a resync marks everything stale |
+| NATS dispatch thread becomes the bottleneck | Medium | measure the tick; shard subscriptions if needed |
+| The 150 ms window is tuned for the current load | Low | one constant, one benchmark, revisit with data |
+| The 100,000 target has no evidence behind it | Medium | treat it as a ceiling (4.4); size the machine from 4.3; do not staff to it |
+| Two environments on one host both take 1.5 GiB | Medium | the unit already caps at 8 GiB with no =Slice=; add a slice before running two |
+| Twelve file-backed routes have no service | Medium | decide in Phase 0: a service, or an explicit filesystem adapter |
+| The port inherits the read amplification | Medium | 10.1: keep the view, fix its computation; do not copy the N+1 |
+| TLS costs 3 GiB at 100,000 connections | Medium | measure it (4.3); terminate in a proxy above roughly 20,000, or accept the memory |
+| A handshake flood costs CPU on the accept core | Medium | per-core handshake cap, handshake deadline, resumption, ECDSA |
+| Certificate renewal needs an operator step | Medium | build the reload path in Phase 1; renewal without reload is an outage |
+| Two ports per deployment invite drift | Low | one config block names both; a test asserts the plain mode cannot serve session routes |
+
+Open questions this document does not settle:
+
+1. *Certificate provisioning.* Where the certificate comes from — ACME against
+   Let's Encrypt, an operator, or the deployment's own CA — and whether renewal
+   is a cron job that writes the file and signals the process. The reload path
+   is designed (6.12); the acquisition is not.
+2. *Where the SPA's stream lives.* One per tab or one per session with a
+   =BroadcastChannel=. The second is better and needs a client change.
+3. *Session durability.* Whether a restart may drop sessions (today it may) or
+   whether they must survive a rolling deploy.
+4. *The OpenAPI document.* Generated at build time, or served at runtime from the
+   manifest. Build time is better; confirm no consumer needs a runtime refresh.
+5. *The doc-backed routes.* A service, or a filesystem adapter in the browser
+   unit. Both are defensible; leaving them in the HTTP core is not.
+
+Answered by the evidence, and no longer open:
+
+- *Are grid engines an HTTP workload?* For the control plane, no: they use NATS.
+  For files, yes, and they already do. That is why this design treats file
+  transfer as a first-class path and streaming as a browser concern (4.4).
+- *Does the server need TLS?* Yes. It faces the internet, so both listeners are
+  designed in 6.12 and built in Phase 1. The remaining question is only where the
+  certificate comes from.
+
+* 15. Decisions requested
+
+1. Approve one process serving both schemes from one route table, and reject any
+   browser-specific component or binary.
+2. Approve the thread-per-core model with =SO_REUSEPORT= and one shared NATS
+   connection with per-request delegation.
+3. Approve SSE as the only stream for now, with WebSocket left for a later
+   interactive surface.
+4. Approve the four-way rule of 11.1 — resource, composed view, transport
+   capability, rendering concern — as the test that places every route.
+5. Approve the manifest facet as the single contract between the server and the
+   SPA.
+6. Approve the phased migration, prioritised by measured traffic, with composed
+   views redesigned rather than copied.
+7. Approve the TLS design in 6.12, and choose the plain listener's default mode
+   (=redirect= for a deployment with a certificate, =serve= only for development).
+8. Decide how certificates are issued and renewed, and whether that is in scope
+   for this work.
+9. Decide the fate of the twelve file-backed routes.

@@ -131,6 +131,15 @@ struct ORES_HTTP_API_EXPORT route final {
     std::vector<std::string> required_roles;
 
     /**
+     * @brief The most this route will read for one request body, in bytes.
+     *
+     * Zero means the server's default applies. A route that accepts an upload
+     * raises it; every other route keeps the small default, so a body bomb costs
+     * a refusal and not the server's memory.
+     */
+    std::uint64_t max_body_size = 0;
+
+    /**
      * @brief OpenAPI summary for documentation.
      */
     std::string summary;

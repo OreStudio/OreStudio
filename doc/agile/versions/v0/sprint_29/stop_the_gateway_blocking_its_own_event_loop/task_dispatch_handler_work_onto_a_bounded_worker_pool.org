@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 34ACA4F4-F78E-406A-843D-5A5332A62B6C
+:END:
+#+title: Task: Dispatch handler work onto a bounded worker pool
+#+description: Hand the matched route's handler to a fixed pool of worker threads and await its result on the connection's executor, so a blocking NATS or database call never runs on an I/O thread. Bound the queue and answer 503 when it is saturated.
+#+type: task
+#+level: s1
+#+filetags: :stop_the_gateway_blocking_its_own_event_loop:sprint_29:v0:
+#+owner: marco
+#+branch: feature/stop-the-gateway-blocking-its-own-event-loop
+#+pr: 4089
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB95B09C-1AF5-4171-8824-EB9ED45B197F][Stop the gateway blocking its own event loop]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A route handler forwards to the owning service with a synchronous request, and
+today that request runs on the one io_context thread the server has. A single
+blocked handler therefore stops every other connection, including =/health=, a
+static file, or a second request that has nothing to do with the slow service.
+
+This task moves the handler off the I/O thread. The handler runs on a fixed pool
+of worker threads and the connection's coroutine is resumed with its result, so
+the I/O thread only ever runs completions. The pool is bounded twice over: a
+fixed thread count, and a cap on the requests it holds at once. Past the cap a
+request is refused with 503 rather than queued without limit.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AB95B09C-1AF5-4171-8824-EB9ED45B197F][Stop the gateway blocking its own event loop]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-29                               |
+
+* Acceptance
+
+- A handler runs on a pool thread, not on the connection's thread, proven by a
+  test that reads the executing thread's id.
+- A handler that blocks does not stop =/health= answering. Proven by an
+  integration test that starts a server, blocks one handler, and reads =/health=
+  under a 500 ms deadline; the same test hangs when the pool is removed.
+- The pool is bounded: the thread count and the in-flight cap are configuration,
+  and a request past the cap is refused with 503 immediately.
+- The pool reports how many requests it holds, and that figure is in the log
+  line that states a refusal.
+- The existing suites stay green.
+
+* Plan
+
+1. A =worker_pool= in =ores.http.api/net/worker_pool.hpp=: an
+   =asio::thread_pool=, an in-flight counter, a =saturated()= predicate, and a
+   =run(Invoke)= that spawns the handler's awaitable on the pool with
+   =asio::co_spawn(..., use_awaitable)= and resumes the caller with the result.
+   The counter is released by a guard living in the coroutine frame, so a
+   cancelled request releases its slot too.
+2. =http_server_options= gains =worker_threads= and =max_inflight_requests=, with
+   =--worker-threads= and =--max-inflight-requests= on the server command line.
+3. =http_server= owns the pool and hands it to every session. Declared before the
+   acceptor so it outlives the sessions that reference it.
+4. =http_session::handle_request= refuses with 503 when the pool is saturated and
+   otherwise runs the handler through it. A null pool keeps the old inline
+   behaviour, which only a test wants.
+5. =http_server::bound_port()= reports the port the acceptor actually bound, so a
+   test can use port zero instead of guessing a free one.
+
+The alternative — rewriting the 24 generated route units onto an asynchronous
+NATS request — is the better end state and belongs to increment R1, where the
+route table is rewritten anyway. This task buys the property with one call site.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =ores.http.api= test cases | 74 cases, 221 assertions, all passing | =./ores.http.api.tests= | branch head |
+| =/health= latency while a handler blocks | answers inside the 500 ms deadline | =./ores.http.api.tests "[http_server]"= | branch head |
+
+* Notes
+
+- The integration test is deliberately not vacuous. With the pool removed from
+  =http_server='s constructor the same test never answers: the blocked handler
+  holds the only I/O thread and the =/health= read runs out of time. That was
+  confirmed before the pool was restored.
+- =worker_threads = 0= selects eight, so the default deployment gets the fix
+  without configuration.
+- The pool is per process, not per core. Making it per core, and sizing it from
+  the CPU count, belongs with the net layer in increment N1.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4089][#4089]] | [http] Stop the gateway blocking and bound the request body |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A route handler now runs on a bounded pool of worker threads and the connection
+is resumed with its result, so no I/O thread blocks on a downstream request. The
+pool states its thread count and its in-flight cap, refuses with 503 at the cap
+rather than queueing, and reports how many requests it holds.
+
+The proof is an integration test that starts a server, blocks one handler and
+reads =/health= under a 500 ms deadline. With the pool removed from
+=http_server='s constructor the same test never answers, because the blocked
+handler holds the only I/O thread. That was checked before the pool was restored,
+so the test fails when the fix is reverted.
+

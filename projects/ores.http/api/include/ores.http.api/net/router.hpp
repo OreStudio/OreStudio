@@ -23,6 +23,7 @@
 #include "ores.http.api/domain/route.hpp"
 #include "ores.http.api/export.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -63,6 +64,13 @@ public:
      * Roles imply a session, so this states auth_required() as well.
      */
     route_builder& roles(std::vector<std::string> r);
+
+    /**
+     * @brief Sets the largest body this route will read.
+     *
+     * Zero, the default, means the server's default applies.
+     */
+    route_builder& max_body(std::uint64_t bytes);
 
     /**
      * @brief Sets OpenAPI summary.
@@ -167,6 +175,7 @@ private:
     std::string description_;
     std::vector<std::string> tags_;
     std::vector<domain::query_param> query_params_;
+    std::uint64_t max_body_size_ = 0;
     std::optional<domain::request_body_schema> body_schema_;
     std::optional<domain::response_schema> success_response_schema_;
 };

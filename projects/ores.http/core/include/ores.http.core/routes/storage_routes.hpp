@@ -59,8 +59,12 @@ namespace ores::http::server::routes {
  */
 class ORES_HTTP_CORE_EXPORT storage_routes final {
 public:
+    /**
+     * @param max_upload_bytes The largest object one upload may carry.
+     */
     storage_routes(std::string storage_dir,
-                   std::shared_ptr<iam::service::authorization_service> auth_service);
+                   std::shared_ptr<iam::service::authorization_service> auth_service,
+                   std::uint64_t max_upload_bytes = 256ULL * 1024 * 1024);
 
     /**
      * @brief Registers all storage routes with the router.
@@ -118,6 +122,7 @@ private:
 
     storage::filesystem::local_store store_;
     std::shared_ptr<iam::service::authorization_service> auth_service_;
+    std::uint64_t max_upload_bytes_;
 };
 
 }

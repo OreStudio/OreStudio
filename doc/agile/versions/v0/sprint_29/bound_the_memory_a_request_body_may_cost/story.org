@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 8945F7D2-8623-407A-998C-8245ACD1DD8B
+:END:
+#+title: Story: Bound the memory a request body may cost
+#+description: A request body is read whole into a reused flat buffer with a 256 MiB cap for every route, so one large upload costs its own size in resident memory and an over-limit body is closed with no response. Read bodies up to a per-route limit, stream the large ones to their destination, and answer 413 when the limit is passed.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The server reads every request body whole, into one buffer per connection, with a
+single limit of 256 MiB for every route: small enough to be useless as a bound,
+and applied before the route is known. So a JSON route accepts a 256 MiB body, a
+large upload costs its own size in resident memory, and a body past the limit
+closes the connection with no response at all.
+
+After this story the route decides the limit. The headers are read on their own,
+the route the request addresses is resolved, and the body is read under that
+route's limit: a small default for a JSON call, an explicit large one for the
+storage upload, and the server's ceiling over both. A body past the limit is
+answered 413 with a reason instead of a silent close.
+
+Increment A2 of
+[[id:2E504EF1-F812-4D83-BD21-AE97162A1ABC][One HTTP Server: designing ores.http to replace the web BFF]].
+Streaming an accepted body rather than holding it is increment A3 and is out of
+scope here.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Both tasks are done: the route decides the limit and an over-limit body gets 413. |
+| Waiting on    | Nothing.                               |
+| Next          | Merged. The next increment takes over. |
+| Last touched  | 2026-10-29                               |
+
+* Acceptance
+
+- The limit is decided by the route, after the headers are read and before the
+  body is held.
+- A body past the limit is answered 413 with a reason, not closed.
+- The refusal closes the connection, because the body was not read and cannot be
+  framed.
+- A route that takes an upload states its own limit, and the server's ceiling
+  still caps it. The storage upload route keeps working at its current size.
+- A client that sends =Expect: 100-continue= is told to proceed before it sends.
+- The existing suites stay green.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F715F394-0F84-4D4F-8530-B9E2E3A66F65][Read the headers before the body]] | DONE | 2026-10-29 | 2026-10-30 | The message is read whole, so one body limit applies to every route and nothing can be decided before the body is held. Read the headers on their own, resolve the route the request addresses, and read the body under that route's limit. |
+| [[id:4E57E64D-6B4F-41F0-8AC3-1B22354FBC14][Answer an over-limit body with 413]] | DONE | 2026-10-29 | 2026-10-30 | A body past the limit makes the read fail and the session close with no response, so the caller cannot tell a refusal from a broken connection. Answer 413 with a reason, close the connection because the body was not read, and give the storage upload route the one limit that needs to be large. |
+
+* Decisions
+
+- The limit lives on the route, not on the server alone, because only the route
+  knows whether its body is a JSON document or an engine package.
+- The default is 1 MiB, which is far above any JSON call the gateway serves and
+  far below anything worth attacking with.
+- Reading the headers first was chosen over a streaming parser because it is the
+  same change that streaming will need in A3, and it lets the refusal happen
+  before a byte of body is held.
+
+* Out of scope
+
+-

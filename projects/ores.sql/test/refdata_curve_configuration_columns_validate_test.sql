@@ -60,6 +60,24 @@ insert into ores_refdata_parties_tbl (
 
 select set_config('app.visible_party_ids', '{a0000000-0000-0000-0000-00000000c0e5}', true);
 
+/*
+ * The currency a curve names is checked against reference data, and currencies
+ * reach a database through the seeder rather than through a populate script, so
+ * a freshly recreated database has none. The fixture states the one the case
+ * uses, which is what makes the case independent of how the database was built.
+ */
+insert into ores_refdata_currencies_tbl (
+    tenant_id, iso_code, version, name, numeric_code, symbol,
+    fraction_symbol, fractions_per_unit, rounding_type, rounding_precision,
+    format, monetary_nature, market_tier, modified_by, performed_by,
+    change_reason_code, change_commentary
+) values (
+    ores_utility_system_tenant_id_fn(), 'GBP', 0, 'Pound Sterling', '826', 'P',
+    'p', 100, NULL, 2,
+    'P#,##0.00', 'fiat', 'g10', current_user, current_user,
+    'system.test', 'pgTAP curve columns fixture'
+);
+
 insert into ores_refdata_curve_configurations_tbl (
     id, tenant_id, version, party_id, name, description, configuration_id,
     modified_by, performed_by, change_reason_code, change_commentary

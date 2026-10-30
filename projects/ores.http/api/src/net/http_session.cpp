@@ -35,11 +35,13 @@ namespace asio = boost::asio;
 http_session::http_session(asio::ip::tcp::socket socket,
                            std::shared_ptr<router> router,
                            std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier,
+                           std::shared_ptr<worker_pool> workers,
                            const http_server_options& options,
                            session_bytes_callback bytes_callback)
     : stream_(std::move(socket))
     , router_(std::move(router))
     , verifier_(std::move(verifier))
+    , workers_(std::move(workers))
     , options_(options)
     , bytes_callback_(std::move(bytes_callback)) {
 
@@ -57,19 +59,78 @@ asio::awaitable<void> http_session::run() {
 
     try {
         for (;;) {
+            /*
+             * The headers are read first, on their own, so the body limit can be
+             * decided by the route the request addresses before any of the body
+             * is held. Reading the message whole would force one limit on every
+             * route: small enough for a JSON call is too small for an engine
+             * package, and large enough for a package is a body bomb everywhere
+             * else.
+             */
             http::request_parser<http::string_body> parser;
-            parser.body_limit(options_.max_body_size);
             parser.header_limit(options_.max_header_size);
-            co_await http::async_read(stream_, buffer_, parser, asio::use_awaitable);
+            parser.body_limit(options_.max_body_size);
+            co_await http::async_read_header(stream_, buffer_, parser, asio::use_awaitable);
+
+            const auto version = parser.get().version();
+            const auto keep_alive = parser.get().keep_alive();
+            const auto subject = std::string(parser.get().target());
+
+            BOOST_LOG_SEV(lg(), debug) << "Received request: " << parser.get().method_string()
+                                       << " " << subject << " from " << remote_address_;
+
+            const auto limit = body_limit_for(parser.get());
+
+            /*
+             * The refusal is written here, not by the failed read, so the caller
+             * is told why instead of watching the socket close. It answers both
+             * the declared size below and the chunked body that declares none.
+             */
+            const auto refuse_too_large =
+                [this, version, &subject](std::uint64_t size) -> asio::awaitable<void> {
+                BOOST_LOG_SEV(lg(), warn) << "Refusing " << subject << ": a body of " << size
+                                          << " bytes is past the route's limit";
+                auto too_large = domain::http_response::error(
+                    domain::http_status::payload_too_large,
+                    "The request body is larger than this route accepts.");
+                auto beast_resp = convert_response(too_large, version, false);
+                co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+            };
+
+            const auto declared = parser.content_length().value_or(0);
+            if (declared > limit) {
+                co_await refuse_too_large(declared);
+                break;
+            }
+
+            // A client that asks before sending is told to send, and only once
+            // the body is known to be acceptable.
+            if (beast::iequals(parser.get()[http::field::expect], "100-continue")) {
+                static constexpr std::string_view cont = "HTTP/1.1 100 Continue\r\n\r\n";
+                co_await asio::async_write(stream_, asio::buffer(cont), asio::use_awaitable);
+            }
+
+            parser.body_limit(limit);
+            auto body_too_large = false;
+            try {
+                co_await http::async_read(stream_, buffer_, parser, asio::use_awaitable);
+            } catch (const boost::system::system_error& e) {
+                // A chunked body declares no length, so it is caught here rather
+                // than above, and it is still a refusal with a reason.
+                if (e.code() != http::error::body_limit)
+                    throw;
+                body_too_large = true;
+            }
+
+            if (body_too_large) {
+                co_await refuse_too_large(limit);
+                break;
+            }
+
             auto req = parser.release();
-
-            BOOST_LOG_SEV(lg(), debug) << "Received request: " << req.method_string() << " "
-                                       << req.target() << " from " << remote_address_;
-
             co_await handle_request(std::move(req));
 
-            // Check for connection close
-            if (!req.keep_alive()) {
+            if (!keep_alive) {
                 BOOST_LOG_SEV(lg(), debug) << "Client requested connection close";
                 break;
             }
@@ -89,6 +150,25 @@ asio::awaitable<void> http_session::run() {
 
     // Graceful shutdown
     stream_.socket().shutdown(asio::ip::tcp::socket::shutdown_send, ec);
+}
+
+std::uint64_t http_session::body_limit_for(const http::request<http::string_body>& req) {
+    const auto ceiling = options_.max_body_size;
+    const auto fallback = std::min<std::uint64_t>(options_.default_max_body_size, ceiling);
+
+    auto path = std::string(req.target());
+    const auto query_pos = path.find('?');
+    if (query_pos != std::string::npos)
+        path = path.substr(0, query_pos);
+
+    std::unordered_map<std::string, std::string> path_params;
+    const auto matched = router_->match(convert_method(req.method()), path, path_params);
+    if (!matched)
+        return fallback;
+
+    const auto stated =
+        matched->max_body_size == 0 ? options_.default_max_body_size : matched->max_body_size;
+    return std::min<std::uint64_t>(stated, ceiling);
 }
 
 asio::awaitable<void> http_session::handle_request(http::request<http::string_body> req) {
@@ -209,17 +289,35 @@ asio::awaitable<void> http_session::handle_request(http::request<http::string_bo
         }
     }
 
-    // Execute handler
+    /*
+     * The handler blocks on the service that owns the data, so it runs on the
+     * worker pool and not here. This thread stays free to serve every other
+     * connection while one request waits on a slow service. A null pool keeps
+     * the old behaviour, which only a test wants.
+     */
     domain::http_response response;
-    try {
-        BOOST_LOG_SEV(lg(), trace) << "Executing handler for: " << matched->pattern;
-        response = co_await matched->handler(domain_req);
-        BOOST_LOG_SEV(lg(), debug)
-            << "Handler completed with status: " << static_cast<int>(response.status);
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Handler exception for " << matched->pattern << ": " << e.what();
-        response = domain::http_response::internal_error(e.what());
+    if (workers_ != nullptr && workers_->saturated()) {
+        BOOST_LOG_SEV(lg(), warn) << "Refusing " << matched->pattern << ": the handler pool holds "
+                                  << workers_->inflight() << " requests already";
+        response = domain::http_response::error(domain::http_status::service_unavailable,
+                                                "The server is saturated. Try again shortly.");
+    } else {
+        try {
+            BOOST_LOG_SEV(lg(), trace) << "Executing handler for: " << matched->pattern;
+            if (workers_ != nullptr) {
+                const auto handler = matched->handler;
+                response = co_await workers_->run(
+                    [&handler, &domain_req]() { return handler(domain_req); });
+            } else {
+                response = co_await matched->handler(domain_req);
+            }
+            BOOST_LOG_SEV(lg(), debug)
+                << "Handler completed with status: " << static_cast<int>(response.status);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Handler exception for " << matched->pattern << ": " << e.what();
+            response = domain::http_response::internal_error(e.what());
+        }
     }
 
     // Add CORS headers if enabled

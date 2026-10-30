@@ -53,6 +53,15 @@ struct http_server_options final {
     std::chrono::seconds request_timeout{30};
 
     /**
+     * @brief The body limit a route gets when it states none.
+     *
+     * A JSON request is small. A route that accepts an upload states its own
+     * limit with max_body(); everything else refuses a larger body with 413
+     * rather than reading it.
+     */
+    std::uint64_t default_max_body_size = 1024 * 1024;
+
+    /**
      * @brief Maximum accepted request body size, in bytes.
      *
      * Beast's default body_limit for a plain (non-parser) http::read is
@@ -71,6 +80,41 @@ struct http_server_options final {
      * read, and it stays bounded so a header cannot grow without limit.
      */
     std::uint32_t max_header_size = 64 * 1024;
+
+    /**
+     * @brief Threads that run a route handler.
+     *
+     * A handler forwards to a service with a synchronous request, so running it
+     * on the connection's thread stalls every other connection for the length of
+     * one downstream answer. The handler runs here instead, and the connection
+     * stays on its own executor. Zero selects the default of eight.
+     */
+    std::size_t worker_threads = 0;
+
+    /**
+     * @brief Handlers the pool accepts at once.
+     *
+     * A slow service must cost a refusal once this is reached, not unbounded
+     * queueing: the request is answered 503 and each worker keeps a bounded
+     * share. Zero removes the cap, which is only appropriate for a test.
+     */
+    std::size_t max_inflight_requests = 1024;
+
+    /**
+     * @brief How often a session's byte totals are written.
+     *
+     * The totals are kept in memory and written once per interval, from a
+     * worker, so a request never waits on the database for a counter.
+     */
+    std::chrono::seconds bytes_flush_interval{5};
+
+    /**
+     * @brief How long a quiet session keeps its totals in memory.
+     *
+     * Bounds what a long-lived process holds. A session that comes back after
+     * this window starts its total again from that point.
+     */
+    std::chrono::seconds bytes_retain{3600};
 
     /**
      * @brief Whether to enable SSL/TLS.

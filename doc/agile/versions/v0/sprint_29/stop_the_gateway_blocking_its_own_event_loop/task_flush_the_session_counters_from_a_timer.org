@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: D703270B-40F4-43D2-B976-D557FEBC82CA
+:END:
+#+title: Task: Flush the session counters from a timer
+#+description: The session byte counters are written to PostgreSQL synchronously after every authenticated request. Accumulate them in memory and flush them from one timer, so the write leaves the request path and the number of writes is bounded by the flush interval rather than by the request rate.
+#+type: task
+#+level: s1
+#+filetags: :stop_the_gateway_blocking_its_own_event_loop:sprint_29:v0:
+#+owner: marco
+#+branch: feature/stop-the-gateway-blocking-its-own-event-loop
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB95B09C-1AF5-4171-8824-EB9ED45B197F][Stop the gateway blocking its own event loop]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Two defects in one place. The gateway writes a session's byte counters to
+PostgreSQL after every authenticated request, synchronously, on the connection's
+own thread: one database round trip per request, on the thread that serves every
+other connection. And the number it writes is wrong: the column is documented as
+the total a session has sent and received, while the gateway passes the size of
+the request it just answered, so the column holds the last request's size and not
+a total.
+
+After this task the totals live in memory and are written once per interval from
+a worker thread, and the number written is the running total.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AB95B09C-1AF5-4171-8824-EB9ED45B197F][Stop the gateway blocking its own event loop]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-29                               |
+
+* Acceptance
+
+- No request path touches the database for a counter. The write happens on the
+  pool, proven by a test that records the thread the sink ran on.
+- What is written is the running total, not the last request's size. Proven by a
+  test that adds three sizes and reads one total.
+- An idle session costs no write: a flush with nothing new does not call the sink.
+- A failed write is retried on the next flush with the same total, so a database
+  hiccup costs a delay and not a gap.
+- Shutdown writes what is still in memory.
+- The existing suites stay green.
+
+* Plan
+
+1. =session_bytes_accumulator= in =ores.http.api=: a map from session id to its
+   running totals, the start time it was first seen, the totals last written, and
+   when it was last active. =add()= books numbers and returns; it never touches
+   the database.
+2. A timer per accumulator, armed for the flush interval. On fire it hands the
+   write to the worker pool, so the I/O thread stays free, and arms the next
+   flush only when that write finishes, so two flushes never overlap.
+3. The write skips an entry whose total has not moved since it was last written,
+   and records the written total only after the sink returns, so a failure leaves
+   the entry owing and the next flush retries.
+4. An entry quiet for longer than the retain window is dropped, which bounds what
+   a long-lived process holds. A session that comes back after that window starts
+   its total again from that point.
+5. =http_server= owns the accumulator, hands sessions a callback that only
+   accumulates, and flushes on =stop()=. The database write stays where the
+   application put it: =set_session_bytes_callback=.
+6. =--bytes-flush-interval= and two option fields: the interval and the retain
+   window.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =ores.http.api= test cases | 79 cases, 239 assertions, all passing | =./ores.http.api.tests= | branch head |
+| Accumulator cases | 5 cases, 18 assertions | =./ores.http.api.tests "[session_bytes]"= | branch head |
+
+* Notes
+
+- The column stays what the model says it is: the total during the session. The
+  gateway now sends the total, so =update_bytes= keeps its =set= semantics and
+  =ores.iam= is untouched. Nothing else calls =update_bytes=.
+- A restart loses at most one interval of counts, and the session it belonged to
+  does not survive the restart either: the session store is in memory.
+- The retain window is the one judgement call. It bounds memory in a process that
+  runs for weeks, at the cost of restarting the count for a session that is
+  silent for an hour and then active again. One hour is the default.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A session's byte totals are kept in memory and written once per flush interval
+from a worker, and what is written is the running total rather than the size of
+the last request. A quiet session costs no write, a failed write is retried with
+the same total, and shutdown writes what is pending.
+
+The column keeps its documented meaning, so =update_bytes= keeps =set= semantics
+and =ores.iam= is untouched: the fix is in what the gateway sends.
+

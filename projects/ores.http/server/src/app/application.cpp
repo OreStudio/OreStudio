@@ -162,7 +162,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     ores::http::routes::refdata::refdata_routes::register_routes(router, registry, service_nats);
 
-    routes::storage_routes storage(cfg.storage_dir, auth_service);
+    routes::storage_routes storage(cfg.storage_dir, auth_service, cfg.server.max_body_size);
     storage.register_routes(router, registry);
 
     BOOST_LOG_SEV(lg(), info) << "API routes registered.";

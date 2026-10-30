@@ -138,9 +138,11 @@ bool capability_allows(const ores::security::jwt::jwt_claims& claims,
 }
 
 storage_routes::storage_routes(std::string storage_dir,
-                               std::shared_ptr<iam::service::authorization_service> auth_service)
+                               std::shared_ptr<iam::service::authorization_service> auth_service,
+                               std::uint64_t max_upload_bytes)
     : store_(std::move(storage_dir))
-    , auth_service_(std::move(auth_service)) {
+    , auth_service_(std::move(auth_service))
+    , max_upload_bytes_(max_upload_bytes) {
     BOOST_LOG_SEV(lg(), debug) << "Storage routes dir: " << store_.root().string();
 }
 
@@ -167,6 +169,14 @@ void storage_routes::register_routes(
                           .description("Upload an object into the named bucket under the given key")
                           .tags({"storage"})
                           .auth_required()
+                          /*
+                           * The one route whose body is an engine package, a job's
+                           * input or a run's output. Every other route keeps the
+                           * server's small default, so a body bomb costs a
+                           * refusal. Streaming this body rather than buffering it
+                           * is increment A3.
+                           */
+                          .max_body(max_upload_bytes_)
                           .handler([this](const http_request& req) { return handle_put(req); })
                           .build());
 

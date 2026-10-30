@@ -23,6 +23,7 @@
 #include "ores.http.api/export.hpp"
 #include "ores.http.api/net/http_server_options.hpp"
 #include "ores.http.api/net/router.hpp"
+#include "ores.http.api/net/worker_pool.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <boost/asio/awaitable.hpp>
@@ -30,6 +31,7 @@
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <chrono>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <string>
@@ -60,6 +62,7 @@ public:
     explicit http_session(boost::asio::ip::tcp::socket socket,
                           std::shared_ptr<router> router,
                           std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier,
+                          std::shared_ptr<worker_pool> workers,
                           const http_server_options& options,
                           session_bytes_callback bytes_callback = nullptr);
 
@@ -80,6 +83,17 @@ private:
     boost::asio::awaitable<void>
     handle_request(boost::beast::http::request<boost::beast::http::string_body> req);
 
+    /**
+     * @brief The most this request's body may be, given the route it addresses.
+     *
+     * The headers are read before the body so the limit can be decided before
+     * any of the body is held: a route that states none gets the server's
+     * default, an upload route states its own, and the server's ceiling caps
+     * both.
+     */
+    [[nodiscard]] std::uint64_t
+    body_limit_for(const boost::beast::http::request<boost::beast::http::string_body>& req);
+
     domain::http_request
     convert_request(const boost::beast::http::request<boost::beast::http::string_body>& req);
 
@@ -98,6 +112,11 @@ private:
     // request when this is absent, rather than falling back to a second way of
     // being believed.
     std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier_;
+
+    // Runs the handler, which blocks on a downstream request. May be null, in
+    // which case the handler runs on this connection's thread as before.
+    std::shared_ptr<worker_pool> workers_;
+
     http_server_options options_;
     std::string remote_address_;
     session_bytes_callback bytes_callback_;

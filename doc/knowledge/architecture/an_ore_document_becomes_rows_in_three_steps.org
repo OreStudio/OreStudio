@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 948DAC44-404D-4B70-A8FC-3E9D4C05F72D
+:END:
+#+title: An ORE document becomes rows in three steps
+#+description: The codec, the mapping and the entity mapper: what each converts, why the rendering of a value is converted at the last step, and the interaction between them.
+#+type: knowledge
+#+level: cross
+#+filetags: :ore:xml:import:mapping:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+* Summary
+
+Three functions stand between a file and a table, and each has one job.
+
+1. *The codec*, =projection::read=, binds the XML into a typed record. It moves
+   no field: what the document said is what the record holds.
+2. *The mapping*, =projection::map=, builds the rows. A value that names a thing
+   (a convention, a currency, a template code) is still the rendering the
+   document used.
+3. *The entity mapper*, =<entity>_mapper::map(domain) -> entity=, is the last
+   code before the SQL. It is where a rendering becomes the one form the table
+   keeps: =F= and =Following= are both written as =Following=.
+
+Then the guard on the table asks the value set whether the stored value is one
+it states, and refuses it with a sentence that names the set.
+
+#+begin_src plantuml :file an_ore_document_becomes_rows_in_three_steps.png
+@startuml
+actor "Caller" as caller
+participant "Projection\n(read)" as codec
+participant "Projection\n(map)" as map
+participant "Entity mapper" as mapper
+database "Table" as db
+participant "Guard" as guard
+
+caller -> codec : ore.xml
+codec -> codec : bind elements to the record
+codec --> map : record, renderings as written
+map -> map : build rows (scopes, names, values)
+map --> mapper : domain rows
+mapper -> mapper : rendering -> stored code
+mapper -> db : insert
+db -> guard : before insert
+guard -> guard : value set states this value?
+guard --> db : accept, or raise naming the set
+@enduml
+#+end_src
+
+The split is what keeps the codec honest: a test reads 89 corpus documents,
+writes each one back and compares, and it passes because no codec converts
+anything.

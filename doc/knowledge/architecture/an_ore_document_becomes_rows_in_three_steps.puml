@@ -1,0 +1,19 @@
+@startuml
+actor "Caller" as caller
+participant "Projection\n(read)" as codec
+participant "Projection\n(map)" as map
+participant "Entity mapper" as mapper
+database "Table" as db
+participant "Guard" as guard
+
+caller -> codec : ore.xml
+codec -> codec : bind elements to the record
+codec --> map : record, renderings as written
+map -> map : build rows (scopes, names, values)
+map --> mapper : domain rows
+mapper -> mapper : rendering -> stored code
+mapper -> db : insert
+db -> guard : before insert
+guard -> guard : value set states this value?
+guard --> db : accept, or raise naming the set
+@enduml

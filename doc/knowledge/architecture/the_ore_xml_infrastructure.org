@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: 7DFE57DE-70C9-4EB6-AF94-DCEC65ADB494
+:END:
+#+title: The ORE XML infrastructure
+#+description: The index to how an ORE XML file becomes database rows and comes back: the projections that read each document family, the mapping tables that name a value's rule, and the guards that refuse a value no set states.
+#+type: knowledge
+#+level: cross
+#+filetags: :ore:xml:architecture:index:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+* Summary
+
+This is the index to the notes that describe how an ORE XML file reaches the
+database and how it comes back. Each note states one idea and links to the
+others; the diagrams are PlantUML beside the note.
+
+The three layers:
+
+- *Presentation*: an ORE document family is read by a *projection*, which binds
+  the XML into a typed model and maps it to rows.
+- *Identity and rule*: the mapping tables state which ORE element a row is, and
+  the value sets state what values that element accepts.
+- *Enforcement*: one database function per parameter family refuses a value no
+  set states, and the write path calls it.
+
+The notes:
+
+- [[id:][A projection reads one ORE document family]]
+- [[id:][An ORE document becomes rows in three steps]]
+- [[id:][Rows become an ORE document on the way out]]
+- [[id:][A value set states a parameter's rule]]
+- [[id:][The tables that map ORE XML]]

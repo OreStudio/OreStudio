@@ -119,7 +119,11 @@ both worth stating because they are not about carriers:
   is made of, and it carries a row's recursion to its end. It does not carry a
   *composite message*: =put_counterparty_composite_request= holds
   =csa_eligible_currency=, which no column of the counterparty row names, so the
-  message's own field types are the second source the include set needs. A junction holding a =csa= recurses into =wire_fields(csa)=,
+  message's own field types are the second source the include set needs, and
+  they are wired in now. What the sweep still needs is the *path* of a junction
+  named from another row: the include came out as =refdata.api/...= rather than
+  =ores.refdata.api/...=, so the last step is the junction's component include,
+  not another source of types. A junction holding a =csa= recurses into =wire_fields(csa)=,
   which is declared in another header the unit never includes, so the compile
   fails as though the type had no shape. The include has to be derived from the
   member types, which is a template change and not an opt-in.

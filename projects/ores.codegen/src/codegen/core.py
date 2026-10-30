@@ -1695,13 +1695,59 @@ def _codec_includes(domain_entity, model_path):
         cpp_type = str(col.get("cpp_type", ""))
         for namespace, name in re.findall(r"((?:\w+::)+)domain::(\w+)", cpp_type):
             parts = [p for p in namespace.split("::") if p]
-            if len(parts) == 2:
+            if len(parts) == 2 and parts[1] != "utility":
                 add(f"{parts[0]}.{parts[1]}.api/domain/{name}.hpp")
         for name in re.findall(r"(?<![\w:])([a-z][a-z0-9_]*)(?![\w:])", cpp_type):
             if name in groups:
                 add(f"{component_include}/domain/{name}.hpp")
             elif name in names:
                 add_codec(f"{component_include}/domain/{name}.hpp")
+
+    return out
+
+
+def _message_codec_includes(domain_entity, model_path):
+    """The codec headers the types a message holds are declared in.
+
+    A row's members are the ones its columns name, and a message's are not: a
+    composite request carries rows of entities the entity it belongs to never
+    mentions, so the message's own field types are a second source.
+    """
+    import re
+
+    names = set()
+    groups = set()
+    if model_path:
+        from .org_loader import _entity_singulars_in
+        names |= set(_entity_singulars_in(str(Path(model_path).resolve().parent)))
+        for m in Path(model_path).resolve().parent.glob("*_junction.org"):
+            names |= set(re.findall(r"^#\+name_singular:\s*(\S+)\s*$",
+                                    m.read_text(encoding="utf-8"), re.M))
+        for m in Path(model_path).resolve().parent.glob("*_field_group.org"):
+            groups |= set(re.findall(r"^#\+(?:entity_singular|name_singular):\s*(\S+)\s*$",
+                                     m.read_text(encoding="utf-8"), re.M))
+
+    component_include = domain_entity.get("component_include") or (
+        f"{domain_entity.get('component')}.{domain_entity.get('subcomponent')}")
+    out = []
+
+    def add(header):
+        if header not in out:
+            out.append(header)
+
+    types = [str(f.get("cpp_type", ""))
+             for message in domain_entity.get("messages") or []
+             for f in message.get("fields") or []]
+    for cpp_type in types:
+        for namespace, name in re.findall(r"((?:\w+::)+)domain::(\w+)", cpp_type):
+            parts = [p for p in namespace.split("::") if p]
+            if len(parts) == 2 and parts[1] != "utility":
+                add(f"{parts[0]}.{parts[1]}.api/domain/{name}.hpp")
+        for name in re.findall(r"(?<![\w:])([a-z][a-z0-9_]*)(?![\w:])", cpp_type):
+            if name in groups:
+                add(f"{component_include}/domain/{name}.hpp")
+            elif name in names:
+                add(f"{component_include}/domain/{name}_codec.hpp")
     return out
 
 
@@ -6255,6 +6301,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # whether the protocol header carries the field list and the codec
         # specialisations with it.
         domain_entity['wire_codec_includes'] = _codec_includes(domain_entity, model_path)
+        domain_entity['message_codec_includes'] = _message_codec_includes(
+            domain_entity, model_path)
         domain_entity['has_generated_wire_codec'] = _facet_enabled(
             model_path, "ores.cpp.wire-codec",
             ("ores.cpp.wire-codec.codec_header", "ores.cpp.wire-codec.codec_impl",
@@ -6583,6 +6631,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # wire shape, and the name each message states a second time so the
         # field loop can reach it.
         junction['wire_codec_includes'] = _codec_includes(junction, model_path)
+        junction['message_codec_includes'] = _message_codec_includes(junction, model_path)
         junction['has_generated_wire_codec'] = _facet_enabled(
             model_path, "ores.cpp.wire-codec",
             ("ores.cpp.wire-codec.codec_header", "ores.cpp.wire-codec.codec_impl",

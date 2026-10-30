@@ -157,10 +157,29 @@ alternatives -- a cap quote is struck on caps, a floor quote on floors, and a
 surface on both -- so they are one =strike_axis= field group carrying the mode and
 the lists, not three columns of a union.
 
-Whether =Type= is a discriminator is not settled here: the schema makes it
-mandatory and the ORE conventions behind each inflation type differ, so the
-reading of =Type='s conventions is what decides between =keep= and a split into
-parts. That reading is the next step, not a guess.
+=Type= has now been read, and it is not a discriminator. =inflationType= in
+=ore_types.xsd= is two values, =ZC= and =YY=, and both types state every other
+element the same way: the same lists, the same optionality, the same strike
+lists. So =Type= selects nothing about the columns; it names which surface the
+entry is, and it stays a column.
+
+What is a union is the strike axis. =CapStrikes=, =FloorStrikes= and =Strikes=
+are three alternatives, and which one a document writes follows its =QuoteType=
+-- a cap quote is struck on caps, a floor quote on floors, and a surface on
+both. Three nullable lists in one row is the shape this story removes.
+
+The field group the plan named is the wrong instrument for it: a field group
+embeds its columns in the host row, so the three lists stay three nullable
+columns of one row. The shape is one row per list the entry states instead:
+
+- =inflation_cap_floor_volatility_strikes= is keyed by =(entry, axis)=, where
+  =axis= is =Cap=, =Floor= or =Both=, and carries one =strikes= text;
+- an entry with caps and floors holds two rows, a surface holds one, and an
+  entry that states no list holds none;
+- an illegal state cannot be stored: a row names the axis it belongs to and the
+  list that axis uses, so nothing can state a cap list under a floor axis.
+
+That supersedes the =strike_axis= field group named earlier in this section.
 
 * Plan
 

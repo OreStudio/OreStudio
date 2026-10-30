@@ -8,7 +8,7 @@
 #+filetags: :normalise-every-ore-parameter-representation:sprint_29:v0:
 #+owner: marco
 #+branch: feature/implement-normalise-every-ore-parameter-representation
-#+pr:
+#+pr: 4123
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -106,7 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4123][#4123]] | [seeder] Take the census of the renderings ORE accepts |
 
 * Review
 

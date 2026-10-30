@@ -20,28 +20,60 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Two defects in one place. The gateway writes a session's byte counters to
+PostgreSQL after every authenticated request, synchronously, on the connection's
+own thread: one database round trip per request, on the thread that serves every
+other connection. And the number it writes is wrong: the column is documented as
+the total a session has sent and received, while the gateway passes the size of
+the request it just answered, so the column holds the last request's size and not
+a total.
+
+After this task the totals live in memory and are written once per interval from
+a worker thread, and the number written is the running total.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:AB95B09C-1AF5-4171-8824-EB9ED45B197F][Stop the gateway blocking its own event loop]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented and green; PR outstanding. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Open the PR with the worker pool task. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
 
--
+- No request path touches the database for a counter. The write happens on the
+  pool, proven by a test that records the thread the sink ran on.
+- What is written is the running total, not the last request's size. Proven by a
+  test that adds three sizes and reads one total.
+- An idle session costs no write: a flush with nothing new does not call the sink.
+- A failed write is retried on the next flush with the same total, so a database
+  hiccup costs a delay and not a gap.
+- Shutdown writes what is still in memory.
+- The existing suites stay green.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. =session_bytes_accumulator= in =ores.http.api=: a map from session id to its
+   running totals, the start time it was first seen, the totals last written, and
+   when it was last active. =add()= books numbers and returns; it never touches
+   the database.
+2. A timer per accumulator, armed for the flush interval. On fire it hands the
+   write to the worker pool, so the I/O thread stays free, and arms the next
+   flush only when that write finishes, so two flushes never overlap.
+3. The write skips an entry whose total has not moved since it was last written,
+   and records the written total only after the sink returns, so a failure leaves
+   the entry owing and the next flush retries.
+4. An entry quiet for longer than the retain window is dropped, which bounds what
+   a long-lived process holds. A session that comes back after that window starts
+   its total again from that point.
+5. =http_server= owns the accumulator, hands sessions a callback that only
+   accumulates, and flushes on =stop()=. The database write stays where the
+   application put it: =set_session_bytes_callback=.
+6. =--bytes-flush-interval= and two option fields: the interval and the retain
+   window.
 
 * Measurements
 
@@ -55,9 +87,19 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| =ores.http.api= test cases | 79 cases, 239 assertions, all passing | =./ores.http.api.tests= | branch head |
+| Accumulator cases | 5 cases, 18 assertions | =./ores.http.api.tests "[session_bytes]"= | branch head |
 
 * Notes
+
+- The column stays what the model says it is: the total during the session. The
+  gateway now sends the total, so =update_bytes= keeps its =set= semantics and
+  =ores.iam= is untouched. Nothing else calls =update_bytes=.
+- A restart loses at most one interval of counts, and the session it belonged to
+  does not survive the restart either: the session store is in memory.
+- The retain window is the one judgement call. It bounds memory in a process that
+  runs for weeks, at the cost of restarting the count for a session that is
+  silent for an hour and then active again. One hour is the default.
 
 * Test Scenarios
 

@@ -92,6 +92,22 @@ struct http_server_options final {
     std::size_t max_inflight_requests = 1024;
 
     /**
+     * @brief How often a session's byte totals are written.
+     *
+     * The totals are kept in memory and written once per interval, from a
+     * worker, so a request never waits on the database for a counter.
+     */
+    std::chrono::seconds bytes_flush_interval{5};
+
+    /**
+     * @brief How long a quiet session keeps its totals in memory.
+     *
+     * Bounds what a long-lived process holds. A session that comes back after
+     * this window starts its total again from that point.
+     */
+    std::chrono::seconds bytes_retain{3600};
+
+    /**
      * @brief Whether to enable SSL/TLS.
      */
     bool enable_ssl = false;

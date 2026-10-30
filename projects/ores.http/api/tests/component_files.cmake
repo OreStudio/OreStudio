@@ -28,5 +28,6 @@ set(files
     "main.cpp"
     "route_tests.cpp"
     "router_tests.cpp"
+    "session_bytes_accumulator_tests.cpp"
     "worker_pool_tests.cpp"
 )

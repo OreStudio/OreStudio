@@ -35,7 +35,25 @@ http_server::http_server(asio::io_context& io_ctx, const http_server_options& op
     , router_(std::make_shared<router>())
     , registry_(std::make_shared<openapi::endpoint_registry>())
     , workers_(std::make_shared<worker_pool>(options.worker_threads,
-                                            options.max_inflight_requests)) {
+                                            options.max_inflight_requests))
+    , bytes_accumulator_(std::make_shared<session_bytes_accumulator>(
+          io_ctx_,
+          [this](const std::string& session_id,
+                 std::chrono::system_clock::time_point start_time,
+                 std::size_t bytes_sent,
+                 std::size_t bytes_received) {
+              if (bytes_callback_)
+                  bytes_callback_(session_id, start_time, bytes_sent, bytes_received);
+          },
+          *workers_,
+          options.bytes_flush_interval,
+          options.bytes_retain))
+    , accumulate_([accumulator = bytes_accumulator_](const std::string& session_id,
+                                                     std::chrono::system_clock::time_point start_time,
+                                                     std::size_t bytes_sent,
+                                                     std::size_t bytes_received) {
+        accumulator->add(session_id, start_time, bytes_sent, bytes_received);
+    }) {
 
     BOOST_LOG_SEV(lg(), info) << "HTTP server initializing with options: " << options_;
 
@@ -103,6 +121,7 @@ asio::awaitable<void> http_server::run() {
     acceptor_->set_option(asio::socket_base::reuse_address(true));
 
     running_.store(true);
+    bytes_accumulator_->start();
     BOOST_LOG_SEV(lg(), info) << "Service ready.";
     BOOST_LOG_SEV(lg(), info) << "Waiting for requests...";
     BOOST_LOG_SEV(lg(), info) << "Accepting connections on port " << options_.port << ".";
@@ -136,7 +155,7 @@ asio::awaitable<void> http_server::accept_connections() {
 
             // Create and run session
             auto session = std::make_shared<http_session>(
-                std::move(socket), router_, verifier_, workers_, options_, bytes_callback_);
+                std::move(socket), router_, verifier_, workers_, options_, accumulate_);
 
             asio::co_spawn(
                 io_ctx_,
@@ -181,6 +200,11 @@ void http_server::stop() {
             BOOST_LOG_SEV(lg(), warn) << "Error closing acceptor: " << ec.message();
         }
     }
+
+    // Write what is still in memory before the process goes. The totals are
+    // the only thing here that is not reproducible.
+    if (bytes_accumulator_)
+        bytes_accumulator_->stop();
 
     BOOST_LOG_SEV(lg(), info) << "HTTP server stop initiated, " << "waiting for "
                               << active_connections_.load() << " active connections";

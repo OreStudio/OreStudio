@@ -8,7 +8,7 @@
 #+filetags: :trading:web:ux:analysis:trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/merge-the-trades-and-structures-screens
-#+pr:
+#+pr: 4081
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -288,7 +288,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4081][#4081]] | [web,trading,shell] Read the blotter and place its rows where a person opens them |
 
 * Review
 

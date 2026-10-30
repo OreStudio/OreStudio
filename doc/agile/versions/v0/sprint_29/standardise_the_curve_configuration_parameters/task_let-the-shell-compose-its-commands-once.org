@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/guard-the-shell-command-units
-#+pr:
+#+pr: 4108
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4108][#4108]] | [shell] Check that each command unit is composed once |
 
 * Review
 

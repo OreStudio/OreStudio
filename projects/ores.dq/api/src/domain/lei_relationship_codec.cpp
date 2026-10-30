@@ -25,22 +25,28 @@
 #include "ores.dq.api/domain/lei_relationship_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-std::string lei_relationship_codec::to_json(const lei_relationship& v) {
-    return utility::codec::object::write_json(v);
+namespace ores::utility::codec {
+
+std::string wire_traits<ores::dq::domain::lei_relationship>::write_json(
+    const ores::dq::domain::lei_relationship& v) {
+    return object::write_json(v);
 }
 
-lei_relationship lei_relationship_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<lei_relationship>(text);
+ores::dq::domain::lei_relationship
+wire_traits<ores::dq::domain::lei_relationship>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::lei_relationship>(text);
 }
 
-std::string lei_relationship_codec::to_msgpack(const lei_relationship& v) {
-    return utility::codec::object::write_msgpack(v);
+std::string wire_traits<ores::dq::domain::lei_relationship>::write_msgpack(
+    const ores::dq::domain::lei_relationship& v) {
+    return object::write_msgpack(v);
 }
 
-lei_relationship lei_relationship_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<lei_relationship>(data);
+ores::dq::domain::lei_relationship
+wire_traits<ores::dq::domain::lei_relationship>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::lei_relationship>(data);
 }
 
 }

@@ -25,22 +25,28 @@
 #include "ores.dq.api/domain/treatment_dimension_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-std::string treatment_dimension_codec::to_json(const treatment_dimension& v) {
-    return utility::codec::object::write_json(v);
+namespace ores::utility::codec {
+
+std::string wire_traits<ores::dq::domain::treatment_dimension>::write_json(
+    const ores::dq::domain::treatment_dimension& v) {
+    return object::write_json(v);
 }
 
-treatment_dimension treatment_dimension_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<treatment_dimension>(text);
+ores::dq::domain::treatment_dimension
+wire_traits<ores::dq::domain::treatment_dimension>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::treatment_dimension>(text);
 }
 
-std::string treatment_dimension_codec::to_msgpack(const treatment_dimension& v) {
-    return utility::codec::object::write_msgpack(v);
+std::string wire_traits<ores::dq::domain::treatment_dimension>::write_msgpack(
+    const ores::dq::domain::treatment_dimension& v) {
+    return object::write_msgpack(v);
 }
 
-treatment_dimension treatment_dimension_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<treatment_dimension>(data);
+ores::dq::domain::treatment_dimension
+wire_traits<ores::dq::domain::treatment_dimension>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::treatment_dimension>(data);
 }
 
 }

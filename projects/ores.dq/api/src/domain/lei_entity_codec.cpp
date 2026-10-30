@@ -25,22 +25,28 @@
 #include "ores.dq.api/domain/lei_entity_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-std::string lei_entity_codec::to_json(const lei_entity& v) {
-    return utility::codec::object::write_json(v);
+namespace ores::utility::codec {
+
+std::string
+wire_traits<ores::dq::domain::lei_entity>::write_json(const ores::dq::domain::lei_entity& v) {
+    return object::write_json(v);
 }
 
-lei_entity lei_entity_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<lei_entity>(text);
+ores::dq::domain::lei_entity
+wire_traits<ores::dq::domain::lei_entity>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::lei_entity>(text);
 }
 
-std::string lei_entity_codec::to_msgpack(const lei_entity& v) {
-    return utility::codec::object::write_msgpack(v);
+std::string
+wire_traits<ores::dq::domain::lei_entity>::write_msgpack(const ores::dq::domain::lei_entity& v) {
+    return object::write_msgpack(v);
 }
 
-lei_entity lei_entity_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<lei_entity>(data);
+ores::dq::domain::lei_entity
+wire_traits<ores::dq::domain::lei_entity>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::lei_entity>(data);
 }
 
 }

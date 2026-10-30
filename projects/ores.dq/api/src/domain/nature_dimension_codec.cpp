@@ -25,22 +25,28 @@
 #include "ores.dq.api/domain/nature_dimension_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-std::string nature_dimension_codec::to_json(const nature_dimension& v) {
-    return utility::codec::object::write_json(v);
+namespace ores::utility::codec {
+
+std::string wire_traits<ores::dq::domain::nature_dimension>::write_json(
+    const ores::dq::domain::nature_dimension& v) {
+    return object::write_json(v);
 }
 
-nature_dimension nature_dimension_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<nature_dimension>(text);
+ores::dq::domain::nature_dimension
+wire_traits<ores::dq::domain::nature_dimension>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::nature_dimension>(text);
 }
 
-std::string nature_dimension_codec::to_msgpack(const nature_dimension& v) {
-    return utility::codec::object::write_msgpack(v);
+std::string wire_traits<ores::dq::domain::nature_dimension>::write_msgpack(
+    const ores::dq::domain::nature_dimension& v) {
+    return object::write_msgpack(v);
 }
 
-nature_dimension nature_dimension_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<nature_dimension>(data);
+ores::dq::domain::nature_dimension
+wire_traits<ores::dq::domain::nature_dimension>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::nature_dimension>(data);
 }
 
 }

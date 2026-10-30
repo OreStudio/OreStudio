@@ -32,38 +32,6 @@
 
 namespace ores::dq::domain {
 
-/**
- * @brief The wire form of dataset_dependency, in each format the wire states.
- *
- * This type is hand-written, so its codec is too, and it states the same four
- * functions the generated ones do -- a member list held in the helper, and one
- * definition per format over it. A type the generator does not own has to look
- * indistinguishable from one it does, or every caller would need to know which
- * is which.
- */
-struct ORES_DQ_API_EXPORT dataset_dependency_codec final {
-    /**
-     * @brief Writes @p v as JSON: an object whose members are the members of
-     * the type.
-     */
-    static std::string to_json(const dataset_dependency& v);
-
-    /**
-     * @brief Reads a dataset_dependency back out of its JSON form.
-     */
-    static dataset_dependency from_json(std::string_view text);
-
-    /**
-     * @brief Writes @p v as MessagePack: a map whose keys are the members of
-     * the type.
-     */
-    static std::string to_msgpack(const dataset_dependency& v);
-
-    /**
-     * @brief Reads a dataset_dependency back out of its MessagePack form.
-     */
-    static dataset_dependency from_msgpack(std::span<const std::byte> data);
-};
 
 /**
  * @brief The members of dataset_dependency, named as the wire names them and in
@@ -92,27 +60,19 @@ namespace ores::utility::codec {
  * type.
  */
 template <>
-struct wire_traits<ores::dq::domain::dataset_dependency> {
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::domain::dataset_dependency> {
     /**
      * @brief States that this type's codec is its own, not the reflector's.
      */
     static constexpr bool is_generated = true;
 
-    static std::string write_json(const ores::dq::domain::dataset_dependency& v) {
-        return ores::dq::domain::dataset_dependency_codec::to_json(v);
-    }
+    static std::string write_json(const ores::dq::domain::dataset_dependency& v);
 
-    static ores::dq::domain::dataset_dependency read_json(std::string_view text) {
-        return ores::dq::domain::dataset_dependency_codec::from_json(text);
-    }
+    static ores::dq::domain::dataset_dependency read_json(std::string_view text);
 
-    static std::string write_msgpack(const ores::dq::domain::dataset_dependency& v) {
-        return ores::dq::domain::dataset_dependency_codec::to_msgpack(v);
-    }
+    static std::string write_msgpack(const ores::dq::domain::dataset_dependency& v);
 
-    static ores::dq::domain::dataset_dependency read_msgpack(std::span<const std::byte> data) {
-        return ores::dq::domain::dataset_dependency_codec::from_msgpack(data);
-    }
+    static ores::dq::domain::dataset_dependency read_msgpack(std::span<const std::byte> data);
 };
 
 }

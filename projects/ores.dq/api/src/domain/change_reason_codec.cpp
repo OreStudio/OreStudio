@@ -25,22 +25,28 @@
 #include "ores.dq.api/domain/change_reason_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-std::string change_reason_codec::to_json(const change_reason& v) {
-    return utility::codec::object::write_json(v);
+namespace ores::utility::codec {
+
+std::string
+wire_traits<ores::dq::domain::change_reason>::write_json(const ores::dq::domain::change_reason& v) {
+    return object::write_json(v);
 }
 
-change_reason change_reason_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<change_reason>(text);
+ores::dq::domain::change_reason
+wire_traits<ores::dq::domain::change_reason>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::change_reason>(text);
 }
 
-std::string change_reason_codec::to_msgpack(const change_reason& v) {
-    return utility::codec::object::write_msgpack(v);
+std::string wire_traits<ores::dq::domain::change_reason>::write_msgpack(
+    const ores::dq::domain::change_reason& v) {
+    return object::write_msgpack(v);
 }
 
-change_reason change_reason_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<change_reason>(data);
+ores::dq::domain::change_reason
+wire_traits<ores::dq::domain::change_reason>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::change_reason>(data);
 }
 
 }

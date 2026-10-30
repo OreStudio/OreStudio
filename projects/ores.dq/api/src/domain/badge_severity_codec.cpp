@@ -25,22 +25,28 @@
 #include "ores.dq.api/domain/badge_severity_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-std::string badge_severity_codec::to_json(const badge_severity& v) {
-    return utility::codec::object::write_json(v);
+namespace ores::utility::codec {
+
+std::string wire_traits<ores::dq::domain::badge_severity>::write_json(
+    const ores::dq::domain::badge_severity& v) {
+    return object::write_json(v);
 }
 
-badge_severity badge_severity_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<badge_severity>(text);
+ores::dq::domain::badge_severity
+wire_traits<ores::dq::domain::badge_severity>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::badge_severity>(text);
 }
 
-std::string badge_severity_codec::to_msgpack(const badge_severity& v) {
-    return utility::codec::object::write_msgpack(v);
+std::string wire_traits<ores::dq::domain::badge_severity>::write_msgpack(
+    const ores::dq::domain::badge_severity& v) {
+    return object::write_msgpack(v);
 }
 
-badge_severity badge_severity_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<badge_severity>(data);
+ores::dq::domain::badge_severity
+wire_traits<ores::dq::domain::badge_severity>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::badge_severity>(data);
 }
 
 }

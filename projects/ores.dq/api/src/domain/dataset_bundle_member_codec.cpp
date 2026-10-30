@@ -25,22 +25,29 @@
 #include "ores.dq.api/domain/dataset_bundle_member_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-std::string dataset_bundle_member_codec::to_json(const dataset_bundle_member& v) {
-    return utility::codec::object::write_json(v);
+namespace ores::utility::codec {
+
+std::string wire_traits<ores::dq::domain::dataset_bundle_member>::write_json(
+    const ores::dq::domain::dataset_bundle_member& v) {
+    return object::write_json(v);
 }
 
-dataset_bundle_member dataset_bundle_member_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<dataset_bundle_member>(text);
+ores::dq::domain::dataset_bundle_member
+wire_traits<ores::dq::domain::dataset_bundle_member>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::dataset_bundle_member>(text);
 }
 
-std::string dataset_bundle_member_codec::to_msgpack(const dataset_bundle_member& v) {
-    return utility::codec::object::write_msgpack(v);
+std::string wire_traits<ores::dq::domain::dataset_bundle_member>::write_msgpack(
+    const ores::dq::domain::dataset_bundle_member& v) {
+    return object::write_msgpack(v);
 }
 
-dataset_bundle_member dataset_bundle_member_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<dataset_bundle_member>(data);
+ores::dq::domain::dataset_bundle_member
+wire_traits<ores::dq::domain::dataset_bundle_member>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::dataset_bundle_member>(data);
 }
 
 }

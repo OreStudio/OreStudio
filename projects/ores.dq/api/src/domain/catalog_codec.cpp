@@ -25,22 +25,26 @@
 #include "ores.dq.api/domain/catalog_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-std::string catalog_codec::to_json(const catalog& v) {
-    return utility::codec::object::write_json(v);
+namespace ores::utility::codec {
+
+std::string wire_traits<ores::dq::domain::catalog>::write_json(const ores::dq::domain::catalog& v) {
+    return object::write_json(v);
 }
 
-catalog catalog_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<catalog>(text);
+ores::dq::domain::catalog wire_traits<ores::dq::domain::catalog>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::catalog>(text);
 }
 
-std::string catalog_codec::to_msgpack(const catalog& v) {
-    return utility::codec::object::write_msgpack(v);
+std::string
+wire_traits<ores::dq::domain::catalog>::write_msgpack(const ores::dq::domain::catalog& v) {
+    return object::write_msgpack(v);
 }
 
-catalog catalog_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<catalog>(data);
+ores::dq::domain::catalog
+wire_traits<ores::dq::domain::catalog>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::catalog>(data);
 }
 
 }

@@ -62,26 +62,37 @@ static_assert(sizeof({{entity_singular}}) == 0,
 {{^has_domain_groups}}
 {{^has_identity_group}}
 {{^has_audit_group}}
-std::string {{entity_singular}}_codec::to_json(const {{entity_singular}}& v) {
-    return utility::codec::object::write_json(v);
+{{/has_audit_group}}
+{{/has_identity_group}}
+{{/has_domain_groups}}
 }
 
-{{entity_singular}} {{entity_singular}}_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<{{entity_singular}}>(text);
+{{^has_domain_groups}}
+{{^has_identity_group}}
+{{^has_audit_group}}
+namespace ores::utility::codec {
+
+std::string wire_traits<ores::{{component}}::domain::{{entity_singular}}>::write_json(const ores::{{component}}::domain::{{entity_singular}}& v) {
+    return object::write_json(v);
 }
 
-std::string {{entity_singular}}_codec::to_msgpack(const {{entity_singular}}& v) {
-    return utility::codec::object::write_msgpack(v);
+ores::{{component}}::domain::{{entity_singular}} wire_traits<ores::{{component}}::domain::{{entity_singular}}>::read_json(std::string_view text) {
+    return object::read_json<ores::{{component}}::domain::{{entity_singular}}>(text);
 }
 
-{{entity_singular}} {{entity_singular}}_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<{{entity_singular}}>(data);
+std::string wire_traits<ores::{{component}}::domain::{{entity_singular}}>::write_msgpack(const ores::{{component}}::domain::{{entity_singular}}& v) {
+    return object::write_msgpack(v);
+}
+
+ores::{{component}}::domain::{{entity_singular}} wire_traits<ores::{{component}}::domain::{{entity_singular}}>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::{{component}}::domain::{{entity_singular}}>(data);
+}
+
 }
 
 {{/has_audit_group}}
 {{/has_identity_group}}
 {{/has_domain_groups}}
-}
 
 {{/domain_entity}}
 {{#junction}}
@@ -91,23 +102,28 @@ std::string {{entity_singular}}_codec::to_msgpack(const {{entity_singular}}& v) 
 
 namespace ores::{{component}}::domain {
 
-std::string {{name_singular}}_codec::to_json(const {{name_singular}}& v) {
-    return utility::codec::object::write_json(v);
 }
 
-{{name_singular}} {{name_singular}}_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<{{name_singular}}>(text);
+namespace ores::utility::codec {
+
+std::string wire_traits<ores::{{component}}::domain::{{name_singular}}>::write_json(const ores::{{component}}::domain::{{name_singular}}& v) {
+    return object::write_json(v);
 }
 
-std::string {{name_singular}}_codec::to_msgpack(const {{name_singular}}& v) {
-    return utility::codec::object::write_msgpack(v);
+ores::{{component}}::domain::{{name_singular}} wire_traits<ores::{{component}}::domain::{{name_singular}}>::read_json(std::string_view text) {
+    return object::read_json<ores::{{component}}::domain::{{name_singular}}>(text);
 }
 
-{{name_singular}} {{name_singular}}_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<{{name_singular}}>(data);
+std::string wire_traits<ores::{{component}}::domain::{{name_singular}}>::write_msgpack(const ores::{{component}}::domain::{{name_singular}}& v) {
+    return object::write_msgpack(v);
+}
+
+ores::{{component}}::domain::{{name_singular}} wire_traits<ores::{{component}}::domain::{{name_singular}}>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::{{component}}::domain::{{name_singular}}>(data);
 }
 
 }
+
 
 {{/junction}}
 #+end_src

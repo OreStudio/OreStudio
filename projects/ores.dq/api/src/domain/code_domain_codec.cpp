@@ -25,22 +25,28 @@
 #include "ores.dq.api/domain/code_domain_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-std::string code_domain_codec::to_json(const code_domain& v) {
-    return utility::codec::object::write_json(v);
+namespace ores::utility::codec {
+
+std::string
+wire_traits<ores::dq::domain::code_domain>::write_json(const ores::dq::domain::code_domain& v) {
+    return object::write_json(v);
 }
 
-code_domain code_domain_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<code_domain>(text);
+ores::dq::domain::code_domain
+wire_traits<ores::dq::domain::code_domain>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::code_domain>(text);
 }
 
-std::string code_domain_codec::to_msgpack(const code_domain& v) {
-    return utility::codec::object::write_msgpack(v);
+std::string
+wire_traits<ores::dq::domain::code_domain>::write_msgpack(const ores::dq::domain::code_domain& v) {
+    return object::write_msgpack(v);
 }
 
-code_domain code_domain_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<code_domain>(data);
+ores::dq::domain::code_domain
+wire_traits<ores::dq::domain::code_domain>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::code_domain>(data);
 }
 
 }

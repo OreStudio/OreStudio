@@ -25,22 +25,28 @@
 #include "ores.dq.api/domain/artefact_type_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-std::string artefact_type_codec::to_json(const artefact_type& v) {
-    return utility::codec::object::write_json(v);
+namespace ores::utility::codec {
+
+std::string
+wire_traits<ores::dq::domain::artefact_type>::write_json(const ores::dq::domain::artefact_type& v) {
+    return object::write_json(v);
 }
 
-artefact_type artefact_type_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<artefact_type>(text);
+ores::dq::domain::artefact_type
+wire_traits<ores::dq::domain::artefact_type>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::artefact_type>(text);
 }
 
-std::string artefact_type_codec::to_msgpack(const artefact_type& v) {
-    return utility::codec::object::write_msgpack(v);
+std::string wire_traits<ores::dq::domain::artefact_type>::write_msgpack(
+    const ores::dq::domain::artefact_type& v) {
+    return object::write_msgpack(v);
 }
 
-artefact_type artefact_type_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<artefact_type>(data);
+ores::dq::domain::artefact_type
+wire_traits<ores::dq::domain::artefact_type>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::artefact_type>(data);
 }
 
 }

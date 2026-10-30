@@ -20,6 +20,7 @@
 #ifndef ORES_UTILITY_CODEC_WIRE_TRAITS_HPP
 #define ORES_UTILITY_CODEC_WIRE_TRAITS_HPP
 
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/throw_exception.hpp>
 #include <rfl/json.hpp>
 #include <rfl/msgpack.hpp>
@@ -32,16 +33,13 @@
 namespace ores::utility::codec {
 
 /**
- * @brief How a type reaches the wire, in each format the wire states.
+ * @brief The primary form, which keeps reflect-cpp.
  *
  * The NATS codec is a template over the message type, so it cannot name a
- * generated function: it names this instead, and a generated codec specialises
- * this in the type's own translation unit. The primary template below keeps
+ * generated function: it names this instead, and a generated codec states a
+ * specialisation in the type's own header. The primary template below keeps
  * reflect-cpp, which is what every type uses until its own codec is generated;
  * step 7 of the story deletes it, and with it the last reflect-cpp dependency.
- *
- * A specialisation states the four functions and nothing else, so the seam is
- * one place rather than one per call site.
  */
 template <typename T>
 struct wire_traits {

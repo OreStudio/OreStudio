@@ -28,9 +28,9 @@ Each of the five volatility entries holds one kind of entry, and the block that 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | Cap and floor, swaption and curve volatility are split end to end; the FX and inflation cap and floor entries still carry their block. |
+| Now          | Cap and floor, swaption, curve volatility and FX are split end to end; the inflation cap and floor entry still carries its block. |
 | Waiting on   | Nothing.                               |
-| Next         | Decide the FX smile's shape and read the inflation entry's =Type=, then split both. |
+| Next         | Read the inflation entry's =Type= and split its strike axis. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -237,7 +237,9 @@ task and name that file in the Command column.
 | Curve volatility entry members, before and after the split | 32 and 4 | `python3 build/scripts/inventory_entity_columns.py \| awk -F'\t' '$3=="curve_volatility_config"'` | `b4fc185da2` |
 | Members the kind row carries | 9 | same, for `curve_volatility_kind` | `b4fc185da2` |
 | Members the five kind parts carry | 4, 6, 11, 16 and 7 | same, for `curve_volatility_constant`, `..._curve`, `..._strike_surface`, `..._delta_surface` and `..._proxy_surface` | `b4fc185da2` |
-| Tables the schema states | 654 | `python3 projects/ores.codegen/src/plantuml_er_parse_sql.py --create-dir projects/ores.sql/create --drop-dir projects/ores.sql/drop --output build/output/codegen/plantuml_er_model.json --ignore-file projects/ores.sql/utility/validation_ignore.txt --warn --strict` | `d6f963d868` |
+| FX entry members, before and after the split | 22 and 15 | `python3 build/scripts/inventory_entity_columns.py \| awk -F'\t' '$3=="fx_volatility_config"'` | `3e353c1d4e` |
+| Members the FX smile part carries | 10 | same, for `fx_volatility_smile` | `3e353c1d4e` |
+| Tables the schema states | 655 | `python3 projects/ores.codegen/src/plantuml_er_parse_sql.py --create-dir projects/ores.sql/create --drop-dir projects/ores.sql/drop --output build/output/codegen/plantuml_er_model.json --ignore-file projects/ores.sql/utility/validation_ignore.txt --warn --strict` | `d6f963d868` |
 
 * Notes
 
@@ -266,10 +268,19 @@ via its "Verifies task" field.
 
 * Result
 
-Three of the five entries are split end to end, and the fourth is modelled.
+Four of the five entries are split end to end.
 
 Cap and floor and swaption are done: their proxy blocks are parts, the entries
 lost the columns, and the document, service and projection carry the parts.
+
+=fx_volatility_config= is done too, and it is the one entry where the split
+improves on the schema instead of following it. =fxVolatility= is a single
+=xs:all= with a mandatory =Dimension= and every smile element optional, so the
+schema can only say the smile fields may be absent. It cannot say that an ATM
+surface has no smile and a smile surface has one. That condition is now the
+presence of an =fx_volatility_smile= row: the entry falls from 22 members to 15
+and the part holds seven, of which =Dimension= stays on the entry because it
+also decides how the =deltas= are read.
 
 =curve_volatility_config= is done in one change, because its five kinds share
 four terms and a half-wired kind would have stated each of them twice. The
@@ -316,13 +327,16 @@ The branch was 166 commits behind =origin/main=, and rebasing it first is part
 of this result: the tree it started from was missing main's inflation cap and
 floor write, which the round trip test caught and this work restored.
 
+What the FX split does not yet prove through the database: the round trip of a
+document that *states* a smile. Both DB fixtures are at the money, so the tests
+assert the part's absence and the smile path is walked in memory over the corpus
+by the projection's own round trip, which covers 89 documents including the
+smile surfaces. A database case needs the FX option conventions and the joined
+calendars a smile entry names, which is the next step.
+
 Still to do:
 
-- =fx_volatility_config='s =dimension= with the smile block, where the schema
-  states one =xs:all= and no kind choice, so the split is ours and the smile is
-  a part only when the dimension is two;
 - =inflation_cap_floor_volatility_config='s =quote_type= with one column per
   quote structure, and =Type= read before deciding whether it is a
   discriminator;
-- the proxy and kind parts reused on the entries that still carry a block, and
-  the round trip re-run over every fixture that states a surface.
+- a database case for a smile surface, with its conventions and calendars.

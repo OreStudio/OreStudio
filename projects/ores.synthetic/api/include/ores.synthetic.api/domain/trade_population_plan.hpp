@@ -21,6 +21,11 @@
 #define ORES_SYNTHETIC_API_DOMAIN_TRADE_POPULATION_PLAN_HPP
 
 #include "ores.synthetic.api/export.hpp"
+#include "ores.trading.api/domain/bond_issue.hpp"
+#include "ores.trading.api/domain/bond_issue_leg.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_amount.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_rate.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_schedule.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -579,6 +584,19 @@ struct trade_population_slot final {
      * until the last family moves.
      */
     ores::trading::domain::instrument_batch instruments;
+    /**
+     * @brief The security a bond trade is written against, and its rows.
+     *
+     * A bond states a security before it states a trade, and the composite write
+     * takes the issue with its legs, amounts, rates and schedule. They live on
+     * the plan rather than in the instrument batch, which is generated from the
+     * trade type catalogue and holds one array per trade type's instrument.
+     */
+    std::optional<ores::trading::domain::bond_issue> bond_issue;
+    std::vector<ores::trading::domain::bond_issue_leg> bond_issue_legs;
+    std::vector<ores::trading::domain::bond_issue_leg_amount> bond_issue_leg_amounts;
+    std::vector<ores::trading::domain::bond_issue_leg_rate> bond_issue_leg_rates;
+    std::vector<ores::trading::domain::bond_issue_leg_schedule> bond_issue_leg_schedules;
     /// The structure this trade is a leg of, when the population groups one.
     std::optional<boost::uuids::uuid> structure_id;
     /// The role it takes in that structure, and its place among the legs.

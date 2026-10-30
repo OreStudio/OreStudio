@@ -277,7 +277,7 @@ std::string_view bond_trade_planner::asset_class_code() const {
  */
 void state_bond_security(const domain::bond_terms& terms,
                          const std::string& currency,
-                         ores::trading::domain::instrument_batch& batch) {
+                         domain::trade_population_slot& entry) {
     namespace tdom = ores::trading::domain;
     const auto money = [](double value) { return tdom::decimal::from_double(value).value(); };
 
@@ -298,7 +298,7 @@ void state_bond_security(const domain::bond_terms& terms,
      */
     if (!terms.reference_curve_id.empty())
         issue.reference_curve_id = terms.reference_curve_id;
-    batch.bond_issues.push_back(std::move(issue));
+    entry.bond_issue = std::move(issue);
 
     tdom::bond_issue_leg leg;
     leg.issue_id = terms.issue_id;
@@ -308,7 +308,7 @@ void state_bond_security(const domain::bond_terms& terms,
     leg.currency = currency;
     leg.payment_convention = "F";
     leg.day_counter = "ACT/ACT";
-    batch.bond_issue_legs.push_back(std::move(leg));
+    entry.bond_issue_legs.push_back(std::move(leg));
 
     tdom::bond_issue_leg_amount notional;
     notional.issue_id = terms.issue_id;
@@ -316,7 +316,7 @@ void state_bond_security(const domain::bond_terms& terms,
     notional.amount_role = "notional";
     notional.sequence_number = 1;
     notional.value = money(security_face_value);
-    batch.bond_issue_leg_amounts.push_back(std::move(notional));
+    entry.bond_issue_leg_amounts.push_back(std::move(notional));
 
     /*
      * The coupon: a fixed leg states a rate and no index, and the reader takes
@@ -327,7 +327,7 @@ void state_bond_security(const domain::bond_terms& terms,
     rate.issue_id = terms.issue_id;
     rate.leg_number = 1;
     rate.rate_kind = "fixed";
-    batch.bond_issue_leg_rates.push_back(std::move(rate));
+    entry.bond_issue_leg_rates.push_back(std::move(rate));
 
     tdom::bond_issue_leg_amount coupon;
     coupon.issue_id = terms.issue_id;
@@ -335,7 +335,7 @@ void state_bond_security(const domain::bond_terms& terms,
     coupon.amount_role = "rate";
     coupon.sequence_number = 2;
     coupon.value = money(coupon_rate);
-    batch.bond_issue_leg_amounts.push_back(std::move(coupon));
+    entry.bond_issue_leg_amounts.push_back(std::move(coupon));
 
     /*
      * The schedule is a rule and not a date list, so the terms stay relative to
@@ -355,7 +355,7 @@ void state_bond_security(const domain::bond_terms& terms,
     schedule.convention = "F";
     schedule.term_convention = "F";
     schedule.rule = "Forward";
-    batch.bond_issue_leg_schedules.push_back(std::move(schedule));
+    entry.bond_issue_leg_schedules.push_back(std::move(schedule));
 }
 
 domain::trade_population_plan
@@ -406,7 +406,7 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         row.issue_id = terms.issue_id;
         row.notional = ores::utility::decimal::decimal::from_double(entry.notional).value();
         entry.instruments.bond_instruments.push_back(ores::trading::domain::construct_bond(row));
-        state_bond_security(terms, entry.currency, entry.instruments);
+        state_bond_security(terms, entry.currency, entry);
 
         plan.slots.push_back(std::move(entry));
     }

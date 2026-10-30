@@ -73,8 +73,8 @@ struct bond_view final {
 };
 
 bond_view bond_of(const domain::trade_population_slot& slot) {
-    const auto& issue = slot.instruments.bond_issues.front();
-    const auto& schedule = slot.instruments.bond_issue_leg_schedules.front();
+    const auto& issue = *slot.bond_issue;
+    const auto& schedule = slot.bond_issue_leg_schedules.front();
     bond_view view;
     view.security_id = issue.security_id;
     view.issue_id = issue.issue_id;
@@ -485,21 +485,21 @@ TEST_CASE("a_bond_slot_states_its_instrument_and_its_security", "[trade_populati
 
     for (const auto& slot : plan.slots) {
         /*
-         * A bond states a security before it states a trade, so the batch
-         * carries the issue with the rows the composite write takes.
+         * A bond states a security before it states a trade, so the plan carries
+         * the issue with the rows the composite write takes, beside the batch.
          */
         REQUIRE(slot.instruments.bond_instruments.size() == 1u);
-        REQUIRE(slot.instruments.bond_issues.size() == 1u);
-        const auto& issue = slot.instruments.bond_issues.front();
+        REQUIRE(slot.bond_issue.has_value());
+        const auto& issue = *slot.bond_issue;
         REQUIRE_FALSE(issue.security_id.empty());
         CHECK(issue.issue_id == slot.instruments.bond_instruments.front().instrument.issue_id);
-        REQUIRE(slot.instruments.bond_issue_legs.size() == 1u);
-        REQUIRE(slot.instruments.bond_issue_leg_rates.size() == 1u);
-        REQUIRE(slot.instruments.bond_issue_leg_schedules.size() == 1u);
+        REQUIRE(slot.bond_issue_legs.size() == 1u);
+        REQUIRE(slot.bond_issue_leg_rates.size() == 1u);
+        REQUIRE(slot.bond_issue_leg_schedules.size() == 1u);
         // A notional and a coupon, which is the pair the engine prices.
-        REQUIRE(slot.instruments.bond_issue_leg_amounts.size() == 2u);
-        REQUIRE(slot.instruments.bond_issue_leg_amounts.front().amount_role == "notional");
-        REQUIRE(slot.instruments.bond_issue_leg_amounts.back().amount_role == "rate");
+        REQUIRE(slot.bond_issue_leg_amounts.size() == 2u);
+        REQUIRE(slot.bond_issue_leg_amounts.front().amount_role == "notional");
+        REQUIRE(slot.bond_issue_leg_amounts.back().amount_role == "rate");
     }
 }
 
@@ -521,12 +521,12 @@ TEST_CASE("the_same_scope_states_the_same_population_twice", "[trade_population]
     for (std::size_t i = 0; i < once.slots.size(); ++i) {
         REQUIRE(once.slots[i].trade_id == twice.slots[i].trade_id);
         REQUIRE(once.slots[i].internal_identifier == twice.slots[i].internal_identifier);
-        REQUIRE(once.slots[i].instruments.bond_issues.front().security_id ==
-                twice.slots[i].instruments.bond_issues.front().security_id);
+        REQUIRE(once.slots[i].bond_issue->security_id ==
+                twice.slots[i].bond_issue->security_id);
         REQUIRE(once.slots[i].notional == twice.slots[i].notional);
         REQUIRE(once.slots[i].trade_date == twice.slots[i].trade_date);
-        REQUIRE(once.slots[i].instruments.bond_issue_leg_schedules.front().end_date ==
-                twice.slots[i].instruments.bond_issue_leg_schedules.front().end_date);
+        REQUIRE(once.slots[i].bond_issue_leg_schedules.front().end_date ==
+                twice.slots[i].bond_issue_leg_schedules.front().end_date);
     }
 }
 
@@ -551,8 +551,8 @@ TEST_CASE("every_trade_date_derives_from_the_as_of_anchor", "[trade_population]"
 
     REQUIRE(first.slots.front().trade_date < second.slots.front().trade_date);
 
-    REQUIRE(first.slots.front().instruments.bond_issue_leg_schedules.front().end_date <
-            second.slots.front().instruments.bond_issue_leg_schedules.front().end_date);
+    REQUIRE(first.slots.front().bond_issue_leg_schedules.front().end_date <
+            second.slots.front().bond_issue_leg_schedules.front().end_date);
 }
 
 TEST_CASE("a_tenor_or_notional_band_that_does_not_order_is_refused", "[trade_population]") {
@@ -847,7 +847,7 @@ TEST_CASE("the_notional_of_every_slot_sits_in_the_band", "[trade_population]") {
         REQUIRE(slot.notional >= scope.min_notional);
         REQUIRE(slot.notional <= scope.max_notional);
         // The security's term is the distance its schedule spans.
-        const auto& schedule = slot.instruments.bond_issue_leg_schedules.front();
+        const auto& schedule = slot.bond_issue_leg_schedules.front();
         REQUIRE(schedule.start_date.has_value());
         REQUIRE(schedule.end_date.has_value());
         const auto days = std::chrono::sys_days{*schedule.end_date} -

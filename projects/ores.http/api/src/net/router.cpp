@@ -131,6 +131,11 @@ route_builder& route_builder::roles(std::vector<std::string> r) {
     return *this;
 }
 
+route_builder& route_builder::max_body(std::uint64_t bytes) {
+    max_body_size_ = bytes;
+    return *this;
+}
+
 route_builder& route_builder::summary(std::string s) {
     summary_ = std::move(s);
     return *this;
@@ -183,6 +188,7 @@ domain::route route_builder::build() const {
     r.description = description_;
     r.tags = tags_;
     r.query_params = query_params_;
+    r.max_body_size = max_body_size_;
     r.body_schema = body_schema_;
     r.success_response_schema = success_response_schema_;
     return r;

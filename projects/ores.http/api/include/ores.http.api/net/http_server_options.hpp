@@ -53,6 +53,15 @@ struct http_server_options final {
     std::chrono::seconds request_timeout{30};
 
     /**
+     * @brief The body limit a route gets when it states none.
+     *
+     * A JSON request is small. A route that accepts an upload states its own
+     * limit with max_body(); everything else refuses a larger body with 413
+     * rather than reading it.
+     */
+    std::uint64_t default_max_body_size = 1024 * 1024;
+
+    /**
      * @brief Maximum accepted request body size, in bytes.
      *
      * Beast's default body_limit for a plain (non-parser) http::read is

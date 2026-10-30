@@ -37,7 +37,7 @@ After the compute results are retrieved, the rows the node marshalled become the
 
 - The run's workflow carries a =post_process_results= step after =submit_compute=, so the rows are loaded once the batch exists.
 - For each result of the batch the step downloads the canonical rows the node wrote, and reads them with one reader.
-- A refusal names the result, the header or the row that caused it, and loads nothing: a partial load would read as a complete one.
+- A refusal names the file, the header or the row that caused it, and loads nothing: a partial load would read as a complete one.
 - Every row of every result lands in one insert for the run.
 - The step answers the number of rows it loaded and a message naming the run.
 - The run's log rows are written once, before the rows are loaded, so a run whose rows are refused still states what the engine said.

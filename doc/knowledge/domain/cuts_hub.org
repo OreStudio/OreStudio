@@ -2,7 +2,7 @@
 :ID: B5214F3A-A72E-421E-82BC-79338B2E95CB
 :END:
 #+title: Cuts
-#+description: Structure note for the cuts cluster: the definition of a cut as a body of data fixed at one timepoint, the body a cut must hold including the reference data, the components the body divides into, and the pages that own each.
+#+description: Structure note for the cuts cluster: the definition of a cut as a body of data fixed at one timepoint, the body a cut must hold including the reference data, the two halves the body divides into, and the pages that own each.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:domain:structure_note:cut:valuation:
@@ -10,7 +10,7 @@
 #+updated: 2026-10-30
 
 This structure note gathers the cuts cluster. It states the definition, the body
-a cut must hold, the components the body divides into, and the order in which to
+a cut must hold, the two halves the body divides into, and the order in which to
 read the pages. The classification of kinds is a page of its own. Return to
 [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
@@ -20,7 +20,7 @@ A *cut* fixes a body of data at one timepoint. The purpose of a cut in this
 repository is single: to provide a valuation that is fully reproducible. The
 body therefore holds everything the valuation reads, which includes the deals,
 the market data, the reference data, and the versions of the engine and of the
-code that computed the result. The kinds of cut record the occasion a cut is
+code that computed the result. The kinds of cut name the occasion a cut is
 taken for, and the components record the two halves of the body.
 
 * The definition
@@ -33,13 +33,13 @@ answers a separate question.
 - The *timepoint* fixes the cut. It is the instant held still, with its timezone.
 - The *object* is the body of data the cut fixes. The rest of this note calls it
   the body. It holds the deals, the market data, the reference data, the engine
-  and code versions, and the identity and authorisation.
+  and code versions, and the the taking identity and the authorisation record.
 
 The label answers which cut is meant. The timepoint answers when it holds. The
 object answers what it holds. A statement that omits one of the three leaves the
 cut unidentified, and a claim about a cut carries the three together.
 
-The sentence fixing the definition constrains two things. Something is fixed, and
+The sentence stating the definition constrains two things. Something is fixed, and
 one instant fixes it. Every further property of a cut is a fact about the kind:
 how often the instant recurs, which location owns it, and which process takes it.
 Those facts qualify a cut without entering the definition, and
@@ -48,7 +48,7 @@ follows from that.
 
 * The kinds
 
-A kind records the occasion a cut is taken for. The purpose is single and fixes
+A kind names the occasion a cut is taken for. The purpose is single and fixes
 the body; the kind fixes the instant, the recurrence and the centre, and the use
 the result is put to. The classification, and the argument for it, is on
 [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]].

@@ -119,8 +119,7 @@ prices are tested on.
 *What it is for.* An indicative view of value while the day is still moving,
 delivered before the day's data settles so that a decision can act on it.
 
-*What it fixes.* The complete body the run reads, at an instant before
-authorisation, with the values current at that instant. The deadline shortens the
+*What it fixes.* The complete body the run reads, at an instant before the official authorisation, with the values current at that instant. The body records the taking identity and the authorisation as pending; the official cut later records the authorisation. The deadline shortens the
 interval and not the body, since a run that left out an input could not be
 reproduced from what it kept.
 

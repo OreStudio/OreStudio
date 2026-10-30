@@ -198,7 +198,7 @@ be brought back to it.
 | Field         | Value |
 |---------------+-------|
 | Status        | PENDING |
-| Completed at  | 2026-10-30T14:05:00Z |
+| Completed at  | |
 | Branch        | feature/bind-a-report-to-the-published-curve |
 | Commit        | 70b2ebbd5f |
 | Worktree      |       |

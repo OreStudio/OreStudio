@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The child collections a curve entry holds, their tables and their per-kind leave
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Not yet started.                       |
+| Now          | The generator emits the collection and the leaves each kind reads; the BFF holds no table. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-29                               |
+| Next         | Review and merge.                      |
+| Last touched | 2026-10-30                               |
 
 * Acceptance
 
@@ -42,9 +42,19 @@ The child collections a curve entry holds, their tables and their per-kind leave
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+#+begin_src text
+1. Read the collection from the projection's own readers:
+   =import_context::segment= names the row, the vector, the key back to the entry
+   and the kind column; =import_quotes= names the column a quote joins by; the
+   section's call to =import_segments= names the block.
+2. Read the leaves each kind reads from =import_segments= and
+   =common_settings=, in the order the projection reads them, so the screen
+   offers a kind's leaves and not the row's columns.
+3. Delete the BFF's table, its column blacklist and its column-name guess, and
+   read the generated rules instead.
+4. Fail the generator when a section holds a =Segments= block that its call
+   pattern does not read, and when a kind reads no leaves.
+#+end_src
 
 * Measurements
 
@@ -58,9 +68,40 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Sections wired | 19 | =python3 projects/ores.sql/utility/generate_curve_section_parameters.py= | this branch |
+| Entry parameters | 250 | as above | this branch |
+| Blocks | 31 | as above | this branch |
+| Collections | 1 | as above | this branch |
+| Kinds the collection states | 12 | as above | this branch |
+| Leaves the kinds read | 58 | counted on the generated module's =kinds= | this branch |
+| BFF suite | 1144 pass | =npx vitest run= in packages/bff | this branch |
+| Browser suite | 2333 pass, 3 fail | =npx vitest run= in packages/web | this branch |
+| Hand-written table | removed | =git diff -- projects/ores.web/packages/bff/src/curve-configuration.ts= | this branch |
 
 * Notes
+
+The three browser failures are =src/shell/cards.test.ts=, which reports
+=synthetic: "Simulator" but the screen says "Synthetic"= in all three languages.
+They fail on main without this change, which a stash confirmed; the fix is a
+product decision, so it is recorded rather than taken here.
+
+The leaves a kind reads are not the leaves the row has columns for. A =Simple=
+segment reads =Conventions=, =PillarChoice=, =Priority=, =MinDistance= and
+=ProjectionCurve=; a =FittedBond= one reads no conventions at all. Reading the
+kind's leaves is what stops the screen offering a leaf of another kind, which the
+QA walk recorded as a snag.
+
+* Result
+
+The collection wiring is the projection's. The generator reads the segment row,
+the vector, the join, the kind column, the quote join and the block from the
+projection's readers, and the leaves each kind reads from the projection's own
+dispatch. The BFF holds no table: it reads the generated wiring, and the column
+blacklist and the column-name guess that stood in for the kind's leaves are gone.
+
+A section that holds a =Segments= block the call pattern does not read, and a kind
+the parser finds no leaves for, both fail the generator instead of reaching a
+screen with no rows.
 
 * Test Scenarios
 

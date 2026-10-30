@@ -33,6 +33,7 @@ import { subjects as settingValueSetSubjects } from '@ores/wire-protocol/generat
 import {
     CURVE_SECTIONS,
     curveSectionOf,
+    type CurveCollection,
     type CurveSectionWiring,
 } from './curve-sections.generated.js';
 import { NO_VALUE_SET, readValueSets } from './ore-value-sets.js';
@@ -309,87 +310,21 @@ function orderedSections(
  */
 type KindOf = (segmentType: string) => string;
 
-/** A nested table a curve entry holds rows of, and where its leaves sit. */
-interface CurveCollectionRule {
-    readonly element: string;
-    readonly entity: string;
-    readonly vector: string;
-    /** The column that joins a row back to the entry it belongs to. */
-    readonly parentKey: string;
-    /** The column that names the element a row is written as, or empty for none. */
-    readonly kindColumn: string;
-    /** The path from the entry to the leaves that kind holds, the entry left off. */
-    readonly pathOf: (kind: string) => string;
-    /** The column a quote of one row joins back to, or empty for no quotes. */
-    readonly quoteParent: string;
-}
-
 /**
- * The child collections a curve entry holds, and the document element each leaf
- * of one sits under.
+ * The leaves of one row of a collection, which are the ones its kind reads.
  *
- * A segment's leaves do not sit at a fixed path: the same column is
- * `Segments/Simple/ProjectionCurve` for a simple segment and
- * `Segments/AverageOIS/ProjectionCurve` for an average OIS one, so the path
- * depends on the kind the row states. That is why the generated section wiring
- * covers only an entry's own table, and why the collection states its path here
- * until the generator can derive it from the projection.
+ * The row's table is one flat table for every kind, so the row holds a column for
+ * every leaf of every kind. What a kind reads is the projection's dispatch, and it
+ * reaches here through the generated wiring: a =Simple= segment reads
+ * =Conventions= and =ProjectionCurve=, a =Direct= one reads =Conventions= alone.
+ * The leaves are the kind's, in the order the projection reads them, and not the
+ * row's columns.
  */
-const CURVE_COLLECTIONS: readonly CurveCollectionRule[] = [
-    {
-        element: 'Segments',
-        entity: 'curve_segment',
-        vector: 'segments',
-        parentKey: 'curve_definition_id',
-        kindColumn: 'segment_type',
-        pathOf: (kind: string) => `Segments/${kind}`,
-        quoteParent: 'curve_segment_id',
-    },
-];
-
-/** The columns a nested row carries that are not leaves of the document. */
-const NOT_A_LEAF: ReadonlySet<string> = new Set([
-    'id',
-    'tenant_id',
-    'version',
-    'party_id',
-    'modified_by',
-    'performed_by',
-    'change_reason_code',
-    'change_commentary',
-    'valid_from',
-    'valid_to',
-    // The instant a row was recorded, which the document carries for every
-    // entity and which no ORE element holds.
-    'recorded_at',
-    'curve_definition_id',
-    'curve_segment_id',
-    'curve_configuration_id',
-    'position',
-]);
-
-/**
- * The ORE element a column holds, which is its name in camel case.
- *
- * The column names are the projection's members, and the projection names each
- * element as its own member's words: =projection_curve= is =ProjectionCurve=,
- * =reference_curve_2= is =ReferenceCurve2=. A column whose leaf the contract
- * does not carry keeps its name on screen and is marked as a gap.
- */
-function oreNameOf(column: string): string {
-    return column
-        .split('_')
-        .filter((part) => part !== '')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('');
-}
-
-/** The leaves of one row of a collection, in the order the row states them. */
 function collectionLeaves(
     row: Readonly<Record<string, unknown>>,
     section: string,
     entryElement: string,
-    rule: CurveCollectionRule,
+    rule: CurveCollection,
     kind: string,
     contract: ReadonlyMap<string, Readonly<Record<string, unknown>>>,
     valueSetOf: ValueSetOf,
@@ -397,36 +332,24 @@ function collectionLeaves(
     if (kind === '') {
         return [];
     }
-    const path = rule.pathOf(kind);
-    const found: CurveParameterView[] = [];
-    for (const column of Object.keys(row)) {
-        if (NOT_A_LEAF.has(column) || column === rule.kindColumn) {
-            continue;
-        }
-        const ore = oreNameOf(column);
-        const leaf = leafView(
+    const declared = rule.kinds.find((candidate) => candidate.kind === kind);
+    if (declared === undefined) {
+        return [];
+    }
+    const path = `${rule.element}/${kind}`;
+    return declared.leaves.map((leaf) =>
+        leafView(
             {
                 entity: rule.entity,
-                column,
-                ore,
-                xpath: `/${ROOT_ELEMENT}/${section}/${entryElement}/${path}/${ore}`,
-                value: valueText(row[column]),
+                column: leaf.column,
+                ore: leaf.ore,
+                xpath: `/${ROOT_ELEMENT}/${section}/${entryElement}/${path}/${leaf.ore}`,
+                value: valueText(row[leaf.column]),
             },
             contract,
             valueSetOf,
-        );
-        /*
-         * The row's table is one flat table for every kind, so most of its columns
-         * are another kind's leaves. A column belongs to this row's kind when the
-         * contract documents it for the kind, or when the row holds a value in it:
-         * the first is a leaf of the kind, the second is one somebody set, and
-         * neither may be hidden.
-         */
-        if (leaf.documented || leaf.value !== null) {
-            found.push(leaf);
-        }
-    }
-    return found;
+        ),
+    );
 }
 
 /**
@@ -472,7 +395,7 @@ function collectionsOf(
     kindOf: KindOf,
 ): readonly CurveCollectionView[] {
     const declared = new Set(wiring.blocks.map((block) => block.element));
-    return CURVE_COLLECTIONS.filter(
+    return wiring.collections.filter(
         (rule) => declared.has(rule.element) || vectorOf(document, rule.vector).length > 0,
     ).map((rule) => {
         const rows = vectorOf(document, rule.vector)

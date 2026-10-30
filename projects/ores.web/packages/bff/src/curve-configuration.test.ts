@@ -615,12 +615,15 @@ describe('the curve configuration a report binds', () => {
         expect(segments?.rows).toHaveLength(1);
         const row = segments?.rows[0];
         expect(row?.kind).toBe('Simple');
-        // The row's table is one table for every kind, so a column that belongs to
-        // another kind and holds nothing is not a leaf of this row.
+        // The leaves are the ones the kind reads, in the order the projection
+        // reads them, and not the row's columns: a Simple segment reads its
+        // conventions, the settings every kind shares, and its projection curve.
         expect(row?.leaves.map((leaf) => leaf.ore)).toEqual([
             'Conventions',
-            'ProjectionCurve',
             'PillarChoice',
+            'Priority',
+            'MinDistance',
+            'ProjectionCurve',
         ]);
         const conventions = row?.leaves.find((leaf) => leaf.ore === 'Conventions');
         expect(conventions?.value).toBe('USD-6M');
@@ -632,7 +635,8 @@ describe('the curve configuration a report binds', () => {
         );
         // The value the document leaves out is no value, not an empty string.
         expect(row?.leaves.find((leaf) => leaf.ore === 'ProjectionCurve')?.value).toBe('USD-3M');
-        expect(row?.leaves.some((leaf) => leaf.ore === 'MinDistance')).toBe(false);
+        // A shared setting the row leaves empty is still a leaf of its kind.
+        expect(row?.leaves.find((leaf) => leaf.ore === 'MinDistance')?.value).toBeNull();
 
         // A segment leaf the contract does not hold is still a leaf of the row: the gap shows.
         const pillar = row?.leaves.find((leaf) => leaf.ore === 'PillarChoice');
@@ -686,7 +690,7 @@ describe('the curve configuration a report binds', () => {
         // The entry's own parameters and the ones its segment row holds, which are
         // parameters of the curve too.
         expect(body.documented).toBe(2 + 2);
-        expect(body.total).toBe(12 + 11 + 3);
+        expect(body.total).toBe(12 + 11 + 5);
     });
 
     it('opens a configuration whose id the ORE import minted, which is not an RFC uuid', async () => {

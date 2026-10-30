@@ -1580,7 +1580,7 @@ const fr: SourceCatalogue = {
                 'Ce scénario est abandonné et ne sera pas exécuté. Un nouveau test efface chaque étape et le remet en jeu.',
             save: 'Enregistrer',
             saveHelp:
-                "L'enregistrement écrit le résultat de chaque étape et l'état global dans le document du scénario.",
+                'Chaque étape est enregistrée au fur et à mesure ; Enregistrer conserve ce que vous avez écrit depuis.',
             back: 'Retour aux tests',
             retestTitle: 'Lancer un nouveau test ?',
             retestBody:

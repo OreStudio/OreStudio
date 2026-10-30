@@ -20,7 +20,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useReducer, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useReducer, useRef, useState, type ReactNode } from 'react';
 import { useParams } from 'react-router';
 import type { Scenario } from '@ores/contracts';
 import { qa } from '../api/qa.js';
@@ -40,6 +40,7 @@ import {
 } from './images.js';
 import {
     isDirty,
+    movesOn,
     openRunner,
     outcomeOf,
     reduce,
@@ -136,6 +137,13 @@ function Context({
     );
 }
 
+/**
+ * How long the run waits after the last move before saving, so a tester walking
+ * quickly through the steps sends one save rather than one per step, and no mark
+ * is dropped while the save of the step before it is still in flight.
+ */
+const SAVE_AFTER_MOVE_MS = 800;
+
 /** Holds the working copy of one loaded scenario, and saves it. */
 function Run({ id, scenario }: { readonly id: string; readonly scenario: Scenario }): ReactNode {
     const { t } = useTranslation();
@@ -147,13 +155,20 @@ function Run({ id, scenario }: { readonly id: string; readonly scenario: Scenari
     const uploading = useRef(false);
     const [imageError, setImageError] = useState<string | null>(null);
 
+    // Whether the save in flight was asked for with the button. A save that rides
+    // along with a step reports nothing when it works, so a run does not shout on
+    // every step; a failed save is loud either way.
+    const explicit = useRef(false);
+    const owed = useRef(false);
+
     const save = useMutation({
         mutationFn: () => qa.record(id, saveRequest(runner)),
         onSuccess: (saved) => {
             client.setQueryData(scenarioKey(id), saved.scenario);
             void client.invalidateQueries({ queryKey: QA_SCENARIOS_KEY });
             dispatch({ type: 'saved', scenario: saved.scenario });
-            setOutcome(outcomeOf(saved));
+            setOutcome(explicit.current ? outcomeOf(saved) : null);
+            explicit.current = false;
         },
         onError: (error) => setOutcome({ kind: 'failed', message: error.message }),
     });
@@ -163,8 +178,35 @@ function Run({ id, scenario }: { readonly id: string; readonly scenario: Scenari
     const act = (action: Action): void => {
         if (save.isPending && (action.type === 'mark' || action.type === 'note')) return;
         setOutcome(null);
+        if (movesOn(action)) owed.current = true;
         dispatch(action);
     };
+
+    /*
+     * A run saves as it goes. A tester who marks every step and reaches the end
+     * has done the work, and a run that waits for a Save nobody pressed is a run
+     * no reader sees: the server closes the scenario when no step is pending, so
+     * the last mark saves the whole run.
+     *
+     * The save waits a moment after the last move, so a tester walking quickly
+     * through nine steps sends one save at the end rather than nine, and a mark
+     * is never dropped because the save of the step before it is still in flight.
+     * An image still uploading holds it back further, because the file's link
+     * reaches its step when the upload ends.
+     */
+    useEffect(() => {
+        if (!owed.current || save.isPending || imageBusy) return undefined;
+        const timer = setTimeout(() => {
+            if (save.isPending || imageBusy) return;
+            if (!isDirty(runner, scenario)) {
+                owed.current = false;
+                return;
+            }
+            owed.current = false;
+            save.mutate();
+        }, SAVE_AFTER_MOVE_MS);
+        return () => clearTimeout(timer);
+    });
 
     // Each image is kept on the server, then its link goes into the note of the
     // step it was dropped on, which may not be the step on show when the upload
@@ -223,7 +265,10 @@ function Run({ id, scenario }: { readonly id: string; readonly scenario: Scenari
                 scenario={scenario}
                 runner={runner}
                 dispatch={act}
-                onSave={() => save.mutate()}
+                onSave={() => {
+                    explicit.current = true;
+                    save.mutate();
+                }}
                 saving={save.isPending}
                 outcome={outcome}
                 onImages={(files) => void onImages(files)}

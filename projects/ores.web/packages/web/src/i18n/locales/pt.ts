@@ -1570,7 +1570,7 @@ const pt: SourceCatalogue = {
                 'Este cenário foi abandonado e não será executado. Um reteste limpa cada passo e o traz de volta.',
             save: 'Gravar',
             saveHelp:
-                'Gravar escreve o resultado de cada passo e o estado geral no documento do cenário.',
+                'Cada passo é guardado à medida que avança; Guardar mantém o que escreveu desde então.',
             back: 'Voltar aos testes',
             retestTitle: 'Iniciar um reteste?',
             retestBody:

@@ -1561,7 +1561,7 @@ export const en: SourceCatalogue = {
             abandonedHelp:
                 'This scenario is abandoned and will not be run. A retest clears every step and brings it back.',
             save: 'Save',
-            saveHelp: "Save writes each step's result and the overall state into the scenario doc.",
+            saveHelp: 'Each step is saved as you move on; Save keeps what you have written since.',
             back: 'Back to the tests',
             retestTitle: 'Start a retest?',
             retestBody:

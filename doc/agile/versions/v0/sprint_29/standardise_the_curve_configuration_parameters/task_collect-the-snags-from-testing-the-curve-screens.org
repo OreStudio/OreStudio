@@ -61,6 +61,25 @@ task and name that file in the Command column.
 
 * Notes
 
+- *A run that reaches its end did not save.* A tester walked the scenario to the
+  last step and pressed Save and nothing reached the doc: the server log showed
+  the step screenshots arriving and no `PUT .../run` at all. Whether the click was
+  missed or the button was disabled at that moment, the design was the defect: a
+  run of nine steps is nine steps of work, and it was kept only if somebody
+  pressed one button at the end.
+- *The fix is that a run saves as it goes.* Marking a step, or skipping it, owes a
+  save; the save waits 800 ms after the last move, so a quick walk sends one save
+  at the end rather than nine, and a mark is never dropped while the save of the
+  step before it is in flight. An image still uploading holds it back further,
+  because the file's link reaches its step when the upload ends. The Save button
+  stays, for a note written without moving on, and its help says what it now does.
+- *Proven in a browser with nothing pressed at the end.* The run was walked from a
+  pending scenario with a screenshot attached and no click on Save: the log shows
+  one `PUT .../run` after the last mark, and the doc came away with nine PASS
+  steps, an overall PASSED and the image link in step 1's note.
+- *What the run does not do.* It does not save the note as it is typed, so a note
+  written on the step on show is kept when the tester moves on or presses Save.
+
 * The snags the first browser walk left
 
 The walk that produced the evidence on

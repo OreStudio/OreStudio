@@ -16,8 +16,8 @@ that needs the answer points at it. A set states a kind, and the kind decides
 which of its other columns mean anything: an enumerated set states its values, a
 catalogue set names a relation to read, a range states a floor and a ceiling, a
 regex states a pattern. Nothing else in the tree repeats the rule: the part
-tables carry no CHECK constraint on the columns a set governs, and no screen
-validates.
+tables carry no CHECK constraint on the columns a set governs, and a screen
+decides no rule of its own; it asks the store and draws the answer.
 
 * The five tables
 

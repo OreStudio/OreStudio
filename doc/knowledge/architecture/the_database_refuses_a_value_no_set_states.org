@@ -74,7 +74,8 @@ apply should not be signed. The comment there states the design rule the whole
 cluster rests on: no copy of the rule lives in the service to drift from the
 store's.
 
-That is the pattern a screen follows too. It does not own a rule; it asks.
+The screen standard follows the same shape: a screen reads what the set states
+and draws it, rather than carrying a copy of the rule.
 
 [[file:the_database_refuses_a_value_no_set_states.png]]
 

@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 123A7AA3-82BF-4401-B9DC-EC6E046A8CD3
+:END:
+#+title: Task: Take the body in chunks
+#+description: Give a route a way to say it wants its body in chunks, and give the session a read loop that hands them on through a bounded channel, under the same limit and a stall deadline.
+#+type: task
+#+level: s1
+#+filetags: :carry_a_large_body_without_holding_it:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8550935B-A0F4-4BAD-95F3-D3E03B45E044][Carry a large body without holding it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every route reads its body into one string, so the storage upload holds the whole
+object in memory. A route needs a way to say its body is a stream, and the session
+needs a read loop that hands the chunks on instead of collecting them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8550935B-A0F4-4BAD-95F3-D3E03B45E044][Carry a large body without holding it]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- A route states that it takes its body in chunks, and the session reads it with a
+  parser that holds one chunk at a time.
+- The chunks reach the handler through a bounded channel, so the socket stays on the
+  executor that owns it and the handler stays on its worker.
+- The per-route limit and the ceiling apply unchanged, and a declared or chunked
+  body past them is answered 413.
+- A body that stops arriving is closed on a stall deadline and its worker returns.
+- A buffered route behaves exactly as it does today.
+- A test streams more bytes than the window holds and reads back the same bytes.
+
+* Plan
+
+1. Add a chunk channel: a bounded queue of fixed-size buffers with a producer side
+   the session fills and a consumer side the handler drains, and a stop that either
+   side can raise.
+2. Add =route::streams_body= and a read loop in =http_session= that parses with
+   =buffer_body=, fills the channel, and reuses the limit and refusal path already
+   there.
+3. Give the handler the consumer through =http_request=, so the existing handler
+   signature and the generated route units are untouched.
+4. Hold the channel depth and chunk size in =http_server_options=, and close on the
+   stall deadline with the timer the session already owns.
+5. Test the bytes, the limit, the stall and the window.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

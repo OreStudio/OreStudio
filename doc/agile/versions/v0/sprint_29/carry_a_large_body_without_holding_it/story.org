@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 8550935B-A0F4-4BAD-95F3-D3E03B45E044
+:END:
+#+title: Story: Carry a large body without holding it
+#+description: An accepted body is still read whole into a string and held for the life of the request, so a 256 MiB upload costs 256 MiB resident. Stream the accepted body to where it is going under the same per-route limit, with a stall deadline, and stream the storage routes' upload and download from the file on disk.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The gateway decides how much body it will accept, refuses what is past the limit,
+and then reads everything it accepted into one string. The storage upload route is
+the one route that legitimately takes a large object, so a 256 MiB engine package
+costs 256 MiB of gateway memory for as long as the request runs. Two concurrent
+uploads cost twice that, and the pool of worker threads holds the request open
+while the memory stays.
+
+After this story the accepted body is carried to where it is going instead of held:
+the session reads it in chunks, the route that wants it consumes those chunks, and
+memory is bounded by the chunk window rather than by the object. The storage upload
+writes to a temporary file and renames it when the body ends, and the download
+serves from that file with a fixed buffer.
+
+This is increment A3 of
+[[id:2E504EF1-F812-4D83-BD21-AE97162A1ABC][One HTTP Server: designing ores.http to replace the web BFF]].
+The design states the approach in its *File transfer* section.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Start the first task: the session reads a body in chunks for a route that asks for them. |
+| Last touched  | 2026-10-30                               |
+
+* Acceptance
+
+- A route states that it takes its body in chunks, and the session reads it that
+  way; every other route keeps the buffered path it has today.
+- The per-route limit and the server ceiling apply to a chunked body exactly as
+  they apply to a buffered one, and a body past them is still answered 413.
+- A body that stops arriving is closed on the stall deadline instead of holding a
+  worker and a connection for the life of the process.
+- The storage upload writes a temporary file and renames it on the last chunk; a
+  request that fails leaves no object behind.
+- The storage download serves the file with a buffer that does not grow with the
+  object.
+- A 256 MiB upload moves the gateway's resident memory by less than 1 MiB, measured
+  by a test that reads the process's own RSS across the request.
+- The grid wrapper's transfer tests pass against the streamed routes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:123A7AA3-82BF-4401-B9DC-EC6E046A8CD3][Take the body in chunks]] | BACKLOG | | | Give a route a way to say it wants its body in chunks, and give the session a read loop that hands them on through a bounded channel, under the same limit and a stall deadline. |
+| [[id:4DE53635-7236-40D7-A86F-26508A186245][Move the storage upload onto the stream]] | BACKLOG | | | Write the upload through the chunk channel to a temporary file and rename it when the body ends, and serve the download from the file with a fixed buffer. |
+| [[id:266C40A0-CD75-4974-B54C-468BA5E4AE24][Prove the resident cost of an upload]] | BACKLOG | | | Measure the gateway's own resident memory across a 256 MiB upload, and run the grid wrapper's transfer tests against the streamed routes. |
+
+* Decisions
+
+- The session reads the socket, and the handler consumes from a bounded channel.
+  Reading must happen on the executor that owns the socket, and the handler runs on
+  a worker thread; handing the parser to the handler, or letting the handler read
+  the socket from the pool, breaks that ownership.
+- The chunk window is the bound. A window that fills blocks the reader, so a slow
+  destination costs throughput and not memory.
+- Streaming is opt-in per route, because a JSON route is simpler to serve from one
+  string and nothing gains from a channel there.
+
+* Out of scope
+
+- Streaming a response other than the storage download. Increment B1 owns response
+  streaming for every route.
+- Resumable or ranged transfers.

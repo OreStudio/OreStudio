@@ -27,7 +27,6 @@
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention_json_io.hpp" // IWYU pragma: keep.
-#include "ores.refdata.core/repository/business_day_convention_code.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_entity.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <vector>
@@ -73,7 +72,7 @@ currency_pair_convention_mapper::map(const domain::currency_pair_convention& v) 
     r.pip_factor = v.pip_factor;
     r.tick_size = v.tick_size;
     r.decimal_places = v.decimal_places;
-    r.business_day_convention = stored_business_day_convention(v.business_day_convention);
+    r.business_day_convention = v.business_day_convention;
     r.spot_relative = v.spot_relative;
     r.end_of_month = v.end_of_month;
     r.oresmd_uri = v.oresmd_uri;

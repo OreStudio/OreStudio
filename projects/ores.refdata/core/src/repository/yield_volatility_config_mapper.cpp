@@ -27,7 +27,6 @@
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/yield_volatility_config.hpp"
 #include "ores.refdata.api/domain/yield_volatility_config_json_io.hpp" // IWYU pragma: keep.
-#include "ores.refdata.core/repository/business_day_convention_code.hpp"
 #include "ores.refdata.core/repository/yield_volatility_config_entity.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
@@ -85,7 +84,7 @@ yield_volatility_config_mapper::map(const domain::yield_volatility_config& v) {
     r.extrapolation = v.extrapolation;
     r.day_counter = v.day_counter;
     r.calendar = v.calendar;
-    r.business_day_convention = stored_business_day_convention(v.business_day_convention);
+    r.business_day_convention = v.business_day_convention;
     r.option_tenors = v.option_tenors;
     r.bond_tenors = v.bond_tenors;
     r.modified_by = v.modified_by;

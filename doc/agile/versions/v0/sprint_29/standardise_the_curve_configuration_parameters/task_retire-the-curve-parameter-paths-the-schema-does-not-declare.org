@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/retire-the-curve-parameter-paths-the-schema-does-not-declare
-#+pr: 4124
+#+pr: 4126
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -26,11 +26,11 @@ Every curve parameter's path is a path the ORE schema declares, or one the ORE c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | The attribution is fixed, the check is wired, and the artefact is clean. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review and merge.                      |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -121,6 +121,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4126][#4126]] | [agile] Close the curve configuration story |
 | [[https://github.com/OreStudio/OreStudio/pull/4124][#4124]] | [refdata] Attribute a block to the call that follows it |
 
 * Review

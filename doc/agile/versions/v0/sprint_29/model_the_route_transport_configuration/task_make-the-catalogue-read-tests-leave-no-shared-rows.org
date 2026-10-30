@@ -8,7 +8,7 @@
 #+filetags: :model_the_route_transport_configuration:sprint_29:v0:
 #+owner: marco
 #+branch: feature/make-the-catalogue-read-tests-leave-no-shared-rows
-#+pr:
+#+pr: 4155
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4155][#4155]] | [marketdata] Keep the catalogue read fixtures out of the system tenant |
 
 * Review
 

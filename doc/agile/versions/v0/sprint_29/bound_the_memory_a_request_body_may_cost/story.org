@@ -36,11 +36,11 @@ scope here.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                |
+| State         | DONE                                   |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The route decides the limit and an over-limit body gets 413. A follow-up fixes a body past the ceiling, which closed instead of refusing. |
+| Now           | Nothing. Both tasks and the follow-up are merged. |
 | Waiting on    | Nothing.                               |
-| Next          | Merge #4110, then increment A3 streams the accepted body. |
+| Next          | Increment A3 streams the accepted body and takes the 256 MiB upload under 1 MiB of RSS. |
 | Last touched  | 2026-10-30                               |
 
 * Acceptance
@@ -61,7 +61,7 @@ scope here.
 |------+-------+-------+-----+-------------|
 | [[id:F715F394-0F84-4D4F-8530-B9E2E3A66F65][Read the headers before the body]] | DONE | 2026-10-29 | 2026-10-30 | The message is read whole, so one body limit applies to every route and nothing can be decided before the body is held. Read the headers on their own, resolve the route the request addresses, and read the body under that route's limit. |
 | [[id:4E57E64D-6B4F-41F0-8AC3-1B22354FBC14][Answer an over-limit body with 413]] | DONE | 2026-10-29 | 2026-10-30 | A body past the limit makes the read fail and the session close with no response, so the caller cannot tell a refusal from a broken connection. Answer 413 with a reason, close the connection because the body was not read, and give the storage upload route the one limit that needs to be large. |
-| [[id:2FDF2F91-193B-4AB1-8EA1-294EF1D2C058][Refuse a body past the server ceiling]] | STARTED | 2026-10-30 | | A body that declares more than the server ceiling closes the session with no response, because Beast enforces the parser's own body limit as the headers finish and the ceiling was set there. Read the headers under no body limit, apply the route's limit to the body alone, and test the ceiling, the route's own limit and a body past a megabyte. |
+| [[id:2FDF2F91-193B-4AB1-8EA1-294EF1D2C058][Refuse a body past the server ceiling]] | DONE | 2026-10-30 | 2026-10-30 | A body that declares more than the server ceiling closes the session with no response, because Beast enforces the parser's own body limit as the headers finish and the ceiling was set there. Read the headers under no body limit, apply the route's limit to the body alone, and test the ceiling, the route's own limit and a body past a megabyte. |
 
 * Decisions
 

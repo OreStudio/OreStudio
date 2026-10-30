@@ -1259,8 +1259,8 @@ Each row is a story. S is a few days, M is one to two weeks, L is more.
 | Id | Increment | Delivers | Exit criterion | Depends on | Size |
 |---|---|---|---|---|---|
 | A1 | Non-blocking upstream calls | the handler never blocks an I/O thread; the session counters are flushed off the loop | a 2 s downstream stall moves neither =/health= nor a static file; request_bench p99 is unchanged | none | M |
-| A2 | Bounded request bodies | streamed request bodies, a per-route limit, and a 413 instead of a silent close | a 256 MiB upload peaks under 1 MiB of gateway RSS; an over-limit body gets 413 | none | S |
-| A3 | File transfer | streaming upload and download on the storage routes, with a stall deadline | the grid wrapper's transfer tests pass; no object is buffered whole | A2 | M |
+| A2 | Bounded request bodies | a per-route limit, and a 413 instead of a silent close | an over-limit body is refused with 413 and a reason; a route that states a limit is capped by the server ceiling | none | S |
+| A3 | Streaming bodies and file transfer | the accepted body streamed to its destination instead of held; streaming upload and download on the storage routes, with a stall deadline | a 256 MiB upload peaks under 1 MiB of gateway RSS; the grid wrapper's transfer tests pass; no object is buffered whole | A2 | M |
 | C1 | Classification and area map | every route classified with 11.1; the published area list; each composed view named with its owner | an inventory table reviewed and approved; the manifest's source of truth agreed | none | M |
 | B1 | Response streaming and the bundle | a handler can write headers and chunks and hold the connection; the SPA bundle with its history fallback and cache headers; =/health= and =/metrics= | =curl -N= receives an event stream; the bundle is served by the C++ server | A1 | M |
 | B2 | The cookie door | the session store, the cookie credential, =POST= and =DELETE /api/v1/auth/sessions=, the =me= alias | a script signs in on C++, reuses the cookie, and no token appears in a browser payload | B1 | M |

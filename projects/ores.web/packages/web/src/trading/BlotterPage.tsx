@@ -190,7 +190,7 @@ export function BlotterPage(): ReactNode {
             cell: (row) => (
                 <>
                     <Link
-                        className="block max-w-[8.5rem] truncate text-accent-bright hover:underline"
+                        className="block max-w-[11rem] truncate text-accent-bright hover:underline"
                         title={row.reference || row.id}
                         to={
                             row.row_kind === 'structure'
@@ -245,8 +245,11 @@ export function BlotterPage(): ReactNode {
                             text={
                                 row.product_name || row.instrument_type_name || row.instrument_type
                             }
+                            triggerClassName="no-underline"
                         >
-                            {code.toUpperCase()}
+                            <span className="font-mono">
+                                <Tag small>{code.toUpperCase()}</Tag>
+                            </span>
                         </Tooltip>
                     </span>
                 );

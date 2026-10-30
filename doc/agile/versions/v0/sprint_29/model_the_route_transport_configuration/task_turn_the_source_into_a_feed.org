@@ -88,19 +88,23 @@ the feed entity is generated, the old =market_data_source= generated files are
 removed, and a mechanical rename (=market_data_source= -> =feed=,
 =source_id= -> =feed_id=) ran across the marketdata tree and its SQL.
 
-Remaining, in order:
+Done: the model, the generated entity, the removal of the old generated files,
+the mechanical rename, the session and feed seeds, the runtime rename, and the
+cross-component call sites (client, synthetic service, IAM provisioning).
 
-1. Replace both source seeds with a session seed and feed rows: the four public
-   feeds through =frankfurter-eu= (=end_of_day=, keys =ECB=, =BOC=, =IMF=,
-   =TCMB=), the simulated and internal feeds through =synthetic-local=
-   (=real_time=).
-2. Rename =provider_code= to =publisher_code= in the feed's consumers and the
-   route model; remove the =kind= reads.
-3. Regenerate marketdata at every address, then the shell adapter, and compile.
-4. Rework the runtime's source assumptions: adapter announce names map to
-   feeds, route =feed_id=, usage/billing reads.
-5. Delete the source-kind entity and its uses.
-6. Tests: pgtap for the feed rows and the default rule; runtime tests.
+The =ores.marketdata.service= target compiles. Remaining, in order:
+
+1. Whole-tree build; fix any remaining =kind= or =provider_code= use in tests
+   and the shell adapter.
+2. Hand-written reference trigger for =session_code= (the generated trigger
+   validates =publisher_code= only), with its drop and includes.
+3. Recreate the database; pgtap for the ten feeds, the four public ones through
+   =frankfurter-eu=, the one-default-per-publisher rule and the session
+   reference.
+4. Regenerate the ER diagrams; run the gate; close the task; raise the PR.
+
+The source-kind lookup belongs to refdata and is now unused by marketdata; it
+is left in place rather than deleted from another component.
 
 * Test Scenarios
 

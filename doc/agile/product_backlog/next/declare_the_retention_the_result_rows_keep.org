@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: CDEFB4C6-1064-4917-8CF8-5490A0E30BFC
+:END:
+#+title: Declare the retention the result rows keep
+#+description: The result rows hypertable declares no :hypertable_retention_interval:, and no Timescale retention job runs on any table in this environment. Decide how long a run's rows are kept, or record that they are kept indefinitely and why.
+#+type: capture
+#+level: cross
+#+filetags: :reporting:timescaledb:retention:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+The result rows hypertable keeps its rows indefinitely. The model declares no
+=:hypertable_retention_interval:=, and this environment runs no Timescale
+retention job on any table.
+
+The task that asked for the table named "the security, indexes and retention the
+market data ticks use". The ticks declare 7 days. A run's rows are the figures a
+person compares across runs, so a short interval loses the history a comparison
+needs, and an indefinite one grows with every run.
+
+Decide the interval and state it on =ores.reporting.report_result_row= so codegen
+applies the policy, or record that the rows are kept indefinitely and why.

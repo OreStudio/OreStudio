@@ -1,299 +1,311 @@
 {
-  "reason": "The type extractor reads a parser, and a parser sees only a string, so it typed these settings as text. The ORE guide lists the values each one accepts, in the Options column of its pricing engine chapter. The guide's list is the vocabulary, so the set states it. A setting whose values one set cannot state stays text, and its description says what the guide allows.",
-  "source": "ore_guide",
-  "source_ref": "projects/ores.seeder/datasets/ore_pricing_engines/pricing_vocabulary.json, the guide's Options column, read from the ORE user guide chapter on the pricing engine configuration",
   "curator": "marco",
   "date": "2026-10-29",
+  "links": {},
+  "reason": "The type extractor reads a parser, and a parser sees only a string, so it typed these settings as text. The ORE guide lists the values each one accepts, in the Options column of its pricing engine chapter. The guide's list is the vocabulary, so the set states it. A setting whose values one set cannot state stays text, and its description says what the guide allows.",
   "sets": {
     "calibration": {
-      "name": "Calibration",
       "description": "Free text: the guide lists Bootstrap, BestFit and None, and the documents the ORE examples ship write Deal, which the guide's list omits. One set cannot state a vocabulary the guide states only in part.",
-      "source_kind": "text",
       "is_ordered": false,
+      "name": "Calibration",
+      "source_kind": "text",
       "values": []
     },
     "calibrationstrategy": {
-      "name": "Calibration Strategy",
       "description": "Which swaptions the fit uses: those that end with the deal, those at the strike of the deal, or the delta gamma adjusted set.",
-      "source_kind": "enumerated",
       "is_ordered": false,
+      "name": "Calibration Strategy",
+      "source_kind": "enumerated",
       "values": [
         {
-          "value": "CoterminalDealStrike",
-          "label": "CoterminalDealStrike",
           "description": "CoterminalDealStrike is one of the values the ORE guide lists for CalibrationStrategy.",
-          "order": 0
+          "label": "CoterminalDealStrike",
+          "order": 0,
+          "value": "CoterminalDealStrike"
         },
         {
-          "value": "CoterminalATM",
-          "label": "CoterminalATM",
           "description": "CoterminalATM is one of the values the ORE guide lists for CalibrationStrategy.",
-          "order": 1
+          "label": "CoterminalATM",
+          "order": 1,
+          "value": "CoterminalATM"
         },
         {
-          "value": "DeltaGammaAdjusted",
-          "label": "DeltaGammaAdjusted",
           "description": "DeltaGammaAdjusted is one of the values the ORE guide lists for CalibrationStrategy.",
-          "order": 2
+          "label": "DeltaGammaAdjusted",
+          "order": 2,
+          "value": "DeltaGammaAdjusted"
         },
         {
-          "value": "None",
-          "label": "None",
           "description": "None is one of the values the ORE guide lists for CalibrationStrategy.",
-          "order": 3
+          "label": "None",
+          "order": 3,
+          "value": "None"
+        },
+        {
+          "description": "UnderlyingATM is one of the values the ORE code accepts for CalibrationStrategy.",
+          "label": "UnderlyingATM",
+          "order": 4,
+          "value": "UnderlyingATM"
+        },
+        {
+          "description": "UnderlyingDealStrike is one of the values the ORE code accepts for CalibrationStrategy.",
+          "label": "UnderlyingDealStrike",
+          "order": 5,
+          "value": "UnderlyingDealStrike"
         }
       ]
     },
     "curve": {
-      "name": "Curve",
       "description": "Which curve the product reads: the index curve, or the curves of the constituents.",
-      "source_kind": "enumerated",
       "is_ordered": false,
+      "name": "Curve",
+      "source_kind": "enumerated",
       "values": [
         {
-          "value": "Index",
-          "label": "Index",
           "description": "Index is one of the values the ORE guide lists for Curve.",
-          "order": 0
+          "label": "Index",
+          "order": 0,
+          "value": "Index"
         },
         {
-          "value": "Underlying",
-          "label": "Underlying",
           "description": "Underlying is one of the values the ORE guide lists for Curve.",
-          "order": 1
+          "label": "Underlying",
+          "order": 1,
+          "value": "Underlying"
         }
       ]
     },
     "fepcurve": {
-      "name": "Fep Curve",
       "description": "Which curve the front end protection reads: the index curve, or the curves of the constituents.",
-      "source_kind": "enumerated",
       "is_ordered": false,
+      "name": "Fep Curve",
+      "source_kind": "enumerated",
       "values": [
         {
-          "value": "Index",
-          "label": "Index",
           "description": "Index is one of the values the ORE guide lists for FepCurve.",
-          "order": 0
+          "label": "Index",
+          "order": 0,
+          "value": "Index"
         },
         {
-          "value": "Underlying",
-          "label": "Underlying",
           "description": "Underlying is one of the values the ORE guide lists for FepCurve.",
-          "order": 1
+          "label": "Underlying",
+          "order": 1,
+          "value": "Underlying"
         }
       ]
     },
     "fxcalibration": {
-      "name": "Fx Calibration",
       "description": "None, or Bootstrap, which is only relevant for a cross currency swaption.",
-      "source_kind": "enumerated",
       "is_ordered": false,
+      "name": "Fx Calibration",
+      "source_kind": "enumerated",
       "values": [
         {
-          "value": "None",
-          "label": "None",
           "description": "None is one of the values the ORE guide lists for FxCalibration.",
-          "order": 0
+          "label": "None",
+          "order": 0,
+          "value": "None"
         },
         {
-          "value": "Bootstrap",
-          "label": "Bootstrap",
           "description": "Bootstrap is one of the values the ORE guide lists for FxCalibration.",
-          "order": 1
+          "label": "Bootstrap",
+          "order": 1,
+          "value": "Bootstrap"
         }
       ]
     },
     "optionexpiryposition": {
-      "name": "Option Expiry Position",
       "description": "Optional, defaults to Mid, and states whether the option expiry sits left or mid.",
-      "source_kind": "enumerated",
       "is_ordered": false,
+      "name": "Option Expiry Position",
+      "source_kind": "enumerated",
       "values": [
         {
-          "value": "Left",
-          "label": "Left",
           "description": "Left is one of the values the ORE guide lists for OptionExpiryPosition.",
-          "order": 0
+          "label": "Left",
+          "order": 0,
+          "value": "Left"
         },
         {
-          "value": "Mid",
-          "label": "Mid",
           "description": "Mid is one of the values the ORE guide lists for OptionExpiryPosition.",
-          "order": 1
+          "label": "Mid",
+          "order": 1,
+          "value": "Mid"
         }
       ]
     },
     "policy": {
-      "name": "Policy",
       "description": "How the replication limits its integration range: by rate bounds, by vega ratio, by price threshold or by standard deviations.",
-      "source_kind": "enumerated",
       "is_ordered": false,
+      "name": "Policy",
+      "source_kind": "enumerated",
       "values": [
         {
-          "value": "RateBound",
-          "label": "RateBound",
           "description": "RateBound is one of the values the ORE guide lists for Policy.",
-          "order": 0
+          "label": "RateBound",
+          "order": 0,
+          "value": "RateBound"
         },
         {
-          "value": "VegaRatio",
-          "label": "VegaRatio",
           "description": "VegaRatio is one of the values the ORE guide lists for Policy.",
-          "order": 1
+          "label": "VegaRatio",
+          "order": 1,
+          "value": "VegaRatio"
         },
         {
-          "value": "PriceThreshold",
-          "label": "PriceThreshold",
           "description": "PriceThreshold is one of the values the ORE guide lists for Policy.",
-          "order": 2
+          "label": "PriceThreshold",
+          "order": 2,
+          "value": "PriceThreshold"
         },
         {
-          "value": "BsStdDev",
-          "label": "BsStdDev",
           "description": "BsStdDev is one of the values the ORE guide lists for Policy.",
-          "order": 3
+          "label": "BsStdDev",
+          "order": 3,
+          "value": "BsStdDev"
         }
       ]
     },
     "regressormodel": {
-      "name": "Regressor Model",
       "description": "The regressor a scripted trade builds: simple, lagged, or lagged by asset class.",
-      "source_kind": "enumerated",
       "is_ordered": false,
+      "name": "Regressor Model",
+      "source_kind": "enumerated",
       "values": [
         {
-          "value": "Simple",
-          "label": "Simple",
           "description": "Simple is one of the values the ORE guide lists for RegressorModel.",
-          "order": 0
+          "label": "Simple",
+          "order": 0,
+          "value": "Simple"
         },
         {
-          "value": "Lagged",
-          "label": "Lagged",
           "description": "Lagged is one of the values the ORE guide lists for RegressorModel.",
-          "order": 1
+          "label": "Lagged",
+          "order": 1,
+          "value": "Lagged"
         },
         {
-          "value": "LaggedIR",
-          "label": "LaggedIR",
           "description": "LaggedIR is one of the values the ORE guide lists for RegressorModel.",
-          "order": 2
+          "label": "LaggedIR",
+          "order": 2,
+          "value": "LaggedIR"
         },
         {
-          "value": "LaggedFX",
-          "label": "LaggedFX",
           "description": "LaggedFX is one of the values the ORE guide lists for RegressorModel.",
-          "order": 3
+          "label": "LaggedFX",
+          "order": 3,
+          "value": "LaggedFX"
         },
         {
-          "value": "LaggedEQ",
-          "label": "LaggedEQ",
           "description": "LaggedEQ is one of the values the ORE guide lists for RegressorModel.",
-          "order": 4
+          "label": "LaggedEQ",
+          "order": 4,
+          "value": "LaggedEQ"
         }
       ]
     },
     "reversiontype": {
-      "name": "Reversion Type",
       "description": "The form of the mean reversion parameter: Hagan or Hull-White.",
-      "source_kind": "enumerated",
       "is_ordered": false,
+      "name": "Reversion Type",
+      "source_kind": "enumerated",
       "values": [
         {
-          "value": "Hagan",
-          "label": "Hagan",
           "description": "Hagan is one of the values the ORE guide lists for ReversionType.",
-          "order": 0
+          "label": "Hagan",
+          "order": 0,
+          "value": "Hagan"
         },
         {
-          "value": "HullWhite",
-          "label": "HullWhite",
           "description": "HullWhite is one of the values the ORE guide lists for ReversionType.",
-          "order": 1
+          "label": "HullWhite",
+          "order": 1,
+          "value": "HullWhite"
         }
       ]
     },
     "sensitivitydecomposition": {
-      "name": "Sensitivity Decomposition",
       "description": "How the index sensitivity splits across the constituents: by underlying, by notional, by loss or by delta.",
-      "source_kind": "enumerated",
       "is_ordered": false,
+      "name": "Sensitivity Decomposition",
+      "source_kind": "enumerated",
       "values": [
         {
-          "value": "Underlying",
-          "label": "Underlying",
           "description": "Underlying is one of the values the ORE guide lists for SensitivityDecomposition.",
-          "order": 0
+          "label": "Underlying",
+          "order": 0,
+          "value": "Underlying"
         },
         {
-          "value": "NotionalWeighted",
-          "label": "NotionalWeighted",
           "description": "NotionalWeighted is one of the values the ORE guide lists for SensitivityDecomposition.",
-          "order": 1
+          "label": "NotionalWeighted",
+          "order": 1,
+          "value": "NotionalWeighted"
         },
         {
-          "value": "LossWeighted",
-          "label": "LossWeighted",
           "description": "LossWeighted is one of the values the ORE guide lists for SensitivityDecomposition.",
-          "order": 2
+          "label": "LossWeighted",
+          "order": 2,
+          "value": "LossWeighted"
         },
         {
-          "value": "DeltaWeighted",
-          "label": "DeltaWeighted",
           "description": "DeltaWeighted is one of the values the ORE guide lists for SensitivityDecomposition.",
-          "order": 3
+          "label": "DeltaWeighted",
+          "order": 3,
+          "value": "DeltaWeighted"
         }
       ]
     },
     "separatecallputvols": {
-      "name": "Separate Call Put Vols",
       "description": "Free text: ORE accepts true, false, or a regular expression inclusion pattern, and one set cannot state a switch and a pattern at once.",
-      "source_kind": "text",
       "is_ordered": false,
+      "name": "Separate Call Put Vols",
+      "source_kind": "text",
       "values": []
     },
     "spreadonincomecurve": {
-      "name": "Spread On Income Curve",
       "description": "Whether to apply the security spread on the income curve for compounding, which defaults to true.",
-      "source_kind": "boolean",
       "is_ordered": false,
+      "name": "Spread On Income Curve",
+      "source_kind": "boolean",
       "values": []
     },
     "treatsecurityspreadascreditspread": {
-      "name": "Treat Security Spread As Credit Spread",
       "description": "Whether the security spread is added on top of the credit curve instead of the benchmark curve, which defaults to false.",
-      "source_kind": "boolean",
       "is_ordered": false,
+      "name": "Treat Security Spread As Credit Spread",
+      "source_kind": "boolean",
       "values": []
     },
     "useindexcdspricer": {
-      "name": "use Index CDSPricer",
       "description": "Whether to use the index CDS pricer for tranches with a detachment point at 100 percent, which defaults to true.",
-      "source_kind": "boolean",
       "is_ordered": false,
+      "name": "use Index CDSPricer",
+      "source_kind": "boolean",
       "values": []
     },
     "volatilitytype": {
-      "name": "Volatility Type",
       "description": "The form of the volatility parameter: Hagan or Hull-White.",
-      "source_kind": "enumerated",
       "is_ordered": false,
+      "name": "Volatility Type",
+      "source_kind": "enumerated",
       "values": [
         {
-          "value": "Hagan",
-          "label": "Hagan",
           "description": "Hagan is one of the values the ORE guide lists for VolatilityType.",
-          "order": 0
+          "label": "Hagan",
+          "order": 0,
+          "value": "Hagan"
         },
         {
-          "value": "HullWhite",
-          "label": "HullWhite",
           "description": "HullWhite is one of the values the ORE guide lists for VolatilityType.",
-          "order": 1
+          "label": "HullWhite",
+          "order": 1,
+          "value": "HullWhite"
         }
       ]
     }
   },
-  "links": {}
+  "source": "ore_guide",
+  "source_ref": "projects/ores.seeder/datasets/ore_pricing_engines/pricing_vocabulary.json, the guide's Options column, read from the ORE user guide chapter on the pricing engine configuration"
 }

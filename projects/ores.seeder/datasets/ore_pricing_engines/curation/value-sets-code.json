@@ -266,12 +266,14 @@
     "beta": {
       "description": "The values the beta setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "beta",
       "source_kind": "number"
     },
     "bins": {
       "description": "The values the Bins setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "Bins",
       "source_kind": "integer"
     },
@@ -285,7 +287,7 @@
       "description": "The values the Bootstrap.MesherConcentration setting accepts.",
       "is_ordered": false,
       "name": "Bootstrap Mesher Concentration",
-      "source_kind": "text"
+      "source_kind": "number"
     },
     "bootstrap_mesherepsilon": {
       "description": "The values the Bootstrap.MesherEpsilon setting accepts.",
@@ -303,17 +305,33 @@
       "description": "The values the Bootstrap.Mode setting accepts.",
       "is_ordered": false,
       "name": "Bootstrap Mode",
-      "source_kind": "text"
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "Alternating is one of the values the ORE code accepts for Bootstrap Mode.",
+          "label": "Alternating",
+          "order": 0,
+          "value": "Alternating"
+        },
+        {
+          "description": "Simultaneously is one of the values the ORE code accepts for Bootstrap Mode.",
+          "label": "Simultaneously",
+          "order": 1,
+          "value": "Simultaneously"
+        }
+      ]
     },
     "bootstrap_stategridpoints": {
       "description": "The values the Bootstrap.StateGridPoints setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "Bootstrap State Grid Points",
       "source_kind": "integer"
     },
     "bootstrap_timestepsperyear": {
       "description": "The values the Bootstrap.TimeStepsPerYear setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "Bootstrap Time Steps Per Year",
       "source_kind": "integer"
     },
@@ -327,7 +345,21 @@
       "description": "The values the Bounds setting accepts.",
       "is_ordered": false,
       "name": "Bounds",
-      "source_kind": "text"
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "Fixed is one of the values the ORE code accepts for Bounds.",
+          "label": "Fixed",
+          "order": 0,
+          "value": "Fixed"
+        },
+        {
+          "description": "PriceThreshold is one of the values the ORE code accepts for Bounds.",
+          "label": "PriceThreshold",
+          "order": 1,
+          "value": "PriceThreshold"
+        }
+      ]
     },
     "brownianbridgeordering": {
       "description": "The values the BrownianBridgeOrdering setting accepts.",
@@ -364,6 +396,7 @@
     "buckets": {
       "description": "The values the buckets setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "buckets",
       "source_kind": "integer"
     },
@@ -448,6 +481,7 @@
     "cashflowgeneration_oncpnmaxsimtimes": {
       "description": "The values the CashflowGeneration.OnCpnMaxSimTimes setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "Cashflow Generation On Cpn Max Sim Times",
       "source_kind": "integer"
     },
@@ -497,7 +531,7 @@
       "description": "The values the Displacement setting accepts.",
       "is_ordered": false,
       "name": "Displacement",
-      "source_kind": "text"
+      "source_kind": "number"
     },
     "engine": {
       "description": "The values the Engine setting accepts.",
@@ -520,6 +554,7 @@
     "exercisetimestepsperyear": {
       "description": "The values the ExerciseTimeStepsPerYear setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "Exercise Time Steps Per Year",
       "source_kind": "integer"
     },
@@ -563,7 +598,27 @@
       "description": "The values the FloatSpreadMapping setting accepts.",
       "is_ordered": false,
       "name": "Float Spread Mapping",
-      "source_kind": "text"
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "NextCoupon is one of the values the ORE code accepts for Float Spread Mapping.",
+          "label": "NextCoupon",
+          "order": 0,
+          "value": "NextCoupon"
+        },
+        {
+          "description": "proRata is one of the values the ORE code accepts for Float Spread Mapping.",
+          "label": "proRata",
+          "order": 1,
+          "value": "proRata"
+        },
+        {
+          "description": "Simple is one of the values the ORE code accepts for Float Spread Mapping.",
+          "label": "Simple",
+          "order": 2,
+          "value": "Simple"
+        }
+      ]
     },
     "fxcalibration": {
       "description": "The values the FxCalibration setting accepts.",
@@ -596,10 +651,10 @@
       "source_kind": "text"
     },
     "globalmodel": {
-      "description": "The values the GlobalModel setting accepts.",
+      "description": "The values the Global Model setting accepts: ORE reads a switch here.",
       "is_ordered": false,
       "name": "Global Model",
-      "source_kind": "text"
+      "source_kind": "boolean"
     },
     "gridcoarsening": {
       "description": "The values the GridCoarsening setting accepts.",
@@ -617,7 +672,33 @@
       "description": "The values the Heston.CalibrationMethod setting accepts.",
       "is_ordered": false,
       "name": "Heston Calibration Method",
-      "source_kind": "text"
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "ConstantBestFit is one of the values the ORE code accepts for Heston Calibration Method.",
+          "label": "ConstantBestFit",
+          "order": 0,
+          "value": "ConstantBestFit"
+        },
+        {
+          "description": "None is one of the values the ORE code accepts for Heston Calibration Method.",
+          "label": "None",
+          "order": 1,
+          "value": "None"
+        },
+        {
+          "description": "PiecewiseBootstrap is one of the values the ORE code accepts for Heston Calibration Method.",
+          "label": "PiecewiseBootstrap",
+          "order": 2,
+          "value": "PiecewiseBootstrap"
+        },
+        {
+          "description": "PiecewiseBestFit is one of the values the ORE code accepts for Heston Calibration Method.",
+          "label": "PiecewiseBestFit",
+          "order": 3,
+          "value": "PiecewiseBestFit"
+        }
+      ]
     },
     "heston_calibrationvarianceterms": {
       "description": "The values the Heston.CalibrationVarianceTerms setting accepts.",
@@ -646,6 +727,7 @@
     "heston_maxcalibrationattempts": {
       "description": "The values the Heston.MaxCalibrationAttempts setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "Heston Max Calibration Attempts",
       "source_kind": "integer"
     },
@@ -659,7 +741,63 @@
       "description": "The values the Heston.ProcessDiscretization setting accepts.",
       "is_ordered": false,
       "name": "Heston Process Discretization",
-      "source_kind": "text"
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "PartialTruncation is one of the values the ORE code accepts for Heston Process Discretization.",
+          "label": "PartialTruncation",
+          "order": 0,
+          "value": "PartialTruncation"
+        },
+        {
+          "description": "FullTruncation is one of the values the ORE code accepts for Heston Process Discretization.",
+          "label": "FullTruncation",
+          "order": 1,
+          "value": "FullTruncation"
+        },
+        {
+          "description": "Reflection is one of the values the ORE code accepts for Heston Process Discretization.",
+          "label": "Reflection",
+          "order": 2,
+          "value": "Reflection"
+        },
+        {
+          "description": "NonCentralChiSquareVariance is one of the values the ORE code accepts for Heston Process Discretization.",
+          "label": "NonCentralChiSquareVariance",
+          "order": 3,
+          "value": "NonCentralChiSquareVariance"
+        },
+        {
+          "description": "QuadraticExponential is one of the values the ORE code accepts for Heston Process Discretization.",
+          "label": "QuadraticExponential",
+          "order": 4,
+          "value": "QuadraticExponential"
+        },
+        {
+          "description": "QuadraticExponentialMartingale is one of the values the ORE code accepts for Heston Process Discretization.",
+          "label": "QuadraticExponentialMartingale",
+          "order": 5,
+          "value": "QuadraticExponentialMartingale"
+        },
+        {
+          "description": "BroadieKayaExactSchemeLobatto is one of the values the ORE code accepts for Heston Process Discretization.",
+          "label": "BroadieKayaExactSchemeLobatto",
+          "order": 6,
+          "value": "BroadieKayaExactSchemeLobatto"
+        },
+        {
+          "description": "BroadieKayaExactSchemeLaguerre is one of the values the ORE code accepts for Heston Process Discretization.",
+          "label": "BroadieKayaExactSchemeLaguerre",
+          "order": 7,
+          "value": "BroadieKayaExactSchemeLaguerre"
+        },
+        {
+          "description": "BroadieKayaExactSchemeTrapezoidal is one of the values the ORE code accepts for Heston Process Discretization.",
+          "label": "BroadieKayaExactSchemeTrapezoidal",
+          "order": 8,
+          "value": "BroadieKayaExactSchemeTrapezoidal"
+        }
+      ]
     },
     "heston_quantoprocessdiscretization": {
       "description": "The values the Heston.QuantoProcessDiscretization setting accepts.",
@@ -733,13 +871,13 @@
       "description": "The values the IndicatorSmoothingForDerivatives setting accepts.",
       "is_ordered": false,
       "name": "Indicator Smoothing For Derivatives",
-      "source_kind": "text"
+      "source_kind": "number"
     },
     "indicatorsmoothingforvalues": {
       "description": "The values the IndicatorSmoothingForValues setting accepts.",
       "is_ordered": false,
       "name": "Indicator Smoothing For Values",
-      "source_kind": "text"
+      "source_kind": "number"
     },
     "infdkvolatility": {
       "description": "The values the InfDkVolatility setting accepts.",
@@ -757,7 +895,7 @@
       "description": "The values the InfJyRealRateReversion setting accepts.",
       "is_ordered": false,
       "name": "Inf Jy Real Rate Reversion",
-      "source_kind": "text"
+      "source_kind": "number"
     },
     "infjyrealratevol": {
       "description": "The values the InfJyRealRateVol setting accepts.",
@@ -781,7 +919,21 @@
       "description": "The values the InfModelType setting accepts.",
       "is_ordered": false,
       "name": "Inf Model Type",
-      "source_kind": "text"
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "DK is one of the values the ORE code accepts for Inf Model Type.",
+          "label": "DK",
+          "order": 0,
+          "value": "DK"
+        },
+        {
+          "description": "JY is one of the values the ORE code accepts for Inf Model Type.",
+          "label": "JY",
+          "order": 1,
+          "value": "JY"
+        }
+      ]
     },
     "integrationpoints": {
       "description": "The values the IntegrationPoints setting accepts.",
@@ -793,13 +945,27 @@
       "description": "The values the IrReversion_ setting accepts.",
       "is_ordered": false,
       "name": "Ir Reversion",
-      "source_kind": "text"
+      "source_kind": "number"
     },
     "irvolatilitytype": {
       "description": "The values the IrVolatilityType setting accepts.",
       "is_ordered": false,
       "name": "Ir Volatility Type",
-      "source_kind": "text"
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "Hagan is one of the values the ORE code accepts for Ir Volatility Type.",
+          "label": "Hagan",
+          "order": 0,
+          "value": "Hagan"
+        },
+        {
+          "description": "HullWhite is one of the values the ORE code accepts for Ir Volatility Type.",
+          "label": "HullWhite",
+          "order": 1,
+          "value": "HullWhite"
+        }
+      ]
     },
     "lossdistributionperiods": {
       "description": "The values the LossDistributionPeriods setting accepts.",
@@ -828,12 +994,14 @@
     "maxdiscretisationpoints": {
       "description": "The values the MaxDiscretisationPoints setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "Max Discretisation Points",
       "source_kind": "integer"
     },
     "maxgapdays": {
       "description": "The values the MaxGapDays setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "Max Gap Days",
       "source_kind": "integer"
     },
@@ -944,18 +1112,21 @@
     "nsimulations": {
       "description": "The values the nSimulations setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "n Simulations",
       "source_kind": "integer"
     },
     "nx": {
       "description": "The values the nx setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "nx",
       "source_kind": "integer"
     },
     "ny": {
       "description": "The values the ny setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "ny",
       "source_kind": "integer"
     },
@@ -1072,6 +1243,7 @@
     "pricing_samples": {
       "description": "The values the Pricing.Samples setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "Pricing Samples",
       "source_kind": "integer"
     },
@@ -1122,12 +1294,14 @@
     "pricing_stategridpoints": {
       "description": "The values the Pricing.StateGridPoints setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "Pricing State Grid Points",
       "source_kind": "integer"
     },
     "pricing_timestepsperyear": {
       "description": "The values the Pricing.TimeStepsPerYear setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "Pricing Time Steps Per Year",
       "source_kind": "integer"
     },
@@ -1177,19 +1351,34 @@
       "description": "The values the Regression.VarGroupMode setting accepts.",
       "is_ordered": false,
       "name": "Regression Var Group Mode",
-      "source_kind": "text"
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "Global is one of the values the ORE code accepts for Regression Var Group Mode.",
+          "label": "Global",
+          "order": 0,
+          "value": "Global"
+        },
+        {
+          "description": "Trivial is one of the values the ORE code accepts for Regression Var Group Mode.",
+          "label": "Trivial",
+          "order": 1,
+          "value": "Trivial"
+        }
+      ]
     },
     "regressionorder": {
       "description": "The values the RegressionOrder setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "Regression Order",
       "source_kind": "integer"
     },
     "regressionvariancecutoff": {
-      "description": "The values the RegressionVarianceCutoff setting accepts.",
+      "description": "The values the RegressionVarianceCutoff setting accepts. An empty value is allowed.",
       "is_ordered": false,
       "name": "Regression Variance Cutoff",
-      "source_kind": "text"
+      "source_kind": "number"
     },
     "regressormodel": {
       "description": "The values the RegressorModel setting accepts.",
@@ -1274,11 +1463,12 @@
     "samples": {
       "description": "The values the samples setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "samples",
       "source_kind": "integer"
     },
     "scheme": {
-      "description": "The values the Scheme setting accepts.",
+      "description": "The scheme a finite difference or variance swap engine uses. The union of the two lists is the closest exact set a name can hold: GaussLobatto and Segment apply to the variance swap engine, and Segment does not apply to a finite difference engine.",
       "is_ordered": false,
       "name": "Scheme",
       "source_kind": "enumerated",
@@ -1342,6 +1532,12 @@
           "label": "Segment",
           "order": 9,
           "value": "Segment"
+        },
+        {
+          "description": "GaussLobatto is the variance swap engine's default scheme. It applies to that engine, not to a finite difference engine.",
+          "label": "GaussLobatto",
+          "order": 10,
+          "value": "GaussLobatto"
         }
       ]
     },
@@ -1523,11 +1719,12 @@
       "description": "The values the SqrtSmoothingForDerivatives setting accepts.",
       "is_ordered": false,
       "name": "Sqrt Smoothing For Derivatives",
-      "source_kind": "text"
+      "source_kind": "number"
     },
     "stategridpoints": {
       "description": "The values the StateGridPoints setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "State Grid Points",
       "source_kind": "integer"
     },
@@ -1576,6 +1773,7 @@
     "timestepsperyear": {
       "description": "The values the TimeStepsPerYear setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "Time Steps Per Year",
       "source_kind": "integer"
     },
@@ -1583,7 +1781,21 @@
       "description": "The values the TimingAdjustment setting accepts.",
       "is_ordered": false,
       "name": "Timing Adjustment",
-      "source_kind": "text"
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "Black76 is one of the values the ORE code accepts for Timing Adjustment.",
+          "label": "Black76",
+          "order": 0,
+          "value": "Black76"
+        },
+        {
+          "description": "BivariateLognormal is one of the values the ORE code accepts for Timing Adjustment.",
+          "label": "BivariateLognormal",
+          "order": 1,
+          "value": "BivariateLognormal"
+        }
+      ]
     },
     "tolerance": {
       "description": "The values the Tolerance setting accepts.",
@@ -1650,6 +1862,7 @@
     "training_samples": {
       "description": "The values the Training.Samples setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "Training Samples",
       "source_kind": "integer"
     },
@@ -1700,8 +1913,9 @@
     "trainingsamples": {
       "description": "The values the TrainingSamples setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "Training Samples",
-      "source_kind": "text"
+      "source_kind": "integer"
     },
     "trainingseed": {
       "description": "The values the TrainingSeed setting accepts.",
@@ -1760,10 +1974,10 @@
       "source_kind": "number"
     },
     "usead": {
-      "description": "The values the UseAD setting accepts.",
+      "description": "The values the Use AD setting accepts: ORE reads a switch here.",
       "is_ordered": false,
       "name": "Use AD",
-      "source_kind": "text"
+      "source_kind": "boolean"
     },
     "useindexcdspricer": {
       "description": "The values the useIndexCDSPricer setting accepts.",
@@ -1772,14 +1986,15 @@
       "source_kind": "text"
     },
     "useindexcurveforindexcds": {
-      "description": "The values the useIndexCurveForIndexCDS setting accepts.",
+      "description": "The values the use Index Curve For Index CDS setting accepts: ORE reads a switch here.",
       "is_ordered": false,
       "name": "use Index Curve For Index CDS",
-      "source_kind": "text"
+      "source_kind": "boolean"
     },
     "variancestategridpoints": {
       "description": "The values the VarianceStateGridPoints setting accepts.",
       "is_ordered": false,
+      "minimum": 0,
       "name": "Variance State Grid Points",
       "source_kind": "integer"
     },
@@ -1817,7 +2032,33 @@
       "description": "The values the YieldCurveModel setting accepts.",
       "is_ordered": false,
       "name": "Yield Curve Model",
-      "source_kind": "text"
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "Standard is one of the values the ORE code accepts for Yield Curve Model.",
+          "label": "Standard",
+          "order": 0,
+          "value": "Standard"
+        },
+        {
+          "description": "ExactYield is one of the values the ORE code accepts for Yield Curve Model.",
+          "label": "ExactYield",
+          "order": 1,
+          "value": "ExactYield"
+        },
+        {
+          "description": "ParallelShifts is one of the values the ORE code accepts for Yield Curve Model.",
+          "label": "ParallelShifts",
+          "order": 2,
+          "value": "ParallelShifts"
+        },
+        {
+          "description": "NonParallelShifts is one of the values the ORE code accepts for Yield Curve Model.",
+          "label": "NonParallelShifts",
+          "order": 3,
+          "value": "NonParallelShifts"
+        }
+      ]
     }
   }
 }

@@ -1,40 +1,42 @@
 {
-  "curveconfig.xsd|Currency": {
+  "curveconfig.xsd|BusinessDayConvention": {
+    "catalogue": "refdata.business_day_convention",
+    "element": "BusinessDayConvention",
+    "name": "Business day conventions",
+    "reason": "ORE spells the element BusinessDayConvention, and the set states the 27 spellings ORE's parser maps onto seven conventions. The rule is the element's own name, which the schema states, so every section that declares the leaf takes the same catalogue.",
     "schema": "curveconfig.xsd",
-    "element": "Currency",
-    "value_set": "curve.currency",
-    "name": "Currencies",
     "source": "ore_xsd",
     "source_ref": "share/ore/xsd/curveconfig.xsd",
+    "value_set": "curve.business_day_convention"
+  },
+  "curveconfig.xsd|Currency": {
+    "catalogue": "refdata.currency",
+    "element": "Currency",
+    "name": "Currencies",
     "reason": "ORE spells the element Currency, and a currency is one of the currencies reference data holds. The rule is the element's own name, which the schema states, so every section that declares a Currency leaf takes the same catalogue.",
-    "catalogue": "refdata.currency"
+    "schema": "curveconfig.xsd",
+    "source": "ore_xsd",
+    "source_ref": "share/ore/xsd/curveconfig.xsd",
+    "value_set": "curve.currency"
   },
   "curveconfig.xsd|DayCounter": {
-    "schema": "curveconfig.xsd",
+    "catalogue": "refdata.day_counter",
     "element": "DayCounter",
-    "value_set": "curve.day_counter",
     "name": "Day counters",
+    "reason": "ORE spells the element DayCounter, and a day counter is one of the spellings reference data holds. The rule is the element's own name, which the schema states, so every section that declares a DayCounter leaf takes the same catalogue.",
+    "schema": "curveconfig.xsd",
     "source": "ore_xsd",
     "source_ref": "share/ore/xsd/curveconfig.xsd",
-    "reason": "ORE spells the element DayCounter, and its document states ORE's own spelling, which the reference data does not hold: the registry holds the words. The set stays text until the registry states the spelling ORE writes."
+    "value_set": "curve.day_counter"
   },
   "curveconfig.xsd|YieldCurveDayCounter": {
-    "schema": "curveconfig.xsd",
+    "catalogue": "refdata.day_counter",
     "element": "YieldCurveDayCounter",
-    "value_set": "curve.day_counter",
     "name": "Day counters",
-    "source": "ore_xsd",
-    "source_ref": "share/ore/xsd/curveconfig.xsd",
     "reason": "The yield curve names its day counter with an element of its own, and its values are the day counters reference data holds.",
-    "catalogue": "refdata.day_counter"
-  },
-  "curveconfig.xsd|BusinessDayConvention": {
     "schema": "curveconfig.xsd",
-    "element": "BusinessDayConvention",
-    "value_set": "curve.business_day_convention",
-    "name": "Business day conventions",
     "source": "ore_xsd",
     "source_ref": "share/ore/xsd/curveconfig.xsd",
-    "reason": "ORE spells the element BusinessDayConvention, and its document states ORE's own spelling, which the reference data does not hold: the registry holds the words. The set stays text until the registry states the spelling ORE writes."
+    "value_set": "curve.day_counter"
   }
 }

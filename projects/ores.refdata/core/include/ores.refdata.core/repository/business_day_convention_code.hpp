@@ -72,9 +72,18 @@ inline std::string stored_business_day_convention(const std::string& stated) {
     return known == conventions.end() ? stated : known->second;
 }
 
-/** The code for a convention a caller states, or empty when it states none. */
-inline std::string stored_business_day_convention(const std::optional<std::string>& stated) {
-    return stated.has_value() ? stored_business_day_convention(*stated) : std::string{};
+/**
+ * The code for a convention a caller states, and nothing when it states none.
+ *
+ * The absence has to survive: an entity column that is nullable holds a row with
+ * no convention, and turning that into an empty string makes the row claim a
+ * convention the document never stated.
+ */
+inline std::optional<std::string>
+stored_business_day_convention(const std::optional<std::string>& stated) {
+    if (!stated)
+        return std::nullopt;
+    return stored_business_day_convention(*stated);
 }
 
 }

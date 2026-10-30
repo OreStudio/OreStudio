@@ -27,6 +27,7 @@
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/ibor_index_convention.hpp"
 #include "ores.refdata.api/domain/ibor_index_convention_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.core/repository/business_day_convention_code.hpp"
 #include "ores.refdata.core/repository/ibor_index_convention_entity.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <vector>
@@ -71,7 +72,7 @@ ibor_index_convention_mapper::map(const domain::ibor_index_convention& v) {
     r.fixing_calendar = v.fixing_calendar;
     r.day_count_fraction = v.day_count_fraction;
     r.settlement_days = v.settlement_days;
-    r.business_day_convention = v.business_day_convention;
+    r.business_day_convention = stored_business_day_convention(v.business_day_convention);
     r.end_of_month = v.end_of_month;
     r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :carry_a_large_body_without_holding_it:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/prove-the-resident-cost-of-an-upload
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -27,11 +27,11 @@ measures it, so nothing would notice if streaming regressed to buffering.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8550935B-A0F4-4BAD-95F3-D3E03B45E044][Carry a large body without holding it]] |
-| Now          | Not yet started.                       |
+| Now          | The cost is measured: a 256 MiB upload moves the process by under half a megabyte. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Review, then run the wrapper's transfer tests when the tree builds. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -39,7 +39,8 @@ measures it, so nothing would notice if streaming regressed to buffering.
 - A test uploads 256 MiB and reads the gateway process's peak resident memory across
   the request.
 - The peak moves by less than 1 MiB.
-- The grid wrapper's transfer tests pass against the streamed routes.
+- The grid wrapper's transfer tests pass against the streamed routes. Not done yet:
+  they need a fleet and a tree that builds, so this stays open.
 - The measurement names the commit it ran at.
 
 * Plan
@@ -63,9 +64,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| 256 MiB upload, resident memory | before 79,968 kB, peak 80,104 kB, so +136 kB | =./ores.http.api.tests "a_256_mib_upload_does_not_grow_the_process" -s= | branch head |
+| The same test over three runs | +136, +136, +464 kB against a 1 MiB bound | same | branch head |
+| The same test with a sink that keeps the body | peak 540,648 kB, so +461 MB: the measurement sees a buffer | same, with the sink's body kept | branch head |
+| 256 MiB over loopback | about 3 s | same | branch head |
 
 * Notes
+
+- The measurement is the test process's own =VmRSS=, read from =/proc/self/status=
+  every 5 ms while the upload runs, and the peak is kept. A peak file counter
+  (=VmHWM=) would also count everything the process did before the test.
+- A first, small upload warms the buffers before the baseline is taken, so the
+  one-off allocations are not credited to the large body.
+- The client generates its frames into one 64 KiB buffer, so the test does not
+  hold the body on the sending side either.
+- The wrapper's transfer tests are the only acceptance left. They need a fleet and
+  a tree that builds, and neither is available: =ores.trading='s generated batch
+  header is missing the members =ores.synthetic= writes.
 
 * Test Scenarios
 

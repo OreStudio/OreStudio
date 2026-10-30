@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-648 tables in 21 groups.
+657 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -99,6 +99,7 @@ entity "refdata" as refdata {
   ores_refdata_calendar_rules_tbl
   ores_refdata_calendar_types_tbl
   ores_refdata_calendars_tbl
+  ores_refdata_cap_floor_proxy_configs_tbl
   ores_refdata_cap_floor_volatility_configs_tbl
   ores_refdata_cashflow_types_tbl
   ores_refdata_cds_conventions_tbl
@@ -158,6 +159,12 @@ entity "refdata" as refdata {
   ores_refdata_curve_segment_types_tbl
   ores_refdata_curve_segments_tbl
   ores_refdata_curve_volatility_configs_tbl
+  ores_refdata_curve_volatility_constants_tbl
+  ores_refdata_curve_volatility_curves_tbl
+  ores_refdata_curve_volatility_delta_surfaces_tbl
+  ores_refdata_curve_volatility_kinds_tbl
+  ores_refdata_curve_volatility_proxy_surfaces_tbl
+  ores_refdata_curve_volatility_strike_surfaces_tbl
   ores_refdata_day_count_fraction_types_tbl
   ores_refdata_day_counters_tbl
   ores_refdata_default_curve_configs_tbl
@@ -174,8 +181,10 @@ entity "refdata" as refdata {
   ores_refdata_future_conventions_tbl
   ores_refdata_fx_option_conventions_tbl
   ores_refdata_fx_volatility_configs_tbl
+  ores_refdata_fx_volatility_smiles_tbl
   ores_refdata_ibor_index_conventions_tbl
   ores_refdata_inflation_cap_floor_volatility_configs_tbl
+  ores_refdata_inflation_cap_floor_volatility_strikes_tbl
   ores_refdata_inflation_curve_configs_tbl
   ores_refdata_inflation_seasonality_factors_tbl
   ores_refdata_inflation_swap_conventions_tbl
@@ -225,6 +234,7 @@ entity "refdata" as refdata {
   ores_refdata_supervisory_bodies_tbl
   ores_refdata_swap_conventions_tbl
   ores_refdata_swap_index_conventions_tbl
+  ores_refdata_swaption_proxy_configs_tbl
   ores_refdata_swaption_volatility_configs_tbl
   ores_refdata_tenor_anchors_tbl
   ores_refdata_tenor_basis_swap_long_shorts_tbl
@@ -245,7 +255,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-170 tables — ores_schema.refdata.puml
+180 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {
@@ -639,7 +649,6 @@ entity "reporting" as reporting {
   ores_reporting_engine_settings_groups_tbl
   ores_reporting_engine_settings_tbl
   ores_reporting_file_types_tbl
-  ores_reporting_ore_element_map_columns_tbl
   ores_reporting_ore_parameter_setting_value_sets_tbl
   ores_reporting_ore_parameter_value_domains_tbl
   ores_reporting_ore_parameter_value_set_catalogues_tbl
@@ -665,7 +674,7 @@ entity "reporting" as reporting {
 }
 note bottom of reporting
 Reporting & Analytics
-39 tables — ores_schema.reporting.puml
+38 tables — ores_schema.reporting.puml
 end note
 
 entity "compute" as compute {

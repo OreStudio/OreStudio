@@ -54,9 +54,6 @@ struct inflation_cap_floor_volatility_config_write {
     std::string extrapolation;
     std::string tenors;
     std::optional<int> settlement_days;
-    std::optional<std::string> cap_strikes;
-    std::optional<std::string> floor_strikes;
-    std::optional<std::string> strikes;
     std::string calendar;
     std::string day_counter;
     std::string business_day_convention;

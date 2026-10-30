@@ -113,9 +113,6 @@ domain::inflation_cap_floor_volatility_config inflation_cap_floor_volatility_con
     v.extrapolation = write.extrapolation;
     v.tenors = write.tenors;
     v.settlement_days = write.settlement_days;
-    v.cap_strikes = write.cap_strikes;
-    v.floor_strikes = write.floor_strikes;
-    v.strikes = write.strikes;
     v.calendar = write.calendar;
     v.day_counter = write.day_counter;
     v.business_day_convention = write.business_day_convention;

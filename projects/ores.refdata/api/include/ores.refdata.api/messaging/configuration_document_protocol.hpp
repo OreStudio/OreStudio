@@ -63,6 +63,7 @@
 #include "ores.refdata.api/domain/fx_volatility_config.hpp"
 #include "ores.refdata.api/domain/fx_volatility_smile.hpp"
 #include "ores.refdata.api/domain/inflation_cap_floor_volatility_config.hpp"
+#include "ores.refdata.api/domain/inflation_cap_floor_volatility_strikes.hpp"
 #include "ores.refdata.api/domain/inflation_curve_config.hpp"
 #include "ores.refdata.api/domain/inflation_seasonality_factor.hpp"
 #include "ores.refdata.api/domain/intraday_power_curve_config.hpp"
@@ -120,6 +121,8 @@ struct curve_configuration_document {
     std::vector<ores::refdata::domain::curve_volatility_proxy_surface> volatility_proxy_surfaces;
     std::vector<ores::refdata::domain::inflation_cap_floor_volatility_config>
         inflation_cap_floor_volatilities;
+    std::vector<ores::refdata::domain::inflation_cap_floor_volatility_strikes>
+        inflation_volatility_strikes;
     std::vector<ores::refdata::domain::swaption_volatility_config> swaption_volatilities;
     std::vector<ores::refdata::domain::swaption_proxy_config> swaption_proxy_configs;
     std::vector<ores::refdata::domain::cap_floor_volatility_config> cap_floor_volatilities;

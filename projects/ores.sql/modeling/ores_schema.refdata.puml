@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: refdata
-Tables: 179
+Tables: 180
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -4038,9 +4038,6 @@ package "refdata" #FFF3E0 {
         * extrapolation : text
         * tenors : text
           settlement_days : integer
-          cap_strikes : text
-          floor_strikes : text
-          strikes : text
         * calendar : text
         * day_counter : text <<FK>>
         * business_day_convention : text
@@ -4066,10 +4063,47 @@ package "refdata" #FFF3E0 {
     Inflation Cap Floor Volatility Config Table
     The settings of one InflationCapFloorVolatility entry of a curveconfig.xml,
     one row per curve_definition in the InflationCapFloorVolatilities section:
-    a zero coupon or year on year inflation cap and floor surface over tenors and
-    strikes, with the index and curves it is built from. Its Report is a row of
+    a zero coupon or year on year inflation cap and floor surface over tenors, with
+    the index and curves it is built from.
+    The strikes are not here. ORE states three lists -- CapStrikes, FloorStrikes
+    and Strikes -- as alternatives, so they are rows of
+    inflation_cap_floor_volatility_strikes, one per axis the entry states, rather
+    than three nullable columns that leave the reader to work out which one a row
+    meant. Type stays: it is ZC or YY and selects nothing about the columns. Its Report is a row of
     curve_report_configuration and its BootstrapConfig a row of
     curve_bootstrap_config, both keyed to the entry.
+    end note
+
+    entity ores_refdata_inflation_cap_floor_volatility_strikes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * inflation_cap_floor_volatility_config_id : uuid <<FK>>
+        * axis : text
+        * strikes : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_inflation_cap_floor_volatility_strikes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Inflation Cap Floor Volatility Strikes Table
+    ORE's inflationCapFloorVolatility states three strike lists: CapStrikes,
+    FloorStrikes and Strikes. They are alternatives, not three facts: a cap quote
+    is struck on caps, a floor quote on floors, and a surface on both sides at once.
+    Three optional columns in one row would let a row state a cap list and a floor
+    list and leave the reader to work out which it meant.
+    The part is a row per axis the entry states, so the choice is structural. An
+    entry with caps and floors holds two rows, a surface holds one, and an entry that
+    states no list holds none.
     end note
 
     entity ores_refdata_inflation_curve_configs_tbl <<temporal>> #C6F0D8 {
@@ -6471,6 +6505,7 @@ ores_refdata_day_counters_tbl ||--o{ ores_refdata_fx_volatility_configs_tbl : "h
 ores_refdata_fx_volatility_configs_tbl ||--o{ ores_refdata_fx_volatility_smiles_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_inflation_cap_floor_volatility_configs_tbl : "has"
 ores_refdata_day_counters_tbl ||--o{ ores_refdata_inflation_cap_floor_volatility_configs_tbl : "has"
+ores_refdata_inflation_cap_floor_volatility_configs_tbl ||--o{ ores_refdata_inflation_cap_floor_volatility_strikes_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_inflation_curve_configs_tbl : "has"
 ores_refdata_day_counters_tbl ||--o{ ores_refdata_inflation_curve_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_inflation_seasonality_factors_tbl : "has"

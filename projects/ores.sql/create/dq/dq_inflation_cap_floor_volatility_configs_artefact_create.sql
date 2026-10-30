@@ -24,7 +24,7 @@
  */
 
 -- =============================================================================
--- The settings of one InflationCapFloorVolatility entry of a curveconfig.xml, one row per curve_definition in the InflationCapFloorVolatilities section: a zero coupon or year on year inflation cap and floor surface over tenors and strikes, with the index and curves it is built from. Its Report is a row of curve_report_configuration and its BootstrapConfig a row of curve_bootstrap_config, both keyed to the entry. - Artefact Table
+-- The settings of one InflationCapFloorVolatility entry of a curveconfig.xml, one row per curve_definition in the InflationCapFloorVolatilities section: a zero coupon or year on year inflation cap and floor surface over tenors, with the index and curves it is built from. The strikes are not here. ORE states three lists -- CapStrikes, FloorStrikes and Strikes -- as alternatives, so they are rows of inflation_cap_floor_volatility_strikes, one per axis the entry states, rather than three nullable columns that leave the reader to work out which one a row meant. Type stays: it is ZC or YY and selects nothing about the columns. Its Report is a row of curve_report_configuration and its BootstrapConfig a row of curve_bootstrap_config, both keyed to the entry. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_inflation_cap_floor_volatility_configs_artefact_tbl" (
@@ -40,9 +40,6 @@ create table if not exists "ores_dq_inflation_cap_floor_volatility_configs_artef
     "extrapolation" text not null,
     "tenors" text not null,
     "settlement_days" integer null,
-    "cap_strikes" text null,
-    "floor_strikes" text null,
-    "strikes" text null,
     "calendar" text not null,
     "day_counter" text not null,
     "business_day_convention" text not null,

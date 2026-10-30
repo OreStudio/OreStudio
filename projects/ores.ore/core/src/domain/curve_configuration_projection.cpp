@@ -1527,6 +1527,16 @@ const Part* part_of(const std::map<boost::uuids::uuid, const Part*>& parts,
     return it == parts.end() ? nullptr : it->second;
 }
 
+std::vector<const refdata::domain::inflation_cap_floor_volatility_strikes*> inflation_strikes_of(
+    const std::vector<refdata::domain::inflation_cap_floor_volatility_strikes>& rows,
+    const boost::uuids::uuid& entry_id) {
+    std::vector<const refdata::domain::inflation_cap_floor_volatility_strikes*> out;
+    for (const auto& r : rows)
+        if (r.inflation_cap_floor_volatility_config_id == entry_id)
+            out.push_back(&r);
+    return out;
+}
+
 const refdata::domain::fx_volatility_smile* fx_smile_of(
     const std::vector<refdata::domain::fx_volatility_smile>& rows,
     const boost::uuids::uuid& entry_id) {
@@ -1752,9 +1762,6 @@ void import_inflation_cap_floor_volatility(
     r.extrapolation = required_spelling(v, "Extrapolation");
     r.tenors = required_text(v, "Tenors");
     r.settlement_days = optional_int(v, "SettlementDays");
-    r.cap_strikes = v.text("CapStrikes");
-    r.floor_strikes = v.text("FloorStrikes");
-    r.strikes = v.text("Strikes");
     r.calendar = required_text(v, "Calendar");
     r.day_counter = required_spelling(v, "DayCounter");
     r.business_day_convention = required_spelling(v, "BusinessDayConvention");
@@ -1766,7 +1773,25 @@ void import_inflation_cap_floor_volatility(
     r.quote_index = v.text("QuoteIndex");
     r.conventions = v.text("Conventions");
     curve_configuration_projection_set_audit(r);
+    const auto entry_id = r.id;
     out.inflation_cap_floor_volatilities.push_back(std::move(r));
+
+    // The three lists are alternatives, so each one the entry states is a row of
+    // its own axis rather than a column that leaves the reader to pick.
+    const auto add_strikes = [&](std::string_view axis, const std::optional<std::string>& list) {
+        if (!list || list->empty())
+            return;
+        refdata::domain::inflation_cap_floor_volatility_strikes row;
+        row.id = curve_configuration_projection_new_uuid();
+        row.inflation_cap_floor_volatility_config_id = entry_id;
+        row.axis = std::string(axis);
+        row.strikes = *list;
+        curve_configuration_projection_set_audit(row);
+        out.inflation_volatility_strikes.push_back(std::move(row));
+    };
+    add_strikes("Cap", v.text("CapStrikes"));
+    add_strikes("Floor", v.text("FloorStrikes"));
+    add_strikes("Both", v.text("Strikes"));
     if (const auto report = v.child("Report"); report)
         import_report(out, d.id, *report);
     if (const auto bootstrap = v.child("BootstrapConfig"); bootstrap)
@@ -2687,6 +2712,7 @@ void export_inflation_cap_floor_volatility(
     record_writer r,
     const refdata::domain::curve_definition& d,
     const refdata::domain::inflation_cap_floor_volatility_config& v,
+    const std::vector<const refdata::domain::inflation_cap_floor_volatility_strikes*>& strikes,
     const refdata::domain::curve_report_configuration* report,
     const refdata::domain::curve_bootstrap_config* bootstrap) {
     r.set_text("CurveId", d.curve_id);
@@ -2697,9 +2723,11 @@ void export_inflation_cap_floor_volatility(
     r.set_spelling("Extrapolation", v.extrapolation, "ORE boolean");
     r.set_text("Tenors", v.tenors);
     r.set_optional_integer("SettlementDays", v.settlement_days);
-    r.set_optional_text("CapStrikes", v.cap_strikes);
-    r.set_optional_text("FloorStrikes", v.floor_strikes);
-    r.set_optional_text("Strikes", v.strikes);
+    for (const auto* list : strikes)
+        r.set_optional_text(std::string(list->axis == "Cap"    ? "CapStrikes"
+                                        : list->axis == "Floor" ? "FloorStrikes"
+                                                                : "Strikes"),
+                            std::optional<std::string>(list->strikes));
     r.set_text("Calendar", v.calendar);
     r.set_spelling("DayCounter", v.day_counter, "day counter");
     r.set_spelling("BusinessDayConvention", v.business_day_convention, "business day convention");
@@ -3343,13 +3371,15 @@ curve_configuration_projection::document curve_configuration_projection::reverse
         }
         if (d->section_code == inflation_cap_floor_volatilities_section) {
             const auto b = ctx.entry_bootstraps.find(d->id);
-            export_inflation_cap_floor_volatility(written.child("InflationCapFloorVolatilities")
-                                                      .append("InflationCapFloorVolatility"),
-                                                  *d,
-                                                  settings_of(inflation_vol_by_definition, *d),
-                                                  report_of(*d),
-                                                  b == ctx.entry_bootstraps.end() ? nullptr :
-                                                                                    b->second);
+            const auto& settings = settings_of(inflation_vol_by_definition, *d);
+            export_inflation_cap_floor_volatility(
+                written.child("InflationCapFloorVolatilities")
+                    .append("InflationCapFloorVolatility"),
+                *d,
+                settings,
+                inflation_strikes_of(v.inflation_volatility_strikes, settings.id),
+                report_of(*d),
+                b == ctx.entry_bootstraps.end() ? nullptr : b->second);
             continue;
         }
         if (d->section_code == correlations_section) {

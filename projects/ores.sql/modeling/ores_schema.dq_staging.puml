@@ -1834,9 +1834,6 @@ package "dq_staging" #F3E5F5 {
         * extrapolation : text
         * tenors : text
           settlement_days : integer
-          cap_strikes : text
-          floor_strikes : text
-          strikes : text
         * calendar : text
         * day_counter : text
         * business_day_convention : text
@@ -1850,7 +1847,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_inflation_cap_floor_volatility_configs_artefact_tbl
-    The settings of one InflationCapFloorVolatility entry of a curveconfig.xml, one row per curve_definition in the InflationCapFloorVolatilities section: a zero coupon or year on year inflation cap and floor surface over tenors and strikes, with the index and curves it is built from. Its Report is a row of curve_report_configuration and its BootstrapConfig a row of curve_bootstrap_config, both keyed to the entry. - Artefact Table
+    The settings of one InflationCapFloorVolatility entry of a curveconfig.xml, one row per curve_definition in the InflationCapFloorVolatilities section: a zero coupon or year on year inflation cap and floor surface over tenors, with the index and curves it is built from. The strikes are not here. ORE states three lists -- CapStrikes, FloorStrikes and Strikes -- as alternatives, so they are rows of inflation_cap_floor_volatility_strikes, one per axis the entry states, rather than three nullable columns that leave the reader to work out which one a row meant. Type stays: it is ZC or YY and selects nothing about the columns. Its Report is a row of curve_report_configuration and its BootstrapConfig a row of curve_bootstrap_config, both keyed to the entry. - Artefact Table
     end note
 
     entity ores_dq_inflation_curve_configs_artefact_tbl  #F7E5FF {

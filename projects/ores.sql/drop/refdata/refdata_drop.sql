@@ -93,6 +93,8 @@
 \ir ./refdata_curve_parametric_smile_parameters_drop.sql
 \ir ./refdata_curve_parametric_smiles_notify_trigger_drop.sql
 \ir ./refdata_curve_parametric_smiles_drop.sql
+\ir ./refdata_inflation_cap_floor_volatility_strikes_notify_trigger_drop.sql
+\ir ./refdata_inflation_cap_floor_volatility_strikes_drop.sql
 \ir ./refdata_inflation_cap_floor_volatility_configs_notify_trigger_drop.sql
 \ir ./refdata_inflation_cap_floor_volatility_configs_drop.sql
 \ir ./refdata_curve_volatility_configs_notify_trigger_drop.sql

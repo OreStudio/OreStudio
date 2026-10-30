@@ -54,6 +54,7 @@
 #include "ores.refdata.core/repository/fx_volatility_config_repository.hpp"
 #include "ores.refdata.core/repository/fx_volatility_smile_repository.hpp"
 #include "ores.refdata.core/repository/inflation_cap_floor_volatility_config_repository.hpp"
+#include "ores.refdata.core/repository/inflation_cap_floor_volatility_strikes_repository.hpp"
 #include "ores.refdata.core/repository/inflation_curve_config_repository.hpp"
 #include "ores.refdata.core/repository/inflation_seasonality_factor_repository.hpp"
 #include "ores.refdata.core/repository/intraday_power_curve_config_repository.hpp"
@@ -214,6 +215,11 @@ void curve_configuration_document_service::save(messaging::curve_configuration_d
                     reason,
                     commentary);
     write_amendment(ctx_,
+                    inflation_cap_floor_volatility_strikes_repository(),
+                    std::move(v.inflation_volatility_strikes),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
                     curve_parametric_smile_repository(),
                     std::move(v.parametric_smiles),
                     reason,
@@ -314,6 +320,13 @@ curve_configuration_document_service::get(const boost::uuids::uuid& config_id) {
         read_where(ctx_, curve_volatility_proxy_surface_repository(), of_volatility_kind);
     r.inflation_cap_floor_volatilities =
         read_where(ctx_, inflation_cap_floor_volatility_config_repository(), of_definition);
+    std::set<boost::uuids::uuid> inflation_entries;
+    for (const auto& c : r.inflation_cap_floor_volatilities)
+        inflation_entries.insert(c.id);
+    r.inflation_volatility_strikes =
+        read_where(ctx_, inflation_cap_floor_volatility_strikes_repository(), [&](const auto& row) {
+            return inflation_entries.contains(row.inflation_cap_floor_volatility_config_id);
+        });
     r.swaption_volatilities =
         read_where(ctx_, swaption_volatility_config_repository(), of_definition);
     std::set<boost::uuids::uuid> swaption_entries;
@@ -383,6 +396,9 @@ void curve_configuration_document_service::remove(const boost::uuids::uuid& id) 
         swaption_proxy_config_repository().remove(ctx_, ids_of(d.swaption_proxy_configs));
     if (!d.swaption_volatilities.empty())
         swaption_volatility_config_repository().remove(ctx_, ids_of(d.swaption_volatilities));
+    if (!d.inflation_volatility_strikes.empty())
+        inflation_cap_floor_volatility_strikes_repository().remove(
+            ctx_, ids_of(d.inflation_volatility_strikes));
     if (!d.inflation_cap_floor_volatilities.empty())
         inflation_cap_floor_volatility_config_repository().remove(
             ctx_, ids_of(d.inflation_cap_floor_volatilities));

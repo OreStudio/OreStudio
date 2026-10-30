@@ -428,6 +428,8 @@
 \ir ./refdata_curve_volatility_strike_surfaces_notify_trigger_create.sql
 \ir ./refdata_inflation_cap_floor_volatility_configs_create.sql
 \ir ./refdata_inflation_cap_floor_volatility_configs_notify_trigger_create.sql
+\ir ./refdata_inflation_cap_floor_volatility_strikes_create.sql
+\ir ./refdata_inflation_cap_floor_volatility_strikes_notify_trigger_create.sql
 \ir ./refdata_curve_parametric_smiles_create.sql
 \ir ./refdata_curve_parametric_smiles_notify_trigger_create.sql
 \ir ./refdata_curve_parametric_smile_parameters_create.sql

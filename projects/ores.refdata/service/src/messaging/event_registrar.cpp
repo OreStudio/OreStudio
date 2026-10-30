@@ -142,6 +142,7 @@
 #include "ores.refdata.service/messaging/fx_volatility_smile_event_registrar.hpp"
 #include "ores.refdata.service/messaging/ibor_index_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/inflation_cap_floor_volatility_config_event_registrar.hpp"
+#include "ores.refdata.service/messaging/inflation_cap_floor_volatility_strikes_event_registrar.hpp"
 #include "ores.refdata.service/messaging/inflation_curve_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/inflation_seasonality_factor_event_registrar.hpp"
 #include "ores.refdata.service/messaging/inflation_swap_convention_event_registrar.hpp"
@@ -380,6 +381,8 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_fx_volatility_smile_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_ibor_index_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_inflation_cap_floor_volatility_config_event_mapping(
+        event_source, event_bus, nats));
+    subs.push_back(register_inflation_cap_floor_volatility_strikes_event_mapping(
         event_source, event_bus, nats));
     subs.push_back(register_inflation_curve_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(

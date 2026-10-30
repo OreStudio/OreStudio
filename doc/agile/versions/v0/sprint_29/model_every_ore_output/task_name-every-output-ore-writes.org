@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 2F281DA3-C265-43EA-9A98-8EDEF902C0A2
+:END:
+#+title: Task: Name every output ORE writes
+#+description: ORE publishes no list of what its outputs contain. The truth is in four places: our file_type seed names 55 output parameters, the manual describes some reports, the writers declare every column, and 473 checked-in expected outputs show the real shapes. Build one catalogue in ores.ore, as document_kind is a catalogue: one row per output family with the file parameter that names it, the analytic codes that write it, its key dimensions and its columns. Derive it from the writers and confirm it against the samples.
+#+type: task
+#+level: s1
+#+filetags: :model_every_ore_output:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One table names every output family ORE writes, so a reader, a table and a test can each be measured against it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- The catalogue names every family whose files appear under external/ore/examples/*/ExpectedOutput, and every output parameter our file_type seed declares.
+- A family states the file parameter, its key dimensions, its columns and the header variants the samples show.
+- A test fails when a checked-in expected output maps to no family, or a family has no file in the samples.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

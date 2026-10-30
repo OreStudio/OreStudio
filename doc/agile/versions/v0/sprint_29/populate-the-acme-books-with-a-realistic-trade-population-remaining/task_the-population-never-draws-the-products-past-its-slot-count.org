@@ -98,3 +98,18 @@ the last eight types are never drawn: a provisioned tenant holds no fx variance
 swap and no fx accumulator, though both construct and both route. The rate
 family is the case that was measured first; the fault is one rule, stated once
 in each planner, and the fix belongs to both.
+
+The fix is written and its tests pass: the seeded rate configs state nine trades
+and the fx configs sixteen, which is one per routed code, and the planner tests
+state the rule and name the knock-out swap, the fx variance swap and the fx
+accumulator as the codes a short config was missing.
+
+The provisioning run has not been made. Main does not compile since #4103
+merged: =ores.synthetic.service= still calls
+=market_data_client::list_market_data_sources()=, which that merge removed in
+favour of =list_feeds()= returning a =feed= row, and a provisioned database has
+no feeds table at all. The rename is half finished, so this is not a caller
+rename that another branch can patch: reverting the WIP commit 84605bcf70
+conflicts in fifty files.
+
+Until main builds, this task cannot produce the run its acceptance asks for.

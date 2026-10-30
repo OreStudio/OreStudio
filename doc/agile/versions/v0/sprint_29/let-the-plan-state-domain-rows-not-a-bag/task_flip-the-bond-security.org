@@ -8,7 +8,7 @@
 #+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
 #+owner: marco
 #+branch: feature/flip-the-bond-security
-#+pr: 4098
+#+pr: 4131
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -82,6 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4131][#4131]] | [agile] Capture the batch members main lost |
 | [[https://github.com/OreStudio/OreStudio/pull/4098][#4098]] | [synthetic] Let a bond state its security and delete the bag |
 
 * Review

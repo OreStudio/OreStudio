@@ -95,17 +95,18 @@ and it does not read what the run produced, which is
    | Cut | The derived label, monospace, and the scope under it |
    | Kind | The occasion |
    | Timepoint | The instant, exact, with its timezone |
-   | State | Authorised, Superseded, Taken, Draft, Incomplete or Refused |
+   | State | Authorised, In use, Superseded, Taken, Draft, Incomplete or Refused, with the kind's basis under it |
    | Taker | The account that took it |
    | Authoriser | The account that decided it, and a dash where nobody has |
    | Holdings | The deal count and the number of market data values the body fixed, right-aligned |
    | Runs | How many runs have priced from it, right-aligned |
 
-5. *Pick the day's cut.* The person picks the row whose state is *Authorised*, and
-   the dialog states what the configuration will name: the label, the kind, the
-   timepoint, the scope, the counts of the body, the taker, the authoriser and the
-   authorisation request. The authorisation is drawn as a fact and not as a link a
-   report can move.
+5. *Pick the day's cut.* The person picks a row whose cut is consumable, which is
+   one in the state *Authorised* or *In use*, and the dialog states what the
+   configuration will name: the label, the kind, the timepoint, the scope, the
+   counts of the body, the taker, and either the authoriser with the authorisation
+   request or the basis, that the kind requires no authorisation. The
+   authorisation is drawn as a fact and not as a link a report can move.
 6. *Read the superseded cut, and why it is still offered.* A cut that a later one
    replaced is offered, drawn *Superseded*, with the sentence that says what that
    means: a rerun reproduces an earlier result from it, and a new run of a report
@@ -120,16 +121,25 @@ and it does not read what the run produced, which is
 
    | The cut's state | What the screen says |
    |-----------------+---------------------|
-   | Taken | That the body is fixed and nobody has signed it, that no run may price from it, and that the request waits on the named part. It names the account the request waits on |
+   | Taken | That the body is fixed, that its kind requires an authorisation, that nobody has signed it, and that the request waits on the kind's deciding permission. It names the account the request waits on |
    | Draft, or Incomplete | That the body is not fixed, or is not complete, and that the gaps are on the cut's page. It names the part each gap belongs to |
    | Refused | That the authorisation was refused, the reason, and that the remedy is a new take rather than a second decision |
    | A cut of another scope or another party | That a run of this configuration values this party's books, so another body cannot be named |
 
-8. *Read the flash cut's indicative mark.* A flash cut is offered while its
-   authorisation reads pending, because its occasion precedes the authorisation,
-   and the row says *Indicative* in the same column as *Authorised* says
-   *Authorised*. A configuration bound to one is drawn with the mark wherever the
-   cut is named, and every result it prices is marked indicative.
+   A cut in the state *In use* is not in this table, because it is not refused: its
+   kind requires no authorisation, so the body was usable when it was taken. The
+   gate is the kind's, and a screen that refused every taken cut would refuse the
+   start of day and flash cuts that no occasion signs.
+
+8. *Read the indicative mark where the kind carries one.* The flash kind states
+   that its values are indicative, because its occasion is before the day settles.
+   Its cut is consumable when taken, and the row says *In use* with the indicative
+   mark under it, in the same column where another cut says *Authorised* with its
+   decider. A configuration bound to such a cut is drawn with the mark wherever
+   the cut is named, and every result it prices is marked indicative. The mark is
+   the kind's and is read from it, so a cut of a kind that requires no
+   authorisation and is not indicative, which the start of day kind is, carries
+   none.
 9. *Read the refused run.* A run asked for while the configuration names a cut that
    is not consumable does not start. It is refused before the engine is reached, in
    the words the tab uses, and the run's output message carries the same sentence,
@@ -147,11 +157,12 @@ and it does not read what the run produced, which is
     is not consumable in the same sentence the screen uses. A run that reads a cut
     reads one body and not two halves at two instants.
 12. *Read the run's card.* The run's page gains one card: *The cut it priced from*.
-    It names the label, the kind, the timepoint, the scope, the taker, the
-    authoriser and the authorisation instant, the deal count, the market data values
-    read, the engine version and the publish record of each market role in the
-    body. It is read from the run and not from the configuration, because the
-    configuration can move after the run.
+    It names the label, the kind, the timepoint, the scope, the taker, the deal
+    count, the market data values read, the engine version and the publish record of
+    each market role in the body, and it states the cut's basis: the authoriser and
+    the authorisation instant where the kind requires them, and that the kind
+    requires no authorisation where it does not. It is read from the run and not
+    from the configuration, because the configuration can move after the run.
 
 ** Step 5: read whether the run reproduced
 
@@ -246,7 +257,7 @@ the run gains one field. Neither copies the body.
 | Step 2, the configuration | Read the run settings configuration and the cut it names | =reporting.v1.configurations.get= | exists; the field that names the cut is missing |
 | Step 4, the picker | List the cuts of a party, with the state, the taker, the authoriser and the counts | =reporting.v1.cuts.list= | missing |
 | Step 5, the cut's facts | Read one cut with its parts and its authorisation | =reporting.v1.cuts.get= | missing |
-| Steps 7 to 9, the verdict | Answer whether a cut is consumable, and why not | =reporting.v1.ops.check_cut_consumable= | missing |
+| Steps 7 to 9, the verdict | Answer whether a cut is consumable — fixed, and signed where its kind requires it — and why not | =reporting.v1.ops.check_cut_consumable= | missing |
 | Step 10, the run | Trigger a run of one definition | =reporting.v1.ops.trigger_report_instance= | exists |
 | Step 11, the deals | Read the population the cut fixed | =reporting.v1.ops.gather_trades= reads the population a run values today, and no read serves a cut's | partial |
 | Step 11, the market data | Read the fixed snapshot the cut names, and refuse a cut that is not consumable | =reporting.v1.ops.gather_market_data= reads every series at a date, and no read serves a snapshot | partial |
@@ -291,7 +302,12 @@ names what it used, and the configuration may move afterwards.
 7. *No route and no screen for reporting.* The report page, the run settings
    screen and its tabs still do not exist, so this journey's surfaces are new with
    the binding's.
-8. *The indicative mark has no badge.* A flash cut's result is indicative, and no
+8. *The kind's basis is not stored.* The card and the picker both state whether the
+   cut's kind required an authorisation, and no table holds the two declarations the
+   answer is read from. The
+   [[id:E840111E-AA2F-4746-8D49-A1D73742925E][take journey]] records the same gap
+   from the side of the take.
+9. *The indicative mark has no badge.* A flash cut's result is indicative, and no
    code domain holds the word. The badge seed needs it, or the screen draws the
    label the seed's rule gives for an unmapped code.
 
@@ -311,7 +327,8 @@ names what it used, and the configuration may move afterwards.
 - [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] — the decision this journey draws.
 - [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]] — the first binding, and the hole this one fills.
 - [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the definition and the body.
-- [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — the occasions, and the flash kind whose authorisation is pending by design.
+- [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — the occasions, and the two that need no authorisation of their own, one of them indicative.
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record whose state the gate reads, and the queue the decider answers in.
 - [[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut] — the values the run reads from the cut.
 - [[id:19630B5D-A163-42B5-B9C4-61A87BAE8F5F][Trade cut]] — the population the run values from the cut.
 - [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]] — why a store read cannot stand in for a fixed body.

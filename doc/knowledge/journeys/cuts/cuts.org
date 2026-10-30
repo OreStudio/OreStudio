@@ -66,7 +66,8 @@ journeys use the same words, and the same words appear on the screens.
 |-------+----------------------+------------------|
 | Draft | The take began and no body is fixed yet | Nothing |
 | Incomplete | The body could not be assembled, and the gaps say why | Nothing, and the gaps name the remedy |
-| Taken | The body is fixed and nobody has signed it | Nothing, and the refusal names the request it waits on |
+| Taken | The body is fixed, its kind requires an authorisation, and nobody has signed it | Nothing, and the refusal names the request it waits on |
+| In use | The body is fixed, and its kind requires no authorisation | It prices from the cut |
 | Authorised | A second person signed the body | It prices from the cut |
 | Refused | The signature was refused, with the reason | Nothing; the remedy is a new take |
 | Superseded | A later cut of the same kind and scope replaced it | It prices from the cut, and says a later cut is in use |
@@ -83,10 +84,18 @@ journeys use the same words, and the same words appear on the screens.
 | engineer | A comparison that differs, and the versions on each side | Nothing; the remedy is a change to the engine, which is another journey |
 
 The reads are =reporting::cuts:read= and =reporting::report_instances:read=, the
-take is =reporting::cuts:take=, and the decision is the inbox part's permission,
-which the seeded =finance= part names. The three names are proposals, and the
+take is =reporting::cuts:take=, and the decision is the permission the inbox kind
+names, which for a cut is =inbox::approvals:decide_finance= — a permission the
+inbox already holds. The two cut names are proposals, and the
 [[id:F6362451-D569-4609-97A3-F1C785AAAF02][decision note]] states why they take
 the shape they do.
+
+An approval is not this group's record. The request, its queue, its decisions,
+its four eyes and its notifications are
+[[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][the inbox's]], and a cut that requires
+an authorisation raises a request of a kind the reporting component registers. A
+cut of a kind that requires none raises nothing, and its record states the
+basis.
 
 * Where the screens are
 
@@ -123,7 +132,7 @@ of Reference data. Every state the three journeys name is behind the query strin
 - [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — the occasions the take offers.
 - [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]] — the first binding, and the hole the cut fills.
 - [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the group whose report, run and configuration screens these extend.
-- [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]] — the approval the authorisation uses.
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record the authorisation is, and the queue the decider answers in.
 
 * See also
 

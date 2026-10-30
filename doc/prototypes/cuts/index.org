@@ -44,7 +44,7 @@ acts, the runs that already rest on the body, and the verdict on a reproduction.
 #+ATTR_HTML: :class hug-leading
 | Prototype | What it argues | Open it | Review |
 |-----------+----------------+---------+--------|
-| [[file:the-cut.org][The cut]] | The screens a cut needs, in one page with seven surfaces. The list draws the six states with the taker, the authoriser and the count of runs, and the default order is the timepoint so the cut in use is the first row. The record draws the body as the four inputs the cluster argues for, a gap table where a part could not be filled, the two acts with the four-eyes rule stated as a fact, the runs that rest on the body, and a history that is two entries because a taken body is immutable. The take is four steps on a rail, and the second step is where the body is refused: no *Take the cut* is drawn while a gap stands, and the draft keeps the gaps because the list is what a person chases. The picker refuses a taken, an incomplete and a refused cut in the same words the run uses, offers a superseded cut with its sentence, and does not refuse a flash cut whose authorisation is pending by its occasion. The run's page carries the card that names the cut, read from the run and never from the configuration, and below it a comparison in three verdicts — reproduced, differs, and cannot be compared for one of three reasons — with all eight outcomes one strip away. The named cut times are a standard list and a standard record in Reference data, and the take reads the close from them. | [[file:the-cut/][prototype]] | none |
+| [[file:the-cut.org][The cut]] | The screens a cut needs, in one page with seven surfaces. The list draws the seven states with the taker, the authoriser and the count of runs, and the default order is the timepoint so the cut in use is the first row. *In use* is the state of a body whose kind requires no authorisation, and the basis stands under each state that has one, apart from the indicative mark, which is the kind's and not the state's. The record draws the body as the four inputs the cluster argues for, a gap table where a part could not be filled, the acts — two where the kind requires an authorisation, with the four-eyes rule stated as a fact, and one where it does not, with the basis in its place — the runs that rest on the body, and a history of one entry or two because a taken body is immutable. The take is four steps on a rail, and the second step is where the body is refused: no *Take the cut* is drawn while a gap stands, and the draft keeps the gaps because the list is what a person chases. The picker refuses a taken, an incomplete and a refused cut in the same words the run uses, offers a superseded cut with its sentence, and offers a cut in use, because its kind requires no authorisation and the take raised no request. The run's page carries the card that names the cut, read from the run and never from the configuration, and below it a comparison in three verdicts — reproduced, differs, and cannot be compared for one of three reasons — with all eight outcomes one strip away. The named cut times are a standard list and a standard record in Reference data, and the take reads the close from them. | [[file:the-cut/][prototype]] | none |
 
 * What it settles
 
@@ -63,8 +63,10 @@ badge would make a cut awaiting a signature look like one that holds none.
 
 *The refusals are one sentence in two places.* The picker refuses a cut where it
 is picked, and the run refuses the same body in the same words before the engine is
-reached. Neither offers a way past a refusal except the remedy the state names: an
-authorisation, or a new take, or a change to the configuration.
+reached. The sentence names what the kind requires, so a body of a kind that
+requires no authorisation is never refused on that ground. Neither offers a way past
+a refusal except the remedy the state names: an authorisation, or a new take, or a
+change to the configuration.
 
 *A reproduction is a sentence before it is a number.* The comparison states what
 was reproduced and what the two runs shared — the body and the engine — before it
@@ -75,8 +77,10 @@ writes the reason down, and the figures are what follow from it.
 
 Whether the gap table becomes a shared part of the standard, or stays the take's
 own. Whether the comparison reads a run's archive into figures, or the run records
-its figures as rows when it completes. And whether the cut's scope is one book
-group, as drawn, or a composition of the cuts of its books.
+its figures as rows when it completes. Whether the cut's scope is one book group,
+as drawn, or a composition of the cuts of its books. And whether one inbox kind
+serves every occasion that needs a signature, as drawn, or each occasion registers
+its own.
 
 * Adding a prototype
 

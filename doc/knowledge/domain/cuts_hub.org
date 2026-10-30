@@ -34,7 +34,7 @@ answers a separate question.
 - The *object* is the body of data the cut fixes. The rest of this note calls it
   the body. It holds the deals, the market data, the reference data, the engine
   and code versions, and the taking identity. The cut records the acts that took
-  and authorised it beside the body.
+  it, and the authorisation where its kind requires one, beside the body.
 
 The label answers which cut is meant. The timepoint answers when it holds. The
 object answers what it holds. A statement that omits one of the three leaves the
@@ -150,8 +150,11 @@ four inputs.
 - The *engine and the code*. The version of the risk engine and the revision of
   the code that computed the result.
 - The *taking identity and the authorisation*. Not inputs to the valuation: the
-  cut records who took it, who authorised it and when, as the acts that made
-  the body official.
+  cut records who took it, and, where its kind requires one, who authorised it
+  and when, as the acts that made the body official. A kind whose occasion
+  carries no signature records the taking act alone, and
+  [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] states which
+  occasions those are.
 
 The list admits a test. Take a result the cut claims to support and ask which
 changes would make the number differ. Each of the four inputs answers yes. A
@@ -262,7 +265,7 @@ to. Practice at a particular firm is a matter for that firm's own record.
 | Timepoint                          | The instant a cut fixes, with its timezone                   |
 | Object                             | The body of data a cut fixes                                 |
 | Kind                               | The occasion a cut is taken for, which fixes its instant, recurrence and centre |
-| Authorisation                      | The sign-off that makes a cut official and immutable         |
+| Authorisation                      | The sign-off a kind requires, which makes a cut official and immutable; a kind whose occasion needs none records the taking act alone |
 | Trade cut                          | The component of a cut that fixes the deal population        |
 | Market data cut                    | The component of a cut that fixes the market data            |
 | Cut code                           | A label for the time of day at which an option expires       |

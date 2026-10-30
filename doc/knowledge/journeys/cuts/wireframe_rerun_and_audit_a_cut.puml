@@ -39,10 +39,12 @@ salt
   {#
     Act | Account | Instant | What it did
     Taken | m.oduya | 06 Oct 16:41Z | the body was fixed and the request raised
-    Authorised | a.reyes | 06 Oct 17:12Z | Finance approved request 4b7c1e02
+    Approved | a.reyes | 06 Oct 17:12Z | Finance approved request 4b7c1e02
   }
   The taker cannot authorise: the inbox refuses a decision by the person who raised
   the request, and one person approves a request once. Two people, one body.
+  A cut whose kind requires no authorisation draws one act and the basis in place of
+  the decision: NO AUTHORISATION IS REQUIRED BY ITS KIND.
   The label names the kind, the scope and the date: it says nothing about who signed.
   --
   <b>THE RUNS THAT REST ON THIS BODY</b>
@@ -65,6 +67,7 @@ salt
   {#
     Cut | State | Runs resting on it
     EOD.ACME-LONDON.2026-10-06 | AUTHORISED | 3
+    FLASH.ACME-LONDON.2026-10-07 | IN USE, indicative | 1
     EOD.ACME-LONDON.2026-10-05 | SUPERSEDED | 2
   }
   A superseded cut keeps its runs and its authorisation: the question before a retake

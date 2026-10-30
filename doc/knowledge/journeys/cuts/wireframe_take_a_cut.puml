@@ -29,12 +29,13 @@ salt
   --
   <b>STEP 1: THE KIND AND THE INSTANT</b>
   {#
-    Kind | What it fixes | What it is for
-    EOD | the centre's close, 16:00 Europe/London | the day's official revaluation
-    SOD | the centre's open, 08:00 Europe/London | opening a day from a known reference
-    IPV | the close of the cut it is built on | testing our marks against outside values
-    FLASH | an instant the process names | an indicative view while the day moves
+    Kind | What it fixes | Authorisation
+    EOD | the centre's close, 16:00 Europe/London | required: reporting.cut_authorisation
+    SOD | the centre's open, 08:00 Europe/London | not required: the take raises no request
+    IPV | the close of the cut it is built on | required: reporting.cut_authorisation
+    FLASH | an instant the process names | not required, and its values are indicative
   }
+  The basis is the kind's declaration and not a choice made at the take.
   Close of the London centre: 06 Oct 2026 16:00Z | Timezone: Europe/London
   Cut time: CUT-LONDON-1600, read from the reference data and drawn, never typed.
   Label, derived from the kind, the scope and the date: EOD.ACME-LONDON.2026-10-06
@@ -71,17 +72,20 @@ salt
   <b>It does not decide</b> the day's prices, the conventions, or how a product is priced.
   --
   <b>STEP 4: THE PRESS, AND THE STATE IT LEAVES</b>
-  TAKEN. The body is frozen, request 4b7c1e02 was raised for Finance, and the cut is
-  EOD.ACME-LONDON.2026-10-06. No run may price from it until somebody signs it.
-  <color:#ef4444>YOU CANNOT AUTHORISE THIS CUT.</color> You took it: the inbox refuses a decision
-  by the person who raised the request, so another person holding the part must decide.
+  EOD: TAKEN. The body is frozen and request 4b7c1e02 was raised, of the kind
+  reporting.cut_authorisation, in the queue of Finance. No run may price from it yet.
+  <color:#ef4444>YOU CANNOT AUTHORISE THIS CUT.</color> Four eyes is the inbox's rule: a decision
+  by the person who raised the request is refused.
+  FLASH: IN USE. The body is frozen and no request is raised, because the kind requires
+  none. A run may price from it now, and its results carry the indicative mark.
   --
   <b>THE CUT'S RECORD, IN EVERY STATE</b>
   {#
     Cut | Timepoint | State | Taker | Authoriser
     EOD.ACME-LONDON.2026-10-06 | 06 Oct 16:00Z | AUTHORISED | m.oduya | a.reyes
     EOD.ACME-LONDON.2026-10-05 | 05 Oct 16:00Z | SUPERSEDED | m.oduya | a.reyes
-    FLASH.ACME-LONDON.2026-10-07 | 07 Oct 07:40Z | INDICATIVE | j.silva | -
+    FLASH.ACME-LONDON.2026-10-07 | 07 Oct 07:40Z | IN USE, indicative | j.silva | -
+    SOD.ACME-LONDON.2026-10-07 | 07 Oct 08:00Z | IN USE | m.oduya | -
     EOD.ACME-LONDON.2026-10-07 | 07 Oct 16:00Z | INCOMPLETE | m.oduya | -
     IPV.ACME-LONDON.2026-10-06 | 06 Oct 16:00Z | TAKEN | j.silva | -
     EOD.ACME-LONDON.2026-10-04 | 04 Oct 16:00Z | REFUSED | m.oduya | a.reyes

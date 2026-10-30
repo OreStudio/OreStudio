@@ -84,40 +84,49 @@ which cut a report prices from, which is
 
 ** Step 2: read who took and who authorised it
 
-4. *Read the authorisation.* The *Authorisation* tab draws the two acts and the
-   sign-off: the taker and the instant, the request, the part that decided it, the
-   decider, the instant and the comment, or the refusal and its reason. Each names
-   its account and links the request in the inbox.
+4. *Read the authorisation.* The *Authorisation* tab draws the acts and the
+   sign-off: the taker and the instant, the request, the account the request waited
+   on, the decider, the instant and the comment, or the refusal and its reason.
+   Each names its account and links the request in Approvals, which is the record
+   the inbox keeps for every kind.
 5. *Read the four-eyes fact.* The tab states, in one line, that the taker and the
    decider are two people, and it says what the schema enforces: a decision by the
-   person who asked is refused, and one person approves a request once. A signature
-   a reader can check is worth more than one a reader must trust.
-6. *Read what the label does not say.* The tab states that the label names the kind,
+   person who asked is refused, and one person approves a request once. The rule is
+   the inbox's for every kind, and
+   [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] states it. A
+   signature a reader can check is worth more than one a reader must trust.
+6. *Read the basis where the kind requires no signature.* A cut of a kind that
+   requires no authorisation draws one act and the sentence that names the basis:
+   that the kind requires none, and, where the kind says so, that every result
+   priced from it is marked indicative. The tab draws it in the place the decision
+   would stand, so an auditor reading the page does not take a signed body and an
+   unsigned one for the same thing.
+7. *Read what the label does not say.* The tab states that the label names the kind,
    the scope and the date, and that it says nothing about who signed it, so the
-   state and the authoriser are read as facts and not inferred from the label.
+   state and the basis are read as facts and not inferred from the label.
 
 ** Step 3: read the runs that priced from it
 
-7. *Read the runs.* The *Runs* tab lists every run that priced from this cut, newest
+8. *Read the runs.* The *Runs* tab lists every run that priced from this cut, newest
    first: the report, the definition, the run's instant, its state, its engine
    version and its result's location. The count of those runs is the column the cuts
    list draws, so the two screens agree.
-8. *Open one run.* A row opens the run's page, and the run's card names the cut it
+9. *Open one run.* A row opens the run's page, and the run's card names the cut it
    priced from, as
    [[id:9123193E-352D-4F46-8174-7763FA0A44CD][Price a report from a cut]] draws
    it. The two pages are the same fact read from each side.
-9. *Read a run that did not price.* A run refused before the engine appears in the
+10. *Read a run that did not price.* A run refused before the engine appears in the
    list with its refusal and does not count as a run that priced from the cut. The
    distinction matters to an auditor: a refusal is not a result.
 
 ** Step 4: reproduce a result
 
-10. *Press Run it again.* The press is offered on a run that completed, and on the
+11. *Press Run it again.* The press is offered on a run that completed, and on the
     cut itself for the report that consumed it. It re-runs the same report against
     the same cut, and the dialog states what it will do: the same body, the same
     engine version if the version is still served, and a result to compare with the
     original.
-11. *Read the verdict.* The comparison is one of three, in the words the card uses.
+12. *Read the verdict.* The comparison is one of three, in the words the card uses.
 
     | Verdict | What the screen draws |
     |---------+-----------------------|
@@ -125,7 +134,7 @@ which cut a report prices from, which is
     | Differs | The first figures that differ, each with both values and the difference, and the statement that the body and the engine are the same. The screen says this is a defect in the engine or in the code and not a movement of the market |
     | Cannot be compared | The reason, in one of three forms, and what would be needed to compare |
 
-12. *Read why reproduction is not possible.* The third verdict is the one an
+13. *Read why reproduction is not possible.* The third verdict is the one an
     auditor writes down, so it is stated precisely.
 
     | Reason | What the screen says |
@@ -134,18 +143,18 @@ which cut a report prices from, which is
     | A part of the body is no longer served | The body records the part and the store no longer serves it: today, a fixed market data snapshot that was never stored, or a configuration version that was withdrawn. The screen names the part and the series |
     | The body was retaken | The run priced from an earlier cut of the same day, and the comparison names both labels. A retaken body is a different body, and its results are comparable only as a movement |
 
-13. *Read what the rerun keeps.* The new run records the cut it priced from, its own
+14. *Read what the rerun keeps.* The new run records the cut it priced from, its own
     instant and its engine version, so a third person can repeat the exercise without
     asking the person who ran it. The screen states that no figure is overwritten: the
     two runs are two records.
 
 ** The audit across the day**
 
-14. *Read the day's sequence.* From the cuts list, a person reads one day's cuts in
+15. *Read the day's sequence.* From the cuts list, a person reads one day's cuts in
     order: the cut taken at the close, the retake that superseded it, and the runs
     that rested on each. The sequence is the audit trail a challenge asks for, and it
     is why a superseded cut is kept and drawn rather than hidden.
-15. *Read who rests on a superseded cut.* The *Runs* tab of a superseded cut names
+16. *Read who rests on a superseded cut.* The *Runs* tab of a superseded cut names
     the runs that priced from it and the cut that replaced it. That is the question a
     person asks before a retake is authorised — *what already rests on the body I am
     about to replace?* — and the answer is a list rather than a guess.
@@ -164,9 +173,9 @@ The judgement, per step, against the standards.
 | 1 to 3, the cut | The standard record page with its tabs | RS-PAGE-01 to RS-PAGE-10 |
 | 2, the body's parts | A panel per part, with counts and links | No rule draws a body yet; the prototype defines the shape |
 | 4 to 6, the authorisation | A panel of the two acts, and a link to the request | The entity screen specification's timeline shape, and the inbox's own page for the request |
-| 7 to 9, the runs | The standard's parts panel with its rows | RS-RELATED-04 to RS-RELATED-06 |
-| 10 to 13, the reproduction | A comparison of two runs, with a verdict | No rule draws a comparison of two results yet; the prototype defines it and [[*What is missing][What is missing]] records the gap |
-| 14 to 15, the day | The list ordered by timepoint, and the *Runs* tab | RS-LIST-12 and RS-RELATED-04 |
+| 8 to 10, the runs | The standard's parts panel with its rows | RS-RELATED-04 to RS-RELATED-06 |
+| 11 to 14, the reproduction | A comparison of two runs, with a verdict | No rule draws a comparison of two results yet; the prototype defines it and [[*What is missing][What is missing]] records the gap |
+| 15 to 16, the day | The list ordered by timepoint, and the *Runs* tab | RS-LIST-12 and RS-RELATED-04 |
 
 #+caption: The audit of a cut: the body's parts, the two acts, the runs that rested on it, and the comparison of a rerun with its original.
 #+attr_html: :width 100%
@@ -225,29 +234,29 @@ are its cut, its engine version and its state.
 
 * What is missing
 
-1. *Nothing compares two runs.* The reproduction promise is the purpose of the whole
+2. *Nothing compares two runs.* The reproduction promise is the purpose of the whole
    cluster and no operation answers it. A comparison needs the two runs' figures as
    rows, which needs the archive parsed, which is a gap the reporting journeys already
    record.
-2. *The run does not record its engine version.* A run records the date it priced at
+3. *The run does not record its engine version.* A run records the date it priced at
    and the note that explains a moved date, and nothing names the version of the
    engine that computed its result. A reproduction verdict that cannot state the
    software is not a verdict.
-3. *The cut records the service build, and nothing provides it.* The body's engine and
+4. *The cut records the service build, and nothing provides it.* The body's engine and
    code part needs a revision for the services that assembled it, and the platform
    records no build for a service. The
    [[id:E840111E-AA2F-4746-8D49-A1D73742925E][Take a cut]] journey records the
    same gap from the side of the take.
-4. *A fixed snapshot is recorded and not served.* A cut whose market data half is a
+5. *A fixed snapshot is recorded and not served.* A cut whose market data half is a
    snapshot nothing materialises can be read today only if the store still holds the
    values. That is the second reason a comparison fails, and it is a property of the
    gap rather than of the audit.
-5. *No list of runs by cut.* Runs are read by definition, by health and by instance.
+6. *No list of runs by cut.* Runs are read by definition, by health and by instance.
    Nothing reads them by cut, so the *Runs* tab and the cuts list's count have no
    source.
-6. *No route and no screen for reporting.* The cut's record, the run's card and the
+7. *No route and no screen for reporting.* The cut's record, the run's card and the
    comparison are all new, as the two journeys beside this one record.
-7. *The day's sequence is not a read.* The list ordered by timepoint answers it for
+8. *The day's sequence is not a read.* The list ordered by timepoint answers it for
    one scope, and no read groups the cuts of a day by kind and ordinal. The first
    slice reads the list and states the order it uses.
 
@@ -270,7 +279,7 @@ are its cut, its engine version and its state.
 - [[id:19630B5D-A163-42B5-B9C4-61A87BAE8F5F][Trade cut]] — the population a rerun replays rather than re-queries.
 - [[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut] — the fixed snapshot a rerun replays.
 - [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]] — why a store read cannot stand in for the body.
-- [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]] — the rule the authorisation tab states as a fact.
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record the authorisation tab reads, and the rule it states as a fact.
 - [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — History against Audit, which decides what this page's tabs are called.
 
 * See also

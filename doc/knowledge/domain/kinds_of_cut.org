@@ -119,9 +119,7 @@ prices are tested on.
 *What it is for.* An indicative view of value while the day is still moving,
 delivered before the day's data settles so that a decision can act on it.
 
-*What it fixes.* The complete body the run reads, at an instant before the official authorisation, with the values current at that instant. The cut records the taking identity and the authorisation as pending; the body is the four inputs at the flash instant. The official cut later records the authorisation. The deadline shortens the
-interval and not the body, since a run that left out an input could not be
-reproduced from what it kept.
+*What it fixes.* The complete body the run reads, at an instant before the official authorisation, with the values current at that instant. The cut records the taking identity and needs no authorisation of its own: a flash cut is not signed, because its occasion is a decision taken while the day moves and a signature would arrive after the decision it serves. The body is the four inputs at the flash instant, and the official cut of the day is the one that carries an authorisation. The deadline shortens the interval and not the body, since a run that left out an input could not be reproduced from what it kept.
 
 *What the occasion gives it.* The instant precedes the official authorisation, which is entailed
 by the occasion, since a view that arrived after the official statement would
@@ -132,8 +130,14 @@ recurs while the market moves.
 The run values deals and reads prices, so it holds the deal population and the
 market data of that instant, and the rest of the body is recorded with it.
 
-The output is indicative by construction. Authorisation converts a candidate into
-official data, and a cut taken to inform a decision precedes that conversion.
+The output is indicative by construction. This kind is the one that fixes the
+values it produces as indicative rather than official, because the occasion is
+before the day's data settles. One kind does not follow the other: the start of
+day kind below needs no authorisation either, and its values are official because
+they were approved when the previous day's cut was fixed. The kind therefore
+states both facts, and the
+[[id:F6362451-D569-4609-97A3-F1C785AAAF02][cut model]] takes them as its
+declaration.
 
 * The start of the day: start of day cut
 
@@ -157,6 +161,15 @@ it. A component names one half of the body, and the component pages take each
 half. The kind does not select the components, since the body is the whole fixed
 world in every kind. A complete description of a cut states its kind, which fixes
 the occasion, and its body, which the purpose fixes.
+
+A kind also declares two further facts, and neither follows from the other. It
+states whether a cut of its occasion is authorised before it is used, and
+whether the values a cut of it fixes are indicative. The four occasions above
+fall two on each side of the first: the end of day cut and the independent
+verification are signed, and the flash and start of day cuts are not. The second
+separates the flash cut, whose values are indicative, from the start of day cut,
+whose values are official because they were approved when the previous day's cut
+was fixed.
 
 * An instant a process names
 

@@ -2,7 +2,7 @@
 :ID: F6362451-D569-4609-97A3-F1C785AAAF02
 :END:
 #+title: The cut is the body a run prices from
-#+description: The cut model the screens imply: the facts a cut records, the states those facts derive, the permissions and the approval that authorise one, the identity the screens draw, and how the cut meets the report binding.
+#+description: The cut model the screens imply: the facts a cut records, the states those facts derive, the kind's declaration of whether it needs an authorisation, the inbox record that authorises one, the identity the screens draw, and how the cut meets the report binding.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:architecture:cut:valuation:reporting:
@@ -14,12 +14,20 @@
 The [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] structure note fixes
 what a cut is, what it holds and why. It settles no state, no act, no
 authorisation and no identity, and the screens cannot be drawn without those
-four. This page settles them. A cut records the body it fixed and the two acts
-that made it — taken, then authorised — and nothing else; its state is derived
-from those facts and stored nowhere; one permission takes a cut and another
-authorises it, and the person who takes one cannot authorise it; its label is
-derived from the kind, the scope and the timepoint, and never typed. The cut is
-then the object a run names, which is what the report binding lacks.
+four. This page settles them. A cut records the body it fixed and the acts that
+made it, and nothing else; its state is derived from those facts and stored
+nowhere; a cut kind declares whether a cut of its occasion needs an
+authorisation at all, and where it does the authorisation is an approval request
+of [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][the inbox]] whose detail the
+reporting component holds; its label is derived from the kind, the scope and the
+timepoint, and never typed. The cut is then the object a run names, which is what
+the report binding lacks.
+
+The authorisation is not a mechanism this cluster invents. One record already
+holds everything that waits on a person, four eyes is a rule of its schema, and
+the queue, the notifications and the history are written once. A cut is a kind of
+that record, with a detail table of its own, and the only thing the cluster adds
+is the declaration that says which occasions need one.
 
 Everything on this page is our working convention. No public source states how a
 firm should model the authorisation of a cut, and the
@@ -28,17 +36,18 @@ the cluster rest on a source and which do not.
 
 * What the screens must settle
 
-Three journeys and one prototype need four things, and the cluster's domain
-pages supply none of them.
+Three journeys and one prototype need five things, and the cluster's domain pages
+supply none of them.
 
 | Need | The question | Where the answer is |
 |------+--------------+---------------------|
 | The facts | What does the record hold, against what the cluster argues it must hold? | [[*The facts a cut records][The facts a cut records]] |
 | The states | What is a cut before it is authorised, and what may a run do with it then? | [[*The states and what derives them][The states and what derives them]] |
-| The acts and permissions | Who takes a cut, who authorises it, and what stops one person doing both? | [[*The permissions and the authorisation][The permissions and the authorisation]] |
+| The acts | Who takes a cut, what authorises it, and what stops one person doing both? | [[*The authorisation is the inbox's][The authorisation is the inbox's]] |
+| The permissions | Which permission reaches each act? | [[*The permissions][The permissions]] |
 | The identity | What does a person quote, and is it typed or derived? | [[*The identity][The identity]] |
 
-The fourth thing the screens need is not about the cut alone: a run must be able
+The sixth thing the screens need is not about the cut alone: a run must be able
 to name the cut it priced from, which is the hole the
 [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][report binding decision]] records
 and leaves open. [[*How it meets the report binding][How it meets the report
@@ -51,14 +60,14 @@ A cut records six groups of facts. The parts are the body the
 five groups name the occasion, the scope, what the assembly could not fill and
 who acted.
 
-| Fact | What it holds | Why it belongs in the body |
+| Fact | What it holds | Why the cut records it |
 |------+---------------+----------------------------|
-| The kind | The occasion, from the closed set [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] classifies, and the instant a process names where no kind applies | The kind fixes the instant, the recurrence and the centre, and it says whether authorisation precedes the values or follows them |
+| The kind | The occasion, from the closed set [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] classifies, and the instant a process names where no kind applies | The kind fixes the instant, the recurrence and the centre, and it declares whether a cut of the occasion needs an authorisation |
 | The timepoint | The instant, with its timezone, and the cut time it came from where a named cut time supplied it | A body fixed at an instant is not fixed until the instant is stated with its clock |
 | The scope | The books whose deals the valuation values, and the rates centre whose market data they revalue against | A body that names no population values nothing, and a market data half with no centre denotes whichever centre answered first |
-| The parts | One reference per part of the body: the fixed market data set, the deal population, the versions of the reference data and the settings, the engine and code versions | The four inputs are what the reproducibility argument requires, and a reference is what a rerun replays |
+| The parts | One reference per part of the body: the fixed market data set, the deal population, the versions of the reference data and the settings, and the engine and code versions | The four inputs are what the reproducibility argument requires, and a reference is what a rerun replays |
 | The gaps | Every part the assembly could not fill, with the item, the part and the reason | A body that could not be assembled is a fact a person acts on, and silence makes the cut look smaller rather than incomplete |
-| The acts | Who took the cut and when; the authorisation request, its decision, the decider and the instant, or the refusal and its reason; the later cut that replaced this one as the cut in use | An unsigned body is a candidate, and the sign-off is what makes a cut official |
+| The acts | Who took the cut and when, and the authorisation: the request the take raised, the decision it reached, the decider and the instant, or the refusal and its reason — or, where the kind requires none, the fact that none was required | The taking identity and the authorisation are not inputs to the valuation: an unsigned body is a candidate, and an occasion that needs no signature still has to say so rather than look unsigned |
 
 Two of these facts are ours alone and no prior art supplies them. The gap list
 follows from the definition: a cut missing a part is incomplete rather than
@@ -80,36 +89,69 @@ same shape and the same reason. A stored state follows a write that may fail, ma
 be repeated or may be missed, so the row and its state can disagree; a derived
 state cannot disagree with the facts it is derived from.
 
+** What the kind declares
+
+A cut kind is a row, and it carries five facts beyond its code and name.
+
+| Declaration | What it decides | The end of day kind | The flash kind |
+|-------------+-----------------+---------------------+----------------|
+| What it fixes | The instant, the recurrence and the centre | The centre's close | An instant the process names |
+| =requires_authorisation= | Whether the take raises an approval request at all | Yes | No |
+| =output_is_indicative= | Whether a result priced from a cut of the kind carries the indicative mark | No | Yes |
+| =approval_kind_code= | Which inbox kind authorises it, where it requires one | =reporting.cut_authorisation= | None |
+| =display_order= | The order the take offers the kinds | 10 | 40 |
+
+Two of those facts are independent, and the start of day kind is the case that
+proves it. A start of day cut is carried forward from the previous end of day
+cut, so it needs no authorisation at the opening, and its result is not
+indicative because the body was approved when it was first fixed. The flash kind
+needs none and is indicative, because its occasion is before the day settles.
+Neither fact implies the other, so the kind states both.
+
 * The states and what derives them
 
-A cut is in one of six states. Each is stated by the facts that hold, and the
+A cut is in one of seven states. Each is stated by the facts that hold, and the
 order of the tests is the order a reader needs them.
 
 | State | The facts that hold | What a run may do | The mark |
 |-------+---------------------+-------------------+----------|
 | Draft | No taking instant holds, and no gap stands; the assembled body is saved before the take | Nothing. It is not a cut yet | Grey, the mark of an inactive record |
 | Incomplete | No taking instant holds, and one or more gaps stand; the attempt is saved as a draft | Nothing. The gaps are the answer | Red, because the body failed its own standard |
-| Taken | The body is fixed, the taking instant holds, and no authorisation is recorded | Nothing. It is the candidate the decider reads | Blue, the mark of a pending item |
-| Authorised | An authorisation instant and its decider hold | Price from it. The gate admits it | Green |
+| Taken | The body is fixed, the kind requires an authorisation, and no approval is recorded | Nothing. It is the body the decider reads | Blue, the mark of a pending item |
+| In use | The body is fixed, and the kind requires no authorisation | Price from it | Green, the colour of a record that is active and in order |
+| Authorised | The body is fixed and an approval is recorded | Price from it | Green |
 | Refused | The authorisation was refused, with the reason | Nothing. A refusal is terminal for that body | Red |
-| Superseded | The cut is authorised, and a later authorised cut of the same kind and scope holds its place | Price from it, and say it is superseded | Grey, as the published lists draw an ended set |
+| Superseded | The cut was authorised or in use, and a later cut of the same kind and scope holds its place | Price from it, and say a later cut is in use | Grey, as the published lists draw an ended set |
 
-The table is a derivation and not a lifecycle: a state is one of the six and
-never a mixture of two.
+The table is a derivation and not a lifecycle: a state is one of the seven and
+never a mixture of two. Two facts decide which of the three usable states
+applies, and neither is a matter of taste: whether the kind requires an
+authorisation, and whether one was recorded.
 
-Four consequences follow, and each is a decision the screens draw.
+Six consequences follow, and each is a decision the screens draw.
 
-**A draft is a record, not a scratchpad.** The gaps a body cannot close name a
-person to chase — a series with no value at or before the instant, a deal at no
+**The gate follows the kind, not a single rule about cuts.** A run prices from a
+body that is fixed and signed where a signature was required. A cut of a kind
+that requires none is usable the moment it is taken, and a cut of a kind that
+requires one is not usable until the approval is recorded. A gate that demanded an
+authorisation of every cut would refuse the occasions that need none, and a gate
+that accepted any taken body would price from an unsigned one.
+
+**A draft is a record, not a scratchpad, and a gap is what separates it from an
+incomplete body.** The gaps a body cannot close name a person to chase — a series with no value at or before the instant, a deal at no
 version, a curve nobody has approved, an engine version nothing recorded. A take
 that threw the attempt away would make the person remember the list. The draft
 therefore holds the attempt, each gap with its reason, and the cut's own page is
 where the list is read.
 
-**An incomplete body is refused before it is signed.** The authorisation is not
-offered while a gap stands, because a decider would be asked to sign a body that
-does not meet the definition. The refusal is at the take and not at the
-authorisation, and the screen says what would close each gap.
+**An incomplete body is refused before it is signed.** The take raises no request
+while a gap stands, because a decider would be asked to sign a body that does not
+meet the definition. The refusal is at the take and not at the authorisation, and
+the screen says what would close each gap.
+
+**A held request leaves the cut where it was.** The inbox's hold state parks the
+request and not the body, so the cut stays *Taken*, its card reads that the
+request is held, and the waiting time is the request's to report.
 
 **Supersession does not withdraw authorisation.** A superseded cut is still a
 record of an instant, and a run that priced from it still reproduces from it. The
@@ -118,59 +160,91 @@ not carry over, because a curve is a value in use and a cut is a record of what
 was used. The one word the screen must say is that a later cut replaced it: a
 person who reads a result must not take it for the day's cut.
 
-**The flash kind's pending authorisation is the exception, and it is written in
-the kind.** The
-[[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] page states that a
-flash cut is taken before the day's data settles, that its body records the
-authorisation as pending, and that its output is indicative by construction. A
-gate that required an authorisation would refuse the one kind whose occasion
-puts it before the authorisation. A flash cut is therefore consumable while its
-authorisation reads pending, and every result priced from one is marked
-indicative. No other kind may be consumed unauthorised, and the picker draws the
-indicative mark where an authorised cut draws its authorisation.
+**The indicative mark is the kind's, and it is not the state's.** A result priced
+from a flash cut is indicative because the kind says so, and the mark is drawn on
+the cut, on the picker's row and on every result it prices. A cut of a kind that
+requires no authorisation is not therefore indicative, and the start of day kind
+is the case that shows it.
 
-* The permissions and the authorisation
+* The authorisation is the inbox's
 
-Three permissions decide what a person sees and does.
+A cut that requires an authorisation raises an approval request of a kind the
+reporting component registers. Nothing about the wait for a person is the cut's
+own: the record, its lifecycle, its rules, its queue, its notifications and its
+history are
+[[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][the approval request's]], and the
+cut adds a detail table and a descriptor.
+
+| What the cut needs | Where it lives | The precedent |
+|--------------------+----------------+---------------|
+| The record of the ask, the decision and the wait | An =ores.inbox= approval request: its kind, state, asker, reason, decision and expiry | [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] |
+| What the request is about | A detail table in the reporting component, keyed by =request_id=: the cut and the counts of the body's parts | [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] |
+| Whether a cut needs one at all | The cut kind's =requires_authorisation=, and the take raises nothing where it says no | [[*What the kind declares][What the kind declares]] |
+| Who may decide | The inbox kind's =decide_permission_code= | [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] |
+| How many approvals close it | The inbox kind's =approvals_required=; one for a cut | [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] |
+| Four eyes | A rule of the schema: a decision by the asker is refused, and one person counts once | [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] |
+| The queue | The shared Approvals read, filtered to the kinds the caller may decide | [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] |
+| One open request per subject | The detail table's natural key on the cut, which is what the inbox means by the same subject | [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] |
+| The screen the decider reads | The request page, which draws the kind's detail as its own section | the inbox's =RequestPage= and its =kinds.tsx= descriptor |
+| Notifications | The inbox's: the deciders are told a request waits, the asker is told the decision | [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] |
+| Applying the decision | The reporting service stamps the cut's authorisation facts when the request reaches approved | the shape IAM uses for a role grant |
+
+**The take raises the request, in one act.** The body is frozen when the request
+is raised, so what a decider reads is what gets authorised. The detail row is
+written with the body and keyed by the request, as the curve publish detail is
+keyed by its request. A take that wrote a body and then asked for a signature
+would leave an interval in which the body may move.
+
+**The taker cannot authorise, and the rule is not the cut's.** The inbox refuses a
+decision by the person who raised the request, and a unique key on the request and
+the decider keeps one person from counting twice. A cut adds nothing to that rule
+and depends on it, which is why the take and the decision are two permissions and
+not one. A firm with one person who holds both cannot authorise a cut at all: the
+screen draws the refusal and names what is missing, which is a second person, and
+it does not draw the button.
+
+**A refusal is terminal for that body.** The body stays readable, the reason is on
+the request and copied to the cut's page, and the inbox allows no second decision
+on a refused request. The remedy is a new take, which is a new cut and a new
+request, because an approval is a decision on one body and a decided body does not
+become another.
+
+**The apply is a reconciliation, not a second screen.** When a request reaches
+approved, the reporting service writes the cut's authorisation facts and marks the
+detail row applied. It does so from the request's change event and from the state
+the request holds, so a missed event, a repeated one, or an approval made while
+the service was down all converge on one outcome, as a role grant does. The
+alternative — an apply workflow — is named in
+[[*What this page does not settle][what this page does not settle]], because the
+work is one row and idempotent.
+
+**The cut's page links the request and never the reverse.** The request is the
+record of the wait and the cut is the record of the body; the request page draws
+the body through the kind's detail, and the cut's page names the request. Neither
+copies the other's facts, because two copies of one act drift.
+
+* The permissions
+
+Three permissions decide what a person sees and does. Two are the cut's own, and
+the third is the inbox's.
 
 | Permission | What it governs | Who holds it, in the fixture |
 |------------+-----------------+------------------------------|
 | =reporting::cuts:read= | The list, the record, the picker over cuts, and the run's card that names one | Market risk, finance, a reader |
-| =reporting::cuts:take= | Assembling and taking a cut, which raises its authorisation request | Finance, for the end of day kind |
-| =inbox::approvals:decide_finance= | The one decision that authorises an end of day cut | Finance, and a different person from the taker |
+| =reporting::cuts:take= | Assembling and taking a cut, which raises its authorisation where the kind requires one | Finance, for the end of day kind |
+| =inbox::approvals:decide_finance= | The decision that authorises an end of day cut: the inbox kind's own decide permission | Finance, and a different person from the taker |
 
-The names are proposals and follow the two namespaces the platform already uses:
-a component's own permission for the record, and an inbox part permission for
-the decision. The third name is not new; it is the part
-[[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]] seeds as
-=finance=, and the decision is the one the
-[[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][approval request]] already runs.
+The first two names are proposals and follow the platform's namespace for a
+component's own record. The third is not new: it is a permission the inbox has
+already seeded, and the cut's kind names it rather than inventing one.
 
-**The take raises the authorisation, in one act.** The body is frozen when the
-request is raised, so what a decider reads is what gets authorised. The shape is
-the one [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][the publish record]] uses: a
-detail row keyed by the request's own id, the subject written at the raise, and
-the applied facts stamped at the decision. A take that wrote a body and then
-asked for a signature would leave an interval in which the body may move.
-
-**The taker cannot authorise, even holding the part.** The inbox refuses a
-decision by the person who raised the request, and one person approves a request
-once. A cut adds nothing to that rule and depends on it, which is why the take
-and the authorisation are two permissions and not one. A firm with one person who
-holds both cannot authorise a cut at all: the screen draws the refusal and names
-what is missing, which is a second person, and it does not draw the button.
-
-**A refusal is terminal for that body.** The body stays readable, the reason is
-on the record, and no second decision may be taken on it. The remedy is a new
-take, which is a new cut with its own authorisation, because an approval is a
-decision on one body and a decided body does not become another.
-
-**A retake supersedes rather than replaces.** The
-[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note records our convention
-that the deal cut is retaken until the population is clean. The earlier body is
-not deleted and its runs are not invalidated: the later cut takes the earlier
-one's place as the cut in use for that kind and scope, and the earlier one keeps
-its authorisation and its reason to exist.
+**One permission decides every cut that needs a signature.** A cut body is signed
+by one function whatever the occasion that produced it, so the inbox kind carries
+one decide permission and every authorisation cut kind names that same kind. The
+occasions differ in whether they require a signature and in how many approvals
+close it, not in who signs. A firm that splits the duty grants the permission to
+the role that does the work, which is the inbox's own rule: a part is decided by a
+permission and not by a named job.
 
 * The identity
 
@@ -199,7 +273,8 @@ a curve is one value in use; a cut is one act among several on the same day.
 
 The label is not the authorisation. A person reading =EOD.ACME-LONDON.2026-10-06=
 knows which day's body is meant and not whether anybody signed it, so every
-screen that shows the label shows the state beside it.
+screen that shows the label shows the state beside it, and a cut of a kind that
+requires no authorisation shows that basis in the same place.
 
 * How it meets the report binding
 
@@ -234,10 +309,10 @@ cut's parts; it names the cut, and the cut is immutable once its body is fixed.
 **The gate is one sentence, spoken in three places.** The picker refuses a cut
 that is not consumable where it is picked, the run refuses it before the engine
 is reached, and the run's output message carries the same sentence so a scheduled
-run that nobody watched still says why it did not price. The words are the
-binding decision's: a set that cannot be used is refused where it is picked, and
-the refusal says what would make it usable. Here the remedy is an authorisation,
-and the refusal names the request and the person it waits on.
+run that nobody watched still says why it did not price. The sentence states what
+the cut's kind requires: a body awaiting its kind's authorisation is refused with
+the request and the person it waits on, and a body of a kind that requires none is
+never refused on that ground.
 
 **What the deal population becomes.** Today the gathering step reads the trade
 store by valuation date and the run records the date it priced at. After this
@@ -255,6 +330,19 @@ answers a read of one. This page settles what a cut must record, which states
 follow, who may act and what a run may name; it does not design the columns, the
 generated types or the subjects. That is the next work, and it starts from this
 page and from [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]].
+
+**One inbox kind, or one for each occasion.** This page takes one inbox kind,
+=reporting.cut_authorisation=, whose detail row names the cut and therefore the
+occasion. The alternative is a kind per occasion, which buys a decide permission
+per occasion and a queue grouped by occasion, at the price of a seeded kind for
+every kind of cut. The choice is the firm's, and the screens draw one kind.
+
+**The apply.** The decision is applied by reconciliation, as a role grant is. The
+alternative is an apply workflow, which the inbox already offers a kind through
+=apply_workflow_type= and which buys a visible run and a retry where this page
+buys one idempotent row. The cut's apply is one row, so this page takes the
+reconciliation; a firm that wants the apply on the workflow screens changes one
+column of the kind.
 
 **The scope of a cut.** The convention taken here is that a cut's scope is the
 set of books that revalue against one centre's market data, which
@@ -280,15 +368,16 @@ body change under the signature. The alternative is named rather than dismissed
 because a firm that keeps one cut per day and amends it would read this
 differently.
 
-**The flash kind's indicative rule.** The exception above is our convention. No
-public source states that an indicative view may be consumed before
-authorisation, and a firm that refuses it would draw the picker with a flash cut
-refused as any other candidate is.
+**Which occasions need no authorisation.** The cluster's classification gives the
+start of day kind and the flash kind, and the fixtures draw those two. Whether a
+process-named instant needs one is the process owner's answer, and the kind
+declares it rather than the design assuming it.
 
 **Who takes a cut where a party has one person.** The four-eyes rule makes an
 authorisation impossible, and this page leaves that as a refusal to draw rather
-than a rule to bend. Whether the installation should let a named second account
-authorise across parties is not settled.
+than a rule to bend. A kind that requires no authorisation sidesteps it, which is
+a fact about the occasion and not a route past the rule. Whether the installation
+should let a named second account authorise across parties is not settled.
 
 **The relation to the run's settings.** A cut holds the settings in force.
 Whether the cut names the engine run settings configuration and its version, or
@@ -299,21 +388,27 @@ to this page.
 * What the sources establish
 
 No claim on this page rests on a public source. The definitions of the states,
-the permissions, the derivation of the label and the relation to the binding are
-ours, and the pages they rest on are cited above. The
-[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note records which claims of
-the cluster do rest on a source, and this page adds none to that list.
+the kind's declarations, the permissions, the derivation of the label and the
+relation to the binding are ours, and the pages they rest on are cited above. The
+rules of the authorisation are not ours: they are the inbox's, stated on
+[[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] and enforced by
+its schema. The [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note records
+which claims of the cluster do rest on a public source, and this page adds none
+to that list.
 
 * See also
 
-- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the structure note that orders this cluster; this page answers the four questions it leaves to the screens.
-- [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — the occasions, and the flash kind's authorisation that precedes its values.
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the structure note that orders this cluster; this page answers the questions it leaves to the screens.
+- [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — the occasions, and the two that need no authorisation of their own.
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record, the rules, the queue and the lifecycle the authorisation is.
+- [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] — the kind this one is shaped after: a detail table keyed by the request, the subject at the raise, the applied facts at the decision.
+- [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] — the journey of the person who decides, and the rules of the kind the cut's kind takes.
+- [[id:C6D6A0C2-1A62-4C52-8DED-D431E410E89F][Implement four-eyes authorisation framework]] — the deferred item that would add several deciding functions to the inbox, which a cut does not need.
+- [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational authorisation]] — where the rule that an authorisation is metadata, and never the record it releases, is argued.
 - [[id:19630B5D-A163-42B5-B9C4-61A87BAE8F5F][Trade cut]] — the deal population, and why the cut copies it rather than querying it.
 - [[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]] — the fixed snapshot the cut records, and the profile the bindings are.
 - [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]] — the binding this page completes with the second one, to a cut.
 - [[id:E840111E-AA2F-4746-8D49-A1D73742925E][Take a cut]] — the journey that takes one, and the gaps it draws.
 - [[id:9123193E-352D-4F46-8174-7763FA0A44CD][Price a report from a cut]] — the journey that consumes one, and the gate it meets.
 - [[id:8BD41683-EFA1-467A-B170-BE7041A745D7][Rerun and audit a cut]] — the journey that reproduces a result from one.
-- [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]] — the parts, the pending change and the gate the authorisation uses.
-- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the request, its states and its decisions.
 - [[id:E9A7D292-593C-4E72-8C1B-109F3DE38241][Cuts journeys]] — the group these journeys belong to.

@@ -34,7 +34,8 @@ salt
     Cut | Kind | Timepoint | State | Taker | Authoriser | Holdings
     EOD.ACME-LONDON.2026-10-06 | EOD | 06 Oct 16:00Z | AUTHORISED | m.oduya | a.reyes | 1,284 / 3,912
     EOD.ACME-LONDON.2026-10-05 | EOD | 05 Oct 16:00Z | SUPERSEDED | m.oduya | a.reyes | 1,281 / 3,908
-    FLASH.ACME-LONDON.2026-10-07 | FLASH | 07 Oct 07:40Z | INDICATIVE | j.silva | - | 1,287 / 3,920
+    FLASH.ACME-LONDON.2026-10-07 | FLASH | 07 Oct 07:40Z | IN USE, indicative | j.silva | - | 1,287 / 3,920
+    SOD.ACME-LONDON.2026-10-07 | SOD | 07 Oct 08:00Z | IN USE | m.oduya | - | 1,284 / 3,912
     IPV.ACME-LONDON.2026-10-06 | IPV | 06 Oct 16:00Z | TAKEN | j.silva | - | 1,284 / 3,912
     EOD.ACME-LONDON.2026-10-07 | EOD | 07 Oct 16:00Z | INCOMPLETE | m.oduya | - | 1,284 / -
     EOD.ACME-LONDON.2026-10-04 | EOD | 04 Oct 16:00Z | REFUSED | m.oduya | a.reyes | 1,276 / 3,901
@@ -49,8 +50,10 @@ salt
   new take rather than a second decision.
   A SUPERSEDED CUT IS OFFERED: a rerun reproduces an earlier result from it, and the
   button says "anyway". No pin is needed, because a cut is a record of an instant.
-  AN INDICATIVE FLASH CUT IS OFFERED: its authorisation is pending by its occasion, and
-  every result priced from it is marked indicative. [ Price from this cut ]
+  A CUT IN USE IS OFFERED, because its kind requires no authorisation: the take raised
+  no request, so the body was usable when it was fixed. Where the kind fixes indicative
+  values, as the flash kind does, every result priced from it carries the mark.
+  [ Price from this cut ]
   --
   <b>THE RUN: REFUSED, AND THE RUN THAT PRICED</b>
   {#

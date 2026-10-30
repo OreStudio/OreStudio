@@ -140,7 +140,7 @@ select{background:#0e1218;border:1px solid var(--line);border-radius:var(--radiu
 
 /* The dialog, as the record standard draws it: one scrolling card. */
 .backdrop{position:fixed;inset:0;z-index:40;background:rgba(6,8,12,.62)}
-.dialog{position:fixed;z-index:45;top:9vh;left:50%;transform:translateX(-50%);width:min(820px,94vw);max-height:80vh;overflow:auto;background:var(--panel);border:1px solid var(--line-strong);border-radius:var(--radius);box-shadow:0 20px 60px rgba(0,0,0,.55)}
+.dialog{position:fixed;z-index:45;top:9vh;left:50%;transform:translateX(-50%);width:min(960px,94vw);max-height:80vh;overflow:auto;background:var(--panel);border:1px solid var(--line-strong);border-radius:var(--radius);box-shadow:0 20px 60px rgba(0,0,0,.55)}
 .dialog .head{padding:20px 24px 0}
 .dialog .head h2{font-size:16px}
 .dialog .head .note{font-size:12px;color:var(--ink-faint);margin-top:4px}
@@ -219,6 +219,14 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
     var SCOPE = 'LDN-RATES';
     var SCOPE_LONG = 'ACME London \u00b7 LDN rates books';
 
+    /* The kind's declaration: what the take reads and the gate answers from. */
+    var KIND_DECL = {
+        EOD:   { name: 'End of day', requires_auth: true,  indicative: false },
+        SOD:   { name: 'Start of day', requires_auth: false, indicative: false },
+        IPV:   { name: 'Independent verification', requires_auth: true, indicative: false },
+        FLASH: { name: 'Flash', requires_auth: false, indicative: true }
+    };
+
     var CUTS = [
         { id: 'c1', code: 'EOD', kind: 'End of day', label: 'EOD.ACME-LONDON.2026-10-06',
           instant: '2026-10-06T16:00:00Z', tz: 'Europe/London', cuttime: 'CUT-LONDON-1600',
@@ -237,9 +245,9 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
           superseded_by: 'c1', superseded_at: '2026-10-06T17:12:00Z' },
         { id: 'c3', code: 'FLASH', kind: 'Flash', label: 'FLASH.ACME-LONDON.2026-10-07',
           instant: '2026-10-07T07:40:00Z', tz: 'UTC', cuttime: '',
-          scope: SCOPE, state: 'taken', indicative: true,
+          scope: SCOPE, state: 'in_use',
           taken_by: 'j.silva', taken_at: '2026-10-07T07:41:00Z',
-          auth_by: '', auth_at: '', request: '9e21c4d8',
+          auth_by: '', auth_at: '', request: '',
           part: 'Market Risk', ordinal: 1, deals: 1287, values: 3920, sets: 7, fixings: 149,
           engine: 'ORE-Studio-7.1', wrapper: 'v1.2.0', build: 'a1f3c9e', runs: 1 },
         { id: 'c4', code: 'EOD', kind: 'End of day', label: 'EOD.ACME-LONDON.2026-10-07',
@@ -267,6 +275,13 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
           auth_by: '', auth_at: '', request: '7a5e0b3f',
           part: 'Market Risk', ordinal: 1, deals: 1284, values: 3912, sets: 7, fixings: 148,
           engine: 'ORE-Studio-7.1', wrapper: 'v1.2.0', build: 'a1f3c9e', runs: 0 },
+        { id: 'c7', code: 'SOD', kind: 'Start of day', label: 'SOD.ACME-LONDON.2026-10-07',
+          instant: '2026-10-07T08:00:00Z', tz: 'Europe/London', cuttime: 'CUT-LONDON-0800',
+          scope: SCOPE, state: 'in_use',
+          taken_by: 'm.oduya', taken_at: '2026-10-07T08:03:00Z',
+          auth_by: '', auth_at: '', request: '',
+          part: '', ordinal: 1, deals: 1284, values: 3912, sets: 7, fixings: 148,
+          engine: 'ORE-Studio-7.1', wrapper: 'v1.2.0', build: 'a1f3c9e', runs: 1 },
         { id: 'c6', code: 'EOD', kind: 'End of day', label: 'EOD.ACME-LONDON.2026-10-04',
           instant: '2026-10-04T16:00:00Z', tz: 'Europe/London', cuttime: 'CUT-LONDON-1600',
           scope: SCOPE, state: 'refused',
@@ -289,16 +304,30 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
         return found;
     }
 
-    /* A cut's consumability, as the run and the picker state it. */
+    /* The kind's declaration of one cut, or the end of day one where the
+       fixture names no kind. A cut in use carries the declaration it was
+       admitted under. */
+    function decl(c) {
+        return KIND_DECL[(c && c.code) || 'EOD'] || KIND_DECL.EOD;
+    }
+
+    /* Whether a result priced from the cut carries the indicative mark: the
+       kind's own fact, and not the state's. */
+    function indicativeOutput(c) {
+        return decl(c).indicative;
+    }
+
+    /* A cut's consumability, as the run and the picker state it. The gate
+       follows the kind: a cut is refused only where its kind requires an
+       authorisation that has not been recorded. */
     function consumable(c) {
         if (!c) return { ok: false, why: 'The configuration names no cut, so a run has no body to value.' };
-        if (c.state === 'authorised' || c.state === 'superseded')
-            return { ok: true, indicative: false };
-        if (c.state === 'taken' && c.indicative)
-            return { ok: true, indicative: true };
+        if (c.state === 'authorised' || c.state === 'in_use' || c.state === 'superseded')
+            return { ok: true, indicative: indicativeOutput(c) };
         if (c.state === 'taken')
             return { ok: false, why: 'That cut is taken and nobody has authorised it. ' +
-                'The body is fixed and no run may price from it. The request waits on ' + c.part + '.' };
+                'Its kind requires an authorisation, the body is fixed, and no run may price from ' +
+                'it. The request waits on ' + c.part + '.' };
         if (c.state === 'incomplete')
             return { ok: false, why: 'That cut holds no complete body. The gaps are on the cut\u2019s page, ' +
                 'and the take resumes once they are closed.' };
@@ -341,13 +370,34 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
         return '<span class="badge ' + cls + '">' + esc(word) + '</span>';
     }
 
+    var STATE_WORD = { draft: 'Draft', incomplete: 'Incomplete', taken: 'Taken',
+                       in_use: 'In use', authorised: 'Authorised', refused: 'Refused',
+                       superseded: 'Superseded' };
     var STATE_CLS = { draft: 'inactive', incomplete: 'bad', taken: 'pending',
-                      authorised: 'ok', refused: 'bad', superseded: 'inactive' };
+                      in_use: 'ok', authorised: 'ok', refused: 'bad', superseded: 'inactive' };
 
     function stateBadge(c) {
-        if (c.state === 'taken' && c.indicative) return badge('Indicative', 'indicative');
-        var word = c.state.charAt(0).toUpperCase() + c.state.slice(1);
-        return badge(word, STATE_CLS[c.state] || 'inactive');
+        return badge(STATE_WORD[c.state] || c.state, STATE_CLS[c.state] || 'inactive');
+    }
+
+    /* The sentence under a state that says why this cut stands where it does.
+       A kind that requires no authorisation states the basis, so a body nobody
+       signed is not read as a body somebody forgot. */
+    function basis(c) {
+        if (c.state === 'in_use')
+            return 'No authorisation is required by its kind';
+        if (c.state === 'superseded')
+            return c.auth_at ? 'Authorised before a later cut replaced it'
+                             : 'In use until a later cut replaced it';
+        if (c.state === 'authorised') return 'Authorised by ' + c.part;
+        if (c.state === 'taken') return 'waits on ' + (c.part || 'its kind');
+        return '';
+    }
+
+    function indicativeTag(c) {
+        return indicativeOutput(c) && (c.state === 'in_use' || c.state === 'authorised' ||
+                                       c.state === 'superseded' || c.state === 'taken')
+            ? ' ' + badge('Indicative output', 'indicative') : '';
     }
 
     function kindBadge(c) {
@@ -407,8 +457,9 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
                         ['A cut time', { surface: 'time', fcase: '' }, 'time']];
         var cases = [['the day', ''], ['no cuts', 'none'],
                      ['draft', 'draft'], ['incomplete', 'incomplete'],
-                     ['taken', 'taken'], ['refused', 'refused'],
-                     ['superseded', 'superseded'], ['indicative', 'indicative'],
+                     ['taken', 'taken'], ['in use', 'in-use'],
+                     ['refused', 'refused'], ['superseded', 'superseded'],
+                     ['the flash kind', 'flash'],
                      ['loading', 'loading'], ['error', 'error']];
         return '<span class="label">Surface</span>' +
             surfaces.map(function (s) { return b(s[0], s[1], S.surface === s[2]); }).join('') +
@@ -429,7 +480,8 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
         case 'taken': rows = [byId('c5')]; break;
         case 'refused': rows = [byId('c6')]; break;
         case 'superseded': rows = [byId('c2'), byId('c1')]; break;
-        case 'indicative': rows = [byId('c3')]; break;
+        case 'in-use': rows = [byId('c3'), byId('c7')]; break;
+        case 'flash': rows = [byId('c3')]; break;
         }
         if (S.q) {
             var needle = S.q.toLowerCase();
@@ -458,9 +510,10 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
                 '<span class="sub">' + esc(SCOPE_LONG) + '</span></td>' +
                 '<td>' + kindBadge(c) + '<span class="sub">' + esc(c.kind) + '</span></td>' +
                 '<td class="mono nowrap">' + dt(c.instant) + '<span class="sub">' + esc(c.tz) + '</span></td>' +
-                '<td>' + stateBadge(c) +
-                (c.state === 'superseded' ? '<span class="sub">replaced ' + rel(c.superseded_at) + '</span>' : '') +
-                (c.state === 'taken' && !c.indicative ? '<span class="sub">waits on ' + esc(c.part) + '</span>' : '') +
+                '<td>' + stateBadge(c) + indicativeTag(c) +
+                (basis(c) ? '<span class="sub">' + esc(basis(c)) + '</span>' : '') +
+                (c.state === 'superseded'
+                    ? '<span class="sub">replaced ' + rel(c.superseded_at) + '</span>' : '') +
                 '</td>' +
                 '<td>' + esc(c.taken_by) + '</td>' +
                 '<td>' + (c.auth_by ? esc(c.auth_by) +
@@ -497,15 +550,25 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
     function notes(rows) {
         var out = '';
         var open = rows.filter(function (c) {
-            return (c.state === 'taken' && !c.indicative) ||
-                   c.state === 'incomplete' || c.state === 'refused';
+            return c.state === 'taken' || c.state === 'incomplete' || c.state === 'refused';
         });
         if (open.length) {
             out += '<div class="notice warn"><b>' + open.length + ' cut' +
                 (open.length === 1 ? ' is' : 's are') + ' not consumable.</b> ' +
-                'A run prices only from an authorised cut, so the reports of this scope are refused ' +
-                'until the body is signed or retaken. ' +
-                open.map(function (c) { return esc(c.label) + ' is ' + esc(c.state) + '.'; }).join(' ') + '</div>';
+                'A run prices only from a body that is fixed and, where its kind requires one, ' +
+                'signed; the reports of this scope are refused until the body is signed or retaken. ' +
+                open.map(function (c) { return esc(c.label) + ' is ' + esc(STATE_WORD[c.state].toLowerCase()) + '.'; }).join(' ') +
+                '</div>';
+        }
+        var inUse = rows.filter(function (c) { return c.state === 'in_use'; });
+        if (inUse.length) {
+            out += '<div class="notice info"><b>' + inUse.length + ' cut' +
+                (inUse.length === 1 ? ' is' : 's are') + ' in use with no signature.</b> ' +
+                'Their kinds require no authorisation, so a run may price from them: ' +
+                inUse.map(function (c) {
+                    return esc(c.label) + ' (' + esc(c.code) + ')';
+                }).join(', ') + '. A result priced from a cut whose kind fixes indicative values ' +
+                'carries the indicative mark.</div>';
         }
         out += '<p class="sentence"><b>What a cut is.</b> It fixes the body one valuation reads — the deals, ' +
             'the market data, the reference data, the engine and the code — and it records who took it — so that a later ' +
@@ -514,8 +577,9 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
             'row. A superseded cut sits under the one that replaced it and stays readable, because the runs ' +
             'that priced from it still reproduce from it.</p>';
         out += '<p class="rule"><b>Who may take one.</b> A person who holds <code>reporting::cuts:take</code> ' +
-            'on this party. The person who takes a cut cannot authorise it: the authorisation is an inbox ' +
-            'request decided by another person who holds the part.</p>';
+            'on this party. Where the kind requires an authorisation, the take raises an approval request, ' +
+            'and the person who took the cut cannot decide it: four eyes is the inbox\u2019s rule and the ' +
+            'request is the inbox\u2019s record.</p>';
         out += '<div class="gap"><b>Gap.</b> No cut component, table, read or screen exists. No BFF route ' +
             'serves reporting. Every row, count and state on this page is a fixture.</div>';
         return out;
@@ -553,7 +617,8 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
         case 'taken': return byId('c5');
         case 'refused': return byId('c6');
         case 'superseded': return byId('c2');
-        case 'indicative': return byId('c3');
+        case 'in-use': return byId('c7');
+        case 'flash': return byId('c3');
         }
         return byId(CONFIG_CUT);
     }
@@ -591,11 +656,11 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
         var acts = '';
         if (c.state === 'incomplete' || c.state === 'draft')
             acts = '<button class="btn">Resume the take</button>';
-        else if (c.state === 'taken' && !c.indicative)
-            acts = '<button class="btn">Authorise</button>';
+        else if (c.state === 'taken')
+            acts = '<span class="faint">Waiting on ' + esc(c.part) + '</span>';
         else if (c.state === 'refused')
             acts = '<button class="btn">Take it again</button>';
-        else if (c.state === 'authorised')
+        else if (c.state === 'authorised' || c.state === 'in_use')
             acts = '<button class="btn">Run it again</button>';
         return '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reporting ' +
             '<span class="sep">&rsaquo;</span> Cuts <span class="sep">&rsaquo;</span> ' + esc(c.label) + '</p>' +
@@ -603,7 +668,8 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
             '<p class="lead">' + esc(c.kind) + ' &middot; ' + dt(c.instant) + ' &middot; ' +
             esc(c.tz) + ' &middot; ' + esc(SCOPE_LONG) + '</p></div>' +
             '<div class="actions"><span class="access">' +
-            (c.state === 'taken' || c.state === 'authorised' ? 'Read only' : 'Editable') + '</span>' +
+            (c.state === 'taken' || c.state === 'authorised' || c.state === 'in_use' ||
+             c.state === 'refused' || c.state === 'superseded' ? 'Read only' : 'Editable') + '</span>' +
             (acts ? acts : '') +
             '<button class="btn">Refresh</button></div></div>' +
             '<div class="tabs">' +
@@ -622,15 +688,20 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
             head = '<div class="notice success"><b>Authorised, so a run may price from it.</b> ' +
                 'A second person signed the body, and every figure in a run made from it is this body at ' +
                 dt(c.instant) + '.</div>';
+        else if (c.state === 'in_use')
+            head = '<div class="notice success"><b>In use, and no authorisation is required by its kind.</b> ' +
+                'The body is fixed and nothing is outstanding, so a run may price from it.' +
+                (indicativeOutput(c)
+                    ? ' The kind fixes indicative values, so every result priced from it carries the ' +
+                      'indicative mark.'
+                    : ' Its values are official, because they were approved when the body they carry ' +
+                      'forward was fixed.') + '</div>';
         else if (c.state === 'superseded')
-            head = '<div class="notice warn"><b>Superseded, and still authorised.</b> A later cut of the same ' +
-                'kind and scope replaced it on ' + dt(c.superseded_at) + '. A rerun reproduces an earlier result ' +
-                'from it; a new run should normally name the cut in use.</div>';
-        else if (c.state === 'taken' && c.indicative)
-            head = '<div class="notice info"><b>Indicative, and consumable by its occasion.</b> ' +
-                'A flash cut is taken before the day\u2019s data settles, so its authorisation is pending by ' +
-                'design and every result priced from it is marked indicative. The request waits on ' +
-                esc(c.part) + '.</div>';
+            head = '<div class="notice warn"><b>Superseded, and still usable.</b> A later cut of the same ' +
+                'kind and scope replaced it on ' + dt(c.superseded_at) + '. ' +
+                (c.auth_at ? 'It was authorised before it was replaced. ' : 'Its kind required no authorisation. ') +
+                'A rerun reproduces an earlier result from it; a new run should normally name the cut ' +
+                'in use.</div>';
         else if (c.state === 'taken')
             head = '<div class="notice info"><b>Taken, and not yet authorised.</b> The body is fixed and ' +
                 'nobody has signed it, so no run may price from it. The request ' + esc(c.request) +
@@ -719,50 +790,94 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
     }
 
     function authTab(c) {
+        var d = decl(c);
+        /* A kind that requires no authorisation draws the basis where another
+           cut draws its decision. The record is the cut's; the request, if there
+           is one, is the inbox's. */
+        if (!d.requires_auth) {
+            var one = '<tr><td>Taken</td><td>' + esc(c.taken_by) + '</td>' +
+                '<td class="mono nowrap">' + dt(c.taken_at) + '</td>' +
+                '<td class="dim">The body was fixed. No request was raised, because the kind ' +
+                'requires none.</td></tr>';
+            return '<div class="notice info"><b>No authorisation is required by its kind.</b> ' +
+                'The ' + esc(d.name.toLowerCase()) + ' kind fixes a body that its occasion does not sign, ' +
+                'so the take writes the body and nothing else. The cut was usable as soon as it was taken' +
+                (d.indicative ? ', and every result priced from it is marked indicative.' : '.') + '</div>' +
+                '<div class="panel"><h2>The act</h2><table class="rows"><thead><tr>' +
+                '<th>Act</th><th>Account</th><th>Instant</th><th>What it did</th></tr></thead><tbody>' +
+                one + '</tbody></table></div>' +
+                '<p class="sentence"><b>The basis is a fact of the kind.</b> It is read from the kind\u2019s ' +
+                'declaration and not inferred from the absence of a signature, so a body nobody signed is ' +
+                'never taken for a body somebody forgot.</p>' +
+                '<p class="rule">Where a firm wanted a signature on this occasion, it changes the kind: ' +
+                'a declaration, a seeded approval kind and a row of the queue, and no screen.</p>' +
+                '<div class="gap"><b>Gap.</b> The declaration is stated in a knowledge page and no table ' +
+                'holds it, so this tab states a fact the server cannot yet answer.</div>';
+        }
         var rows = '<tr><td>Taken</td><td>' + esc(c.taken_by) + '</td>' +
             '<td class="mono nowrap">' + dt(c.taken_at) + '</td>' +
-            '<td class="dim">The body was fixed and the authorisation was raised in one act.</td></tr>';
+            '<td class="dim">The body was fixed and the authorisation request raised in one act.</td></tr>';
         if (c.state === 'authorised' || c.state === 'superseded') {
-            rows += '<tr><td>Authorised</td><td>' + esc(c.auth_by) + '</td>' +
+            rows += '<tr><td>Approved</td><td>' + esc(c.auth_by) + '</td>' +
                 '<td class="mono nowrap">' + dt(c.auth_at) + '</td>' +
-                '<td class="dim">' + esc(c.part) + ' approved request ' + esc(c.request) + '.</td></tr>';
+                '<td class="dim">' + esc(c.part) + ' approved request ' + esc(c.request) +
+                ' in Approvals.</td></tr>';
         } else if (c.state === 'refused') {
             rows += '<tr><td>Refused</td><td>' + esc(c.auth_by) + '</td>' +
                 '<td class="mono nowrap">' + dt(c.auth_at) + '</td>' +
-                '<td class="dim">' + esc(c.part) + ' refused request ' + esc(c.request) + '.</td></tr>';
+                '<td class="dim">' + esc(c.part) + ' refused request ' + esc(c.request) +
+                ', with the reason the asker reads.</td></tr>';
         } else if (c.state === 'incomplete' || c.state === 'draft') {
             rows += '<tr><td>Authorisation</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td>' +
                 '<td class="dim">Not raised: a body with gaps is not offered for signature.</td></tr>';
         } else {
-            rows += '<tr><td>Awaiting</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td>' +
+            rows += '<tr><td>Waiting</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td>' +
                 '<td class="dim">Request ' + esc(c.request) + ' waits on ' + esc(c.part) +
-                (c.indicative ? ', and the body is consumable meanwhile because the kind says so.' : '.') +
-                '</td></tr>';
+                '. A hold parks the request and leaves the cut taken.</td></tr>';
         }
         var four = '<div class="notice info"><b>The taker cannot authorise.</b> ' +
-            'The inbox refuses a decision by the person who raised the request, and one person approves a ' +
-            'request once. Here the taker is <b>' + esc(c.taken_by) + '</b>, so the decision needs another ' +
-            'person who holds <code>inbox::approvals:decide_' + esc((c.part || '').toLowerCase().replace(/ /g, '_')) +
+            'Four eyes is the inbox\u2019s rule: a decision by the person who raised the request is refused, ' +
+            'and one person approves a request once. Here the taker is <b>' + esc(c.taken_by) + '</b>, so ' +
+            'the decision needs another person who holds ' +
+            '<code>inbox::approvals:decide_' + esc((c.part || '').toLowerCase().replace(/ /g, '_')) +
             '</code>.</div>';
         var waiting = '';
         if (c.state === 'taken')
             waiting = '<div class="notice warn"><b>It waits on ' + esc(c.part) + '.</b> ' +
-                'The request is ' + esc(c.request) + '. One decision authorises it, and a refusal ends it.</div>';
+                'The request is ' + esc(c.request) + ', and it is read and decided in Approvals. ' +
+                'One decision authorises it, and a refusal ends it.</div>';
+        var record = '<div class="panel"><h2>Where the request lives ' +
+            '<span class="sub">the inbox\u2019s record, not the cut\u2019s</span></h2>' +
+            '<div class="facts">' +
+            fact('Kind', '<span class="mono">reporting.cut_authorisation</span>') +
+            fact('Request', '<span class="mono">' + esc(c.request || '\u2014') + '</span>') +
+            fact('Decided by', esc(c.part || '\u2014')) +
+            fact('Queue', 'Approvals') +
+            '</div>' +
+            '<p class="rule">The request carries who asked, when, why, its state and its decision. The ' +
+            'cut\u2019s detail row hangs off it, keyed by the request, and holds the cut and the counts of ' +
+            'the body. This tab reads both and copies neither.</p></div>';
         var label = '<p class="sentence"><b>What the label does not say.</b> The label names the kind, the ' +
             'scope and the date. It says nothing about who signed the body, so the state and the authoriser ' +
             'are read here as facts.</p>';
         return four + waiting +
-            '<div class="panel"><h2>The two acts</h2><table class="rows"><thead><tr>' +
+            '<div class="panel"><h2>The acts</h2><table class="rows"><thead><tr>' +
             '<th>Act</th><th>Account</th><th>Instant</th><th>What it did</th></tr></thead><tbody>' +
-            rows + '</tbody></table></div>' + label +
-            '<div class="gap"><b>Gap.</b> Approval requests exist, and no cut raises one: the raise would be ' +
-            'the take, and the kind <code>reporting.cut_authorisation</code> is not seeded.</div>';
+            rows + '</tbody></table></div>' + record + label +
+            '<div class="gap"><b>Gap.</b> Approval requests exist and are queued in Approvals. The kind ' +
+            '<code>reporting.cut_authorisation</code> is not seeded, the cut\u2019s detail row does not ' +
+            'exist, and no web descriptor draws the body on the request page.</div>';
     }
 
     function runsTab(c) {
         if (c.state === 'taken' || c.state === 'incomplete' || c.state === 'refused' || c.state === 'draft') {
             return '<div class="panel"><h2>The runs that priced from this cut</h2>' +
-                '<p class="sentence">None. A run prices only from an authorised cut, so no run names this body.</p></div>';
+                '<p class="sentence">None. ' +
+                (c.state === 'taken'
+                    ? 'A run prices only from a body that is fixed and signed where its kind requires it, ' +
+                      'and this body is waiting on ' + esc(c.part) + '.'
+                    : 'No run can price from a body that is not fixed.') +
+                '</p></div>';
         }
         var runs = c.runs ? [
             { id: '#4823', def: 'NPV', when: '2026-10-06T18:05:00Z', state: 'completed',
@@ -806,7 +921,9 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
     function historyTab(c) {
         var entries = [
             { when: c.taken_at, who: c.taken_by, what: 'Took the cut',
-              why: 'The body was fixed and the authorisation raised, in one act.' }
+              why:  decl(c).requires_auth
+                  ? 'The body was fixed and the authorisation request raised, in one act.'
+                  : 'The body was fixed. The kind requires no authorisation, so no request was raised.' }
         ];
         if (c.auth_at)
             entries.unshift({ when: c.auth_at, who: c.auth_by,
@@ -862,13 +979,13 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
             '<span class="sep">&rsaquo;</span> Cuts <span class="sep">&rsaquo;</span> Take a cut</p>' +
             '<div class="pagehead"><div><h1>Take a cut</h1>' +
             '<p class="lead">Four steps over one body. Nothing is fixed until the last press, and the ' +
-            'press raises the authorisation with the body.</p></div>' +
+            'press raises the authorisation with the body where the kind requires one.</p></div>' +
             '<div class="actions"><span class="access">Editable</span></div></div>' +
             rail(step) + body;
     }
 
     function rail(step) {
-        var steps = ['Kind and timepoint', 'The body', 'Review', 'Take and authorise'];
+        var steps = ['Kind and timepoint', 'The body', 'Review', 'Take the cut'];
         return '<div class="rail">' + steps.map(function (s, i) {
             var n = String(i + 1);
             var cls = 'step' + (n === step ? ' on' : (Number(step) > i + 1 ? ' done' : ''));
@@ -877,13 +994,7 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
     }
 
     function takeKind() {
-        var rows = KINDS.map(function (k, i) {
-            return '<tr class="pick' + (k.on || S.fcase === 'indicative' && k.code === 'FLASH' ? ' sel' : '') +
-                '" data-kind="' + k.code + '">' +
-                '<td class="key">' + esc(k.code) + '<span class="sub">' + esc(k.name) + '</span></td>' +
-                '<td>' + esc(k.instant) + '</td><td class="dim">' + esc(k.why) + '</td></tr>';
-        }).join('');
-        var flash = S.fcase === 'indicative';
+        var flash = S.fcase === 'flash';
         var instant = flash
             ? '<div class="panel"><h2>The instant this cut fixes</h2>' +
               '<div class="facts">' +
@@ -903,9 +1014,23 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
               'so a clock change moves the instant and not the name.</p></div>';
         return '<div class="card"><h2>What kind of cut is this?</h2>' +
             '<p class="lede">The kind names the occasion. It fixes the instant, the recurrence and the ' +
-            'centre, and it says whether the authorisation precedes the values or follows them.</p>' +
+            'centre, and it declares whether a cut of the occasion is signed before it is used, and ' +
+            'whether its values are indicative.</p>' +
             '<div class="panel"><table class="rows"><thead><tr><th>Kind</th><th>What it fixes</th>' +
-            '<th>What it is for</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+            '<th>What it is for</th><th>Authorisation</th></tr></thead><tbody>' +
+            KINDS.map(function (k) {
+                var d = KIND_DECL[k.code];
+                return '<tr class="pick' + (k.on ? ' sel' : '') + '" data-kind="' + k.code + '">' +
+                    '<td class="key">' + esc(k.code) + '<span class="sub">' + esc(k.name) + '</span></td>' +
+                    '<td>' + esc(k.instant) + '</td><td class="dim">' + esc(k.why) + '</td>' +
+                    '<td>' + (d.requires_auth
+                        ? badge('Required', 'pending') + '<span class="sub">approval kind reporting.cut_authorisation</span>'
+                        : badge('Not required', 'inactive') + '<span class="sub">the take raises no request</span>') +
+                    (d.indicative ? '<span class="sub">its values are indicative</span>' : '') +
+                    '</td></tr>';
+            }).join('') + '</tbody></table></div>' +
+            '<p class="rule">The basis is the kind\u2019s declaration, not a choice made at the take. Two ' +
+            'kinds require an authorisation and two do not, and the take reads the row rather than asking.</p>' +
             '<div class="spacer"></div>' + instant +
             '<div class="spacer"></div><div class="panel"><h2>The label this cut will carry</h2>' +
             '<p class="mono" style="font-size:15px">' + (flash ? 'FLASH.ACME-LONDON.2026-10-07' :
@@ -1023,24 +1148,52 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
 
     function takePress() {
         var c = byId(CONFIG_CUT);
+        var flash = S.fcase === 'flash';
+        if (flash) {
+            return '<div class="card"><h2>The cut is taken, and its kind requires no authorisation</h2>' +
+                '<p class="lede">The body is frozen. No field changes from here, and no request is raised, ' +
+                'because the kind says none is needed.</p>' +
+                '<div class="notice success"><b>In use.</b> The body is fixed, the kind requires no ' +
+                'authorisation, and a run may price from it now. The cut is <b>' +
+                esc(byId('c3').label) + '</b>.</div>' +
+                '<div class="panel"><h2>What the press did</h2><table class="rows"><thead><tr>' +
+                '<th>Fact</th><th>Value</th></tr></thead><tbody>' +
+                '<tr><td>Body frozen at</td><td class="mono">07 Oct 2026 07:41Z</td></tr>' +
+                '<tr><td>Authorisation</td><td>None raised: the flash kind requires none</td></tr>' +
+                '<tr><td>Cut state</td><td>' + badge('In use', 'ok') +
+                ' ' + badge('Indicative output', 'indicative') + '</td></tr>' +
+                '<tr><td>What a result carries</td><td>The indicative mark, because the kind fixes ' +
+                'indicative values</td></tr></tbody></table></div>' +
+                '<div class="spacer"></div>' +
+                '<div class="notice info"><b>Why no signature.</b> The occasion is a decision taken while ' +
+                'the day moves, and a signature would arrive after the decision it serves. The body is ' +
+                'still complete and still reproducible; it is the values that are indicative, and the ' +
+                'mark says so wherever the cut is named.</div>' +
+                '<div class="savebar"><span class="faint">Step 4 of 4</span>' +
+                '<div class="right"><button class="btn">Open the cut</button>' +
+                '<button class="btn">Back to the cuts</button></div></div></div>';
+        }
         return '<div class="card"><h2>The cut is taken, and the authorisation is raised</h2>' +
             '<p class="lede">The body is frozen. No field changes from here, and the request is with the ' +
             'deciders.</p>' +
             '<div class="notice success"><b>Taken.</b> The body is fixed, the request <b>4b7c1e02</b> was ' +
-            'raised for Finance, and the cut is now <b>' + esc(c.label) + '</b>. No run may price from it ' +
-            'until somebody signs it.</div>' +
+            'raised for the kind\u2019s deciding permission, and the cut is <b>' + esc(c.label) + '</b>. ' +
+            'No run may price from it until the request is approved.</div>' +
             '<div class="panel"><h2>What the press did</h2><table class="rows"><thead><tr>' +
             '<th>Fact</th><th>Value</th></tr></thead><tbody>' +
             '<tr><td>Body frozen at</td><td class="mono">07 Oct 2026 09:01Z</td></tr>' +
-            '<tr><td>Authorisation request</td><td class="mono">4b7c1e02 \u00b7 waits on Finance</td></tr>' +
+            '<tr><td>Approval request</td><td class="mono">4b7c1e02 &middot; kind ' +
+            'reporting.cut_authorisation</td></tr>' +
+            '<tr><td>Decided by</td><td>Finance &middot; <code>inbox::approvals:decide_finance</code></td></tr>' +
             '<tr><td>Cut state</td><td>' + badge('Taken', 'pending') + '</td></tr>' +
             '<tr><td>Previous cut of the same kind and scope</td><td>' +
-            'EOD.ACME-LONDON.2026-10-05 \u00b7 stays Authorised, becomes Superseded when this one is signed</td>' +
-            '</tr></tbody></table></div>' +
+            'EOD.ACME-LONDON.2026-10-05 &middot; stays Authorised, becomes Superseded when this one is ' +
+            'approved</td></tr></tbody></table></div>' +
             '<div class="spacer"></div>' +
-            '<div class="notice info"><b>You cannot authorise this cut.</b> You took it, so the decision ' +
-            'needs another person who holds <code>inbox::approvals:decide_finance</code>. The screen does not ' +
-            'draw the button, and the inbox would refuse the decision.</div>' +
+            '<div class="notice info"><b>You cannot authorise this cut.</b> Four eyes is the inbox\u2019s ' +
+            'rule: you raised the request, so the decision needs another person who holds ' +
+            '<code>inbox::approvals:decide_finance</code>. The screen does not draw the button, and the ' +
+            'inbox would refuse the decision.</div>' +
             '<div class="savebar"><span class="faint">Step 4 of 4</span>' +
             '<div class="right"><button class="btn">Open the cut</button>' +
             '<button class="btn">Back to the cuts</button></div></div></div>';
@@ -1057,7 +1210,7 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
         if (S.fcase === 'incomplete') rows = [byId('c4'), byId(CONFIG_CUT)];
         if (S.fcase === 'refused') rows = [byId('c6'), byId(CONFIG_CUT)];
         if (S.fcase === 'taken') rows = [byId('c5'), byId(CONFIG_CUT)];
-        if (S.fcase === 'indicative') rows = [byId('c3'), byId(CONFIG_CUT)];
+        if (S.fcase === 'in-use' || S.fcase === 'flash') rows = [byId('c3'), byId('c7'), byId(CONFIG_CUT)];
         if (S.fcase === 'superseded') rows = [byId('c2'), byId(CONFIG_CUT)];
 
         var chosen = S.pick ? CUTS.concat([draftCut()]).filter(function (c) { return c.id === S.pick; })[0] : null;
@@ -1066,13 +1219,14 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
             '<th>Holdings</th><th>Runs</th></tr></thead><tbody>' +
             rows.map(function (c) {
                 var cls = 'pick' + (c.state === 'superseded' ? ' ended' : '') +
-                    (c.state !== 'authorised' && c.state !== 'superseded' && !c.indicative ? ' open' : '') +
+                    (consumable(c).ok ? '' : ' open') +
                     (S.pick === c.id ? ' sel' : '');
                 return '<tr class="' + cls + '" data-pick="' + c.id + '">' +
                     '<td class="key">' + esc(c.label) + '<span class="sub">' + esc(SCOPE_LONG) + '</span></td>' +
                     '<td class="mono">' + esc(c.code) + '</td>' +
                     '<td class="mono nowrap">' + dt(c.instant) + '</td>' +
-                    '<td>' + stateBadge(c) + '</td>' +
+                    '<td>' + stateBadge(c) + indicativeTag(c) +
+                    (basis(c) ? '<span class="sub">' + esc(basis(c)) + '</span>' : '') + '</td>' +
                     '<td>' + esc(c.taken_by) + '</td>' +
                     '<td>' + (c.auth_by || '<span class="dash">&mdash;</span>') + '</td>' +
                     '<td class="num">' + (c.deals ? c.deals.toLocaleString('en-GB') + ' deals &middot; ' +
@@ -1084,13 +1238,15 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
 
         return takeFrame('') + '<div class="backdrop"></div>' +
             '<div class="dialog"><div class="head"><h2>Price from a cut</h2>' +
-            '<p class="note">The cuts of ACME London, read 07 Oct 2026 08:58Z. A cut that is not authorised ' +
-            'is drawn where it sits and refused in the footer, because a run would refuse it.</p></div>' +
+            '<p class="note">The cuts of ACME London, read 07 Oct 2026 08:58Z. A cut that is not consumable ' +
+            '&mdash; fixed but waiting on an authorisation its kind requires, or not fixed at all &mdash; is ' +
+            'drawn where it sits and refused in the footer, because a run would refuse it.</p></div>' +
             '<div class="body"><div class="listtools">' +
             '<div class="searchbox"><input placeholder="Search the label or the scope"></div>' +
             '<select><option>Kind: all</option><option>End of day</option><option>Flash</option></select>' +
-            '<select><option>State: all</option><option>Authorised</option><option>Superseded</option>' +
-            '<option>Taken</option><option>Incomplete</option><option>Refused</option></select>' +
+            '<select><option>State: all</option><option>Authorised</option><option>In use</option>' +
+            '<option>Superseded</option><option>Taken</option><option>Incomplete</option>' +
+            '<option>Refused</option></select>' +
             '</div>' + table +
             '<div class="gap"><b>Gap.</b> <code>RecordPicker</code> reads its whole kind once and draws no ' +
             'state, so this is a <code>CutPicker</code> or the shared one gains a filtered form. ' +
@@ -1106,7 +1262,9 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
             '<div><p class="k">Cut</p><p class="mono">' + esc(c.label) + '</p></div>' +
             '<div><p class="k">Timepoint</p><p class="mono">' + dt(c.instant) + '</p></div>' +
             '<div><p class="k">State</p><p>' + stateBadge(c) + '</p></div>' +
-            '<div><p class="k">Authoriser</p><p>' + (c.auth_by || '<span class="dash">&mdash;</span>') + '</p></div>' +
+            '<div><p class="k">Basis</p><p>' + (c.auth_by
+                ? esc(c.auth_by) + ' authorised it'
+                : '<span class="dim">No authorisation required by its kind</span>') + '</p></div>' +
             '<div><p class="k">Holdings</p><p class="mono">' +
             (c.deals ? c.deals.toLocaleString('en-GB') + ' \u00b7 ' + c.values.toLocaleString('en-GB') : '\u2014') +
             '</p></div></div>';
@@ -1114,20 +1272,23 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
             return facts + '<div class="notice error"><b>That cut is refused.</b> ' + esc(v.why) + '</div>' +
                 '<div class="footrow"><button class="btn">Cancel</button></div>';
         }
-        if (v.indicative) {
-            return facts + '<div class="notice warn"><b>An indicative body.</b> ' +
-                'The flash cut carries a pending authorisation because its occasion is before the day settles. ' +
-                'Every result priced from it is marked indicative.</div>' +
-                '<p class="rule">The cut\u2019s points and its figures are the body at ' + dt(c.instant) + '.</p>' +
-                '<div class="footrow"><button class="btn">Cancel</button>' +
-                '<button class="btn primary">Price from this cut</button></div>';
-        }
         if (c.state === 'superseded') {
-            return facts + '<div class="notice info"><b>Superseded, and still authorised.</b> ' +
+            return facts + '<div class="notice info"><b>Superseded, and still usable.</b> ' +
                 'A later cut replaced it on ' + dt(c.superseded_at) + '. A rerun reproduces an earlier result ' +
                 'from it, and a new run should normally name the cut in use.</div>' +
                 '<div class="footrow"><button class="btn">Cancel</button>' +
                 '<button class="btn primary">Price from this cut anyway</button></div>';
+        }
+        if (c.state === 'in_use') {
+            return facts + '<div class="notice success"><b>In use, and no authorisation is required by ' +
+                'its kind.</b> The body was usable when it was taken, so a run may price from it now.' +
+                (indicativeOutput(c)
+                    ? ' The kind fixes indicative values, so every result priced from this cut is ' +
+                      'marked indicative.'
+                    : '') + '</div>' +
+                '<p class="rule">The cut\u2019s figures are the body at ' + dt(c.instant) + '.</p>' +
+                '<div class="footrow"><button class="btn">Cancel</button>' +
+                '<button class="btn primary">Price from this cut</button></div>';
         }
         return facts + '<p class="rule">A run prices from this body and from nothing else. ' +
             'The run records the cut, and the cut names the publish record of every market role.</p>' +
@@ -1157,7 +1318,9 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
         var verdict = S.verdict || (S.fcase === 'refused' ? 'refused'
             : S.fcase === 'taken' ? 'refused-taken'
             : S.fcase === 'incomplete' ? 'refused-incomplete' : 'reproduced');
-        var cut = byId(CONFIG_CUT);
+        /* A run that priced from a cut whose kind requires no authorisation is
+           the second reading of the same card, and it is case=in-use. */
+        var cut = (S.fcase === 'in-use' || S.fcase === 'flash') ? byId('c3') : byId(CONFIG_CUT);
         var refused = verdict.indexOf('refused') === 0;
         var head = refused ? runRefused(verdict, cut) : runPriced(verdict, cut);
         return '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reporting ' +
@@ -1255,11 +1418,18 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
             fact('Deals valued', c.deals.toLocaleString('en-GB')) +
             fact('Market data values read', c.values.toLocaleString('en-GB')) +
             fact('Taken by', esc(c.taken_by)) +
-            fact('Authorised by', esc(c.auth_by) + ' on ' + dt(c.auth_at)) +
+            (decl(c).requires_auth
+                ? fact('Authorised by', esc(c.auth_by) + ' on ' + dt(c.auth_at))
+                : fact('Basis', 'No authorisation required by its kind')) +
             fact('Engine version', '<span class="mono">' + esc(c.engine) + '</span>') +
             '</div>' +
+            (indicativeOutput(c)
+                ? '<p class="sentence">' + badge('Indicative output', 'indicative') + ' The kind fixes ' +
+                  'indicative values, so every figure this run produced is marked indicative. ' +
+                  'The body is complete and reproduces; the values are not official.</p>'
+                : '') +
             '<p class="sentence">The market roles inside the body: pricing resolves to ' +
-            '<b>USD-SOFR-3M &middot; ACME London</b> at <b>06 Oct 16:00Z</b>, publish record ' +
+            '<b>USD-SOFR-3M &middot; ACME London</b> at <b>' + dt(c.instant) + '</b>, publish record ' +
             '<b>8f2a4c19</b>, and simulation to <b>EUR-ESTR-6M</b> at the same as-of, publish record ' +
             '<b>2c40f8d1</b>.</p>' +
             '<p class="rule">The run names the cut it used, not the cut the configuration names today: the ' +
@@ -1475,7 +1645,7 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
         if (k) {
             e.preventDefault();
             location.search = q({ surface: 'take', step: '1',
-                fcase: k.getAttribute('data-kind') === 'FLASH' ? 'indicative' : '' });
+                fcase: k.getAttribute('data-kind') === 'FLASH' ? 'flash' : '' });
             return;
         }
         var r = e.target.closest('[data-run]');

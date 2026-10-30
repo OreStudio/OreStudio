@@ -401,12 +401,14 @@ describe('the curve configuration page', () => {
 
     it('names the child elements a curve holds, and says once the ones it draws rows of', () => {
         const words = textOf(page('curves'));
+        // The elements the document can hold, each on its own line with its state.
+        expect(words).toContain('Other elements it can hold');
         expect(words).toContain('Report');
-        expect(words).toContain('stated');
+        expect(words).toContain('set');
         // A block the section declares and this curve does not state says so.
         expect(words).toContain('BootstrapConfig');
-        expect(words).toContain('not recorded here');
-        // Segments are drawn as their rows, so the badge row does not name them again.
+        expect(words).toContain('this screen cannot read it yet');
+        // Segments are drawn as their rows, so the list does not name them again.
         expect(words).toContain('Its Segments');
         expect(words.match(/Segments/g)).toHaveLength(1);
     });

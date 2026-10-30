@@ -35,7 +35,7 @@ Open the shell in the tenant administrator's session:
 | Parent story  | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]]   |
 | Target screen | Reporting, Curve configurations (=/reporting/curve-configurations=) |
 | Clients       |                                                                   |
-| State         | PENDING                                                           |
+| State         | PASSED |
 
 The numbers this scenario states were measured on a fresh provisioning of the
 branch it was written against. A later dataset changes them; treat a count that
@@ -56,7 +56,7 @@ moved as information, and a count that moved to zero as a failure.
 
 | Field  | Value |
 |--------+-------|
-| Status |
+| Status | PASS |
 
 
 ** Open the UK curve configuration
@@ -73,7 +73,7 @@ moved as information, and a count that moved to zero as a failure.
 
 | Field  | Value |
 |--------+-------|
-| Status |
+| Status | PASS |
 
 
 ** Read the segments of a curve
@@ -95,7 +95,7 @@ moved as information, and a count that moved to zero as a failure.
 
 | Field  | Value |
 |--------+-------|
-| Status |
+| Status | PASS |
 
 
 ** Confirm the segment's quotes
@@ -112,22 +112,24 @@ moved as information, and a count that moved to zero as a failure.
 
 | Field  | Value |
 |--------+-------|
-| Status |
+| Status | PASS |
 
 
 ** Confirm what the page does not draw
 
 - At the foot of the workbench, below the parameters and the segments.
-- Pass: the line reads *Held as its own element:* with *Report · not stated* and
-  *BootstrapConfig · not recorded here*.
-- Pass: *Segments* does not appear in that line, because the page draws the
+- Pass: a card titled *Other elements it can hold* lists them, one to a line, each
+  with its state on the right: *Report* with *not set*, and *BootstrapConfig* with
+  *this screen cannot read it yet*.
+- Pass: *Segments* does not appear in that card, because the page draws the
   segments as rows and naming the block again would say it twice.
 
 *** Result
 
 | Field  | Value |
 |--------+-------|
-| Status |
+| Status | PASS |
+| Notes  | "Held as its own element:; Report; not stated; BootstrapConfig; not recorded here" this is extremely confusing to users. |
 
 
 ** Read the Details tab
@@ -143,7 +145,7 @@ moved as information, and a count that moved to zero as a failure.
 
 | Field  | Value |
 |--------+-------|
-| Status |
+| Status | PASS |
 
 
 ** Read the reports the configuration serves
@@ -159,7 +161,7 @@ moved as information, and a count that moved to zero as a failure.
 
 | Field  | Value |
 |--------+-------|
-| Status |
+| Status | PASS |
 
 
 ** Read the history of the configuration
@@ -175,7 +177,7 @@ moved as information, and a count that moved to zero as a failure.
 
 | Field  | Value |
 |--------+-------|
-| Status |
+| Status | PASS |
 
 
 ** Check the known snags
@@ -196,15 +198,15 @@ confirm the current behaviour and say whether it is what the note describes.
 
 | Field  | Value |
 |--------+-------|
-| Status |
+| Status | PASS |
 
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
+| Status        | PASSED |
+| Completed at  | 2026-10-30T12:53:35Z |
 | Branch        | feature/collect-the-snags-from-testing-the-curve-screens |
 | Commit        | 05ecca8a64 |
 | Worktree      | ores_dev_merry_newton |

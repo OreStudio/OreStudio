@@ -80,6 +80,17 @@ task and name that file in the Command column.
 - *What the run does not do.* It does not save the note as it is typed, so a note
   written on the step on show is kept when the tester moves on or presses Save.
 
+
+- *The elements a curve can also hold were one confusing line.* The tester's note on
+  step 5 of the scenario, verbatim: "'Held as its own element:; Report; not stated;
+  BootstrapConfig; not recorded here' this is extremely confusing to users." Three
+  things were wrong with it: the label spoke about elements in the abstract, the
+  words *not stated* and *not recorded here* named two different facts in one run,
+  and a tag beside a word is read as a fragment rather than a sentence. It is now a
+  card, *Other elements it can hold*, one element to a line, each with its own
+  state on the right: *set*, *not set*, and *this screen cannot read it yet* for a
+  column the projection does not read.
+
 * The snags the first browser walk left
 
 The walk that produced the evidence on

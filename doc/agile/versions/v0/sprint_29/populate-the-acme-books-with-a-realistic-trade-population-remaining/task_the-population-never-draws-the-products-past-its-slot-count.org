@@ -35,7 +35,11 @@ The rate planner cycles nine routed types and each seeded rate config states eig
 
 * Acceptance
 
--
+- The seeded rate and fx configs state one trade per routed code, so a
+  provisioned tenant holds every code the family routes.
+- A test states the rule at that size and names the codes a short config misses.
+- The rest of the population does not move: the families that already covered
+  their codes book the same rows.
 
 * Plan
 
@@ -55,7 +59,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Rate instrument rows | 27 (was 24) | =select count(*) from ores_trading_rate_instruments_tbl= | worktree |
+| Rate codes drawn | 9 (was 8) | =select count(distinct trade_type_code) ...= | worktree |
+| Knock-out swaps | 3 (was 0) | =select count(*) from ores_trading_knock_out_swap_instruments_tbl= | worktree |
+| Fx rows, all tables | 64 (was 32) | the seven fx tables, summed | worktree |
+| Fx codes drawn | 16 (was 14) | =select count(distinct trade_type_code)= over the fx tables | worktree |
+| Fx variance swaps | 4 (was 0) | =...fx_variance_swap_instruments_tbl= | worktree |
+| Fx accumulators | 4 (was 0) | =...fx_accumulator_instruments_tbl= | worktree |
+| Range bounds | 8 (was 4) | =select count(*) from ores_trading_range_bounds_tbl= | worktree |
+| Bond / commodity / equity / credit rows | 24 / 25 + 12 / 17 / 5, unchanged | their tables | worktree |
+| Trade rows, latest version | 162 (was 127) | =select count(distinct id) from ores_trading_trades_tbl where valid_to = ...= | worktree |
+| Planner suite | 2,050 assertions in 82 cases | =publish/bin/ores.synthetic.core.tests= | worktree |
 
 * Notes
 
@@ -113,3 +127,33 @@ rename that another branch can patch: reverting the WIP commit 84605bcf70
 conflicts in fifty files.
 
 Until main builds, this task cannot produce the run its acceptance asks for.
+
+A planner draws its routed codes by the slot's position, so a config that states
+fewer slots than its family routes states a prefix of the list and the codes past
+that position are never drawn. The rate configs stated eight slots into nine
+codes and the fx configs eight into sixteen, so a provisioned tenant held no
+knock-out swap, no fx variance swap and no fx accumulator, though all three
+construct and all three route.
+
+The fix is in the data, not in the cycle: the seeded rate configs state nine
+trades and the fx configs sixteen, which is one per routed code — the rule
+commodity (25) and credit (5) already followed. The planner tests state the rule
+at that size and name the three codes, so a config that falls short again shows
+up as a missing code rather than as silence.
+
+Measured on a fresh tenant: 27 rate rows over 9 codes with 3 knock-out swaps, 64
+fx rows over 16 codes with 4 variance swaps and 4 accumulators, 8 range bounds in
+place of 4, and every other family unchanged at 24 bonds, 25 commodity rows with
+12 constituents, 17 equity rows and 5 credit rows. The tenant holds 162 trades
+where it held 127.
+
+Two consequences worth stating rather than leaving to a reader.
+
+- The population grows by 35 trades and the mix moves with it: fx now carries 64
+  of 162 trades, which is 40% against the 25% Trade Population Weights states.
+  The mix was already far from those weights before this change — rates were 19%
+  against 42% — so sizing every class to its weight is its own piece of work and
+  is captured rather than attempted here.
+- A tenant that wants a thinner book still can, by lowering trades_per_book; it
+  gives up the codes past its slot count by doing so. The seed comment says this
+  where the configs are stated, so the trade-off is written where it is made.

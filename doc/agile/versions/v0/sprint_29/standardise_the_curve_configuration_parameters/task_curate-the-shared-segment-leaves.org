@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 27C8B919-C762-4382-9043-1DE7E2D4A6D5
+:END:
+#+title: Task: Curate the shared segment leaves
+#+description: Task for: Standardise the curve configuration's parameters on the one contract
+#+type: task
+#+level: s1
+#+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
+#+owner: marco
+#+branch: feature/curate-the-shared-segment-leaves
+#+pr: 4118
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the four leaves every segment kind shares — PillarChoice, DuplicatePillarPolicy, Priority and MinDistance — a contract row, so the screen documents them and the page stops reading 238 of 289.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- Each of the four leaves carries a curation entry with a label, a description, a reason and a source reference.
+- The seed carries a row for each leaf under every segment kind.
+- PillarChoice and DuplicatePillarPolicy take their ORE parser's list, not text.
+
+* Plan
+
+#+begin_src text
+1. Curate PillarChoice, DuplicatePillarPolicy, Priority and MinDistance in
+   curve_term_curation.json, from the prose the ORE guide spends on them.
+2. Link PillarChoice and DuplicatePillarPolicy to the parsers that read them, so
+   the screen draws the closed list rather than a text field.
+3. Regenerate the artefact and the value sets, and run the four contract checks.
+#+end_src
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Parameters the seed holds | 2295, then 2343 | =python3 projects/ores.sql/utility/generate_ore_parameters_dataset.py= | this branch |
+| Rows the curation adds | 48 (4 leaves x 12 kinds) | =git diff --stat projects/ores.sql/populate/reporting/reporting_ore_parameters_artefact_populate.sql= | this branch |
+| Value sets | 224, then 226 | =python3 projects/ores.sql/utility/generate_value_sets.py= | this branch |
+| Leaves still without text | 167 | the generator's own report | this branch |
+
+* Notes
+
+The extractor was never the problem. =curve_terms.json= holds PillarChoice,
+DuplicatePillarPolicy, Priority and MinDistance for every kind, with the type and
+default the ORE source states; the walk on 2026-10-30 suggests otherwise only
+because a term without a text is not written as a row. The guide explains the four
+once, in the simple segment's prose, and never lists them as items, so the
+extraction has no item to attach the words to. That is what curation exists for,
+and the same route landed ProjectionCurve.
+
+The default the extractor read is what the screen shows: LastRelevantDate for the
+pillar choice, KeepLast for the duplicate policy, 0 and 1 for the priority and the
+minimum distance.
+
+* Result
+
+The four leaves reach the contract for every segment kind: the seed grows from
+2295 to 2343 parameters, 48 rows, and the two closed lists take their parser's
+values instead of text. The page reads its three dashed leaves from the contract
+now, so the walk that reads *3 without documentation* must be repeated; the count
+it will read is not claimed here, because only a provisioned tenant shows it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4118][#4118]] | [refdata] Curate the leaves every segment kind shares |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

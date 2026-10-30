@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: EB796F14-ECCB-4634-BAD9-6958D0F3C10A
 :END:
-#+title: The curve term extractor misses leaves a helper reads
-#+description: A segment's PillarChoice, Priority and MinDistance reach the document through common_settings, not through an assignment in the importer, so the extractor records none of them. The screen now shows three undocumented leaves per simple segment and the page reads 238 of 289 parameters documented.
+#+title: Three segment leaves the contract has no row for
+#+description: The extractor reads PillarChoice, DuplicatePillarPolicy, Priority and MinDistance from the ORE source, but the guide explains them in prose and never lists them as items, so no term carries a text and the contract writes no row. Taken by task 2A7C0F5B.
 #+type: capture
 #+level: cross
 #+filetags: 
@@ -13,10 +13,15 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-Teach =extract_curve_terms.py= to follow a helper call. Every segment kind reads
-=PillarChoice=, =Priority= and =MinDistance= through =common_settings(s, g)= and
-not through an assignment the extractor sees, so the ORE parameter contract holds
-no row for any of the three, for any of the twelve kinds.
+Curate the four leaves every segment kind shares: =PillarChoice=,
+=DuplicatePillarPolicy=, =Priority= and =MinDistance=. The extractor records all
+four, for every kind, with the type and default the ORE source states. What they
+lack is a text: the guide explains them in the simple segment's prose and never
+lists them as items, so no term carries a text and curve_parameter_rows.py writes
+no row for a term without one.
+
+Taken by [[id:27C8B919-C762-4382-9043-1DE7E2D4A6D5][Curate the shared segment
+leaves]].
 
 * Why
 
@@ -26,10 +31,10 @@ which the walk on 2026-10-30 shows as a dash and as *3 without documentation* on
 the entry, and the page reads *238 of 289 parameters carry documentation* where it
 read *238 of 238*.
 
-The root cause is the one [[id:3D1208F2-1D51-4733-81FB-01B19D36E8EE][Record the
-leaves a segment inherits]] fixed for a class's base: the extractor reads the
-assignments of an importer and nothing that an importer calls. That task added
-=Conventions= for every kind and nothing else.
+=Conventions= has a row because the guide lists it under each kind. The four that
+do not are the ones the guide describes once, in prose, as settings of the segment
+it is describing. The contract's rule is right: a term without a text is a gap,
+not a row. What is missing is the person's text.
 
 * References
 

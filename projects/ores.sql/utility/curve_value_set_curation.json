@@ -15,6 +15,14 @@
   "source": "ore_code",
   "source_ref": "OREData/ored/utilities/parsers.cpp:361"
  },
+ "YieldCurves|DuplicatePillarPolicy": {
+  "curator": "marco",
+  "date": "2026-10-30",
+  "link": "parseDuplicatePillarPolicy",
+  "reason": "The yield curve config reads the leaf with this parser, and the leaf was curated into the contract on 2026-10-30, so the link is authored here for the same reason its text is.",
+  "source": "ore_code",
+  "source_ref": "OREData/ored/utilities/parsers.cpp:1612"
+ },
  "YieldCurves|ExtrapolationMethod": {
   "curator": "marco",
   "date": "2026-10-27",
@@ -38,5 +46,13 @@
   "reason": "Parsed by this function for the yield curve config only; the other families carry the name without an ORE list.",
   "source": "ore_code",
   "source_ref": "OREData/ored/marketdata/yieldcurve.hpp:260"
+ },
+ "YieldCurves|PillarChoice": {
+  "curator": "marco",
+  "date": "2026-10-30",
+  "link": "parsePillarChoice",
+  "reason": "The yield curve config reads the leaf with this parser, and the leaf was curated into the contract on 2026-10-30, so the link is authored here for the same reason its text is.",
+  "source": "ore_code",
+  "source_ref": "OREData/ored/utilities/parsers.cpp:1573"
  }
 }

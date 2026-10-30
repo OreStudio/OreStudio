@@ -92,8 +92,8 @@ moved as information, and a count that moved to zero as a failure.
   dash, and *Projection curve* reading *Default: Not given. ORE applies its own
   rule.*
 - Note: the three leaves that read a dash have no row in the contract, which is
-  the snag recorded below. A row that shows a value or a default for them means
-  the extractor follows a helper call, and the note is out of date.
+  the snag recorded below. A label and a value for them means the four leaves
+  were curated, and the note is out of date.
 - Note: a snag is a segment leaf that prints an ORE name such as =Conventions= or
   =RecordedAt= where a label belongs, or a leaf that belongs to another kind.
 
@@ -200,11 +200,11 @@ confirm the current behaviour and say whether it is what the note describes.
 - Pass: no row reads =RecordedAt=. A row that shows it means the build predates
   the fix.
 - Pass: =PillarChoice=, =Priority= and =MinDistance= draw a dash and the entry
-  reads *3 without documentation*, so the page reads *238 of 289*. They reach the
-  document through =common_settings=, which the extractor does not follow, so the
-  contract holds no row for any of them. Recorded as
-  [[id:EB796F14-ECCB-4634-BAD9-6958D0F3C10A][The curve term extractor misses
-  leaves a helper reads]].
+  reads *3 without documentation*, so the page reads *238 of 289*. The extractor
+  reads all three from the ORE source; the guide explains them in prose and never
+  lists them as items, so no term carries a text and the contract writes no row.
+  Curating them is [[id:27C8B919-C762-4382-9043-1DE7E2D4A6D5][Curate the shared
+  segment leaves]].
 
 *** Result
 

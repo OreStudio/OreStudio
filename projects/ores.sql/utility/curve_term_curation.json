@@ -124,5 +124,41 @@
         "source_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:783",
         "curator": "marco",
         "date": "2026-10-29"
+    },
+    "YieldCurves/PillarChoice": {
+        "label": "Pillar choice",
+        "description": "Which date of each instrument becomes its bootstrap pillar: MaturityDate, LastRelevantDate, NoPillar, StartDate, StartDateAndMaturityDate or StartDateAndLastRelevantDate.",
+        "reason": "The guide explains the node in the simple segment's prose and never lists it as an item, so the extractor has no item to read. The same node serves every segment kind, whose guide listing repeats it without a description.",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:244",
+        "curator": "marco",
+        "date": "2026-10-30"
+    },
+    "YieldCurves/DuplicatePillarPolicy": {
+        "label": "Duplicate pillar policy",
+        "description": "How the bootstrap treats instruments in the same segment that share a pillar date: KeepLast, KeepFirst, KeepAll or ThrowError.",
+        "reason": "The guide explains the node in the simple segment's prose and never lists it as an item, so the extractor has no item to read. The same node serves every segment kind, whose guide listing repeats it without a description.",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:248",
+        "curator": "marco",
+        "date": "2026-10-30"
+    },
+    "YieldCurves/Priority": {
+        "label": "Priority",
+        "description": "The segment's place in the bootstrap order, as a non-negative integer where a lower number is a higher priority. When two adjacent segments overlap on pillar dates, the instruments of the lower-priority segment are removed until the overlap is resolved.",
+        "reason": "The guide explains the node in the simple segment's prose and never lists it as an item, so the extractor has no item to read. The same node serves every segment kind, whose guide listing repeats it without a description.",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:250",
+        "curator": "marco",
+        "date": "2026-10-30"
+    },
+    "YieldCurves/MinDistance": {
+        "label": "Minimum distance",
+        "description": "The number of calendar days kept between the pillar dates of this segment and the next one, when the two segments overlap.",
+        "reason": "The guide explains the node in the simple segment's prose and never lists it as an item, so the extractor has no item to read. The same node serves every segment kind, whose guide listing repeats it without a description.",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:254",
+        "curator": "marco",
+        "date": "2026-10-30"
     }
 }

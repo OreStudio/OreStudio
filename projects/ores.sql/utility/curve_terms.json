@@ -9689,6 +9689,258 @@
     {
      "conditional": false,
      "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "member": null,
+     "name": "Type",
+     "parser": "parseYieldCurveSegment",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "Direct",
+      "Type"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:380",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:146",
+     "guide_text": "The identifier for the conventions associated with the commodity being averaged.",
+     "mandatory": false,
+     "member": "conventionsID_",
+     "name": "Conventions",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "Direct",
+      "Conventions"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:408",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "LastRelevantDate",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "PillarChoice",
+     "parser": "parsePillarChoice",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "Direct",
+      "PillarChoice"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:411",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "KeepLast",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "DuplicatePillarPolicy",
+     "parser": "parseDuplicatePillarPolicy",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "Direct",
+      "DuplicatePillarPolicy"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:413",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "0",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "priority_",
+     "name": "Priority",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "Direct",
+      "Priority"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:414",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": "1",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "minDistance_",
+     "name": "MinDistance",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "Direct",
+      "MinDistance"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:415",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "member": null,
+     "name": "Type",
+     "parser": "parseYieldCurveSegment",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "Simple",
+      "Type"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:380",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:146",
+     "guide_text": "The identifier for the conventions associated with the commodity being averaged.",
+     "mandatory": false,
+     "member": "conventionsID_",
+     "name": "Conventions",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "Simple",
+      "Conventions"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:408",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "LastRelevantDate",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "PillarChoice",
+     "parser": "parsePillarChoice",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "Simple",
+      "PillarChoice"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:411",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "KeepLast",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "DuplicatePillarPolicy",
+     "parser": "parseDuplicatePillarPolicy",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "Simple",
+      "DuplicatePillarPolicy"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:413",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "0",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "priority_",
+     "name": "Priority",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "Simple",
+      "Priority"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:414",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": "1",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "minDistance_",
+     "name": "MinDistance",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "Simple",
+      "MinDistance"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:415",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": null,
      "element": "Simple",
      "guide_optional": null,
      "guide_ref": "",
@@ -9710,6 +9962,132 @@
     {
      "conditional": false,
      "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "member": null,
+     "name": "Type",
+     "parser": "parseYieldCurveSegment",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "AverageOIS",
+      "Type"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:380",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:146",
+     "guide_text": "The identifier for the conventions associated with the commodity being averaged.",
+     "mandatory": false,
+     "member": "conventionsID_",
+     "name": "Conventions",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "AverageOIS",
+      "Conventions"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:408",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "LastRelevantDate",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "PillarChoice",
+     "parser": "parsePillarChoice",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "AverageOIS",
+      "PillarChoice"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:411",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "KeepLast",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "DuplicatePillarPolicy",
+     "parser": "parseDuplicatePillarPolicy",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "AverageOIS",
+      "DuplicatePillarPolicy"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:413",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "0",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "priority_",
+     "name": "Priority",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "AverageOIS",
+      "Priority"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:414",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": "1",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "minDistance_",
+     "name": "MinDistance",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "AverageOIS",
+      "MinDistance"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:415",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": null,
      "element": "AverageOIS",
      "guide_optional": null,
      "guide_ref": "",
@@ -9727,6 +10105,132 @@
      ],
      "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:521",
      "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "member": null,
+     "name": "Type",
+     "parser": "parseYieldCurveSegment",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "TenorBasis",
+      "Type"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:380",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:146",
+     "guide_text": "The identifier for the conventions associated with the commodity being averaged.",
+     "mandatory": false,
+     "member": "conventionsID_",
+     "name": "Conventions",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "TenorBasis",
+      "Conventions"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:408",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "LastRelevantDate",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "PillarChoice",
+     "parser": "parsePillarChoice",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "TenorBasis",
+      "PillarChoice"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:411",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "KeepLast",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "DuplicatePillarPolicy",
+     "parser": "parseDuplicatePillarPolicy",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "TenorBasis",
+      "DuplicatePillarPolicy"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:413",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "0",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "priority_",
+     "name": "Priority",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "TenorBasis",
+      "Priority"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:414",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": "1",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "minDistance_",
+     "name": "MinDistance",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "TenorBasis",
+      "MinDistance"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:415",
+     "type": "integer"
     },
     {
      "conditional": false,
@@ -9815,6 +10319,132 @@
     {
      "conditional": false,
      "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "member": null,
+     "name": "Type",
+     "parser": "parseYieldCurveSegment",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "CrossCurrency",
+      "Type"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:380",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:146",
+     "guide_text": "The identifier for the conventions associated with the commodity being averaged.",
+     "mandatory": false,
+     "member": "conventionsID_",
+     "name": "Conventions",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "CrossCurrency",
+      "Conventions"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:408",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "LastRelevantDate",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "PillarChoice",
+     "parser": "parsePillarChoice",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "CrossCurrency",
+      "PillarChoice"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:411",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "KeepLast",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "DuplicatePillarPolicy",
+     "parser": "parseDuplicatePillarPolicy",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "CrossCurrency",
+      "DuplicatePillarPolicy"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:413",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "0",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "priority_",
+     "name": "Priority",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "CrossCurrency",
+      "Priority"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:414",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": "1",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "minDistance_",
+     "name": "MinDistance",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "CrossCurrency",
+      "MinDistance"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:415",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": null,
      "element": "CrossCurrency",
      "guide_optional": false,
      "guide_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:37",
@@ -9899,6 +10529,132 @@
     {
      "conditional": false,
      "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "member": null,
+     "name": "Type",
+     "parser": "parseYieldCurveSegment",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "ZeroSpread",
+      "Type"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:380",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:146",
+     "guide_text": "The identifier for the conventions associated with the commodity being averaged.",
+     "mandatory": false,
+     "member": "conventionsID_",
+     "name": "Conventions",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "ZeroSpread",
+      "Conventions"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:408",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "LastRelevantDate",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "PillarChoice",
+     "parser": "parsePillarChoice",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "ZeroSpread",
+      "PillarChoice"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:411",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "KeepLast",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "DuplicatePillarPolicy",
+     "parser": "parseDuplicatePillarPolicy",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "ZeroSpread",
+      "DuplicatePillarPolicy"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:413",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "0",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "priority_",
+     "name": "Priority",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "ZeroSpread",
+      "Priority"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:414",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": "1",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "minDistance_",
+     "name": "MinDistance",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "ZeroSpread",
+      "MinDistance"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:415",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": null,
      "element": "ZeroSpread",
      "guide_optional": false,
      "guide_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:601",
@@ -9916,6 +10672,132 @@
      ],
      "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:633",
      "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "member": null,
+     "name": "Type",
+     "parser": "parseYieldCurveSegment",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "DiscountRatio",
+      "Type"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:380",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:146",
+     "guide_text": "The identifier for the conventions associated with the commodity being averaged.",
+     "mandatory": false,
+     "member": "conventionsID_",
+     "name": "Conventions",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "DiscountRatio",
+      "Conventions"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:408",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "LastRelevantDate",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "PillarChoice",
+     "parser": "parsePillarChoice",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "DiscountRatio",
+      "PillarChoice"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:411",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "KeepLast",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "DuplicatePillarPolicy",
+     "parser": "parseDuplicatePillarPolicy",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "DiscountRatio",
+      "DuplicatePillarPolicy"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:413",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "0",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "priority_",
+     "name": "Priority",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "DiscountRatio",
+      "Priority"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:414",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": "1",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "minDistance_",
+     "name": "MinDistance",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "DiscountRatio",
+      "MinDistance"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:415",
+     "type": "integer"
     },
     {
      "conditional": false,
@@ -9941,6 +10823,132 @@
     {
      "conditional": false,
      "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "member": null,
+     "name": "Type",
+     "parser": "parseYieldCurveSegment",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "FittedBond",
+      "Type"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:380",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:146",
+     "guide_text": "The identifier for the conventions associated with the commodity being averaged.",
+     "mandatory": false,
+     "member": "conventionsID_",
+     "name": "Conventions",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "FittedBond",
+      "Conventions"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:408",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "LastRelevantDate",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "PillarChoice",
+     "parser": "parsePillarChoice",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "FittedBond",
+      "PillarChoice"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:411",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "KeepLast",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "DuplicatePillarPolicy",
+     "parser": "parseDuplicatePillarPolicy",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "FittedBond",
+      "DuplicatePillarPolicy"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:413",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "0",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "priority_",
+     "name": "Priority",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "FittedBond",
+      "Priority"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:414",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": "1",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "minDistance_",
+     "name": "MinDistance",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "FittedBond",
+      "MinDistance"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:415",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": null,
      "element": "FittedBond",
      "guide_optional": false,
      "guide_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:517",
@@ -9958,6 +10966,132 @@
      ],
      "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:732",
      "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "member": null,
+     "name": "Type",
+     "parser": "parseYieldCurveSegment",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "BondYieldShifted",
+      "Type"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:380",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:146",
+     "guide_text": "The identifier for the conventions associated with the commodity being averaged.",
+     "mandatory": false,
+     "member": "conventionsID_",
+     "name": "Conventions",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "BondYieldShifted",
+      "Conventions"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:408",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "LastRelevantDate",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "PillarChoice",
+     "parser": "parsePillarChoice",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "BondYieldShifted",
+      "PillarChoice"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:411",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "KeepLast",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "DuplicatePillarPolicy",
+     "parser": "parseDuplicatePillarPolicy",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "BondYieldShifted",
+      "DuplicatePillarPolicy"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:413",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "0",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "priority_",
+     "name": "Priority",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "BondYieldShifted",
+      "Priority"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:414",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": "1",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "minDistance_",
+     "name": "MinDistance",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "BondYieldShifted",
+      "MinDistance"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:415",
+     "type": "integer"
     },
     {
      "conditional": false,
@@ -10000,6 +11134,132 @@
      ],
      "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:909",
      "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "member": null,
+     "name": "Type",
+     "parser": "parseYieldCurveSegment",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "WeightedAverage",
+      "Type"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:380",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:146",
+     "guide_text": "The identifier for the conventions associated with the commodity being averaged.",
+     "mandatory": false,
+     "member": "conventionsID_",
+     "name": "Conventions",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "WeightedAverage",
+      "Conventions"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:408",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "LastRelevantDate",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "PillarChoice",
+     "parser": "parsePillarChoice",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "WeightedAverage",
+      "PillarChoice"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:411",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "KeepLast",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "DuplicatePillarPolicy",
+     "parser": "parseDuplicatePillarPolicy",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "WeightedAverage",
+      "DuplicatePillarPolicy"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:413",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "0",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "priority_",
+     "name": "Priority",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "WeightedAverage",
+      "Priority"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:414",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": "1",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "minDistance_",
+     "name": "MinDistance",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "WeightedAverage",
+      "MinDistance"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:415",
+     "type": "integer"
     },
     {
      "conditional": false,
@@ -10088,6 +11348,132 @@
     {
      "conditional": false,
      "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "member": null,
+     "name": "Type",
+     "parser": "parseYieldCurveSegment",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "YieldPlusDefault",
+      "Type"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:380",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:146",
+     "guide_text": "The identifier for the conventions associated with the commodity being averaged.",
+     "mandatory": false,
+     "member": "conventionsID_",
+     "name": "Conventions",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "YieldPlusDefault",
+      "Conventions"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:408",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "LastRelevantDate",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "PillarChoice",
+     "parser": "parsePillarChoice",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "YieldPlusDefault",
+      "PillarChoice"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:411",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "KeepLast",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "DuplicatePillarPolicy",
+     "parser": "parseDuplicatePillarPolicy",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "YieldPlusDefault",
+      "DuplicatePillarPolicy"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:413",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "0",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "priority_",
+     "name": "Priority",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "YieldPlusDefault",
+      "Priority"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:414",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": "1",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "minDistance_",
+     "name": "MinDistance",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "YieldPlusDefault",
+      "MinDistance"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:415",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": null,
      "element": "YieldPlusDefault",
      "guide_optional": false,
      "guide_ref": "Docs/UserGuide/curve_configurations/yieldcurves.tex:601",
@@ -10147,6 +11533,132 @@
      ],
      "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:821",
      "type": "double"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "member": null,
+     "name": "Type",
+     "parser": "parseYieldCurveSegment",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "IborFallback",
+      "Type"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:380",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:146",
+     "guide_text": "The identifier for the conventions associated with the commodity being averaged.",
+     "mandatory": false,
+     "member": "conventionsID_",
+     "name": "Conventions",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "IborFallback",
+      "Conventions"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:408",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "LastRelevantDate",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "PillarChoice",
+     "parser": "parsePillarChoice",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "IborFallback",
+      "PillarChoice"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:411",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "KeepLast",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": null,
+     "name": "DuplicatePillarPolicy",
+     "parser": "parseDuplicatePillarPolicy",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "IborFallback",
+      "DuplicatePillarPolicy"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:413",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "0",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "priority_",
+     "name": "Priority",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "IborFallback",
+      "Priority"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:414",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": "1",
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "member": "minDistance_",
+     "name": "MinDistance",
+     "parser": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "IborFallback",
+      "MinDistance"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:415",
+     "type": "integer"
     },
     {
      "conditional": false,
@@ -10233,7 +11745,296 @@
      "type": "text"
     }
    ],
-   "unresolved": []
+   "unresolved": [
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "Direct",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "Direct",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "Simple",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "Simple",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "AverageOIS",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "AverageOIS",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "TenorBasis",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "TenorBasis",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "CrossCurrency",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "CrossCurrency",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "ZeroSpread",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "ZeroSpread",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "DiscountRatio",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "DiscountRatio",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "FittedBond",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "FittedBond",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "BondYieldShifted",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "BondYieldShifted",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "WeightedAverage",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "WeightedAverage",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "YieldPlusDefault",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "YieldPlusDefault",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "IborFallback",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "Quotes",
+     "name": null,
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "IborFallback",
+      "Quotes"
+     ],
+     "unresolved": "child node with no parser"
+    }
+   ]
   },
   "YieldVolatilities": {
    "entry_class": "YieldVolatilityCurveConfig",

@@ -1171,6 +1171,7 @@ insert into ores_reporting_ore_parameter_setting_value_sets_tbl (
     ('TenorBasisTwoSwap:ShortIndex', ores_utility_system_tenant_id_fn(), 0, 'TenorBasisTwoSwap', 'ShortIndex', 'text', 'ores_reporting_service', 'system.initial_load', 'Seed parameter value sets'),
     ('YieldCurves:Accuracy', ores_utility_system_tenant_id_fn(), 0, 'YieldCurves', 'Accuracy', 'curve.text', 'ores_reporting_service', 'system.initial_load', 'Seed parameter value sets'),
     ('YieldCurves:BaseCurve', ores_utility_system_tenant_id_fn(), 0, 'YieldCurves', 'BaseCurve', 'curve.text', 'ores_reporting_service', 'system.initial_load', 'Seed parameter value sets'),
+    ('YieldCurves:Conventions', ores_utility_system_tenant_id_fn(), 0, 'YieldCurves', 'Conventions', 'curve.text', 'ores_reporting_service', 'system.initial_load', 'Seed parameter value sets'),
     ('YieldCurves:Currency', ores_utility_system_tenant_id_fn(), 0, 'YieldCurves', 'Currency', 'curve.currency', 'ores_reporting_service', 'system.initial_load', 'Seed parameter value sets'),
     ('YieldCurves:CurveDescription', ores_utility_system_tenant_id_fn(), 0, 'YieldCurves', 'CurveDescription', 'curve.text', 'ores_reporting_service', 'system.initial_load', 'Seed parameter value sets'),
     ('YieldCurves:CurveId', ores_utility_system_tenant_id_fn(), 0, 'YieldCurves', 'CurveId', 'curve.text', 'ores_reporting_service', 'system.initial_load', 'Seed parameter value sets'),

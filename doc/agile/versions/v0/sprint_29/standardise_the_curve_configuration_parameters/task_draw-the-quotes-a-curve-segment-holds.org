@@ -75,7 +75,9 @@ task and name that file in the Command column.
 | Quotes a provisioned document held | 420 | `compass sql -- -c "select count(*) from ores_refdata_curve_quotes_tbl where valid_to = ores_utility_infinity_timestamp_fn()"` | f9144787e5 |
 | Quotes that name a segment | 420 | the same, filtered by `curve_segment_id` | f9144787e5 |
 | Quotes the contract documents the parts of | 0 | `compass sql -- -c "select count(*) from ores_reporting_ore_parameters_tbl where xpath like '%/Segments/%Quote%' and valid_to = ores_utility_infinity_timestamp_fn()"` | f9144787e5 |
-| BFF tests | 1144 | `npm run test` in `packages/bff` | f9144787e5 |
+| BFF tests | 1144 | `npm run test` in `packages/bff` | cadc240799 |
+| Browser tests | 2332 | `npm run test` in `packages/web` | cadc240799 |
+| Screens walked in a browser | Segments card, 1 row, 2 leaves, 12 quotes | `node evidence/curve_screens.mjs` against the running environment | cadc240799 |
 | Browser tests | 2332 | `npm run test` in `packages/web` | f9144787e5 |
 
 * Notes
@@ -128,7 +130,13 @@ The BFF reads a segment's quotes by the column the collection rule states, so a
 quote arrives with the segment that holds it and never with another. The page
 draws them under the segment's leaves.
 
-Seen on a provisioned environment, through the route the page reads: every yield
+Seen on a provisioned environment, in a browser as well as through the route: the
+walk in =evidence/curve_screens.mjs= signs in, chooses the party, opens the UK
+configuration and reads the Curves tab, and =evidence/curve-segments-and-quotes.png=
+is what it saw — the Segments card holding one row of kind Simple, its two leaves,
+its twelve quotes, and the block badges below it for the elements it does not draw.
+
+Through the route the page reads: every yield
 curve of the UK configuration reports one `Segments` row of kind `Simple`, two
 leaves and twelve quotes, the first being `IR_SWAP/RATE/GBP/0D/1D/1M`. The whole
 configuration counts 221 of 238 parameters documented.

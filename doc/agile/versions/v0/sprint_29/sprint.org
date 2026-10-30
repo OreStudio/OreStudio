@@ -155,6 +155,7 @@ of the application join as their own stories under this heading.
 | [[id:4D2D0EF9-986A-49F3-91CD-29DF44548590][Build the Connectivity screens]] | BACKLOG | | | The delivery tree, the supplier dashboard, the adapter catalogue and the session and feed records, with the two setup flows and the writes behind them. |
 | [[id:F6EA17E9-761E-452B-9ABF-7551B3612383][Build the Public rates screens]] | BACKLOG | | | Publisher and class rows, the routed feed and supplier, freshness derived from the feed schedule, availability and compare, and a service-aware fetch. |
 | [[id:7AB2C9A4-BFFF-4206-90A5-CA275EF8B1C2][Govern the public feeds]] | BACKLOG | | | Terms acceptance in Connectivity, a defined pause, and a route switch with history, with the old acts removed from Public rates. |
+| [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] | BACKLOG | | | ORE accepts more than one spelling for many of its values: 27 spellings for seven business day conventions, four vocabularies for a boolean, alias rows for a day counter, and any case for the enumerations its parser upper-cases. The store must hold one representation of each fact, and the knowledge of which spellings mean what must live in data, not in code that drifts from the engine. |
 
 * Achievements
 

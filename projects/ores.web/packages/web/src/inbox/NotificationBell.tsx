@@ -162,7 +162,7 @@ export function NotificationBell(): ReactNode {
             <div
                 role="menu"
                 hidden={!open}
-                className="absolute right-0 z-30 mt-2 w-80 rounded-md border border-line bg-surface-overlay p-2 shadow-xl"
+                className="absolute right-0 z-30 mt-2 w-96 rounded-md border border-line bg-surface-overlay p-2 shadow-xl"
             >
                 <div className="flex items-center justify-between border-b border-line px-2 pb-2 pt-1">
                     <span className="text-sm font-medium">{t('inbox.bell.title')}</span>
@@ -179,7 +179,7 @@ export function NotificationBell(): ReactNode {
                 {items.length === 0 ? (
                     <p className="px-2 py-3 text-sm text-ink-muted">{t('inbox.bell.empty')}</p>
                 ) : (
-                    <ul className="max-h-80 overflow-y-auto">
+                    <ul>
                         {shown.map((notification) => (
                             <li key={notification.id}>
                                 <button

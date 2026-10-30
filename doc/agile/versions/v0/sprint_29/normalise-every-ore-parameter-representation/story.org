@@ -1,0 +1,167 @@
+:PROPERTIES:
+:ID: 46BFBF6D-6757-45C8-B799-73AEFFFBD842
+:END:
+#+title: Story: Normalise every ORE parameter representation
+#+description: ORE accepts more than one spelling for many of its values: 27 spellings for seven business day conventions, four vocabularies for a boolean, alias rows for a day counter, and any case for the enumerations its parser upper-cases. The store must hold one representation of each fact, and the knowledge of which spellings mean what must live in data, not in code that drifts from the engine.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every ORE parameter whose reader accepts more than one rendering of a value is stored in one canonical representation, and the map from a rendering to that representation is data the database holds, not a table compiled into a binary. The value set states both what is accepted and what is canonical, so the screen offers one form and the store keeps one form, and a spelling ORE adds later is a row rather than a release.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | The story is written; the census is the first task. |
+| Waiting on    | The owner's sign-off on the two decisions the census confirms: the canonical form per class, and where the crosswalk data lives. |
+| Next          | Take the census, then extend the value set with the canonical form. |
+| Last touched  | 2026-10-30                               |
+
+* Acceptance
+
+- Every parameter whose ORE reader accepts more than one rendering is named, with the reader that accepts it and the canonical form chosen for it.
+- The map from an accepted rendering to the canonical form is data: the value set states it, and no compiled table holds ORE's spellings.
+- A write converts an accepted rendering to the canonical form at one boundary for every parameter, and a rendering the map does not know is refused naming the set.
+- The screens offer the canonical forms and not the accepted ones, and the guard accepts every accepted rendering.
+- A check fails when a table holds more than one rendering of one fact.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:ABCEDE72-7A51-4D82-8232-DC9BA9CC9291][Scaffold story: Normalise every ORE parameter representation]] | STARTED | 2026-10-30 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:300CD9D6-19F9-4826-B771-49B04A9DD2E7][Take the census of the representations ORE accepts]] | BACKLOG | | | Initial task for: Normalise every ORE parameter representation |
+
+
+* Analysis
+
+** What a "rendering" is
+
+A rendering is a string a document or a caller states for a value whose meaning
+is one of a closed set. ORE accepts more than one rendering for four kinds of
+value, and the store keeps whichever arrived:
+
+| Class | Example | What ORE accepts | Where the difference shows |
+|-------+---------+------------------+----------------------------|
+| Alias spellings | business day convention | 27 strings for 7 conventions | a query groups into 27 rows for 7 facts |
+| Case-insensitive words | =ReversionType=, =VolatilityType=, =IrVolatilityType=, =SensitivityDecomposition= | any case, because the parser upper-cases before comparing | =bootstrap= and =Bootstrap= are two rows |
+| Flags | every boolean setup and product parameter | =Y=, =YES=, =TRUE=, =1=, =true=, =yes= at different layers | =Y=, =true= and =yes= are three rows for one switch |
+| Index and code lists | day counters, currencies | aliases as separate registry rows (=ACT/360=, =Act/360=, =A360=) | the picker offers the alias and the store keeps it |
+
+A fifth kind looks the same but is not this class: =Model=, =Engine= and a
+sensitivity template code name a thing the document defines, so their valid
+set is open and nothing about them can be canonicalised.
+
+The count of case-insensitive comparisons in the ORE source is twenty across
+=irmodeldata.cpp=, =lgmdata.cpp= and =bondutils.cpp=, against the three the
+value set audit marked, so the audit under-counted that class.
+
+** Where the knowledge lives today, and why that is the defect
+
+=projects/ores.refdata/core/include/ores.refdata.core/repository/business_day_convention_code.hpp=
+holds the 27-to-7 crosswalk as a compiled table. It solved the one case that
+broke a test and a picker, and it is exactly the shape the story forbids for the
+general case: ORE adds a spelling, and a release has to follow. Twenty-seven
+strings of engine knowledge in a binary is a copy that will drift.
+
+** The shape the data should take
+
+Three placements were considered.
+
+*** A. The value set states the canonical form (recommended)
+
+The value set already enumerates what is accepted. Adding one nullable column to
+=ores_reporting_ore_parameter_value_set_values_tbl= — =canonical_value=, empty
+when the value is its own canonical form — turns the enumeration into a
+crosswalk without a second statement. The same attribute answers the question
+the business day convention picker raised: a value is *offered* when its
+canonical is empty, and an alias is *accepted* but not offered. One attribute,
+one rule, and the change to ORE is a row.
+
+*** B. A crosswalk table per entity
+
+A =*_spellings_tbl= beside each registry, in the shape of
+=ores_refdata_curve_configuration_columns_tbl=. Precise, but it states the
+accepted enumerations a second time.
+
+*** C. One generic alias table
+
+=(domain, alias, canonical)= for everything. Small, but it loses the tie to the
+value set, so a spelling could exist with no set that accepts it.
+
+** Where the conversion runs
+
+*** 1. The repository hands the crosswalk to the mapper (recommended)
+
+The mapper stays a pure function of (domain, crosswalk) and keeps the
+conversion, which is the decision already taken: the mapping is responsible for
+converting between representations. The repository loads the crosswalk once per
+write batch, so the database is read, and the mapper remains testable without
+one.
+
+*** 2. A trigger normalises before the guard
+
+Data-driven and impossible to bypass, but it puts a second rule where the guard
+already lives, and the domain never sees the conversion.
+
+*** 3. The XML codec normalises
+
+Rejected: it breaks the corpus test that proves a document survives read and
+write untouched, and it would put database knowledge in a codec.
+
+** What it costs
+
+- A backfill: rows already stored under an alias must be rewritten to the
+  canonical form, and the check in the acceptance is what finds them.
+- A read per write batch, which the repositories already do for other lookups.
+- The compiled table goes, so the one case the branch fixed moves to data.
+
+** How the census is taken
+
+=extract_parameter_types.py= already reads the ORE source for the parser of
+every parameter. It gains three facts per parser: the accepted strings, whether
+the comparison upper-cases its input, and the spelling the engine's own writer
+emits (the canonical form). The census task runs it over ORE 1.8.17.0 and writes
+the table above with a row per parameter, which is the list the rest of the
+story works through.
+
+* Decisions
+
+Proposed, and confirmed or corrected when the census lands.
+
+- *The value set states the canonical form.* A value is canonical when its
+  =canonical_value= is empty, and an alias states the value it means. The set
+  therefore answers three questions with one statement: what is accepted, what a
+  rendering means, and what a screen offers.
+- *The canonical form is the spelling ORE's own writer emits.* For a convention
+  that is =Following=; for a flag, =true= and =false=; for a case-insensitive
+  word, the mixed case the engine's enum states. The engine's writer is the
+  authority because a document the system exports is one ORE reads back.
+- *The mapping keeps the conversion.* The repository loads the crosswalk for the
+  values a write touches and hands it to the mapper, which stays a pure function
+  of (domain, crosswalk). The database functions keep enforcing; they do not
+  acquire a second rule.
+- *The codec keeps the document's rendering.* It is a codec, not a converter,
+  and the corpus test that proves a document survives read and write untouched
+  stays as it is.
+- *A redelivery is a row, not a release.* Adding a spelling ORE accepts is a row
+  in the value set and nothing else.
+
+* Out of scope
+
+- =Model=, =Engine= and a sensitivity template code: the document defines the
+  thing they name, so their set is open and nothing about them is canonicalised.
+- Free text parameters, whose set says so.
+- Currencies, whose registry already holds the ISO code and nothing else.
+- Rewriting ORE's semantics: the canonical form is a rendering, not a new value.

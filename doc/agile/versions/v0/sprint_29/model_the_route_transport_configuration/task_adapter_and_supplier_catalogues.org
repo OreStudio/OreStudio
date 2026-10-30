@@ -2,18 +2,18 @@
 :ID: 25131341-145D-4FFE-B70C-F063ACD39F67
 :END:
 #+title: Task: Add the adapter and supplier catalogues
-#+description: Adapter and supplier tables and domains; the release seeds adapters, DQ seeds suppliers.
+#+description: Adapter and supplier tables and domains; DQ seeds both catalogues, and an adapter module marks itself installed when it announces.
 #+type: task
 #+level: s1
 #+filetags: :marketdata:implementation:model_the_route_transport_configuration:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-the-adapter-and-supplier-catalogues
+#+pr: 4067
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The adapter and supplier catalogues exist as rows and domains, seeded where they
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -61,6 +61,16 @@ task and name that file in the Command column.
 
 * Notes
 
+- The release defines two adapter modules, and only two: =frankfurter=, the
+  official-rates adapter behind =ores.marketdata.official=, and =synthetic=,
+  the simulator behind =ores.synthetic.service=. The catalogue holds no module
+  the code does not have.
+- A module is a class. Its announce carries =adapter_code= and
+  =module_version=; the service refuses a module the catalogue does not
+  define, and the announce is what marks the module installed on this
+  installation. A catalogue row is a definition; the status list is the
+  installation claim.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -76,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4067][#4067]] | [marketdata] Add the adapter and supplier catalogues (WIP) |
 
 * Review
 
@@ -85,3 +95,34 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** Outcome
+
+The adapter and supplier catalogues ship as DQ datasets, =marketdata.adapters=
+and =marketdata.suppliers=, members of the =system_core= bundle. Their publish
+functions write the system tenant's rows from =dq_adapters_artefact_tbl= and
+=dq_suppliers_artefact_tbl=; the old final-table populate scripts are gone. The
+datasets stage the two modules the release actually has: =frankfurter= and
+=synthetic=, with Frankfurter and the simulator as their suppliers.
+
+Both entities are =:client_read_only:=: a client reads them and every write verb
+is absent from the protocol, the service, the shell and the web twins. The SQL
+publish functions remain the writers.
+
+An adapter's announce carries =adapter_code= and =module_version=. The service
+refuses a module the catalogue does not define, and the announce is what marks
+the module installed on this installation, so an installation that never runs a
+module never claims it. The runtime adapter menu is =adapter-status=, which
+leaves the =adapters= name to the catalogue and ends the menu collision.
+
+Measured on the final tree:
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Staged adapters and suppliers | 2 each | =select count(*) from ores_dq_{adapters,suppliers}_artefact_tbl= | 81eb415172 |
+| Published adapters and suppliers | 2 each | =select count(*) from ores_marketdata_{adapters,suppliers}_tbl= | 81eb415172 |
+| Catalogue publish tests | 9/9 pass | =projects/ores.sql/test/run_tests.sh marketdata_catalogue_publish_test.sql= | 81eb415172 |
+| Adapter registry tests | 13 cases, 50 assertions pass | =ores.marketdata.service.tests "[app][adapter_registry]"= | 81eb415172 |
+| Source feed tests | 5 cases, 32 assertions pass | =ores.marketdata.official.tests "[domain][source_feed]"= | 81eb415172 |
+| Simulator announce tests | 4 cases, 34 assertions pass | =ores.synthetic.service.tests "[simulator_adapter][adapter]"= | 81eb415172 |
+| Live announces | 4 sources accepted, 0 rejected | =journalctl --user -u ores.marketdata.service= | 81eb415172 |

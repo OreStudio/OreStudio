@@ -130,9 +130,7 @@ export interface SaveCurveConfigurationDocumentRequest {
      * leaves the store's own reason, which is the create case.
      */
     reason_code: string;
-    /**
-     * @brief The words that go with the reason, empty when the reason needs none.
-     */
+    /** The words that go with the reason, empty when the reason needs none. */
     commentary: string;
 }
 

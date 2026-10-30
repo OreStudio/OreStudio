@@ -157,8 +157,21 @@ convert(const std::filesystem::path& file, document_kind kind, roundtrip_summary
             ++summary.convention_files;
             return xml;
         }
+        // The table says which families the round trip converts, so a case here
+        // is one it converts and this switch does not: a disagreement, not an
+        // unsupported family.
+        case document_kind::curve_configuration:
+        case document_kind::todays_market:
+        case document_kind::counterparty_information:
+        case document_kind::ibor_fallback_config:
+        case document_kind::netting_set_definitions:
+        case document_kind::stress_testing:
+        case document_kind::run_document:
+            break;
     }
-    throw std::logic_error("unhandled document kind");
+    // The coverage table decides this before the call, so reaching here means
+    // the table and the conversion disagree.
+    throw std::logic_error("the table states a conversion this switch does not make");
 }
 
 } // namespace
@@ -185,6 +198,13 @@ roundtrip_summary roundtrip(const std::filesystem::path& input_dir,
             const auto kind = detect_document_kind(file);
             if (!kind) {
                 BOOST_LOG_SEV(lg(), debug) << "Unsupported document, not written: " << relative;
+                ++summary.unsupported;
+                continue;
+            }
+
+            if (!family_of(*kind).roundtrip) {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Classified document, nothing converts it: " << relative;
                 ++summary.unsupported;
                 continue;
             }

@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 47A5B305-2152-5AAA-9F3E-BFE01CB5D13B
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the suppliers commands from the shell?
+#+description: Every command the suppliers submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:suppliers:
+
+This file documents the suppliers resource at the shell, one section per command. Every command is a subcommand of =suppliers=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 1DE1CC78-8568-5F52-B9D9-91A6495D97FA
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+suppliers list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.suppliers.list=.
+
+#+name: suppliers-list
+#+begin_src ores-shell :tangle suppliers-list.ores :exports none
+suppliers list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: FD50E100-AF63-5A71-B603-032C521A1AB1
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+suppliers get <code>
+#+end_example
+
+It is addressed at =marketdata.v1.suppliers.get=.
+
+#+name: suppliers-get
+#+begin_src ores-shell :tangle suppliers-get.ores :exports none
+suppliers get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 426214E5-7271-54CE-936E-77B6280261C8
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+suppliers get-many <code>
+#+end_example
+
+It is addressed at =marketdata.v1.suppliers.get_many=.
+
+#+name: suppliers-get-many
+#+begin_src ores-shell :tangle suppliers-get-many.ores :exports none
+suppliers get-many __none__
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: C5242B67-4327-5D42-82C4-8C1382EF7266
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+suppliers versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.suppliers_versions.list=.
+
+#+name: suppliers-versions
+#+begin_src ores-shell :tangle suppliers-versions.ores :exports none
+suppliers versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 6948B436-939D-52E4-91E2-641B2154CA13
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+suppliers version <code> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.suppliers_versions.get=.
+
+#+name: suppliers-version
+#+begin_src ores-shell :tangle suppliers-version.ores :exports none
+suppliers version __none__ --version 1
+#+end_src
+

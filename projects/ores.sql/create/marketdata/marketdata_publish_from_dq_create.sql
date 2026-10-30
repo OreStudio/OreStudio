@@ -238,3 +238,227 @@ begin
     where v_deleted > 0;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
+-- Market Data Adapters: marketdata.v1.ops.publish_adapters_from_dq
+--
+-- The adapter catalogue is installation data: the system tenant owns the rows
+-- and every tenant reads them, so a publish into another tenant is refused
+-- rather than given its own copy. Each publish replaces the live row it finds,
+-- through the entity's own version trigger, so the catalogue converges on the
+-- staged set however many times the dataset is published.
+-- =============================================================================
+
+create or replace function ores_marketdata_publish_adapters_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (
+    action text,
+    record_count bigint
+) as $$
+declare
+    v_dataset_name text;
+    v_inserted bigint := 0;
+    v_updated bigint := 0;
+    v_skipped bigint := 0;
+    v_deleted bigint := 0;
+    r record;
+    v_exists boolean;
+begin
+    perform ores_utility_allow_version_replace_fn();
+
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    if p_mode not in ('upsert', 'insert_only', 'replace_all') then
+        raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
+    end if;
+
+    if p_target_tenant_id <> ores_utility_system_tenant_id_fn() then
+        raise exception 'The adapter catalogue belongs to the system tenant; cannot publish into %.', p_target_tenant_id;
+    end if;
+
+    if p_mode = 'replace_all' then
+        update ores_marketdata_adapters_tbl existing
+        set valid_to = clock_timestamp()
+        where existing.tenant_id = p_target_tenant_id
+          and existing.valid_to = ores_utility_infinity_timestamp_fn()
+          and existing.code in (
+              select dq.code
+              from ores_dq_adapters_artefact_tbl dq
+              where dq.dataset_id = p_dataset_id
+                and dq.tenant_id = ores_utility_system_tenant_id_fn());
+
+        get diagnostics v_deleted = row_count;
+    end if;
+
+    for r in
+        select dq.code, dq.name, dq.module_version, dq.description, dq.process,
+               dq.asset_classes, dq.services, dq.configuration_schema,
+               dq.display_order
+        from ores_dq_adapters_artefact_tbl dq
+        where dq.dataset_id = p_dataset_id
+          and dq.tenant_id = ores_utility_system_tenant_id_fn()
+        order by dq.display_order, dq.code
+    loop
+        select exists (
+            select 1 from ores_marketdata_adapters_tbl existing
+            where existing.tenant_id = p_target_tenant_id
+              and existing.code = r.code
+              and existing.valid_to = ores_utility_infinity_timestamp_fn()
+        ) into v_exists;
+
+        if p_mode = 'insert_only' and v_exists then
+            v_skipped := v_skipped + 1;
+            continue;
+        end if;
+
+        insert into ores_marketdata_adapters_tbl (
+            tenant_id, code, version, name, module_version, description, process,
+            asset_classes, services, configuration_schema, display_order,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            p_target_tenant_id, r.code, 0, r.name, r.module_version, r.description,
+            r.process, r.asset_classes, r.services, r.configuration_schema,
+            r.display_order,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.initial_load', 'Published from DQ dataset: ' || v_dataset_name
+        );
+
+        if v_exists then
+            v_updated := v_updated + 1;
+        else
+            v_inserted := v_inserted + 1;
+        end if;
+    end loop;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'updated'::text, v_updated
+    where v_updated > 0
+    union all select 'skipped'::text, v_skipped
+    where v_skipped > 0
+    union all select 'deleted'::text, v_deleted
+    where v_deleted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
+-- Market Data Suppliers: marketdata.v1.ops.publish_suppliers_from_dq
+--
+-- Same installation-data rule as the adapter catalogue: the system tenant owns
+-- the rows, every tenant reads them, and each publish replaces the live row it
+-- finds.
+-- =============================================================================
+
+create or replace function ores_marketdata_publish_suppliers_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (
+    action text,
+    record_count bigint
+) as $$
+declare
+    v_dataset_name text;
+    v_inserted bigint := 0;
+    v_updated bigint := 0;
+    v_skipped bigint := 0;
+    v_deleted bigint := 0;
+    r record;
+    v_exists boolean;
+begin
+    perform ores_utility_allow_version_replace_fn();
+
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    if p_mode not in ('upsert', 'insert_only', 'replace_all') then
+        raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
+    end if;
+
+    if p_target_tenant_id <> ores_utility_system_tenant_id_fn() then
+        raise exception 'The supplier catalogue belongs to the system tenant; cannot publish into %.', p_target_tenant_id;
+    end if;
+
+    if p_mode = 'replace_all' then
+        update ores_marketdata_suppliers_tbl existing
+        set valid_to = clock_timestamp()
+        where existing.tenant_id = p_target_tenant_id
+          and existing.valid_to = ores_utility_infinity_timestamp_fn()
+          and existing.code in (
+              select dq.code
+              from ores_dq_suppliers_artefact_tbl dq
+              where dq.dataset_id = p_dataset_id
+                and dq.tenant_id = ores_utility_system_tenant_id_fn());
+
+        get diagnostics v_deleted = row_count;
+    end if;
+
+    for r in
+        select dq.code, dq.name, dq.kind, dq.description, dq.contract_reference,
+               dq.support, dq.display_order
+        from ores_dq_suppliers_artefact_tbl dq
+        where dq.dataset_id = p_dataset_id
+          and dq.tenant_id = ores_utility_system_tenant_id_fn()
+        order by dq.display_order, dq.code
+    loop
+        select exists (
+            select 1 from ores_marketdata_suppliers_tbl existing
+            where existing.tenant_id = p_target_tenant_id
+              and existing.code = r.code
+              and existing.valid_to = ores_utility_infinity_timestamp_fn()
+        ) into v_exists;
+
+        if p_mode = 'insert_only' and v_exists then
+            v_skipped := v_skipped + 1;
+            continue;
+        end if;
+
+        insert into ores_marketdata_suppliers_tbl (
+            tenant_id, code, version, name, kind, description, contract_reference,
+            support, display_order,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            p_target_tenant_id, r.code, 0, r.name, r.kind, r.description,
+            r.contract_reference, r.support, r.display_order,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.initial_load', 'Published from DQ dataset: ' || v_dataset_name
+        );
+
+        if v_exists then
+            v_updated := v_updated + 1;
+        else
+            v_inserted := v_inserted + 1;
+        end if;
+    end loop;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'updated'::text, v_updated
+    where v_updated > 0
+    union all select 'skipped'::text, v_skipped
+    where v_skipped > 0
+    union all select 'deleted'::text, v_deleted
+    where v_deleted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;

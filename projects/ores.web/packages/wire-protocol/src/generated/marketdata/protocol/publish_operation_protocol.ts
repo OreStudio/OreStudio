@@ -31,9 +31,29 @@
  */
 export interface PublishMarketDataObservationsFromDqRequest {}
 
+/**
+ * @brief The workflow step that publishes the adapter catalogue from DQ.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_marketdata_publish_adapters_from_dq_fn.
+ */
+export interface PublishAdaptersFromDqRequest {}
+
+/**
+ * @brief The workflow step that publishes the supplier catalogue from DQ.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_marketdata_publish_suppliers_from_dq_fn.
+ */
+export interface PublishSuppliersFromDqRequest {}
+
 export const subjects = {
     publish_market_data_observations_from_dq_request:
         'marketdata.v1.ops.publish_market_data_observations_from_dq',
+    publish_adapters_from_dq_request: 'marketdata.v1.ops.publish_adapters_from_dq',
+    publish_suppliers_from_dq_request: 'marketdata.v1.ops.publish_suppliers_from_dq',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -42,4 +62,6 @@ export const subjects = {
  */
 export const requiresSession = {
     publish_market_data_observations_from_dq_request: true,
+    publish_adapters_from_dq_request: true,
+    publish_suppliers_from_dq_request: true,
 } as const;

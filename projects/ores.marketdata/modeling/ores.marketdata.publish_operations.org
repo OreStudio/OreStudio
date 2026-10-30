@@ -2,7 +2,7 @@
 :ID: B6C0E2A4-5D71-4F38-8A9C-1E4B7D6F0C35
 :END:
 #+title: ores.marketdata.publish_operations
-#+description: Codegen operation model for the workflow step that publishes the market data observations from a DQ dataset.
+#+description: Codegen operation model for the workflow steps that publish the market data catalogue and observations from a DQ dataset.
 #+type: ores.codegen.operation
 #+component: marketdata
 #+subcomponent: api
@@ -13,7 +13,7 @@
 #+created: 2026-10-18
 #+updated: 2026-10-18
 
-The workflow step that publishes the market data observations from a DQ dataset.
+The workflow steps that publish the market data catalogue and observations from a DQ dataset.
 It is a trigger, as the reporting and analytics components' publish steps are:
 the DQ publisher sends it and reads no reply, so a step states a subject and no
 response.
@@ -43,6 +43,36 @@ once here and referenced at the call site.
  * A trigger rather than a request: the DQ publisher sends it and reads no
  * reply. The SQL function the handler calls is
  * ores_marketdata_publish_market_data_observations_from_dq_fn.
+ */
+#+end_src
+
+** publish_adapters_from_dq_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.publish_adapters_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the adapter catalogue from DQ.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_marketdata_publish_adapters_from_dq_fn.
+ */
+#+end_src
+
+** publish_suppliers_from_dq_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.publish_suppliers_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the supplier catalogue from DQ.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_marketdata_publish_suppliers_from_dq_fn.
  */
 #+end_src
 

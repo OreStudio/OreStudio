@@ -1859,3 +1859,11 @@ tangled into the runnable script library
 * Legal Entities
 
 - [[id:82F0BB15-9794-5199-A101-86923D28CADF][How do I run the legal_entities commands from the shell?]]
+
+* Adapters
+
+- [[id:1B252F1F-0823-508E-B32E-7842399698C3][How do I run the adapters commands from the shell?]]
+
+* Suppliers
+
+- [[id:47A5B305-2152-5AAA-9F3E-BFE01CB5D13B][How do I run the suppliers commands from the shell?]]

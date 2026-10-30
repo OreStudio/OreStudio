@@ -22,6 +22,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/version/version.hpp"
 #include <span>
 #include <utility>
 
@@ -105,7 +106,13 @@ void official_adapter::on_demand(served& s, const ores::nats::message& msg) {
 bool official_adapter::announce(served& s) {
     const auto& name = s.feed->source().source_name;
     try {
-        const auto bytes = ores::nats::default_wire_codec().encode(s.feed->announcement());
+        // The module is the class that sends the announce, not the feed: one
+        // Frankfurter adapter hosts every source, so the code and version are
+        // the adapter's on every announce it makes.
+        auto request = s.feed->announcement();
+        request.adapter_code = "frankfurter";
+        request.module_version = ORES_VERSION;
+        const auto bytes = ores::nats::default_wire_codec().encode(request);
         const auto reply = nats_.request_sync(subjects::adapter_announce_subject(),
                                               std::span<const std::byte>(bytes),
                                               {},

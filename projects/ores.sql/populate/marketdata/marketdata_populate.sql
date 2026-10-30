@@ -30,6 +30,8 @@
 \echo ''
 
 \echo '--- Market Data Catalogue ---'
+\ir ./marketdata_adapters_artefact_populate.sql
+\ir ./marketdata_suppliers_artefact_populate.sql
 \ir ./marketdata_catalogue_populate.sql
 
 \echo '--- Market Data Vendor Instruments and Mappings ---'

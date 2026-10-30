@@ -61,13 +61,6 @@ const domain::bond_terms& bond_of(const domain::trade_population_slot& slot) {
     return std::get<domain::bond_terms>(slot.terms);
 }
 
-const domain::rate_terms& rate_of(const domain::trade_population_slot& slot) {
-    return std::get<domain::rate_terms>(slot.terms);
-}
-
-const domain::fx_terms& fx_of(const domain::trade_population_slot& slot) {
-    return std::get<domain::fx_terms>(slot.terms);
-}
 
 const boost::uuids::uuid config_id =
     boost::uuids::string_generator()("0cd68b09-6ebc-4180-a298-0cc386590f31");
@@ -243,6 +236,35 @@ domain::trade_generation_scope equity_scope() {
     return scope;
 }
 
+domain::trade_generation_scope credit_scope() {
+    auto scope = bond_scope();
+    scope.asset_class_code = "credit";
+    scope.trades_per_book = 4;
+    scope.credit_reference_entities = {"529900T8BM49AURSDO55", "5493001KJTIIGC8Y1R12"};
+    return scope;
+}
+
+TEST_CASE("a_credit_slot_states_its_row_and_names_a_legal_entity", "[trade_population]") {
+    const auto plan = plan_of(credit_scope());
+
+    REQUIRE(!plan.slots.empty());
+    for (const auto& slot : plan.slots) {
+        // The family states its row and no bag.
+        REQUIRE(std::holds_alternative<std::monostate>(slot.terms));
+        REQUIRE(slot.instruments.credit_instruments.size() == 1u);
+        const auto& row = slot.instruments.credit_instruments.front();
+        // The row states the party boundary and no trade type: the trade states
+        // that one.
+        CHECK_FALSE(row.reference_entity_id_type.empty());
+        /*
+         * A credit trade names a party by one identifier, and the reference is
+         * the LEI the dataset holds.
+         */
+        CHECK(row.reference_entity_id_type == "LEI");
+        CHECK(row.reference_entity_id.size() == 20u);
+    }
+}
+
 TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", "[trade_population]") {
     auto wide = commodity_scope();
     wide.trades_per_book = 25;
@@ -279,16 +301,73 @@ TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length", "[t
     REQUIRE(types.size() == 16u);
 }
 
+namespace {
+
+/*
+ * The header row a slot states, whichever table its type routes to. A slot
+ * states one, so a reader that wants the drawn underlying does not have to know
+ * the routing table.
+ */
+std::string underlying_of(const domain::trade_population_slot& slot) {
+    const auto& batch = slot.instruments;
+    if (!batch.equity_forward_instruments.empty())
+        return batch.equity_forward_instruments.front().underlying_name;
+    if (!batch.equity_option_instruments.empty())
+        return batch.equity_option_instruments.front().underlying_name;
+    if (!batch.equity_asian_option_instruments.empty())
+        return batch.equity_asian_option_instruments.front().underlying_name;
+    if (!batch.equity_barrier_option_instruments.empty())
+        return batch.equity_barrier_option_instruments.front().underlying_name;
+    if (!batch.equity_digital_option_instruments.empty())
+        return batch.equity_digital_option_instruments.front().underlying_name;
+    if (!batch.equity_swap_instruments.empty())
+        return batch.equity_swap_instruments.front().underlying_name;
+    if (!batch.equity_variance_swap_instruments.empty())
+        return batch.equity_variance_swap_instruments.front().underlying_name;
+    if (!batch.equity_accumulator_instruments.empty())
+        return batch.equity_accumulator_instruments.front().underlying_name;
+    if (!batch.equity_position_instruments.empty())
+        return batch.equity_position_instruments.front().underlying_name;
+    return {};
+}
+
+std::size_t header_rows_of(const domain::trade_population_slot& slot) {
+    const auto& batch = slot.instruments;
+    return batch.equity_forward_instruments.size() + batch.equity_option_instruments.size() +
+           batch.equity_asian_option_instruments.size() +
+           batch.equity_barrier_option_instruments.size() +
+           batch.equity_digital_option_instruments.size() + batch.equity_swap_instruments.size() +
+           batch.equity_variance_swap_instruments.size() +
+           batch.equity_accumulator_instruments.size() +
+           batch.equity_position_instruments.size();
+}
+
+}
+
 TEST_CASE("an_equity_slot_names_an_underlying_the_catalogue_holds", "[trade_population]") {
     const auto plan = plan_of(equity_scope());
 
     std::set<std::string> named;
     for (const auto& slot : plan.slots) {
-        REQUIRE(std::holds_alternative<domain::equity_terms>(slot.terms));
-        const auto& terms = std::get<domain::equity_terms>(slot.terms);
-        REQUIRE_FALSE(terms.underlying_name.empty());
-        REQUIRE_FALSE(terms.underlying_kind.empty());
-        named.insert(terms.underlying_name);
+        /*
+         * The family states its rows and no bag: one header row per slot, in
+         * the table its type routes to.
+         */
+        REQUIRE(std::holds_alternative<std::monostate>(slot.terms));
+        REQUIRE(header_rows_of(slot) == 1u);
+        const auto underlying = underlying_of(slot);
+        if (underlying.empty()) {
+            /*
+             * A worst-of basket names no single underlying on its header: the
+             * names are its constituents, and it states none of its own.
+             */
+            REQUIRE(slot.trade_type_code == "EquityWorstOfBasketSwap");
+            REQUIRE(slot.instruments.equity_basket_constituents.size() == 2u);
+            for (const auto& member : slot.instruments.equity_basket_constituents)
+                named.insert(member.underlying_name);
+        } else {
+            named.insert(underlying);
+        }
     }
 
     // Every underlying the scope states is drawn, and no other is invented.
@@ -307,16 +386,16 @@ TEST_CASE("a_worst_of_basket_states_its_constituents_and_its_periods", "[trade_p
         if (slot.trade_type_code != "EquityWorstOfBasketSwap")
             continue;
         found = true;
-        const auto& terms = std::get<domain::equity_terms>(slot.terms);
+        REQUIRE(slot.instruments.equity_swap_instruments.size() == 1u);
         // Two names over four dates, which is the shape the corpus states.
-        REQUIRE(terms.basket.size() == 2u);
-        REQUIRE(terms.periods.size() == 4u);
-        for (const auto& member : terms.basket) {
-            REQUIRE_FALSE(member.name.empty());
-            REQUIRE_FALSE(member.kind.empty());
+        REQUIRE(slot.instruments.equity_basket_constituents.size() == 2u);
+        REQUIRE(slot.instruments.equity_swap_periods.size() == 4u);
+        for (const auto& member : slot.instruments.equity_basket_constituents) {
+            REQUIRE_FALSE(member.underlying_name.empty());
+            REQUIRE_FALSE(member.underlying_kind.empty());
             REQUIRE(member.initial_price.has_value());
         }
-        for (const auto& period : terms.periods) {
+        for (const auto& period : slot.instruments.equity_swap_periods) {
             REQUIRE(period.period_date.has_value());
             REQUIRE(period.knock_out_level.has_value());
             REQUIRE(period.fixed_trigger_level.has_value());
@@ -332,17 +411,23 @@ TEST_CASE("an_equity_population_with_no_catalogue_is_refused", "[trade_populatio
     REQUIRE_THROWS_AS(plan_of(empty), trade_population_error);
 }
 
-TEST_CASE("a_commodity_slot_states_its_own_terms_and_names_a_catalogue_commodity",
+TEST_CASE("a_commodity_slot_states_its_own_rows_and_names_a_catalogue_commodity",
           "[trade_population]") {
     const auto plan = plan_of(commodity_scope());
 
     std::set<std::string> commodities;
     for (const auto& slot : plan.slots) {
-        REQUIRE(std::holds_alternative<domain::commodity_terms>(slot.terms));
-        const auto& terms = std::get<domain::commodity_terms>(slot.terms);
-        REQUIRE_FALSE(terms.commodity_code.empty());
-        REQUIRE_FALSE(terms.unit.empty());
-        commodities.insert(terms.commodity_code);
+        /*
+         * The family states its rows and no bag: the plan carries what the
+         * writer persists. A slot with no bag must not read as any family,
+         * and the bond writer takes the first alternative it finds.
+         */
+        REQUIRE(std::holds_alternative<std::monostate>(slot.terms));
+        REQUIRE(slot.instruments.commodity_instruments.size() == 1u);
+        const auto& row = slot.instruments.commodity_instruments.front();
+        REQUIRE_FALSE(row.commodity_code.empty());
+        REQUIRE_FALSE(row.unit.empty());
+        commodities.insert(row.commodity_code);
     }
 
     // Every commodity the scope states is drawn, and no other is invented.
@@ -497,25 +582,41 @@ TEST_CASE("a_rate_population_states_two_legs_of_one_currency", "[trade_populatio
 
     REQUIRE(!plan.slots.empty());
     for (const auto& slot : plan.slots) {
-        const auto& terms = rate_of(slot);
-        REQUIRE(terms.start_date < terms.maturity_date);
-        CHECK(terms.fixed_rate > 0.0);
-        CHECK(terms.fixed_rate < 0.1);
-        CHECK_FALSE(terms.floating_index_code.empty());
-        CHECK(terms.notional >= scope.min_notional);
-        CHECK(terms.notional <= scope.max_notional);
+        /*
+         * The family states its rows and no bag: the legs, the amounts, the
+         * rates and the strikes are what the writer persists.
+         */
+        REQUIRE(std::holds_alternative<std::monostate>(slot.terms));
+        REQUIRE(slot.instruments.rate_instruments.size() == 1u);
+        REQUIRE(slot.instruments.swap_legs.size() == 2u);
+        REQUIRE(slot.instruments.swap_leg_amounts.size() == 2u);
+        REQUIRE(slot.instruments.swap_leg_rates.size() == 2u);
+
+        const auto& row = slot.instruments.rate_instruments.front();
+        REQUIRE(row.start_date.has_value());
+        REQUIRE(row.maturity_date.has_value());
+        CHECK(*row.start_date < *row.maturity_date);
+
+        const auto& floating = slot.instruments.swap_legs.back();
+        CHECK(floating.leg_type_code == "Floating");
+        CHECK(floating.payer.has_value());
+        CHECK_FALSE(*floating.payer);
         if (slot.trade_type_code == "CrossCurrencySwap") {
             // Two legs of one currency are not a cross currency swap, so the
             // floating side states a currency the book does not.
-            CHECK_FALSE(terms.floating_currency.empty());
-            CHECK(terms.floating_currency != scope.currency_code);
+            CHECK_FALSE(floating.currency.empty());
+            CHECK(floating.currency != scope.currency_code);
         } else {
-            CHECK(terms.floating_currency.empty());
+            CHECK(floating.currency == scope.currency_code);
         }
-        if (slot.trade_type_code == "Swaption") {
-            REQUIRE(terms.expiry_date.has_value());
-            CHECK(*terms.expiry_date > scope.as_of_date);
-        }
+
+        // Only the cap floor states a strike; the swaption constructor it is
+        // drawn for states its own terms and no strike.
+        const bool struck = slot.trade_type_code == "CapFloor";
+        CHECK(slot.instruments.instrument_strikes.size() == (struck ? 1u : 0u));
+
+        CHECK(slot.notional >= scope.min_notional);
+        CHECK(slot.notional <= scope.max_notional);
     }
 }
 
@@ -538,13 +639,11 @@ TEST_CASE("a_rate_population_without_an_index_catalogue_is_refused", "[trade_pop
     CHECK_THROWS_AS(plan_of(scope), trade_population_error);
 }
 
-TEST_CASE("an_fx_population_states_the_idiom_its_type_needs", "[trade_population]") {
-    const auto scope = fx_scope();
-    const auto plan = plan_of(scope);
+TEST_CASE("an_fx_population_states_the_row_its_type_routes_to", "[trade_population]") {
+    const auto plan = plan_of(fx_scope());
 
-    const auto bought_and_sold = [](const std::string& type) {
-        return type == "FxForward" || type == "FxSwap" || type == "FxOption" ||
-               type.starts_with("FxBarrier") || type == "FxDoubleBarrierOption" ||
+    const auto barrier = [](const std::string& type) {
+        return type.starts_with("FxBarrier") || type == "FxDoubleBarrierOption" ||
                type == "FxEuropeanBarrierOption" || type == "FxGenericBarrierOption" ||
                type == "FxKIKOBarrierOption";
     };
@@ -555,24 +654,52 @@ TEST_CASE("an_fx_population_states_the_idiom_its_type_needs", "[trade_population
 
     REQUIRE(!plan.slots.empty());
     for (const auto& slot : plan.slots) {
-        const auto& terms = fx_of(slot);
+        /*
+         * The family states its rows and no bag: exactly one routed row per
+         * slot, and it is the row the type belongs to.
+         */
+        REQUIRE(std::holds_alternative<std::monostate>(slot.terms));
         const auto& type = slot.trade_type_code;
-        if (bought_and_sold(type)) {
-            CHECK_FALSE(terms.bought_currency.empty());
-            CHECK_FALSE(terms.sold_currency.empty());
-            CHECK(terms.bought_amount > 0.0);
+        const auto& batch = slot.instruments;
+
+        if (type == "FxForward" || type == "FxSwap") {
+            REQUIRE(batch.fx_forward_instruments.size() == 1u);
+            const auto& row = batch.fx_forward_instruments.front();
+            CHECK_FALSE(row.bought_currency.empty());
+            CHECK_FALSE(row.sold_currency.empty());
+        } else if (type == "FxOption") {
+            REQUIRE(batch.fx_vanilla_option_instruments.size() == 1u);
+            const auto& row = batch.fx_vanilla_option_instruments.front();
+            CHECK_FALSE(row.bought_currency.empty());
+            CHECK_FALSE(row.option_type.empty());
+        } else if (barrier(type)) {
+            REQUIRE(batch.fx_barrier_option_instruments.size() == 1u);
+            const auto& row = batch.fx_barrier_option_instruments.front();
+            CHECK_FALSE(row.bought_currency.empty());
+            CHECK_FALSE(row.barrier_type.empty());
+            CHECK(row.lower_barrier.has_value());
         } else if (digital(type)) {
-            CHECK_FALSE(terms.foreign_currency.empty());
-            CHECK_FALSE(terms.payoff_currency.empty());
-            REQUIRE(terms.payoff_amount.has_value());
+            REQUIRE(batch.fx_digital_option_instruments.size() == 1u);
+            const auto& row = batch.fx_digital_option_instruments.front();
+            CHECK_FALSE(row.foreign_currency.empty());
+            CHECK_FALSE(row.payoff_amount.to_string() == "0");
         } else if (type == "FxAverageForward" || type == "FxTaRF") {
             // The average forward and the target redemption forward are
             // written on an index, not on a named underlying.
-            CHECK_FALSE(terms.fx_index.empty());
-            CHECK(terms.fixing_amount > 0.0);
+            REQUIRE(batch.fx_asian_forward_instruments.size() == 1u);
+            const auto& row = batch.fx_asian_forward_instruments.front();
+            CHECK_FALSE(row.fx_index.empty());
+            CHECK(row.reference_notional.has_value());
+        } else if (type == "FxVarianceSwap") {
+            REQUIRE(batch.fx_variance_swap_instruments.size() == 1u);
+            const auto& row = batch.fx_variance_swap_instruments.front();
+            CHECK_FALSE(row.underlying_code.empty());
+            CHECK_FALSE(row.moment_type.empty());
         } else {
-            CHECK_FALSE(terms.underlying_code.empty());
-            CHECK(terms.fixing_amount > 0.0);
+            REQUIRE(batch.fx_accumulator_instruments.size() == 1u);
+            const auto& row = batch.fx_accumulator_instruments.front();
+            CHECK_FALSE(row.underlying_code.empty());
+            CHECK(row.knock_out_barrier.has_value());
         }
     }
 }
@@ -588,17 +715,25 @@ TEST_CASE("every_routed_fx_type_appears_in_a_population_of_that_length", "[trade
 }
 
 TEST_CASE("an_fx_population_prefers_the_pairs_that_name_the_book_currency", "[trade_population]") {
-    const auto scope = fx_scope();
-    const auto plan = plan_of(scope);
+    const auto plan = plan_of(fx_scope());
 
-    // EUR/USD names the book's currency and GBP/USD does not, so every slot
-    // takes the first.
+    /*
+     * EUR/USD names the book's currency and GBP/USD does not, so every slot
+     * takes the first: a bought-and-sold row states it as the bought currency,
+     * and an index row as the currency it references.
+     */
     for (const auto& slot : plan.slots) {
-        const auto& terms = fx_of(slot);
-        if (!terms.bought_currency.empty()) {
-            CHECK(terms.bought_currency == "EUR");
-        } else if (!terms.reference_currency.empty()) {
-            CHECK(terms.reference_currency == "EUR");
+        const auto& batch = slot.instruments;
+        if (!batch.fx_forward_instruments.empty()) {
+            CHECK(batch.fx_forward_instruments.front().bought_currency == "EUR");
+        } else if (!batch.fx_vanilla_option_instruments.empty()) {
+            CHECK(batch.fx_vanilla_option_instruments.front().bought_currency == "EUR");
+        } else if (!batch.fx_barrier_option_instruments.empty()) {
+            CHECK(batch.fx_barrier_option_instruments.front().bought_currency == "EUR");
+        } else if (!batch.fx_digital_option_instruments.empty()) {
+            CHECK(batch.fx_digital_option_instruments.front().foreign_currency == "EUR");
+        } else if (!batch.fx_asian_forward_instruments.empty()) {
+            CHECK(batch.fx_asian_forward_instruments.front().reference_currency == "EUR");
         }
     }
 }

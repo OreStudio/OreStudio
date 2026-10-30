@@ -21,6 +21,7 @@
 #define ORES_SYNTHETIC_API_DOMAIN_TRADE_POPULATION_PLAN_HPP
 
 #include "ores.synthetic.api/export.hpp"
+#include "ores.trading.api/domain/instrument_batch.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
@@ -278,7 +279,10 @@ struct bond_terms final {
 };
 
 /**
- * @brief The facts a commodity slot carries and no other family does.
+ * @brief The facts the commodity planner draws, before it states its rows.
+ *
+ * The family states rows in the plan, so this is the drawing's own shape and
+ * never a slot's bag.
  *
  * A commodity row is wide and flat: the same table holds a forward, an
  * option, an Asian or a variance swap, and each shape states the fields its
@@ -329,7 +333,10 @@ struct commodity_terms final {
 };
 
 /**
- * @brief The facts a rate slot carries and no other family does.
+ * @brief The facts the rate planner draws, before it states its rows.
+ *
+ * The family states rows in the plan, so this is the drawing's own shape and
+ * never a slot's bag.
  *
  * An interest rate trade reduces to one fixed leg against one floating leg,
  * whatever its trade type: the type decides the exercise and payment features
@@ -388,7 +395,10 @@ struct rate_terms final {
  */
 
 /**
- * @brief The facts an FX slot carries and no other family does.
+ * @brief The facts the fx planner draws, before it states its rows.
+ *
+ * The family states rows in the plan, so this is the drawing's own shape and
+ * never a slot's bag.
  *
  * The sixteen routed types reach seven tables, and the tables state three
  * idioms: a bought currency against a sold one, a digital payoff struck against
@@ -537,8 +547,14 @@ struct equity_terms final {
     std::vector<equity_range_bound> range_bounds;
 };
 
-using trade_terms =
-    std::variant<bond_terms, commodity_terms, credit_terms, rate_terms, fx_terms, equity_terms>;
+/**
+ * @brief The bag a family fills while it still draws facts rather than rows.
+ *
+ * The monostate comes first so a slot whose family states its rows holds no
+ * bag at all. Without it the variant's default is the first alternative, and
+ * a slot that states rows would read as a bond with empty terms.
+ */
+using trade_terms = std::variant<std::monostate, bond_terms>;
 
 /**
  * @brief One trade the population states, with every reference already
@@ -564,8 +580,21 @@ struct trade_population_slot final {
     double notional = 0.0;
     std::string currency;
     bool intra_group = false;
-    /// The facts that belong to this slot's own family, and to no other.
+    /**
+     * @brief The facts that belong to this slot's own family, and to no other.
+     *
+     * A family that states rows holds the monostate here, so nothing reads its
+     * empty slot as facts of another family.
+     */
     trade_terms terms;
+    /**
+     * @brief The domain rows this slot states, when its family has been flipped.
+     *
+     * A family that has flipped fills this and leaves =terms= empty; the writer
+     * persists what it is given instead of translating a bag. The two coexist
+     * until the last family moves.
+     */
+    ores::trading::domain::instrument_batch instruments;
     /// The structure this trade is a leg of, when the population groups one.
     std::optional<boost::uuids::uuid> structure_id;
     /// The role it takes in that structure, and its place among the legs.

@@ -1,0 +1,193 @@
+:PROPERTIES:
+:ID: E6C92BB1-8AB4-4580-A318-A5EB2A10BBB1
+:END:
+#+title: Investigation: Inventory of type widths
+#+description: Every generated persisted type's member and column count, the blocks that repeat across the wide ones, and a verdict for each type over twenty members.
+#+type: investigation
+#+level: s1
+#+filetags: :split_the_types_that_carry_too_many_columns:sprint_29:v0:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into Every generated persisted type's member and column count, the blocks that repeat across the wide ones, and a verdict for each type over twenty members..
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+The MSVC job of the Windows nightly stopped on C1202 on 2026-10-29, in
+=std::tuple_cat= over one =column_binding= per persisted column of a generated
+entity with 47 bindings. Nothing in that failure involves reflection, and it is
+not the configuration document an earlier task was watching. The compiler is
+reporting the shape of the model.
+
+This page asks the question the failure raises: which persisted types hold more
+than one component, and what should each become? It answers with numbers a
+reader can reproduce and a verdict per type.
+
+* Methodology
+
+The models are the authority, not the generated headers. One script,
+=build/scripts/inventory_entity_columns.py=, reads every
+=projects/*/modeling/*.org= of type =ores.codegen.entity= and counts, per type,
+the columns it declares, the nullable ones, the ones folded into a =:group:=,
+the members its domain struct therefore carries, and the rows of its =* Parts=
+table. Its output is committed beside this page as =evidence/entity_columns.tsv=.
+
+#+begin_src sh :results verbatim
+python3 build/scripts/inventory_entity_columns.py \
+  > doc/agile/versions/v0/sprint_29/split_the_types_that_carry_too_many_columns/evidence/entity_columns.tsv
+#+end_src
+
+The generated query builder binds the scaffold's own columns on top of the
+model's, so a binding count is the column count plus eight, measured on
+=cap_floor_volatility_config= (39 columns, 47 bindings: =tenant_id=, =version=,
+=modified_by=, =change_reason_code=, =change_commentary=, =performed_by=,
+=valid_from=, =valid_to=). That is the number MSVC reported.
+
+The criteria are the ones the model states: a type holds one component when its
+fields share one invariant that holds at one instant and one key identifies
+them; a block that is present only when a flag is set, or only for one value of
+a discriminator, or only for one direction of a pair, is a different component.
+The reasons in the table name the flag or the discriminator that was read.
+
+The threshold is twenty members. It is where the tail starts, not a limit the
+model states: the median type carries 6 members, and 24 of 457 carry 20 or more.
+
+A verdict outside refdata is a reading of that model from outside its component.
+The numbers hold, and their owners confirm the verdict before anyone acts on it.
+
+
+* Paths taken
+
+- Counting from the generated headers. The first run counted every =bind(= in a
+  generated entity and reported 60 for =commodity_future_convention=. That
+  number was right, but it cannot be attributed: it mixes the model's columns
+  with the scaffold's and says nothing about which block a column belongs to.
+  The model is the authority, so the script reads the model and the scaffold's
+  eight columns are stated as a constant.
+- Counting every =**= heading under any section. The second run counted the
+  =* Artefact columns= block as columns of the same type, and read
+  =ir_curve_generation_config= as 44 columns when it has 21. A section heading
+  is not a column, and a section with a space in its name defeated the first
+  pattern. Recorded here because the inflated numbers looked plausible.
+- Splitting the configuration document's protocol. Set aside: the failure is in
+  a repository's column list, not in a message. See
+  [[id:2750EACD-6C84-485D-B32A-E41D2785F0DF][the task that looked there]].
+- Composing the document from field groups. Set aside: =rfl::Flatten= hoists the
+  group's names into the parent's literal, so it lowers nothing, and the document
+  is not the failing type anyway.
+
+* Conclusions
+
+457 persisted types. Their member counts, by bucket:
+
+| Members | Types |
+|---------+-------|
+| 1-5     | 196   |
+| 6-9     | 141   |
+| 10-14   | 69    |
+| 15-19   | 27    |
+| 20-24   | 11    |
+| 25-29   | 7     |
+| 30+     | 6     |
+
+The median is 6 and the widest is 57, so this is a tail of 24 types rather than
+a model that is wrong everywhere. Of the 24, 17 should split,
+6 should group, and 1 should keep.
+
+Three shapes repeat, and each one names its own split:
+
+- *A flag and its block.* =has_proxy_config= with seven proxy columns,
+  =has_basis_configuration= with ten basis columns, =has_quotes= with three.
+  The block's fields are meaningless unless the flag is set, so the flag and the
+  block are one invariant, and a row that does not have them carries nulls it
+  can never use.
+- *A discriminator and its columns.* =segment_type= with twenty element columns,
+  =kind= with one column per surface, =default_curve_type= with one column per
+  construction. The row is a union of kinds written as nullable columns.
+- *A pair of directions.* =flat_*= and =spread_*= in the cross-currency basis
+  convention, the fixed and floating legs of the fix-float convention. Each arm
+  has its own terms and its own invariant.
+
+The conventions family already solved the second shape: a central row, one part
+per kind, and only the central row carries the kind. That is the pattern the
+split task should follow, and it is what
+[[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][The atomised entity: a central row
+and its parts]] states.
+
+| Members | Columns | Nullable | Verdict | Type | Reason |
+|---------+---------+----------+---------+------+--------|
+| 57 | 57 | 54 | split | =market_series_identity= (marketdata) | One column per identity field of a series kind, and no discriminator to say which kind a row is: the kinds are the components. |
+| 53 | 53 | 49 | split | =commodity_future_convention= (refdata) | Five blocks in one row: the expiry anchor, the option expiry, the power peak and off-peak settings, the averaging block and the ORESmd link. The other conventions families already split this way. |
+| 39 | 39 | 35 | split | =cap_floor_volatility_config= (refdata) | =has_proxy_config= and the seven proxy columns it governs. It also carries both =use_effecive_volatility= and =use_effective_volatility=, so one of the two is dead. |
+| 33 | 33 | 28 | split | =curve_segment= (refdata) | =segment_type= selects one of twelve elements, and twenty columns exist for one of them alone. |
+| 33 | 33 | 27 | split | =instrument_option= (trading) | Premium, exercise, fee and payment blocks, which the instrument's own schema already holds as separate child rows. |
+| 32 | 32 | 26 | split | =curve_volatility_config= (refdata) | =kind= selects the surface, and one column per surface sits beside it. |
+| 29 | 29 | 24 | split | =bond_leg_rate= (trading) | Its own brief says one arm of the leg-data choice per row: the arms are the components. |
+| 27 | 30 | 22 | group | =commodity_instrument= (trading) | One instrument, but the option and schedule blocks are read on their own. |
+| 27 | 27 | 21 | split | =cross_currency_basis_convention= (refdata) | =flat_*= and =spread_*= are two legs, and the tenor basis swap family models its legs as parts already. |
+| 27 | 27 | 21 | split | =default_curve_configuration= (refdata) | =default_curve_type= selects the construction, and one column per construction sits beside it. |
+| 27 | 27 | 23 | split | =swaption_volatility_config= (refdata) | =has_proxy_config= and the five proxy columns it governs, the same shape as the cap floor entry. |
+| 27 | 27 | 24 | split | =bond_issue_leg_rate= (trading) | The same leg-data arms as =bond_leg_rate=. |
+| 25 | 25 | 20 | keep | =lei_entity= (dq) | One external record, read whole. Its width is the GLEIF file's width, not a design choice. |
+| 24 | 24 | 17 | split | =commodity_curve_config= (refdata) | =has_basis_configuration= and the ten basis columns. The basis curve is its own configuration. |
+| 23 | 23 | 19 | group | =csa= (refdata) | The two directions are symmetric fields of one agreement, not two components; the margin blocks are the groups. |
+| 22 | 22 | 5 | group | =book_change= (refdata) | A change line plus a snapshot of the book it changes. The snapshot is the block. |
+| 22 | 22 | 18 | split | =fx_volatility_config= (refdata) | =dimension= selects the smile, and the smile block exists for one value of it. |
+| 22 | 22 | 7 | split | =inflation_cap_floor_volatility_config= (refdata) | =quote_type= selects among the quote structures, and one column per structure sits beside it. |
+| 22 | 22 | 15 | split | =instrument_schedule= (trading) | Either a rule block or a date list, which the brief itself states as two shapes in one row. |
+| 21 | 21 | 2 | group | =ir_curve_generation_config= (synthetic) | Configuration and process parameters, read by different code on different cadences. |
+| 20 | 20 | 5 | group | =dataset= (dq) | A registry row plus a lineage block. The lineage is read on its own. |
+| 20 | 20 | 10 | split | =cross_currency_fix_float_convention= (refdata) | Two legs in one row, one fixed and one floating, each with its own terms. |
+| 20 | 20 | 10 | group | =inflation_curve_config= (refdata) | One curve configuration, but the seasonality and quote blocks are read on their own. |
+| 20 | 20 | 15 | split | =bond_issue_leg_schedule= (trading) | The same rule-block-or-date-list choice as =instrument_schedule=. |
+
+* Recommendations
+
+The split task takes the 17 types the table marks =split=, worst
+first. The order below is by column count, because the verdicts' parts are
+described in prose and the split task re-derives them from the model. A type
+whose verdict names three parts should go before one that names two, so the
+order will move once the parts are counted.
+
+| Order | Type | Columns | Parts the verdict names |
+|-------+------+---------+-------------------------|
+| 1 | =market_series_identity= (marketdata) | 57 | One column per identity field of a series kind, and no discriminator to say which kind a row is: the kinds are the components. |
+| 2 | =commodity_future_convention= (refdata) | 53 | Five blocks in one row: the expiry anchor, the option expiry, the power peak and off-peak settings, the averaging block and the ORESmd link. The other conventions families already split this way. |
+| 3 | =cap_floor_volatility_config= (refdata) | 39 | =has_proxy_config= and the seven proxy columns it governs. It also carries both =use_effecive_volatility= and =use_effective_volatility=, so one of the two is dead. |
+| 4 | =curve_segment= (refdata) | 33 | =segment_type= selects one of twelve elements, and twenty columns exist for one of them alone. |
+| 5 | =instrument_option= (trading) | 33 | Premium, exercise, fee and payment blocks, which the instrument's own schema already holds as separate child rows. |
+| 6 | =curve_volatility_config= (refdata) | 32 | =kind= selects the surface, and one column per surface sits beside it. |
+| 7 | =bond_leg_rate= (trading) | 29 | Its own brief says one arm of the leg-data choice per row: the arms are the components. |
+| 8 | =cross_currency_basis_convention= (refdata) | 27 | =flat_*= and =spread_*= are two legs, and the tenor basis swap family models its legs as parts already. |
+| 9 | =default_curve_configuration= (refdata) | 27 | =default_curve_type= selects the construction, and one column per construction sits beside it. |
+| 10 | =swaption_volatility_config= (refdata) | 27 | =has_proxy_config= and the five proxy columns it governs, the same shape as the cap floor entry. |
+| 11 | =bond_issue_leg_rate= (trading) | 27 | The same leg-data arms as =bond_leg_rate=. |
+| 12 | =commodity_curve_config= (refdata) | 24 | =has_basis_configuration= and the ten basis columns. The basis curve is its own configuration. |
+| 13 | =fx_volatility_config= (refdata) | 22 | =dimension= selects the smile, and the smile block exists for one value of it. |
+| 14 | =inflation_cap_floor_volatility_config= (refdata) | 22 | =quote_type= selects among the quote structures, and one column per structure sits beside it. |
+| 15 | =instrument_schedule= (trading) | 22 | Either a rule block or a date list, which the brief itself states as two shapes in one row. |
+| 16 | =cross_currency_fix_float_convention= (refdata) | 20 | Two legs in one row, one fixed and one floating, each with its own terms. |
+| 17 | =bond_issue_leg_schedule= (trading) | 20 | The same rule-block-or-date-list choice as =instrument_schedule=. |
+
+The rule to record on [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented
+Design in ORE Studio]]: a new model is checked for a =has_*= flag followed by its
+block, a discriminator followed by one column per value, and a pair of
+per-direction columns. Any of the three is a split, and the check belongs in
+codegen so a model that has one fails review with a reason rather than a review
+comment.
+
+Ownership: 17 types span refdata, trading, marketdata, dq and
+synthetic. The refdata ones are one environment's; the trading, marketdata and
+dq ones belong to whoever holds those components, so the split task takes the
+refdata list first and hands the rest over rather than editing another
+environment's component.
+
+* See also
+
+- [[id:066BEB24-5BFB-4D30-85E2-723E90C75712][Inventory the types that carry too many columns]] — the task this page answers.
+- [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] — the story.
+- [[id:9844D039-9694-4290-9A97-3A755770911B][Split the types the inventory names]] — the task that acts on this list.
+- =evidence/entity_columns.tsv= — the lever's output, one row per type.
+- =build/scripts/inventory_entity_columns.py= — the lever.

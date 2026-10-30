@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: marketdata
-Tables: 24
+Tables: 27
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -48,6 +48,44 @@ end note
 ' ==================== marketdata (Market Data (Quotes, Fixings, Series)) ====================
 '
 package "marketdata" #E3F2FD {
+    entity ores_marketdata_adapters_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * module_version : text
+        * description : text
+        * process : text
+        * asset_classes : text
+        * services : text
+        * configuration_schema : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_adapters_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Adapter Table
+    The catalogue of adapter modules. An adapter is a class the release defines; a
+    person configures a session of it and then the feeds that come off the session.
+    The class announces itself when it comes up, and that announce is what marks the
+    module installed on this installation, so an installation that never runs a
+    module never claims it.
+    The catalogue states the module's version, the asset classes it can serve, the
+    services it offers, and the configuration a session must provide, so the screen
+    can build the session form from data instead of from code.
+    The system tenant owns the rows. Every tenant reads them and only the system
+    tenant writes them.
+    end note
+
     entity ores_marketdata_composite_inputs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -843,6 +881,43 @@ package "marketdata" #E3F2FD {
     series it met.
     end note
 
+    entity ores_marketdata_sessions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * supplier_code : text
+        * adapter_code : text
+        * environment : text
+        * endpoint : text
+        * credential_ref : text
+        * settings : text
+        * enabled : boolean
+        * description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_sessions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Session Table
+    A session is one configured adapter at a supplier. The adapter is code and the
+    supplier is a party; the session is what a person configures: where the adapter
+    runs, how to reach it, which credential it uses, and the settings its adapter's
+    schema requires. A feed binds a publisher to a session and a service, so one
+    session can serve many feeds.
+    The system tenant owns the rows. Every tenant reads them and only the system
+    tenant writes them: an installation has one set of adapter processes, not one
+    per tenant.
+    end note
+
     entity ores_marketdata_subscription_intervals_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -906,6 +981,39 @@ package "marketdata" #E3F2FD {
     here. A route names it.
     A subscription holds at least one right. A party administrator reads and changes only the
     subscriptions of the party, and the history of every change is kept.
+    end note
+
+    entity ores_marketdata_suppliers_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * kind : text
+        * description : text
+        * contract_reference : text
+        * support : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_suppliers_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Supplier Table
+    The catalogue of delivery parties. A publisher owns the data; a supplier is who we
+    connect to for it. The release holds two: Frankfurter, an aggregator that delivers
+    many publishers' rates over one endpoint, and the synthetic simulator the platform
+    runs itself. A supplier has sessions, and a session is one configured adapter at
+    that supplier.
+    The system tenant owns the rows. Every tenant reads them and only the system
+    tenant writes them.
     end note
 
     entity ores_marketdata_tick_coords_tbl  #F7E5FF {

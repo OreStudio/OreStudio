@@ -109,12 +109,20 @@ target_include_directories(${lib_target_name} PUBLIC
     ${generated_include_dir}
     ${CMAKE_SOURCE_DIR}/projects/ores.utility/include)
 
+# The two carriers the codecs write: the JSON and the MessagePack the wire
+# states. Both are linked here because the codecs are this component's, even
+# though reflect-cpp pulls them in transitively today.
+find_package(yyjson CONFIG REQUIRED)
+find_package(msgpack-c CONFIG REQUIRED)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.platform.lib
         Boost::exception
         Boost::iostreams
         Boost::program_options
+        yyjson::yyjson
+        msgpack-c
     PRIVATE
         OpenSSL::Crypto
         faker-cxx::faker-cxx)

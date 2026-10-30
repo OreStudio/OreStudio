@@ -86,7 +86,7 @@ std::string escape_path(const std::string& value) {
  * it is escaped once here. The bell prefixes the slash, so the route is stated
  * without one.
  */
-std::string notice_curve_name_of(const ores::database::context& ctx,
+std::string curve_notice_name_of(const ores::database::context& ctx,
                                  const domain::curve_publish& record) {
     repository::market_series_repository repo;
     const auto series = repo.read_latest(ctx, boost::uuids::to_string(record.output_series_id));
@@ -217,7 +217,7 @@ std::string instant_of(const std::optional<std::chrono::system_clock::time_point
 void announce_publish(const ores::database::context& ctx,
                       const domain::curve_publish& published,
                       std::optional<std::chrono::system_clock::time_point> previous_as_of) {
-    const auto curve = notice_curve_name_of(ctx, published);
+    const auto curve = curve_notice_name_of(ctx, published);
     const auto curve_link = record_link(curve);
     raise_notice(ctx,
                  curve_published_kind_code,
@@ -235,7 +235,7 @@ void announce_publish(const ores::database::context& ctx,
 void announce_withdrawal(const ores::database::context& ctx,
                          const domain::curve_publish& withdrawn,
                          std::optional<std::chrono::system_clock::time_point> previous_as_of) {
-    const auto curve = notice_curve_name_of(ctx, withdrawn);
+    const auto curve = curve_notice_name_of(ctx, withdrawn);
     const auto curve_link = record_link(curve);
     raise_notice(ctx,
                  curve_withdrawn_kind_code,

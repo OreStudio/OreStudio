@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata:implementation:model_the_route_transport_configuration:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-the-session
+#+pr: 4091
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A session is a row: supplier, adapter, environment, endpoint, credential referen
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -41,9 +41,31 @@ A session is a row: supplier, adapter, environment, endpoint, credential referen
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The session is a codegen entity, like the adapters and suppliers it names. The
+code is the key as well as the label a feed will use, so it is the primary key:
+=frankfurter-eu= names one session as clearly as an id would, and a feed's
+=session_code= stays readable in a query.
+
+The session carries the supplier and the adapter by code, the environment, the
+endpoint, the credential reference, the settings and the enabled flag. The two
+codes are validated against the system-tenant catalogues, so a session cannot
+name an adapter or supplier the release does not define. The environment is a
+check constraint over =production=, =test=, =dr= and =simulated=.
+
+The settings are the one field whose validity depends on another row: the
+adapter's =configuration_schema=. A hand-written trigger validates them, because
+the codegen insert trigger carries only per-column validations. It refuses a key
+the schema does not state, a missing required key, a value of the wrong type,
+and a settings value that is not a JSON object.
+
+The system tenant owns the rows, as it does for the catalogues: one set of
+adapter processes serves the installation, not one per tenant. The session has
+its own event registrar, history provider and handlers, and no shell unit: the
+shell's =sessions= menu belongs to IAM logins, and the Connectivity screen is
+where a person configures a session.
+
+The acceptance's =a read returns a session and its feeds= waits for the feed
+entity (task A3). The read returns the session's own row today.
 
 * Measurements
 
@@ -57,9 +79,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Session settings cases | 7/7 pass | =projects/ores.sql/test/run_tests.sh marketdata_session_settings_validation_test.sql= | ae8f8f3d0d |
+| Catalogue publish cases | 9/9 pass | =projects/ores.sql/test/run_tests.sh marketdata_catalogue_publish_test.sql= | ae8f8f3d0d |
+| Build | green | =./compass.sh build= | ae8f8f3d0d |
 
 * Notes
+
+- The settings validation is a hand-written trigger,
+  =marketdata_sessions_settings_validate_trigger_create.sql=, not part of the
+  generated insert trigger: the generator carries per-column validations only.
+- The session has no shell unit. Its plural, =sessions=, is the IAM login
+  session's shell menu; the Connectivity screen is the surface for sessions.
 
 * Test Scenarios
 
@@ -76,7 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4091][#4091]] | [marketdata] Add the session entity |
 
 * Review
 
@@ -85,3 +115,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** Outcome
+
+The =sessions= table and domain exist: code, name, supplier, adapter,
+environment, endpoint, credential reference, settings, enabled and
+description, with bitemporal history. The supplier and adapter codes validate
+against the system-tenant catalogues; the environment is a check over
+production, test, dr and simulated.
+
+The settings are validated against the adapter's configuration schema by
+=marketdata_sessions_settings_validate_trigger_create.sql=. It refuses a key
+outside the schema, a missing required key, a value of the wrong type, and a
+settings value that is not a JSON object.
+
+The entity is wired into the service handlers, the event mapping and the
+history provider. It has no shell unit: =sessions= is the IAM login session's
+menu, and the Connectivity screen is where a session is configured.
+
+The acceptance's =a read returns a session and its feeds= waits for the feed
+entity (task A3). The read returns the session's own row today.

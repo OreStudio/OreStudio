@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: CC7A9D6D-100B-4217-9233-976B62178BE5
 :END:
 #+title: ores.dq.change_reason_category

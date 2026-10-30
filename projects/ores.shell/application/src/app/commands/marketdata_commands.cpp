@@ -28,6 +28,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/commands/marketdata/adapter_commands.hpp"
 #include "ores.shell/app/commands/marketdata/adapter_status_commands.hpp"
 #include "ores.shell/app/commands/marketdata/curve_publish_commands.hpp"
 #include "ores.shell/app/commands/marketdata/market_fixing_commands.hpp"
@@ -37,6 +38,7 @@
 #include "ores.shell/app/commands/marketdata/observation_lineage_commands.hpp"
 #include "ores.shell/app/commands/marketdata/oresmd_index_commands.hpp"
 #include "ores.shell/app/commands/marketdata/series_classification_rule_commands.hpp"
+#include "ores.shell/app/commands/marketdata/supplier_commands.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -160,6 +162,8 @@ void marketdata_commands::register_commands(cli::Menu& root_menu, nats_client& s
     // entity onto the REPL as a top-level menu of its own, so the commands a
     // user can type cannot drift from the operations the service offers.
     curve_publish_commands::register_commands(root_menu, session);
+    adapter_commands::register_commands(root_menu, session);
+    supplier_commands::register_commands(root_menu, session);
     market_fixing_commands::register_commands(root_menu, session);
     market_observation_commands::register_commands(root_menu, session);
     market_series_commands::register_commands(root_menu, session);

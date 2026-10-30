@@ -71,11 +71,24 @@ const blockSchema = z.object({
 
 export type CurveBlock = z.infer<typeof blockSchema>;
 
+/** One quote a segment holds, as the document writes it. */
+const quoteSchema = z.object({
+    id: z.string(),
+    list: z.string(),
+    text: z.string(),
+    optional: z.boolean(),
+    rateQuote: z.string(),
+    spreadQuote: z.string(),
+});
+
+export type CurveQuote = z.infer<typeof quoteSchema>;
+
 /** One row of a child collection, with the leaves the contract names for it. */
 const collectionRowSchema = z.object({
     id: z.string(),
     kind: z.string(),
     leaves: z.array(parameterSchema),
+    quotes: z.array(quoteSchema).default([]),
 });
 
 export type CurveCollectionRow = z.infer<typeof collectionRowSchema>;

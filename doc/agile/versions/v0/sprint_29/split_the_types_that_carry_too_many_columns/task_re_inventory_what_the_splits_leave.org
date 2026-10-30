@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: 51839336-1AF9-4EFD-84E0-0CB983DC385B
+:END:
+#+title: Task: Re-inventory what the splits leave
+#+description: Once the split tasks are done, re-run the inventory and read what is left: the six types the first inventory marked group, any type the splits moved across the threshold, and whether the C1202 the story started from still reproduces.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-design:modeling:refdata:codegen:split_the_types_that_carry_too_many_columns:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: The six split tasks of this story
+#+blocked_since: 2026-10-29
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The inventory is re-run on the tree the splits produce, and what remains is decided: grouped, split, or kept with a reason. The story closes only when the widest remaining type is a shape the data-oriented model allows.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
+| Now          | Not yet started.                       |
+| Waiting on   | The six split tasks of this story.      |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-29                               |
+
+* Acceptance
+
+- The lever is re-run at a named commit and its output replaced under evidence/.
+- Every type still over the threshold carries a verdict, and the six that were group verdicts are either grouped or argued down.
+- The C1202 recorded on 2026-10-29 is checked against the tree: either it does not reproduce, or its remaining cause is recorded with the type and the binding count.
+- The rule the inventory applies is on the data-oriented design page or in codegen, so a new model is checked rather than re-inventoried.
+
+* Plan
+
+** What is re-read
+
+The lever again, on the tree the splits produce:
+
+#+begin_src sh :results verbatim
+python3 build/scripts/inventory_entity_columns.py --summary
+#+end_src
+
+Three things come out of it, and each is decided here rather than left for the
+next person:
+
+- the types the first inventory marked =group=, which were deferred on purpose:
+  =csa=, =book_change=, =commodity_instrument=, =inflation_curve_config=,
+  =ir_curve_generation_config= and =dataset=. A group is a block that belongs
+  together inside one component, so each is either grouped or argued down to
+  =keep= with a reason;
+- any type the splits moved across the threshold. A split can widen a type it
+  did not touch — a part's key, or a shared field that moved to the centre — and
+  the inventory is the only thing that notices;
+- the C1202 the story started from. It is checked against the widest remaining
+  entity's binding count, which is its model columns plus the scaffold's eight.
+
+** The rule that ends the story
+
+The story closes when the widest remaining type is a shape
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][the data-oriented model]] allows: one
+component, one key, one invariant. Not when a number is under a threshold -- the
+threshold was a work list, and a type under it can still be two components badly
+joined. If the inventory and the model disagree, the model wins and the report
+says why.
+
+** The rule in code
+
+The inventory is a manual pass, and a manual pass is done once. Before the story
+closes, the three shapes it found are a check a new model fails: a =has_*= flag
+followed by the block it governs, a discriminator followed by one column per
+value, and a pair of per-direction columns. That check belongs in codegen, where
+a model is read, so the next wide type is refused at review with a reason.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

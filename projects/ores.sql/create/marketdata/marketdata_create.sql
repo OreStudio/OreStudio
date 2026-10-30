@@ -47,10 +47,17 @@
 \ir ./marketdata_market_fixings_notify_trigger_create.sql
 \ir ./marketdata_series_classification_rules_create.sql
 \ir ./marketdata_series_classification_rules_notify_trigger_create.sql
+\ir ./marketdata_adapters_create.sql
+\ir ./marketdata_adapters_notify_trigger_create.sql
+\ir ./marketdata_suppliers_create.sql
+\ir ./marketdata_suppliers_notify_trigger_create.sql
 \ir ./marketdata_providers_create.sql
 \ir ./marketdata_providers_notify_trigger_create.sql
 \ir ./marketdata_market_data_sources_create.sql
 \ir ./marketdata_market_data_sources_notify_trigger_create.sql
+\ir ./marketdata_sessions_create.sql
+\ir ./marketdata_sessions_notify_trigger_create.sql
+\ir ./marketdata_sessions_settings_validate_trigger_create.sql
 \ir ./marketdata_market_data_vendor_instruments_create.sql
 \ir ./marketdata_market_data_vendor_instruments_notify_trigger_create.sql
 \ir ./marketdata_market_data_mappings_create.sql

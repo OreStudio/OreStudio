@@ -321,9 +321,7 @@ message, and no family of conventions has a type here.
 :END:
 
 #+begin_src cpp :name comment
-/**
- * @brief The words that go with the reason, empty when the reason needs none.
- */
+/** The words that go with the reason, empty when the reason needs none. */
 #+end_src
 
 ** save_curve_configuration_document_response

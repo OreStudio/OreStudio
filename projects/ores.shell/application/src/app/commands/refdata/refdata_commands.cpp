@@ -214,6 +214,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     convention_kind_term_commands::register_commands(root_menu, session);
     counterparty_business_centre_commands::register_commands(root_menu, session);
     counterparty_commands::register_commands(root_menu, session);
+    legal_entity_commands::register_commands(root_menu, session);
     counterparty_change_commands::register_commands(root_menu, session);
     counterparty_contact_information_commands::register_commands(root_menu, session);
     counterparty_identifier_commands::register_commands(root_menu, session);

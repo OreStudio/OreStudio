@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: F68334AC-1541-4CE8-B89E-12F7CEC99A71
 :END:
 #+title: ores.dq.fsm_state

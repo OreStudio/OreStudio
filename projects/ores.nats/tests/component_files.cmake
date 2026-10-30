@@ -30,4 +30,5 @@ set(files
     "service_message_ownership_tests.cpp"
     "service_refusal_tests.cpp"
     "service_subscription_lifetime_tests.cpp"
+    "wire_codec_traits_tests.cpp"
 )

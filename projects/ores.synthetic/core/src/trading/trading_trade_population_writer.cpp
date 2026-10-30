@@ -27,21 +27,20 @@
 #include "ores.refdata.api/messaging/commodity_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
-#include "ores.refdata.api/messaging/legal_entity_protocol.hpp"
 #include "ores.refdata.api/messaging/equity_underlying_protocol.hpp"
 #include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
+#include "ores.refdata.api/messaging/legal_entity_protocol.hpp"
 #include "ores.refdata.api/messaging/netting_set_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_book_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_counterparty_protocol.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
+#include "ores.trading.api/domain/bond_instruments.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
 #include "ores.trading.api/domain/commodity_instruments.hpp"
 #include "ores.trading.api/domain/credit_instruments.hpp"
-#include "ores.trading.api/domain/rate_instruments.hpp"
 #include "ores.trading.api/domain/equity_instruments.hpp"
-#include "ores.trading.api/domain/fx_instruments.hpp"
 #include "ores.trading.api/domain/flexi_swap_instrument.hpp"
 #include "ores.trading.api/domain/fra_instrument.hpp"
 #include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
@@ -49,9 +48,11 @@
 #include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_instruments.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
+#include "ores.trading.api/domain/rate_instruments.hpp"
 #include "ores.trading.api/domain/swaption_instrument.hpp"
 #include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
 #include "ores.trading.api/messaging/structure_member_protocol.hpp"
@@ -589,7 +590,172 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
     identifier.change_commentary = "Generated trade population.";
     book_req.identifiers.push_back(identifier);
 
-    if (const auto* bond = std::get_if<domain::bond_terms>(&slot.terms)) {
+    /*
+     * A family that states its rows states all of them, so the writer persists
+     * what the plan carries and reads no bag for it.
+     */
+    if (!slot.instruments.commodity_instruments.empty()) {
+        for (auto row : slot.instruments.commodity_instruments) {
+            row.audit.change_reason_code = std::string(population_reason);
+            row.audit.change_commentary = "Generated trade population.";
+            book_req.instruments.commodity_instruments.push_back(row);
+        }
+        for (auto constituent : slot.instruments.commodity_basket_constituents) {
+            constituent.change_reason_code = std::string(population_reason);
+            constituent.change_commentary = "Generated trade population.";
+            book_req.instruments.commodity_basket_constituents.push_back(constituent);
+        }
+    } else if (!slot.instruments.bond_instruments.empty()) {
+        for (auto row : slot.instruments.bond_instruments) {
+            row.instrument.audit.change_reason_code = std::string(population_reason);
+            row.instrument.audit.change_commentary = "Generated trade population.";
+            book_req.instruments.bond_instruments.push_back(row);
+        }
+    } else if (!slot.instruments.rate_instruments.empty()) {
+        /*
+         * The rows were built in the planner, so the writer states the audit
+         * columns on each and sends. The strikes carry the reason and the
+         * commentary themselves rather than an audit block.
+         */
+        for (auto row : slot.instruments.rate_instruments) {
+            row.audit.change_reason_code = std::string(population_reason);
+            row.audit.change_commentary = "Generated trade population.";
+            book_req.instruments.rate_instruments.push_back(row);
+        }
+        for (auto leg : slot.instruments.swap_legs) {
+            leg.audit.change_reason_code = std::string(population_reason);
+            leg.audit.change_commentary = "Generated trade population.";
+            book_req.instruments.swap_legs.push_back(leg);
+        }
+        for (auto amount : slot.instruments.swap_leg_amounts) {
+            amount.change_reason_code = std::string(population_reason);
+            amount.change_commentary = "Generated trade population.";
+            book_req.instruments.swap_leg_amounts.push_back(amount);
+        }
+        for (auto leg_rate : slot.instruments.swap_leg_rates) {
+            leg_rate.change_reason_code = std::string(population_reason);
+            leg_rate.change_commentary = "Generated trade population.";
+            book_req.instruments.swap_leg_rates.push_back(leg_rate);
+        }
+        for (auto strike : slot.instruments.instrument_strikes) {
+            strike.change_reason_code = std::string(population_reason);
+            strike.change_commentary = "Generated trade population.";
+            book_req.instruments.instrument_strikes.push_back(strike);
+        }
+        const auto append_facts = [&](const auto& facts, auto& into) {
+            for (auto fact : facts) {
+                fact.change_reason_code = std::string(population_reason);
+                fact.change_commentary = "Generated trade population.";
+                into.push_back(fact);
+            }
+        };
+        append_facts(slot.instruments.vanilla_swap_instruments,
+                     book_req.instruments.vanilla_swap_instruments);
+        append_facts(slot.instruments.fra_instruments, book_req.instruments.fra_instruments);
+        append_facts(slot.instruments.cap_floor_instruments,
+                     book_req.instruments.cap_floor_instruments);
+        append_facts(slot.instruments.swaption_instruments,
+                     book_req.instruments.swaption_instruments);
+        append_facts(slot.instruments.callable_swap_instruments,
+                     book_req.instruments.callable_swap_instruments);
+        append_facts(slot.instruments.knock_out_swap_instruments,
+                     book_req.instruments.knock_out_swap_instruments);
+        append_facts(slot.instruments.flexi_swap_instruments,
+                     book_req.instruments.flexi_swap_instruments);
+        append_facts(slot.instruments.balance_guaranteed_swap_instruments,
+                     book_req.instruments.balance_guaranteed_swap_instruments);
+    } else if (!slot.instruments.fx_forward_instruments.empty() ||
+               !slot.instruments.fx_barrier_option_instruments.empty() ||
+               !slot.instruments.fx_digital_option_instruments.empty() ||
+               !slot.instruments.fx_vanilla_option_instruments.empty() ||
+               !slot.instruments.fx_asian_forward_instruments.empty() ||
+               !slot.instruments.fx_variance_swap_instruments.empty() ||
+               !slot.instruments.fx_accumulator_instruments.empty()) {
+        /*
+         * The rows were built in the planner, so the writer states the audit
+         * columns on each and sends. The accumulator's range bounds carry the
+         * reason and the commentary themselves.
+         */
+        const auto append_rows = [&](const auto& rows, auto& into) {
+            for (auto row : rows) {
+                row.audit.change_reason_code = std::string(population_reason);
+                row.audit.change_commentary = "Generated trade population.";
+                into.push_back(row);
+            }
+        };
+        append_rows(slot.instruments.fx_forward_instruments,
+                    book_req.instruments.fx_forward_instruments);
+        append_rows(slot.instruments.fx_barrier_option_instruments,
+                    book_req.instruments.fx_barrier_option_instruments);
+        append_rows(slot.instruments.fx_digital_option_instruments,
+                    book_req.instruments.fx_digital_option_instruments);
+        append_rows(slot.instruments.fx_vanilla_option_instruments,
+                    book_req.instruments.fx_vanilla_option_instruments);
+        append_rows(slot.instruments.fx_asian_forward_instruments,
+                    book_req.instruments.fx_asian_forward_instruments);
+        append_rows(slot.instruments.fx_variance_swap_instruments,
+                    book_req.instruments.fx_variance_swap_instruments);
+        append_rows(slot.instruments.fx_accumulator_instruments,
+                    book_req.instruments.fx_accumulator_instruments);
+        for (auto bound : slot.instruments.range_bounds) {
+            bound.change_reason_code = std::string(population_reason);
+            bound.change_commentary = "Generated trade population.";
+            book_req.instruments.range_bounds.push_back(bound);
+        }
+    } else if (!slot.instruments.equity_forward_instruments.empty() ||
+               !slot.instruments.equity_option_instruments.empty() ||
+               !slot.instruments.equity_asian_option_instruments.empty() ||
+               !slot.instruments.equity_barrier_option_instruments.empty() ||
+               !slot.instruments.equity_digital_option_instruments.empty() ||
+               !slot.instruments.equity_swap_instruments.empty() ||
+               !slot.instruments.equity_variance_swap_instruments.empty() ||
+               !slot.instruments.equity_accumulator_instruments.empty() ||
+               !slot.instruments.equity_position_instruments.empty()) {
+        /*
+         * The rows were built in the planner, so the writer states the audit
+         * columns on each and sends. A child row states its audit columns flat
+         * rather than as a struct, so it is stamped by its own walk.
+         */
+        const auto append_rows = [&](const auto& rows, auto& into) {
+            for (auto row : rows) {
+                row.audit.change_reason_code = std::string(population_reason);
+                row.audit.change_commentary = "Generated trade population.";
+                into.push_back(row);
+            }
+        };
+        const auto append_children = [&](const auto& rows, auto& into) {
+            for (auto row : rows) {
+                row.change_reason_code = std::string(population_reason);
+                row.change_commentary = "Generated trade population.";
+                into.push_back(row);
+            }
+        };
+        append_rows(slot.instruments.equity_forward_instruments,
+                    book_req.instruments.equity_forward_instruments);
+        append_rows(slot.instruments.equity_option_instruments,
+                    book_req.instruments.equity_option_instruments);
+        append_rows(slot.instruments.equity_asian_option_instruments,
+                    book_req.instruments.equity_asian_option_instruments);
+        append_rows(slot.instruments.equity_barrier_option_instruments,
+                    book_req.instruments.equity_barrier_option_instruments);
+        append_rows(slot.instruments.equity_digital_option_instruments,
+                    book_req.instruments.equity_digital_option_instruments);
+        append_rows(slot.instruments.equity_swap_instruments,
+                    book_req.instruments.equity_swap_instruments);
+        append_rows(slot.instruments.equity_variance_swap_instruments,
+                    book_req.instruments.equity_variance_swap_instruments);
+        append_rows(slot.instruments.equity_accumulator_instruments,
+                    book_req.instruments.equity_accumulator_instruments);
+        append_rows(slot.instruments.equity_position_instruments,
+                    book_req.instruments.equity_position_instruments);
+        append_children(slot.instruments.equity_basket_constituents,
+                        book_req.instruments.equity_basket_constituents);
+        append_children(slot.instruments.equity_swap_periods,
+                        book_req.instruments.equity_swap_periods);
+        append_children(slot.instruments.equity_position_option_underlyings,
+                        book_req.instruments.equity_position_option_underlyings);
+        append_children(slot.instruments.range_bounds, book_req.instruments.range_bounds);
+    } else if (const auto* bond = std::get_if<domain::bond_terms>(&slot.terms)) {
         ores::trading::domain::bond_instrument_data row;
         row.instrument.issue_id = bond->issue_id;
         row.instrument.notional =
@@ -597,758 +763,15 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
         row.instrument.audit.change_reason_code = std::string(population_reason);
         row.instrument.audit.change_commentary = "Generated trade population.";
         book_req.instruments.bond_instruments.push_back(row);
-    } else if (const auto* commodity = std::get_if<domain::commodity_terms>(&slot.terms)) {
-        namespace tdom = ores::trading::domain;
-        const auto money = [](std::optional<double> value) -> std::optional<tdom::decimal> {
-            if (!value.has_value())
-                return std::nullopt;
-            return tdom::decimal::from_double(*value).value();
-        };
-
-        tdom::commodity_common_terms common;
-        common.commodity_code = commodity->commodity_code;
-        common.currency = slot.currency;
-        common.quantity = commodity->quantity;
-        common.unit = commodity->unit;
-        common.start_date = commodity->start_date;
-        common.maturity_date = commodity->maturity_date;
-
-        const auto& type = slot.trade_type_code;
-        auto basket_members = std::vector<tdom::commodity_basket_member_terms>{};
-        for (const auto& member : commodity->basket) {
-            tdom::commodity_basket_member_terms terms{member.code, member.weight};
-            basket_members.push_back(terms);
+    } else if (!slot.instruments.credit_instruments.empty()) {
+        for (auto row : slot.instruments.credit_instruments) {
+            row.audit.change_reason_code = std::string(population_reason);
+            row.audit.change_commentary = "Generated trade population.";
+            book_req.instruments.credit_instruments.push_back(row);
         }
-        auto built = [&]() -> tdom::commodity_basket_product {
-            if (type == "CommodityForward" || type == "IntradayPowerForward" ||
-                type == "CommodityForwardVolatilityAgreement" || type == "CommodityPosition") {
-                tdom::commodity_forward_terms terms{common, money(commodity->fixed_price)};
-                if (type == "CommodityForward")
-                    return {tdom::construct_commodity_forward(terms), {}};
-                if (type == "IntradayPowerForward")
-                    return {tdom::construct_intraday_power_forward(terms), {}};
-                if (type == "CommodityForwardVolatilityAgreement")
-                    return {tdom::construct_commodity_forward_volatility_agreement(terms), {}};
-                return {tdom::construct_commodity_position(terms), {}};
-            }
-            if (type == "CommodityOption" || type == "CommodityDigitalOption" ||
-                type == "CommodityStrikeResettableOption") {
-                tdom::commodity_option_terms terms{
-                    common,
-                    commodity->option_type,
-                    money(commodity->strike_price).value_or(tdom::decimal{}),
-                    commodity->exercise_type};
-                if (type == "CommodityOption")
-                    return {tdom::construct_commodity_option(terms), {}};
-                if (type == "CommodityDigitalOption")
-                    return {tdom::construct_commodity_digital_option(terms), {}};
-                return {tdom::construct_commodity_strike_resettable_option(terms), {}};
-            }
-            if (type == "CommodityAsianOption") {
-                tdom::commodity_asian_option_terms terms{
-                    common,
-                    commodity->option_type,
-                    money(commodity->strike_price).value_or(tdom::decimal{}),
-                    commodity->average_type,
-                    commodity->averaging_start_date,
-                    commodity->averaging_end_date};
-                return {tdom::construct_commodity_asian_option(terms), {}};
-            }
-            if (type == "CommodityAveragePriceOption" ||
-                type == "CommodityDigitalAveragePriceOption") {
-                tdom::commodity_average_price_option_terms terms{
-                    common,
-                    commodity->option_type,
-                    money(commodity->strike_price).value_or(tdom::decimal{}),
-                    commodity->average_type,
-                    commodity->averaging_start_date,
-                    commodity->averaging_end_date};
-                if (type == "CommodityAveragePriceOption")
-                    return {tdom::construct_commodity_average_price_option(terms), {}};
-                return {tdom::construct_commodity_digital_average_price_option(terms), {}};
-            }
-            if (type == "CommodityOptionStrip") {
-                tdom::commodity_option_strip_terms terms{
-                    common,
-                    commodity->option_type,
-                    money(commodity->strike_price).value_or(tdom::decimal{}),
-                    commodity->average_type,
-                    commodity->averaging_start_date,
-                    commodity->averaging_end_date,
-                    commodity->strip_frequency_code};
-                return {tdom::construct_commodity_option_strip(terms), {}};
-            }
-            if (type == "CommodityWindowBarrierOption" || type == "CommodityGenericBarrierOption") {
-                tdom::commodity_barrier_option_terms terms{
-                    common,
-                    commodity->option_type,
-                    money(commodity->strike_price).value_or(tdom::decimal{}),
-                    commodity->barrier_type,
-                    money(commodity->lower_barrier).value_or(tdom::decimal{}),
-                    money(commodity->upper_barrier)};
-                if (type == "CommodityWindowBarrierOption")
-                    return {tdom::construct_commodity_window_barrier_option(terms), {}};
-                return {tdom::construct_commodity_generic_barrier_option(terms), {}};
-            }
-            if (type == "CommodityAccumulator" || type == "CommodityTaRF") {
-                tdom::commodity_accumulation_terms terms{
-                    common,
-                    commodity->option_type,
-                    money(commodity->accumulation_amount).value_or(tdom::decimal{}),
-                    money(commodity->knock_out_barrier)};
-                if (type == "CommodityAccumulator")
-                    return {tdom::construct_commodity_accumulator(terms), {}};
-                return {tdom::construct_commodity_target_redemption_forward(terms), {}};
-            }
-            if (type == "CommoditySpreadOption") {
-                tdom::commodity_spread_option_terms terms{
-                    common,
-                    commodity->option_type,
-                    money(commodity->strike_price).value_or(tdom::decimal{}),
-                    commodity->spread_commodity_code,
-                    money(commodity->spread_amount).value_or(tdom::decimal{})};
-                return {tdom::construct_commodity_spread_option(terms), {}};
-            }
-            if (type == "CommodityVarianceSwap" || type == "CommodityPairwiseVarianceSwap" ||
-                type == "CommodityBasketVarianceSwap") {
-                tdom::commodity_variance_swap_terms terms{common,
-                                                          commodity->variance_strike.value_or(0.0)};
-                if (type == "CommodityVarianceSwap")
-                    return {tdom::construct_commodity_variance_swap(terms), {}};
-                if (type == "CommodityPairwiseVarianceSwap")
-                    return {tdom::construct_commodity_pairwise_variance_swap(terms), {}};
-                return {tdom::construct_commodity_basket_variance_swap(terms), {}};
-            }
-            if (type == "CommoditySwap") {
-                tdom::commodity_swap_terms terms{common, money(commodity->fixed_price)};
-                return {tdom::construct_commodity_swap(terms), {}};
-            }
-            if (type == "CommodityWorstOfBasketSwap") {
-                tdom::commodity_worst_of_basket_swap_terms terms{
-                    common, money(commodity->fixed_price), basket_members};
-                return tdom::construct_commodity_worst_of_basket_swap(terms);
-            }
-            if (type == "CommodityBasketOption" || type == "CommodityRainbowOption" ||
-                type == "CommodityBestEntryOption") {
-                tdom::commodity_basket_option_terms terms{
-                    common,
-                    commodity->option_type,
-                    money(commodity->strike_price).value_or(tdom::decimal{}),
-                    commodity->exercise_type,
-                    basket_members};
-                if (type == "CommodityBasketOption")
-                    return tdom::construct_commodity_basket_option(terms);
-                if (type == "CommodityRainbowOption")
-                    return tdom::construct_commodity_rainbow_option(terms);
-                return tdom::construct_commodity_best_entry_option(terms);
-            }
-            if (type == "CommoditySwaption") {
-                tdom::commodity_swaption_terms terms{
-                    common,
-                    commodity->option_type,
-                    money(commodity->strike_price).value_or(tdom::decimal{}),
-                    commodity->swaption_expiry_date};
-                return {tdom::construct_commodity_swaption(terms), {}};
-            }
-            throw trade_population_write_error("The commodity trade type " + type +
-                                               " states no table this writer knows.");
-        }();
-        built.row.audit.change_reason_code = std::string(population_reason);
-        built.row.audit.change_commentary = "Generated trade population.";
-        book_req.instruments.commodity_instruments.push_back(built.row);
-        for (const auto& constituent : built.constituents)
-            book_req.instruments.commodity_basket_constituents.push_back(constituent);
-    } else if (const auto* rate = std::get_if<domain::rate_terms>(&slot.terms)) {
-        namespace tdom = ores::trading::domain;
-        const auto money = [](double value) {
-            return tdom::decimal::from_double(value).value();
-        };
-
-        tdom::rate_common_terms common;
-        common.start_date = rate->start_date;
-        common.maturity_date = rate->maturity_date;
-        common.fixed.leg_type_code = "Fixed";
-        common.fixed.day_count_fraction_code = rate->fixed_day_count_fraction_code;
-        common.fixed.business_day_convention_code = rate->fixed_business_day_convention_code;
-        common.fixed.payment_frequency_code = rate->fixed_payment_frequency_code;
-        common.fixed.currency = rate->currency;
-        common.fixed.rate_role = "fixed";
-        common.fixed.value = money(rate->fixed_rate);
-        common.fixed.notional = money(rate->notional);
-        common.fixed.payer = true;
-        common.floating.leg_type_code = "Floating";
-        common.floating.day_count_fraction_code = rate->floating_day_count_fraction_code;
-        common.floating.business_day_convention_code =
-            rate->floating_business_day_convention_code;
-        common.floating.payment_frequency_code = rate->floating_payment_frequency_code;
-        common.floating.floating_index_code = rate->floating_index_code;
-        common.floating.currency =
-            rate->floating_currency.empty() ? rate->currency : rate->floating_currency;
-        common.floating.rate_role = "spread";
-        common.floating.value = money(rate->spread);
-        common.floating.notional = money(rate->notional);
-        common.floating.payer = false;
-
-        const auto direction = std::string(slot.slot % 2 == 0 ? "Long" : "Short");
-        const auto& type = slot.trade_type_code;
-        auto product = [&]() -> tdom::rate_product {
-            if (type == "Swap")
-                return tdom::construct_rate_swap(tdom::rate_swap_terms{common, 2});
-            if (type == "CrossCurrencySwap")
-                return tdom::construct_rate_cross_currency_swap(tdom::rate_swap_terms{common, 2});
-            if (type == "ForwardRateAgreement")
-                return tdom::construct_rate_fra(tdom::rate_fra_terms{common, direction});
-            if (type == "CapFloor")
-                return tdom::construct_rate_cap_floor(
-                    tdom::rate_cap_floor_terms{common, money(rate->strike.value_or(0.0))});
-            if (type == "Swaption") {
-                tdom::rate_swaption_terms terms{common,
-                                                rate->expiry_date.value_or(rate->start_date),
-                                                direction, "European", "Cash"};
-                return tdom::construct_rate_swaption(terms);
-            }
-            if (type == "CallableSwap")
-                return tdom::construct_rate_callable_swap(tdom::rate_callable_swap_terms{common});
-            if (type == "KnockOutSwap")
-                return tdom::construct_rate_knock_out_swap(
-                    tdom::rate_knock_out_swap_terms{common, rate->start_date, "UpAndOut"});
-            if (type == "FlexiSwap")
-                return tdom::construct_rate_flexi_swap(tdom::rate_flexi_swap_terms{common, direction});
-            if (type == "BalanceGuaranteedSwap")
-                return tdom::construct_rate_balance_guaranteed_swap(
-                    tdom::rate_balance_guaranteed_swap_terms{common, slot.internal_identifier});
-            throw trade_population_write_error("The rate trade type " + type +
-                                               " states no fact row this writer knows.");
-        }();
-
-        product.row.audit.change_reason_code = std::string(population_reason);
-        product.row.audit.change_commentary = "Generated trade population.";
-        for (auto& leg : product.legs) {
-            leg.audit.change_reason_code = std::string(population_reason);
-            leg.audit.change_commentary = "Generated trade population.";
-        }
-        for (auto& amount : product.amounts) {
-            amount.change_reason_code = std::string(population_reason);
-            amount.change_commentary = "Generated trade population.";
-        }
-        for (auto& leg_rate : product.rates) {
-            leg_rate.change_reason_code = std::string(population_reason);
-            leg_rate.change_commentary = "Generated trade population.";
-        }
-
-        book_req.instruments.rate_instruments.push_back(product.row);
-        for (const auto& leg : product.legs)
-            book_req.instruments.swap_legs.push_back(leg);
-        for (const auto& amount : product.amounts)
-            book_req.instruments.swap_leg_amounts.push_back(amount);
-        for (const auto& leg_rate : product.rates)
-            book_req.instruments.swap_leg_rates.push_back(leg_rate);
-        for (const auto& strike : product.strikes)
-            book_req.instruments.instrument_strikes.push_back(strike);
-        std::visit(
-            [&](const auto& fact) {
-                using fact_type = std::decay_t<decltype(fact)>;
-                if constexpr (std::is_same_v<fact_type, tdom::vanilla_swap_instrument>)
-                    book_req.instruments.vanilla_swap_instruments.push_back(fact);
-                else if constexpr (std::is_same_v<fact_type, tdom::fra_instrument>)
-                    book_req.instruments.fra_instruments.push_back(fact);
-                else if constexpr (std::is_same_v<fact_type, tdom::cap_floor_instrument>)
-                    book_req.instruments.cap_floor_instruments.push_back(fact);
-                else if constexpr (std::is_same_v<fact_type, tdom::swaption_instrument>)
-                    book_req.instruments.swaption_instruments.push_back(fact);
-                else if constexpr (std::is_same_v<fact_type, tdom::callable_swap_instrument>)
-                    book_req.instruments.callable_swap_instruments.push_back(fact);
-                else if constexpr (std::is_same_v<fact_type, tdom::knock_out_swap_instrument>)
-                    book_req.instruments.knock_out_swap_instruments.push_back(fact);
-                else if constexpr (std::is_same_v<fact_type, tdom::flexi_swap_instrument>)
-                    book_req.instruments.flexi_swap_instruments.push_back(fact);
-                else
-                    book_req.instruments.balance_guaranteed_swap_instruments.push_back(fact);
-            },
-            product.fact);
-    } else if (const auto* equity = std::get_if<domain::equity_terms>(&slot.terms)) {
-        const auto money = [](double value) {
-            return ores::utility::decimal::decimal::from_double(value).value();
-        };
-        const auto maybe_money =
-            [&money](
-                std::optional<double> value) -> std::optional<ores::utility::decimal::decimal> {
-            if (!value.has_value())
-                return std::nullopt;
-            return money(*value);
-        };
-        const auto& type = slot.trade_type_code;
-        const auto stamp = [](auto& row) {
-            row.audit.change_reason_code = std::string(population_reason);
-            row.audit.change_commentary = "Generated trade population.";
-        };
-        /// A child row states its audit columns flat rather than as a struct.
-        const auto stamp_child = [](auto& row) {
-            row.change_reason_code = std::string(population_reason);
-            row.change_commentary = "Generated trade population.";
-        };
-
-        /*
-         * The routing table puts seventeen codes in nine tables, so a table
-         * serves more than one type and the payload states the fields all of
-         * them share. The basket is the one product that also states rows: its
-         * constituents and its periods are children of the swap.
-         */
-        if (type == "EquityOption") {
-            ores::trading::domain::equity_option_terms terms;
-            terms.underlying_name = equity->underlying_name;
-            terms.currency = equity->currency;
-            terms.notional = money(equity->notional);
-            terms.option_type = equity->option_type;
-            terms.strike = money(equity->strike.value_or(0.0));
-            terms.expiry_date = equity->expiry_date;
-            terms.exercise_type = equity->exercise_type;
-            terms.long_short = equity->long_short;
-            terms.settlement_type = equity->settlement_type;
-            auto row = ores::trading::domain::construct_equity_option(terms);
-            row.description = "Generated equity trade.";
-            stamp(row);
-            book_req.instruments.equity_option_instruments.push_back(row);
-        } else if (type == "EquityCliquetOption") {
-            ores::trading::domain::equity_cliquet_option_terms terms;
-            terms.underlying_name = equity->underlying_name;
-            terms.currency = equity->currency;
-            terms.notional = money(equity->notional);
-            terms.option_type = equity->option_type;
-            terms.strike = money(equity->strike.value_or(0.0));
-            terms.expiry_date = equity->expiry_date;
-            terms.exercise_type = equity->exercise_type;
-            terms.long_short = equity->long_short;
-            terms.settlement_type = equity->settlement_type;
-            terms.frequency = equity->cliquet_frequency;
-            auto row = ores::trading::domain::construct_equity_cliquet_option(terms);
-            row.description = "Generated equity trade.";
-            stamp(row);
-            book_req.instruments.equity_option_instruments.push_back(row);
-        } else if (type == "EquityAsianOption") {
-            ores::trading::domain::equity_asian_option_terms terms;
-            terms.underlying_name = equity->underlying_name;
-            terms.currency = equity->currency;
-            terms.notional = money(equity->notional);
-            terms.option_type = equity->option_type;
-            terms.strike = money(equity->strike.value_or(0.0));
-            terms.expiry_date = equity->expiry_date;
-            terms.exercise_type = equity->exercise_type;
-            terms.long_short = equity->long_short;
-            terms.average_type = equity->average_type;
-            terms.averaging_start_date = equity->averaging_start_date.value_or(equity->start_date);
-            terms.averaging_end_date = equity->averaging_end_date.value_or(equity->expiry_date);
-            auto row = ores::trading::domain::construct_equity_asian_option(terms);
-            row.description = "Generated equity trade.";
-            stamp(row);
-            book_req.instruments.equity_asian_option_instruments.push_back(row);
-        } else if (type == "EquityBarrierOption" || type == "EquityEuropeanBarrierOption") {
-            ores::trading::domain::equity_barrier_option_terms terms;
-            terms.underlying_name = equity->underlying_name;
-            terms.currency = equity->currency;
-            terms.notional = money(equity->notional);
-            terms.option_type = equity->option_type;
-            terms.strike = money(equity->strike.value_or(0.0));
-            terms.expiry_date = equity->expiry_date;
-            terms.exercise_type = equity->exercise_type;
-            terms.long_short = equity->long_short;
-            terms.lower_barrier = money(equity->lower_barrier.value_or(0.0));
-            terms.lower_barrier_type = equity->lower_barrier_type;
-            terms.rebate = maybe_money(equity->rebate);
-            auto row = type == "EquityEuropeanBarrierOption" ?
-                           ores::trading::domain::construct_equity_european_barrier_option(terms) :
-                           ores::trading::domain::construct_equity_barrier_option(terms);
-            row.description = "Generated equity trade.";
-            stamp(row);
-            book_req.instruments.equity_barrier_option_instruments.push_back(row);
-        } else if (type == "EquityDoubleBarrierOption") {
-            ores::trading::domain::equity_double_barrier_option_terms terms;
-            terms.underlying_name = equity->underlying_name;
-            terms.currency = equity->currency;
-            terms.notional = money(equity->notional);
-            terms.option_type = equity->option_type;
-            terms.strike = money(equity->strike.value_or(0.0));
-            terms.expiry_date = equity->expiry_date;
-            terms.exercise_type = equity->exercise_type;
-            terms.long_short = equity->long_short;
-            terms.lower_barrier = money(equity->lower_barrier.value_or(0.0));
-            terms.lower_barrier_type = equity->lower_barrier_type;
-            terms.upper_barrier = money(equity->upper_barrier.value_or(0.0));
-            terms.upper_barrier_type = equity->upper_barrier_type;
-            terms.rebate = maybe_money(equity->rebate);
-            auto row = ores::trading::domain::construct_equity_double_barrier_option(terms);
-            row.description = "Generated equity trade.";
-            stamp(row);
-            book_req.instruments.equity_barrier_option_instruments.push_back(row);
-        } else if (type == "EquityDigitalOption") {
-            ores::trading::domain::equity_digital_option_terms terms;
-            terms.underlying_name = equity->underlying_name;
-            terms.currency = equity->currency;
-            terms.notional = money(equity->notional);
-            terms.option_type = equity->option_type;
-            terms.strike = money(equity->strike.value_or(0.0));
-            terms.expiry_date = equity->expiry_date;
-            terms.long_short = equity->long_short;
-            terms.payout_amount = maybe_money(equity->payout_amount);
-            auto row = ores::trading::domain::construct_equity_digital_option(terms);
-            row.description = "Generated equity trade.";
-            stamp(row);
-            book_req.instruments.equity_digital_option_instruments.push_back(row);
-        } else if (type == "EquityTouchOption") {
-            ores::trading::domain::equity_touch_option_terms terms;
-            terms.underlying_name = equity->underlying_name;
-            terms.currency = equity->currency;
-            terms.notional = money(equity->notional);
-            terms.barrier_level = money(equity->barrier_level.value_or(0.0));
-            terms.barrier_type = equity->barrier_type;
-            terms.expiry_date = equity->expiry_date;
-            terms.long_short = equity->long_short;
-            terms.payout_amount = maybe_money(equity->payout_amount);
-            auto row = ores::trading::domain::construct_equity_touch_option(terms);
-            row.description = "Generated equity trade.";
-            stamp(row);
-            book_req.instruments.equity_digital_option_instruments.push_back(row);
-        } else if (type == "EquityForward") {
-            ores::trading::domain::equity_forward_terms terms;
-            terms.underlying_name = equity->underlying_name;
-            terms.currency = equity->currency;
-            terms.quantity = equity->quantity;
-            terms.forward_price = maybe_money(equity->fixed_price);
-            terms.expiry_date = equity->expiry_date;
-            terms.long_short = equity->long_short;
-            terms.settlement_type = equity->settlement_type;
-            auto row = ores::trading::domain::construct_equity_forward(terms);
-            row.description = "Generated equity trade.";
-            stamp(row);
-            book_req.instruments.equity_forward_instruments.push_back(row);
-        } else if (type == "EquitySwap" || type == "EquityWorstOfBasketSwap") {
-            const auto return_type = equity->return_type.empty() ? "Price" : equity->return_type;
-            const auto payment_frequency = equity->payment_frequency_code.empty() ?
-                                               "Quarterly" :
-                                               equity->payment_frequency_code;
-            auto basket = std::vector<ores::trading::domain::equity_basket_member_terms>{};
-            for (const auto& member : equity->basket) {
-                ores::trading::domain::equity_basket_member_terms terms;
-                terms.underlying_name = member.name;
-                terms.underlying_kind = member.kind;
-                terms.weight = member.weight;
-                terms.initial_price = maybe_money(member.initial_price);
-                basket.push_back(terms);
-            }
-            auto periods = std::vector<ores::trading::domain::equity_swap_period_terms>{};
-            for (const auto& period : equity->periods) {
-                ores::trading::domain::equity_swap_period_terms terms;
-                terms.period_date = period.period_date.value_or(equity->start_date);
-                terms.knock_out_level = period.knock_out_level;
-                terms.fixed_trigger_level = period.fixed_trigger_level;
-                periods.push_back(terms);
-            }
-            auto product = [&] {
-                if (type == "EquitySwap") {
-                    ores::trading::domain::equity_swap_terms terms;
-                    terms.underlying_name = equity->underlying_name;
-                    terms.currency = equity->currency;
-                    terms.notional = money(equity->notional);
-                    terms.return_type = return_type;
-                    terms.start_date = equity->start_date;
-                    terms.maturity_date = equity->maturity_date;
-                    terms.long_short = equity->long_short;
-                    terms.payment_frequency_code = payment_frequency;
-                    terms.basket = basket;
-                    terms.periods = periods;
-                    return ores::trading::domain::construct_equity_swap(terms);
-                }
-                ores::trading::domain::equity_basket_swap_terms terms;
-                terms.currency = equity->currency;
-                terms.notional = money(equity->notional);
-                terms.return_type = return_type;
-                terms.start_date = equity->start_date;
-                terms.maturity_date = equity->maturity_date;
-                terms.long_short = equity->long_short;
-                terms.payment_frequency_code = payment_frequency;
-                terms.basket = basket;
-                terms.periods = periods;
-                return ores::trading::domain::construct_equity_worst_of_basket_swap(terms);
-            }();
-            product.row.description = "Generated equity trade.";
-            stamp(product.row);
-            book_req.instruments.equity_swap_instruments.push_back(product.row);
-            for (auto& constituent : product.constituents) {
-                stamp_child(constituent);
-                book_req.instruments.equity_basket_constituents.push_back(constituent);
-            }
-            for (const auto& child : product.periods)
-                book_req.instruments.equity_swap_periods.push_back(child);
-        } else if (type == "EquityVarianceSwap") {
-            ores::trading::domain::equity_variance_swap_terms terms;
-            terms.underlying_name = equity->underlying_name;
-            terms.currency = equity->currency;
-            terms.notional = money(equity->notional);
-            terms.variance_strike = equity->variance_strike.value_or(0.04);
-            terms.start_date = equity->start_date;
-            terms.maturity_date = equity->maturity_date;
-            terms.long_short = equity->long_short;
-            auto row = ores::trading::domain::construct_equity_variance_swap(terms);
-            row.description = "Generated equity trade.";
-            stamp(row);
-            book_req.instruments.equity_variance_swap_instruments.push_back(row);
-        } else if (type == "EquityAccumulator" || type == "EquityTaRF") {
-            auto bounds = std::vector<ores::trading::domain::equity_range_bound_terms>{};
-            for (const auto& bound : equity->range_bounds) {
-                ores::trading::domain::equity_range_bound_terms terms;
-                terms.range_from = maybe_money(bound.range_from);
-                terms.range_to = maybe_money(bound.range_to);
-                terms.leverage = bound.leverage;
-                bounds.push_back(terms);
-            }
-            auto product = [&] {
-                if (type == "EquityAccumulator") {
-                    ores::trading::domain::equity_accumulator_terms terms;
-                    terms.underlying_name = equity->underlying_name;
-                    terms.currency = equity->currency;
-                    terms.strike = money(equity->strike.value_or(0.0));
-                    terms.fixing_amount = money(equity->notional);
-                    terms.start_date = equity->start_date;
-                    terms.expiry_date = equity->expiry_date;
-                    terms.fixing_frequency =
-                        equity->fixing_frequency.empty() ? "Daily" : equity->fixing_frequency;
-                    terms.long_short = equity->long_short;
-                    terms.knock_out_level = maybe_money(equity->knock_out_level);
-                    terms.payoff_type =
-                        equity->payoff_type.empty() ? "Accumulator" : equity->payoff_type;
-                    terms.range_bounds = bounds;
-                    return ores::trading::domain::construct_equity_accumulator(terms);
-                }
-                ores::trading::domain::equity_tarf_terms terms;
-                terms.underlying_name = equity->underlying_name;
-                terms.currency = equity->currency;
-                terms.strike = money(equity->strike.value_or(0.0));
-                terms.fixing_amount = money(equity->notional);
-                terms.start_date = equity->start_date;
-                terms.expiry_date = equity->expiry_date;
-                terms.fixing_frequency =
-                    equity->fixing_frequency.empty() ? "Daily" : equity->fixing_frequency;
-                terms.long_short = equity->long_short;
-                terms.knock_out_level = maybe_money(equity->knock_out_level);
-                terms.payoff_type =
-                    equity->payoff_type.empty() ? "Accumulator" : equity->payoff_type;
-                terms.target_amount = money(equity->target_amount.value_or(0.0));
-                terms.target_type = equity->target_type;
-                terms.range_bounds = bounds;
-                return ores::trading::domain::construct_equity_target_redemption_forward(terms);
-            }();
-            product.row.description = "Generated equity trade.";
-            stamp(product.row);
-            book_req.instruments.equity_accumulator_instruments.push_back(product.row);
-            for (auto& bound : product.range_bounds)
-                book_req.instruments.range_bounds.push_back(bound);
-        } else if (type == "EquityPosition" || type == "EquityOptionPosition") {
-            ores::trading::domain::equity_position_terms terms;
-            terms.underlying_name = equity->underlying_name;
-            terms.currency = equity->currency;
-            terms.quantity = equity->quantity;
-            terms.price = maybe_money(equity->fixed_price);
-            auto row = type == "EquityOptionPosition" ?
-                           ores::trading::domain::construct_equity_option_position(terms) :
-                           ores::trading::domain::construct_equity_position(terms);
-            row.description = "Generated equity trade.";
-            stamp(row);
-            book_req.instruments.equity_position_instruments.push_back(row);
-        } else {
-            throw trade_population_write_error("The equity trade type " + type +
-                                               " states no table this writer knows.");
-        }
-
-    } else if (const auto* fx = std::get_if<domain::fx_terms>(&slot.terms)) {
-        namespace tdom = ores::trading::domain;
-        const auto money = [](double value) {
-            return tdom::decimal::from_double(value).value();
-        };
-        const auto maybe_money = [&money](std::optional<double> value)
-            -> std::optional<tdom::decimal> {
-            if (!value.has_value())
-                return std::nullopt;
-            return money(*value);
-        };
-        const auto& type = slot.trade_type_code;
-
-        tdom::fx_legs_terms legs;
-        legs.bought_currency = fx->bought_currency;
-        legs.bought_amount = money(fx->bought_amount);
-        legs.sold_currency = fx->sold_currency;
-        legs.sold_amount = money(fx->sold_amount);
-
-        /*
-         * One routed table per shape. An FX row is the whole instrument, so
-         * there is no fact row beside it and nothing to forget: the fields the
-         * table states are the fields the row carries.
-         */
-        if (type == "FxForward" || type == "FxSwap") {
-            tdom::fx_forward_terms terms{legs, fx->value_date, fx->settlement};
-            auto row = type == "FxForward" ? tdom::construct_fx_forward(terms)
-                                           : tdom::construct_fx_swap(terms);
-            row.description = "Generated FX trade.";
-            row.audit.change_reason_code = std::string(population_reason);
-            row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.fx_forward_instruments.push_back(row);
-        } else if (type == "FxOption") {
-            tdom::fx_vanilla_option_terms terms{legs, fx->option_type, fx->expiry_date,
-                                                fx->exercise_style, fx->settlement};
-            auto row = tdom::construct_fx_option(terms);
-            row.description = "Generated FX trade.";
-            row.audit.change_reason_code = std::string(population_reason);
-            row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.fx_vanilla_option_instruments.push_back(row);
-        } else if (type.starts_with("FxBarrier") || type == "FxDoubleBarrierOption" ||
-                   type == "FxEuropeanBarrierOption" || type == "FxGenericBarrierOption" ||
-                   type == "FxKIKOBarrierOption") {
-            tdom::fx_barrier_option_terms terms{legs,
-                                                fx->option_type,
-                                                fx->expiry_date,
-                                                fx->settlement,
-                                                fx->barrier_type,
-                                                maybe_money(fx->lower_barrier),
-                                                maybe_money(fx->upper_barrier),
-                                                fx->underlying_code};
-            auto row = [&] {
-                if (type == "FxBarrierOption")
-                    return tdom::construct_fx_barrier_option(terms);
-                if (type == "FxDoubleBarrierOption")
-                    return tdom::construct_fx_double_barrier_option(terms);
-                if (type == "FxEuropeanBarrierOption")
-                    return tdom::construct_fx_european_barrier_option(terms);
-                if (type == "FxGenericBarrierOption")
-                    return tdom::construct_fx_generic_barrier_option(terms);
-                return tdom::construct_fx_kiko_barrier_option(terms);
-            }();
-            row.description = "Generated FX trade.";
-            row.audit.change_reason_code = std::string(population_reason);
-            row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.fx_barrier_option_instruments.push_back(row);
-        } else if (type == "FxDigitalOption" || type == "FxTouchOption" ||
-                   type == "FxDoubleTouchOption" || type == "FxDigitalBarrierOption") {
-            tdom::fx_digital_option_terms terms{fx->foreign_currency,
-                                                fx->domestic_currency,
-                                                fx->payoff_currency,
-                                                money(fx->payoff_amount.value_or(0.0)),
-                                                fx->option_type,
-                                                fx->expiry_date,
-                                                fx->long_short,
-                                                maybe_money(fx->strike),
-                                                fx->barrier_type,
-                                                maybe_money(fx->lower_barrier),
-                                                maybe_money(fx->upper_barrier)};
-            auto row = [&] {
-                if (type == "FxDigitalOption")
-                    return tdom::construct_fx_digital_option(terms);
-                if (type == "FxTouchOption")
-                    return tdom::construct_fx_touch_option(terms);
-                if (type == "FxDoubleTouchOption")
-                    return tdom::construct_fx_double_touch_option(terms);
-                return tdom::construct_fx_digital_barrier_option(terms);
-            }();
-            row.description = "Generated FX trade.";
-            row.audit.change_reason_code = std::string(population_reason);
-            row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.fx_digital_option_instruments.push_back(row);
-        } else if (type == "FxAverageForward") {
-            tdom::fx_asian_forward_terms terms{fx->fx_index,
-                                               fx->reference_currency,
-                                               maybe_money(fx->reference_notional),
-                                               fx->settlement_currency,
-                                               maybe_money(fx->settlement_notional),
-                                               fx->payment_date,
-                                               fx->long_short,
-                                               fx->currency,
-                                               maybe_money(fx->fixing_amount),
-                                               maybe_money(fx->strike)};
-            auto row = tdom::construct_fx_average_forward(terms);
-            row.description = "Generated FX trade.";
-            row.audit.change_reason_code = std::string(population_reason);
-            row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.fx_asian_forward_instruments.push_back(row);
-        } else if (type == "FxTaRF") {
-            tdom::fx_tarf_terms terms{fx->fx_index,
-                                      fx->reference_currency,
-                                      maybe_money(fx->reference_notional),
-                                      fx->settlement_currency,
-                                      maybe_money(fx->settlement_notional),
-                                      fx->payment_date,
-                                      fx->long_short,
-                                      fx->currency,
-                                      maybe_money(fx->fixing_amount),
-                                      maybe_money(fx->strike),
-                                      money(fx->target_amount.value_or(0.0))};
-            auto row = tdom::construct_fx_target_redemption_forward(terms);
-            row.description = "Generated FX trade.";
-            row.audit.change_reason_code = std::string(population_reason);
-            row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.fx_asian_forward_instruments.push_back(row);
-        } else if (type == "FxVarianceSwap") {
-            tdom::fx_variance_swap_terms terms{fx->start_date,
-                                               fx->end_date,
-                                               fx->currency,
-                                               fx->underlying_code,
-                                               fx->long_short,
-                                               fx->strike.value_or(0.0),
-                                               money(fx->reference_notional),
-                                               fx->moment_type};
-            auto row = tdom::construct_fx_variance_swap(terms);
-            row.description = "Generated FX trade.";
-            row.audit.change_reason_code = std::string(population_reason);
-            row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.fx_variance_swap_instruments.push_back(row);
-        } else if (type == "FxAccumulator") {
-            tdom::fx_accumulator_terms terms{fx->currency,
-                                             money(fx->fixing_amount),
-                                             fx->underlying_code,
-                                             fx->long_short,
-                                             fx->start_date,
-                                             money(fx->strike.value_or(0.0)),
-                                             maybe_money(fx->knock_out_barrier)};
-            auto built = tdom::construct_fx_accumulator(terms);
-            built.row.description = "Generated FX trade.";
-            built.row.audit.change_reason_code = std::string(population_reason);
-            built.row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.fx_accumulator_instruments.push_back(built.row);
-            for (const auto& bound : built.range_bounds)
-                book_req.instruments.range_bounds.push_back(bound);
-        } else {
-            throw trade_population_write_error("The FX trade type " + type +
-                                               " states no table this writer knows.");
-        }
-
-    } else if (const auto* credit = std::get_if<domain::credit_terms>(&slot.terms)) {
-        namespace tdom = ores::trading::domain;
-        tdom::credit_common_terms terms;
-        terms.trade_type_code = slot.trade_type_code;
-        terms.reference_entity_id_type = credit->reference_entity_id_type;
-        terms.reference_entity_id = credit->reference_entity_id;
-        terms.start_date = credit->start_date;
-        terms.maturity_date = credit->maturity_date;
-
-        const auto& type = slot.trade_type_code;
-        auto row = [&] {
-            if (type == "CreditDefaultSwap")
-                return tdom::construct_credit_default_swap(terms);
-            if (type == "IndexCreditDefaultSwap")
-                return tdom::construct_index_credit_default_swap(terms);
-            if (type == "IndexCreditDefaultSwapOption")
-                return tdom::construct_index_credit_default_swap_option(terms);
-            if (type == "CreditLinkedSwap")
-                return tdom::construct_credit_linked_swap(terms);
-            if (type == "RiskParticipationAgreement")
-                return tdom::construct_risk_participation_agreement(terms);
-            return tdom::construct_synthetic_cdo(terms);
-        }();
-        row.description = "Generated credit trade.";
-        row.audit.change_reason_code = std::string(population_reason);
-        row.audit.change_commentary = "Generated trade population.";
-        book_req.instruments.credit_instruments.push_back(row);
-
     } else {
         throw trade_population_write_error(
-            "The slot states no terms this writer knows how to book.");
+            "The slot states no rows this writer knows how to book.");
     }
 
     /*

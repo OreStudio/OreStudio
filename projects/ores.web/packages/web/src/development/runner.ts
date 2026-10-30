@@ -148,6 +148,19 @@ export function stateNow(runner: Runner): ScenarioState {
     return scenarioStateOf(runner.steps.map((step) => step.status));
 }
 
+/**
+ * Whether an action moves the tester on, which saves the run as it goes.
+ *
+ * A tester who marks nine steps and reaches the end has done nine steps of work,
+ * and a run that waits for a Save nobody pressed is a run no reader sees. So a
+ * mark or a skip saves; a note or a screenshot does not, because a save while a
+ * file is uploading would replace the working copy before the file's link is in
+ * it, and the tester can save the note with the button.
+ */
+export function movesOn(action: Action): boolean {
+    return action.type === 'mark' || action.type === 'next';
+}
+
 /** The steps with an outcome. */
 export function markedCount(runner: Runner): number {
     return runner.steps.filter((step) => step.status !== 'PENDING').length;

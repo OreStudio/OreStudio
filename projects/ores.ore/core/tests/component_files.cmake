@@ -41,6 +41,7 @@ set(files
     "xml_creditsimulation_projection_tests.cpp"
     "xml_currency_config_tests.cpp"
     "xml_curve_configuration_projection_roundtrip_tests.cpp"
+    "xml_document_families_tests.cpp"
     "xml_document_tests.cpp"
     "xml_emitter_tests.cpp"
     "xml_exporter_directory_roundtrip_tests.cpp"

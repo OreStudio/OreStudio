@@ -1,0 +1,304 @@
+:PROPERTIES:
+:ID: 994D5AB9-83A4-42B4-B489-5EE2B44AD95E
+:ores.cpp.shell-command.enabled: true
+:ores.cpp.eventing-integration-test.enabled: true
+:END:
+#+title: ores.marketdata.session
+#+description: Codegen entity model for market data sessions: one configured adapter at a supplier, with its environment, endpoint, credential reference, settings and enablement.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: session
+#+entity_plural: sessions
+#+entity_title: Session
+#+brief: One configured adapter at a supplier, with its environment, endpoint, credential reference, settings and enablement.
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+A session is one configured adapter at a supplier. The adapter is code and the
+supplier is a party; the session is what a person configures: where the adapter
+runs, how to reach it, which credential it uses, and the settings its adapter's
+schema requires. A feed binds a publisher to a session and a service, so one
+session can serve many feeds.
+
+The system tenant owns the rows. Every tenant reads them and only the system
+tenant writes them: an installation has one set of adapter processes, not one
+per tenant.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:profile:       simple-lookup
+:system_tenant_validation: true
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique session code: lower case letters, digits, underscores and hyphens,
+starting with a letter. It is the code a feed names, such as
+=frankfurter-eu=.
+
+#+begin_src cpp :name generator
+std::string("session-") + std::to_string(faker::number::integer(1, 999999))
+#+end_src
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:sortable:    true
+:searchable:  true
+:END:
+
+The session's readable label, such as =Frankfurter EU=. Unique within the
+system tenant.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " session"
+#+end_src
+
+** supplier_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:filterable:  true
+:END:
+
+References =supplier.code=: the party this session connects to.
+
+#+begin_src cpp :name generator
+std::string("frankfurter")
+#+end_src
+
+** adapter_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:filterable:  true
+:END:
+
+References =adapter.code=: the code class that speaks the supplier's protocol.
+
+#+begin_src cpp :name generator
+std::string("frankfurter")
+#+end_src
+
+** environment
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:default:     'production'
+:filterable:  true
+:END:
+
+Where the session runs: =production=, =test=, =dr= or =simulated=.
+
+#+begin_src cpp :name generator
+std::string("production")
+#+end_src
+
+** endpoint
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       ''
+:default_value: ""
+:END:
+
+The address the adapter reaches, such as =https://api.frankfurter.dev=. Empty
+when the adapter has no endpoint of its own.
+
+#+begin_src cpp :name generator
+std::string("https://api.frankfurter.dev")
+#+end_src
+
+** credential_ref
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       ''
+:default_value: ""
+:END:
+
+The name of the credential the session uses, never the secret itself. Empty
+when the service needs no credential.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+** settings
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       '{}'
+:default_value: "{}"
+:END:
+
+The adapter's settings as a JSON object. The adapter's configuration schema
+says which keys are required and what type each has; a trigger refuses a
+setting the schema does not state and a value of the wrong type.
+
+#+begin_src cpp :name generator
+std::string("{}")
+#+end_src
+
+** enabled
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: true
+:sortable:      true
+:END:
+
+False when the session is configured but must not be used. A disabled session
+keeps its feeds and its history.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the session is for, in a sentence.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                 ores_marketdata_sessions_tbl
+:rls_tenant_isolation:      true
+:rls_own_or_system_tenant_rows: true
+:END:
+
+** Checks
+
+| expression                                                          |
+|---------------------------------------------------------------------|
+| "code" ~ '^[a-z][a-z0-9_-]*$'                                        |
+| "environment" in ('production', 'test', 'dr', 'simulated')           |
+| "endpoint" = '' or "endpoint" ~ '^[a-z][a-z0-9+.-]*://'              |
+
+** Indexes
+
+| name     | columns              | unique | current_only | where_extra |
+|----------+----------------------+--------+--------------+-------------|
+| supplier | tenant_id, supplier_code | false | true       |             |
+| adapter  | tenant_id, adapter_code  | false | true       |             |
+
+* Insert trigger
+** Validations
+
+| column        | validation_function                    |
+|---------------+----------------------------------------|
+| supplier_code | ores_marketdata_validate_supplier_fn   |
+| adapter_code  | ores_marketdata_validate_adapter_fn    |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: session
+:entity_plural_short:   sessions
+:entity_singular_words: market data session
+:entity_plural_words:   market data sessions
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <string_view>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: s
+:END:
+
+** Presentation
+:PROPERTIES:
+:has_pagination:          true
+:domain_include:          ores.marketdata.api/domain/session.hpp
+:domain_class:            ores::marketdata::domain::session
+:protocol_include:        ores.marketdata.api/messaging/session_protocol.hpp
+:collection_name:         sessions
+:key_field:               code
+:has_change_reason_cache: true
+:END:
+
+*** Detail fields
+
+| field          | label        | widget                | type      | is_key | is_required | placeholder              |
+|----------------+--------------+-----------------------+-----------+--------+-------------+--------------------------|
+| code           | Code         | codeEdit              | line_edit | true   | true        | Enter session code       |
+| name           | Name         | nameEdit              | line_edit |        | true        | Enter a name             |
+| supplier_code  | Supplier     | supplierEdit          | line_edit |        | true        | frankfurter              |
+| adapter_code   | Adapter      | adapterEdit           | line_edit |        | true        | frankfurter              |
+| environment    | Environment  | environmentEdit       | line_edit |        | true        | production               |
+| endpoint       | Endpoint     | endpointEdit          | line_edit |        |             | https://api.frankfurter.dev |
+| credential_ref | Credential   | credentialRefEdit     | line_edit |        |             | vault:credentials/...    |
+| settings       | Settings     | settingsEdit          | text_edit |        | true        | {}                       |
+| enabled        | Enabled      | enabledEdit           | check_box |        |             |                          |
+| description    | Description  | descriptionEdit       | text_edit |        | true        | Enter a description      |
+
+*** Columns
+
+| enum_name  | field          | header      | type    | width |
+|------------+----------------+-------------+---------+-------|
+| Code       | code           | Code        | string  | 140   |
+| Name       | name           | Name        | string  | 180   |
+| Supplier   | supplier_code  | Supplier    | string  | 120   |
+| Adapter    | adapter_code   | Adapter     | string  | 120   |
+| Environment| environment    | Environment | string  | 110   |
+| Enabled    | enabled        | Enabled     | boolean | 70    |
+| Version    | version        | Version     | int     | 70    |
+| ModifiedBy | modified_by    | Modified By | string  | 120   |
+
+* Physical space
+
+The session is configured from the Connectivity screen, not from the shell. The
+shell menu would also be named =sessions=, which the IAM login sessions already
+own, so this entity contributes no shell unit.
+
+| Address                | Enabled |
+|------------------------+---------|
+| ores.cpp.shell-command | false   |
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] -- the words: adapter, supplier, session, feed.

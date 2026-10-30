@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "codec_cron_expression_tests.cpp"
     "domain_cron_expression_tests.cpp"
     "main.cpp"
 )

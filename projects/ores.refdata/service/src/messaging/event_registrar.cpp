@@ -212,6 +212,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(
         register_counterparty_business_centre_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_trading_account_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_legal_entity_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_asset_class_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_asset_measure_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_benchmark_rate_event_mapping(event_source, event_bus, nats));

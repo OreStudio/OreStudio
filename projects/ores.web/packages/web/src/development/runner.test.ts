@@ -24,6 +24,7 @@ import type { Scenario, StepStatus } from '@ores/contracts';
 import {
     isDirty,
     markedCount,
+    movesOn,
     openRunner,
     outcomeOf,
     percentMarked,
@@ -323,5 +324,22 @@ describe('what has not been saved', () => {
 
     it('is something when the scenario has a different number of steps', () => {
         expect(isDirty(openRunner(saved), scenario(['PASS', 'PENDING']))).toBe(true);
+    });
+});
+
+describe('what saves a run as it goes', () => {
+    it('saves when a mark moves the tester on', () => {
+        expect(movesOn({ type: 'mark', mark: 'PASS' })).toBe(true);
+        expect(movesOn({ type: 'mark', mark: 'FAIL' })).toBe(true);
+    });
+
+    it('saves when the tester skips a step', () => {
+        expect(movesOn({ type: 'next' })).toBe(true);
+    });
+
+    it('leaves the save to the button for a note, an image or going back', () => {
+        expect(movesOn({ type: 'note', notes: 'The list is empty.' })).toBe(false);
+        expect(movesOn({ type: 'attach', index: 0, name: 'shot.png' })).toBe(false);
+        expect(movesOn({ type: 'previous' })).toBe(false);
     });
 });

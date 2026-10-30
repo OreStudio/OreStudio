@@ -55,7 +55,14 @@ adapter_registry::announce(const messaging::adapter_announce_request& request,
         return response;
     }
 
-    if (!check.provider_known(request.provider_code)) {
+    fresh.status.adapter_code = request.adapter_code;
+    fresh.status.module_version = request.module_version;
+
+    if (request.adapter_code.empty() || !check.adapter_known(request.adapter_code)) {
+        fresh.state = adapter_state::rejected;
+        response.message =
+            "The adapter module " + request.adapter_code + " is not in the catalogue.";
+    } else if (!check.provider_known(request.provider_code)) {
         fresh.state = adapter_state::rejected;
         response.message = "The provider " + request.provider_code + " is not in the catalogue.";
     } else {

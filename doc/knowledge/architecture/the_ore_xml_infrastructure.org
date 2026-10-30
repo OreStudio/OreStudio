@@ -22,7 +22,10 @@ follows the dependencies between the answers rather than the file layout.
 
 * The order, and why it is the order
 
-** 1. The document's shape has one owner
+The sections are in dependency order, not reading order. Each one says what it
+makes possible for the page after it.
+
+** The document's shape has one owner
 
 [[id:9697F09E-441A-4B51-869E-FC59433EEA1E][One component reads every ORE document, and none of them stores XML]]
 
@@ -31,51 +34,54 @@ other component parses ORE XML. A store receives typed rows. Read this first
 because every rule in this cluster acts on rows: a reader who does not know where
 the XML stops cannot tell which page owns a change.
 
-** 2. A value changes form exactly once
+** A value changes form exactly once
 
 [[id:948DAC44-404D-4B70-A8FC-3E9D4C05F72D][A stored value is converted at the entity mapper, never in the codec]]
 
 The conversion from an ORE rendering to the stored form is the only
-transformation in the path, and it sits in the entity mapper. It follows from
-page 1: the codec may not know the store, so the conversion cannot be there.
-Read it second because it settles what "the value" means in pages 4 and 5.
+transformation in the path, and it sits in the entity mapper. It follows from the
+boundary above: the codec may not know the store, so the conversion cannot be
+there. It comes next because it settles what the value means for everything
+below it.
 
-** 3. The way out is not the way in
+** The way out is not the way in
 
 [[id:FB734007-5AB3-41D0-8F94-4A37584FE049][The export writes the stored form, so a round trip is not byte-identical]]
 
-The export builds the documents from rows by reversing each projection. Given
-page 2, the rendering the imported file used does not survive, and this page says
-why that is correct and what the two round-trip tests assert instead.
+The export builds the documents from rows by reversing each projection. Because
+of the conversion, the rendering the imported file used does not survive the
+store, and this page says why that is correct and what the two round-trip tests
+assert instead.
 
-** 4. Which element a row is
+** Which element a row is
 
 [[id:8E71C928-6618-455F-AECA-102AACB07883][Three tables answer which ORE element a row is]]
 
-Identity, once the value is settled: eight tables touch the document, three of
-them state the same leaf fact, and one of those three is read by nothing. That is
-the defect the normalisation story removes first, so it is worth knowing before
-trusting any of them.
+Identity, now that the value is settled: eight tables touch the document, three
+of them state the same leaf fact, and one of those three is read by nothing. That
+is the defect the normalisation story removes first, so it is worth knowing
+before trusting any of them.
 
-** 5. What makes the value legal
+** What makes the value legal
 
 [[id:D5FFD498-A6E9-45AA-B80D-E16E3A432BD0][A value set is the only place an ORE parameter's rule is written]]
 
 A parameter or a leaf element resolves to one value set, and the set states the
 kind, the bounds, the pattern, the catalogue and the values. Nothing else in the
-tree repeats it. Page 4 is the lookup; this page is what the lookup lands on.
+tree repeats it. The identity page is the lookup; this page is what the lookup
+lands on.
 
-** 6. Who refuses an illegal value
+** Who refuses an illegal value
 
 [[id:E693B10B-7C28-4F21-95EC-ED9579E23D1A][The database refuses a value that no value set states]]
 
 Enforcement comes last because it depends on the set being reachable from every
-writer. Four trigger functions and one verdict function refuse the value, and
-why the verdict runs as a definer is page 6's subject.
+writer. Four trigger functions and one verdict function refuse the value, and why
+the verdict runs as a definer belongs to this page.
 
-Pages 4 and 5 can be swapped by a reader who wants only the data model. Pages 1
-and 2 cannot: page 2 is a consequence of page 1.
-
+The identity page and the value set page can be swapped by a reader who wants
+only the data model. The first two cannot be: the conversion is a consequence of
+the boundary above it.
 * What this cluster does not cover
 
 The screens are a neighbouring cluster, not this one. How a value is drawn, the
@@ -106,9 +112,9 @@ Three more neighbours, and why each boundary falls where it does:
   is filed under, in the Architecture table.
 - [[id:852207A6-6785-43E6-A5D6-2D5C2C374101][ORE element and leaf screen
   standard]] — the improbable neighbour: a UI page that constrains this data
-  model. *Answers* the question a reader of page 5 asks, which is why the set
-  must be complete rather than merely used: a screen may not carry a rule of its
-  own.
+  model. *Answers* the question a reader of the value set page asks, which is why
+  the set must be complete rather than merely used: a screen may not carry a rule
+  of its own.
 - [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL Architecture]] — the
   row-level security and bitemporal conventions the value set tables and the
   guards are built on. *Exemplifies* the platform rules the cluster relies on.

@@ -13,6 +13,10 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
+Still open, and now the only writer left. #4135 stopped the drift check writing
+into the tree; the suite itself still renders in place, so a run of =compass
+check= can leave generated files changed that the branch never touched.
+
 Make the codegen suite render into a temporary directory, or restore what it
 touches, so that running a check never leaves the working tree different from
 how it was found.

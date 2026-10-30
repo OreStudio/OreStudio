@@ -13,6 +13,13 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
+*Addressed by #4135.* The check renders into a temporary root unless =--write=
+is passed, and =--write= refuses a working tree that holds changes, so it can no
+longer write old code over new in a branch whose templates predate main. The
+registry no longer decides whether a component is gated.
+
+Original proposal:
+
 Make the codegen drift check refuse to overwrite a working tree it cannot
 prove is current. The check regenerates a component in place, so on a branch
 whose templates predate main it writes old code over new. Restrict it to the

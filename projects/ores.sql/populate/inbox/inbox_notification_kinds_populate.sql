@@ -30,6 +30,14 @@
  * the member had been told something would be telling them something untrue.
  * A component that raises its own kinds seeds them in its own populate script.
  * This script is idempotent.
+ *
+ * The one exception is the scenario notice. It lives here and not in a
+ * component's script because no component raises it: an operator or an agent
+ * raises it through the shell and through compass when a test scenario is
+ * written, which is agile and development tooling rather than a running
+ * service. It tells a person that a scenario waits for them, so it names the
+ * scenario and nothing else: the link it carries is where the steps and their
+ * readiness are read.
  */
 
 \echo '--- Notification Kinds ---'
@@ -54,7 +62,12 @@ insert into ores_inbox_notification_kinds_tbl (
     (ores_utility_system_tenant_id_fn(), 'inbox.approval_expiring', 0,
      'Request about to expire', 'A request waiting in the queue is close to its deadline',
      'notification.inbox.approval_expiring', true, 40,
-     current_user, current_user, 'system.initial_load', 'Initial population of notification kinds')
+     current_user, current_user, 'system.initial_load', 'Initial population of notification kinds'),
+    (ores_utility_system_tenant_id_fn(), 'scenario.to_run', 0,
+     'Scenario to run', 'A test scenario is written and waits for the person who runs it',
+     'notification.scenario.to_run', true, 60,
+     current_user, current_user, 'system.initial_load',
+     'Initial population of the scenario notification kind')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;

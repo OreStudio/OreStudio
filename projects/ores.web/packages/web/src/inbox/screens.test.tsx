@@ -463,6 +463,50 @@ describe('the notification bell', () => {
         expect(notificationRoute(notification())).toBe(`/requests/${REQUEST}`);
         expect(notificationRoute(notification({ linkId: '' }))).toBe('/requests');
     });
+
+    /*
+     * A scenario notice names the scenario and where it is run. It is the one
+     * kind whose link is a screen as a whole, so it carries an empty id: the
+     * bell uses the route as it stands and does not add one.
+     */
+    const scenarioNotification = notification({
+        kindCode: 'scenario.to_run',
+        messageKey: 'notification.scenario.to_run',
+        raisedBy: 'tenant_admin',
+        linkRoute: '/development/tests/BE0384AF-AFAA-49B9-B313-19EE86C02733',
+        linkId: '',
+        arguments: [
+            { name: 'raiser', value: 'tenant_admin' },
+            { name: 'scenario', value: 'verify the route from a feed to a published curve' },
+            { name: 'reason', value: 'A feed publishes and its ticks store.' },
+        ],
+    });
+
+    it('renders a scenario notice in words, not as its message key', () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(['unread-notifications'], 1);
+                client.setQueryData(['notifications'], {
+                    items: [scenarioNotification],
+                    total: 1,
+                });
+            },
+            <NotificationBell />,
+            '/',
+        );
+
+        expect(html).toContain(
+            'tenant_admin asks you to run the scenario &quot;verify the route from a feed to a ' +
+                'published curve&quot;. Reason given: A feed publishes and its ticks store.',
+        );
+        expect(html).not.toContain('notification.scenario.to_run');
+    });
+
+    it('points a scenario notice at the page that runs it', () => {
+        expect(notificationRoute(scenarioNotification)).toBe(
+            '/development/tests/BE0384AF-AFAA-49B9-B313-19EE86C02733',
+        );
+    });
 });
 
 /*

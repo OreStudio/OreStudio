@@ -499,6 +499,9 @@ const pt: SourceCatalogue = {
     'notification.marketdata.curve_withdrawn':
         'A curva {curve} de {party} foi retirada em {withdrawn_at} por {withdrawn_by}: {reason}. O seu ultimo conjunto publicado tinha a data de {as_of}.',
 
+    'notification.scenario.to_run':
+        '{raiser} pede-lhe para executar o cenário « {scenario} ». Motivo indicado: {reason}',
+
     signIns: {
         title: 'Inícios de sessão',
         kind: 'Tipo',

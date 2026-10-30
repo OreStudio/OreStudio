@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 72D683FE-02D5-47A9-8323-3F5D6F7AA617
+:END:
+#+title: The digest tests run from a target the build no longer has
+#+description: ores.trading.core.digest.tests is not in any CMakeLists: 41346d023c dropped add_subdirectory(digest_tests), so the sources are tracked but never built. CTest still runs the binary left in the build tree, from object files dated 2026-10-16, and it segfaults in tenant_aware_pool, a type that no longer exists.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Either wire =digest_tests= back into the trading core component, through a model
+the generator renders, or delete the directory. Today it is neither: the sources
+are tracked and the build never sees them, while CTest keeps running the binary
+an older build left behind.
+
+The stale binary segfaults inside =tenant_aware_pool<sqlgen::postgres::Connection>=,
+a type no source defines since sqlgen was removed, so the four "failures" a full
+=compass test run= reports are an artefact of a build tree older than the removal.
+A clean build tree would not run the suite at all.
+
+* Why
+
+=41346d023c= regenerated the component root CMakeLists from
+=cmake_component_root.mustache=, and the template emits only =src=, =tests= and
+=modeling=. The hand-written =add_subdirectory(digest_tests)= was not in the
+model, so it went, on 2026-10-16, with the commit that says "not build-verified".
+
+Nobody noticed for two weeks because the failure does not look like a missing
+target: ctest reads the orphaned =CTestTestfile.cmake= in the build tree and runs
+the binary, which crashes far below the test in a type that no longer exists.
+=compass test results= then reports four failures that no source can reproduce.
+
+The same shape as the batch members and the mapper conversions: a generated file
+loses a hand edit and nothing compares the estate against what the build needs.
+
+* References
+
+-
+
+* See also
+
+-

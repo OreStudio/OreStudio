@@ -230,6 +230,17 @@ are one value written twice and both move together.
  */
 #+end_src
 
+** publish_legal_entities_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_legal_entities_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Publishes the legal entities a tenant may reference.
+ */
+#+end_src
+
 ** publish_equity_underlyings_from_dq_request
 :PROPERTIES:
 :subject: refdata.v1.ops.publish_equity_underlyings_from_dq

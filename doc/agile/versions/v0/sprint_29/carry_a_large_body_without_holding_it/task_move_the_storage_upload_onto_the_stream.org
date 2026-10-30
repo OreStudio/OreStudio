@@ -8,8 +8,9 @@
 #+filetags: :carry_a_large_body_without_holding_it:sprint_29:v0:
 #+owner: marco
 #+branch: feature/move-the-storage-upload-onto-the-stream
-#+pr:
-#+blocked_on:
+#+pr: 4157
+#+blocked_on: review
+#+blocked_since: 2026-10-30 23:40
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
@@ -67,8 +68,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Upload sink cases | 4 cases, 21 assertions, all passing | =./ores.http.core.tests "[storage_upload_sink]"= | =#4138= |
-| =ores.http.api= test cases | 96 cases, 292 assertions, all passing | =./ores.http.api.tests= | =#4138= |
+| Upload sink cases | 4 cases, 21 assertions, all passing | =./ores.http.core.tests "[storage_upload_sink]"= | =#4157= |
+| =ores.http.api= test cases | 96 cases, 292 assertions, all passing | =./ores.http.api.tests= | =#4157= |
 
 * Notes
 
@@ -97,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#4157](https://github.com/OreStudio/OreStudio/pull/4157) | [storage] Write the upload to a part file and rename it |
 
 * Review
 

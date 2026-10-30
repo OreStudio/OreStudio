@@ -3298,16 +3298,20 @@ package "refdata" #FFF3E0 {
     Curve Volatility Kind Table
     An ORE volatility entry writes either one bare kind element, or a
     VolatilityConfig element holding up to one of each of seven kinds in an
-    xs:all. Each kind is its own complex type, and every one of the seven repeats
-    the same four terms: QuoteType, VolatilityType, ExerciseType and
-    Calendar. Each also carries a priority attribute, because an entry may hold
-    several alternatives and ORE builds the first that succeeds.
-    This row is that kind: which kind it is, where it sits in the order, and the four
-    terms. They are columns of this row rather than of each kind's part, because the
-    row is what makes them appear once: seven kinds sharing four columns is a group,
-    seven kinds each having their own four is a union. The kind's own fields live in
-    the kind's part, one table each, as curve_volatility_strike_surface does for
-    StrikeSurface.
+    xs:all. Each kind is its own complex type, and each carries a priority
+    attribute, because an entry may hold several alternatives and ORE builds the
+    first that succeeds.
+    Five of the seven kinds repeat the same four terms: QuoteType,
+    VolatilityType, ExerciseType and Calendar. ApoFutureSurface states the
+    first two and no calendar, and ProxySurface states none of the four. The four
+    are columns of this row rather than of each kind's part, because the row is what
+    makes them appear once: seven kinds sharing four columns is a group, seven kinds
+    each having their own four is a union again. A kind that states none of them
+    leaves them null, and the mapper reads them only where the holder's type
+    declares them.
+    This row is that kind: which kind it is, where ORE's priority puts it, and
+    the terms it states. The kind's own fields live in the kind's part, one table
+    each, as curve_volatility_strike_surface does for StrikeSurface.
     The kind is the discriminator, and it is a row rather than a column because an
     entry holds several of them.
     end note

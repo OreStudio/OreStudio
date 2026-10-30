@@ -25,8 +25,6 @@
 #include "ores.dq.api/domain/coding_scheme_authority_type_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::dq::domain {}
-
 namespace ores::utility::codec {
 
 std::string wire_traits<ores::dq::domain::coding_scheme_authority_type>::write_json(

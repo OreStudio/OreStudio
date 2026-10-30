@@ -111,6 +111,24 @@ recursing into those groups is what the field-group work above just made
 possible. The 158 opt-ins are reverted until then; =currency= stays, because its
 row is flat.
 
+A second sweep followed the grouped shape, and it stops on two more boundaries,
+both worth stating because they are not about carriers:
+
+- **A generated codec unit does not include the codec headers of the types its
+  members hold.** A junction holding a =csa= recurses into =wire_fields(csa)=,
+  which is declared in another header the unit never includes, so the compile
+  fails as though the type had no shape. The include has to be derived from the
+  member types, which is a template change and not an opt-in.
+- **Seven of the component's domain headers are hand-written** --
+  =tenor_resolution=, =tenor_basis_swap_long_short_legs=,
+  =tenor_basis_swap_pay_receive_legs= and four smaller ones -- so nothing
+  generates their shapes; each needs the hand-written treatment
+  =dataset_dependency= got in dq.
+
+The grouped shape itself is in the template and unexercised until the sweep can
+run: a grouped entity states one field per group member, which is what the
+reflector writes for them.
+
 The field groups followed. =cpp_field_group.hpp.mustache= states each group's
 shape beside the struct now, from the same iteration that writes its members, and
 the group models of both components opt in. Two things about that are worth

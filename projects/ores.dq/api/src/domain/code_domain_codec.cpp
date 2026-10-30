@@ -25,8 +25,6 @@
 #include "ores.dq.api/domain/code_domain_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::dq::domain {}
-
 namespace ores::utility::codec {
 
 std::string

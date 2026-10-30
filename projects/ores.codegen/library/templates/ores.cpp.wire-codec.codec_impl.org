@@ -37,39 +37,6 @@ The full template source. Edit here and re-tangle with
 
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::{{component}}::domain {
-
-{{#has_domain_groups}}
-static_assert(sizeof({{entity_singular}}) == 0,
-    "The wire codec states a flat member list, and this entity's members are "
-    "grouped: its codec has to encode the groups, and no template in this "
-    "facet does that yet.");
-{{/has_domain_groups}}
-}
-{{^has_domain_groups}}
-{{#has_identity_group}}
-static_assert(sizeof({{entity_singular}}) == 0,
-    "The wire codec states a flat member list, and this entity's members sit "
-    "in an identity group: its codec has to encode the group, and no template "
-    "in this facet does that yet.");
-{{/has_identity_group}}
-{{#has_audit_group}}
-static_assert(sizeof({{entity_singular}}) == 0,
-    "The wire codec states a flat member list, and this entity's members sit "
-    "in an audit group: its codec has to encode the group, and no template in "
-    "this facet does that yet.");
-{{/has_audit_group}}
-{{/has_domain_groups}}
-{{^has_domain_groups}}
-{{^has_identity_group}}
-{{^has_audit_group}}
-{{/has_audit_group}}
-{{/has_identity_group}}
-{{/has_domain_groups}}
-
-{{^has_domain_groups}}
-{{^has_identity_group}}
-{{^has_audit_group}}
 namespace ores::utility::codec {
 
 std::string wire_traits<ores::{{component}}::domain::{{entity_singular}}>::write_json(const ores::{{component}}::domain::{{entity_singular}}& v) {
@@ -89,10 +56,6 @@ ores::{{component}}::domain::{{entity_singular}} wire_traits<ores::{{component}}
 }
 
 }
-
-{{/has_audit_group}}
-{{/has_identity_group}}
-{{/has_domain_groups}}
 
 {{/domain_entity}}
 {{#junction}}

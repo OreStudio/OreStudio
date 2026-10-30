@@ -16,9 +16,7 @@
 
 namespace ores::{{component}}::domain {
 
-{{^has_domain_groups}}
-{{^has_identity_group}}
-{{^has_audit_group}}
+{{#has_domain_groups}}
 /**
  * @brief The members of {{entity_singular}}, named as the wire names them and
  * in the order the type declares them.
@@ -29,32 +27,53 @@ namespace ores::{{component}}::domain {
  */
 [[nodiscard]] constexpr auto wire_fields(const {{entity_singular}}&) {
     return std::tuple{
-{{#has_audit_columns}}    utility::codec::field{"version", &{{entity_singular}}::version},
+{{#domain_groups}}        utility::codec::field{"{{member}}", &{{entity_singular}}::{{member}}},
+{{/domain_groups}}    };
+}
+{{/has_domain_groups}}
+{{^has_domain_groups}}
+/**
+ * @brief The members of {{entity_singular}}, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
+ */
+[[nodiscard]] constexpr auto wire_fields(const {{entity_singular}}&) {
+    return std::tuple{
+{{#has_identity_group}}        utility::codec::field{"identity", &{{entity_singular}}::identity},
+{{/has_identity_group}}
+{{^has_identity_group}}
+{{#has_audit_columns}}        utility::codec::field{"version", &{{entity_singular}}::version},
 {{/has_audit_columns}}
-{{#has_tenant_id}}    utility::codec::field{"tenant_id", &{{entity_singular}}::tenant_id},
+{{#has_tenant_id}}        utility::codec::field{"tenant_id", &{{entity_singular}}::tenant_id},
 {{/has_tenant_id}}
-{{#primary_key.columns}}    utility::codec::field{"{{column}}", &{{entity_singular}}::{{column}}},
+{{#primary_key.columns}}        utility::codec::field{"{{column}}", &{{entity_singular}}::{{column}}},
 {{/primary_key.columns}}
-{{#natural_keys}}    utility::codec::field{"{{column}}", &{{entity_singular}}::{{column}}},
+{{#natural_keys}}        utility::codec::field{"{{column}}", &{{entity_singular}}::{{column}}},
 {{/natural_keys}}
+{{/has_identity_group}}
 {{#columns}}
 {{^is_identity_group_column}}
 {{^sql_only}}
-{{^no_wire}}    utility::codec::field{"{{name}}", &{{entity_singular}}::{{name}}},
+{{^no_wire}}        utility::codec::field{"{{name}}", &{{entity_singular}}::{{name}}},
 {{/no_wire}}
 {{/sql_only}}
 {{/is_identity_group_column}}
 {{/columns}}
-{{#has_audit_columns}}    utility::codec::field{"modified_by", &{{entity_singular}}::modified_by},
-    utility::codec::field{"performed_by", &{{entity_singular}}::performed_by},
-    utility::codec::field{"change_reason_code", &{{entity_singular}}::change_reason_code},
-    utility::codec::field{"change_commentary", &{{entity_singular}}::change_commentary},
-    utility::codec::field{"recorded_at", &{{entity_singular}}::recorded_at},
+{{#has_audit_group}}        utility::codec::field{"audit", &{{entity_singular}}::audit},
+{{/has_audit_group}}
+{{^has_audit_group}}
+{{#has_audit_columns}}        utility::codec::field{"modified_by", &{{entity_singular}}::modified_by},
+        utility::codec::field{"performed_by", &{{entity_singular}}::performed_by},
+        utility::codec::field{"change_reason_code", &{{entity_singular}}::change_reason_code},
+        utility::codec::field{"change_commentary", &{{entity_singular}}::change_commentary},
+        utility::codec::field{"recorded_at", &{{entity_singular}}::recorded_at},
 {{/has_audit_columns}}
+{{/has_audit_group}}
     };
 }
-{{/has_audit_group}}
-{{/has_identity_group}}
 {{/has_domain_groups}}
 
 }

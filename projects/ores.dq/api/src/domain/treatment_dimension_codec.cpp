@@ -25,8 +25,6 @@
 #include "ores.dq.api/domain/treatment_dimension_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::dq::domain {}
-
 namespace ores::utility::codec {
 
 std::string wire_traits<ores::dq::domain::treatment_dimension>::write_json(

@@ -105,35 +105,7 @@ curve_volatility_config_to_domain(const messaging::curve_volatility_config_write
     domain::curve_volatility_config v;
     v.id = write.id;
     v.curve_definition_id = write.curve_definition_id;
-    v.kind = write.kind;
     v.is_wrapped = write.is_wrapped;
-    v.priority = write.priority;
-    v.quote_type = write.quote_type;
-    v.volatility_type = write.volatility_type;
-    v.exercise_type = write.exercise_type;
-    v.strikes = write.strikes;
-    v.expiries = write.expiries;
-    v.time_interpolation = write.time_interpolation;
-    v.strike_interpolation = write.strike_interpolation;
-    v.extrapolation = write.extrapolation;
-    v.time_extrapolation = write.time_extrapolation;
-    v.time_extrapolation_variance = write.time_extrapolation_variance;
-    v.strike_extrapolation = write.strike_extrapolation;
-    v.calendar = write.calendar;
-    v.quote = write.quote;
-    v.interpolation = write.interpolation;
-    v.enforce_monotone_variance = write.enforce_monotone_variance;
-    v.delta_type = write.delta_type;
-    v.atm_type = write.atm_type;
-    v.atm_delta_type = write.atm_delta_type;
-    v.put_deltas = write.put_deltas;
-    v.call_deltas = write.call_deltas;
-    v.future_price_correction = write.future_price_correction;
-    v.proxy_volatility_curve = write.proxy_volatility_curve;
-    v.fx_volatility_curve = write.fx_volatility_curve;
-    v.correlation_curve = write.correlation_curve;
-    v.cds_volatility_curve = write.cds_volatility_curve;
-    v.position = write.position;
     return v;
 }
 

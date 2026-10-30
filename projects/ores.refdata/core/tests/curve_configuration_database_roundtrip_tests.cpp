@@ -330,6 +330,12 @@ TEST_CASE("default, equity and inflation curves and securities round trip throug
     CHECK(back.equity_volatilities.size() == mapped.equity_volatilities.size());
     CHECK(back.commodity_volatilities.size() == mapped.commodity_volatilities.size());
     CHECK(back.volatility_configs.size() == mapped.volatility_configs.size());
+    CHECK(back.volatility_kinds.size() == mapped.volatility_kinds.size());
+    CHECK(back.volatility_constants.size() == mapped.volatility_constants.size());
+    CHECK(back.volatility_curves.size() == mapped.volatility_curves.size());
+    CHECK(back.volatility_strike_surfaces.size() == mapped.volatility_strike_surfaces.size());
+    CHECK(back.volatility_delta_surfaces.size() == mapped.volatility_delta_surfaces.size());
+    CHECK(back.volatility_proxy_surfaces.size() == mapped.volatility_proxy_surfaces.size());
     CHECK(back.quotes.size() == mapped.quotes.size());
 
     const auto exported = curve_configuration_projection::read(
@@ -376,6 +382,12 @@ TEST_CASE("equity and commodity volatility configurations and the report configu
     write(h.context(), mapped);
     const auto back = read_back(h.context(), mapped);
     CHECK(back.volatility_configs.size() == mapped.volatility_configs.size());
+    CHECK(back.volatility_kinds.size() == mapped.volatility_kinds.size());
+    CHECK(back.volatility_constants.size() == mapped.volatility_constants.size());
+    CHECK(back.volatility_curves.size() == mapped.volatility_curves.size());
+    CHECK(back.volatility_strike_surfaces.size() == mapped.volatility_strike_surfaces.size());
+    CHECK(back.volatility_delta_surfaces.size() == mapped.volatility_delta_surfaces.size());
+    CHECK(back.volatility_proxy_surfaces.size() == mapped.volatility_proxy_surfaces.size());
     CHECK(back.quotes.size() == mapped.quotes.size());
     CHECK(back.global_reports.size() == mapped.global_reports.size());
 
@@ -438,11 +450,69 @@ TEST_CASE("a CDS volatility's terms and strike surface round trip through the da
     const auto mapped = curve_configuration_projection::map(original);
     REQUIRE(!mapped.cds_volatility_terms.empty());
     REQUIRE(mapped.volatility_configs.size() == 1);
+    REQUIRE(mapped.volatility_kinds.size() == 1);
+    REQUIRE(mapped.volatility_kinds.front().kind_code == "StrikeSurface");
+    REQUIRE(mapped.volatility_strike_surfaces.size() == 1);
 
     write(h.context(), mapped);
     const auto back = read_back(h.context(), mapped);
     CHECK(back.cds_volatility_terms.size() == mapped.cds_volatility_terms.size());
     CHECK(back.volatility_configs.size() == 1);
+    CHECK(back.volatility_kinds.size() == 1);
+    CHECK(back.volatility_strike_surfaces.size() == 1);
+
+    const auto exported = curve_configuration_projection::read(
+        curve_configuration_projection::write(curve_configuration_projection::reverse(back)));
+    const auto difference = compare_documents(original, exported, products_example);
+    INFO(difference);
+    CHECK(difference.empty());
+}
+
+TEST_CASE("a holder writing two kinds keeps both and the order it wrote them in",
+          "[curveconfig][database][roundtrip]") {
+    auto lg(ores::logging::make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info)
+        << "a holder writing two kinds keeps both and the order it wrote them in";
+    ores::testing::scoped_database_helper h;
+
+    const auto full = load_document(products_example);
+    curve_document original;
+    original.equity_volatilities = full.equity_volatilities;
+    keep(original, "EquityVolatilities");
+    const auto mapped = curve_configuration_projection::map(original);
+
+    const std::string curve_id = "RIC:.NDX";
+    const auto definition = std::ranges::find_if(
+        mapped.definitions, [&](const auto& d) { return d.curve_id == curve_id; });
+    REQUIRE(definition != mapped.definitions.end());
+    const auto entry = std::ranges::find_if(mapped.volatility_configs, [&](const auto& e) {
+        return e.curve_definition_id == definition->id;
+    });
+    REQUIRE(entry != mapped.volatility_configs.end());
+    CHECK(entry->is_wrapped);
+
+    const auto kinds_of_entry = [&](const auto& kinds) {
+        std::map<std::string, std::optional<int>> out;
+        for (const auto& k : kinds)
+            if (k.curve_volatility_config_id == entry->id)
+                out.emplace(k.kind_code, k.priority);
+        return out;
+    };
+    const auto kinds = kinds_of_entry(mapped.volatility_kinds);
+    REQUIRE(kinds.size() == 2);
+    CHECK(kinds.contains("DeltaSurface"));
+    CHECK(kinds.contains("StrikeSurface"));
+    CHECK(kinds.at("DeltaSurface") == 0);
+    CHECK(kinds.at("StrikeSurface") == 1);
+
+    write(h.context(), mapped);
+    const auto back = read_back(h.context(), mapped);
+    CHECK(kinds_of_entry(back.volatility_kinds) == kinds);
+
+    const bool delta_kept = std::ranges::any_of(back.volatility_delta_surfaces, [&](const auto& s) {
+        return s.delta_type == "Spot" && s.atm_type == "AtmDeltaNeutral";
+    });
+    CHECK(delta_kept);
 
     const auto exported = curve_configuration_projection::read(
         curve_configuration_projection::write(curve_configuration_projection::reverse(back)));

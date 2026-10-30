@@ -24,18 +24,16 @@
  *
  * Curve Volatility Config Table
  *
- * One way a volatility entry's surface may be built. CDS, equity and commodity
- * volatilities each name one or more volatility configurations, each with an
- * optional priority; ORE builds the first that succeeds. kind names the
- * element the document wrote, and the columns that kind uses are set. An entry
- * writes a kind either directly or inside a VolatilityConfig element, which
- * holds at most one of each kind; is_wrapped says which.
+ * The volatility block of one ORE curve entry: the holder its kinds are listed in.
+ * ORE writes either one bare kind element on the entry, or a VolatilityConfig
+ * element holding up to one of each kind in an xs:all; is_wrapped says which
+ * form this block was written in. The kinds themselves are rows of
+ * curve_volatility_kind, and each kind's own fields are the row of that kind's
+ * part.
  *
- * The kinds the corpus writes are modelled: Constant, Curve, StrikeSurface,
- * DeltaSurface and ProxySurface. A Curve kind's quotes are rows of
- * curve_quote on the entry, in the list Curve or VolatilityConfig/Curve.
- * MoneynessSurface, ApoFutureSurface and a parametric smile inside a surface
- * appear in no corpus document, and the mapper refuses them.
+ * The row carries no kind and no field of any kind. Every one of those facts
+ * belongs to a kind or to a kind's part, and a row that carried them as well would
+ * state each one twice.
  */
 
 create table if not exists "ores_refdata_curve_volatility_configs_tbl" (
@@ -44,35 +42,7 @@ create table if not exists "ores_refdata_curve_volatility_configs_tbl" (
     "version" integer not null,
     "party_id" uuid not null,
     "curve_definition_id" uuid not null,
-    "kind" text not null,
     "is_wrapped" boolean not null,
-    "priority" integer null,
-    "quote_type" text null,
-    "volatility_type" text null,
-    "exercise_type" text null,
-    "strikes" text null,
-    "expiries" text null,
-    "time_interpolation" text null,
-    "strike_interpolation" text null,
-    "extrapolation" text null,
-    "time_extrapolation" text null,
-    "time_extrapolation_variance" text null,
-    "strike_extrapolation" text null,
-    "calendar" text null,
-    "quote" text null,
-    "interpolation" text null,
-    "enforce_monotone_variance" boolean null,
-    "delta_type" text null,
-    "atm_type" text null,
-    "atm_delta_type" text null,
-    "put_deltas" text null,
-    "call_deltas" text null,
-    "future_price_correction" text null,
-    "proxy_volatility_curve" text null,
-    "fx_volatility_curve" text null,
-    "correlation_curve" text null,
-    "cds_volatility_curve" text null,
-    "position" integer not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -86,9 +56,7 @@ create table if not exists "ores_refdata_curve_volatility_configs_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("kind" <> ''),
-    check ("position" >= 0)
+    check ("id" <> ores_utility_nil_uuid_fn())
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -121,11 +89,6 @@ begin
     ) then
         raise exception 'Invalid curve_definition_id: %. No active curve definition found with this id.', NEW.curve_definition_id
             using errcode = '23503';
-    end if;
-
-    -- Validate calendar (optional field -- skip validation when null)
-    if NEW.calendar is not null then
-        NEW.calendar := ores_refdata_validate_calendar_fn(NEW.tenant_id, NEW.calendar);
     end if;
 
     -- Validate change_reason_code

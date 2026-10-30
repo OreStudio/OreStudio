@@ -4,29 +4,27 @@
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.curve_volatility_config
-#+description: Codegen entity model for the refdata =curve_volatility_config= table. One volatility configuration of an ORE volatility entry.
+#+description: Codegen entity model for the refdata =curve_volatility_config= table. The volatility block of one ORE curve entry.
 #+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:
-#+brief: One surface a volatility entry may be built as, with its priority.
+#+brief: The holder of a volatility entry's kinds, and whether they sit in a VolatilityConfig element.
 #+entity_singular: curve_volatility_config
 #+entity_plural: curve_volatility_configs
 #+entity_title: Curve Volatility Config
 #+created: 2026-10-03
-#+updated: 2026-10-03
+#+updated: 2026-10-30
 
-One way a volatility entry's surface may be built. CDS, equity and commodity
-volatilities each name one or more volatility configurations, each with an
-optional =priority=; ORE builds the first that succeeds. =kind= names the
-element the document wrote, and the columns that kind uses are set. An entry
-writes a kind either directly or inside a =VolatilityConfig= element, which
-holds at most one of each kind; =is_wrapped= says which.
+The volatility block of one ORE curve entry: the holder its kinds are listed in.
+ORE writes either one bare kind element on the entry, or a =VolatilityConfig=
+element holding up to one of each kind in an =xs:all=; =is_wrapped= says which
+form this block was written in. The kinds themselves are rows of
+=curve_volatility_kind=, and each kind's own fields are the row of that kind's
+part.
 
-The kinds the corpus writes are modelled: =Constant=, =Curve=, =StrikeSurface=,
-=DeltaSurface= and =ProxySurface=. A =Curve= kind's quotes are rows of
-=curve_quote= on the entry, in the list =Curve= or =VolatilityConfig/Curve=.
-=MoneynessSurface=, =ApoFutureSurface= and a parametric smile inside a surface
-appear in no corpus document, and the mapper refuses them.
+The row carries no kind and no field of any kind. Every one of those facts
+belongs to a kind or to a kind's part, and a row that carried them as well would
+state each one twice.
 
 * Flags
 :PROPERTIES:
@@ -80,19 +78,6 @@ The curve entry this row belongs to.
 ctx.generate_uuid()
 #+end_src
 
-** kind
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:END:
-
-The element the document wrote, such as =StrikeSurface=.
-
-#+begin_src cpp :name generator
-std::string("StrikeSurface")
-#+end_src
-
 ** is_wrapped
 :PROPERTIES:
 :type:     boolean
@@ -100,363 +85,12 @@ std::string("StrikeSurface")
 :nullable: false
 :END:
 
-Whether the configuration is written inside a =VolatilityConfig= element.
+Whether the entry writes its kinds inside a =VolatilityConfig= element. The
+entry states this once, for all the kinds it holds, because ORE's =xs:choice=
+lets a holder write either that element or bare kinds, never both.
 
 #+begin_src cpp :name generator
 false
-#+end_src
-
-** priority
-:PROPERTIES:
-:type:     integer
-:cpp_type: std::optional<int>
-:nullable: true
-:END:
-
-The configuration's =priority= attribute, when it has one.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** quote_type
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-What the quotes are, such as =ImpliedVolatility= or =Premium=.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** volatility_type
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Whether the volatility is normal, lognormal or shifted lognormal.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** exercise_type
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The exercise type of quoted premiums.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** strikes
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The strikes of a strike surface, as ORE's comma separated text or =*=.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** expiries
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The expiries of a surface, as ORE's comma separated text or =*=.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** time_interpolation
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-How the surface interpolates in time.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** strike_interpolation
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-How the surface interpolates in strike.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** extrapolation
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-How the configuration extrapolates: for a surface, whether it extrapolates as
-the ORE boolean the document wrote; for a curve, the extrapolation type.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** time_extrapolation
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-How the surface extrapolates in time.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** time_extrapolation_variance
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Whether time extrapolation is in variance, as the ORE boolean the document wrote.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** strike_extrapolation
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-How the surface extrapolates in strike.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** calendar
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The configuration's calendar, as the document spells it.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** quote
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The quote of a constant volatility.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** interpolation
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-How a volatility curve interpolates.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** enforce_monotone_variance
-:PROPERTIES:
-:type:     boolean
-:cpp_type: std::optional<bool>
-:nullable: true
-:END:
-
-Whether a volatility curve enforces monotone variance.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** delta_type
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The delta type of a delta surface.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** atm_type
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The ATM type of a delta surface.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** atm_delta_type
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The delta type of a delta surface's ATM strike.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** put_deltas
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The put deltas of a delta surface, as ORE's comma separated text.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** call_deltas
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The call deltas of a delta surface, as ORE's comma separated text.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** future_price_correction
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-Whether a delta surface corrects for the future price, as the ORE boolean the document wrote.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** proxy_volatility_curve
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The volatility a proxy surface is built from.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** fx_volatility_curve
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The FX volatility a proxy surface converts with.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** correlation_curve
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The correlation a proxy surface converts with.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** cds_volatility_curve
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The CDS volatility a proxy surface is built from.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** position
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:END:
-
-The configuration's place among the entry's configurations, which the export
-restores.
-
-#+begin_src cpp :name generator
-1
 #+end_src
 
 * Foreign keys
@@ -470,13 +104,6 @@ restores.
 :error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
 :END:
 
-* Insert trigger
-** Validations
-
-| column               | validation_function                           |
-|----------------------+-----------------------------------------------|
-| calendar             | ores_refdata_validate_calendar_fn             |
-
 * SQL
 
 ** Flags
@@ -485,13 +112,6 @@ restores.
 :rls_tenant_isolation: true
 :rls_party_isolation: true
 :END:
-
-** Checks
-
-| expression      |
-|-----------------|
-| "kind" <> ''    |
-| "position" >= 0 |
 
 * C++
 
@@ -511,8 +131,6 @@ restores.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <optional>
-#include <string>
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #+end_src
@@ -527,4 +145,5 @@ restores.
 * See also
 
 - [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
+- [[id:2D6A4F18-7C3E-4B95-9A21-5E8D3C07B4F6][ores.refdata.curve_volatility_kind]] — the kinds this row holds.
 - [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

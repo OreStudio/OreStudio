@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: 3F2552AA-9B6A-4231-836F-F0FFE8E2BCC1
+:END:
+#+title: ores.refdata.curve_volatility_curve
+#+description: Codegen entity model for the refdata =curve_volatility_curve= part: the fields ORE's Curve states.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: curve_volatility_curve
+#+entity_plural: curve_volatility_curves
+#+entity_title: Curve Volatility Curve
+#+brief: How a Curve volatility kind interpolates and extrapolates its quotes.
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+ORE's =volatilityCurveConfig= states its quotes in a =Quotes= list, and states how
+those quotes are interpolated and extrapolated. The quotes are rows of
+=curve_quote= on the entry, because a quote is a market data row and not a
+property of the kind. What is the kind's own is the shape it reads them in:
+those three columns are this part, and a row of it exists only when the entry
+holds a kind of this type.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this part row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_volatility_kind_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:unique:      true
+:END:
+
+The kind this curve belongs to. One curve per kind, so the generated table adds
+the unique index on the live rows of =(tenant_id, curve_volatility_kind_id)=.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the entry this kind belongs to. Carried so row level security
+can isolate the part without a join.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** interpolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How the curve interpolates between its quotes.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** extrapolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How the curve extrapolates past its last quote.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** enforce_monotone_variance
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether the curve forces the variance between its quotes to stay monotone.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_curve_volatility_curves_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: curve_volatility_curve
+:entity_plural_short:   curve_volatility_curves
+:entity_singular_words: curve volatility curve
+:entity_plural_words:   curve volatility curves
+:END:
+
+* Foreign keys
+
+** curve_volatility_kind_id
+:PROPERTIES:
+:table:         ores_refdata_curve_volatility_kinds_tbl
+:target_column: id
+:parent_entity: curve_volatility_kind
+:nullable:      false
+:error_message: Invalid curve_volatility_kind_id: %. No active volatility kind found with this id.
+:END:
+
+* See also
+
+- [[id:2D6A4F18-7C3E-4B95-9A21-5E8D3C07B4F6][ores.refdata.curve_volatility_kind]] — the kind this row gives its fields to.
+- [[id:8C947D0F-E4AB-41C0-BA1A-C5AFE23A48E9][Split the ORE volatility entries by kind]] — the task that introduced it.

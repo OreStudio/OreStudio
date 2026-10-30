@@ -166,6 +166,13 @@ The calendar the kind's observations are read on.
 std::nullopt
 #+end_src
 
+* Insert trigger
+** Validations
+
+| column   | validation_function               |
+|----------+-----------------------------------|
+| calendar | ores_refdata_validate_calendar_fn |
+
 * SQL
 
 ** Flags
@@ -174,6 +181,12 @@ std::nullopt
 :rls_tenant_isolation: true
 :rls_party_isolation: true
 :END:
+
+** Checks
+
+| expression        |
+|-------------------|
+| "kind_code" <> '' |
 
 * C++
 

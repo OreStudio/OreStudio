@@ -68,7 +68,8 @@ create table if not exists "ores_refdata_curve_volatility_kinds_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn())
+    check ("id" <> ores_utility_nil_uuid_fn()),
+    check ("kind_code" <> '')
 );
 
 -- Composite natural key: unique combination for active records
@@ -106,6 +107,11 @@ begin
     ) then
         raise exception 'Invalid curve_volatility_config_id: %. No active volatility entry found with this id.', NEW.curve_volatility_config_id
             using errcode = '23503';
+    end if;
+
+    -- Validate calendar (optional field -- skip validation when null)
+    if NEW.calendar is not null then
+        NEW.calendar := ores_refdata_validate_calendar_fn(NEW.tenant_id, NEW.calendar);
     end if;
 
     -- Validate change_reason_code

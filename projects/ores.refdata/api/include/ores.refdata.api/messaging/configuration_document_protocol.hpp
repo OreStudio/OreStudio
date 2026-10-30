@@ -50,6 +50,12 @@
 #include "ores.refdata.api/domain/curve_segment.hpp"
 #include "ores.refdata.api/domain/curve_segment_curve.hpp"
 #include "ores.refdata.api/domain/curve_volatility_config.hpp"
+#include "ores.refdata.api/domain/curve_volatility_constant.hpp"
+#include "ores.refdata.api/domain/curve_volatility_curve.hpp"
+#include "ores.refdata.api/domain/curve_volatility_delta_surface.hpp"
+#include "ores.refdata.api/domain/curve_volatility_kind.hpp"
+#include "ores.refdata.api/domain/curve_volatility_proxy_surface.hpp"
+#include "ores.refdata.api/domain/curve_volatility_strike_surface.hpp"
 #include "ores.refdata.api/domain/default_curve_config.hpp"
 #include "ores.refdata.api/domain/default_curve_configuration.hpp"
 #include "ores.refdata.api/domain/equity_curve_config.hpp"
@@ -104,6 +110,12 @@ struct curve_configuration_document {
     std::vector<ores::refdata::domain::cds_volatility_config> cds_volatilities;
     std::vector<ores::refdata::domain::cds_volatility_term> cds_volatility_terms;
     std::vector<ores::refdata::domain::curve_volatility_config> volatility_configs;
+    std::vector<ores::refdata::domain::curve_volatility_kind> volatility_kinds;
+    std::vector<ores::refdata::domain::curve_volatility_constant> volatility_constants;
+    std::vector<ores::refdata::domain::curve_volatility_curve> volatility_curves;
+    std::vector<ores::refdata::domain::curve_volatility_strike_surface> volatility_strike_surfaces;
+    std::vector<ores::refdata::domain::curve_volatility_delta_surface> volatility_delta_surfaces;
+    std::vector<ores::refdata::domain::curve_volatility_proxy_surface> volatility_proxy_surfaces;
     std::vector<ores::refdata::domain::inflation_cap_floor_volatility_config>
         inflation_cap_floor_volatilities;
     std::vector<ores::refdata::domain::swaption_volatility_config> swaption_volatilities;

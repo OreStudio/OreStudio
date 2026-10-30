@@ -1392,39 +1392,11 @@ package "dq_staging" #F3E5F5 {
         * version : integer
         * party_id : uuid <<FK>>
         * curve_definition_id : uuid <<FK>>
-        * kind : text
         * is_wrapped : boolean
-          priority : integer
-          quote_type : text
-          volatility_type : text
-          exercise_type : text
-          strikes : text
-          expiries : text
-          time_interpolation : text
-          strike_interpolation : text
-          extrapolation : text
-          time_extrapolation : text
-          time_extrapolation_variance : text
-          strike_extrapolation : text
-          calendar : text
-          quote : text
-          interpolation : text
-          enforce_monotone_variance : boolean
-          delta_type : text
-          atm_type : text
-          atm_delta_type : text
-          put_deltas : text
-          call_deltas : text
-          future_price_correction : text
-          proxy_volatility_curve : text
-          fx_volatility_curve : text
-          correlation_curve : text
-          cds_volatility_curve : text
-        * position : integer
     }
 
     note right of ores_dq_curve_volatility_configs_artefact_tbl
-    One way a volatility entry's surface may be built. CDS, equity and commodity volatilities each name one or more volatility configurations, each with an optional priority; ORE builds the first that succeeds. kind names the element the document wrote, and the columns that kind uses are set. An entry writes a kind either directly or inside a VolatilityConfig element, which holds at most one of each kind; is_wrapped says which. The kinds the corpus writes are modelled: Constant, Curve, StrikeSurface, DeltaSurface and ProxySurface. A Curve kind's quotes are rows of curve_quote on the entry, in the list Curve or VolatilityConfig/Curve. MoneynessSurface, ApoFutureSurface and a parametric smile inside a surface appear in no corpus document, and the mapper refuses them. - Artefact Table
+    The volatility block of one ORE curve entry: the holder its kinds are listed in. ORE writes either one bare kind element on the entry, or a VolatilityConfig element holding up to one of each kind in an xs:all; is_wrapped says which form this block was written in. The kinds themselves are rows of curve_volatility_kind, and each kind's own fields are the row of that kind's part. The row carries no kind and no field of any kind. Every one of those facts belongs to a kind or to a kind's part, and a row that carried them as well would state each one twice. - Artefact Table
     end note
 
     entity ores_dq_default_curve_configs_artefact_tbl  #F7E5FF {

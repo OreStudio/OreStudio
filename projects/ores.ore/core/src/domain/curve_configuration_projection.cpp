@@ -58,6 +58,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <format>
+#include <limits>
 #include <map>
 #include <optional>
 #include <stdexcept>
@@ -201,6 +202,38 @@ void set_integer_text(record_writer w, std::string_view name, const std::optiona
 void set_boolean_text(record_writer w, std::string_view name, const std::optional<bool>& value) {
     if (value)
         w.set_text(name, *value ? "true" : "false");
+}
+
+// A boolean ORE states as an enumeration of true and false, rather than as text.
+bool boolean_spelling(const record_reader& v, std::string_view name) {
+    const auto value = required_spelling(v, name);
+    if (value == "true")
+        return true;
+    if (value == "false")
+        return false;
+    throw refusal("'" + value + "' is not a boolean for " + std::string(name));
+}
+
+std::optional<bool> optional_boolean_spelling(const record_reader& v, std::string_view name) {
+    const auto value = v.spelling(name);
+    if (!value)
+        return std::nullopt;
+    if (*value == "true")
+        return true;
+    if (*value == "false")
+        return false;
+    throw refusal("'" + *value + "' is not a boolean for " + std::string(name));
+}
+
+std::optional<std::string> spelling_of(const std::optional<bool>& value) {
+    if (!value)
+        return std::nullopt;
+    return *value ? std::string("true") : std::string("false");
+}
+
+// The text of an element only where the holder's type states that element.
+std::optional<std::string> declared_text(const record_reader& v, std::string_view name) {
+    return v.declares(name) ? v.text(name) : std::nullopt;
 }
 
 // The strike factor is a schema decimal and a column of the reference data
@@ -1123,109 +1156,102 @@ void import_base_correlation(ores::refdata::messaging::curve_configuration_docum
     out.base_correlations.push_back(std::move(r));
 }
 
-void import_strike_surface(ores::refdata::messaging::curve_configuration_document& out,
-                           const boost::uuids::uuid& definition_id,
-                           const record_reader& v,
-                           int position,
-                           bool wrapped = false) {
-    if (v.has("ParametricSmileConfiguration"))
-        throw refusal("a strike surface writes a ParametricSmileConfiguration, which is not "
-                      "modelled yet");
-    refdata::domain::curve_volatility_config c;
-    c.id = curve_configuration_projection_new_uuid();
-    c.curve_definition_id = definition_id;
-    c.kind = std::string(strike_surface_kind);
-    c.is_wrapped = wrapped;
-    c.priority = integer_text(v, "priority");
-    c.quote_type = v.text("QuoteType");
-    c.volatility_type = v.text("VolatilityType");
-    c.exercise_type = v.text("ExerciseType");
-    c.strikes = required_text(v, "Strikes");
-    c.expiries = required_text(v, "Expiries");
-    c.time_interpolation = required_text(v, "TimeInterpolation");
-    c.strike_interpolation = required_text(v, "StrikeInterpolation");
-    c.extrapolation = required_spelling(v, "Extrapolation");
-    c.time_extrapolation = required_spelling(v, "TimeExtrapolation");
-    c.time_extrapolation_variance = v.spelling("TimeExtrapolationVariance");
-    c.strike_extrapolation = required_spelling(v, "StrikeExtrapolation");
-    c.calendar = v.text("Calendar");
-    c.position = position;
-    curve_configuration_projection_set_audit(c);
-    out.volatility_configs.push_back(std::move(c));
+// A kind's structure and its own fields, paired with the kind row that holds the
+// terms every kind may state. A kind states exactly one part, chosen by its
+// kind_code.
+struct volatility_kind_export {
+    const refdata::domain::curve_volatility_kind* kind = nullptr;
+    const refdata::domain::curve_volatility_constant* constant = nullptr;
+    const refdata::domain::curve_volatility_curve* curve = nullptr;
+    const refdata::domain::curve_volatility_strike_surface* strike_surface = nullptr;
+    const refdata::domain::curve_volatility_delta_surface* delta_surface = nullptr;
+    const refdata::domain::curve_volatility_proxy_surface* proxy_surface = nullptr;
+};
+
+// The kinds one entry holds, in the order the document listed them, and whether
+// the entry wrote them inside a VolatilityConfig element.
+struct volatility_entry_export {
+    bool is_wrapped = false;
+    std::vector<volatility_kind_export> kinds;
+};
+
+// Adds the entry row a holder's kinds hang off, and returns its id.
+boost::uuids::uuid add_volatility_entry(
+    ores::refdata::messaging::curve_configuration_document& out,
+    const boost::uuids::uuid& definition_id,
+    bool wrapped) {
+    refdata::domain::curve_volatility_config entry;
+    entry.id = curve_configuration_projection_new_uuid();
+    entry.curve_definition_id = definition_id;
+    entry.is_wrapped = wrapped;
+    curve_configuration_projection_set_audit(entry);
+    out.volatility_configs.push_back(std::move(entry));
+    return out.volatility_configs.back().id;
 }
 
-void export_strike_surface(record_writer v, const refdata::domain::curve_volatility_config& c) {
-    set_integer_text(v, "priority", c.priority);
-    v.set_optional_text("QuoteType", c.quote_type);
-    v.set_optional_text("VolatilityType", c.volatility_type);
-    v.set_optional_text("ExerciseType", c.exercise_type);
-    v.set_text("Strikes", c.strikes.value_or(""));
-    v.set_text("Expiries", c.expiries.value_or(""));
-    v.set_text("TimeInterpolation", c.time_interpolation.value_or(""));
-    v.set_text("StrikeInterpolation", c.strike_interpolation.value_or(""));
-    v.set_spelling("Extrapolation", c.extrapolation.value_or(""), "ORE boolean");
-    v.set_spelling("TimeExtrapolation", c.time_extrapolation.value_or(""), "extrapolation");
-    v.set_optional_spelling(
-        "TimeExtrapolationVariance", c.time_extrapolation_variance, "ORE boolean");
-    v.set_spelling("StrikeExtrapolation", c.strike_extrapolation.value_or(""), "extrapolation");
-    v.set_optional_text("Calendar", c.calendar);
+// Where a kind sits in ORE's =volatilityConfig=, which is the order the export
+// writes an entry's kinds in when nothing states a priority.
+int kind_rank(std::string_view kind_code) {
+    if (kind_code == constant_kind)
+        return 0;
+    if (kind_code == curve_kind)
+        return 1;
+    if (kind_code == strike_surface_kind)
+        return 2;
+    if (kind_code == "MoneynessSurface")
+        return 3;
+    if (kind_code == delta_surface_kind)
+        return 4;
+    if (kind_code == "ApoFutureSurface")
+        return 5;
+    if (kind_code == proxy_surface_kind)
+        return 6;
+    return 7;
 }
 
-refdata::domain::curve_volatility_config new_volatility_config(
-    const boost::uuids::uuid& definition_id, std::string_view kind, bool wrapped, int position) {
-    refdata::domain::curve_volatility_config c;
-    c.id = curve_configuration_projection_new_uuid();
-    c.curve_definition_id = definition_id;
-    c.kind = std::string(kind);
-    c.is_wrapped = wrapped;
-    c.position = position;
-    curve_configuration_projection_set_audit(c);
-    return c;
+refdata::domain::curve_volatility_kind new_volatility_kind(
+    const boost::uuids::uuid& entry_id,
+    std::string_view kind_code,
+    const record_reader& v) {
+    refdata::domain::curve_volatility_kind k;
+    k.id = curve_configuration_projection_new_uuid();
+    k.curve_volatility_config_id = entry_id;
+    k.kind_code = std::string(kind_code);
+    k.priority = integer_text(v, "priority");
+    k.quote_type = declared_text(v, "QuoteType");
+    k.volatility_type = declared_text(v, "VolatilityType");
+    k.exercise_type = declared_text(v, "ExerciseType");
+    k.calendar = declared_text(v, "Calendar");
+    curve_configuration_projection_set_audit(k);
+    return k;
 }
 
 void import_constant(ores::refdata::messaging::curve_configuration_document& out,
-                     const boost::uuids::uuid& definition_id,
-                     const record_reader& v,
-                     bool wrapped,
-                     int position) {
-    auto c = new_volatility_config(definition_id, constant_kind, wrapped, position);
-    c.priority = integer_text(v, "priority");
-    c.quote_type = v.text("QuoteType");
-    c.volatility_type = v.text("VolatilityType");
-    c.exercise_type = v.text("ExerciseType");
-    c.quote = required_text(v, "Quote");
-    c.calendar = v.text("Calendar");
-    out.volatility_configs.push_back(std::move(c));
+                     const boost::uuids::uuid& entry_id,
+                     const record_reader& v) {
+    out.volatility_kinds.push_back(new_volatility_kind(entry_id, constant_kind, v));
+    refdata::domain::curve_volatility_constant p;
+    p.id = curve_configuration_projection_new_uuid();
+    p.curve_volatility_kind_id = out.volatility_kinds.back().id;
+    p.quote = required_text(v, "Quote");
+    curve_configuration_projection_set_audit(p);
+    out.volatility_constants.push_back(std::move(p));
 }
-
-void export_constant(record_writer v, const refdata::domain::curve_volatility_config& c) {
-    set_integer_text(v, "priority", c.priority);
-    v.set_optional_text("QuoteType", c.quote_type);
-    v.set_optional_text("VolatilityType", c.volatility_type);
-    v.set_optional_text("ExerciseType", c.exercise_type);
-    v.set_text("Quote", c.quote.value_or(""));
-    v.set_optional_text("Calendar", c.calendar);
-}
-
-void export_quote_list(record_writer quotes,
-                       const std::vector<const refdata::domain::curve_quote*>& rows,
-                       std::optional<std::string_view> list);
 
 void import_volatility_curve(ores::refdata::messaging::curve_configuration_document& out,
+                             const boost::uuids::uuid& entry_id,
                              const boost::uuids::uuid& definition_id,
                              const record_reader& v,
-                             bool wrapped,
-                             int position) {
-    auto c = new_volatility_config(definition_id, curve_kind, wrapped, position);
-    c.priority = integer_text(v, "priority");
-    c.quote_type = v.text("QuoteType");
-    c.volatility_type = v.text("VolatilityType");
-    c.exercise_type = v.text("ExerciseType");
-    c.interpolation = required_spelling(v, "Interpolation");
-    c.extrapolation = required_spelling(v, "Extrapolation");
-    c.enforce_monotone_variance = boolean_text(v, "EnforceMontoneVariance");
-    c.calendar = v.text("Calendar");
-    out.volatility_configs.push_back(std::move(c));
+                             bool wrapped) {
+    out.volatility_kinds.push_back(new_volatility_kind(entry_id, curve_kind, v));
+    refdata::domain::curve_volatility_curve p;
+    p.id = curve_configuration_projection_new_uuid();
+    p.curve_volatility_kind_id = out.volatility_kinds.back().id;
+    p.interpolation = required_spelling(v, "Interpolation");
+    p.extrapolation = required_spelling(v, "Extrapolation");
+    p.enforce_monotone_variance = boolean_text(v, "EnforceMontoneVariance");
+    curve_configuration_projection_set_audit(p);
+    out.volatility_curves.push_back(std::move(p));
     if (const auto quotes = v.child("Quotes"); quotes)
         import_commodity_quotes(out,
                                 definition_id,
@@ -1234,179 +1260,303 @@ void import_volatility_curve(ores::refdata::messaging::curve_configuration_docum
                                 *quotes);
 }
 
-void export_volatility_curve(record_writer v,
-                             const refdata::domain::curve_volatility_config& c,
-                             const std::vector<const refdata::domain::curve_quote*>& entry_quotes) {
-    set_integer_text(v, "priority", c.priority);
-    v.set_optional_text("QuoteType", c.quote_type);
-    v.set_optional_text("VolatilityType", c.volatility_type);
-    v.set_optional_text("ExerciseType", c.exercise_type);
-    export_quote_list(v.child("Quotes"),
-                      entry_quotes,
-                      c.is_wrapped ? wrapped_curve_quotes_list : curve_quotes_list);
-    v.set_spelling("Interpolation", c.interpolation.value_or(""), "interpolation method");
-    v.set_spelling("Extrapolation", c.extrapolation.value_or(""), "extrapolation");
-    set_boolean_text(v, "EnforceMontoneVariance", c.enforce_monotone_variance);
-    v.set_optional_text("Calendar", c.calendar);
+void import_strike_surface(ores::refdata::messaging::curve_configuration_document& out,
+                           const boost::uuids::uuid& entry_id,
+                           const record_reader& v,
+                           int position) {
+    if (v.has("ParametricSmileConfiguration"))
+        throw refusal("a strike surface writes a ParametricSmileConfiguration, which is not "
+                      "modelled yet");
+    out.volatility_kinds.push_back(new_volatility_kind(entry_id, strike_surface_kind, v));
+    refdata::domain::curve_volatility_strike_surface p;
+    p.id = curve_configuration_projection_new_uuid();
+    p.curve_volatility_kind_id = out.volatility_kinds.back().id;
+    p.strikes = required_text(v, "Strikes");
+    p.expiries = required_text(v, "Expiries");
+    p.time_interpolation = required_text(v, "TimeInterpolation");
+    p.strike_interpolation = required_text(v, "StrikeInterpolation");
+    p.extrapolation = boolean_spelling(v, "Extrapolation");
+    p.time_extrapolation = required_spelling(v, "TimeExtrapolation");
+    p.time_extrapolation_variance = optional_boolean_spelling(v, "TimeExtrapolationVariance");
+    p.strike_extrapolation = required_spelling(v, "StrikeExtrapolation");
+    curve_configuration_projection_set_audit(p);
+    out.volatility_strike_surfaces.push_back(std::move(p));
 }
 
 void import_delta_surface(ores::refdata::messaging::curve_configuration_document& out,
-                          const boost::uuids::uuid& definition_id,
+                          const boost::uuids::uuid& entry_id,
                           const record_reader& v,
-                          bool wrapped,
                           int position) {
     if (v.has("ParametricSmileConfiguration"))
         throw refusal("a delta surface writes a ParametricSmileConfiguration, which is not "
                       "modelled yet");
-    auto c = new_volatility_config(definition_id, delta_surface_kind, wrapped, position);
-    c.priority = integer_text(v, "priority");
-    c.quote_type = v.text("QuoteType");
-    c.volatility_type = v.text("VolatilityType");
-    c.exercise_type = v.text("ExerciseType");
-    c.delta_type = required_spelling(v, "DeltaType");
-    c.atm_type = required_spelling(v, "AtmType");
-    c.atm_delta_type = v.spelling("AtmDeltaType");
-    c.put_deltas = required_text(v, "PutDeltas");
-    c.call_deltas = required_text(v, "CallDeltas");
-    c.expiries = required_text(v, "Expiries");
-    c.time_interpolation = required_text(v, "TimeInterpolation");
-    c.strike_interpolation = required_text(v, "StrikeInterpolation");
-    c.extrapolation = required_spelling(v, "Extrapolation");
-    c.time_extrapolation = required_spelling(v, "TimeExtrapolation");
-    c.time_extrapolation_variance = v.spelling("TimeExtrapolationVariance");
-    c.strike_extrapolation = required_spelling(v, "StrikeExtrapolation");
-    c.future_price_correction = v.spelling("FuturePriceCorrection");
-    c.calendar = v.text("Calendar");
-    out.volatility_configs.push_back(std::move(c));
-}
-
-void export_delta_surface(record_writer v, const refdata::domain::curve_volatility_config& c) {
-    set_integer_text(v, "priority", c.priority);
-    v.set_optional_text("QuoteType", c.quote_type);
-    v.set_optional_text("VolatilityType", c.volatility_type);
-    v.set_optional_text("ExerciseType", c.exercise_type);
-    v.set_spelling("DeltaType", c.delta_type.value_or(""), "delta type");
-    v.set_spelling("AtmType", c.atm_type.value_or(""), "ATM type");
-    v.set_optional_spelling("AtmDeltaType", c.atm_delta_type, "delta type");
-    v.set_text("PutDeltas", c.put_deltas.value_or(""));
-    v.set_text("CallDeltas", c.call_deltas.value_or(""));
-    v.set_text("Expiries", c.expiries.value_or(""));
-    v.set_text("TimeInterpolation", c.time_interpolation.value_or(""));
-    v.set_text("StrikeInterpolation", c.strike_interpolation.value_or(""));
-    v.set_spelling("Extrapolation", c.extrapolation.value_or(""), "ORE boolean");
-    v.set_spelling("TimeExtrapolation", c.time_extrapolation.value_or(""), "extrapolation");
-    v.set_optional_spelling(
-        "TimeExtrapolationVariance", c.time_extrapolation_variance, "ORE boolean");
-    v.set_spelling("StrikeExtrapolation", c.strike_extrapolation.value_or(""), "extrapolation");
-    v.set_optional_spelling("FuturePriceCorrection", c.future_price_correction, "ORE boolean");
-    v.set_optional_text("Calendar", c.calendar);
+    out.volatility_kinds.push_back(new_volatility_kind(entry_id, delta_surface_kind, v));
+    refdata::domain::curve_volatility_delta_surface p;
+    p.id = curve_configuration_projection_new_uuid();
+    p.curve_volatility_kind_id = out.volatility_kinds.back().id;
+    p.delta_type = required_spelling(v, "DeltaType");
+    p.atm_type = required_spelling(v, "AtmType");
+    p.atm_delta_type = v.spelling("AtmDeltaType");
+    p.put_deltas = required_text(v, "PutDeltas");
+    p.call_deltas = required_text(v, "CallDeltas");
+    p.expiries = required_text(v, "Expiries");
+    p.time_interpolation = required_text(v, "TimeInterpolation");
+    p.strike_interpolation = required_text(v, "StrikeInterpolation");
+    p.extrapolation = boolean_spelling(v, "Extrapolation");
+    p.time_extrapolation = required_spelling(v, "TimeExtrapolation");
+    p.time_extrapolation_variance = optional_boolean_spelling(v, "TimeExtrapolationVariance");
+    p.strike_extrapolation = required_spelling(v, "StrikeExtrapolation");
+    p.future_price_correction = optional_boolean_spelling(v, "FuturePriceCorrection");
+    curve_configuration_projection_set_audit(p);
+    out.volatility_delta_surfaces.push_back(std::move(p));
 }
 
 void import_proxy_surface(ores::refdata::messaging::curve_configuration_document& out,
-                          const boost::uuids::uuid& definition_id,
+                          const boost::uuids::uuid& entry_id,
                           const record_reader& v,
-                          bool wrapped,
                           int position) {
-    auto c = new_volatility_config(definition_id, proxy_surface_kind, wrapped, position);
-    c.priority = integer_text(v, "priority");
-    c.proxy_volatility_curve = required_text(v, "ProxyVolatilityCurve");
-    c.fx_volatility_curve = v.text("FXVolatilityCurve");
-    c.correlation_curve = v.text("CorrelationCurve");
-    c.cds_volatility_curve = v.text("CDSVolatilityCurve");
-    out.volatility_configs.push_back(std::move(c));
+    out.volatility_kinds.push_back(new_volatility_kind(entry_id, proxy_surface_kind, v));
+    refdata::domain::curve_volatility_proxy_surface p;
+    p.id = curve_configuration_projection_new_uuid();
+    p.curve_volatility_kind_id = out.volatility_kinds.back().id;
+    p.proxy_volatility_curve = required_text(v, "ProxyVolatilityCurve");
+    p.fx_volatility_curve = v.text("FXVolatilityCurve");
+    p.correlation_curve = v.text("CorrelationCurve");
+    p.cds_volatility_curve = v.text("CDSVolatilityCurve");
+    curve_configuration_projection_set_audit(p);
+    out.volatility_proxy_surfaces.push_back(std::move(p));
 }
 
-void export_proxy_surface(record_writer v, const refdata::domain::curve_volatility_config& c) {
-    set_integer_text(v, "priority", c.priority);
-    v.set_text("ProxyVolatilityCurve", c.proxy_volatility_curve.value_or(""));
+void export_constant(record_writer v, const volatility_kind_export& k) {
+    set_integer_text(v, "priority", k.kind->priority);
+    v.set_optional_text("QuoteType", k.kind->quote_type);
+    v.set_optional_text("VolatilityType", k.kind->volatility_type);
+    v.set_optional_text("ExerciseType", k.kind->exercise_type);
+    v.set_text("Quote", k.constant->quote);
+    v.set_optional_text("Calendar", k.kind->calendar);
+}
+
+void export_quote_list(record_writer quotes,
+                       const std::vector<const refdata::domain::curve_quote*>& rows,
+                       std::optional<std::string_view> list);
+
+void export_volatility_curve(record_writer v,
+                             const volatility_kind_export& k,
+                             const std::vector<const refdata::domain::curve_quote*>& entry_quotes,
+                             bool is_wrapped) {
+    set_integer_text(v, "priority", k.kind->priority);
+    v.set_optional_text("QuoteType", k.kind->quote_type);
+    v.set_optional_text("VolatilityType", k.kind->volatility_type);
+    v.set_optional_text("ExerciseType", k.kind->exercise_type);
+    export_quote_list(v.child("Quotes"),
+                      entry_quotes,
+                      is_wrapped ? wrapped_curve_quotes_list : curve_quotes_list);
+    v.set_spelling("Interpolation", k.curve->interpolation, "interpolation method");
+    v.set_spelling("Extrapolation", k.curve->extrapolation, "extrapolation");
+    set_boolean_text(v, "EnforceMontoneVariance", k.curve->enforce_monotone_variance);
+    v.set_optional_text("Calendar", k.kind->calendar);
+}
+
+void export_strike_surface(record_writer v, const volatility_kind_export& k) {
+    const auto& c = *k.strike_surface;
+    set_integer_text(v, "priority", k.kind->priority);
+    v.set_optional_text("QuoteType", k.kind->quote_type);
+    v.set_optional_text("VolatilityType", k.kind->volatility_type);
+    v.set_optional_text("ExerciseType", k.kind->exercise_type);
+    v.set_text("Strikes", c.strikes);
+    v.set_text("Expiries", c.expiries);
+    v.set_text("TimeInterpolation", c.time_interpolation);
+    v.set_text("StrikeInterpolation", c.strike_interpolation);
+    v.set_spelling("Extrapolation", c.extrapolation ? "true" : "false", "ORE boolean");
+    v.set_spelling("TimeExtrapolation", c.time_extrapolation, "extrapolation");
+    v.set_optional_spelling(
+        "TimeExtrapolationVariance", spelling_of(c.time_extrapolation_variance), "ORE boolean");
+    v.set_spelling("StrikeExtrapolation", c.strike_extrapolation, "extrapolation");
+    v.set_optional_text("Calendar", k.kind->calendar);
+}
+
+void export_delta_surface(record_writer v, const volatility_kind_export& k) {
+    const auto& c = *k.delta_surface;
+    set_integer_text(v, "priority", k.kind->priority);
+    v.set_optional_text("QuoteType", k.kind->quote_type);
+    v.set_optional_text("VolatilityType", k.kind->volatility_type);
+    v.set_optional_text("ExerciseType", k.kind->exercise_type);
+    v.set_spelling("DeltaType", c.delta_type, "delta type");
+    v.set_spelling("AtmType", c.atm_type, "ATM type");
+    v.set_optional_spelling("AtmDeltaType", c.atm_delta_type, "delta type");
+    v.set_text("PutDeltas", c.put_deltas);
+    v.set_text("CallDeltas", c.call_deltas);
+    v.set_text("Expiries", c.expiries);
+    v.set_text("TimeInterpolation", c.time_interpolation);
+    v.set_text("StrikeInterpolation", c.strike_interpolation);
+    v.set_spelling("Extrapolation", c.extrapolation ? "true" : "false", "ORE boolean");
+    v.set_spelling("TimeExtrapolation", c.time_extrapolation, "extrapolation");
+    v.set_optional_spelling(
+        "TimeExtrapolationVariance", spelling_of(c.time_extrapolation_variance), "ORE boolean");
+    v.set_spelling("StrikeExtrapolation", c.strike_extrapolation, "extrapolation");
+    v.set_optional_spelling(
+        "FuturePriceCorrection", spelling_of(c.future_price_correction), "ORE boolean");
+    v.set_optional_text("Calendar", k.kind->calendar);
+}
+
+void export_proxy_surface(record_writer v, const volatility_kind_export& k) {
+    const auto& c = *k.proxy_surface;
+    set_integer_text(v, "priority", k.kind->priority);
+    v.set_text("ProxyVolatilityCurve", c.proxy_volatility_curve);
     v.set_optional_text("FXVolatilityCurve", c.fx_volatility_curve);
     v.set_optional_text("CorrelationCurve", c.correlation_curve);
     v.set_optional_text("CDSVolatilityCurve", c.cds_volatility_curve);
 }
 
-// Reads the volatility configurations an entry or its VolatilityConfig element
-// writes. Each holder has at most one of each kind, and a holder whose type has
-// no slot for a kind never writes it.
+// Reads the kinds an entry or its VolatilityConfig element writes. Each holder
+// has at most one of each kind, and a holder whose type has no slot for a kind
+// never writes it. The entry row exists only when the holder writes a kind.
 void import_volatility_configs(ores::refdata::messaging::curve_configuration_document& out,
                                const boost::uuids::uuid& definition_id,
                                const std::string& curve_id,
                                const record_reader& v,
                                bool wrapped) {
-    int position = 0;
+    if (v.declares("MoneynessSurface") && v.has("MoneynessSurface"))
+        throw refusal("volatility " + curve_id +
+                      " writes a MoneynessSurface, which is not modelled yet");
+    if (v.declares("ApoFutureSurface") && v.has("ApoFutureSurface"))
+        throw refusal("volatility " + curve_id +
+                      " writes an ApoFutureSurface, which is not modelled yet");
+
+    const bool writes_a_kind =
+        (v.declares("Constant") && v.has("Constant")) ||
+        (v.declares("Curve") && v.has("Curve")) ||
+        (v.declares("StrikeSurface") && v.has("StrikeSurface")) ||
+        (v.declares("DeltaSurface") && v.has("DeltaSurface")) ||
+        (v.declares("ProxySurface") && v.has("ProxySurface"));
+    if (!writes_a_kind)
+        return;
+
+    const auto entry_id = add_volatility_entry(out, definition_id, wrapped);
+
     if (v.declares("Constant"))
         if (const auto c = v.child("Constant"); c)
-            import_constant(out, definition_id, *c, wrapped, position++);
+            import_constant(out, entry_id, *c);
     if (v.declares("Curve"))
         if (const auto c = v.child("Curve"); c)
-            import_volatility_curve(out, definition_id, *c, wrapped, position++);
+            import_volatility_curve(out, entry_id, definition_id, *c, wrapped);
     if (const auto c = v.child("StrikeSurface"); c)
-        import_strike_surface(out, definition_id, *c, position++, wrapped);
-    if (v.declares("MoneynessSurface"))
-        if (v.has("MoneynessSurface"))
-            throw refusal("volatility " + curve_id +
-                          " writes a MoneynessSurface, which is not "
-                          "modelled yet");
+        import_strike_surface(out, entry_id, *c);
     if (v.declares("DeltaSurface"))
         if (const auto c = v.child("DeltaSurface"); c)
-            import_delta_surface(out, definition_id, *c, wrapped, position++);
-    if (v.declares("ApoFutureSurface"))
-        if (v.has("ApoFutureSurface"))
-            throw refusal("volatility " + curve_id +
-                          " writes an ApoFutureSurface, which is not "
-                          "modelled yet");
+            import_delta_surface(out, entry_id, *c);
     if (v.declares("ProxySurface"))
         if (const auto c = v.child("ProxySurface"); c)
-            import_proxy_surface(out, definition_id, *c, wrapped, position++);
+            import_proxy_surface(out, entry_id, *c);
 }
 
-// Writes one volatility configuration back into the holder it came from.
-void export_volatility_config(record_writer h,
-                              const refdata::domain::curve_volatility_config& c,
-                              const std::vector<const refdata::domain::curve_quote*>& entry_quotes,
-                              const std::string& curve_id) {
-    if (c.kind == strike_surface_kind) {
-        export_strike_surface(h.child("StrikeSurface"), c);
+// Writes one kind back into the holder it came from.
+void export_volatility_kind(record_writer h,
+                            const volatility_kind_export& k,
+                            const std::vector<const refdata::domain::curve_quote*>& entry_quotes,
+                            bool is_wrapped,
+                            const std::string& curve_id) {
+    const std::string& kind = k.kind->kind_code;
+    if (kind == strike_surface_kind) {
+        export_strike_surface(h.child("StrikeSurface"), k);
         return;
     }
-    if (h.declares("Constant") && c.kind == constant_kind) {
-        export_constant(h.child("Constant"), c);
+    if (h.declares("Constant") && kind == constant_kind) {
+        export_constant(h.child("Constant"), k);
         return;
     }
-    if (h.declares("Curve") && c.kind == curve_kind) {
-        export_volatility_curve(h.child("Curve"), c, entry_quotes);
+    if (h.declares("Curve") && kind == curve_kind) {
+        export_volatility_curve(h.child("Curve"), k, entry_quotes, is_wrapped);
         return;
     }
-    if (h.declares("DeltaSurface") && c.kind == delta_surface_kind) {
-        export_delta_surface(h.child("DeltaSurface"), c);
+    if (h.declares("DeltaSurface") && kind == delta_surface_kind) {
+        export_delta_surface(h.child("DeltaSurface"), k);
         return;
     }
-    if (h.declares("ProxySurface") && c.kind == proxy_surface_kind) {
-        export_proxy_surface(h.child("ProxySurface"), c);
+    if (h.declares("ProxySurface") && kind == proxy_surface_kind) {
+        export_proxy_surface(h.child("ProxySurface"), k);
         return;
     }
-    throw refusal("volatility " + curve_id + " has a volatility config of kind " + c.kind +
+    throw refusal("volatility " + curve_id + " has a volatility config of kind " + kind +
                   ", which its section cannot hold");
 }
 
 void export_volatility_configs(
     record_writer r,
     bool has_volatility_config,
-    const std::vector<const refdata::domain::curve_volatility_config*>& configs,
+    const volatility_entry_export& entry,
     const std::vector<const refdata::domain::curve_quote*>& entry_quotes,
     const std::string& curve_id) {
     std::optional<record_writer> wrapped;
     if (has_volatility_config)
         wrapped = r.child("VolatilityConfig");
-    for (const auto* c : configs) {
-        if (c->is_wrapped) {
+    for (const auto& k : entry.kinds) {
+        if (entry.is_wrapped) {
             if (!wrapped)
                 throw refusal("volatility " + curve_id +
                               " has a wrapped volatility config but no VolatilityConfig element");
-            export_volatility_config(*wrapped, *c, entry_quotes, curve_id);
+            export_volatility_kind(*wrapped, k, entry_quotes, true, curve_id);
         } else {
-            export_volatility_config(r, *c, entry_quotes, curve_id);
+            export_volatility_kind(r, k, entry_quotes, false, curve_id);
         }
     }
+}
+
+template <typename Part>
+std::map<boost::uuids::uuid, const Part*> parts_by_kind(const std::vector<Part>& rows) {
+    std::map<boost::uuids::uuid, const Part*> out;
+    for (const auto& r : rows)
+        out.emplace(r.curve_volatility_kind_id, &r);
+    return out;
+}
+
+template <typename Part>
+const Part* part_of(const std::map<boost::uuids::uuid, const Part*>& parts,
+                    const boost::uuids::uuid& kind_id) {
+    const auto it = parts.find(kind_id);
+    return it == parts.end() ? nullptr : it->second;
+}
+
+// Pairs each entry with its kinds and each kind with its part, keyed by the
+// definition the entry belongs to.
+std::map<boost::uuids::uuid, volatility_entry_export> build_volatility_exports(
+    const ores::refdata::messaging::curve_configuration_document& v) {
+    const auto constants = parts_by_kind(v.volatility_constants);
+    const auto curves = parts_by_kind(v.volatility_curves);
+    const auto strike_surfaces = parts_by_kind(v.volatility_strike_surfaces);
+    const auto delta_surfaces = parts_by_kind(v.volatility_delta_surfaces);
+    const auto proxy_surfaces = parts_by_kind(v.volatility_proxy_surfaces);
+    std::map<boost::uuids::uuid, std::vector<const refdata::domain::curve_volatility_kind*>> kinds;
+    for (const auto& k : v.volatility_kinds)
+        kinds[k.curve_volatility_config_id].push_back(&k);
+
+    std::map<boost::uuids::uuid, volatility_entry_export> out;
+    for (const auto& e : v.volatility_configs) {
+        volatility_entry_export entry;
+        entry.is_wrapped = e.is_wrapped;
+        if (const auto it = kinds.find(e.id); it != kinds.end()) {
+            auto rows = it->second;
+            std::sort(rows.begin(), rows.end(), [](const auto* l, const auto* r) {
+                const auto l_priority = l->priority.value_or(std::numeric_limits<int>::max());
+                const auto r_priority = r->priority.value_or(std::numeric_limits<int>::max());
+                if (l_priority != r_priority)
+                    return l_priority < r_priority;
+                return kind_rank(l->kind_code) < kind_rank(r->kind_code);
+            });
+            for (const auto* k : rows) {
+                volatility_kind_export ke;
+                ke.kind = k;
+                ke.constant = part_of(constants, k->id);
+                ke.curve = part_of(curves, k->id);
+                ke.strike_surface = part_of(strike_surfaces, k->id);
+                ke.delta_surface = part_of(delta_surfaces, k->id);
+                ke.proxy_surface = part_of(proxy_surfaces, k->id);
+                entry.kinds.push_back(ke);
+            }
+        }
+        out.emplace(e.curve_definition_id, std::move(entry));
+    }
+    return out;
 }
 
 void import_equity_volatility(ores::refdata::messaging::curve_configuration_document& out,
@@ -1558,8 +1708,10 @@ void import_cds_volatility(ores::refdata::messaging::curve_configuration_documen
             out.cds_volatility_terms.push_back(std::move(term));
         }
     }
-    if (const auto surface = v.child("StrikeSurface"); surface)
-        import_strike_surface(out, d.id, *surface, 0);
+    if (const auto surface = v.child("StrikeSurface"); surface) {
+        const auto entry_id = add_volatility_entry(out, d.id, false);
+        import_strike_surface(out, entry_id, *surface);
+    }
 }
 
 void import_inflation_cap_floor_volatility(
@@ -1859,10 +2011,6 @@ boost::uuids::uuid term_definition(const refdata::domain::cds_volatility_term& t
 boost::uuids::uuid
 smile_parameter_definition(const refdata::domain::curve_parametric_smile_parameter& p) {
     return p.curve_definition_id;
-}
-
-boost::uuids::uuid volatility_config_definition(const refdata::domain::curve_volatility_config& c) {
-    return c.curve_definition_id;
 }
 
 boost::uuids::uuid definition_of(const refdata::domain::curve_segment& s) {
@@ -2484,7 +2632,7 @@ void export_cds_volatility(
     const refdata::domain::curve_definition& d,
     const refdata::domain::cds_volatility_config& v,
     const std::vector<const refdata::domain::cds_volatility_term*>& terms,
-    const std::vector<const refdata::domain::curve_volatility_config*>& configs) {
+    const volatility_entry_export& volatility) {
     r.set_text("CurveId", d.curve_id);
     r.set_text("CurveDescription", d.description.value_or(""));
     if (!terms.empty()) {
@@ -2497,11 +2645,11 @@ void export_cds_volatility(
         }
     }
     r.set_optional_text("Expiries", v.expiries);
-    for (const auto* c : configs) {
-        if (c->kind != strike_surface_kind)
+    for (const auto& k : volatility.kinds) {
+        if (k.kind->kind_code != strike_surface_kind)
             throw refusal("CDS volatility " + d.curve_id + " has a volatility config of kind " +
-                          c->kind + ", which is not modelled yet");
-        export_strike_surface(r.child("StrikeSurface"), *c);
+                          k.kind->kind_code + ", which is not modelled yet");
+        export_strike_surface(r.child("StrikeSurface"), k);
     }
     r.set_optional_spelling("DayCounter", v.day_counter, "day counter");
     r.set_optional_text("Calendar", v.calendar);
@@ -2654,7 +2802,7 @@ void export_equity_volatility(
     record_writer r,
     const refdata::domain::curve_definition& d,
     const refdata::domain::equity_volatility_config& v,
-    const std::vector<const refdata::domain::curve_volatility_config*>& configs,
+    const volatility_entry_export& volatility,
     const std::vector<const refdata::domain::curve_quote*>& entry_quotes,
     const refdata::domain::curve_report_configuration* report) {
     r.set_text("CurveId", d.curve_id);
@@ -2667,7 +2815,7 @@ void export_equity_volatility(
     r.set_optional_spelling("DayCounter", v.day_counter, "day counter");
     r.set_optional_spelling("TimeExtrapolation", v.time_extrapolation, "extrapolation");
     r.set_optional_spelling("StrikeExtrapolation", v.strike_extrapolation, "extrapolation");
-    export_volatility_configs(r, v.has_volatility_config, configs, entry_quotes, d.curve_id);
+    export_volatility_configs(r, v.has_volatility_config, volatility, entry_quotes, d.curve_id);
     r.set_optional_text("Calendar", v.calendar);
     r.set_optional_spelling("PreferOutOfTheMoney", v.prefer_out_of_the_money, "ORE boolean");
     if (report)
@@ -2678,7 +2826,7 @@ void export_commodity_volatility(
     record_writer r,
     const refdata::domain::curve_definition& d,
     const refdata::domain::commodity_volatility_config& v,
-    const std::vector<const refdata::domain::curve_volatility_config*>& configs,
+    const volatility_entry_export& volatility,
     const std::vector<const refdata::domain::curve_quote*>& entry_quotes,
     const refdata::domain::curve_report_configuration* report) {
     r.set_text("CurveId", d.curve_id);
@@ -2687,7 +2835,7 @@ void export_commodity_volatility(
     r.set_optional_text("InstrumentType", v.instrument_type);
     r.set_optional_integer("CalendarSpreadOffset", v.calendar_spread_offset);
     r.set_optional_text("CalendarSpreadUnderlyingName", v.calendar_spread_underlying_name);
-    export_volatility_configs(r, v.has_volatility_config, configs, entry_quotes, d.curve_id);
+    export_volatility_configs(r, v.has_volatility_config, volatility, entry_quotes, d.curve_id);
     r.set_optional_spelling("DayCounter", v.day_counter, "day counter");
     r.set_optional_text("Calendar", v.calendar);
     r.set_optional_text("FutureConventions", v.future_conventions);
@@ -2704,12 +2852,12 @@ void export_bond_future_volatility(
     record_writer r,
     const refdata::domain::curve_definition& d,
     const refdata::domain::bond_future_volatility_config& v,
-    const std::vector<const refdata::domain::curve_volatility_config*>& configs,
+    const volatility_entry_export& volatility,
     const std::vector<const refdata::domain::curve_quote*>& entry_quotes) {
     r.set_text("CurveId", d.curve_id);
     r.set_text("CurveDescription", d.description.value_or(""));
     r.set_text("ContractName", v.contract_name);
-    export_volatility_configs(r, v.has_volatility_config, configs, entry_quotes, d.curve_id);
+    export_volatility_configs(r, v.has_volatility_config, volatility, entry_quotes, d.curve_id);
     r.set_optional_spelling("DayCounter", v.day_counter, "day counter");
     r.set_optional_text("Calendar", v.calendar);
     r.set_optional_text("YieldCurveId", v.yield_curve_id);
@@ -3017,7 +3165,7 @@ curve_configuration_projection::document curve_configuration_projection::reverse
     const auto price_segments = group_by(v.commodity_price_segments, &price_segment_definition);
     const auto cds_vol_by_definition = by_definition(v.cds_volatilities);
     const auto cds_terms = group_by(v.cds_volatility_terms, &term_definition);
-    const auto volatility_configs = group_by(v.volatility_configs, &volatility_config_definition);
+    const auto volatility_exports = build_volatility_exports(v);
     const auto inflation_vol_by_definition = by_definition(v.inflation_cap_floor_volatilities);
     const auto swaption_vol_by_definition = by_definition(v.swaption_volatilities);
     const auto cap_floor_vol_by_definition = by_definition(v.cap_floor_volatilities);
@@ -3069,15 +3217,15 @@ curve_configuration_projection::document curve_configuration_projection::reverse
                    d->section_code != commodity_curves_section && ctx.entry_quotes.contains(d->id))
             throw refusal("curve " + d->curve_id + " in section " + d->section_code +
                           " holds a quote directly on its entry");
-        static const std::vector<const refdata::domain::curve_volatility_config*> no_configs_of;
-        const auto configs_it = volatility_configs.find(d->id);
-        const auto& configs_of =
-            configs_it == volatility_configs.end() ? no_configs_of : configs_it->second;
+        static const volatility_entry_export no_volatility;
+        const auto volatility_it = volatility_exports.find(d->id);
+        const auto& volatility_of =
+            volatility_it == volatility_exports.end() ? no_volatility : volatility_it->second;
         if (d->section_code == equity_volatilities_section) {
             export_equity_volatility(written.child("EquityVolatilities").append("EquityVolatility"),
                                      *d,
                                      settings_of(equity_vol_by_definition, *d),
-                                     configs_of,
+                                     volatility_of,
                                      ctx.quotes_of_entry(d->id),
                                      report_of(*d));
             continue;
@@ -3087,7 +3235,7 @@ curve_configuration_projection::document curve_configuration_projection::reverse
                 written.child("CommodityVolatilities").append("CommodityVolatility"),
                 *d,
                 settings_of(commodity_vol_by_definition, *d),
-                configs_of,
+                volatility_of,
                 ctx.quotes_of_entry(d->id),
                 report_of(*d));
             continue;
@@ -3097,7 +3245,7 @@ curve_configuration_projection::document curve_configuration_projection::reverse
                 written.child("BondFutureVolatilities").append("BondFutureVolatility"),
                 *d,
                 settings_of(bond_future_vol_by_definition, *d),
-                configs_of,
+                volatility_of,
                 ctx.quotes_of_entry(d->id));
             continue;
         }
@@ -3131,14 +3279,13 @@ curve_configuration_projection::document curve_configuration_projection::reverse
         }
         if (d->section_code == cds_volatilities_section) {
             static const std::vector<const refdata::domain::cds_volatility_term*> no_terms;
-            static const std::vector<const refdata::domain::curve_volatility_config*> no_configs;
             const auto t = cds_terms.find(d->id);
-            const auto c = volatility_configs.find(d->id);
-            export_cds_volatility(written.child("CDSVolatilities").append("CDSVolatility"),
-                                  *d,
-                                  settings_of(cds_vol_by_definition, *d),
-                                  t == cds_terms.end() ? no_terms : t->second,
-                                  c == volatility_configs.end() ? no_configs : c->second);
+            export_cds_volatility(
+                written.child("CDSVolatilities").append("CDSVolatility"),
+                *d,
+                settings_of(cds_vol_by_definition, *d),
+                t == cds_terms.end() ? no_terms : t->second,
+                volatility_of);
             continue;
         }
         if (d->section_code == swaption_volatilities_section) {

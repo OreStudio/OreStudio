@@ -67,7 +67,7 @@ moved as information, and a count that moved to zero as a failure.
 - Click UK curve configuration.
 - Pass: the page title is *UK curve configuration*, the tabs are *Details*,
   *Curves*, *Used by* and *History*, and the line under the title reads *Version 1
-  · 238 of 238 parameters carry documentation from the ORE parameter
+  · 238 of 289 parameters carry documentation from the ORE parameter
   contract*.
 
 *** Result
@@ -86,9 +86,14 @@ moved as information, and a count that moved to zero as a failure.
   then *Its parameters*.
 - Scroll to the card titled *Its Segments*.
 - Pass: the card says *1 row*, and the row names its kind: *Simple*.
-- Pass: the row lists its leaves, each with a value or a default and a
-  *Documentation* link: *Conventions* with =GBP-OIS-CONVENTIONS=, and
-  *Projection curve* reading *Default: Not given. ORE applies its own rule.*
+- Pass: the row lists the five leaves a =Simple= segment reads, each with a value
+  or a default and a *Documentation* link: *Conventions* with
+  =GBP-OIS-CONVENTIONS=, *PillarChoice*, *Priority* and *MinDistance* reading a
+  dash, and *Projection curve* reading *Default: Not given. ORE applies its own
+  rule.*
+- Note: the three leaves that read a dash have no row in the contract, which is
+  the snag recorded below. A row that shows a value or a default for them means
+  the extractor follows a helper call, and the note is out of date.
 - Note: a snag is a segment leaf that prints an ORE name such as =Conventions= or
   =RecordedAt= where a label belongs, or a leaf that belongs to another kind.
 
@@ -194,6 +199,12 @@ confirm the current behaviour and say whether it is what the note describes.
   Still open; it is a snag, not a failure of this walk.
 - Pass: no row reads =RecordedAt=. A row that shows it means the build predates
   the fix.
+- Pass: =PillarChoice=, =Priority= and =MinDistance= draw a dash and the entry
+  reads *3 without documentation*, so the page reads *238 of 289*. They reach the
+  document through =common_settings=, which the extractor does not follow, so the
+  contract holds no row for any of them. Recorded as
+  [[id:EB796F14-ECCB-4634-BAD9-6958D0F3C10A][The curve term extractor misses
+  leaves a helper reads]].
 
 *** Result
 
@@ -207,10 +218,11 @@ confirm the current behaviour and say whether it is what the note describes.
 | Field         | Value |
 |---------------+-------|
 | Status        | PASSED |
-| Completed at  | 2026-10-30T17:05:00Z |
-| Branch        | main at ffcf0a5baa, provisioned from a fresh database |
-| Evidence      | [[file:evidence/curve-workbench-provisioned.png][the UK workbench]] |
-| Commit        | ffcf0a5baa |
+| Completed at  | 2026-10-30T17:35:00Z |
+| Branch        | main at c7c28edd9a, on the tenant provisioned earlier |
+| Evidence      | [[file:evidence/curve-workbench-provisioned.png][the UK workbench]],
+                  [[file:evidence/segment-card-after-the-wiring-change.txt][the segment card after the wiring change]] |
+| Commit        | c7c28edd9a |
 | Worktree      | ores_dev_merry_newton |
 
 * Notes

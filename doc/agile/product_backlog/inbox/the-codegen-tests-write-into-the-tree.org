@@ -45,4 +45,6 @@ uncommitted side effect identically.
 
 * See also
 
-- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]] — what an inbox capture is.
+- [[id:BBBD07EF-09E0-4FF6-A282-28534429264C][The drift check is destructive on a stale template branch]].
+- [[id:A62877EC-7888-44FA-A08C-CD10327FD893][Main lost the batch members a consumer uses]].
+ [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]] — what an inbox capture is.

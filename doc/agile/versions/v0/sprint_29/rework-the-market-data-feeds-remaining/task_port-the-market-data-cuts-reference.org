@@ -100,7 +100,9 @@ its own right.
   the market data cut, the four kinds, the end of day process and its rate
   overrides, multiple centres, what a cut holds, profiles, one cut per book,
   option-expiry cut codes, audit and rerun, our position, a glossary and
-  references. No notebook is referenced and no vendor or bank system appears.
+  references. No notebook is referenced, and no vendor system appears in the
+  conceptual pages. The prior-art survey in [[id:6810B313-1BE8-4889-A3C0-30174ADCBEDD][Naming the cut]] names
+  systems, because the naming question requires it.
 - Every non-repository claim rests on a public source fetched and read while
   writing: EBA RTS (EU) 2016/101 Art. 3 for independent price verification and
   its accepted sources; the ECB euro reference rates for an official daily rate;

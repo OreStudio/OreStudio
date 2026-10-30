@@ -31,8 +31,9 @@ answers a separate question.
 - The *label* names the cut. A code, a reference date or a version serves as the
   handle that a report, a deal or a book carries.
 - The *timepoint* fixes the cut. It is the instant held still, with its timezone.
-- The *object* is the body of data the cut fixes. It may be a deal population, a
-  market data set, both, or anything else a valuation reads.
+- The *object* is the body of data the cut fixes. The rest of this note calls it
+  the body. It holds the deals, the market data, the reference data, the engine
+  and code versions, and the identity and authorisation.
 
 The label answers which cut is meant. The timepoint answers when it holds. The
 object answers what it holds. A statement that omits one of the three leaves the
@@ -167,8 +168,11 @@ because the cut records them.
 
 * Components and their order
 
-The body divides into two components, the deals and the market data, and the
-division has consequences for the process that fixes them.
+Within the body, the deals and the market data are the two halves that a process
+fixes by separate acts. The remaining parts, the reference data, the settings,
+the engine and the code, are recorded with the cut and are not the subject of a
+daily review, and the component pages below take only the two reviewed halves.
+The division between those halves has consequences for the process.
 
 The components differ in owner, in review and in mode of failure. A deal is
 reviewed by reading it and comparing it to what the desk booked, and it fails by
@@ -187,16 +191,16 @@ committed.
 
 * Reading order
 
-The classification comes first, because purpose fixes the body and the instant a
-kind contributes. The component pages then take the definition in the two
-directions the body admits, and the last page takes the same definition into the
-expiry sense of the word.
+The classification comes first. The purpose fixes the body, and the kind
+contributes the occasion, which is the recurrence, the centre and the instant.
+The component pages then take the two halves of the body, and the last page takes
+the definition into the expiry sense of the word.
 
 ** The classification
 
 [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — what a cut is for,
-placed under the four purposes in use, with what each kind fixes, the attributes
-its purpose gives it, and how each relates to the components.
+placed under the four occasions in use, with what each kind fixes, the attributes
+its occasion gives it, and how each relates to the components.
 
 ** The market data component
 
@@ -254,9 +258,7 @@ to. Practice at a particular firm is a matter for that firm's own record.
 | Label                              | The name of a cut: a code, a reference date, a version       |
 | Timepoint                          | The instant a cut fixes, with its timezone                   |
 | Object                             | The body of data a cut fixes                                 |
-| Purpose                            | The single end a cut serves: a valuation that can be reproduced |
 | Kind                               | The occasion a cut is taken for, which fixes its instant, recurrence and centre |
-| Reproducibility                    | The property that a valuation recomputed from the inputs its cut fixed returns the same result |
 | Authorisation                      | The sign-off that makes a cut official and immutable         |
 | Trade cut                          | The component of a cut that fixes the deal population        |
 | Market data cut                    | The component of a cut that fixes the market data            |

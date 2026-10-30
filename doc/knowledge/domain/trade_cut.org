@@ -18,18 +18,15 @@ carries the deals.
 
 A trade cut holds the deal population a valuation values at the timepoint: every
 live deal as it stands at that instant, with the state it holds, the book it
-belongs to, and the corrections applied before the cut was authorised. The
-definition of a cut fixes a body of data at one instant, and the deals are the
-part of that body which the valuation prices. Two properties follow from the
-purpose. The population must be complete, because a valuation states what a book
-is worth and a missing deal makes that statement false. The population must be
-identified as of the instant, because a deal's state, its book and its terms
-change, and the record must say which version each of those facts had. The
-population also carries its authorisation, since an unsigned population is a
-candidate. The deals are one half of the body; the market data, the settings and
-the engine version are recorded beside them, as the
-[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note sets out. A query over
-the trade store yields a population and carries none of these properties with it.
+belongs to, and the corrections applied before the cut was authorised. It is one
+half of the body, and the market data, the reference data, the settings and the
+engine version are recorded beside it, as the
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note sets out. Two properties
+follow from the purpose of a cut. The population must be complete, because a
+valuation states what a book is worth and a missing deal makes that statement
+false. It must also be identified as of the instant and carry its authorisation,
+because a deal's state, book and terms change, and because an unsigned population
+is a candidate.
 
 * What it fixes
 

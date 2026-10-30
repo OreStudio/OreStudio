@@ -15,6 +15,16 @@ definition, the single purpose and the body; this page states why the occasion i
 the property that classifies a cut, and places each kind under the occasion that
 produces it.
 
+* Summary
+
+The kinds of cut classify the occasion a cut is taken for, and not the size of
+the body. The purpose is single, a valuation that can be reproduced, so the body
+is the entire fixed world of one valuation in every kind. Four occasions are in
+use, the official valuation, the verification of prices, the intraday view and
+the start of the day, and a process may name an instant of its own. Each kind is
+stated by what it is for, what it fixes, the attributes its occasion gives it,
+and its relation to the two reviewed halves of the body.
+
 * The principle
 
 A cut fixes a body of data at one timepoint, and its purpose is single: to make a
@@ -32,10 +42,11 @@ builds on. The classification is therefore a classification of occasions, and th
 body is held constant across it.
 
 Two consequences follow. An attribute that follows from the occasion is entailed
-by the kind and needs no separate justification. And a cut whose body is smaller
-than the structure note states is incomplete for its own purpose, whatever its
-kind. Completeness belongs to every kind, and the kinds differ in the occasion
-they serve rather than in the standard they meet.
+by the kind and needs no separate justification. And a cut missing a part of the
+body is incomplete rather than smaller, whatever its kind: it holds less than the
+definition requires, and the defect is the same defect in every occasion.
+Completeness belongs to every kind, and the kinds differ in the occasion they
+serve rather than in the standard they meet.
 
 * The official valuation: end of day cut
 
@@ -118,9 +129,9 @@ by the occasion, since a view that arrived after the official statement would
 serve no decision. Recurrence is intraday, since the view answers a question that
 recurs while the market moves.
 
-*How it relates to the components.* The market data component, and the deal
-component where the run values deals. Which of the two it holds is a question of
-scope within the kind.
+*How it relates to the components.* Both reviewed halves, at the flash instant.
+The run values deals and reads prices, so it holds the deal population and the
+market data of that instant, and the rest of the body is recorded with it.
 
 The output is indicative by construction. Authorisation converts a candidate into
 official data, and a cut taken to inform a decision precedes that conversion.
@@ -143,11 +154,10 @@ approved at the opening. What the kind adds is a direction of inheritance.
 * Where a kind sits against a component
 
 A kind qualifies the cut as a whole, and the process that takes the cut chooses
-it. A component qualifies the body, and the set of data the valuation reads
-chooses the component. Neither answer constrains the other, since the definition
-admits any body at any instant. A flash cut of the market data alone and an end
-of day cut of deals and market data both satisfy the definition. A complete
-description of a cut states its kind and its body.
+it. A component names one half of the body, and the component pages take each
+half. The kind does not select the components, since the body is the whole fixed
+world in every kind. A complete description of a cut states its kind, which fixes
+the occasion, and its body, which the purpose fixes.
 
 * An instant a process names
 

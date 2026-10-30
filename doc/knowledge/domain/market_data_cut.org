@@ -18,17 +18,14 @@ holds values.
 
 A market data cut holds the values a valuation reads at the timepoint: spots,
 curves, forward points, volatility surfaces, fixings and market-driven
-parameters, together with the approved rates that replace some of them. The
-definition of a cut fixes a body of data at one instant, and this component
-supplies the part of the body that carries values. Two properties follow from
-the purpose. The values must be attributable, because a valuation defended in a
-verification is defended value by value. The set must be reproducible from rules
-and store state, because a set a person assembled records an outcome without the
-procedure that produced it. A published set records one curve at one as-of, which
-places it as provenance for part of this component rather than for the whole cut.
-The component is one half of the body; the settings and the version of the
-engine are recorded beside it, as the
-[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note sets out.
+parameters, together with the approved rates that replace some of them. It is one
+half of the body, and the reference data, the settings and the engine version are
+recorded beside it, as the
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note sets out. Two properties
+follow from the purpose of a cut. The values must be attributable, because a
+valuation defended in a verification is defended value by value. The set must be
+reproducible from rules and store state, because a set a person assembled records
+an outcome without the procedure that produced it.
 
 * What it fixes
 
@@ -140,8 +137,8 @@ each point when the caller asks. See
 The resolution-side snapshot exists here as a definition.
 [[id:CEC7844C-B3AE-4858-BF67-71F511007F82][Market Data Snapshot]] defines the
 fixed and floating snapshot as the materialisation of a resolved market data set,
-and records that neither ORE nor Strata names the concept. No entity, service or
-read in this repository implements it. The repository holds the vocabulary of the
+and records that the engines it surveyed name no such concept. No entity, service
+or read in this repository implements it. The repository holds the vocabulary of the
 mechanism and the stored-data read, and the note describes the mechanism as a
 concept.
 

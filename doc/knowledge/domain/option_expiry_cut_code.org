@@ -18,14 +18,13 @@ into the instant at which an option expires.
 
 * Summary
 
-A cut code is a *label* for the time of day at which an FX option expires on its
+A cut code is a label for the time of day at which an FX option expires on its
 expiry date. The definition of a cut names a body of data and an instant, and the
-expiry supplies an instant for one contract. A date contains many instants, and
-an option's payout is conditioned on an observation at one of them, so the date
-alone leaves the contract's end underdetermined. The market settles the
-indeterminacy with a name, chosen per currency pair, and the timezone says which
-clock reads the time. A reference row holds the name beside the time it names.
-The repository holds the design of that row and not the row.
+expiry supplies the instant for one contract. A date contains many instants and
+the payout depends on one, so the market settles the indeterminacy with a name
+chosen per currency pair, and the timezone says which clock reads it. A reference
+row holds the name beside the time and the timezone, and the repository holds the
+design of that row rather than the row.
 
 * Why an expiry needs an instant
 

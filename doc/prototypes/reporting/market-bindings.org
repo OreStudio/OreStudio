@@ -22,17 +22,13 @@ surfaces: the report page that is the way in, the *Market bindings* tab of the
 run settings configuration, the picker over the published sets, and the run that
 names the publish record it priced from.
 
-The page argues five things. The market bindings are a collection of the run
-settings configuration and a tab of its own, so the screen follows the
-[[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]]
-instead of inventing a fifth kind of screen. A binding names a published set and
-not a name, so the row draws the curve, the party, the as-of, the state and the
-publisher, and the ORE name stands beside them as something derived. A candidate
-is refused where the person picks it, because nobody approved it. An ended set is
-refused too, and the one route past the refusal is the person saying, on purpose,
-that the run shall price from it at its own as-of. And the run's own record names
-the publish record it priced from, so a number in the report and the set on the
-published screen are the same object.
+The page draws the five settlements that
+[[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][the decision note]] states, and it
+does not restate the argument for any of them. It takes the
+[[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]] for
+the shape, because the rows are a collection of the run settings configuration,
+and it draws the row, the picker, the refusals, the pin and the run's card as
+that decision implies them.
 
 It is throwaway. It reads no service, it holds no session, and every value on it
 is mock data. It exists because the journeys settle what a binding *is* and
@@ -338,12 +334,6 @@ run today.
 watches must reach somebody. The prototype draws the refusal in the run's output
 message and stops there. Whether a refused scheduled run also raises a notice, or
 marks the definition, belongs to the schedule's journey and is not settled here.
-
-*The pin's granularity.* The pin names the set's own as-of. A run that priced
-from an ended set at an instant the set did not hold — a rerun at the previous
-day's close — would need an as-of the set cannot serve, and the screen says
-nothing about it. Whether the as-of is the set's or the run's is the open half of
-the decision's "explicit historical as-of".
 
 *See also.*
 

@@ -189,18 +189,18 @@ be brought back to it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
-| Notes  | The fourth card is named Simulator and /api/synthetic/providers answers 200. The hand-start path was proven by the delivery task's live pass; the manual click-through remains for the tester. |
+| Status | PENDING |
+| Notes  | The fourth card is named Simulator and /api/synthetic/providers answers 200, which is the screen and the read. The hand-start click-through has not been done in this environment, so the step is not passed. |
 
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | PASSED |
+| Status        | PENDING |
 | Completed at  | 2026-10-30T14:05:00Z |
 | Branch        | feature/bind-a-report-to-the-published-curve |
-| Commit        | re-run through the app's own routes on 70b2ebbd5f |
+| Commit        | 70b2ebbd5f |
 | Worktree      |       |
 
 * Notes

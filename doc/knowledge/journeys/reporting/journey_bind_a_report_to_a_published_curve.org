@@ -106,7 +106,7 @@ set's own.
    | Role | The ORE market name, monospace, and the first column |
    | Published curve | The curve's code and the party that published it. The same code in two parties is two curves |
    | As-of | The instant the set was built at, exact, because it is what the run prices at |
-   | State | Published, Historical or Ended, as its badge |
+   | State | The binding's verdict: Published, Historical, Refused, Ended or No binding |
    | Publisher | The account that applied the approval |
    | Published | The published instant, relative, with the exact value on hover |
    | Points | How many pillars the set holds, right-aligned |
@@ -210,8 +210,8 @@ set's own.
     price.
 15. *Read the run's record.* The run's page gains one card: *The market it priced
     from*. It names the role, the curve, the party, the as-of, the publisher, the
-    published instant and the publish record, with a link to the published set's
-    page. It is read from the run and not from the binding, because the binding
+    published instant, the points read and the publish record, with a link to the
+    published set's page. It is read from the run and not from the binding, because the binding
     can move after the run: a run names the set it used, not the set the
     configuration names today.
 
@@ -231,6 +231,10 @@ set's own.
     No read answers it today; *What is missing* records it.
 
 * Screens and wireframes
+
+The five settlements the screen makes are stated once on
+[[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][the decision note]], and the steps
+above walk them from the person's side.
 
 Two screens and one dialog's worth of surfaces. The *Market bindings* tab of the
 run settings configuration is where the binding is read and changed: the roles,
@@ -295,7 +299,7 @@ data and a better answer than a version of the row that named it.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Step 1, the report's market | Read the configurations a definition binds | =reporting.v1.report_configurations.list_by_definition_id= | exists |
+| Step 1, the report's market | Read the configurations a definition binds | =reporting.v1.report_configurations.list_by_report_definition_id= | exists |
 | Step 1, the configuration | Read the run settings configuration | =reporting.v1.configurations.get= | exists |
 | Step 2, the roles | Read the market roles of a configuration | =reporting.v1.configuration_market_bindings.list_by_configuration_id= | exists |
 | Step 3, the picker | List the published sets, with the state and the filters | =marketdata.v1.ops.list_published_curves= | exists |

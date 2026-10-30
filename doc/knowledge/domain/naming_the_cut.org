@@ -146,27 +146,8 @@ hub argues for.
 
 * What a change of term would cost
 
-If the cluster moved to another word, the work would run as follows.
-
-- Five knowledge pages would be renamed and rewritten:
-  [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]],
-  [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]],
-  [[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]],
-  [[id:19630B5D-A163-42B5-B9C4-61A87BAE8F5F][Trade cut]] and
-  [[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][The option-expiry cut code]].
-- Twelve documents outside the cluster link the hub, and each link would be
-  rewritten: the knowledge index, the two snapshot notes, the pricing
-  configuration, the market data architecture, risk reporting, report processing,
-  the reports index, the binding decision and its journey, the backlog story and
-  this task's page.
-- The backlog story designs an entity named for a cut, so the entity, its
-  columns and its foreign key would change with the term.
-- The glossary on the hub would be rewritten, and the qualifier rule above would
-  be replaced by whatever disambiguation the new word needs.
-
-The cost is bounded and it is not the reason to keep the word. The reason is that
-no candidate improves on *cut* while surviving the two snapshot meanings already
-in the repository.
+A change of term would rename five pages and rewrite twelve links, and the cost
+is bounded, which is not the reason to keep the word.
 
 * See also
 

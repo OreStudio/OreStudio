@@ -147,7 +147,7 @@ TEST_CASE("a_route_names_a_source_of_its_provider", route_tags) {
     r.asset_class = "fx";
     r.feed_id = catalogue::ore_import_feed_id();
     CHECK_THROWS_WITH(routes.write(h.context(), r),
-                      Catch::Matchers::ContainsSubstring("is not a source of provider"));
+                      Catch::Matchers::ContainsSubstring("is not a feed of publisher"));
 }
 
 TEST_CASE("a_party_has_one_route_for_a_provider", route_tags) {

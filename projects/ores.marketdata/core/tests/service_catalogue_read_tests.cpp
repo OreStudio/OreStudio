@@ -111,6 +111,8 @@ TEST_CASE("an_adapter_is_listed_and_read", "[service][catalogue]") {
     catalogue_read_fixture f;
     auto adapter = generators::generate_synthetic_adapter(f.gen);
     adapter.code = unique_code("read-adapter");
+    // The store's unique index is on the name, so the code alone is not enough.
+    adapter.name = unique_code("read-adapter-name");
     adapter.tenant_id = f.ctx.tenant_id();
     repository::adapter_repository{}.write(f.ctx, adapter);
 

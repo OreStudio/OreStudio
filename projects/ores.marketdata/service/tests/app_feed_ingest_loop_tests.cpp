@@ -188,7 +188,8 @@ struct app_feed_ingest_loop_fixture {
         auto r = generators::generate_synthetic_route(gen);
         r.tenant_id = h.tenant_id();
         r.party_id = party_id;
-        r.provider_code = "ore";
+        r.publisher_code = "ore";
+        r.asset_class = "fx";
         r.feed_id = src.id;
         r.modified_by = h.db_user();
         r.performed_by = h.db_user();

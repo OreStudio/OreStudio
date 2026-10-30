@@ -213,7 +213,8 @@ TEST_CASE("the_states_come_from_the_routes_that_hold_a_subscription_with_a_right
     demand_catalogue c;
     ores::marketdata::domain::route routed;
     routed.party_id = f.party;
-    routed.provider_code = "bloomberg";
+    routed.publisher_code = "bloomberg";
+    routed.asset_class = "fx";
     routed.feed_id = f.sim;
     ores::marketdata::domain::route unsubscribed = routed;
     unsubscribed.party_id = f.gen();

@@ -554,7 +554,7 @@ struct equity_terms final {
  * bag at all. Without it the variant's default is the first alternative, and
  * a slot that states rows would read as a bond with empty terms.
  */
-using trade_terms = std::variant<std::monostate, bond_terms, credit_terms>;
+using trade_terms = std::variant<std::monostate, bond_terms>;
 
 /**
  * @brief One trade the population states, with every reference already

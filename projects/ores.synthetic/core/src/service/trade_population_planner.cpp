@@ -20,6 +20,7 @@
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.trading.api/domain/bond_instruments.hpp"
 #include "ores.trading.api/domain/commodity_instruments.hpp"
+#include "ores.trading.api/domain/credit_instruments.hpp"
 #include "ores.trading.api/domain/equity_instruments.hpp"
 #include "ores.trading.api/domain/fx_instruments.hpp"
 #include "ores.trading.api/domain/rate_instruments.hpp"
@@ -1427,6 +1428,39 @@ std::string_view credit_trade_planner::asset_class_code() const {
     return "credit";
 }
 
+/*
+ * The credit family states its own row. The mapping from what the planner draws
+ * to each product's constructor lives here, beside the drawing, and not in the
+ * writer: the plan carries the row and the writer persists it.
+ */
+ores::trading::domain::credit_instrument
+construct_credit_row(const domain::credit_terms& drawn, const std::string& trade_type_code) {
+    namespace tdom = ores::trading::domain;
+    tdom::credit_common_terms terms;
+    terms.trade_type_code = trade_type_code;
+    terms.reference_entity_id_type = drawn.reference_entity_id_type;
+    terms.reference_entity_id = drawn.reference_entity_id;
+    terms.start_date = drawn.start_date;
+    terms.maturity_date = drawn.maturity_date;
+
+    const auto& type = trade_type_code;
+    auto row = [&] {
+        if (type == "CreditDefaultSwap")
+            return tdom::construct_credit_default_swap(terms);
+        if (type == "IndexCreditDefaultSwap")
+            return tdom::construct_index_credit_default_swap(terms);
+        if (type == "IndexCreditDefaultSwapOption")
+            return tdom::construct_index_credit_default_swap_option(terms);
+        if (type == "CreditLinkedSwap")
+            return tdom::construct_credit_linked_swap(terms);
+        if (type == "RiskParticipationAgreement")
+            return tdom::construct_risk_participation_agreement(terms);
+        return tdom::construct_synthetic_cdo(terms);
+    }();
+    row.description = "Generated credit trade.";
+    return row;
+}
+
 domain::trade_population_plan
 credit_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     validate_scope(scope);
@@ -1462,7 +1496,12 @@ credit_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         auto entry = common_slot(scope, slot);
         entry.trade_type_code = std::string(credit_types[slot % credit_type_count]);
         entry.notional = notional_from(scope, draw(name, 1));
-        entry.terms = terms;
+        /*
+         * The credit family states its row here, where it draws it, and the
+         * plan carries no bag for it.
+         */
+        entry.instruments.credit_instruments.push_back(
+            construct_credit_row(terms, entry.trade_type_code));
 
         plan.slots.push_back(std::move(entry));
     }

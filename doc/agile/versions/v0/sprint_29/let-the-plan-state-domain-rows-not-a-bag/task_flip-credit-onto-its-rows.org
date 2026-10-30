@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A credit trade states its row in the plan, and the writer translates nothing for
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -37,7 +37,7 @@ A credit trade states its row in the plan, and the writer translates nothing for
 
 - The planner builds the credit row each type routes to.
 - The writer's credit arm is gone and the batch is persisted with its audit columns stamped.
-- A provisioning run books the same credit rows as before the flip: one each of the four products the seeded population draws.
+- A provisioning run books the same credit rows as before the flip: one each of the five products the seeded population draws.
 
 * Plan
 
@@ -57,7 +57,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Credit instrument rows | 5 | =select count(*) from ores_trading_credit_instruments_tbl= | worktree |
+| Products drawn | 5, one each | =select trade_type, count(distinct id) ... group by 1= | worktree |
+| Reference type | LEI on every row, 20 characters | =select reference_entity_id_type, count(*), min(char_length(...)) ...= | worktree |
+| Trade rows, latest version | 127 | =select count(distinct id) from ores_trading_trades_tbl where valid_to = ...= | worktree |
+| Planner suite | 1,937 assertions in 80 cases | =publish/bin/ores.synthetic.core.tests= | worktree |
 
 * Notes
 
@@ -85,3 +89,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The credit family states its row. The planner builds the row each type routes to
+and the writer persists it, which leaves the writer's dispatch with one bag arm:
+the bond security's.
+
+The population is unchanged: five rows, one for each of the five products the
+seeded population draws, every one of them referencing a legal entity by LEI of
+twenty characters, and 127 trades in total.
+
+The family had no planner test, because it had no planner until the population
+work gave it one; the flip adds the first. It asserts one row per slot, the type
+that routes it, and the LEI reference, so the family that motivated the legal
+entity model is now covered where it is drawn rather than only in a provisioning
+run.

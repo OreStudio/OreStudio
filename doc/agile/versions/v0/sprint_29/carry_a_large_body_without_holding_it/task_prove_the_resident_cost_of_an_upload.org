@@ -8,8 +8,9 @@
 #+filetags: :carry_a_large_body_without_holding_it:sprint_29:v0:
 #+owner: marco
 #+branch: feature/prove-the-resident-cost-of-an-upload
-#+pr:
-#+blocked_on:
+#+pr: 4159
+#+blocked_on: review
+#+blocked_since: 2026-10-31 00:10
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
@@ -64,10 +65,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| 256 MiB upload, resident memory | before 79,968 kB, peak 80,104 kB, so +136 kB | =./ores.http.api.tests "a_256_mib_upload_does_not_grow_the_process" -s= | branch head |
-| The same test over three runs | +136, +136, +464 kB against a 1 MiB bound | same | branch head |
-| The same test with a sink that keeps the body | peak 540,648 kB, so +461 MB: the measurement sees a buffer | same, with the sink's body kept | branch head |
-| 256 MiB over loopback | about 3 s | same | branch head |
+| 256 MiB upload, resident memory | before 79,968 kB, peak 80,104 kB, so +136 kB | =./ores.http.api.tests "a_256_mib_upload_does_not_grow_the_process" -s= | =#4159= |
+| The same test over three runs | +136, +136, +464 kB against a 1 MiB bound | same | =#4159= |
+| The same test with a sink that keeps the body | peak 540,648 kB, so +461 MB: the measurement sees a buffer | same, with the sink's body kept | =#4159= |
+| 256 MiB over loopback | about 3 s | same | =#4159= |
 
 * Notes
 
@@ -97,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#4159](https://github.com/OreStudio/OreStudio/pull/4159) | [http] Measure what a large upload costs the process |
 
 * Review
 

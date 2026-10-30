@@ -8,12 +8,12 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/draw-the-quotes-a-curve-segment-holds
-#+pr: 4078
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,39 +26,25 @@ A person reads, under each segment, the quotes it bootstraps from: their list, t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Quotes and their parts are drawn, and walked in a browser. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close on the pull request.             |
-| Last touched | 2026-10-30                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-29                               |
 
 * Acceptance
 
 - A quote's value is read from the element that holds it, not from a column named after an ORE child element.
 - A segment's quotes are drawn under that segment, in the order the document writes them.
 - A composite quote's rate and spread show, and so does the list a quote belongs to.
-- A quote that states no words of its own, such as a composite quote, shows its rate and spread rather than an empty row.
-- The page names a quote's parts in its own words, because the contract documents the `Quotes` element and not its parts.
+- A quote leaf the contract does not document keeps its name and counts as a gap.
 
 * Plan
 
-Three facts decided the shape.
-
-A quote is not a leaf. It is the text of a `Quote` element, and the element has no
-name of its own: the contract documents `Quotes`, an element, and carries no row
-for what is inside it. Forcing a quote into the leaf shape would have meant a
-leaf whose xpath no document holds, which is the defect the columns already fix
-for the other way round. So a quote is read as its own shape: its list, its text,
-its optional flag, and the rate and spread pair a composite quote states.
-
-Quotes belong to a segment, not to the curve. The collection rule says which
-column joins a quote to a row, so a segment's quotes are the rows that name it,
-in the position order the document writes them.
-
-What is not drawn: the quotes a section attaches to the curve itself rather than
-to a segment, such as an equity curve's. Those are rows of the same table with no
-segment, and they want the entry's own card.
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
 
 * Measurements
 
@@ -72,29 +58,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Quotes a provisioned document held | 420 | `compass sql -- -c "select count(*) from ores_refdata_curve_quotes_tbl where valid_to = ores_utility_infinity_timestamp_fn()"` | f9144787e5 |
-| Quotes that name a segment | 420 | `compass sql -- -c "select count(*) from ores_refdata_curve_quotes_tbl where curve_segment_id is not null and curve_segment_id <> ores_utility_nil_uuid_fn() and valid_to = ores_utility_infinity_timestamp_fn()"` | f9144787e5 |
-| Quotes the contract documents the parts of | 0 | `compass sql -- -c "select count(*) from ores_reporting_ore_parameters_tbl where xpath like '%/Segments/%Quote%' and valid_to = ores_utility_infinity_timestamp_fn()"` | f9144787e5 |
-| BFF tests | 1144 | `npm run test` in `packages/bff` | cadc240799 |
-| Browser tests | 2332 | `npm run test` in `packages/web` | cadc240799 |
-| Screens walked in a browser | 1 row, 2 leaves, 12 quotes, 221 of 238 documented | `node evidence/curve_screens.mjs` from `projects/ores.web`, which writes `01-signin.png` … `10-segments.png`; `curve-segments-and-quotes.png` is the copy kept as evidence | cadc240799 |
+|      |       |         |        |
 
 * Notes
-
-- *The contract documents the list, not what is in it.* No contract row names a
-  `Quote`, a `RateQuote` or a `SpreadQuote`, so a quote has no leaf to join and no
-  words to read. The page names its parts itself, which is the one place this
-  screen departs from the leaf standard, and the deviation is the contract's.
-- *A quote is a row, not a leaf.* The element has no name of its own: the text is
-  the element's text. Reading it as a leaf would have meant an xpath no document
-  holds, which is the defect the columns already fixed for the other direction.
-- *The corpus is plain quotes.* All 420 quotes a provisioned document holds carry
-  a text and no list, no rate and no spread. The composite and named-list paths
-  are therefore covered only by the fixtures, which state a quote with a
-  =BasisQuotes= list and a =RateQuote=/=SpreadQuote= pair.
-- *The list is never filled.* No caller of the projection's =import_quotes= passes
-  a list name, so =quote_list= is null for every row the system writes today; the
-  screen draws the field, and the projection owes it a value.
 
 * Test Scenarios
 
@@ -105,51 +71,18 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:D2120291-825B-4117-A85F-7B9F28237942][Walk the curve segments and quotes on the screen]] | PENDING | Walks the quotes under each segment, and the states they draw. |
+|          |       |       |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/4078][#4078]] | [web] Draw the quotes a segment holds |
+|    |       |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | A quote cannot be a leaf: the contract carries no row for `Quote`, `RateQuote` or `SpreadQuote`, so joining it to the contract would show every part as a gap. | curve-configuration.ts | Accept | The quote is its own shape, with the words the screen states, and the task records the deviation rather than hiding it. |
-| 2 | Quotes a section attaches to the curve rather than to a segment are not drawn. | curve-configuration.ts | Deferred | They are rows of the same table with no segment, and no task owns them yet: the nested-collections task defers the quotes here, and this one defers the entry-level quotes to a task that does not exist. |
-| 3 | The corpus holds no composite quote and no named list, so those two paths are tested and not observed. | ores_refdata_curve_quotes_tbl | No change | Said plainly in the notes and the pull request's limitations. |
-| 4 | The instant a row was recorded reached the screen as a leaf, because it is a field of the document row and not a column of the table the exclusion list was written from. | curve-configuration.ts | Accept | The row's recorded instant is excluded, and the test's segment row carries one so the exclusion is held. Seen on a provisioned environment: a segment drew `RecordedAt` beside its leaves until this. |
-| 5 | A segment draws its conventions as a gap though ORE documents it. | curve_term_curation / extractor | Deferred | The contract has no `Segments/<Kind>/Conventions` row at all: the leaf is read by the segment base class, and the extractor keeps no base for a class declared in a header and defined in a source. Filed as [[id:3D1208F2-1D51-4733-81FB-01B19D36E8EE][Record the leaves a segment inherits]]. |
-| 6 | A quote drew as a bare value: no label, no words for its list or its flag, and the flag's tag printed even for `optional="false"`. | CurveConfigurationPage.tsx | Accept | Each part is drawn under its own label, the flag as Yes or No, and the composite pair through a translated pattern. |
-| 7 | The view's justification said the contract documents the `Quotes` element; it carries no entry for a segment's quotes at all. | curve-configuration.ts | Accept | The comment now says what is true, and why the screen names the parts itself. |
-| 8 | The `quotes` plurality key was unreachable, because the plural rules always find `.one`/`.other`. | locales | Accept | The dead key is gone from all three locales. |
-| 9 | The page test asserted `toContain('optional')`, which passes on a missing translation because the key itself contains the word. | screens.test.tsx | Accept | The test names the labels and the Yes/No words, and a second test covers the composite pair and its list. |
-| 10 | The BFF test never checked the list, the rate or the spread, and `default([])` would hide a dropped field. | curve-configuration.test.ts | Accept | The fixture carries a composite quote on a named list, and the test asserts all three. |
-| 11 | The measurements cited a command that does not produce the number, and one commit no branch contains. | task doc | Accept | The commands are the ones that ran, and the rows name the commits that hold them. |
+|   |                 |      |          |       |
 
 * Result
-
-A person reading a curve sees, under each segment, the quotes it bootstraps from:
-the text of each quote, the list it sits in, and a mark on the ones ORE may leave
-out, in the order the document writes them.
-
-The BFF reads a segment's quotes by the column the collection rule states, so a
-quote arrives with the segment that holds it and never with another. The page
-draws them under the segment's leaves.
-
-Seen on a provisioned environment, in a browser as well as through the route: the
-walk in =evidence/curve_screens.mjs= signs in, chooses the party, opens the UK
-configuration and reads the Curves tab, and =evidence/curve-segments-and-quotes.png=
-is what it saw — the Segments card holding one row of kind Simple, its two leaves,
-its twelve quotes, and the block badges below it for the elements it does not draw.
-
-Through the route the page reads: every yield
-curve of the UK configuration reports one `Segments` row of kind `Simple`, two
-leaves and twelve quotes, the first being `IR_SWAP/RATE/GBP/0D/1D/1M`. The whole
-configuration counts 221 of 238 parameters documented.
-
-Two things that only the live run showed, both fixed or filed: the row's recorded
-instant was drawn as a leaf, and a segment's conventions arrive as a gap because
-the contract holds no row for them (task 3D1208F2, "Record the leaves a segment inherits").

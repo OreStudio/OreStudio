@@ -8,12 +8,12 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/record-the-leaves-a-segment-inherits
-#+pr:
+#+pr: 4097
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every leaf a segment inherits from its base class reaches the contract, so a seg
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Not yet started.                       |
+| Now          | The base map is read across files; the contract carries the leaves. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Close on the pull request.             |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -42,61 +42,48 @@ Every leaf a segment inherits from its base class reaches the contract, so a seg
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+One map, collected before anything is built. `classes()` read `class X : public Y`
+from each file and looked the base up in that file's map, so a class declared in
+`yieldcurveconfig.hpp` and defined in `yieldcurveconfig.cpp` kept no base and every
+leaf it inherits was lost. The base map is now filled from every file the
+extractor reads before any class is built.
+
+The leaves that come back are the ones the base reads: `Type`, `Conventions`,
+`PillarChoice`, `DuplicatePillarPolicy`, `Priority` and `MinDistance`, under each
+of the twelve kinds.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Terms the extractor writes | 434 before, 480 after | `python3 projects/ores.sql/utility/extract_curve_terms.py` | see =* Result= |
+| Segment leaves the contract carries | 26 before, 38 after | a count of `/Segments/` paths in the artefact | see =* Result= |
+| `Conventions` rows under segments | 0 before, 12 after | the same, filtered to paths ending `/Conventions` | see =* Result= |
+| Parameter rows in the artefact | 2283 before, 2295 after | the dataset generator's own count | see =* Result= |
 
 * Notes
 
-- *Where the leaves are lost.* =YieldCurveSegment::fromXML= reads =Type=,
-  =Conventions=, =PillarChoice=, =DuplicatePillarPolicy=, =Priority= and
-  =MinDistance=, and every segment class calls it first. The extractor's =BASE=
-  pattern reads `class X : public Y` from *one file*, so a class declared in
-  =yieldcurveconfig.hpp= and defined in =yieldcurveconfig.cpp= keeps no base and
-  its inherited reads never reach the term. Both halves are in the tree; only the
-  lookup is per file.
-- *What the screen shows today.* A segment draws =Conventions= as a gap while the
-  guide documents it, because the contract has no
-  =Segments/<Kind>/Conventions= row. Measured on the UK curve configuration: two
-  leaves per segment, one documented.
-- *The fix is one map.* Collect the base of every class across all files the
-  extractor reads, before building the entries, and look it up from that map.
-
-* Test Scenarios
-
-Manual QA scenarios (scaffolded via =compass add test_scenario=)
-that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
-
-| Scenario | State | Notes |
-|----------+-------+-------|
-|          |       |       |
-
-* PRs
-
-| PR | Title |
-|----+-------|
-|    |       |
-
-* Review
-
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+- *What the unresolved blocks say.* Walking the base adds 25 blocks the extractor
+  cannot resolve, almost all a segment's `Quotes`: a quote list is a collection of
+  `Quote` elements, not a leaf, so the extractor records it as a block with no
+  parser rather than inventing a leaf for it. That is the honest answer, and it is
+  why the count moved.
+- *The screen follows the contract.* The page reads these leaves by path, so a
+  segment's conventions and pillar choice stop drawing as gaps once the contract
+  carrying them is published; no screen change was needed.
 
 * Result
+
+A segment's inherited leaves reach the contract. The extractor now reads a class's
+base from every file it reads, so the six leaves `YieldCurveSegment::fromXML`
+reads — `Type`, `Conventions`, `PillarChoice`, `DuplicatePillarPolicy`, `Priority`
+and `MinDistance` — are recorded under each of the twelve segment kinds.
+
+Measured on the regenerated tree: 434 terms became 480, the artefact's curve rows
+went from 253 to 265, its segment rows from 26 to 38, and `Conventions` went from
+no row at all to twelve. The dataset and value-set checks pass, and the artefact
+and the value sets are the generators'.
+
+What it does not fix: a segment's `Quotes` is a collection of quote elements, and
+the extractor records it as a block it cannot resolve rather than as leaves —
+which is why the unresolved count rose from 8 to 32.

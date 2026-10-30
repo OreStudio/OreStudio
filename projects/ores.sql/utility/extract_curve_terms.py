@@ -250,9 +250,16 @@ def classes(paths):
     """Every class that parses a document node, keyed by its name."""
     out = {}
     built = {}
+    # A class is declared in a header and defined in a source, so its base is read
+    # from every file before any class is built: a parser defined in one file and
+    # declared in another would otherwise keep no base, and every leaf it inherits
+    # would be lost.
+    bases = {}
+    for path in paths:
+        for match in BASE.finditer(read(path)):
+            bases.setdefault(match.group(1), match.group(2))
     for path in paths:
         text = read(path)
-        bases = {m.group(1): m.group(2) for m in BASE.finditer(text)}
         for match in FUNCTION.finditer(text):
             name = match.group(1)
             chunk = body(text, match.start())

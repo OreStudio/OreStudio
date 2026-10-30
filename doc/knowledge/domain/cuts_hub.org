@@ -2,115 +2,61 @@
 :ID: B5214F3A-A72E-421E-82BC-79338B2E95CB
 :END:
 #+title: Cuts
-#+description: Structure note for the cuts cluster: a cut is a label for a timepoint and the object it fixes, the kinds of cut, the data a cut must freeze including the reference data, and the pages that own each component.
+#+description: Structure note for the cuts cluster: the definition of a cut as a body of data fixed at one timepoint, the body a cut must hold including the reference data, the components the body divides into, and the pages that own each.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:domain:structure_note:cut:valuation:
 #+created: 2026-10-30
 #+updated: 2026-10-30
 
-This is the structure note for the cuts cluster. It states the general notion,
-the kinds and the composition, then the order to read the component pages in.
-Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+This structure note gathers the cuts cluster. It states the definition, the body
+a cut must hold, the components the body divides into, and the order in which to
+read the pages. The classification of kinds is a page of its own. Return to
+[[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
-* Summary
+* The definition
 
-A *cut* is a *label* for a *timepoint* and an *object* it fixes. The label names
-the cut. The timepoint is the moment held still. The object is what is held still
-there, and it may be a deal population, a market data set, both, or anything else
-a valuation reads.
+A *cut* fixes a body of data at one timepoint. Three parts follow, and each
+answers a separate question.
 
-The timepoint is the defining property, and it is not the same thing as a
-business day or a centre. A cut is not daily because a cut is not defined by
-being daily, and it does not belong to a centre because belonging to a centre is
-not what makes it a cut. The end of day cut is the daily kind, taken at a
-centre's close. Other kinds are taken at an opening, mid-day, or at an instant a
-process names, and each is still a cut.
+- The *label* names the cut. A code, a reference date or a version serves as the
+  handle that a report, a deal or a book carries.
+- The *timepoint* fixes the cut. It is the instant held still, with its timezone.
+- The *object* is the body of data the cut fixes. It may be a deal population, a
+  market data set, both, or anything else a valuation reads.
 
-An end of day cut is the widest case, and it is wider than most people assume.
-It fixes the whole world one valuation runs against, including the reference
-data that gives the deals and the quotes their meaning, such as conventions,
-calendars and the valuation settings. A valuation rebuilt from the same quotes
-under a different day count or a different calendar is a different number.
+The label answers which cut is meant. The timepoint answers when it holds. The
+object answers what it holds. A statement that omits one of the three leaves the
+cut unidentified, and a claim about a cut carries the three together.
 
-The kinds of cut say why a cut was taken and what it is built on. The components
-say what its object is. The cluster has one page for market data, one for deals,
-and one for the expiry sense of the same word.
+The sentence fixing the definition constrains two things. Something is fixed, and
+one instant fixes it. Every further property of a cut is a fact about the kind:
+how often the instant recurs, which location owns it, and which process takes it.
+Those facts qualify a cut without entering the definition, and
+[[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] works out what
+follows from that.
 
-* The shape of a cut
+* The kinds
 
-Three parts, and a claim about a cut is incomplete until all three are named.
+A kind states what a cut is for, and the purpose fixes the body and the instant.
+The classification, and the argument for it, is on
+[[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]], which places each
+kind under its purpose and relates it to the components below.
 
-- The *label*. The name a person or a system uses for the cut: a code, a
-  reference date, a version. It is what a report, a deal or a book points at.
-- The *timepoint*. The moment fixed, with its timezone. A kind that belongs to a
-  centre names the centre as well, and a kind that does not belongs to no centre.
-- The *object*. What the cut holds still.
+* The body a cut must hold
 
-Two cuts with the same label and the same timepoint can fix different objects.
-Two that fix the same object can fix it at different timepoints. Saying "the EOD
-cut" names a kind and leaves the other two open.
+The definition fixes a body of data without saying how large that body is. The
+size follows from the purpose, and for an EOD cut the purpose is to reproduce an
+official valuation.
 
-A cut that has been authorised also carries who signed it and when. That
-signature is what makes it official rather than a candidate, and it belongs to
-the object rather than sitting beside it.
+The argument has three premises. A valuation is determined by its inputs. Two
+runs over the same deals and the same quotes produce different numbers when the
+day count, the calendar or the valuation settings differ. Those settings are
+therefore inputs to the valuation in the same sense that the quotes are. It
+follows that a cut holding the deals and the quotes while leaving the settings
+free cannot reproduce the valuation it claims to have produced.
 
-* Kinds of cut
-
-A kind states why the cut exists and what it is built on. Every kind can carry
-the same object, so a kind on its own does not tell a reader what the cut holds.
-
-** End of day cut
-
-The primary, authoritative cut of a centre's business day. It carries the widest
-object and serves the widest purpose: the day's official revaluation, the
-movement from yesterday's cut to today's, and the reports built on both. It is
-sometimes called the *independent cut* because approved rates replace the rates
-the front office used during the day. The name should be used with care, because
-the verification cut below is the one that is independent by construction.
-
-** Independent price verification cut
-
-Built on the EOD cut. It keeps that cut's object and replaces selected market
-data items with values sourced independently of the front office, so the firm
-tests its own marks against data it did not produce.
-
-A prudential standard fixes what may count as an independent source. It accepts
-exchange prices in a liquid market, trades in the same or a very similar
-instrument, tradable quotes from brokers and other market participants,
-consensus service data, indicative broker quotes, and counterparty collateral
-valuations
-([[https://www.legislation.gov.uk/eur/2016/101/chapter/I][EBA RTS (EU) 2016/101 on prudent valuation]], Article 3). The same article
-names the independent price verification process as the process whose market
-data range those sources serve. Which items a firm replaces is its own policy.
-The standard fixes the sources, not the items.
-
-** Flash cut
-
-A tentative cut that a valuation runs against before the day's cut is
-authorised. Its purpose is to test the object while the object can still change,
-so the output is indicative rather than official. A flash cut usually holds the
-narrowest object of the day, enough to give the reader confidence and not
-everything a full run reads.
-
-** Start of day cut
-
-A cut taken at the opening of a centre. It carries the previous EOD cut's object
-forward, so the new day begins from a known reference and the day's movement is
-measured from it.
-
-** Where a kind belongs
-
-A kind qualifies the cut as a whole, and the process that takes the cut chooses
-it. A component qualifies the object, and what the valuation reads chooses it.
-The two are separate answers to separate questions. A flash cut of the market
-data alone and an EOD cut of deals and market data are both coherent cuts, and a
-reader has to be told which of the two questions was answered.
-
-* What an EOD cut must freeze
-
-An EOD cut is *all* the data a valuation reads, and not only the deals and the
-market data.
+An EOD cut therefore holds four parts.
 
 - The *deals*. The population the valuation values.
 - The *market data*. Spots, curves, forward points, volatility surfaces,
@@ -118,40 +64,51 @@ market data.
 - The *reference data*. The conventions, the calendars and holiday sets, the
   valuation and pricing settings, the curve configurations, and anything else
   the run reads to turn a deal and a quote into a number.
-- The *identity and the authorisation*. The label, the timepoint, who signed it,
+- The *identity and the authorisation*. The label, the timepoint, the signatory
   and the version.
 
-The reason is reproducibility. The same deals and the same quotes under a
-different day count, a different calendar, or a different set of valuation
-settings produce different numbers. A cut that fixed the quotes and not the
-conventions could not reproduce the valuation it claims to have produced. The
-object of the cut is the fixed world, and the quotes are only the part people
-notice.
-
-So the question to ask of any cut is not "which deals and which rates" but
-"everything this run read". A cut that answers the narrower question is a
-snapshot of a component and not a cut.
+A cut that holds the first two alone answers the question "which deals and which
+rates", and reproducibility requires the wider question, "everything this run
+read". The narrower object is the object of a component, and the component pages
+below treat it as such.
 
 * Components and their order
 
-The two components are frozen by separate acts, and our working convention is
-that the deals come first and the market data second. The deal cut is retaken
-until the population is clean, because a person may still correct a deal in
-production. The market data cut follows, because a provisional market data set
-is needed to value the deals and confirm they are right before anybody commits
-the day's rates.
+The body divides into two components, the deals and the market data, and the
+division has consequences for the process that fixes them.
 
-The argument for keeping the acts separate is ours. Each has its own owner, its
-own review and its own failure. A corrected deal does not move a rate, and an
-approved rate does not move a deal. One act that froze both would make every
-trade correction a re-approval of the day's rates.
+The components differ in owner, in review and in mode of failure. A deal is
+reviewed by reading it and comparing it to what the desk booked, and it fails by
+being absent or wrong. A rate is reviewed by comparing it to an external source,
+and it fails by being stale or unapproved. A corrected deal moves no rate, and
+an approved rate moves no deal. One act that fixed both would tie every trade
+correction to a fresh approval of the day's rates, and would therefore slow the
+correction the review exists to serve.
+
+Our working convention follows from that. The two components are fixed by
+separate acts, the deals first and the market data second. The deal cut is
+retaken until the population is clean, because a person may still correct a deal
+in production. The market data cut follows, since a provisional market data set
+is needed to value the deals and confirm they are right before the day's rates are
+committed.
 
 * Reading order
+
+The classification comes first, because purpose fixes the body and the instant a
+kind contributes. The component pages then take the definition in the two
+directions the body admits, and the last page takes the same definition into the
+expiry sense of the word.
+
+** The classification
+
+[[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — what a cut is for,
+placed under the four purposes in use, with what each kind fixes, the attributes
+its purpose gives it, and how each relates to the components.
 
 ** The market data component
 
 [[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]] — the values a
-valuation reads at the timepoint: the quotes, curves, surfaces and fixings, the
+valuation reads at the timepoint: quotes, curves, surfaces and fixings, the
 approved rates applied on top, the snapshot that fixes them, the published sets
 and their provenance, and what our system holds today.
 
@@ -164,41 +121,40 @@ each belongs to, the corrections applied, and what our system holds today.
 ** The expiry sense of the word
 
 [[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][The option-expiry cut code]] — the
-same idea applied to expiry: a label for the time of day at which an option
-expires on its expiry date. It fixes an instant rather than a population.
+definition applied to expiry: a label for the time of day at which an option
+expires on its expiry date, fixing an instant rather than a population.
 
 * What the sources establish
 
-Three claims in this cluster have a public source. That an independent price
-verification exists, and which market data sources count as independent, rests
-on a prudential standard
-([[https://www.legislation.gov.uk/eur/2016/101/chapter/I][EBA RTS (EU) 2016/101]], Article 3). That an official rate is published once
-per working day at a stated time rests on the central bank reference rates
-([[https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html][ECB euro foreign exchange reference rates]]). That a centre's business day has a
-stated open and close, published by the settlement system for its currency,
-rests on one settlement system's published hours
-([[https://www.federalreserve.gov/paymentsystems/fedfunds_about.htm][Fedwire Funds Service]]).
+Three claims in this cluster have a public source, and each is recorded on the
+page that makes it. The admissible sources of an independent price verification
+rest on a prudential standard
+([[https://www.legislation.gov.uk/eur/2016/101/chapter/I][EBA RTS (EU) 2016/101]], Article 3), and the stated open and close of a
+centre's business day rests on one settlement system's published hours
+([[https://www.federalreserve.gov/paymentsystems/fedfunds_about.htm][Fedwire Funds Service]]); both appear in
+[[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]]. That an official rate
+is published once per working day at a stated time rests on the central bank
+reference rates
+([[https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html][ECB euro foreign exchange reference rates]]), which appears in
+[[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]].
 
 Everything else is a definition of a term or our working convention. The order
-of the two component acts, the flash runs, the start of day cut, the numbered
-end of day sequence, one cut per book, the after-hours rule, and the times that
-cut codes name have no public source we could verify. They are written down as
-the convention we work to, not as established fact. A reader who needs the
-practice of a particular firm should ask that firm.
+of the two component acts, the existence of the flash and start of day kinds, the
+numbered end of day sequence, one cut per book, the after-hours rule, the
+arbitrary instant a process may name, and the times that cut codes name have no
+public source we could verify. They are written here as the convention we work
+to. Practice at a particular firm is a matter for that firm's own record.
 
 * Glossary
 
 | Term                               | Definition                                                  |
 |------------------------------------+-------------------------------------------------------------|
-| Cut                                | A label for a timepoint and the object it fixes              |
+| Cut                                | A body of data fixed at one timepoint                        |
 | Label                              | The name of a cut: a code, a reference date, a version       |
-| Timepoint                          | The moment a cut fixes, with its timezone                    |
-| Object                             | What a cut holds still                              |
+| Timepoint                          | The instant a cut fixes, with its timezone                   |
+| Object                             | The body of data a cut fixes                                 |
+| Kind                               | The purpose a cut serves, which classifies it and fixes its body and instant |
 | Authorisation                      | The sign-off that makes a cut official and immutable         |
-| End of day cut                     | The primary, authoritative cut of a centre's business day    |
-| Independent price verification cut | A cut built on the EOD cut, with selected items replaced by independently sourced values |
-| Flash cut                          | A tentative cut a valuation runs against before authorisation |
-| Start of day cut                   | A cut at a centre's opening that carries the previous EOD cut forward |
 | Trade cut                          | The component of a cut that fixes the deal population        |
 | Market data cut                    | The component of a cut that fixes the market data            |
 | Cut code                           | A label for the time of day at which an option expires       |
@@ -207,14 +163,14 @@ practice of a particular firm should ask that firm.
 * What this cluster does not cover
 
 The pricing settings themselves, the engine's configuration documents, and the
-reads served over stored market data belong to other clusters. This cluster says
-what a cut must hold and why, and leaves the meaning of each setting to the page
-that owns it.
+reads served over stored market data belong to other clusters. This cluster
+states what a cut must hold and why, and leaves the meaning of each setting to
+the page that owns it.
 
 * See also
 
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this structure note hangs from.
-- [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — states the reproducibility contract from the settings side, the half of the cut's object this cluster leaves to it.
+- [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — states the reproducibility contract from the settings side, the half of the cut's body this cluster leaves to it.
 - [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]] — the binding that names a published set and leaves the deal population unbound, which is the dependency this cluster answers.
 - [[id:4B4ED152-1670-4E81-895A-24D747382D4C][Model market data cuts as proper ORE Studio reference data]] — the story that designs the cut time as reference data.
 - [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — the entity a cut would be assigned to.

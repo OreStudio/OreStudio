@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Ten trade types route to the bond instrument table. The planner draws exactly on
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -92,3 +92,14 @@ facts exist and are empty.
 
 None of that is a constructor's job, and the decisions are not the
 constructor's either: they say what ACME's bond trades are.
+
+Delivered by [[id:6A312257-E1EA-4034-89F7-DE942E8F3D0B][Draw every bond code and state its facts]] and its sibling
+[[id:33D80666-EC0D-4484-B8F2-661D5752CED5][Construct every bond product by name]]: the planner now draws all ten codes
+the catalogue routes to the bond instrument table, a fresh tenant books four of
+each, and every bond fact table holds its rows. BondFutureOption is the eleventh
+bond product and the catalogue routes it to no table, which is captured
+separately.
+
+This task was the capture that named the gap; the two tasks above carry the
+work, so it closes with a pointer rather than with a second record of the same
+measurements.

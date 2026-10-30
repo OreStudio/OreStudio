@@ -25,7 +25,7 @@ Every ORE parameter whose reader accepts more than one rendering of a value is s
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | The story is written; the census is the first task. |
 | Waiting on    | The owner's sign-off on the two decisions the census confirms: the canonical form per class, and where the crosswalk data lives. |
-| Next          | Take the census, then extend the value set with the canonical form. |
+| Next          | Confirm the canonical form per class, then extend the value set with it. |
 | Last touched  | 2026-10-30                               |
 
 * Acceptance
@@ -41,7 +41,7 @@ Every ORE parameter whose reader accepts more than one rendering of a value is s
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:ABCEDE72-7A51-4D82-8232-DC9BA9CC9291][Scaffold story: Normalise every ORE parameter representation]] | DONE | 2026-10-30 | 2026-10-30 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:300CD9D6-19F9-4826-B771-49B04A9DD2E7][Take the census of the representations ORE accepts]] | BACKLOG | | | Initial task for: Normalise every ORE parameter representation |
+| [[id:300CD9D6-19F9-4826-B771-49B04A9DD2E7][Take the census of the representations ORE accepts]] | DONE | 2026-10-30 | 2026-10-30 | Initial task for: Normalise every ORE parameter representation |
 
 
 * Analysis
@@ -135,6 +135,62 @@ the comparison upper-cases its input, and the spelling the engine's own writer
 emits (the canonical form). The census task runs it over ORE 1.8.17.0 and writes
 the table above with a row per parameter, which is the list the rest of the
 story works through.
+
+
+* Census of the renderings ORE accepts
+
+The census is produced by
+=projects/ores.seeder/datasets/ore_pricing_engines/extract_parameter_renderings.py=,
+which reads the engine's own source for the renderings each parser accepts,
+whether the comparison ignores case, and the spelling the engine's writer emits.
+Its output is committed as =parameter-renderings.json= beside the extractor, so
+a later ORE version regenerates it and the diff is the change.
+
+Against ORE 1.8.17.0, seventy-four parameters accept more than one rendering:
+
+| Class | Count | Parameters |
+|-------+-------+------------|
+| Flags | 52 | every =parseBool= parameter, whose parser takes twelve renderings: =Y=, =YES=, =TRUE=, =True=, =true=, =1= and the six negatives |
+| Case-insensitive words | 6 | =Calibration=, =CalibrationStrategy=, =FloatSpreadMapping=, =IrVolatilityType=, =ReversionType=, =VolatilityType= |
+| Alias maps | 16 | =BrownianBridgeOrdering=, =Heston.QuantoProcessDiscretization=, =OptionExpiryPosition=, =PolynomType=, =Pricing.Sequence=, =Regression.VarGroupMode=, =RegressorModel=, =SalvagingAlgorithm=, =Scheme=, =SensitivityDecomposition=, =SequenceType=, =SobolDirectionIntegers=, =SobolOrdering=, =Training.BasisFunction=, =Training.Sequence=, =TrainingSequenceType= |
+
+** The canonical form the engine writes
+
+Five of the six case-insensitive words have a writer this scan found, and the
+spelling it emits is the canonical form the story adopts:
+
+| Parameter | Canonical |
+|-----------+-----------|
+| =Calibration= | =BestFit=, =Bootstrap=, =FirstBestFitThenBootsrap=, =None= |
+| =CalibrationStrategy= | =CoterminalAtm=, =CoterminalDealStrike=, =DeltaGammaAdjusted=, =None=, =UnderlyingAtm=, =UnderlyingDealStrike= |
+| =IrVolatilityType=, =ReversionType=, =VolatilityType= | =Hagan=, =HullWhite= |
+
+Two details matter here, and both are evidence a person reads rather than
+trusts. The engine writes =FirstBestFitThenBootsrap= for the enumerator it
+parses as =FIRSTBESTFITTHENBOOTSTRAP= — the writer is misspelt, and its own
+parser would refuse that spelling. And =CalibrationStrategy= writes
+=CoterminalAtm= where the value set states =CoterminalATM=.
+
+The rule that follows: the canonical form must be a rendering the parser
+accepts, because a document the system exports has to be one ORE reads back.
+Where the writer and the parser disagree, the parser wins and the difference is
+recorded as an engine defect rather than copied. So =FirstBestFitThenBootstrap=
+is canonical and the writer's typo is noted; =CoterminalAtm= is canonical
+because the comparison ignores case and the writer states it.
+
+** Two gaps in the census
+
+- *A writer the scan cannot see.* Sixty-nine parameters have no writer in the
+  engine's source: the enumeration belongs to QuantLib, and =operator<<= for it
+  lives in the QuantLib tree, not this one. The canonical form for those must
+  come from a person's reading of the engine's output, or from the value set the
+  registry already states, and the census says so rather than guessing.
+- *Leaves are not in the census.* This scan reads =engineParameter=,
+  =modelParameter= and =globalParameter= call sites, so it names the parameters
+  of a pricing engine. The curve and convention leaves are a different family:
+  the business day convention leaf was the case that started this story, and the
+  day counter leaf is the same class. A later task extends the census to the
+  leaves, or the value set's own links are taken as the list.
 
 * Decisions
 

@@ -1,0 +1,1644 @@
+{
+  "parameters": [
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "AdditionalResultsPathLevel",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "AlwaysRecomputeOptionRepresentation",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "AntitheticVariate",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "ApplyConvexityAdjustment",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "ApplySimmExemptions",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "BrownianBridge",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "BrownianBridgeOrdering",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseSobolBrownianGeneratorOrdering"
+      ],
+      "renderings": [
+        "Factors",
+        "Steps",
+        "Diagonal"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "ByCallSpread",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "CalibrateUnderlyingCurves",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "ComputeBPS",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "ComputeDelta",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "ComputeDeltaVega",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "ComputeGamma",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "ControlVariate",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "EnableCgOptimization",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "EnforceMonotoneVariance",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "ExternalDeviceCompatibilityMode",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "FxVolIsStatic",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "Heston.QuantoProcessDiscretization",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseHestonProcessDiscretization"
+      ],
+      "renderings": [
+        "PartialTruncation",
+        "FullTruncation",
+        "Reflection",
+        "NonCentralChiSquareVariance",
+        "QuadraticExponential",
+        "QuadraticExponentialMartingale",
+        "BroadieKayaExactSchemeLobatto",
+        "BroadieKayaExactSchemeLaguerre",
+        "BroadieKayaExactSchemeTrapezoidal"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "IncludePastCashflows",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "Interactive",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "LinearInZero",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "MesherIsStatic",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "MinObsDate",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "OptionExpiryPosition",
+      "origin": "OREData/ored/scripting/engines/riskparticipationagreementbaseengine.cpp",
+      "parsers": [
+        "parseRpaOptionExpiryPosition"
+      ],
+      "renderings": [
+        "Mid",
+        "Left"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "PolynomType",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parsePolynomType"
+      ],
+      "renderings": [
+        "Monomial",
+        "Laguerre",
+        "Hermite",
+        "Hyperbolic",
+        "Legendre",
+        "Chebyshev",
+        "Chebyshev2nd"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "Pricing.Sequence",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseSequenceType"
+      ],
+      "renderings": [
+        "MersenneTwister",
+        "MersenneTwisterAntithetic",
+        "Sobol",
+        "SobolBrownianBridge",
+        "Burley2020SobolBrownianBridge"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "RecalibrateOnStickyCloseOutDates",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "ReevaluateExerciseInStickyRun",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "Regression.VarGroupMode",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseVarGroupMode"
+      ],
+      "renderings": [
+        "Global",
+        "Trivial"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "RegressorModel",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseRegressorModel"
+      ],
+      "renderings": [
+        "Simple",
+        "Lagged",
+        "LaggedIR",
+        "LaggedFX",
+        "LaggedEQ"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "SalvagingAlgorithm",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseSalvagingAlgorithmType"
+      ],
+      "renderings": [
+        "None",
+        "Spectral",
+        "Hypersphere",
+        "LowerDiagonal",
+        "Higham",
+        "Principal"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "Scheme",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseFdmSchemeDesc"
+      ],
+      "renderings": [
+        "CrankNicolson",
+        "Hundsdorfer",
+        "Douglas",
+        "CraigSneyd",
+        "ModifiedCraigSneyd",
+        "ImplicitEuler",
+        "ExplicitEuler",
+        "MethodOfLines",
+        "TrBDF2"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "ScriptedLibraryOverride",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "SensitivityDecomposition",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseCreditPortfolioSensitivityDecomposition"
+      ],
+      "renderings": [
+        "Underlying",
+        "NotionalWeighted",
+        "LossWeighted",
+        "DeltaWeighted"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "SequenceType",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseSequenceType"
+      ],
+      "renderings": [
+        "MersenneTwister",
+        "MersenneTwisterAntithetic",
+        "Sobol",
+        "SobolBrownianBridge",
+        "Burley2020SobolBrownianBridge"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "SobolDirectionIntegers",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseSobolRsgDirectionIntegers"
+      ],
+      "renderings": [
+        "Unit",
+        "Jaeckel",
+        "SobolLevitan",
+        "SobolLevitanLemieux",
+        "JoeKuoD5",
+        "JoeKuoD6",
+        "JoeKuoD7",
+        "Kuo",
+        "Kuo2",
+        "Kuo3"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "SobolOrdering",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseSobolBrownianGeneratorOrdering"
+      ],
+      "renderings": [
+        "Factors",
+        "Steps",
+        "Diagonal"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "SpreadOnIncomeCurve",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "StaticNpvMem",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "Training.BasisFunction",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parsePolynomType"
+      ],
+      "renderings": [
+        "Monomial",
+        "Laguerre",
+        "Hermite",
+        "Hyperbolic",
+        "Legendre",
+        "Chebyshev",
+        "Chebyshev2nd"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "Training.Sequence",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseSequenceType"
+      ],
+      "renderings": [
+        "MersenneTwister",
+        "MersenneTwisterAntithetic",
+        "Sobol",
+        "SobolBrownianBridge",
+        "Burley2020SobolBrownianBridge"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "TrainingSequenceType",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseSequenceType"
+      ],
+      "renderings": [
+        "MersenneTwister",
+        "MersenneTwisterAntithetic",
+        "Sobol",
+        "SobolBrownianBridge",
+        "Burley2020SobolBrownianBridge"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "UseAD",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "UseCG",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "UseDoublePrecisionForExternalCalculation",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "UseExternalComputeDevice",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "ZeroVolatility",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "calibrateConstituentCurves",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "homogeneousPoolWhenJustified",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "withFlatVol",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "engine"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "AdjustCreditSpreadToRR",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "AdjustDiscounting",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "AdjustEquityForward",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "AdjustEquityVolatility",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [
+        "BestFit",
+        "Bootstrap",
+        "FirstBestFitThenBootsrap",
+        "None"
+      ],
+      "ignores_case": true,
+      "name": "Calibration",
+      "origin": "OREData/ored/model/irmodeldata.cpp",
+      "parsers": [
+        "parseCalibrationType"
+      ],
+      "renderings": [
+        "BOOTSTRAP",
+        "BESTFIT",
+        "FIRSTBESTFITTHENBOOTSTRAP",
+        "STATISTICALWITHRISKNEUTRALVOLATILITY",
+        "NONE"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [
+        "CoterminalAtm",
+        "CoterminalDealStrike",
+        "DeltaGammaAdjusted",
+        "None",
+        "UnderlyingAtm",
+        "UnderlyingDealStrike"
+      ],
+      "ignores_case": true,
+      "name": "CalibrationStrategy",
+      "origin": "OREData/ored/model/irmodeldata.cpp",
+      "parsers": [
+        "parseCalibrationStrategy"
+      ],
+      "renderings": [
+        "COTERMINALATM",
+        "COTERMINALDEALSTRIKE",
+        "DELTAGAMMAADJUSTED",
+        "UNDERLYINGATM",
+        "UNDERLYINGDEALSTRIKE",
+        "NONE"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "EnableCredit",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "EnforceBaseCcy",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [],
+      "ignores_case": true,
+      "name": "FloatSpreadMapping",
+      "origin": "OREData/ored/model/lgmdata.cpp",
+      "parsers": [
+        "parseFloatSpreadMapping"
+      ],
+      "renderings": [
+        "NEXTCOUPON",
+        "PRORATA",
+        "SIMPLE"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "FullDynamicFx",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "FullDynamicIr",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "IncludeSecurityLeg",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [
+        "Hagan",
+        "HullWhite"
+      ],
+      "ignores_case": true,
+      "name": "IrVolatilityType",
+      "origin": "OREData/ored/model/lgmdata.cpp",
+      "parsers": [
+        "parseVolatilityType"
+      ],
+      "renderings": [
+        "HULLWHITE",
+        "HAGAN"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "MatchUnderlyingTenor",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [
+        "Hagan",
+        "HullWhite"
+      ],
+      "ignores_case": true,
+      "name": "ReversionType",
+      "origin": "OREData/ored/model/lgmdata.cpp",
+      "parsers": [
+        "parseReversionType"
+      ],
+      "renderings": [
+        "HULLWHITE",
+        "HAGAN"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "StaticTodaysSpot",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "SurvivalWeightedFundingReturnCashflows",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "TreatSecuritySpreadAsCreditSpread",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [
+        "Hagan",
+        "HullWhite"
+      ],
+      "ignores_case": true,
+      "name": "VolatilityType",
+      "origin": "OREData/ored/model/lgmdata.cpp",
+      "parsers": [
+        "parseVolatilityType"
+      ],
+      "renderings": [
+        "HULLWHITE",
+        "HAGAN"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "ZeroRecoveryOverwrite",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "useAssumedRecovery",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "useQuadrature",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "model"
+    },
+    {
+      "canonical": [],
+      "ignores_case": false,
+      "name": "useStochasticRecovery",
+      "origin": "OREData/ored/utilities/parsers.cpp",
+      "parsers": [
+        "parseBool"
+      ],
+      "renderings": [
+        "Y",
+        "YES",
+        "TRUE",
+        "True",
+        "true",
+        "1",
+        "N",
+        "NO",
+        "FALSE",
+        "False",
+        "false",
+        "0"
+      ],
+      "scope": "model"
+    }
+  ]
+}

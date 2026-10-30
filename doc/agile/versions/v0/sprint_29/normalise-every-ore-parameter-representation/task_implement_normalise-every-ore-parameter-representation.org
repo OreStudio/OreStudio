@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :normalise-every-ore-parameter-representation:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-normalise-every-ore-parameter-representation
+#+pr: 4123
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every ORE parameter whose reader accepts more than one rendering of a value is s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Extend the type extractor with the renderings and the writer. |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -106,7 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4123][#4123]] | [seeder] Take the census of the renderings ORE accepts |
 
 * Review
 
@@ -115,3 +115,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The census is in the story and its output is committed as
+=parameter-renderings.json= beside the extractor. Against ORE 1.8.17.0,
+seventy-four parameters accept more than one rendering: fifty-two flags,
+six case-insensitive words and sixteen alias maps.
+
+Two findings change the story's plan. The engine's writer is not always a
+spelling its own parser accepts — =FirstBestFitThenBootsrap= is written and
+=FirstBestFitThenBootstrap= is parsed — so the canonical form is a rendering
+the parser accepts, and the writer is evidence for it. And sixty-nine
+parameters have no writer in this tree because the enumeration belongs to
+QuantLib, so their canonical form comes from the registry or from a person's
+reading, and the census says which.

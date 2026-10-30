@@ -8,7 +8,7 @@
 #+filetags: :marketdata:implementation:model_the_route_transport_configuration:sprint_29:v0:
 #+owner: marco
 #+branch: feature/add-the-session
-#+pr:
+#+pr: 4091
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -106,7 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4091][#4091]] | [marketdata] Add the session entity |
 
 * Review
 

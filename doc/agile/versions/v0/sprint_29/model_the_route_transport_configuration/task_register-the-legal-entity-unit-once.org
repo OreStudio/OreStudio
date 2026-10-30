@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The shell starts, and the legal entity unit is registered once, in its place.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Fixed and proven: the shell starts.    |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-30                               |
+| Next         | Record the PR.                         |
+| Last touched | 2026-10-30                             |
 
 * Acceptance
 
@@ -56,7 +56,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Calls to register the unit | 2 before, 1 after | =grep -c legal_entity_commands::register_commands= | worktree |
+| Shell startup | refused before, starts after | =./compass.sh shell -l .../legal_entities-list.ores= | worktree |
 
 * Notes
 
@@ -84,3 +85,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The registrar calls the unit once, in its alphabetical place among the leg and
+local jurisdiction commands. The stray call beside the counterparty commands is
+gone.
+
+Before: the shell refused to start with "Two shell command units register the
+name 'legal_entities'", so no environment could be provisioned or driven from
+the shell. After: the shell starts and resolves the address — `legal_entities
+list` answers that the caller is not logged in, which is the command's own
+refusal and not the menu's.
+
+Both calls arrived in the same session's legal entity wiring, one from
+[[commit ef5800d37a]] and one from [[commit 20a6ec0707]]; neither noticed the
+other because the file is generated in alphabetical order and the second landed
+out of sequence.

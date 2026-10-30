@@ -50,7 +50,7 @@ select * from ores_marketdata_publish_adapters_from_dq_fn(
 select * from ores_marketdata_publish_suppliers_from_dq_fn(
     (select id from t_suppliers), ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb);
 
-create function pg_temp.session_insert(p_code text, p_settings text, p_adapter text default 'frankfurter')
+create or replace function pg_temp.session_insert(p_code text, p_settings text, p_adapter text default 'frankfurter')
 returns void as $$
 begin
     insert into ores_marketdata_sessions_tbl (

@@ -162,6 +162,47 @@ begin
 end;
 $$ language plpgsql;
 
+/**
+ * What a setting's value set says about one value: whether the setting names a
+ * set at all, which set, what kind it states, and whether the value is in it.
+ *
+ * The caller states a setting by the code the link table uses, such as
+ * Setup:nThreads. The lookup and the verdict are one security definer function
+ * for the same reason the trigger is one: the value sets are shared rows, so a
+ * tenant-scoped caller that read the tables itself would meet row-level
+ * security, see nothing, and read a rule that does not exist. A setting that
+ * names no set answers found = false rather than raising, because the caller
+ * turns that into a refusal it can state.
+ */
+create or replace function ores_reporting_setting_value_verdict_fn(p_code text, p_value text)
+returns table (found boolean, value_set_code text, source_kind text, is_in_set boolean)
+security definer
+set search_path = public, pg_temp
+stable
+as $$
+declare
+    v_set_code text;
+    v_kind text;
+begin
+    select l.value_set_code, s.source_kind
+      into v_set_code, v_kind
+      from ores_reporting_ore_parameter_setting_value_sets_tbl l
+      join ores_reporting_ore_parameter_value_sets_tbl s
+        on s.code = l.value_set_code
+       and s.valid_to = ores_utility_infinity_timestamp_fn()
+     where l.code = p_code
+       and l.valid_to = ores_utility_infinity_timestamp_fn();
+
+    if not found then
+        return query select false, null::text, null::text, null::boolean;
+        return;
+    end if;
+
+    return query select true, v_set_code, v_kind,
+                        ores_reporting_value_in_set_fn(v_set_code, p_value);
+end;
+$$ language plpgsql;
+
 create or replace function ores_reporting_validate_parameter_value_fn()
 returns trigger
 security definer

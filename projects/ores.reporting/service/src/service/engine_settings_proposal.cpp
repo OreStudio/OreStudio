@@ -163,14 +163,13 @@ void validate(const ores::database::context& ctx,
     if (value.empty())
         return;
 
-    const std::string sql = "select l.value_set_code, s.source_kind,"
-                            " ores_reporting_value_in_set_fn(l.value_set_code, $2)::text"
-                            " from ores_reporting_ore_parameter_setting_value_sets_tbl l"
-                            "  join ores_reporting_ore_parameter_value_sets_tbl s"
-                            "    on s.code = l.value_set_code"
-                            "   and s.valid_to = ores_utility_infinity_timestamp_fn()"
-                            " where l.code = $1"
-                            "   and l.valid_to = ores_utility_infinity_timestamp_fn()";
+    /*
+     * The verdict comes from one security definer function, so a caller whose
+     * tenant cannot see the shared value set rows still reads the rule rather
+     * than an empty answer.
+     */
+    const std::string sql = "select found::text, value_set_code, source_kind, is_in_set::text"
+                            " from ores_reporting_setting_value_verdict_fn($1, $2)";
 
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
         ctx,
@@ -179,12 +178,13 @@ void validate(const ores::database::context& ctx,
         lg,
         "validate an engine setting against its value set");
 
-    if (rows.empty() || rows.front().size() < 3 || !rows.front()[2].has_value())
+    if (rows.empty() || rows.front().size() < 4 || !rows.front()[0].has_value() ||
+        rows.front()[0].value() != "true")
         throw std::invalid_argument(setting.column_name +
                                     " has no value set, so the value it holds cannot be checked.");
 
-    const auto set_code = rows.front()[0].value_or(std::string{});
-    const auto kind = rows.front()[1].value_or(std::string{});
+    const auto set_code = rows.front()[1].value_or(std::string{});
+    const auto kind = rows.front()[2].value_or(std::string{});
 
     /*
      * A kind the set states as a whole has a column of its own, and a number the
@@ -195,7 +195,7 @@ void validate(const ores::database::context& ctx,
     if (kind == "integer")
         as_whole(text);
 
-    if (rows.front()[2].value() == "true")
+    if (rows.front()[3].value_or(std::string{}) == "true")
         return;
 
     throw std::invalid_argument(setting.column_name + " is not a value its value set " + set_code +

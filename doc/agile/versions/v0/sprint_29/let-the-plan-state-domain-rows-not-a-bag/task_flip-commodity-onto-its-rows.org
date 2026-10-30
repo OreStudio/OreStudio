@@ -93,3 +93,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The commodity family states its rows. The planner builds the instrument and its
+basket members beside the drawing that feeds them, and the writer persists what
+the plan carries. The writer's commodity arm is gone: 168 lines of translation
+left the writer and the mapping landed in one function in the planner.
+
+The flip exposed a defect in the slot rather than in the family. A family that
+states rows leaves its bag unset, and the bag's variant defaulted to its first
+alternative, which was a bond. Every commodity slot therefore read as a bond
+with an empty security, and the run stopped when the writer tried to create an
+issue with a nil id:
+
+#+begin_src text
+new row for relation "ores_trading_bond_issues_tbl" violates check constraint
+"ores_trading_bond_issues_tbl_issue_id_check"
+#+end_src
+
+The variant now holds =std::monostate= first, so a slot with no bag reads as no
+family, and the planner test asserts that rather than the absence of one family.
+The bond flip's next slice, the security, is unaffected.
+
+One service was down before the run: =ores.marketdata.official= had no NATS
+client certificate, because it was added after the fleet's certificates were
+issued. =compass nats certs= issued the missing one and the fleet came up 25 of
+25. That is an environment gap and not a code change; it is noted here because
+the run could not start without it.

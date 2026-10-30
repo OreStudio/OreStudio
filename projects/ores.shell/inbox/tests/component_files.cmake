@@ -37,6 +37,7 @@ set(files
     "notification_commands_tests.cpp"
     "notification_delivery_commands_tests.cpp"
     "notification_kind_commands_tests.cpp"
+    "notification_operations_commands_tests.cpp"
     "notification_preference_commands_tests.cpp"
     "notification_recipient_commands_tests.cpp"
 )

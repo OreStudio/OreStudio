@@ -36,6 +36,7 @@ set(files
     "app/commands/inbox/notification_commands.cpp"
     "app/commands/inbox/notification_delivery_commands.cpp"
     "app/commands/inbox/notification_kind_commands.cpp"
+    "app/commands/inbox/notification_operations_commands.cpp"
     "app/commands/inbox/notification_preference_commands.cpp"
     "app/commands/inbox/notification_recipient_commands.cpp"
 )
@@ -58,6 +59,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/inbox/notification_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/inbox/notification_delivery_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/inbox/notification_kind_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/inbox/notification_operations_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/inbox/notification_preference_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/inbox/notification_recipient_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/ores.shell.inbox.hpp"

@@ -26,11 +26,17 @@
 #define ORES_DQ_API_MESSAGING_SUBJECT_AREA_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/subject_area.hpp"
+#include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::dq::messaging {
@@ -267,7 +273,671 @@ inline constexpr std::string_view created = "dq.v1.subject_areas_events.created"
 inline constexpr std::string_view updated = "dq.v1.subject_areas_events.updated";
 inline constexpr std::string_view deleted = "dq.v1.subject_areas_events.deleted";
 }
+/**
+ * @brief The members of subject_area_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const subject_area_key&) {
+    return std::tuple{
+        utility::codec::field{"name", &subject_area_key::name},
+        utility::codec::field{"domain_name", &subject_area_key::domain_name},
+    };
+}
+
+/**
+ * @brief The members of subject_area_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const subject_area_write&) {
+    return std::tuple{
+        utility::codec::field{"name", &subject_area_write::name},
+        utility::codec::field{"domain_name", &subject_area_write::domain_name},
+        utility::codec::field{"description", &subject_area_write::description},
+    };
+}
+
+/**
+ * @brief The members of subject_area_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const subject_area_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &subject_area_change::write},
+        utility::codec::field{"precondition", &subject_area_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of subject_area_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const subject_area_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &subject_area_removal::key},
+        utility::codec::field{"precondition", &subject_area_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of subject_area_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const subject_area_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &subject_area_lookup::key},
+        utility::codec::field{"subject_area", &subject_area_lookup::subject_area},
+    };
+}
+
+/**
+ * @brief The members of subject_area_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const subject_area_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &subject_area_event::event_id},
+        utility::codec::field{"key", &subject_area_event::key},
+        utility::codec::field{"action", &subject_area_event::action},
+        utility::codec::field{"version", &subject_area_event::version},
+        utility::codec::field{"occurred_at", &subject_area_event::occurred_at},
+        utility::codec::field{"correlation_id", &subject_area_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of subject_area_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const subject_area_version_key&) {
+    return std::tuple{
+        utility::codec::field{"subject_area", &subject_area_version_key::subject_area},
+        utility::codec::field{"version", &subject_area_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of subject_area_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const subject_area_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &subject_area_versions_filter::version},
+        utility::codec::field{"from_version", &subject_area_versions_filter::from_version},
+        utility::codec::field{"to_version", &subject_area_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_subject_areas_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_subject_areas_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_subject_areas_request::offset},
+        utility::codec::field{"limit", &list_subject_areas_request::limit},
+        utility::codec::field{"order", &list_subject_areas_request::order},
+        utility::codec::field{"as_of", &list_subject_areas_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_subject_areas_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_subject_areas_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_subject_areas_response::result},
+        utility::codec::field{"areas", &list_subject_areas_response::areas},
+        utility::codec::field{"total", &list_subject_areas_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_subject_area_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_subject_area_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_subject_area_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_subject_area_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_subject_area_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_subject_area_response::result},
+        utility::codec::field{"subject_area", &get_subject_area_response::subject_area},
+    };
+}
+
+/**
+ * @brief The members of get_many_subject_areas_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_subject_areas_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_subject_areas_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_subject_areas_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_subject_areas_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_subject_areas_response::result},
+        utility::codec::field{"entries", &get_many_subject_areas_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_subject_area_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_subject_area_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_subject_area_request::change},
+        utility::codec::field{"intent", &put_subject_area_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_subject_area_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_subject_area_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_subject_area_response::result},
+        utility::codec::field{"subject_area", &put_subject_area_response::subject_area},
+    };
+}
+
+/**
+ * @brief The members of put_many_subject_areas_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_subject_areas_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_subject_areas_request::changes},
+        utility::codec::field{"intent", &put_many_subject_areas_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_subject_areas_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_subject_areas_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_subject_areas_response::result},
+        utility::codec::field{"areas", &put_many_subject_areas_response::areas},
+    };
+}
+
+/**
+ * @brief The members of delete_subject_area_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_subject_area_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_subject_area_request::removal},
+        utility::codec::field{"intent", &delete_subject_area_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_subject_area_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_subject_area_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_subject_area_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_subject_areas_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_subject_areas_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_subject_areas_request::removals},
+        utility::codec::field{"intent", &delete_many_subject_areas_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_subject_areas_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_subject_areas_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_subject_areas_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_subject_area_versions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_subject_area_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_subject_area_versions_request::key},
+        utility::codec::field{"offset", &list_subject_area_versions_request::offset},
+        utility::codec::field{"limit", &list_subject_area_versions_request::limit},
+        utility::codec::field{"order", &list_subject_area_versions_request::order},
+        utility::codec::field{"filter", &list_subject_area_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_subject_area_versions_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_subject_area_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_subject_area_versions_response::result},
+        utility::codec::field{"versions", &list_subject_area_versions_response::versions},
+        utility::codec::field{"total", &list_subject_area_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_subject_area_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_subject_area_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_subject_area_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_subject_area_version_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_subject_area_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_subject_area_version_response::result},
+        utility::codec::field{"version", &get_subject_area_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::subject_area_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::subject_area_key& v);
+    static ores::dq::messaging::subject_area_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::subject_area_key& v);
+    static ores::dq::messaging::subject_area_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::subject_area_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::subject_area_write& v);
+    static ores::dq::messaging::subject_area_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::subject_area_write& v);
+    static ores::dq::messaging::subject_area_write read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::subject_area_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::subject_area_change& v);
+    static ores::dq::messaging::subject_area_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::subject_area_change& v);
+    static ores::dq::messaging::subject_area_change read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::subject_area_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::subject_area_removal& v);
+    static ores::dq::messaging::subject_area_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::subject_area_removal& v);
+    static ores::dq::messaging::subject_area_removal read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::subject_area_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::subject_area_lookup& v);
+    static ores::dq::messaging::subject_area_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::subject_area_lookup& v);
+    static ores::dq::messaging::subject_area_lookup read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::subject_area_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::subject_area_event& v);
+    static ores::dq::messaging::subject_area_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::subject_area_event& v);
+    static ores::dq::messaging::subject_area_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::subject_area_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::subject_area_version_key& v);
+    static ores::dq::messaging::subject_area_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::subject_area_version_key& v);
+    static ores::dq::messaging::subject_area_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::subject_area_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::subject_area_versions_filter& v);
+    static ores::dq::messaging::subject_area_versions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::subject_area_versions_filter& v);
+    static ores::dq::messaging::subject_area_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_subject_areas_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_subject_areas_request& v);
+    static ores::dq::messaging::list_subject_areas_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::list_subject_areas_request& v);
+    static ores::dq::messaging::list_subject_areas_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_subject_areas_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_subject_areas_response& v);
+    static ores::dq::messaging::list_subject_areas_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::list_subject_areas_response& v);
+    static ores::dq::messaging::list_subject_areas_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_subject_area_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_subject_area_request& v);
+    static ores::dq::messaging::get_subject_area_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_subject_area_request& v);
+    static ores::dq::messaging::get_subject_area_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_subject_area_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_subject_area_response& v);
+    static ores::dq::messaging::get_subject_area_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_subject_area_response& v);
+    static ores::dq::messaging::get_subject_area_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_many_subject_areas_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_many_subject_areas_request& v);
+    static ores::dq::messaging::get_many_subject_areas_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_many_subject_areas_request& v);
+    static ores::dq::messaging::get_many_subject_areas_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_many_subject_areas_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_many_subject_areas_response& v);
+    static ores::dq::messaging::get_many_subject_areas_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_many_subject_areas_response& v);
+    static ores::dq::messaging::get_many_subject_areas_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_subject_area_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_subject_area_request& v);
+    static ores::dq::messaging::put_subject_area_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::put_subject_area_request& v);
+    static ores::dq::messaging::put_subject_area_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_subject_area_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_subject_area_response& v);
+    static ores::dq::messaging::put_subject_area_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::put_subject_area_response& v);
+    static ores::dq::messaging::put_subject_area_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_many_subject_areas_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_many_subject_areas_request& v);
+    static ores::dq::messaging::put_many_subject_areas_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::put_many_subject_areas_request& v);
+    static ores::dq::messaging::put_many_subject_areas_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_many_subject_areas_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_many_subject_areas_response& v);
+    static ores::dq::messaging::put_many_subject_areas_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::put_many_subject_areas_response& v);
+    static ores::dq::messaging::put_many_subject_areas_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_subject_area_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::delete_subject_area_request& v);
+    static ores::dq::messaging::delete_subject_area_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::delete_subject_area_request& v);
+    static ores::dq::messaging::delete_subject_area_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_subject_area_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::delete_subject_area_response& v);
+    static ores::dq::messaging::delete_subject_area_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::delete_subject_area_response& v);
+    static ores::dq::messaging::delete_subject_area_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_many_subject_areas_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::delete_many_subject_areas_request& v);
+    static ores::dq::messaging::delete_many_subject_areas_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_many_subject_areas_request& v);
+    static ores::dq::messaging::delete_many_subject_areas_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_many_subject_areas_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::delete_many_subject_areas_response& v);
+    static ores::dq::messaging::delete_many_subject_areas_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_many_subject_areas_response& v);
+    static ores::dq::messaging::delete_many_subject_areas_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_subject_area_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_subject_area_versions_request& v);
+    static ores::dq::messaging::list_subject_area_versions_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_subject_area_versions_request& v);
+    static ores::dq::messaging::list_subject_area_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_subject_area_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::list_subject_area_versions_response& v);
+    static ores::dq::messaging::list_subject_area_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_subject_area_versions_response& v);
+    static ores::dq::messaging::list_subject_area_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_subject_area_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_subject_area_version_request& v);
+    static ores::dq::messaging::get_subject_area_version_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_subject_area_version_request& v);
+    static ores::dq::messaging::get_subject_area_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_subject_area_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_subject_area_version_response& v);
+    static ores::dq::messaging::get_subject_area_version_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_subject_area_version_response& v);
+    static ores::dq::messaging::get_subject_area_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

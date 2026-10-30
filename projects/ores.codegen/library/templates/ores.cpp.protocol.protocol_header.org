@@ -47,7 +47,17 @@ The full template source. Edit here and re-tangle with
 #include <vector>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/domain/protocol.hpp"
+{{#has_generated_wire_codec}}
+#include <cstddef>
+#include <span>
+#include <tuple>
+{{/has_generated_wire_codec}}
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
+{{#has_generated_wire_codec}}
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include "ores.{{component_include}}/export.hpp"
+{{/has_generated_wire_codec}}
 <<paste:8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F>>
 
 namespace ores::{{component}}::messaging {
@@ -92,9 +102,45 @@ namespace {{entity_singular}}_event_subjects {
 inline constexpr std::string_view {{action}} = "{{subject}}";
 {{/events}}
 }
+{{#has_generated_wire_codec}}
+{{#messages}}
+/**
+ * @brief The members of {{name}}, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const {{name}}&) {
+    return std::tuple{
+{{#fields}}        utility::codec::field{"{{name}}", &{{struct_name}}::{{name}}},
+{{/fields}}    };
+}
+
+{{/messages}}
+{{/has_generated_wire_codec}}
 
 <<paste:2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F>>
 }
+{{#has_generated_wire_codec}}
+namespace ores::utility::codec {
+
+{{#messages}}
+template <>
+struct ORES_{{component_include_upper}}_EXPORT
+wire_traits<ores::{{component}}::messaging::{{name}}> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::{{component}}::messaging::{{name}}& v);
+    static ores::{{component}}::messaging::{{name}} read_json(std::string_view text);
+    static std::string write_msgpack(const ores::{{component}}::messaging::{{name}}& v);
+    static ores::{{component}}::messaging::{{name}} read_msgpack(std::span<const std::byte> data);
+};
+{{/messages}}
+}
+
+{{/has_generated_wire_codec}}
 
 #endif
 {{/domain_entity}}
@@ -108,7 +154,17 @@ inline constexpr std::string_view {{action}} = "{{subject}}";
 #include <vector>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/domain/protocol.hpp"
+{{#has_generated_wire_codec}}
+#include <cstddef>
+#include <span>
+#include <tuple>
+{{/has_generated_wire_codec}}
 #include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
+{{#has_generated_wire_codec}}
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include "ores.{{component_include}}/export.hpp"
+{{/has_generated_wire_codec}}
 
 namespace ores::{{component}}::messaging {
 
@@ -139,7 +195,43 @@ struct {{name}} {
 };
 
 {{/messages}}
+{{#has_generated_wire_codec}}
+{{#messages}}
+/**
+ * @brief The members of {{name}}, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const {{name}}&) {
+    return std::tuple{
+{{#fields}}        utility::codec::field{"{{name}}", &{{struct_name}}::{{name}}},
+{{/fields}}    };
 }
+
+{{/messages}}
+{{/has_generated_wire_codec}}
+}
+{{#has_generated_wire_codec}}
+namespace ores::utility::codec {
+
+{{#messages}}
+template <>
+struct ORES_{{component_include_upper}}_EXPORT
+wire_traits<ores::{{component}}::messaging::{{name}}> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::{{component}}::messaging::{{name}}& v);
+    static ores::{{component}}::messaging::{{name}} read_json(std::string_view text);
+    static std::string write_msgpack(const ores::{{component}}::messaging::{{name}}& v);
+    static ores::{{component}}::messaging::{{name}} read_msgpack(std::span<const std::byte> data);
+};
+{{/messages}}
+}
+
+{{/has_generated_wire_codec}}
 
 #endif
 {{/junction}}

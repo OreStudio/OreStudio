@@ -27,62 +27,54 @@
 
 #include "ores.dq.api/domain/methodology.hpp"
 #include "ores.dq.api/export.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
 /**
- * @brief The wire form of methodology, in each format the wire states.
+ * @brief The members of methodology, named as the wire names them and
+ * in the order the type declares them.
  *
- * The four functions are this type's own: an overload set in the domain
- * namespace would collide on the read direction, where two types differ only
- * in what they return, so they are named here instead.
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
  */
-struct ORES_DQ_API_EXPORT methodology_codec final {
-    /**
-     * @brief Writes @p v as JSON: an object whose members are the members of
-     * the type.
-     *
-     * The bytes are reflect-cpp's for the same value, because this states the
-     * encoding that reflector derives, and the type's own test compares the
-     * two.
-     */
-    static std::string to_json(const methodology& v);
-
-    /**
-     * @brief Reads a methodology back out of its JSON form.
-     */
-    static methodology from_json(std::string_view text);
-
-    /**
-     * @brief Writes @p v as MessagePack: a map whose keys are the members of
-     * the type.
-     */
-    static std::string to_msgpack(const methodology& v);
-
-    /**
-     * @brief Reads a methodology back out of its MessagePack form.
-     */
-    static methodology from_msgpack(std::span<const std::byte> data);
-};
+[[nodiscard]] constexpr auto wire_fields(const methodology&) {
+    return std::tuple{
+        utility::codec::field{"version", &methodology::version},
+        utility::codec::field{"tenant_id", &methodology::tenant_id},
+        utility::codec::field{"id", &methodology::id},
+        utility::codec::field{"name", &methodology::name},
+        utility::codec::field{"description", &methodology::description},
+        utility::codec::field{"logic_reference", &methodology::logic_reference},
+        utility::codec::field{"implementation_details", &methodology::implementation_details},
+        utility::codec::field{"modified_by", &methodology::modified_by},
+        utility::codec::field{"performed_by", &methodology::performed_by},
+        utility::codec::field{"change_reason_code", &methodology::change_reason_code},
+        utility::codec::field{"change_commentary", &methodology::change_commentary},
+        utility::codec::field{"recorded_at", &methodology::recorded_at},
+    };
+}
 
 }
 
 namespace ores::utility::codec {
 
 /**
- * @brief The generated codec, which is how the wire codec reaches this type.
+ * @brief The generated codec: what the wire codec resolves to for this type.
  *
- * A translation unit that only sends the type includes this header and is
- * done: the wire codec names wire_traits, and this states what it resolves to
- * here.
+ * The functions are declared here and defined in this type's own translation
+ * unit, so a translation unit that only sends the type compiles a declaration
+ * rather than a second copy of the encoder.
  */
 template <>
-struct wire_traits<ores::dq::domain::methodology> {
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::domain::methodology> {
     /**
      * @brief States that this is a generated codec.
      *
@@ -94,21 +86,13 @@ struct wire_traits<ores::dq::domain::methodology> {
      */
     static constexpr bool is_generated = true;
 
-    static std::string write_json(const ores::dq::domain::methodology& v) {
-        return ores::dq::domain::methodology_codec::to_json(v);
-    }
+    static std::string write_json(const ores::dq::domain::methodology& v);
 
-    static ores::dq::domain::methodology read_json(std::string_view text) {
-        return ores::dq::domain::methodology_codec::from_json(text);
-    }
+    static ores::dq::domain::methodology read_json(std::string_view text);
 
-    static std::string write_msgpack(const ores::dq::domain::methodology& v) {
-        return ores::dq::domain::methodology_codec::to_msgpack(v);
-    }
+    static std::string write_msgpack(const ores::dq::domain::methodology& v);
 
-    static ores::dq::domain::methodology read_msgpack(std::span<const std::byte> data) {
-        return ores::dq::domain::methodology_codec::from_msgpack(data);
-    }
+    static ores::dq::domain::methodology read_msgpack(std::span<const std::byte> data);
 };
 
 }

@@ -26,11 +26,11 @@ Step 6 of 7, first component. The codec templates emit generated codecs, and the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | ores.dq's domain types carry generated codecs and are proved byte for byte against reflect-cpp; the wire codec reaches them through the seam. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR, then the component's messaging types -- see the last Note. |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance

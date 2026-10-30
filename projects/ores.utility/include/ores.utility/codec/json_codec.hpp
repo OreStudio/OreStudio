@@ -21,6 +21,7 @@
 #define ORES_UTILITY_CODEC_JSON_CODEC_HPP
 
 #include "ores.utility/codec/text_form.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include <cstdint>
 #include <limits>
@@ -28,21 +29,90 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <type_traits>
 #include <vector>
 #include <yyjson.h>
 
 namespace ores::utility::codec {
 
+template <typename T>
+struct json_codec;
+
+/**
+ * @brief An object, over a list of fields: one value carrying each field.
+ *
+ * This is where the recursion lives. A field's own value is whatever its
+ * member's carrier gives it, so a member that is itself a type with a wire form
+ * carries another object, a vector carries an array of them and an optional
+ * carries one or nothing -- no carrier knows any of those types by name.
+ */
+namespace detail {
+
+template <typename T, typename... Members>
+yyjson_mut_val*
+write_object(yyjson_mut_doc* doc, const T& v, const std::tuple<field<T, Members>...>& fields) {
+    auto* object = yyjson_mut_obj(doc);
+    if (object == nullptr)
+        throw std::runtime_error("Could not make a JSON object");
+    std::apply(
+        [&](const auto&... f) {
+            (
+                [&] {
+                    using member_type = std::remove_cvref_t<decltype(v.*(f.member))>;
+                    if constexpr (is_optional_member<member_type>) {
+                        if (!(v.*(f.member)))
+                            return;
+                    }
+                    // The key is copied into the document: the mutable API
+                    // stores the pointer it is given, so a key held anywhere
+                    // shorter-lived than the document would dangle between the
+                    // add and the render.
+                    auto* key = yyjson_mut_strncpy(doc, f.name.data(), f.name.size());
+                    auto* value = json_codec<Members>::write(doc, v.*(f.member));
+                    if (!yyjson_mut_obj_add(object, key, value))
+                        throw std::runtime_error("Could not add " + std::string(f.name) +
+                                                 " to a JSON object");
+                }(),
+                ...);
+        },
+        fields);
+    return object;
+}
+
+template <typename T, typename... Members>
+void read_object(yyjson_val* v, T& out, const std::tuple<field<T, Members>...>& fields) {
+    if (!yyjson_is_obj(v))
+        throw std::invalid_argument("Not an object");
+    std::apply(
+        [&](const auto&... f) {
+            (
+                [&] {
+                    using member_type = std::remove_cvref_t<decltype(out.*(f.member))>;
+                    auto* value = yyjson_obj_getn(v, f.name.data(), f.name.size());
+                    if (value == nullptr) {
+                        if constexpr (is_optional_member<member_type>)
+                            return;
+                        else
+                            throw std::invalid_argument("Missing member: " + std::string(f.name));
+                    }
+                    out.*(f.member) = json_codec<Members>::read(value);
+                }(),
+                ...);
+        },
+        fields);
+}
+
+}
+
 /**
  * @brief The JSON form of a type: one value appended to a document, and one
  * value read back out of one.
  *
- * A type whose wire form is a string states it through =text_form= and takes
- * the implementation below; a type with another shape states its own
- * specialisation. Most of what this estate puts on the wire is a string, and
- * the rest is a number or a truth value, which the specialisations further
- * down state.
+ * A type that states its own shape through =wire_fields= is an object, and its
+ * members are encoded by theirs. Every other type states its form through
+ * =text_form=, or has a specialisation further down for the shape a string does
+ * not cover: a number, a truth value, an absent value, an array.
  *
  * Writing takes the document because a value is built against it; reading takes
  * the immutable value the parser produced.
@@ -50,15 +120,25 @@ namespace ores::utility::codec {
 template <typename T>
 struct json_codec {
     static yyjson_mut_val* write(yyjson_mut_doc* doc, const T& v) {
-        const auto text = text_form<T>::to_text(v);
-        return yyjson_mut_strncpy(doc, text.data(), text.size());
+        if constexpr (states_wire_form<T>) {
+            return detail::write_object(doc, v, wire_fields(v));
+        } else {
+            const auto text = text_form<T>::to_text(v);
+            return yyjson_mut_strncpy(doc, text.data(), text.size());
+        }
     }
 
     static T read(yyjson_val* v) {
-        if (!yyjson_is_str(v))
-            throw std::invalid_argument("Not " + std::string(text_form<T>::wire_name) +
-                                        ": the JSON value is not a string");
-        return text_form<T>::from_text(std::string_view(yyjson_get_str(v), yyjson_get_len(v)));
+        if constexpr (states_wire_form<T>) {
+            T out;
+            detail::read_object(v, out, wire_fields(out));
+            return out;
+        } else {
+            if (!yyjson_is_str(v))
+                throw std::invalid_argument("Not " + std::string(text_form<T>::wire_name) +
+                                            ": the JSON value is not a string");
+            return text_form<T>::from_text(std::string_view(yyjson_get_str(v), yyjson_get_len(v)));
+        }
     }
 };
 

@@ -24,46 +24,29 @@
  */
 #include "ores.dq.api/domain/nature_dimension_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-namespace {
+namespace ores::utility::codec {
 
-/**
- * @brief The members of nature_dimension, named as the wire names them and
- * in the order the type declares them.
- */
-constexpr auto nature_dimension_codec_fields = std::tuple{
-    utility::codec::field{"version", &nature_dimension::version},
-    utility::codec::field{"tenant_id", &nature_dimension::tenant_id},
-    utility::codec::field{"code", &nature_dimension::code},
-    utility::codec::field{"name", &nature_dimension::name},
-    utility::codec::field{"description", &nature_dimension::description},
-    utility::codec::field{"modified_by", &nature_dimension::modified_by},
-    utility::codec::field{"performed_by", &nature_dimension::performed_by},
-    utility::codec::field{"change_reason_code", &nature_dimension::change_reason_code},
-    utility::codec::field{"change_commentary", &nature_dimension::change_commentary},
-    utility::codec::field{"recorded_at", &nature_dimension::recorded_at},
-};
-
+std::string wire_traits<ores::dq::domain::nature_dimension>::write_json(
+    const ores::dq::domain::nature_dimension& v) {
+    return object::write_json(v);
 }
 
-std::string nature_dimension_codec::to_json(const nature_dimension& v) {
-    return utility::codec::object::write_json(v, nature_dimension_codec_fields);
+ores::dq::domain::nature_dimension
+wire_traits<ores::dq::domain::nature_dimension>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::nature_dimension>(text);
 }
 
-nature_dimension nature_dimension_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<nature_dimension>(text, nature_dimension_codec_fields);
+std::string wire_traits<ores::dq::domain::nature_dimension>::write_msgpack(
+    const ores::dq::domain::nature_dimension& v) {
+    return object::write_msgpack(v);
 }
 
-std::string nature_dimension_codec::to_msgpack(const nature_dimension& v) {
-    return utility::codec::object::write_msgpack(v, nature_dimension_codec_fields);
-}
-
-nature_dimension nature_dimension_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<nature_dimension>(data,
-                                                                  nature_dimension_codec_fields);
+ores::dq::domain::nature_dimension
+wire_traits<ores::dq::domain::nature_dimension>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::nature_dimension>(data);
 }
 
 }

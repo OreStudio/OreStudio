@@ -24,46 +24,29 @@
  */
 #include "ores.dq.api/domain/code_domain_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-namespace {
+namespace ores::utility::codec {
 
-/**
- * @brief The members of code_domain, named as the wire names them and
- * in the order the type declares them.
- */
-constexpr auto code_domain_codec_fields = std::tuple{
-    utility::codec::field{"version", &code_domain::version},
-    utility::codec::field{"tenant_id", &code_domain::tenant_id},
-    utility::codec::field{"code", &code_domain::code},
-    utility::codec::field{"name", &code_domain::name},
-    utility::codec::field{"description", &code_domain::description},
-    utility::codec::field{"display_order", &code_domain::display_order},
-    utility::codec::field{"modified_by", &code_domain::modified_by},
-    utility::codec::field{"performed_by", &code_domain::performed_by},
-    utility::codec::field{"change_reason_code", &code_domain::change_reason_code},
-    utility::codec::field{"change_commentary", &code_domain::change_commentary},
-    utility::codec::field{"recorded_at", &code_domain::recorded_at},
-};
-
+std::string
+wire_traits<ores::dq::domain::code_domain>::write_json(const ores::dq::domain::code_domain& v) {
+    return object::write_json(v);
 }
 
-std::string code_domain_codec::to_json(const code_domain& v) {
-    return utility::codec::object::write_json(v, code_domain_codec_fields);
+ores::dq::domain::code_domain
+wire_traits<ores::dq::domain::code_domain>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::code_domain>(text);
 }
 
-code_domain code_domain_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<code_domain>(text, code_domain_codec_fields);
+std::string
+wire_traits<ores::dq::domain::code_domain>::write_msgpack(const ores::dq::domain::code_domain& v) {
+    return object::write_msgpack(v);
 }
 
-std::string code_domain_codec::to_msgpack(const code_domain& v) {
-    return utility::codec::object::write_msgpack(v, code_domain_codec_fields);
-}
-
-code_domain code_domain_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<code_domain>(data, code_domain_codec_fields);
+ores::dq::domain::code_domain
+wire_traits<ores::dq::domain::code_domain>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::code_domain>(data);
 }
 
 }

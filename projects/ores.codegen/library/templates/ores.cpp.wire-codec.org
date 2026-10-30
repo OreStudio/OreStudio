@@ -54,6 +54,7 @@ what =rfl::Skip= does for the reflector this replaces.
 |-----------+-------------|
 | [[id:9A5DB007-BF55-43DC-9C2F-479A501BA44A][ores.cpp.wire-codec.codec_header]] | Declares a type's four wire functions and the wire_traits specialisation naming them. =wire-codec= facet. |
 | [[id:82D600B6-D48F-4BED-B4CB-BFF0DFCEC5B0][ores.cpp.wire-codec.codec_impl]] | States a type's field list and defines its four wire functions over it. =wire-codec= facet. |
+| [[id:6A583145-C60B-4EDC-A17E-03226578C168][ores.cpp.wire-codec.protocol_codec_impl]] | Defines each protocol message's four wire functions. =wire-codec= facet. |
 
 * See also
 

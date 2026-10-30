@@ -24,45 +24,27 @@
  */
 #include "ores.dq.api/domain/catalog_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-namespace {
+namespace ores::utility::codec {
 
-/**
- * @brief The members of catalog, named as the wire names them and
- * in the order the type declares them.
- */
-constexpr auto catalog_codec_fields = std::tuple{
-    utility::codec::field{"version", &catalog::version},
-    utility::codec::field{"tenant_id", &catalog::tenant_id},
-    utility::codec::field{"name", &catalog::name},
-    utility::codec::field{"description", &catalog::description},
-    utility::codec::field{"owner", &catalog::owner},
-    utility::codec::field{"modified_by", &catalog::modified_by},
-    utility::codec::field{"performed_by", &catalog::performed_by},
-    utility::codec::field{"change_reason_code", &catalog::change_reason_code},
-    utility::codec::field{"change_commentary", &catalog::change_commentary},
-    utility::codec::field{"recorded_at", &catalog::recorded_at},
-};
-
+std::string wire_traits<ores::dq::domain::catalog>::write_json(const ores::dq::domain::catalog& v) {
+    return object::write_json(v);
 }
 
-std::string catalog_codec::to_json(const catalog& v) {
-    return utility::codec::object::write_json(v, catalog_codec_fields);
+ores::dq::domain::catalog wire_traits<ores::dq::domain::catalog>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::catalog>(text);
 }
 
-catalog catalog_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<catalog>(text, catalog_codec_fields);
+std::string
+wire_traits<ores::dq::domain::catalog>::write_msgpack(const ores::dq::domain::catalog& v) {
+    return object::write_msgpack(v);
 }
 
-std::string catalog_codec::to_msgpack(const catalog& v) {
-    return utility::codec::object::write_msgpack(v, catalog_codec_fields);
-}
-
-catalog catalog_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<catalog>(data, catalog_codec_fields);
+ores::dq::domain::catalog
+wire_traits<ores::dq::domain::catalog>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::catalog>(data);
 }
 
 }

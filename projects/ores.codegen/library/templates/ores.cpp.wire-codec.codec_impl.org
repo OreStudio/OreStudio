@@ -36,7 +36,6 @@ The full template source. Edit here and re-tangle with
 #include "ores.{{component_include}}/domain/{{entity_singular}}_codec.hpp"
 
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
 namespace ores::{{component}}::domain {
 
@@ -46,6 +45,7 @@ static_assert(sizeof({{entity_singular}}) == 0,
     "grouped: its codec has to encode the groups, and no template in this "
     "facet does that yet.");
 {{/has_domain_groups}}
+}
 {{^has_domain_groups}}
 {{#has_identity_group}}
 static_assert(sizeof({{entity_singular}}) == 0,
@@ -63,109 +63,67 @@ static_assert(sizeof({{entity_singular}}) == 0,
 {{^has_domain_groups}}
 {{^has_identity_group}}
 {{^has_audit_group}}
-namespace {
+{{/has_audit_group}}
+{{/has_identity_group}}
+{{/has_domain_groups}}
 
-/**
- * @brief The members of {{entity_singular}}, named as the wire names them and
- * in the order the type declares them.
- */
-constexpr auto {{entity_singular}}_codec_fields = std::tuple{
-{{#has_audit_columns}}    utility::codec::field{"version", &{{entity_singular}}::version},
-{{/has_audit_columns}}
-{{#has_tenant_id}}    utility::codec::field{"tenant_id", &{{entity_singular}}::tenant_id},
-{{/has_tenant_id}}
-{{#primary_key.columns}}    utility::codec::field{"{{column}}", &{{entity_singular}}::{{column}}},
-{{/primary_key.columns}}
-{{#natural_keys}}    utility::codec::field{"{{column}}", &{{entity_singular}}::{{column}}},
-{{/natural_keys}}
-{{#columns}}
-{{^is_identity_group_column}}
-{{^sql_only}}
-{{^no_wire}}    utility::codec::field{"{{name}}", &{{entity_singular}}::{{name}}},
-{{/no_wire}}
-{{/sql_only}}
-{{/is_identity_group_column}}
-{{/columns}}
-{{#has_audit_columns}}    utility::codec::field{"modified_by", &{{entity_singular}}::modified_by},
-    utility::codec::field{"performed_by", &{{entity_singular}}::performed_by},
-    utility::codec::field{"change_reason_code", &{{entity_singular}}::change_reason_code},
-    utility::codec::field{"change_commentary", &{{entity_singular}}::change_commentary},
-    utility::codec::field{"recorded_at", &{{entity_singular}}::recorded_at},
-{{/has_audit_columns}}
-};
+{{^has_domain_groups}}
+{{^has_identity_group}}
+{{^has_audit_group}}
+namespace ores::utility::codec {
 
+std::string wire_traits<ores::{{component}}::domain::{{entity_singular}}>::write_json(const ores::{{component}}::domain::{{entity_singular}}& v) {
+    return object::write_json(v);
 }
 
-std::string {{entity_singular}}_codec::to_json(const {{entity_singular}}& v) {
-    return utility::codec::object::write_json(v, {{entity_singular}}_codec_fields);
+ores::{{component}}::domain::{{entity_singular}} wire_traits<ores::{{component}}::domain::{{entity_singular}}>::read_json(std::string_view text) {
+    return object::read_json<ores::{{component}}::domain::{{entity_singular}}>(text);
 }
 
-{{entity_singular}} {{entity_singular}}_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<{{entity_singular}}>(text, {{entity_singular}}_codec_fields);
+std::string wire_traits<ores::{{component}}::domain::{{entity_singular}}>::write_msgpack(const ores::{{component}}::domain::{{entity_singular}}& v) {
+    return object::write_msgpack(v);
 }
 
-std::string {{entity_singular}}_codec::to_msgpack(const {{entity_singular}}& v) {
-    return utility::codec::object::write_msgpack(v, {{entity_singular}}_codec_fields);
+ores::{{component}}::domain::{{entity_singular}} wire_traits<ores::{{component}}::domain::{{entity_singular}}>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::{{component}}::domain::{{entity_singular}}>(data);
 }
 
-{{entity_singular}} {{entity_singular}}_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<{{entity_singular}}>(data, {{entity_singular}}_codec_fields);
 }
 
 {{/has_audit_group}}
 {{/has_identity_group}}
 {{/has_domain_groups}}
-}
 
 {{/domain_entity}}
 {{#junction}}
 #include "ores.{{component_include}}/domain/{{name_singular}}_codec.hpp"
 
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
 namespace ores::{{component}}::domain {
 
-namespace {
-
-/**
- * @brief The members of {{name_singular}}, named as the wire names them and in
- * the order the type declares them.
- */
-constexpr auto {{name_singular}}_codec_fields = std::tuple{
-    utility::codec::field{"version", &{{name_singular}}::version},
-{{#has_tenant_id}}    utility::codec::field{"tenant_id", &{{name_singular}}::tenant_id},
-{{/has_tenant_id}}
-    utility::codec::field{"{{left.column}}", &{{name_singular}}::{{left.column}}},
-    utility::codec::field{"{{right.column}}", &{{name_singular}}::{{right.column}}},
-{{#columns}}    utility::codec::field{"{{name}}", &{{name_singular}}::{{name}}},
-{{/columns}}
-    utility::codec::field{"modified_by", &{{name_singular}}::modified_by},
-    utility::codec::field{"performed_by", &{{name_singular}}::performed_by},
-    utility::codec::field{"change_reason_code", &{{name_singular}}::change_reason_code},
-    utility::codec::field{"change_commentary", &{{name_singular}}::change_commentary},
-    utility::codec::field{"recorded_at", &{{name_singular}}::recorded_at},
-};
-
 }
 
-std::string {{name_singular}}_codec::to_json(const {{name_singular}}& v) {
-    return utility::codec::object::write_json(v, {{name_singular}}_codec_fields);
+namespace ores::utility::codec {
+
+std::string wire_traits<ores::{{component}}::domain::{{name_singular}}>::write_json(const ores::{{component}}::domain::{{name_singular}}& v) {
+    return object::write_json(v);
 }
 
-{{name_singular}} {{name_singular}}_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<{{name_singular}}>(text, {{name_singular}}_codec_fields);
+ores::{{component}}::domain::{{name_singular}} wire_traits<ores::{{component}}::domain::{{name_singular}}>::read_json(std::string_view text) {
+    return object::read_json<ores::{{component}}::domain::{{name_singular}}>(text);
 }
 
-std::string {{name_singular}}_codec::to_msgpack(const {{name_singular}}& v) {
-    return utility::codec::object::write_msgpack(v, {{name_singular}}_codec_fields);
+std::string wire_traits<ores::{{component}}::domain::{{name_singular}}>::write_msgpack(const ores::{{component}}::domain::{{name_singular}}& v) {
+    return object::write_msgpack(v);
 }
 
-{{name_singular}} {{name_singular}}_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<{{name_singular}}>(data, {{name_singular}}_codec_fields);
+ores::{{component}}::domain::{{name_singular}} wire_traits<ores::{{component}}::domain::{{name_singular}}>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::{{component}}::domain::{{name_singular}}>(data);
 }
 
 }
+
 
 {{/junction}}
 #+end_src

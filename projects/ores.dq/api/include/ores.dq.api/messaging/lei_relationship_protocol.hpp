@@ -26,11 +26,17 @@
 #define ORES_DQ_API_MESSAGING_LEI_RELATIONSHIP_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/lei_relationship.hpp"
+#include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::dq::messaging {
@@ -128,7 +134,269 @@ inline constexpr std::string_view created = "dq.v1.lei_relationships_events.crea
 inline constexpr std::string_view updated = "dq.v1.lei_relationships_events.updated";
 inline constexpr std::string_view deleted = "dq.v1.lei_relationships_events.deleted";
 }
+/**
+ * @brief The members of lei_relationship_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const lei_relationship_key&) {
+    return std::tuple{
+        utility::codec::field{"relationship_start_node_node_id",
+                              &lei_relationship_key::relationship_start_node_node_id},
+    };
+}
+
+/**
+ * @brief The members of lei_relationship_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const lei_relationship_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &lei_relationship_lookup::key},
+        utility::codec::field{"lei_relationship", &lei_relationship_lookup::lei_relationship},
+    };
+}
+
+/**
+ * @brief The members of lei_relationships_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const lei_relationships_filter&) {
+    return std::tuple{
+        utility::codec::field{"relationship_start_node_node_id_one_of",
+                              &lei_relationships_filter::relationship_start_node_node_id_one_of},
+    };
+}
+
+/**
+ * @brief The members of lei_relationship_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const lei_relationship_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &lei_relationship_event::event_id},
+        utility::codec::field{"key", &lei_relationship_event::key},
+        utility::codec::field{"action", &lei_relationship_event::action},
+        utility::codec::field{"version", &lei_relationship_event::version},
+        utility::codec::field{"occurred_at", &lei_relationship_event::occurred_at},
+        utility::codec::field{"correlation_id", &lei_relationship_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of list_lei_relationships_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_lei_relationships_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_lei_relationships_request::offset},
+        utility::codec::field{"limit", &list_lei_relationships_request::limit},
+        utility::codec::field{"order", &list_lei_relationships_request::order},
+        utility::codec::field{"filter", &list_lei_relationships_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_lei_relationships_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_lei_relationships_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_lei_relationships_response::result},
+        utility::codec::field{"relationships", &list_lei_relationships_response::relationships},
+        utility::codec::field{"total", &list_lei_relationships_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_lei_relationship_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_lei_relationship_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_lei_relationship_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_lei_relationship_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_lei_relationship_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_lei_relationship_response::result},
+        utility::codec::field{"lei_relationship", &get_lei_relationship_response::lei_relationship},
+    };
+}
+
+/**
+ * @brief The members of get_many_lei_relationships_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_lei_relationships_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_lei_relationships_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_lei_relationships_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_lei_relationships_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_lei_relationships_response::result},
+        utility::codec::field{"entries", &get_many_lei_relationships_response::entries},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::lei_relationship_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::lei_relationship_key& v);
+    static ores::dq::messaging::lei_relationship_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::lei_relationship_key& v);
+    static ores::dq::messaging::lei_relationship_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::lei_relationship_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::lei_relationship_lookup& v);
+    static ores::dq::messaging::lei_relationship_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::lei_relationship_lookup& v);
+    static ores::dq::messaging::lei_relationship_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::lei_relationships_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::lei_relationships_filter& v);
+    static ores::dq::messaging::lei_relationships_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::lei_relationships_filter& v);
+    static ores::dq::messaging::lei_relationships_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::lei_relationship_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::lei_relationship_event& v);
+    static ores::dq::messaging::lei_relationship_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::lei_relationship_event& v);
+    static ores::dq::messaging::lei_relationship_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_lei_relationships_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_lei_relationships_request& v);
+    static ores::dq::messaging::list_lei_relationships_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::list_lei_relationships_request& v);
+    static ores::dq::messaging::list_lei_relationships_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_lei_relationships_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_lei_relationships_response& v);
+    static ores::dq::messaging::list_lei_relationships_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::list_lei_relationships_response& v);
+    static ores::dq::messaging::list_lei_relationships_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_lei_relationship_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_lei_relationship_request& v);
+    static ores::dq::messaging::get_lei_relationship_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_lei_relationship_request& v);
+    static ores::dq::messaging::get_lei_relationship_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_lei_relationship_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_lei_relationship_response& v);
+    static ores::dq::messaging::get_lei_relationship_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_lei_relationship_response& v);
+    static ores::dq::messaging::get_lei_relationship_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_many_lei_relationships_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_many_lei_relationships_request& v);
+    static ores::dq::messaging::get_many_lei_relationships_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_many_lei_relationships_request& v);
+    static ores::dq::messaging::get_many_lei_relationships_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_many_lei_relationships_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::get_many_lei_relationships_response& v);
+    static ores::dq::messaging::get_many_lei_relationships_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_many_lei_relationships_response& v);
+    static ores::dq::messaging::get_many_lei_relationships_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

@@ -39,62 +39,71 @@ The full template source. Edit here and re-tangle with
 
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
 #include "ores.{{component_include}}/export.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::{{component}}::domain {
 
+{{^has_domain_groups}}
+{{^has_identity_group}}
+{{^has_audit_group}}
 /**
- * @brief The wire form of {{entity_singular}}, in each format the wire states.
+ * @brief The members of {{entity_singular}}, named as the wire names them and
+ * in the order the type declares them.
  *
- * The four functions are this type's own: an overload set in the domain
- * namespace would collide on the read direction, where two types differ only
- * in what they return, so they are named here instead.
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
  */
-struct ORES_{{component_include_upper}}_EXPORT {{entity_singular}}_codec final {
-    /**
-     * @brief Writes @p v as JSON: an object whose members are the members of
-     * the type.
-     *
-     * The bytes are reflect-cpp's for the same value, because this states the
-     * encoding that reflector derives, and the type's own test compares the
-     * two.
-     */
-    static std::string to_json(const {{entity_singular}}& v);
-
-    /**
-     * @brief Reads a {{entity_singular}} back out of its JSON form.
-     */
-    static {{entity_singular}} from_json(std::string_view text);
-
-    /**
-     * @brief Writes @p v as MessagePack: a map whose keys are the members of
-     * the type.
-     */
-    static std::string to_msgpack(const {{entity_singular}}& v);
-
-    /**
-     * @brief Reads a {{entity_singular}} back out of its MessagePack form.
-     */
-    static {{entity_singular}} from_msgpack(std::span<const std::byte> data);
-};
+[[nodiscard]] constexpr auto wire_fields(const {{entity_singular}}&) {
+    return std::tuple{
+{{#has_audit_columns}}    utility::codec::field{"version", &{{entity_singular}}::version},
+{{/has_audit_columns}}
+{{#has_tenant_id}}    utility::codec::field{"tenant_id", &{{entity_singular}}::tenant_id},
+{{/has_tenant_id}}
+{{#primary_key.columns}}    utility::codec::field{"{{column}}", &{{entity_singular}}::{{column}}},
+{{/primary_key.columns}}
+{{#natural_keys}}    utility::codec::field{"{{column}}", &{{entity_singular}}::{{column}}},
+{{/natural_keys}}
+{{#columns}}
+{{^is_identity_group_column}}
+{{^sql_only}}
+{{^no_wire}}    utility::codec::field{"{{name}}", &{{entity_singular}}::{{name}}},
+{{/no_wire}}
+{{/sql_only}}
+{{/is_identity_group_column}}
+{{/columns}}
+{{#has_audit_columns}}    utility::codec::field{"modified_by", &{{entity_singular}}::modified_by},
+    utility::codec::field{"performed_by", &{{entity_singular}}::performed_by},
+    utility::codec::field{"change_reason_code", &{{entity_singular}}::change_reason_code},
+    utility::codec::field{"change_commentary", &{{entity_singular}}::change_commentary},
+    utility::codec::field{"recorded_at", &{{entity_singular}}::recorded_at},
+{{/has_audit_columns}}
+    };
+}
+{{/has_audit_group}}
+{{/has_identity_group}}
+{{/has_domain_groups}}
 
 }
 
 namespace ores::utility::codec {
 
 /**
- * @brief The generated codec, which is how the wire codec reaches this type.
+ * @brief The generated codec: what the wire codec resolves to for this type.
  *
- * A translation unit that only sends the type includes this header and is
- * done: the wire codec names wire_traits, and this states what it resolves to
- * here.
+ * The functions are declared here and defined in this type's own translation
+ * unit, so a translation unit that only sends the type compiles a declaration
+ * rather than a second copy of the encoder.
  */
 template <>
-struct wire_traits<ores::{{component}}::domain::{{entity_singular}}> {
+struct ORES_{{component_include_upper}}_EXPORT
+wire_traits<ores::{{component}}::domain::{{entity_singular}}> {
     /**
      * @brief States that this is a generated codec.
      *
@@ -106,22 +115,13 @@ struct wire_traits<ores::{{component}}::domain::{{entity_singular}}> {
      */
     static constexpr bool is_generated = true;
 
-    static std::string write_json(const ores::{{component}}::domain::{{entity_singular}}& v) {
-        return ores::{{component}}::domain::{{entity_singular}}_codec::to_json(v);
-    }
+    static std::string write_json(const ores::{{component}}::domain::{{entity_singular}}& v);
 
-    static ores::{{component}}::domain::{{entity_singular}} read_json(std::string_view text) {
-        return ores::{{component}}::domain::{{entity_singular}}_codec::from_json(text);
-    }
+    static ores::{{component}}::domain::{{entity_singular}} read_json(std::string_view text);
 
-    static std::string write_msgpack(const ores::{{component}}::domain::{{entity_singular}}& v) {
-        return ores::{{component}}::domain::{{entity_singular}}_codec::to_msgpack(v);
-    }
+    static std::string write_msgpack(const ores::{{component}}::domain::{{entity_singular}}& v);
 
-    static ores::{{component}}::domain::{{entity_singular}} read_msgpack(
-        std::span<const std::byte> data) {
-        return ores::{{component}}::domain::{{entity_singular}}_codec::from_msgpack(data);
-    }
+    static ores::{{component}}::domain::{{entity_singular}} read_msgpack(std::span<const std::byte> data);
 };
 
 }
@@ -134,62 +134,55 @@ struct wire_traits<ores::{{component}}::domain::{{entity_singular}}> {
 
 #include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
 #include "ores.{{component_include}}/export.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::{{component}}::domain {
 
 /**
- * @brief The wire form of {{name_singular}}, in each format the wire states.
+ * @brief The members of {{name_singular}}, named as the wire names them and
+ * in the order the type declares them.
  *
- * The four functions are this type's own: an overload set in the domain
- * namespace would collide on the read direction, where two types differ only
- * in what they return, so they are named here instead.
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
  */
-struct ORES_{{component_include_upper}}_EXPORT {{name_singular}}_codec final {
-    /**
-     * @brief Writes @p v as JSON: an object whose members are the members of
-     * the type.
-     *
-     * The bytes are reflect-cpp's for the same value, because this states the
-     * encoding that reflector derives, and the type's own test compares the
-     * two.
-     */
-    static std::string to_json(const {{name_singular}}& v);
-
-    /**
-     * @brief Reads a {{name_singular}} back out of its JSON form.
-     */
-    static {{name_singular}} from_json(std::string_view text);
-
-    /**
-     * @brief Writes @p v as MessagePack: a map whose keys are the members of
-     * the type.
-     */
-    static std::string to_msgpack(const {{name_singular}}& v);
-
-    /**
-     * @brief Reads a {{name_singular}} back out of its MessagePack form.
-     */
-    static {{name_singular}} from_msgpack(std::span<const std::byte> data);
-};
+[[nodiscard]] constexpr auto wire_fields(const {{name_singular}}&) {
+    return std::tuple{
+    utility::codec::field{"version", &{{name_singular}}::version},
+{{#has_tenant_id}}    utility::codec::field{"tenant_id", &{{name_singular}}::tenant_id},
+{{/has_tenant_id}}
+    utility::codec::field{"{{left.column}}", &{{name_singular}}::{{left.column}}},
+    utility::codec::field{"{{right.column}}", &{{name_singular}}::{{right.column}}},
+{{#columns}}    utility::codec::field{"{{name}}", &{{name_singular}}::{{name}}},
+{{/columns}}
+    utility::codec::field{"modified_by", &{{name_singular}}::modified_by},
+    utility::codec::field{"performed_by", &{{name_singular}}::performed_by},
+    utility::codec::field{"change_reason_code", &{{name_singular}}::change_reason_code},
+    utility::codec::field{"change_commentary", &{{name_singular}}::change_commentary},
+    utility::codec::field{"recorded_at", &{{name_singular}}::recorded_at},
+    };
+}
 
 }
 
 namespace ores::utility::codec {
 
 /**
- * @brief The generated codec, which is how the wire codec reaches this type.
+ * @brief The generated codec: what the wire codec resolves to for this type.
  *
- * A translation unit that only sends the type includes this header and is
- * done: the wire codec names wire_traits, and this states what it resolves to
- * here.
+ * The functions are declared here and defined in this type's own translation
+ * unit, so a translation unit that only sends the type compiles a declaration
+ * rather than a second copy of the encoder.
  */
 template <>
-struct wire_traits<ores::{{component}}::domain::{{name_singular}}> {
+struct ORES_{{component_include_upper}}_EXPORT
+wire_traits<ores::{{component}}::domain::{{name_singular}}> {
     /**
      * @brief States that this is a generated codec.
      *
@@ -201,22 +194,13 @@ struct wire_traits<ores::{{component}}::domain::{{name_singular}}> {
      */
     static constexpr bool is_generated = true;
 
-    static std::string write_json(const ores::{{component}}::domain::{{name_singular}}& v) {
-        return ores::{{component}}::domain::{{name_singular}}_codec::to_json(v);
-    }
+    static std::string write_json(const ores::{{component}}::domain::{{name_singular}}& v);
 
-    static ores::{{component}}::domain::{{name_singular}} read_json(std::string_view text) {
-        return ores::{{component}}::domain::{{name_singular}}_codec::from_json(text);
-    }
+    static ores::{{component}}::domain::{{name_singular}} read_json(std::string_view text);
 
-    static std::string write_msgpack(const ores::{{component}}::domain::{{name_singular}}& v) {
-        return ores::{{component}}::domain::{{name_singular}}_codec::to_msgpack(v);
-    }
+    static std::string write_msgpack(const ores::{{component}}::domain::{{name_singular}}& v);
 
-    static ores::{{component}}::domain::{{name_singular}} read_msgpack(
-        std::span<const std::byte> data) {
-        return ores::{{component}}::domain::{{name_singular}}_codec::from_msgpack(data);
-    }
+    static ores::{{component}}::domain::{{name_singular}} read_msgpack(std::span<const std::byte> data);
 };
 
 }

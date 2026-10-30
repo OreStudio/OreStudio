@@ -27,62 +27,55 @@
 
 #include "ores.dq.api/domain/fsm_transition.hpp"
 #include "ores.dq.api/export.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
 /**
- * @brief The wire form of fsm_transition, in each format the wire states.
+ * @brief The members of fsm_transition, named as the wire names them and
+ * in the order the type declares them.
  *
- * The four functions are this type's own: an overload set in the domain
- * namespace would collide on the read direction, where two types differ only
- * in what they return, so they are named here instead.
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
  */
-struct ORES_DQ_API_EXPORT fsm_transition_codec final {
-    /**
-     * @brief Writes @p v as JSON: an object whose members are the members of
-     * the type.
-     *
-     * The bytes are reflect-cpp's for the same value, because this states the
-     * encoding that reflector derives, and the type's own test compares the
-     * two.
-     */
-    static std::string to_json(const fsm_transition& v);
-
-    /**
-     * @brief Reads a fsm_transition back out of its JSON form.
-     */
-    static fsm_transition from_json(std::string_view text);
-
-    /**
-     * @brief Writes @p v as MessagePack: a map whose keys are the members of
-     * the type.
-     */
-    static std::string to_msgpack(const fsm_transition& v);
-
-    /**
-     * @brief Reads a fsm_transition back out of its MessagePack form.
-     */
-    static fsm_transition from_msgpack(std::span<const std::byte> data);
-};
+[[nodiscard]] constexpr auto wire_fields(const fsm_transition&) {
+    return std::tuple{
+        utility::codec::field{"version", &fsm_transition::version},
+        utility::codec::field{"tenant_id", &fsm_transition::tenant_id},
+        utility::codec::field{"id", &fsm_transition::id},
+        utility::codec::field{"machine_id", &fsm_transition::machine_id},
+        utility::codec::field{"from_state_id", &fsm_transition::from_state_id},
+        utility::codec::field{"to_state_id", &fsm_transition::to_state_id},
+        utility::codec::field{"name", &fsm_transition::name},
+        utility::codec::field{"guard_function", &fsm_transition::guard_function},
+        utility::codec::field{"modified_by", &fsm_transition::modified_by},
+        utility::codec::field{"performed_by", &fsm_transition::performed_by},
+        utility::codec::field{"change_reason_code", &fsm_transition::change_reason_code},
+        utility::codec::field{"change_commentary", &fsm_transition::change_commentary},
+        utility::codec::field{"recorded_at", &fsm_transition::recorded_at},
+    };
+}
 
 }
 
 namespace ores::utility::codec {
 
 /**
- * @brief The generated codec, which is how the wire codec reaches this type.
+ * @brief The generated codec: what the wire codec resolves to for this type.
  *
- * A translation unit that only sends the type includes this header and is
- * done: the wire codec names wire_traits, and this states what it resolves to
- * here.
+ * The functions are declared here and defined in this type's own translation
+ * unit, so a translation unit that only sends the type compiles a declaration
+ * rather than a second copy of the encoder.
  */
 template <>
-struct wire_traits<ores::dq::domain::fsm_transition> {
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::domain::fsm_transition> {
     /**
      * @brief States that this is a generated codec.
      *
@@ -94,21 +87,13 @@ struct wire_traits<ores::dq::domain::fsm_transition> {
      */
     static constexpr bool is_generated = true;
 
-    static std::string write_json(const ores::dq::domain::fsm_transition& v) {
-        return ores::dq::domain::fsm_transition_codec::to_json(v);
-    }
+    static std::string write_json(const ores::dq::domain::fsm_transition& v);
 
-    static ores::dq::domain::fsm_transition read_json(std::string_view text) {
-        return ores::dq::domain::fsm_transition_codec::from_json(text);
-    }
+    static ores::dq::domain::fsm_transition read_json(std::string_view text);
 
-    static std::string write_msgpack(const ores::dq::domain::fsm_transition& v) {
-        return ores::dq::domain::fsm_transition_codec::to_msgpack(v);
-    }
+    static std::string write_msgpack(const ores::dq::domain::fsm_transition& v);
 
-    static ores::dq::domain::fsm_transition read_msgpack(std::span<const std::byte> data) {
-        return ores::dq::domain::fsm_transition_codec::from_msgpack(data);
-    }
+    static ores::dq::domain::fsm_transition read_msgpack(std::span<const std::byte> data);
 };
 
 }

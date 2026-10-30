@@ -24,49 +24,29 @@
  */
 #include "ores.dq.api/domain/artefact_type_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-namespace {
+namespace ores::utility::codec {
 
-/**
- * @brief The members of artefact_type, named as the wire names them and
- * in the order the type declares them.
- */
-constexpr auto artefact_type_codec_fields = std::tuple{
-    utility::codec::field{"version", &artefact_type::version},
-    utility::codec::field{"tenant_id", &artefact_type::tenant_id},
-    utility::codec::field{"code", &artefact_type::code},
-    utility::codec::field{"name", &artefact_type::name},
-    utility::codec::field{"description", &artefact_type::description},
-    utility::codec::field{"artefact_table", &artefact_type::artefact_table},
-    utility::codec::field{"target_table", &artefact_type::target_table},
-    utility::codec::field{"target_subject", &artefact_type::target_subject},
-    utility::codec::field{"display_order", &artefact_type::display_order},
-    utility::codec::field{"modified_by", &artefact_type::modified_by},
-    utility::codec::field{"performed_by", &artefact_type::performed_by},
-    utility::codec::field{"change_reason_code", &artefact_type::change_reason_code},
-    utility::codec::field{"change_commentary", &artefact_type::change_commentary},
-    utility::codec::field{"recorded_at", &artefact_type::recorded_at},
-};
-
+std::string
+wire_traits<ores::dq::domain::artefact_type>::write_json(const ores::dq::domain::artefact_type& v) {
+    return object::write_json(v);
 }
 
-std::string artefact_type_codec::to_json(const artefact_type& v) {
-    return utility::codec::object::write_json(v, artefact_type_codec_fields);
+ores::dq::domain::artefact_type
+wire_traits<ores::dq::domain::artefact_type>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::artefact_type>(text);
 }
 
-artefact_type artefact_type_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<artefact_type>(text, artefact_type_codec_fields);
+std::string wire_traits<ores::dq::domain::artefact_type>::write_msgpack(
+    const ores::dq::domain::artefact_type& v) {
+    return object::write_msgpack(v);
 }
 
-std::string artefact_type_codec::to_msgpack(const artefact_type& v) {
-    return utility::codec::object::write_msgpack(v, artefact_type_codec_fields);
-}
-
-artefact_type artefact_type_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<artefact_type>(data, artefact_type_codec_fields);
+ores::dq::domain::artefact_type
+wire_traits<ores::dq::domain::artefact_type>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::artefact_type>(data);
 }
 
 }

@@ -21,43 +21,122 @@
 #define ORES_UTILITY_CODEC_MSGPACK_CODEC_HPP
 
 #include "ores.utility/codec/text_form.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include <cstddef>
 #include <limits>
 #include <msgpack.h>
 #include <optional>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <type_traits>
 #include <vector>
 
 namespace ores::utility::codec {
 
+template <typename T>
+struct msgpack_codec;
+
+/**
+ * @brief An object, over a list of fields: one map carrying each field.
+ *
+ * The contract is the JSON carrier's, one format over, recursion included: a
+ * field's own value is whatever its member's carrier gives it, so a member that
+ * is itself a type with a wire form carries another map, a vector carries an
+ * array of them and an optional carries one or nil.
+ */
+namespace detail {
+
+template <typename T, typename... Members>
+void write_object(msgpack_packer* pk, const T& v, const std::tuple<field<T, Members>...>& fields) {
+    if (msgpack_pack_map(pk, sizeof...(Members)) != 0)
+        throw std::runtime_error("Could not pack an object");
+    std::apply(
+        [&](const auto&... f) {
+            (
+                [&] {
+                    const auto key = std::string(f.name);
+                    if (msgpack_pack_str(pk, key.size()) != 0 ||
+                        msgpack_pack_str_body(pk, key.data(), key.size()) != 0)
+                        throw std::runtime_error("Could not pack a member name");
+                    msgpack_codec<Members>::write(pk, v.*(f.member));
+                }(),
+                ...);
+        },
+        fields);
+}
+
+template <typename T, typename... Members>
+void read_object(const msgpack_object& v, T& out, const std::tuple<field<T, Members>...>& fields) {
+    if (v.type != MSGPACK_OBJECT_MAP)
+        throw std::invalid_argument("Not an object");
+    std::apply(
+        [&](const auto&... f) {
+            (
+                [&] {
+                    using member_type = std::remove_cvref_t<decltype(out.*(f.member))>;
+                    bool found = false;
+                    for (std::uint32_t i = 0; i < v.via.map.size; ++i) {
+                        const auto& key = v.via.map.ptr[i].key;
+                        if (key.type != MSGPACK_OBJECT_STR)
+                            continue;
+                        if (std::string_view(key.via.str.ptr, key.via.str.size) != f.name)
+                            continue;
+                        out.*(f.member) = msgpack_codec<Members>::read(v.via.map.ptr[i].val);
+                        found = true;
+                        break;
+                    }
+                    if (!found) {
+                        if constexpr (is_optional_member<member_type>)
+                            return;
+                        else
+                            throw std::invalid_argument("Missing member: " + std::string(f.name));
+                    }
+                }(),
+                ...);
+        },
+        fields);
+}
+
+}
+
 /**
  * @brief The MessagePack form of a type: one value packed into a buffer, and
  * one value read back out of a parsed object.
  *
- * The contract is the JSON carrier's, one format over: a type whose wire form is
- * a string states it through =text_form= and takes the implementation below,
- * and a number or a truth value takes the specialisations further down. The
- * text is the same text, so the two formats cannot disagree about a value --
- * only about how they frame it.
+ * A type that states its own shape through =wire_fields= is an object, and its
+ * members are encoded by theirs. Every other type states its form through
+ * =text_form=, or has a specialisation further down for the shape a string does
+ * not cover. The text is the same text, so the two formats cannot disagree
+ * about a value -- only about how they frame it.
  */
 template <typename T>
 struct msgpack_codec {
     static void write(msgpack_packer* pk, const T& v) {
-        const auto text = text_form<T>::to_text(v);
-        if (msgpack_pack_str(pk, text.size()) != 0 ||
-            msgpack_pack_str_body(pk, text.data(), text.size()) != 0)
-            throw std::runtime_error("Could not pack " + std::string(text_form<T>::wire_name));
+        if constexpr (states_wire_form<T>) {
+            detail::write_object(pk, v, wire_fields(v));
+        } else {
+            const auto text = text_form<T>::to_text(v);
+            if (msgpack_pack_str(pk, text.size()) != 0 ||
+                msgpack_pack_str_body(pk, text.data(), text.size()) != 0)
+                throw std::runtime_error("Could not pack " + std::string(text_form<T>::wire_name));
+        }
     }
 
     static T read(const msgpack_object& v) {
-        if (v.type != MSGPACK_OBJECT_STR)
-            throw std::invalid_argument("Not " + std::string(text_form<T>::wire_name) +
-                                        ": the MessagePack value is not a string");
-        return text_form<T>::from_text(std::string_view(v.via.str.ptr, v.via.str.size));
+        if constexpr (states_wire_form<T>) {
+            T out;
+            detail::read_object(v, out, wire_fields(out));
+            return out;
+        } else {
+            if (v.type != MSGPACK_OBJECT_STR)
+                throw std::invalid_argument("Not " + std::string(text_form<T>::wire_name) +
+                                            ": the MessagePack value is not a string");
+            return text_form<T>::from_text(std::string_view(v.via.str.ptr, v.via.str.size));
+        }
     }
 };
 
@@ -230,6 +309,17 @@ T read(std::string_view text) {
         msgpack_unpacked_destroy(&result);
         throw;
     }
+}
+
+/**
+ * @brief The same, over the bytes a caller holds rather than over text.
+ *
+ * MessagePack is bytes, so this is the form most callers have; the text one
+ * above is the same thing with the characters already.
+ */
+template <typename T>
+T read(std::span<const std::byte> data) {
+    return read<T>(std::string_view(reinterpret_cast<const char*>(data.data()), data.size()));
 }
 
 }

@@ -27,62 +27,57 @@
 
 #include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.dq.api/export.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
 /**
- * @brief The wire form of change_reason, in each format the wire states.
+ * @brief The members of change_reason, named as the wire names them and
+ * in the order the type declares them.
  *
- * The four functions are this type's own: an overload set in the domain
- * namespace would collide on the read direction, where two types differ only
- * in what they return, so they are named here instead.
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
  */
-struct ORES_DQ_API_EXPORT change_reason_codec final {
-    /**
-     * @brief Writes @p v as JSON: an object whose members are the members of
-     * the type.
-     *
-     * The bytes are reflect-cpp's for the same value, because this states the
-     * encoding that reflector derives, and the type's own test compares the
-     * two.
-     */
-    static std::string to_json(const change_reason& v);
-
-    /**
-     * @brief Reads a change_reason back out of its JSON form.
-     */
-    static change_reason from_json(std::string_view text);
-
-    /**
-     * @brief Writes @p v as MessagePack: a map whose keys are the members of
-     * the type.
-     */
-    static std::string to_msgpack(const change_reason& v);
-
-    /**
-     * @brief Reads a change_reason back out of its MessagePack form.
-     */
-    static change_reason from_msgpack(std::span<const std::byte> data);
-};
+[[nodiscard]] constexpr auto wire_fields(const change_reason&) {
+    return std::tuple{
+        utility::codec::field{"version", &change_reason::version},
+        utility::codec::field{"tenant_id", &change_reason::tenant_id},
+        utility::codec::field{"code", &change_reason::code},
+        utility::codec::field{"description", &change_reason::description},
+        utility::codec::field{"category_code", &change_reason::category_code},
+        utility::codec::field{"applies_to_new", &change_reason::applies_to_new},
+        utility::codec::field{"applies_to_amend", &change_reason::applies_to_amend},
+        utility::codec::field{"applies_to_delete", &change_reason::applies_to_delete},
+        utility::codec::field{"requires_commentary", &change_reason::requires_commentary},
+        utility::codec::field{"display_order", &change_reason::display_order},
+        utility::codec::field{"modified_by", &change_reason::modified_by},
+        utility::codec::field{"performed_by", &change_reason::performed_by},
+        utility::codec::field{"change_reason_code", &change_reason::change_reason_code},
+        utility::codec::field{"change_commentary", &change_reason::change_commentary},
+        utility::codec::field{"recorded_at", &change_reason::recorded_at},
+    };
+}
 
 }
 
 namespace ores::utility::codec {
 
 /**
- * @brief The generated codec, which is how the wire codec reaches this type.
+ * @brief The generated codec: what the wire codec resolves to for this type.
  *
- * A translation unit that only sends the type includes this header and is
- * done: the wire codec names wire_traits, and this states what it resolves to
- * here.
+ * The functions are declared here and defined in this type's own translation
+ * unit, so a translation unit that only sends the type compiles a declaration
+ * rather than a second copy of the encoder.
  */
 template <>
-struct wire_traits<ores::dq::domain::change_reason> {
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::domain::change_reason> {
     /**
      * @brief States that this is a generated codec.
      *
@@ -94,21 +89,13 @@ struct wire_traits<ores::dq::domain::change_reason> {
      */
     static constexpr bool is_generated = true;
 
-    static std::string write_json(const ores::dq::domain::change_reason& v) {
-        return ores::dq::domain::change_reason_codec::to_json(v);
-    }
+    static std::string write_json(const ores::dq::domain::change_reason& v);
 
-    static ores::dq::domain::change_reason read_json(std::string_view text) {
-        return ores::dq::domain::change_reason_codec::from_json(text);
-    }
+    static ores::dq::domain::change_reason read_json(std::string_view text);
 
-    static std::string write_msgpack(const ores::dq::domain::change_reason& v) {
-        return ores::dq::domain::change_reason_codec::to_msgpack(v);
-    }
+    static std::string write_msgpack(const ores::dq::domain::change_reason& v);
 
-    static ores::dq::domain::change_reason read_msgpack(std::span<const std::byte> data) {
-        return ores::dq::domain::change_reason_codec::from_msgpack(data);
-    }
+    static ores::dq::domain::change_reason read_msgpack(std::span<const std::byte> data);
 };
 
 }

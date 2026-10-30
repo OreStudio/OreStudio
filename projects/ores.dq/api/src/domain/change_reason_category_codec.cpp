@@ -24,46 +24,30 @@
  */
 #include "ores.dq.api/domain/change_reason_category_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-namespace {
+namespace ores::utility::codec {
 
-/**
- * @brief The members of change_reason_category, named as the wire names them and
- * in the order the type declares them.
- */
-constexpr auto change_reason_category_codec_fields = std::tuple{
-    utility::codec::field{"version", &change_reason_category::version},
-    utility::codec::field{"tenant_id", &change_reason_category::tenant_id},
-    utility::codec::field{"code", &change_reason_category::code},
-    utility::codec::field{"description", &change_reason_category::description},
-    utility::codec::field{"modified_by", &change_reason_category::modified_by},
-    utility::codec::field{"performed_by", &change_reason_category::performed_by},
-    utility::codec::field{"change_reason_code", &change_reason_category::change_reason_code},
-    utility::codec::field{"change_commentary", &change_reason_category::change_commentary},
-    utility::codec::field{"recorded_at", &change_reason_category::recorded_at},
-};
-
+std::string wire_traits<ores::dq::domain::change_reason_category>::write_json(
+    const ores::dq::domain::change_reason_category& v) {
+    return object::write_json(v);
 }
 
-std::string change_reason_category_codec::to_json(const change_reason_category& v) {
-    return utility::codec::object::write_json(v, change_reason_category_codec_fields);
+ores::dq::domain::change_reason_category
+wire_traits<ores::dq::domain::change_reason_category>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::change_reason_category>(text);
 }
 
-change_reason_category change_reason_category_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<change_reason_category>(
-        text, change_reason_category_codec_fields);
+std::string wire_traits<ores::dq::domain::change_reason_category>::write_msgpack(
+    const ores::dq::domain::change_reason_category& v) {
+    return object::write_msgpack(v);
 }
 
-std::string change_reason_category_codec::to_msgpack(const change_reason_category& v) {
-    return utility::codec::object::write_msgpack(v, change_reason_category_codec_fields);
-}
-
-change_reason_category change_reason_category_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<change_reason_category>(
-        data, change_reason_category_codec_fields);
+ores::dq::domain::change_reason_category
+wire_traits<ores::dq::domain::change_reason_category>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::change_reason_category>(data);
 }
 
 }

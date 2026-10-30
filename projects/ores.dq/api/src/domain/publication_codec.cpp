@@ -24,47 +24,29 @@
  */
 #include "ores.dq.api/domain/publication_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-namespace {
+namespace ores::utility::codec {
 
-/**
- * @brief The members of publication, named as the wire names them and
- * in the order the type declares them.
- */
-constexpr auto publication_codec_fields = std::tuple{
-    utility::codec::field{"tenant_id", &publication::tenant_id},
-    utility::codec::field{"id", &publication::id},
-    utility::codec::field{"dataset_id", &publication::dataset_id},
-    utility::codec::field{"dataset_code", &publication::dataset_code},
-    utility::codec::field{"mode", &publication::mode},
-    utility::codec::field{"target_table", &publication::target_table},
-    utility::codec::field{"records_inserted", &publication::records_inserted},
-    utility::codec::field{"records_updated", &publication::records_updated},
-    utility::codec::field{"records_skipped", &publication::records_skipped},
-    utility::codec::field{"records_deleted", &publication::records_deleted},
-    utility::codec::field{"published_by", &publication::published_by},
-    utility::codec::field{"published_at", &publication::published_at},
-};
-
+std::string
+wire_traits<ores::dq::domain::publication>::write_json(const ores::dq::domain::publication& v) {
+    return object::write_json(v);
 }
 
-std::string publication_codec::to_json(const publication& v) {
-    return utility::codec::object::write_json(v, publication_codec_fields);
+ores::dq::domain::publication
+wire_traits<ores::dq::domain::publication>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::publication>(text);
 }
 
-publication publication_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<publication>(text, publication_codec_fields);
+std::string
+wire_traits<ores::dq::domain::publication>::write_msgpack(const ores::dq::domain::publication& v) {
+    return object::write_msgpack(v);
 }
 
-std::string publication_codec::to_msgpack(const publication& v) {
-    return utility::codec::object::write_msgpack(v, publication_codec_fields);
-}
-
-publication publication_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<publication>(data, publication_codec_fields);
+ores::dq::domain::publication
+wire_traits<ores::dq::domain::publication>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::publication>(data);
 }
 
 }

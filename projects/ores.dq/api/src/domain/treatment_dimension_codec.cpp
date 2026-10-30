@@ -24,47 +24,29 @@
  */
 #include "ores.dq.api/domain/treatment_dimension_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-namespace {
+namespace ores::utility::codec {
 
-/**
- * @brief The members of treatment_dimension, named as the wire names them and
- * in the order the type declares them.
- */
-constexpr auto treatment_dimension_codec_fields = std::tuple{
-    utility::codec::field{"version", &treatment_dimension::version},
-    utility::codec::field{"tenant_id", &treatment_dimension::tenant_id},
-    utility::codec::field{"code", &treatment_dimension::code},
-    utility::codec::field{"name", &treatment_dimension::name},
-    utility::codec::field{"description", &treatment_dimension::description},
-    utility::codec::field{"modified_by", &treatment_dimension::modified_by},
-    utility::codec::field{"performed_by", &treatment_dimension::performed_by},
-    utility::codec::field{"change_reason_code", &treatment_dimension::change_reason_code},
-    utility::codec::field{"change_commentary", &treatment_dimension::change_commentary},
-    utility::codec::field{"recorded_at", &treatment_dimension::recorded_at},
-};
-
+std::string wire_traits<ores::dq::domain::treatment_dimension>::write_json(
+    const ores::dq::domain::treatment_dimension& v) {
+    return object::write_json(v);
 }
 
-std::string treatment_dimension_codec::to_json(const treatment_dimension& v) {
-    return utility::codec::object::write_json(v, treatment_dimension_codec_fields);
+ores::dq::domain::treatment_dimension
+wire_traits<ores::dq::domain::treatment_dimension>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::treatment_dimension>(text);
 }
 
-treatment_dimension treatment_dimension_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<treatment_dimension>(text,
-                                                                  treatment_dimension_codec_fields);
+std::string wire_traits<ores::dq::domain::treatment_dimension>::write_msgpack(
+    const ores::dq::domain::treatment_dimension& v) {
+    return object::write_msgpack(v);
 }
 
-std::string treatment_dimension_codec::to_msgpack(const treatment_dimension& v) {
-    return utility::codec::object::write_msgpack(v, treatment_dimension_codec_fields);
-}
-
-treatment_dimension treatment_dimension_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<treatment_dimension>(
-        data, treatment_dimension_codec_fields);
+ores::dq::domain::treatment_dimension
+wire_traits<ores::dq::domain::treatment_dimension>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::treatment_dimension>(data);
 }
 
 }

@@ -24,48 +24,29 @@
  */
 #include "ores.dq.api/domain/fsm_transition_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-namespace {
+namespace ores::utility::codec {
 
-/**
- * @brief The members of fsm_transition, named as the wire names them and
- * in the order the type declares them.
- */
-constexpr auto fsm_transition_codec_fields = std::tuple{
-    utility::codec::field{"version", &fsm_transition::version},
-    utility::codec::field{"tenant_id", &fsm_transition::tenant_id},
-    utility::codec::field{"id", &fsm_transition::id},
-    utility::codec::field{"machine_id", &fsm_transition::machine_id},
-    utility::codec::field{"from_state_id", &fsm_transition::from_state_id},
-    utility::codec::field{"to_state_id", &fsm_transition::to_state_id},
-    utility::codec::field{"name", &fsm_transition::name},
-    utility::codec::field{"guard_function", &fsm_transition::guard_function},
-    utility::codec::field{"modified_by", &fsm_transition::modified_by},
-    utility::codec::field{"performed_by", &fsm_transition::performed_by},
-    utility::codec::field{"change_reason_code", &fsm_transition::change_reason_code},
-    utility::codec::field{"change_commentary", &fsm_transition::change_commentary},
-    utility::codec::field{"recorded_at", &fsm_transition::recorded_at},
-};
-
+std::string wire_traits<ores::dq::domain::fsm_transition>::write_json(
+    const ores::dq::domain::fsm_transition& v) {
+    return object::write_json(v);
 }
 
-std::string fsm_transition_codec::to_json(const fsm_transition& v) {
-    return utility::codec::object::write_json(v, fsm_transition_codec_fields);
+ores::dq::domain::fsm_transition
+wire_traits<ores::dq::domain::fsm_transition>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::fsm_transition>(text);
 }
 
-fsm_transition fsm_transition_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<fsm_transition>(text, fsm_transition_codec_fields);
+std::string wire_traits<ores::dq::domain::fsm_transition>::write_msgpack(
+    const ores::dq::domain::fsm_transition& v) {
+    return object::write_msgpack(v);
 }
 
-std::string fsm_transition_codec::to_msgpack(const fsm_transition& v) {
-    return utility::codec::object::write_msgpack(v, fsm_transition_codec_fields);
-}
-
-fsm_transition fsm_transition_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<fsm_transition>(data, fsm_transition_codec_fields);
+ores::dq::domain::fsm_transition
+wire_traits<ores::dq::domain::fsm_transition>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::fsm_transition>(data);
 }
 
 }

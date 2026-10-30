@@ -24,45 +24,29 @@
  */
 #include "ores.dq.api/domain/subject_area_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-namespace {
+namespace ores::utility::codec {
 
-/**
- * @brief The members of subject_area, named as the wire names them and
- * in the order the type declares them.
- */
-constexpr auto subject_area_codec_fields = std::tuple{
-    utility::codec::field{"version", &subject_area::version},
-    utility::codec::field{"tenant_id", &subject_area::tenant_id},
-    utility::codec::field{"name", &subject_area::name},
-    utility::codec::field{"domain_name", &subject_area::domain_name},
-    utility::codec::field{"description", &subject_area::description},
-    utility::codec::field{"modified_by", &subject_area::modified_by},
-    utility::codec::field{"performed_by", &subject_area::performed_by},
-    utility::codec::field{"change_reason_code", &subject_area::change_reason_code},
-    utility::codec::field{"change_commentary", &subject_area::change_commentary},
-    utility::codec::field{"recorded_at", &subject_area::recorded_at},
-};
-
+std::string
+wire_traits<ores::dq::domain::subject_area>::write_json(const ores::dq::domain::subject_area& v) {
+    return object::write_json(v);
 }
 
-std::string subject_area_codec::to_json(const subject_area& v) {
-    return utility::codec::object::write_json(v, subject_area_codec_fields);
+ores::dq::domain::subject_area
+wire_traits<ores::dq::domain::subject_area>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::subject_area>(text);
 }
 
-subject_area subject_area_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<subject_area>(text, subject_area_codec_fields);
+std::string wire_traits<ores::dq::domain::subject_area>::write_msgpack(
+    const ores::dq::domain::subject_area& v) {
+    return object::write_msgpack(v);
 }
 
-std::string subject_area_codec::to_msgpack(const subject_area& v) {
-    return utility::codec::object::write_msgpack(v, subject_area_codec_fields);
-}
-
-subject_area subject_area_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<subject_area>(data, subject_area_codec_fields);
+ores::dq::domain::subject_area
+wire_traits<ores::dq::domain::subject_area>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::subject_area>(data);
 }
 
 }

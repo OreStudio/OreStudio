@@ -24,46 +24,29 @@
  */
 #include "ores.dq.api/domain/dataset_bundle_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-namespace {
+namespace ores::utility::codec {
 
-/**
- * @brief The members of dataset_bundle, named as the wire names them and
- * in the order the type declares them.
- */
-constexpr auto dataset_bundle_codec_fields = std::tuple{
-    utility::codec::field{"version", &dataset_bundle::version},
-    utility::codec::field{"tenant_id", &dataset_bundle::tenant_id},
-    utility::codec::field{"id", &dataset_bundle::id},
-    utility::codec::field{"code", &dataset_bundle::code},
-    utility::codec::field{"name", &dataset_bundle::name},
-    utility::codec::field{"description", &dataset_bundle::description},
-    utility::codec::field{"modified_by", &dataset_bundle::modified_by},
-    utility::codec::field{"performed_by", &dataset_bundle::performed_by},
-    utility::codec::field{"change_reason_code", &dataset_bundle::change_reason_code},
-    utility::codec::field{"change_commentary", &dataset_bundle::change_commentary},
-    utility::codec::field{"recorded_at", &dataset_bundle::recorded_at},
-};
-
+std::string wire_traits<ores::dq::domain::dataset_bundle>::write_json(
+    const ores::dq::domain::dataset_bundle& v) {
+    return object::write_json(v);
 }
 
-std::string dataset_bundle_codec::to_json(const dataset_bundle& v) {
-    return utility::codec::object::write_json(v, dataset_bundle_codec_fields);
+ores::dq::domain::dataset_bundle
+wire_traits<ores::dq::domain::dataset_bundle>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::dataset_bundle>(text);
 }
 
-dataset_bundle dataset_bundle_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<dataset_bundle>(text, dataset_bundle_codec_fields);
+std::string wire_traits<ores::dq::domain::dataset_bundle>::write_msgpack(
+    const ores::dq::domain::dataset_bundle& v) {
+    return object::write_msgpack(v);
 }
 
-std::string dataset_bundle_codec::to_msgpack(const dataset_bundle& v) {
-    return utility::codec::object::write_msgpack(v, dataset_bundle_codec_fields);
-}
-
-dataset_bundle dataset_bundle_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<dataset_bundle>(data, dataset_bundle_codec_fields);
+ores::dq::domain::dataset_bundle
+wire_traits<ores::dq::domain::dataset_bundle>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::dataset_bundle>(data);
 }
 
 }

@@ -24,45 +24,29 @@
  */
 #include "ores.dq.api/domain/badge_mapping_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-namespace {
+namespace ores::utility::codec {
 
-/**
- * @brief The members of badge_mapping, named as the wire names them and in
- * the order the type declares them.
- */
-constexpr auto badge_mapping_codec_fields = std::tuple{
-    utility::codec::field{"version", &badge_mapping::version},
-    utility::codec::field{"tenant_id", &badge_mapping::tenant_id},
-    utility::codec::field{"code_domain_code", &badge_mapping::code_domain_code},
-    utility::codec::field{"entity_code", &badge_mapping::entity_code},
-    utility::codec::field{"badge_code", &badge_mapping::badge_code},
-    utility::codec::field{"modified_by", &badge_mapping::modified_by},
-    utility::codec::field{"performed_by", &badge_mapping::performed_by},
-    utility::codec::field{"change_reason_code", &badge_mapping::change_reason_code},
-    utility::codec::field{"change_commentary", &badge_mapping::change_commentary},
-    utility::codec::field{"recorded_at", &badge_mapping::recorded_at},
-};
-
+std::string
+wire_traits<ores::dq::domain::badge_mapping>::write_json(const ores::dq::domain::badge_mapping& v) {
+    return object::write_json(v);
 }
 
-std::string badge_mapping_codec::to_json(const badge_mapping& v) {
-    return utility::codec::object::write_json(v, badge_mapping_codec_fields);
+ores::dq::domain::badge_mapping
+wire_traits<ores::dq::domain::badge_mapping>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::badge_mapping>(text);
 }
 
-badge_mapping badge_mapping_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<badge_mapping>(text, badge_mapping_codec_fields);
+std::string wire_traits<ores::dq::domain::badge_mapping>::write_msgpack(
+    const ores::dq::domain::badge_mapping& v) {
+    return object::write_msgpack(v);
 }
 
-std::string badge_mapping_codec::to_msgpack(const badge_mapping& v) {
-    return utility::codec::object::write_msgpack(v, badge_mapping_codec_fields);
-}
-
-badge_mapping badge_mapping_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<badge_mapping>(data, badge_mapping_codec_fields);
+ores::dq::domain::badge_mapping
+wire_traits<ores::dq::domain::badge_mapping>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::badge_mapping>(data);
 }
 
 }

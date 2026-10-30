@@ -26,11 +26,17 @@
 #define ORES_DQ_API_MESSAGING_BADGE_MAPPING_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/badge_mapping.hpp"
+#include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::dq::messaging {
@@ -232,6 +238,604 @@ struct list_by_code_domain_code_badge_mappings_response {
     std::uint64_t total;
 };
 
+/**
+ * @brief The members of badge_mapping_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const badge_mapping_key&) {
+    return std::tuple{
+        utility::codec::field{"code_domain_code", &badge_mapping_key::code_domain_code},
+        utility::codec::field{"entity_code", &badge_mapping_key::entity_code},
+    };
 }
+
+/**
+ * @brief The members of badge_mapping_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const badge_mapping_write&) {
+    return std::tuple{
+        utility::codec::field{"code_domain_code", &badge_mapping_write::code_domain_code},
+        utility::codec::field{"entity_code", &badge_mapping_write::entity_code},
+        utility::codec::field{"badge_code", &badge_mapping_write::badge_code},
+    };
+}
+
+/**
+ * @brief The members of badge_mapping_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const badge_mapping_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &badge_mapping_change::write},
+        utility::codec::field{"precondition", &badge_mapping_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of badge_mapping_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const badge_mapping_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &badge_mapping_removal::key},
+        utility::codec::field{"precondition", &badge_mapping_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of badge_mapping_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const badge_mapping_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &badge_mapping_lookup::key},
+        utility::codec::field{"badge_mapping", &badge_mapping_lookup::badge_mapping},
+    };
+}
+
+/**
+ * @brief The members of badge_mappings_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const badge_mappings_filter&) {
+    return std::tuple{
+        utility::codec::field{"code_domain_code", &badge_mappings_filter::code_domain_code},
+        utility::codec::field{"code_domain_code_one_of",
+                              &badge_mappings_filter::code_domain_code_one_of},
+    };
+}
+
+/**
+ * @brief The members of badge_mapping_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const badge_mapping_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &badge_mapping_event::event_id},
+        utility::codec::field{"key", &badge_mapping_event::key},
+        utility::codec::field{"action", &badge_mapping_event::action},
+        utility::codec::field{"version", &badge_mapping_event::version},
+        utility::codec::field{"occurred_at", &badge_mapping_event::occurred_at},
+        utility::codec::field{"correlation_id", &badge_mapping_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of list_badge_mappings_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_badge_mappings_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_badge_mappings_request::offset},
+        utility::codec::field{"limit", &list_badge_mappings_request::limit},
+        utility::codec::field{"order", &list_badge_mappings_request::order},
+        utility::codec::field{"filter", &list_badge_mappings_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_badge_mappings_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_badge_mappings_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_badge_mappings_response::result},
+        utility::codec::field{"badge_mappings", &list_badge_mappings_response::badge_mappings},
+        utility::codec::field{"total", &list_badge_mappings_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_badge_mapping_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_badge_mapping_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_badge_mapping_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_badge_mapping_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_badge_mapping_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_badge_mapping_response::result},
+        utility::codec::field{"badge_mapping", &get_badge_mapping_response::badge_mapping},
+    };
+}
+
+/**
+ * @brief The members of get_many_badge_mappings_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_badge_mappings_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_badge_mappings_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_badge_mappings_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_badge_mappings_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_badge_mappings_response::result},
+        utility::codec::field{"entries", &get_many_badge_mappings_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_badge_mapping_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_badge_mapping_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_badge_mapping_request::change},
+        utility::codec::field{"intent", &put_badge_mapping_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_badge_mapping_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_badge_mapping_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_badge_mapping_response::result},
+        utility::codec::field{"badge_mapping", &put_badge_mapping_response::badge_mapping},
+    };
+}
+
+/**
+ * @brief The members of put_many_badge_mappings_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_badge_mappings_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_badge_mappings_request::changes},
+        utility::codec::field{"intent", &put_many_badge_mappings_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_badge_mappings_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_badge_mappings_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_badge_mappings_response::result},
+        utility::codec::field{"badge_mappings", &put_many_badge_mappings_response::badge_mappings},
+    };
+}
+
+/**
+ * @brief The members of delete_badge_mapping_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_badge_mapping_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_badge_mapping_request::removal},
+        utility::codec::field{"intent", &delete_badge_mapping_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_badge_mapping_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_badge_mapping_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_badge_mapping_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_badge_mappings_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_badge_mappings_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_badge_mappings_request::removals},
+        utility::codec::field{"intent", &delete_many_badge_mappings_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_badge_mappings_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_badge_mappings_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_badge_mappings_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_by_code_domain_code_badge_mappings_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_code_domain_code_badge_mappings_request&) {
+    return std::tuple{
+        utility::codec::field{"code_domain_code",
+                              &list_by_code_domain_code_badge_mappings_request::code_domain_code},
+        utility::codec::field{"scope", &list_by_code_domain_code_badge_mappings_request::scope},
+        utility::codec::field{"offset", &list_by_code_domain_code_badge_mappings_request::offset},
+        utility::codec::field{"limit", &list_by_code_domain_code_badge_mappings_request::limit},
+        utility::codec::field{"order", &list_by_code_domain_code_badge_mappings_request::order},
+        utility::codec::field{"filter", &list_by_code_domain_code_badge_mappings_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_by_code_domain_code_badge_mappings_response, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_by_code_domain_code_badge_mappings_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_by_code_domain_code_badge_mappings_response::result},
+        utility::codec::field{"badge_mappings",
+                              &list_by_code_domain_code_badge_mappings_response::badge_mappings},
+        utility::codec::field{"total", &list_by_code_domain_code_badge_mappings_response::total},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::badge_mapping_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::badge_mapping_key& v);
+    static ores::dq::messaging::badge_mapping_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::badge_mapping_key& v);
+    static ores::dq::messaging::badge_mapping_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::badge_mapping_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::badge_mapping_write& v);
+    static ores::dq::messaging::badge_mapping_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::badge_mapping_write& v);
+    static ores::dq::messaging::badge_mapping_write read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::badge_mapping_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::badge_mapping_change& v);
+    static ores::dq::messaging::badge_mapping_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::badge_mapping_change& v);
+    static ores::dq::messaging::badge_mapping_change read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::badge_mapping_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::badge_mapping_removal& v);
+    static ores::dq::messaging::badge_mapping_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::badge_mapping_removal& v);
+    static ores::dq::messaging::badge_mapping_removal read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::badge_mapping_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::badge_mapping_lookup& v);
+    static ores::dq::messaging::badge_mapping_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::badge_mapping_lookup& v);
+    static ores::dq::messaging::badge_mapping_lookup read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::badge_mappings_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::badge_mappings_filter& v);
+    static ores::dq::messaging::badge_mappings_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::badge_mappings_filter& v);
+    static ores::dq::messaging::badge_mappings_filter read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::badge_mapping_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::badge_mapping_event& v);
+    static ores::dq::messaging::badge_mapping_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::badge_mapping_event& v);
+    static ores::dq::messaging::badge_mapping_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_badge_mappings_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_badge_mappings_request& v);
+    static ores::dq::messaging::list_badge_mappings_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::list_badge_mappings_request& v);
+    static ores::dq::messaging::list_badge_mappings_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_badge_mappings_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_badge_mappings_response& v);
+    static ores::dq::messaging::list_badge_mappings_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::list_badge_mappings_response& v);
+    static ores::dq::messaging::list_badge_mappings_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_badge_mapping_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_badge_mapping_request& v);
+    static ores::dq::messaging::get_badge_mapping_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_badge_mapping_request& v);
+    static ores::dq::messaging::get_badge_mapping_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_badge_mapping_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_badge_mapping_response& v);
+    static ores::dq::messaging::get_badge_mapping_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_badge_mapping_response& v);
+    static ores::dq::messaging::get_badge_mapping_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_many_badge_mappings_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_many_badge_mappings_request& v);
+    static ores::dq::messaging::get_many_badge_mappings_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_many_badge_mappings_request& v);
+    static ores::dq::messaging::get_many_badge_mappings_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_many_badge_mappings_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_many_badge_mappings_response& v);
+    static ores::dq::messaging::get_many_badge_mappings_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_many_badge_mappings_response& v);
+    static ores::dq::messaging::get_many_badge_mappings_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_badge_mapping_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_badge_mapping_request& v);
+    static ores::dq::messaging::put_badge_mapping_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::put_badge_mapping_request& v);
+    static ores::dq::messaging::put_badge_mapping_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_badge_mapping_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_badge_mapping_response& v);
+    static ores::dq::messaging::put_badge_mapping_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::put_badge_mapping_response& v);
+    static ores::dq::messaging::put_badge_mapping_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_many_badge_mappings_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_many_badge_mappings_request& v);
+    static ores::dq::messaging::put_many_badge_mappings_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::put_many_badge_mappings_request& v);
+    static ores::dq::messaging::put_many_badge_mappings_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_many_badge_mappings_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_many_badge_mappings_response& v);
+    static ores::dq::messaging::put_many_badge_mappings_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::put_many_badge_mappings_response& v);
+    static ores::dq::messaging::put_many_badge_mappings_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_badge_mapping_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::delete_badge_mapping_request& v);
+    static ores::dq::messaging::delete_badge_mapping_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::delete_badge_mapping_request& v);
+    static ores::dq::messaging::delete_badge_mapping_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_badge_mapping_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::delete_badge_mapping_response& v);
+    static ores::dq::messaging::delete_badge_mapping_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::delete_badge_mapping_response& v);
+    static ores::dq::messaging::delete_badge_mapping_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_many_badge_mappings_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::delete_many_badge_mappings_request& v);
+    static ores::dq::messaging::delete_many_badge_mappings_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_many_badge_mappings_request& v);
+    static ores::dq::messaging::delete_many_badge_mappings_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_many_badge_mappings_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::delete_many_badge_mappings_response& v);
+    static ores::dq::messaging::delete_many_badge_mappings_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_many_badge_mappings_response& v);
+    static ores::dq::messaging::delete_many_badge_mappings_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::list_by_code_domain_code_badge_mappings_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::list_by_code_domain_code_badge_mappings_request& v);
+    static ores::dq::messaging::list_by_code_domain_code_badge_mappings_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_by_code_domain_code_badge_mappings_request& v);
+    static ores::dq::messaging::list_by_code_domain_code_badge_mappings_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::list_by_code_domain_code_badge_mappings_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::list_by_code_domain_code_badge_mappings_response& v);
+    static ores::dq::messaging::list_by_code_domain_code_badge_mappings_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_by_code_domain_code_badge_mappings_response& v);
+    static ores::dq::messaging::list_by_code_domain_code_badge_mappings_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

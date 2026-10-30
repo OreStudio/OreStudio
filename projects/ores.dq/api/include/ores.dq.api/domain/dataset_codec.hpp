@@ -27,62 +27,69 @@
 
 #include "ores.dq.api/domain/dataset.hpp"
 #include "ores.dq.api/export.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
 /**
- * @brief The wire form of dataset, in each format the wire states.
+ * @brief The members of dataset, named as the wire names them and
+ * in the order the type declares them.
  *
- * The four functions are this type's own: an overload set in the domain
- * namespace would collide on the read direction, where two types differ only
- * in what they return, so they are named here instead.
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
  */
-struct ORES_DQ_API_EXPORT dataset_codec final {
-    /**
-     * @brief Writes @p v as JSON: an object whose members are the members of
-     * the type.
-     *
-     * The bytes are reflect-cpp's for the same value, because this states the
-     * encoding that reflector derives, and the type's own test compares the
-     * two.
-     */
-    static std::string to_json(const dataset& v);
-
-    /**
-     * @brief Reads a dataset back out of its JSON form.
-     */
-    static dataset from_json(std::string_view text);
-
-    /**
-     * @brief Writes @p v as MessagePack: a map whose keys are the members of
-     * the type.
-     */
-    static std::string to_msgpack(const dataset& v);
-
-    /**
-     * @brief Reads a dataset back out of its MessagePack form.
-     */
-    static dataset from_msgpack(std::span<const std::byte> data);
-};
+[[nodiscard]] constexpr auto wire_fields(const dataset&) {
+    return std::tuple{
+        utility::codec::field{"version", &dataset::version},
+        utility::codec::field{"tenant_id", &dataset::tenant_id},
+        utility::codec::field{"id", &dataset::id},
+        utility::codec::field{"code", &dataset::code},
+        utility::codec::field{"catalog_name", &dataset::catalog_name},
+        utility::codec::field{"subject_area_name", &dataset::subject_area_name},
+        utility::codec::field{"domain_name", &dataset::domain_name},
+        utility::codec::field{"coding_scheme_code", &dataset::coding_scheme_code},
+        utility::codec::field{"origin_code", &dataset::origin_code},
+        utility::codec::field{"nature_code", &dataset::nature_code},
+        utility::codec::field{"treatment_code", &dataset::treatment_code},
+        utility::codec::field{"methodology_id", &dataset::methodology_id},
+        utility::codec::field{"name", &dataset::name},
+        utility::codec::field{"description", &dataset::description},
+        utility::codec::field{"source_system_id", &dataset::source_system_id},
+        utility::codec::field{"business_context", &dataset::business_context},
+        utility::codec::field{"upstream_derivation_id", &dataset::upstream_derivation_id},
+        utility::codec::field{"lineage_depth", &dataset::lineage_depth},
+        utility::codec::field{"as_of_date", &dataset::as_of_date},
+        utility::codec::field{"ingestion_timestamp", &dataset::ingestion_timestamp},
+        utility::codec::field{"license_info", &dataset::license_info},
+        utility::codec::field{"artefact_type", &dataset::artefact_type},
+        utility::codec::field{"modified_by", &dataset::modified_by},
+        utility::codec::field{"performed_by", &dataset::performed_by},
+        utility::codec::field{"change_reason_code", &dataset::change_reason_code},
+        utility::codec::field{"change_commentary", &dataset::change_commentary},
+        utility::codec::field{"recorded_at", &dataset::recorded_at},
+    };
+}
 
 }
 
 namespace ores::utility::codec {
 
 /**
- * @brief The generated codec, which is how the wire codec reaches this type.
+ * @brief The generated codec: what the wire codec resolves to for this type.
  *
- * A translation unit that only sends the type includes this header and is
- * done: the wire codec names wire_traits, and this states what it resolves to
- * here.
+ * The functions are declared here and defined in this type's own translation
+ * unit, so a translation unit that only sends the type compiles a declaration
+ * rather than a second copy of the encoder.
  */
 template <>
-struct wire_traits<ores::dq::domain::dataset> {
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::domain::dataset> {
     /**
      * @brief States that this is a generated codec.
      *
@@ -94,21 +101,13 @@ struct wire_traits<ores::dq::domain::dataset> {
      */
     static constexpr bool is_generated = true;
 
-    static std::string write_json(const ores::dq::domain::dataset& v) {
-        return ores::dq::domain::dataset_codec::to_json(v);
-    }
+    static std::string write_json(const ores::dq::domain::dataset& v);
 
-    static ores::dq::domain::dataset read_json(std::string_view text) {
-        return ores::dq::domain::dataset_codec::from_json(text);
-    }
+    static ores::dq::domain::dataset read_json(std::string_view text);
 
-    static std::string write_msgpack(const ores::dq::domain::dataset& v) {
-        return ores::dq::domain::dataset_codec::to_msgpack(v);
-    }
+    static std::string write_msgpack(const ores::dq::domain::dataset& v);
 
-    static ores::dq::domain::dataset read_msgpack(std::span<const std::byte> data) {
-        return ores::dq::domain::dataset_codec::from_msgpack(data);
-    }
+    static ores::dq::domain::dataset read_msgpack(std::span<const std::byte> data);
 };
 
 }

@@ -26,11 +26,17 @@
 #define ORES_DQ_API_MESSAGING_CODING_SCHEME_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/coding_scheme.hpp"
+#include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::dq::messaging {
@@ -275,7 +281,704 @@ inline constexpr std::string_view created = "dq.v1.coding_schemes_events.created
 inline constexpr std::string_view updated = "dq.v1.coding_schemes_events.updated";
 inline constexpr std::string_view deleted = "dq.v1.coding_schemes_events.deleted";
 }
+/**
+ * @brief The members of coding_scheme_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const coding_scheme_key&) {
+    return std::tuple{
+        utility::codec::field{"code", &coding_scheme_key::code},
+    };
+}
+
+/**
+ * @brief The members of coding_scheme_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const coding_scheme_write&) {
+    return std::tuple{
+        utility::codec::field{"code", &coding_scheme_write::code},
+        utility::codec::field{"name", &coding_scheme_write::name},
+        utility::codec::field{"authority_type", &coding_scheme_write::authority_type},
+        utility::codec::field{"subject_area_name", &coding_scheme_write::subject_area_name},
+        utility::codec::field{"domain_name", &coding_scheme_write::domain_name},
+        utility::codec::field{"uri", &coding_scheme_write::uri},
+        utility::codec::field{"description", &coding_scheme_write::description},
+    };
+}
+
+/**
+ * @brief The members of coding_scheme_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const coding_scheme_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &coding_scheme_change::write},
+        utility::codec::field{"precondition", &coding_scheme_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of coding_scheme_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const coding_scheme_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &coding_scheme_removal::key},
+        utility::codec::field{"precondition", &coding_scheme_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of coding_scheme_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const coding_scheme_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &coding_scheme_lookup::key},
+        utility::codec::field{"coding_scheme", &coding_scheme_lookup::coding_scheme},
+    };
+}
+
+/**
+ * @brief The members of coding_schemes_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const coding_schemes_filter&) {
+    return std::tuple{
+        utility::codec::field{"code_one_of", &coding_schemes_filter::code_one_of},
+    };
+}
+
+/**
+ * @brief The members of coding_scheme_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const coding_scheme_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &coding_scheme_event::event_id},
+        utility::codec::field{"key", &coding_scheme_event::key},
+        utility::codec::field{"action", &coding_scheme_event::action},
+        utility::codec::field{"version", &coding_scheme_event::version},
+        utility::codec::field{"occurred_at", &coding_scheme_event::occurred_at},
+        utility::codec::field{"correlation_id", &coding_scheme_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of coding_scheme_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const coding_scheme_version_key&) {
+    return std::tuple{
+        utility::codec::field{"coding_scheme", &coding_scheme_version_key::coding_scheme},
+        utility::codec::field{"version", &coding_scheme_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of coding_scheme_versions_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const coding_scheme_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &coding_scheme_versions_filter::version},
+        utility::codec::field{"from_version", &coding_scheme_versions_filter::from_version},
+        utility::codec::field{"to_version", &coding_scheme_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_coding_schemes_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_coding_schemes_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_coding_schemes_request::offset},
+        utility::codec::field{"limit", &list_coding_schemes_request::limit},
+        utility::codec::field{"order", &list_coding_schemes_request::order},
+        utility::codec::field{"filter", &list_coding_schemes_request::filter},
+        utility::codec::field{"as_of", &list_coding_schemes_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_coding_schemes_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_coding_schemes_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_coding_schemes_response::result},
+        utility::codec::field{"schemes", &list_coding_schemes_response::schemes},
+        utility::codec::field{"total", &list_coding_schemes_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_coding_scheme_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_coding_scheme_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_coding_scheme_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_coding_scheme_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_coding_scheme_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_coding_scheme_response::result},
+        utility::codec::field{"coding_scheme", &get_coding_scheme_response::coding_scheme},
+    };
+}
+
+/**
+ * @brief The members of get_many_coding_schemes_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_coding_schemes_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_coding_schemes_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_coding_schemes_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_coding_schemes_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_coding_schemes_response::result},
+        utility::codec::field{"entries", &get_many_coding_schemes_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_coding_scheme_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_coding_scheme_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_coding_scheme_request::change},
+        utility::codec::field{"intent", &put_coding_scheme_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_coding_scheme_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_coding_scheme_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_coding_scheme_response::result},
+        utility::codec::field{"coding_scheme", &put_coding_scheme_response::coding_scheme},
+    };
+}
+
+/**
+ * @brief The members of put_many_coding_schemes_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_coding_schemes_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_coding_schemes_request::changes},
+        utility::codec::field{"intent", &put_many_coding_schemes_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_coding_schemes_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_coding_schemes_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_coding_schemes_response::result},
+        utility::codec::field{"schemes", &put_many_coding_schemes_response::schemes},
+    };
+}
+
+/**
+ * @brief The members of delete_coding_scheme_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_coding_scheme_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_coding_scheme_request::removal},
+        utility::codec::field{"intent", &delete_coding_scheme_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_coding_scheme_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_coding_scheme_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_coding_scheme_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_coding_schemes_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_coding_schemes_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_coding_schemes_request::removals},
+        utility::codec::field{"intent", &delete_many_coding_schemes_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_coding_schemes_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_coding_schemes_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_coding_schemes_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_coding_scheme_versions_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_coding_scheme_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_coding_scheme_versions_request::key},
+        utility::codec::field{"offset", &list_coding_scheme_versions_request::offset},
+        utility::codec::field{"limit", &list_coding_scheme_versions_request::limit},
+        utility::codec::field{"order", &list_coding_scheme_versions_request::order},
+        utility::codec::field{"filter", &list_coding_scheme_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_coding_scheme_versions_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_coding_scheme_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_coding_scheme_versions_response::result},
+        utility::codec::field{"versions", &list_coding_scheme_versions_response::versions},
+        utility::codec::field{"total", &list_coding_scheme_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_coding_scheme_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_coding_scheme_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_coding_scheme_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_coding_scheme_version_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_coding_scheme_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_coding_scheme_version_response::result},
+        utility::codec::field{"version", &get_coding_scheme_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::coding_scheme_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::coding_scheme_key& v);
+    static ores::dq::messaging::coding_scheme_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::coding_scheme_key& v);
+    static ores::dq::messaging::coding_scheme_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::coding_scheme_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::coding_scheme_write& v);
+    static ores::dq::messaging::coding_scheme_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::coding_scheme_write& v);
+    static ores::dq::messaging::coding_scheme_write read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::coding_scheme_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::coding_scheme_change& v);
+    static ores::dq::messaging::coding_scheme_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::coding_scheme_change& v);
+    static ores::dq::messaging::coding_scheme_change read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::coding_scheme_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::coding_scheme_removal& v);
+    static ores::dq::messaging::coding_scheme_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::coding_scheme_removal& v);
+    static ores::dq::messaging::coding_scheme_removal read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::coding_scheme_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::coding_scheme_lookup& v);
+    static ores::dq::messaging::coding_scheme_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::coding_scheme_lookup& v);
+    static ores::dq::messaging::coding_scheme_lookup read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::coding_schemes_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::coding_schemes_filter& v);
+    static ores::dq::messaging::coding_schemes_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::coding_schemes_filter& v);
+    static ores::dq::messaging::coding_schemes_filter read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::coding_scheme_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::coding_scheme_event& v);
+    static ores::dq::messaging::coding_scheme_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::coding_scheme_event& v);
+    static ores::dq::messaging::coding_scheme_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::coding_scheme_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::coding_scheme_version_key& v);
+    static ores::dq::messaging::coding_scheme_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::coding_scheme_version_key& v);
+    static ores::dq::messaging::coding_scheme_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::coding_scheme_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::coding_scheme_versions_filter& v);
+    static ores::dq::messaging::coding_scheme_versions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::coding_scheme_versions_filter& v);
+    static ores::dq::messaging::coding_scheme_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_coding_schemes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_coding_schemes_request& v);
+    static ores::dq::messaging::list_coding_schemes_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::list_coding_schemes_request& v);
+    static ores::dq::messaging::list_coding_schemes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_coding_schemes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_coding_schemes_response& v);
+    static ores::dq::messaging::list_coding_schemes_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::list_coding_schemes_response& v);
+    static ores::dq::messaging::list_coding_schemes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_coding_scheme_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_coding_scheme_request& v);
+    static ores::dq::messaging::get_coding_scheme_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_coding_scheme_request& v);
+    static ores::dq::messaging::get_coding_scheme_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_coding_scheme_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_coding_scheme_response& v);
+    static ores::dq::messaging::get_coding_scheme_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_coding_scheme_response& v);
+    static ores::dq::messaging::get_coding_scheme_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_many_coding_schemes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_many_coding_schemes_request& v);
+    static ores::dq::messaging::get_many_coding_schemes_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_many_coding_schemes_request& v);
+    static ores::dq::messaging::get_many_coding_schemes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_many_coding_schemes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_many_coding_schemes_response& v);
+    static ores::dq::messaging::get_many_coding_schemes_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_many_coding_schemes_response& v);
+    static ores::dq::messaging::get_many_coding_schemes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_coding_scheme_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_coding_scheme_request& v);
+    static ores::dq::messaging::put_coding_scheme_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::put_coding_scheme_request& v);
+    static ores::dq::messaging::put_coding_scheme_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_coding_scheme_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_coding_scheme_response& v);
+    static ores::dq::messaging::put_coding_scheme_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::put_coding_scheme_response& v);
+    static ores::dq::messaging::put_coding_scheme_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_many_coding_schemes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_many_coding_schemes_request& v);
+    static ores::dq::messaging::put_many_coding_schemes_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::put_many_coding_schemes_request& v);
+    static ores::dq::messaging::put_many_coding_schemes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_many_coding_schemes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_many_coding_schemes_response& v);
+    static ores::dq::messaging::put_many_coding_schemes_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::put_many_coding_schemes_response& v);
+    static ores::dq::messaging::put_many_coding_schemes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_coding_scheme_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::delete_coding_scheme_request& v);
+    static ores::dq::messaging::delete_coding_scheme_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::delete_coding_scheme_request& v);
+    static ores::dq::messaging::delete_coding_scheme_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_coding_scheme_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::delete_coding_scheme_response& v);
+    static ores::dq::messaging::delete_coding_scheme_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::delete_coding_scheme_response& v);
+    static ores::dq::messaging::delete_coding_scheme_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_many_coding_schemes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::delete_many_coding_schemes_request& v);
+    static ores::dq::messaging::delete_many_coding_schemes_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_many_coding_schemes_request& v);
+    static ores::dq::messaging::delete_many_coding_schemes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_many_coding_schemes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::delete_many_coding_schemes_response& v);
+    static ores::dq::messaging::delete_many_coding_schemes_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_many_coding_schemes_response& v);
+    static ores::dq::messaging::delete_many_coding_schemes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_coding_scheme_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::list_coding_scheme_versions_request& v);
+    static ores::dq::messaging::list_coding_scheme_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_coding_scheme_versions_request& v);
+    static ores::dq::messaging::list_coding_scheme_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_coding_scheme_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::list_coding_scheme_versions_response& v);
+    static ores::dq::messaging::list_coding_scheme_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_coding_scheme_versions_response& v);
+    static ores::dq::messaging::list_coding_scheme_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_coding_scheme_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_coding_scheme_version_request& v);
+    static ores::dq::messaging::get_coding_scheme_version_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_coding_scheme_version_request& v);
+    static ores::dq::messaging::get_coding_scheme_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_coding_scheme_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_coding_scheme_version_response& v);
+    static ores::dq::messaging::get_coding_scheme_version_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_coding_scheme_version_response& v);
+    static ores::dq::messaging::get_coding_scheme_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

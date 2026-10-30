@@ -24,46 +24,29 @@
  */
 #include "ores.dq.api/domain/badge_severity_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
-namespace ores::dq::domain {
+namespace ores::dq::domain {}
 
-namespace {
+namespace ores::utility::codec {
 
-/**
- * @brief The members of badge_severity, named as the wire names them and
- * in the order the type declares them.
- */
-constexpr auto badge_severity_codec_fields = std::tuple{
-    utility::codec::field{"version", &badge_severity::version},
-    utility::codec::field{"tenant_id", &badge_severity::tenant_id},
-    utility::codec::field{"code", &badge_severity::code},
-    utility::codec::field{"name", &badge_severity::name},
-    utility::codec::field{"description", &badge_severity::description},
-    utility::codec::field{"display_order", &badge_severity::display_order},
-    utility::codec::field{"modified_by", &badge_severity::modified_by},
-    utility::codec::field{"performed_by", &badge_severity::performed_by},
-    utility::codec::field{"change_reason_code", &badge_severity::change_reason_code},
-    utility::codec::field{"change_commentary", &badge_severity::change_commentary},
-    utility::codec::field{"recorded_at", &badge_severity::recorded_at},
-};
-
+std::string wire_traits<ores::dq::domain::badge_severity>::write_json(
+    const ores::dq::domain::badge_severity& v) {
+    return object::write_json(v);
 }
 
-std::string badge_severity_codec::to_json(const badge_severity& v) {
-    return utility::codec::object::write_json(v, badge_severity_codec_fields);
+ores::dq::domain::badge_severity
+wire_traits<ores::dq::domain::badge_severity>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::badge_severity>(text);
 }
 
-badge_severity badge_severity_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<badge_severity>(text, badge_severity_codec_fields);
+std::string wire_traits<ores::dq::domain::badge_severity>::write_msgpack(
+    const ores::dq::domain::badge_severity& v) {
+    return object::write_msgpack(v);
 }
 
-std::string badge_severity_codec::to_msgpack(const badge_severity& v) {
-    return utility::codec::object::write_msgpack(v, badge_severity_codec_fields);
-}
-
-badge_severity badge_severity_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<badge_severity>(data, badge_severity_codec_fields);
+ores::dq::domain::badge_severity
+wire_traits<ores::dq::domain::badge_severity>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::badge_severity>(data);
 }
 
 }

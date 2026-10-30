@@ -1642,6 +1642,25 @@ def validate_cached_by(domain_entity):
             f"{domain_entity.get('entity_singular', '?')}: cached_by requires has_tenant_id")
 
 
+def _facet_enabled(model_path, facet, addresses):
+    """Whether a model enables a facet, after its own overrides.
+
+    Every address the facet renders is resolved, not only the facet itself: a
+    model may name one archetype's address instead, and a facet half on would
+    emit a declaration without its definition.
+    """
+    if not model_path:
+        return False
+    from .org_loader import parse_org, read_physical_space_overrides
+    from .physical_space import _enabled_overrides, is_enabled
+    doc = parse_org(Path(model_path).read_text(encoding="utf-8"))
+    properties = dict(doc.file_properties)
+    properties.update(read_physical_space_overrides(doc))
+    overrides = _enabled_overrides(properties)
+    return all(is_enabled(address, facet, "ores.cpp", overrides, False)
+               for address in addresses)
+
+
 def _protocol_enabled(model_path):
     """Whether a model generates its protocol header, after its own overrides."""
     if not model_path:
@@ -6169,6 +6188,18 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # derived names.
         domain_entity['messages'] = entity_protocol_messages(
             domain_entity, sibling_entity_singulars(model_path))
+        # Whether this model's types state their own wire shape, which decides
+        # whether the protocol header carries the field list and the codec
+        # specialisations with it.
+        domain_entity['has_generated_wire_codec'] = _facet_enabled(
+            model_path, "ores.cpp.wire-codec",
+            ("ores.cpp.wire-codec.codec_header", "ores.cpp.wire-codec.codec_impl",
+             "ores.cpp.wire-codec.protocol_codec_impl"))
+        # The wire-shape function below iterates a message's fields, and a
+        # field states its own name, which shadows the message's. The message
+        # states its name a second time so the field loop can still reach it.
+        for _message in domain_entity['messages']:
+            _message['struct_name'] = _message['name']
         # The filter record the list request carries, read by the repository
         # so the condition it builds names the members the record declares.
         _filter = filter_members(domain_entity)
@@ -6484,6 +6515,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # The derivation needs the enriched junction (sides, columns, stamped
         # ts_type), so it runs here rather than in the loader.
         junction['messages'] = junction_protocol_messages(junction)
+        # Same two facts as a domain entity: whether its types state their own
+        # wire shape, and the name each message states a second time so the
+        # field loop can reach it.
+        junction['has_generated_wire_codec'] = _facet_enabled(
+            model_path, "ores.cpp.wire-codec",
+            ("ores.cpp.wire-codec.codec_header", "ores.cpp.wire-codec.codec_impl",
+             "ores.cpp.wire-codec.protocol_codec_impl"))
+        for _message in junction['messages']:
+            _message['struct_name'] = _message['name']
         # The record a caller sends, on the shape rather than on the junction
         # dict: a junction states its fields as two sides, and the key the
         # record carries is both of them. The screen builders read this, so it

@@ -19,44 +19,27 @@
  */
 #include "ores.dq.api/domain/dataset_dependency_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
-namespace ores::dq::domain {
+namespace ores::utility::codec {
 
-namespace {
-
-/**
- * @brief The members of dataset_dependency, named as the wire names them and
- * in the order the type declares them.
- */
-constexpr auto dataset_dependency_codec_fields = std::tuple{
-    utility::codec::field{"tenant_id", &dataset_dependency::tenant_id},
-    utility::codec::field{"dataset_code", &dataset_dependency::dataset_code},
-    utility::codec::field{"dependency_code", &dataset_dependency::dependency_code},
-    utility::codec::field{"role", &dataset_dependency::role},
-    utility::codec::field{"modified_by", &dataset_dependency::modified_by},
-    utility::codec::field{"performed_by", &dataset_dependency::performed_by},
-    utility::codec::field{"recorded_at", &dataset_dependency::recorded_at},
-};
-
+std::string wire_traits<ores::dq::domain::dataset_dependency>::write_json(
+    const ores::dq::domain::dataset_dependency& v) {
+    return object::write_json(v);
 }
 
-std::string dataset_dependency_codec::to_json(const dataset_dependency& v) {
-    return utility::codec::object::write_json(v, dataset_dependency_codec_fields);
+ores::dq::domain::dataset_dependency
+wire_traits<ores::dq::domain::dataset_dependency>::read_json(std::string_view text) {
+    return object::read_json<ores::dq::domain::dataset_dependency>(text);
 }
 
-dataset_dependency dataset_dependency_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<dataset_dependency>(text,
-                                                                 dataset_dependency_codec_fields);
+std::string wire_traits<ores::dq::domain::dataset_dependency>::write_msgpack(
+    const ores::dq::domain::dataset_dependency& v) {
+    return object::write_msgpack(v);
 }
 
-std::string dataset_dependency_codec::to_msgpack(const dataset_dependency& v) {
-    return utility::codec::object::write_msgpack(v, dataset_dependency_codec_fields);
-}
-
-dataset_dependency dataset_dependency_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<dataset_dependency>(
-        data, dataset_dependency_codec_fields);
+ores::dq::domain::dataset_dependency
+wire_traits<ores::dq::domain::dataset_dependency>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::dq::domain::dataset_dependency>(data);
 }
 
 }

@@ -1,0 +1,214 @@
+:PROPERTIES:
+:ID: 4F3C2423-ED21-446F-9004-E82B51B0853F
+:END:
+#+title: Test Scenario: Walk the connectivity and public rates screens
+#+description: Manual walkthrough of the Connectivity and Public rates screens, ending with a historical fixings download from Frankfurter.
+#+type: test_scenario
+#+level: s1
+#+filetags: :marketdata:test_scenario:screens:connectivity:public_rates:build_the_connectivity_screens:sprint_29:v0:
+#+target_dialog:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: prime_origin
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:1994DF76-4830-4510-96BD-3B524E782ED2][Prove the connectivity screens]] in [[id:4D2D0EF9-986A-49F3-91CD-29DF44548590][Build the Connectivity screens]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+
+* Before you start
+
+The tester opens the client on a ready environment. Do this yourself before handing over.
+
+- The build is green and the services run: =./compass.sh build= then
+  =./compass.sh services start=.
+- The database is provisioned for =acme_corporation=: =./compass.sh db status=,
+  and only if stale =./compass.sh db recreate -y -k= followed by the provisioning
+  script =projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
+  The run must finish with no failed steps.
+- The catalogue is published: call
+  =ores_marketdata_publish_adapters_from_dq_fn= and
+  =ores_marketdata_publish_suppliers_from_dq_fn= for the marketdata dataset.
+- Terms are accepted for =ecb=, =imf=, =boc= and =tcmb=, so the official adapter
+  has demand. Without them the feeds announce and fetch nothing.
+- The official adapter announced the four Frankfurter feeds and the service
+  accepted them (log: =Adapter 'ecb-frankfurter' ... announced: ready=).
+- No live fetch is running against Frankfurter during the walkthrough; the
+  download in Step 14 reads stored fixings.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:1994DF76-4830-4510-96BD-3B524E782ED2][Prove the connectivity screens]] and [[id:4FF957B8-0B6F-4002-B438-20D929F306B6][Prove the public rates screens]] |
+| Parent story  | [[id:4D2D0EF9-986A-49F3-91CD-29DF44548590][Build the Connectivity screens]]   |
+| Target screen | =/connectivity= (Publishers, Suppliers, Adapters, Feeds) and =/public-rates= (Publishers, Compare, Fetch) |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading. Its body is a checklist: what to click, what to
+type, and what confirms the step passed. Record the outcome in a =*** Result=
+child as PASS, FAIL or PENDING with one line of evidence.
+
+** Log in as tenant_admin
+
+- Open the web client at the address the environment prints.
+- Log in as =tenant_admin@acme_corporation= with the password from the
+  provisioning run (look the account up with =compass shell= if needed).
+- Confirm the shell shows the Market data area and no permission errors.
+
+*** Result
+
+** Open the connectivity area
+
+- Choose Market data, then Connectivity, in the shell.
+- Confirm the publisher list is the landing view and the screen title reads
+  =Connectivity=.
+- Confirm the four public publishers (ECB, IMF, BoC, TCMB) and the simulator
+  publishers are listed.
+
+*** Result
+
+** Read the publishers list
+
+- For each row, read the name, publisher code, kind and terms state.
+- Confirm ECB, IMF, BoC and TCMB show their terms accepted and their feed
+  count is one each.
+- Confirm the list shows no invented publisher: only what the catalogue holds.
+
+*** Result
+
+** Open the ECB publisher
+
+- Click the ECB row.
+- Confirm the detail shows the publisher code =ecb=, its kind, its supplier
+  and its feed =ecb-frankfurter=.
+- Confirm the terms panel shows the accepted digest, who accepted it and when.
+- Confirm the transport fields (session, environment, endpoint) read
+  =frankfurter-eu=, =production=, =https://api.frankfurter.dev=.
+
+*** Result
+
+** Walk the supplier tree
+
+- Open Suppliers.
+- Confirm the tree groups suppliers under their publisher and shows
+  =frankfurter= and =synthetic=.
+- Expand =frankfurter= and confirm the sessions =frankfurter-eu= and the
+  feeds that use it.
+- Confirm the dashboard counts match the tree (publishers, suppliers,
+  sessions, feeds).
+
+*** Result
+
+** Read the adapters list
+
+- Open Adapters.
+- Confirm =frankfurter= and =synthetic= are listed with their versions.
+- Confirm each row states whether the adapter is installed, and that the
+  installed state comes from the module's announcement, not from a seed.
+
+*** Result
+
+** Open the frankfurter adapter
+
+- Click the frankfurter row.
+- Confirm the detail shows the adapter code, the module version, and the
+  configuration schema (the =url=, =backfill_days= and =poll_minutes= keys).
+- Confirm the sessions list shows =frankfurter-eu=.
+
+*** Result
+
+** Open the frankfurter session
+
+- Open the session =frankfurter-eu=.
+- Confirm supplier =frankfurter=, adapter =frankfurter=, environment
+  =production=, endpoint =https://api.frankfurter.dev=, enabled =true=.
+- Confirm the settings panel renders the JSON as fields, not as raw text.
+
+*** Result
+
+** Open the ECB feed
+
+- Open the feed =ecb-frankfurter=.
+- Confirm publisher =ecb=, session =frankfurter-eu=, service =end_of_day=,
+  provider key =ECB=, default =true=.
+- Confirm the scope panel lists the FX items the feed serves and the vendor
+  instrument behind each, and that the count matches the availability screen.
+
+*** Result
+
+** Whole catalogues round trip
+
+- On the Connectivity screen, open a publisher, then a supplier, then an
+  adapter, then a session, then the feed, using the links between them.
+- Confirm every link lands on the record you expect and the back button
+  returns to the list without losing the selection.
+
+*** Result
+
+** Switch to Public rates
+
+- Choose Public rates in the shell.
+- Confirm the title reads =Public rates= and no screen in this area mentions
+  synthetic data.
+- Confirm the same four public publishers appear.
+
+*** Result
+
+** Read the publisher freshnes
+
+- For each publisher, read the last fixing date and the number of series it
+  serves.
+- Confirm ECB, IMF and BoC show a date no older than the last business day,
+  and the series counts match the feed scope (ECB 44, IMF 48, BoC 27).
+- Confirm TCMB shows its state (a date, or =no fixings yet= when its first
+  fetch has not landed).
+
+*** Result
+
+** Read the ECB availability
+
+- Open the ECB publisher.
+- Confirm the availability table lists each currency pair the feed serves
+  with its first and last fixing date.
+- Confirm =EUR/USD= is present and its latest value matches the fixing
+  stored for today.
+
+*** Result
+
+** Compare two publishers
+
+- Open Compare, choose ECB and IMF, and select =EUR/USD=.
+- Confirm the grid shows both series by date and the values agree with the
+  availability pages.
+- Confirm a pair only one publisher serves is marked as missing for the
+  other, not shown as zero.
+
+*** Result
+
+** Download historical fixings
+
+- Open the Fetch tab.
+- Choose publisher =ECB=, pair =EUR/USD= (or all pairs), and a date range of
+  the last 30 calendar days.
+- Press Fetch. Confirm the UI reports the rows fetched and the file name.
+- Download the file and open it.
+- Confirm the header names the publisher, pair and date, and that each row
+  carries the date and value.
+- Spot check three rows against the Public rates availability page; the
+  values must match exactly.
+- Confirm a second fetch of the same range answers from stored fixings and
+  writes no duplicate rows.
+
+*** Result
+
+** Close the walkthrough
+
+- Confirm no screen shows a console error, a raw JSON payload, or a stack
+  trace.
+- Record the counts you saw (publishers, suppliers, adapters, sessions, feeds,
+  fixings downloaded) in the Results section of the task.
+
+*** Result

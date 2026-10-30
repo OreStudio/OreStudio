@@ -69,6 +69,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
+| [[id:4F3C2423-ED21-446F-9004-E82B51B0853F][Walk the connectivity and public rates screens]] | PENDING | Covers both screen areas and the historical fixings download. |
 |          |       |       |
 
 * PRs

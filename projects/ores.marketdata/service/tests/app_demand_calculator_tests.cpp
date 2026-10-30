@@ -44,10 +44,12 @@ struct app_demand_calculator_world {
     app_demand_calculator_world() {
         sim.id = gen();
         sim.name = "bloomberg-sim";
-        sim.provider_code = "bloomberg";
+        sim.publisher_code = "bloomberg";
+        sim.session_code = "synthetic-local";
         live.id = gen();
         live.name = "bloomberg-live";
-        live.provider_code = "bloomberg";
+        live.publisher_code = "bloomberg";
+        live.session_code = "frankfurter-eu";
         c.feeds = {sim, live};
         instrument("bloomberg", "EURUSD Curncy", eur_usd);
         instrument("bloomberg", "GBPUSD Curncy", gbp_usd);
@@ -77,14 +79,14 @@ struct app_demand_calculator_world {
         ores::marketdata::domain::route r;
         r.id = gen();
         r.party_id = party;
-        r.provider_code = source.provider_code;
+        r.provider_code = source.publisher_code;
         r.feed_id = source.id;
         c.routes.push_back(r);
         if (subscribed) {
             ores::marketdata::domain::subscription s;
             s.id = gen();
             s.party_id = party;
-            s.provider_code = source.provider_code;
+            s.provider_code = source.publisher_code;
             s.display = !derived_only;
             s.derived = derived_only;
             c.subscriptions.push_back(s);

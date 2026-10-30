@@ -69,15 +69,15 @@ values
     ('1cf1232c-7ce2-54f3-b55f-c57793caf5af', ores_utility_system_tenant_id_fn(), 0,
      'ecb-frankfurter', 'ecb', 'frankfurter-eu', 'end_of_day', 'ECB', true,
      'The rates of European Central Bank read through Frankfurter by the official rates adapter.',
-     current_user, current_user, 'system.initial_load', 'Initial population of the official rates feeds')
+     current_user, current_user, 'system.initial_load', 'Initial population of the official rates feeds'),
     ('da7d3d48-48af-5359-938e-9a6f0d7168e2', ores_utility_system_tenant_id_fn(), 0,
      'imf-frankfurter', 'imf', 'frankfurter-eu', 'end_of_day', 'IMF', true,
      'The rates of International Monetary Fund read through Frankfurter by the official rates adapter.',
-     current_user, current_user, 'system.initial_load', 'Initial population of the official rates feeds')
+     current_user, current_user, 'system.initial_load', 'Initial population of the official rates feeds'),
     ('c0e15d2f-abeb-57a7-ab42-0f60bcc89d82', ores_utility_system_tenant_id_fn(), 0,
      'boc-frankfurter', 'boc', 'frankfurter-eu', 'end_of_day', 'BOC', true,
      'The rates of Bank of Canada read through Frankfurter by the official rates adapter.',
-     current_user, current_user, 'system.initial_load', 'Initial population of the official rates feeds')
+     current_user, current_user, 'system.initial_load', 'Initial population of the official rates feeds'),
     ('46fe8046-7d3a-59fa-80b8-1bf9ef7901fd', ores_utility_system_tenant_id_fn(), 0,
      'tcmb-frankfurter', 'tcmb', 'frankfurter-eu', 'end_of_day', 'TCMB', true,
      'The rates of Central Bank of the Republic of Türkiye read through Frankfurter by the official rates adapter.',

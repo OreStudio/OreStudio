@@ -162,8 +162,8 @@ struct app_feed_ingest_loop_fixture {
             ores::database::service::tenant_context::with_system_tenant(h.context());
         auto src = generators::generate_synthetic_feed(gen);
         src.name = source;
-        src.provider_code = "ore";
-        src.kind = "simulated";
+        src.publisher_code = "ore";
+        src.session_code = "synthetic-local";
         src.is_default = false;
         src.tenant_id = ores::utility::uuid::tenant_id::from_string(
                             ores::database::service::tenant_context::system_tenant_id)

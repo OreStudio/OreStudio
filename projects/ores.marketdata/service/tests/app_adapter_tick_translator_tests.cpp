@@ -45,12 +45,12 @@ struct catalogue {
         boost::uuids::random_generator gen;
         live.id = gen();
         live.name = "bloomberg-live";
-        live.provider_code = "bloomberg";
-        live.kind = "live";
+        live.publisher_code = "bloomberg";
+        live.session_code = "frankfurter-eu";
         simulated.id = gen();
         simulated.name = "bloomberg-sim";
-        simulated.provider_code = "bloomberg";
-        simulated.kind = "simulated";
+        simulated.publisher_code = "bloomberg";
+        simulated.session_code = "synthetic-local";
         instrument.id = gen();
         instrument.provider_code = "bloomberg";
         instrument.id_scheme = "bbg_ticker";

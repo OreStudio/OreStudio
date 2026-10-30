@@ -210,7 +210,7 @@ TEST_CASE("the_demand_and_the_metering_of_a_composite_include_its_inputs",
         ores::marketdata::domain::feed source;
         source.id = gen();
         source.name = provider + "-sim";
-        source.provider_code = provider;
+        source.publisher_code = provider;
         c.feeds.push_back(source);
 
         ores::marketdata::domain::market_data_vendor_instrument v;

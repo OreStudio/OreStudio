@@ -44,10 +44,10 @@ struct world {
     world() {
         live.id = gen();
         live.name = "bloomberg-live";
-        live.kind = "live";
+        live.session_code = "frankfurter-eu";
         simulated.id = gen();
         simulated.name = "bloomberg-sim";
-        simulated.kind = "simulated";
+        simulated.session_code = "synthetic-local";
     }
 
     billing_period period() const {

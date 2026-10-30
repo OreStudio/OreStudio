@@ -105,6 +105,33 @@ public:
     void put(const std::string& bucket, const std::string& key, std::string_view data);
 
     /**
+     * @brief A part file beside the object, for a caller that writes it in pieces.
+     *
+     * The name is unique per call, so two callers writing the same key never share
+     * a file and neither can publish or remove the other's bytes. The file itself
+     * is not created: the caller opens it.
+     *
+     * @throws std::runtime_error when the bucket or key cannot name an object, or
+     * the bucket directory cannot be made.
+     */
+    [[nodiscard]] std::filesystem::path begin_put(const std::string& bucket,
+                                                  const std::string& key);
+
+    /**
+     * @brief Publishes a part file at the object's key, replacing what is there.
+     *
+     * @throws std::runtime_error when the part file cannot be renamed.
+     */
+    void commit_put(const std::filesystem::path& part,
+                    const std::string& bucket,
+                    const std::string& key);
+
+    /**
+     * @brief Removes a part file, if it is there. Never throws.
+     */
+    static void abandon_put(const std::filesystem::path& part) noexcept;
+
+    /**
      * @brief Reads one object.
      *
      * @throws object_not_found when the bucket holds no object at the key.

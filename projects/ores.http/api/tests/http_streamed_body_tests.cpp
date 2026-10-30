@@ -310,14 +310,15 @@ TEST_CASE("a_route_with_a_sink_receives_the_body_in_chunks", "[http_streamed_bod
     auto record = std::make_shared<streamed_sink_record>();
     streaming_fixture fixture(options);
     auto router = fixture.server().get_router();
-    router->add_route(
-        router->post("/stream")
-            .summary("Take a streamed body")
-            .auth_optional()
-            .max_body(1024 * 1024)
-            .sink([record] { return std::make_unique<streamed_recording_sink>(record); })
-            .handler(streamed_echo(record))
-            .build());
+    router->add_route(router->post("/stream")
+                          .summary("Take a streamed body")
+                          .auth_optional()
+                          .max_body(1024 * 1024)
+                          .sink([record](const http_request&) {
+                              return std::make_unique<streamed_recording_sink>(record);
+                          })
+                          .handler(streamed_echo(record))
+                          .build());
 
     const auto body = std::string(200 * 1024, 'x');
     const auto answered = post_streamed(fixture.port(), "/stream", body, std::chrono::seconds(5));
@@ -345,14 +346,15 @@ TEST_CASE("a_streamed_body_past_the_limit_is_refused", "[http_streamed_body]") {
     auto record = std::make_shared<streamed_sink_record>();
     streaming_fixture fixture(options);
     auto router = fixture.server().get_router();
-    router->add_route(
-        router->post("/stream")
-            .summary("Take a streamed body")
-            .auth_optional()
-            .max_body(1024)
-            .sink([record] { return std::make_unique<streamed_recording_sink>(record); })
-            .handler(streamed_echo(record))
-            .build());
+    router->add_route(router->post("/stream")
+                          .summary("Take a streamed body")
+                          .auth_optional()
+                          .max_body(1024)
+                          .sink([record](const http_request&) {
+                              return std::make_unique<streamed_recording_sink>(record);
+                          })
+                          .handler(streamed_echo(record))
+                          .build());
 
     const auto refused =
         post_streamed(fixture.port(), "/stream", std::string(4096, 'x'), std::chrono::seconds(5));
@@ -380,14 +382,15 @@ TEST_CASE("a_stream_that_runs_past_the_limit_is_refused_and_discarded", "[http_s
     auto record = std::make_shared<streamed_sink_record>();
     streaming_fixture fixture(options);
     auto router = fixture.server().get_router();
-    router->add_route(
-        router->post("/stream")
-            .summary("Take a streamed body")
-            .auth_optional()
-            .max_body(4096)
-            .sink([record] { return std::make_unique<streamed_recording_sink>(record); })
-            .handler(streamed_echo(record))
-            .build());
+    router->add_route(router->post("/stream")
+                          .summary("Take a streamed body")
+                          .auth_optional()
+                          .max_body(4096)
+                          .sink([record](const http_request&) {
+                              return std::make_unique<streamed_recording_sink>(record);
+                          })
+                          .handler(streamed_echo(record))
+                          .build());
 
     const auto refused =
         post_chunked_in_pieces(fixture.port(), "/stream", 8 * 1024, 1024, std::chrono::seconds(5));
@@ -416,14 +419,15 @@ TEST_CASE("a_destination_that_refuses_a_chunk_is_answered_500", "[http_streamed_
     record->refuse_chunks = true;
     streaming_fixture fixture(options);
     auto router = fixture.server().get_router();
-    router->add_route(
-        router->post("/stream")
-            .summary("Take a streamed body")
-            .auth_optional()
-            .max_body(1024 * 1024)
-            .sink([record] { return std::make_unique<streamed_recording_sink>(record); })
-            .handler(streamed_echo(record))
-            .build());
+    router->add_route(router->post("/stream")
+                          .summary("Take a streamed body")
+                          .auth_optional()
+                          .max_body(1024 * 1024)
+                          .sink([record](const http_request&) {
+                              return std::make_unique<streamed_recording_sink>(record);
+                          })
+                          .handler(streamed_echo(record))
+                          .build());
 
     const auto failed =
         post_streamed(fixture.port(), "/stream", std::string(4096, 'x'), std::chrono::seconds(5));
@@ -447,14 +451,15 @@ TEST_CASE("a_body_that_stops_arriving_is_closed_on_the_deadline", "[http_streame
     auto record = std::make_shared<streamed_sink_record>();
     streaming_fixture fixture(options);
     auto router = fixture.server().get_router();
-    router->add_route(
-        router->post("/stream")
-            .summary("Take a streamed body")
-            .auth_optional()
-            .max_body(1024 * 1024)
-            .sink([record] { return std::make_unique<streamed_recording_sink>(record); })
-            .handler(streamed_echo(record))
-            .build());
+    router->add_route(router->post("/stream")
+                          .summary("Take a streamed body")
+                          .auth_optional()
+                          .max_body(1024 * 1024)
+                          .sink([record](const http_request&) {
+                              return std::make_unique<streamed_recording_sink>(record);
+                          })
+                          .handler(streamed_echo(record))
+                          .build());
 
     // The body is declared and never sent, so the read waits for a chunk that
     // does not come. The read budget is longer than the server's deadline, so a
@@ -479,14 +484,15 @@ TEST_CASE("bytes_that_cannot_be_completed_are_answered_500", "[http_streamed_bod
     record->refuse_finish = true;
     streaming_fixture fixture(options);
     auto router = fixture.server().get_router();
-    router->add_route(
-        router->post("/stream")
-            .summary("Take a streamed body")
-            .auth_optional()
-            .max_body(1024 * 1024)
-            .sink([record] { return std::make_unique<streamed_recording_sink>(record); })
-            .handler(streamed_echo(record))
-            .build());
+    router->add_route(router->post("/stream")
+                          .summary("Take a streamed body")
+                          .auth_optional()
+                          .max_body(1024 * 1024)
+                          .sink([record](const http_request&) {
+                              return std::make_unique<streamed_recording_sink>(record);
+                          })
+                          .handler(streamed_echo(record))
+                          .build());
 
     const auto failed =
         post_streamed(fixture.port(), "/stream", std::string(4096, 'x'), std::chrono::seconds(5));

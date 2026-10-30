@@ -108,6 +108,10 @@ private:
     boost::asio::awaitable<http::domain::http_response>
     handle_put(const http::domain::http_request& req);
 
+    /// The sink the upload route writes its body into.
+    [[nodiscard]] std::unique_ptr<http::domain::body_sink>
+    make_upload_sink(const http::domain::http_request& req);
+
     boost::asio::awaitable<http::domain::http_response>
     handle_get(const http::domain::http_request& req);
 

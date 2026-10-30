@@ -139,8 +139,11 @@ struct ORES_HTTP_API_EXPORT route final {
      * route wants. A route that takes an object states a factory instead: the
      * session reads the body in chunks straight into the sink the factory
      * returns, so the object never sits in memory.
+     *
+     * The factory sees the request before its body has been read, which is what
+     * lets a route that takes an object name the object from its path.
      */
-    std::function<std::unique_ptr<body_sink>()> sink;
+    std::function<std::unique_ptr<body_sink>(const http_request&)> sink;
 
     /**
      * @brief The most this route will read for one request body, in bytes.

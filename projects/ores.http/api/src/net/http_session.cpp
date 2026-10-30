@@ -25,6 +25,7 @@
 #include <boost/url/parse.hpp>
 #include <boost/url/url_view.hpp>
 #include <algorithm>
+#include <stdexcept>
 #include <string_view>
 #include <vector>
 
@@ -109,40 +110,39 @@ asio::awaitable<void> http_session::run() {
              * sink both come from it, and matching once keeps the pattern off the
              * path the body takes.
              */
-            request_body body;
-            body.route = router_->match(
-                convert_method(parser.get().method()), route_path(subject), body.path_params);
-            const auto limit = body_limit_for(body.route);
+            std::unordered_map<std::string, std::string> path_params;
+            auto route = router_->match(
+                convert_method(parser.get().method()), route_path(subject), path_params);
+            const auto limit = body_limit_for(route);
 
             /*
              * The refusal is written here, not by the failed read, so the caller
-             * is told why instead of watching the socket close. It answers the
-             * declared size below, the chunked body that declares none, and the
-             * stream that runs past the limit.
+             * is told why instead of watching the socket close. One place answers
+             * the declared size, the chunked body that declares none, the stream
+             * that runs past the limit, the route that will not take the request,
+             * and the destination that cannot take the bytes.
              */
-            const auto refuse_too_large =
-                [this, version, &subject](std::uint64_t size) -> asio::awaitable<void> {
-                BOOST_LOG_SEV(lg(), warn) << "Refusing " << subject << ": a body of " << size
-                                          << " bytes is past the route's limit";
-                auto too_large = domain::http_response::error(
-                    domain::http_status::payload_too_large,
-                    "The request body is larger than this route accepts.");
-                auto beast_resp = convert_response(too_large, version, false);
+            const auto refuse =
+                [this, version, &subject](domain::http_status status,
+                                          std::string_view reason,
+                                          std::string_view note) -> asio::awaitable<void> {
+                BOOST_LOG_SEV(lg(), warn) << "Refusing " << subject << ": " << note;
+                auto response = domain::http_response::error(status, std::string(reason));
+                auto beast_resp = convert_response(response, version, false);
                 co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
             };
 
-            /*
-             * A destination that cannot take the bytes is a fault here, not a
-             * fault of the request, so it is answered as one.
-             */
-            const auto refuse_destination = [this, version, &subject]() -> asio::awaitable<void> {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Refusing " << subject << ": the body could not be written where it goes";
-                auto failed =
-                    domain::http_response::error(domain::http_status::internal_server_error,
-                                                 "The request body could not be stored.");
-                auto beast_resp = convert_response(failed, version, false);
-                co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+            const auto refuse_too_large = [&refuse](std::uint64_t size) -> asio::awaitable<void> {
+                co_await refuse(domain::http_status::payload_too_large,
+                                "The request body is larger than this route accepts.",
+                                "a body of " + std::to_string(size) + " bytes is past the limit");
+            };
+
+            const auto refuse_destination =
+                [&refuse](std::string_view note) -> asio::awaitable<void> {
+                co_await refuse(domain::http_status::internal_server_error,
+                                "The request body could not be stored.",
+                                note);
             };
 
             const auto declared = parser.content_length().value_or(0);
@@ -160,21 +160,44 @@ asio::awaitable<void> http_session::run() {
 
             parser.body_limit(limit);
 
+            auto domain_req = convert_request(parser.get().base());
+            domain_req.path_params = std::move(path_params);
+
             /*
              * The sink belongs to this request, so a session that keeps its
-             * connection holds nothing once the request is answered.
+             * connection holds nothing once the request is answered. A factory
+             * that refuses the request says so with invalid_argument, which is a
+             * bad request and not a fault; the body is not read, so nothing has
+             * been written.
              */
             std::unique_ptr<domain::body_sink> sink;
-            if (body.route && body.route->sink) {
-                sink = body.route->sink();
-                if (!sink) {
-                    // A route that states a sink and produces none must not
-                    // quietly read the body into memory instead.
-                    co_await refuse_destination();
-                    break;
+            std::string refused_request;
+            std::string sink_failed;
+            if (route && route->sink) {
+                try {
+                    sink = route->sink(domain_req);
+                } catch (const std::invalid_argument& e) {
+                    refused_request = e.what();
+                } catch (const std::exception& e) {
+                    sink_failed = e.what();
                 }
+                if (sink == nullptr && refused_request.empty() && sink_failed.empty())
+                    sink_failed = "the route produced no sink";
             }
-            body.sink = sink.get();
+
+            if (!refused_request.empty()) {
+                co_await refuse(domain::http_status::bad_request,
+                                refused_request,
+                                "the route will not take this request");
+                break;
+            }
+
+            if (!sink_failed.empty()) {
+                co_await refuse_destination(sink_failed);
+                break;
+            }
+
+            domain_req.sink = sink.get();
 
             /*
              * Every path that does not publish leaves the bytes discarded, and the
@@ -187,27 +210,27 @@ asio::awaitable<void> http_session::run() {
                     if (sink != nullptr)
                         sink->abort();
                 }
-            } discard_guard{body.sink};
+            } discard_guard{sink.get()};
 
-            const auto outcome = co_await read_body(parser, body.sink, body);
+            std::string content;
+            std::uint64_t byte_count = 0;
+            const auto outcome = co_await read_body(parser, sink.get(), content, byte_count);
             if (outcome != body_outcome::complete) {
                 if (outcome == body_outcome::too_large)
                     co_await refuse_too_large(limit);
                 else
-                    co_await refuse_destination();
+                    co_await refuse_destination("the body could not be written where it goes");
                 break;
             }
 
-            /*
-             * The parser releases a message whose body is a buffer the next read
-             * reuses, and the body has already been consumed, so only the header
-             * half is carried on.
-             */
-            auto streamed = parser.release();
-            http::request<http::string_body> req;
-            req.base() = streamed.base();
-            co_await handle_request(std::move(req), std::move(body));
-            if (body.sink != nullptr && !body.sink->published())
+            // The body has been consumed, so the message is released for its
+            // framing and not for its bytes.
+            parser.release();
+
+            domain_req.body = std::move(content);
+            domain_req.body_bytes = byte_count;
+            co_await handle_request(std::move(domain_req), std::move(route), keep_alive);
+            if (sink != nullptr && !sink->published())
                 BOOST_LOG_SEV(lg(), warn)
                     << "The handler for " << subject << " answered without publishing its body";
 
@@ -233,8 +256,11 @@ asio::awaitable<void> http_session::run() {
     stream_.socket().shutdown(asio::ip::tcp::socket::shutdown_send, ec);
 }
 
-asio::awaitable<http_session::body_outcome> http_session::read_body(
-    http::request_parser<http::buffer_body>& parser, domain::body_sink* sink, request_body& body) {
+asio::awaitable<http_session::body_outcome>
+http_session::read_body(http::request_parser<http::buffer_body>& parser,
+                        domain::body_sink* sink,
+                        std::string& content,
+                        std::uint64_t& byte_count) {
     /*
      * One chunk at a time, so the body costs the chunk and not itself. The buffer
      * belongs to this call, so a session that is idle between requests holds no
@@ -267,7 +293,7 @@ asio::awaitable<http_session::body_outcome> http_session::read_body(
         }
 
         const auto taken = chunk.size() - view.size;
-        body.byte_count += taken;
+        byte_count += taken;
         if (taken == 0)
             continue;
 
@@ -275,7 +301,7 @@ asio::awaitable<http_session::body_outcome> http_session::read_body(
             if (!sink->consume(std::string_view(chunk.data(), taken)))
                 co_return body_outcome::destination_failed;
         } else {
-            body.content.append(chunk.data(), taken);
+            content.append(chunk.data(), taken);
         }
     }
 
@@ -296,15 +322,13 @@ std::uint64_t http_session::body_limit_for(const std::optional<domain::route>& r
     return std::min<std::uint64_t>(stated, ceiling);
 }
 
-asio::awaitable<void> http_session::handle_request(http::request<http::string_body> req,
-                                                   request_body body) {
-
-    auto domain_req = convert_request(req);
-    domain_req.body = std::move(body.content);
-    domain_req.body_bytes = body.byte_count;
-    domain_req.sink = body.sink;
+asio::awaitable<void> http_session::handle_request(domain::http_request domain_req,
+                                                   std::optional<domain::route> route,
+                                                   bool keep_alive) {
 
     const auto path = route_path(domain_req.target);
+    const auto version =
+        static_cast<unsigned>(domain_req.http_version_major * 10 + domain_req.http_version_minor);
 
     BOOST_LOG_SEV(lg(), trace) << "Processing request path: " << path
                                << " method: " << static_cast<int>(domain_req.method);
@@ -319,24 +343,22 @@ asio::awaitable<void> http_session::handle_request(http::request<http::string_bo
         cors_resp.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
         cors_resp.set_header("Access-Control-Max-Age", "86400");
 
-        auto beast_resp = convert_response(cors_resp, req.version(), req.keep_alive());
+        auto beast_resp = convert_response(cors_resp, version, keep_alive);
         co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
         co_return;
     }
 
     // The route was resolved before the body was read.
-    auto matched = std::move(body.route);
+    auto matched = std::move(route);
 
     if (!matched) {
         BOOST_LOG_SEV(lg(), debug)
             << "No route matched for: " << static_cast<int>(domain_req.method) << " " << path;
         auto not_found = domain::http_response::not_found("Endpoint not found");
-        auto beast_resp = convert_response(not_found, req.version(), req.keep_alive());
+        auto beast_resp = convert_response(not_found, version, keep_alive);
         co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
         co_return;
     }
-
-    domain_req.path_params = std::move(body.path_params);
 
     BOOST_LOG_SEV(lg(), debug) << "Route matched: " << matched->pattern;
 
@@ -348,7 +370,7 @@ asio::awaitable<void> http_session::handle_request(http::request<http::string_bo
                                       << " from " << remote_address_;
             auto unauthorized = domain::http_response::unauthorized(
                 "Authorization header with Bearer token required");
-            auto beast_resp = convert_response(unauthorized, req.version(), req.keep_alive());
+            auto beast_resp = convert_response(unauthorized, version, keep_alive);
             co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
             co_return;
         }
@@ -364,7 +386,7 @@ asio::awaitable<void> http_session::handle_request(http::request<http::string_bo
                 << "configured; refusing " << matched->pattern << " from " << remote_address_;
             auto unauthorized = domain::http_response::unauthorized(
                 "Authentication is not configured on this server");
-            auto beast_resp = convert_response(unauthorized, req.version(), req.keep_alive());
+            auto beast_resp = convert_response(unauthorized, version, keep_alive);
             co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
             co_return;
         }
@@ -377,7 +399,7 @@ asio::awaitable<void> http_session::handle_request(http::request<http::string_bo
                     << ": " << ores::security::jwt::to_string(claims_result.error());
                 auto unauthorized = domain::http_response::unauthorized(
                     ores::security::jwt::to_string(claims_result.error()));
-                auto beast_resp = convert_response(unauthorized, req.version(), req.keep_alive());
+                auto beast_resp = convert_response(unauthorized, version, keep_alive);
                 co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
                 co_return;
             }
@@ -404,7 +426,7 @@ asio::awaitable<void> http_session::handle_request(http::request<http::string_bo
                     BOOST_LOG_SEV(lg(), warn) << "User " << domain_req.authenticated_user->subject
                                               << " lacks required role for " << matched->pattern;
                     auto forbidden = domain::http_response::forbidden("Insufficient permissions");
-                    auto beast_resp = convert_response(forbidden, req.version(), req.keep_alive());
+                    auto beast_resp = convert_response(forbidden, version, keep_alive);
                     co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
                     co_return;
                 }
@@ -451,7 +473,7 @@ asio::awaitable<void> http_session::handle_request(http::request<http::string_bo
     // Add server header
     response.set_header("Server", options_.server_identifier);
 
-    auto beast_resp = convert_response(response, req.version(), req.keep_alive());
+    auto beast_resp = convert_response(response, version, keep_alive);
     co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
 
     // Update session bytes if we have an authenticated user with session info
@@ -470,21 +492,20 @@ asio::awaitable<void> http_session::handle_request(http::request<http::string_bo
     }
 }
 
-domain::http_request http_session::convert_request(const http::request<http::string_body>& req) {
+domain::http_request http_session::convert_request(const http::header<true>& head) {
 
     domain::http_request result;
-    result.method = convert_method(req.method());
-    result.target = std::string(req.target());
-    result.body = req.body();
+    result.method = convert_method(head.method());
+    result.target = std::string(head.target());
     result.remote_address = remote_address_;
 
     // Extract HTTP version (e.g., 11 = HTTP/1.1, 20 = HTTP/2)
-    auto version = req.version();
+    auto version = head.version();
     result.http_version_major = static_cast<std::uint16_t>(version / 10);
     result.http_version_minor = static_cast<std::uint16_t>(version % 10);
 
     // Copy headers (normalize keys to lowercase for case-insensitive lookup per RFC 7230)
-    for (const auto& field : req) {
+    for (const auto& field : head) {
         std::string key = std::string(field.name_string());
         std::transform(
             key.begin(), key.end(), key.begin(), [](unsigned char c) { return std::tolower(c); });

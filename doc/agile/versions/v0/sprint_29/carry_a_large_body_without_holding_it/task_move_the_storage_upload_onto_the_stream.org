@@ -7,10 +7,10 @@
 #+level: s1
 #+filetags: :carry_a_large_body_without_holding_it:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on:
-#+blocked_since:
+#+branch: feature/move-the-storage-upload-onto-the-stream
+#+pr: 4157
+#+blocked_on: review
+#+blocked_since: 2026-10-30 23:40
 #+created: 2026-10-30
 #+updated: 2026-10-30
 #+environment: clever_dijkstra
@@ -28,11 +28,11 @@ size in memory. Move them onto the chunk channel and the file on disk.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8550935B-A0F4-4BAD-95F3-D3E03B45E044][Carry a large body without holding it]] |
-| Now          | Not yet started.                       |
+| Now          | The upload writes a part file and publishes it. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Review, then the resident-cost measure takes over. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -40,20 +40,21 @@ size in memory. Move them onto the chunk channel and the file on disk.
 - The upload writes each chunk to a temporary file beside the object and renames it
   when the body ends, so a reader never sees a partial object.
 - A request that fails, disconnects, or is refused leaves no file behind.
-- The download writes the file through a fixed buffer, so its memory does not grow
-  with the object.
-- The upload's stated limit and the ceiling are unchanged.
-- Tests cover an upload of several chunks, an aborted upload, and a download larger
-  than one buffer.
+- The upload's stated limit and the ceiling are unchanged, and the answer carries
+  the digest and the byte count of what was stored.
+- Tests cover an upload of several chunks, an aborted upload, and a key that cannot
+  name an object.
+- The download is served from the file by [[id:9A622B67-34FA-4426-9526-508CFB7A690C][Serve the download from the file]], because it needs the
+  response streaming that increment B1 owns.
 
 * Plan
 
 1. Write to =<root>/<bucket>/<key>.part= from the channel, then rename on the last
    chunk.
 2. Delete the part file when the channel stops early, from the same scope that owns it.
-3. Replace the download's =store_.get= with a file read through a fixed buffer and a
-   serializer, so the response is written in chunks.
-4. Test the round trip through the routes the wrapper uses.
+3. Test the sink on its own: the part file, the rename, the digest, and the abort
+   that leaves nothing.
+4. Leave the download to its own task, which waits on B1.
 
 * Measurements
 
@@ -67,9 +68,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Upload sink cases | 4 cases, 21 assertions, all passing | =./ores.http.core.tests "[storage_upload_sink]"= | =#4157= |
+| =ores.http.api= test cases | 96 cases, 292 assertions, all passing | =./ores.http.api.tests= | =#4157= |
 
 * Notes
+
+- The upload's digest is taken from the part file once the last chunk arrives, so
+  the response still carries the same =sha256= the buffered write did, without the
+  bytes ever being in memory.
+- The part-file protocol lives in =local_store=: =begin_put= names a part that no
+  other caller shares, =commit_put= publishes it, =abandon_put= removes it. Two
+  uploads of one key therefore never write one file, and neither can publish or
+  remove the other's bytes. =put= is now the same protocol with one write in it.
+- =list= skips a part file, so an object being written is not reported as an
+  object.
+- A factory that refuses the request throws =invalid_argument= and the session
+  answers 400; any other failure is a 500. That is why the body has to be read
+  after the route is resolved and before the handler runs.
 
 * Test Scenarios
 
@@ -86,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#4157](https://github.com/OreStudio/OreStudio/pull/4157) | [storage] Write the upload to a part file and rename it |
 
 * Review
 

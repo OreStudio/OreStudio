@@ -1,0 +1,196 @@
+:PROPERTIES:
+:ID: 72748A21-F7A2-4B40-B258-123AB7115A36
+:END:
+#+title: Test Scenario: Verify the trade blotter
+#+description: Manual steps confirming the blotter reads the party's trades and structures by portfolio tree or by counterparty, places a structure where its legs are, flattens to the legs, and opens the trade or the structure a row names.
+#+type: test_scenario
+#+level: s1
+#+filetags: :trading:web:blotter:trade-blotter-remaining:sprint_29:v0:
+#+target_dialog:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: jolly_knuth
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:5057B9A6-66F0-4E4E-967F-DF915809DF3E][Merge the trades and structures screens]] in [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]]. It walks the one screen the Trading area offers: the trades and the structures read together, by the portfolio tree or by counterparty. Record the outcome by hand in each =*** Result=.
+
+* Before you start
+
+- The fleet is up on this checkout and the database holds tenant
+  =acme_corporation= provisioned from =acme_demo= with its trade population.
+  Recreate and provision only if it is stale:
+  =compass db recreate -y -k=, then
+  =compass shell -f projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
+- What the screen shows is one party's holdings. Signed in as =diane.kay= you
+  see the structures and trades of =ACME Corporation UK plc=. The database holds
+  the other legal entities' holdings too; they belong to parties this session
+  does not work for, and they are not a defect.
+- A structure's legs are placed where its trades are booked. The population books
+  most structures into one book each; one structure whose legs sit in two books
+  is the case Step 5 needs, and it says so on its row when the data has one.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:5057B9A6-66F0-4E4E-967F-DF915809DF3E][Merge the trades and structures screens]] |
+| Parent story  | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]]   |
+| Target screen | Trade blotter, at =/trading/blotter=.   |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in as diane.kay
+
+- Open http://127.0.0.1:20802/.
+- Username =diane.kay@acme_corporation=, password =Secure-Password-123=, then
+  *Sign in*.
+- Passes when the home page greets *Welcome, Diane Kay* and the status bar names
+  tenant *Acme Corporation* and party *ACME Corporation UK plc*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+| Notes  |       |
+
+** Reach the blotter from the area
+
+- Choose *Trading* in the menu.
+- Passes when the area page offers one card, *Trade blotter*.
+- Open it. Passes when the address is =/trading/blotter= and the crumb reads
+  *Home › Trading › Trade blotter*.
+- Also open =/trading/trades= and =/trading/structures= in the address bar: each
+  passes when it lands on =/trading/blotter=, because those two lists are the
+  screen's rows now.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+| Notes  |       |
+
+** Read the portfolio tree's counts
+
+- The rail on the left is headed *Read by* and offers *Portfolio tree*.
+- Passes when the rail's first node is the party, *ACME Corporation UK plc*, with
+  a number on the same line, and each portfolio and book under it carries its own
+  number.
+- Read the biggest portfolio's number, open it, and read the list's pager. Passes
+  when the pager's total equals the number the node stated.
+- Passes when a book with nothing booked to it is not drawn, and when the numbers
+  add up: a portfolio's figure is the rows placed anywhere below it.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+| Notes  |       |
+
+** Read the rows and their columns
+
+- The columns are *Identifier*, *What*, *Book*, *Counterparty*, *Date*, *State*;
+  *Structure* is not drawn yet.
+- Passes when a structure's row states its reference (=PKG-…= or =DYN-…=), its
+  kind, the book or books its legs sit in, a counterparty name, a date and a
+  state.
+- Passes when a trade's row states its own reference (=POP-…=) and its own book,
+  counterparty, date and state, and when the *Book* and *Counterparty* cells are
+  links.
+- Passes when no row is a leg of a structure: a structure's legs are inside it,
+  and its row stands in their place.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+| Notes  |       |
+
+** Narrow to a book and a portfolio
+
+- Choose a book on the rail. Passes when every row's *Book* is that book, and the
+  pager's total equals the number the node stated.
+- Choose the portfolio above it. Passes when the list holds the rows of every
+  book below that portfolio, and its total equals the portfolio's number.
+- Passes when a structure whose legs span books is **not** under either book but
+  under the portfolio that holds them both, and its row carries the chip
+  *spans books* and names both books. If the data holds no such structure, record
+  that here and pass the step on the chip's absence being explainable.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+| Notes  |       |
+
+** Flatten the list to the legs
+
+- Tick *Flat* beside *Group trades*.
+- Passes when the *Structure* column appears, the pager's total grows to every
+  trade of the party, and each leg states the structure that holds it.
+- Passes when a trade no structure holds shows a dash in *Structure*, and when
+  unticking *Flat* brings back the top rows with the column gone.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+| Notes  |       |
+
+** Read the rows by counterparty
+
+- Choose *Counterparty* in *Read by*. Passes when the rail becomes the
+  counterparties the rows face, each with its own number, and the tree is gone.
+- Choose a counterparty. Passes when every row's *Counterparty* is that one, and
+  the pager's total equals the node's number.
+- Choose *Portfolio tree* again. Passes when the tree is drawn at once, not the
+  counterparties and not a wait.
+- Choose a counterparty again, then the tree: the same, both ways.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+| Notes  |       |
+
+** Open what a row names
+
+- From the top rows, click a structure's identifier. Passes when the structure's
+  page opens at =/trading/structures/<reference>=, titled by its kind, with its
+  tree beside it and its legs under *Members*.
+- Go back, tick *Flat*, and click a trade's identifier. Passes when the trade's
+  page opens at =/trading/trades/<id>= with its *Details* tab.
+- From either page, the crumb leads back to the blotter.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+| Notes  |       |
+
+** Group trades from the blotter
+
+- Click *Group trades*. Passes when the grouping screen opens, at
+  =/trading/structures/group=.
+- Pick two trades of one counterparty and group them. Passes when the new
+  structure is offered back to the blotter: return to =/trading/blotter= and it
+  is one row holding those two trades as legs.
+- If the picker offers no pair sharing a counterparty, record it: that is the
+  population's shape, not the screen's.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+| Notes  |       |

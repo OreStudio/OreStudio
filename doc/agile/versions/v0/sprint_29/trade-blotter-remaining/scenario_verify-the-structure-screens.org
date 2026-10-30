@@ -8,7 +8,7 @@
 #+filetags: :trading:structure:trade-blotter-remaining:sprint_29:v0:
 #+target_dialog:
 #+created: 2026-10-28
-#+updated: 2026-10-28
+#+updated: 2026-10-30
 #+environment: jolly_knuth
 #+todo: PENDING | PASSED FAILED ABANDONED
 #+startup: inlineimages
@@ -50,7 +50,22 @@ that note, and see the capture filed for it.
 | Parent story  | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]]   |
 | Target screen | Structures and packages, at =/trading/structures=, and a deal's page under it |
 | Clients       |                                          |
-| State         | PENDING |
+| State         | ABANDONED |
+
+* Why this scenario is abandoned
+
+The screen it walks no longer exists. The structures list was one of the two lists
+the blotter replaced, and =/trading/structures= now redirects to
+[[id:5057B9A6-66F0-4E4E-967F-DF915809DF3E][Merge the trades and structures screens]]'s
+blotter, which reads the trades and the structures in one list, by portfolio tree
+or by counterparty. Steps 2 to 5 read that list's columns, its search and its
+kind filter, and none of them has a screen to read.
+
+The structure page half of this scenario — open a structure, read its identity,
+its tree, add and unlink a leg, read its history — still holds, and the automated
+case =specs/structures.spec.ts= walks it against the provisioned tenant on every
+run. What a person should read by hand is the blotter; this scenario is kept for
+the record of what the removed list did, with its screenshots.
 
 * Steps
 

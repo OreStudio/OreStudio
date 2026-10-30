@@ -148,7 +148,8 @@ via its "Verifies task" field.
 | Scenario | State | Notes |
 |----------+-------+-------|
 | [[id:E45DD02C-CB73-4D63-8EAF-692A4C0F8CD3][Verify Book a trade]] | PENDING | The form, its two visible rules, and the page a booking opens. |
-| [[id:9969BCF5-6C44-4768-90FB-30FBC8A3E32A][Verify the structure screens]] | PENDING | The structures list, a deal's page and its parts, unlinking a leg, and grouping trades. Walked once, with three findings; all three answered and the screens approved by the reviewer on 2026-10-28. A fresh walk is the remaining check. |
+| [[id:9969BCF5-6C44-4768-90FB-30FBC8A3E32A][Verify the structure screens]] | ABANDONED | Walked once with three findings, all answered, and the screens approved on 2026-10-28. Abandoned on 2026-10-30: the structures list it walks is the blotter's rows now, and =/trading/structures= redirects there. The structure page half is covered by =specs/structures.spec.ts= and by the blotter's scenario. |
+| [[id:72748A21-F7A2-4B40-B258-123AB7115A36][Verify the trade blotter]] | PENDING | The one Trading screen: the portfolio tree and its counts, the top rows, narrowing to a book and a portfolio, the flat list, the counterparty grouping, the pages a row opens, and grouping from the screen's button. |
 
 * PRs
 

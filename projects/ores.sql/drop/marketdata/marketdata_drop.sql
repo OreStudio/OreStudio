@@ -40,6 +40,7 @@
 \ir ./marketdata_market_data_mappings_drop.sql
 \ir ./marketdata_market_data_vendor_instruments_notify_trigger_drop.sql
 \ir ./marketdata_market_data_vendor_instruments_drop.sql
+\ir ./marketdata_feeds_references_validate_trigger_drop.sql
 \ir ./marketdata_feeds_notify_trigger_drop.sql
 \ir ./marketdata_sessions_settings_validate_trigger_drop.sql
 \ir ./marketdata_sessions_notify_trigger_drop.sql

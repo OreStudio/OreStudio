@@ -58,6 +58,16 @@ begin
             using errcode = '23514';
     end if;
 
+    -- Bootstrap: the catalogue is published after the seed that writes the
+    -- first sessions, so an empty catalogue validates nothing yet.
+    if not exists (
+        select 1 from ores_marketdata_adapters_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return NEW;
+    end if;
+
     select configuration_schema into v_schema
     from ores_marketdata_adapters_tbl
     where tenant_id = ores_utility_system_tenant_id_fn()

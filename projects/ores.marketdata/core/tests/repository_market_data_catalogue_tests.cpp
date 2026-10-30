@@ -69,40 +69,42 @@ TEST_CASE("write_and_read_a_provider", "[repository][catalogue]") {
     CHECK(read.front().kind == p.kind);
 }
 
-TEST_CASE("a_provider_has_at_most_one_default_source", "[repository][catalogue]") {
+TEST_CASE("a_publisher_has_at_most_one_default_feed", "[repository][catalogue]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
     feed_repository repo;
     auto first = generate_synthetic_feed(ctx);
-    first.provider_code = "bloomberg";
-    first.kind = "live";
+    first.publisher_code = "bloomberg";
+    first.session_code = "frankfurter-eu";
+    first.service = "real_time";
     first.is_default = true;
     repo.write(h.context(), first);
 
     auto second = generate_synthetic_feed(ctx);
-    second.provider_code = "bloomberg";
-    second.kind = "simulated";
+    second.publisher_code = "bloomberg";
+    second.session_code = "frankfurter-eu";
+    second.service = "real_time";
     second.is_default = false;
     CHECK_NOTHROW(repo.write(h.context(), second));
 
     auto rival = generate_synthetic_feed(ctx);
-    rival.provider_code = "bloomberg";
-    rival.kind = "simulated";
+    rival.publisher_code = "bloomberg";
+    rival.session_code = "frankfurter-eu";
+    rival.service = "real_time";
     rival.is_default = true;
     CHECK_THROWS_WITH(repo.write(h.context(), rival),
                       Catch::Matchers::ContainsSubstring(unique_violation));
 }
 
-TEST_CASE("a_source_kind_must_be_in_the_vocabulary", "[repository][catalogue]") {
+TEST_CASE("a_feed_service_must_be_in_the_vocabulary", "[repository][catalogue]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
     feed_repository repo;
     auto s = generate_synthetic_feed(ctx);
-    s.kind = "not_a_kind";
-    CHECK_THROWS_WITH(repo.write(h.context(), s),
-                      Catch::Matchers::ContainsSubstring("Invalid source_kind"));
+    s.service = "not_a_service";
+    CHECK_THROWS(repo.write(h.context(), s));
 }
 
 TEST_CASE("a_vendor_instrument_identity_is_unique", "[repository][catalogue]") {

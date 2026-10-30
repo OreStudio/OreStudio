@@ -59,6 +59,26 @@ function rankOf(idType: string): number {
     return index === -1 ? IDENTIFIER_ORDER.length : index;
 }
 
+/** The name a desk gives an asset class, from the code the catalogue states. */
+function labelOfClass(code: string): string {
+    switch (code) {
+        case 'interest_rates':
+            return 'Rates';
+        case 'fx':
+            return 'FX';
+        case 'credit':
+            return 'Credit';
+        case 'equity':
+            return 'Equity';
+        case 'commodity':
+            return 'Commodity';
+        case 'bond':
+            return 'Bond';
+        default:
+            return humanise(code);
+    }
+}
+
 /** A code made readable: the words the camel case hides, with the spaces put back. */
 function humanise(code: string): string {
     return code
@@ -75,10 +95,10 @@ const READ_CAP = 20_000;
 
 const blotterQuerySchema = z.object({
     /** The grouping the rail is drawn by. */
-    view: z.enum(['portfolio', 'counterparty']).default('portfolio'),
+    view: z.enum(['portfolio', 'counterparty', 'instrument']).default('portfolio'),
     /**
      * The node the list is narrowed to: `book:<id>`, `portfolio:<id>`,
-     * `counterparty:<id>`, or empty for the party itself.
+     * `counterparty:<id>`, `instrument:<class>`, or empty for the party itself.
      */
     node: z.string().trim().max(100).default(''),
     flat: z
@@ -177,7 +197,7 @@ async function allSummaries(
 interface TreeNode {
     readonly id: string;
     readonly label: string;
-    readonly kind: 'party' | 'portfolio' | 'book' | 'counterparty';
+    readonly kind: 'party' | 'portfolio' | 'book' | 'counterparty' | 'instrument';
     readonly parent: string;
     readonly count: number;
 }
@@ -185,6 +205,7 @@ interface TreeNode {
 const bookNodeId = (id: string): string => `book:${id}`;
 const portfolioNodeId = (id: string): string => `portfolio:${id}`;
 const counterpartyNodeId = (id: string): string => `counterparty:${id}`;
+const instrumentNodeId = (code: string): string => `instrument:${code}`;
 
 /** Where a portfolio sits: its parent, or the empty string when it is a root. */
 type PortfolioParent = ReadonlyMap<string, string>;
@@ -360,6 +381,7 @@ export function registerBlotterRoutes(
          */
         const productCodeOf = new Map<string, string>();
         const productNameOf = new Map<string, string>();
+        const assetClassOf = new Map<string, string>();
         for (const row of instruments) {
             const tradeType = text(row['ore_trade_type']);
             if (tradeType === '') {
@@ -367,6 +389,7 @@ export function registerBlotterRoutes(
             }
             productCodeOf.set(tradeType, text(row['code']));
             productNameOf.set(tradeType, text(row['name']));
+            assetClassOf.set(tradeType, text(row['asset_class']));
         }
 
         /* Which structure holds which trade. */
@@ -659,7 +682,42 @@ export function registerBlotterRoutes(
             ];
         };
 
-        const drawn = query.view === 'counterparty' ? counterpartyRail() : portfolioRail();
+        const instrumentRail = (): readonly TreeNode[] => {
+            const counts = new Map<string, number>();
+            for (const row of topRows) {
+                const code = assetClassOf.get(text(row['instrument_type'])) ?? '';
+                if (code !== '') {
+                    counts.set(code, (counts.get(code) ?? 0) + 1);
+                }
+            }
+            return [
+                {
+                    id: '',
+                    label: session.party?.name ?? '',
+                    kind: 'party',
+                    parent: '',
+                    count: topRows.length,
+                },
+                ...[...counts.entries()]
+                    .sort(([left], [right]) =>
+                        labelOfClass(left).localeCompare(labelOfClass(right)),
+                    )
+                    .map(([code, count]) => ({
+                        id: instrumentNodeId(code),
+                        label: labelOfClass(code),
+                        kind: 'instrument' as const,
+                        parent: '',
+                        count,
+                    })),
+            ];
+        };
+
+        const drawn =
+            query.view === 'counterparty'
+                ? counterpartyRail()
+                : query.view === 'instrument'
+                  ? instrumentRail()
+                  : portfolioRail();
         const tree = drawn.filter((node) => node.id === '' || node.count > 0);
 
         /* The rows the list is read from: every trade when flat, the top rows otherwise. */
@@ -683,6 +741,12 @@ export function registerBlotterRoutes(
             }
             if (node.startsWith('counterparty:')) {
                 return text(row['counterparty_id']) === node.slice('counterparty:'.length);
+            }
+            if (node.startsWith('instrument:')) {
+                return (
+                    assetClassOf.get(text(row['instrument_type'])) ===
+                    node.slice('instrument:'.length)
+                );
             }
             const placement = placementOf(row);
             return ancestorsOfPlacement(placement, portfolioOfBook, parentOf).includes(node);

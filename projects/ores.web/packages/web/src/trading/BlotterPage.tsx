@@ -326,14 +326,18 @@ export function BlotterPage(): ReactNode {
                     className="mt-2 w-full"
                     value={view}
                     onChange={(event) => {
+                        const chosen = event.target.value;
                         setView(
-                            event.target.value === 'counterparty' ? 'counterparty' : 'portfolio',
+                            chosen === 'counterparty' || chosen === 'instrument'
+                                ? chosen
+                                : 'portfolio',
                         );
                         setNode('');
                     }}
                 >
                     <option value="portfolio">{t('trading.blotter.viewPortfolio')}</option>
                     <option value="counterparty">{t('trading.blotter.viewCounterparty')}</option>
+                    <option value="instrument">{t('trading.blotter.viewInstrument')}</option>
                 </Select>
                 {nodes.length === 0 ? (
                     <p className="mt-3 px-2 text-sm text-ink-muted">

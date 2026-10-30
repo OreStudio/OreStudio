@@ -238,7 +238,12 @@ function replies(): Readonly<Record<string, unknown>> {
         [subjects.instrumentCodes]: {
             result: ok,
             instruments: [
-                { code: 'IRS', name: 'Interest Rate Swap', ore_trade_type: 'Swap' },
+                {
+                    code: 'IRS',
+                    name: 'Interest Rate Swap',
+                    ore_trade_type: 'Swap',
+                    asset_class: 'interest_rates',
+                },
             ],
             total: 1,
         },
@@ -415,6 +420,28 @@ describe('the blotter read', () => {
             structure_reference: 'PKG-0001',
         });
         expect(body.rows[0]).toMatchObject({ structure: '' });
+    });
+
+    it('draws the instrument rail from the classes and narrows to one', async () => {
+        const { server, sessionId } = buildTestServer();
+        const body = (await get(server, sessionId, '/api/blotter?view=instrument')).json();
+        const rail = (body.tree as { id: string; label: string; count: number }[]).filter(
+            (node) => node.id !== '',
+        );
+        // The fixture's structures are packages, which are no class at all, and its
+        // trades are swaps: one class, and the party states the rows inside one.
+        expect(rail.map((node) => [node.label, node.count])).toEqual([['Rates', 2]]);
+        const narrowed = (
+            await get(
+                server,
+                sessionId,
+                '/api/blotter?view=instrument&node=instrument:interest_rates',
+            )
+        ).json();
+        expect(narrowed.rows.map((row: { id: string }) => row.id)).toEqual([
+            FREE_EMEA,
+            FREE_EQUITY,
+        ]);
     });
 
     it('draws the counterparty rail from the rows and narrows to one', async () => {

@@ -3725,6 +3725,7 @@ const pt: SourceCatalogue = {
             viewPortfolio: 'Árvore de portfólios',
             railLoading: 'A ler a árvore...',
             viewCounterparty: 'Contraparte',
+            viewInstrument: 'Classe de ativo',
             flat: 'Plano',
             identifier: 'Identificador',
             structureColumn: 'Estrutura',

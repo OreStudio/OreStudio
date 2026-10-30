@@ -101,6 +101,16 @@ test('the blotter reads trades and structures by book, and flattens to the legs'
     expect(Number(of?.[1] ?? '0')).toBe(counterpartyCount);
     await page.screenshot({ path: 'shots/blotter-counterparty.png', fullPage: true });
 
+    // The third grouping: the classes the rows fall into, and the same narrowing.
+    await page.getByLabel('Grouping').selectOption('instrument');
+    const classNode = rail.getByRole('button').nth(1);
+    await classNode.waitFor({ state: 'visible', timeout: 20_000 });
+    const className = (await classNode.innerText()).split('\n')[0]?.trim() ?? '';
+    expect(className).toMatch(/^[A-Za-z]/);
+    await classNode.click();
+    await expect(rows.first()).toBeVisible({ timeout: 20_000 });
+    await page.screenshot({ path: 'shots/blotter-instrument.png', fullPage: true });
+
     // Choosing the tree again draws the tree again, not the counterparties: the
     // rail belongs to the grouping that was chosen.
     await page.getByLabel('Grouping').selectOption('portfolio');

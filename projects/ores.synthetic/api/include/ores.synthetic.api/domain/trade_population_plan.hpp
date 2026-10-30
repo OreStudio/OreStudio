@@ -22,6 +22,8 @@
 
 #include "ores.synthetic.api/export.hpp"
 #include "ores.trading.api/domain/bond_issue.hpp"
+#include "ores.trading.api/domain/bond_issue_call_date.hpp"
+#include "ores.trading.api/domain/bond_issue_conversion_target.hpp"
 #include "ores.trading.api/domain/bond_issue_leg.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_amount.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_rate.hpp"
@@ -597,6 +599,20 @@ struct trade_population_slot final {
     std::vector<ores::trading::domain::bond_issue_leg_amount> bond_issue_leg_amounts;
     std::vector<ores::trading::domain::bond_issue_leg_rate> bond_issue_leg_rates;
     std::vector<ores::trading::domain::bond_issue_leg_schedule> bond_issue_leg_schedules;
+    /**
+     * @brief The dates a callable security's issuer may call it.
+     *
+     * The calls belong to the security and not to the trade, so they travel with
+     * the issue the run writes before it books the trade.
+     */
+    std::vector<ores::trading::domain::bond_issue_call_date> bond_issue_call_dates;
+    /**
+     * @brief What a convertible security may convert into.
+     *
+     * The targets belong to the security for the same reason the calls do.
+     */
+    std::vector<ores::trading::domain::bond_issue_conversion_target>
+        bond_issue_conversion_targets;
     /// The structure this trade is a leg of, when the population groups one.
     std::optional<boost::uuids::uuid> structure_id;
     /// The role it takes in that structure, and its place among the legs.

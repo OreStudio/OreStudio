@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: D480256E-1AA1-4C99-BAFF-392151DFD05A
+:END:
+#+title: BondFutureOption is a bond product with no routed table. The…
+#+description: BondFutureOption is a bond product with no routed table. The trade type catalogue lists it with product_type bond, has_options true and an empty instrument column, so its row cannot be booked anywhere and the planner cannot draw it: a tenant holds no option on a bond future, and the constructor written for it is never reached. Either the catalogue routes it to bond_instrument, which needs its own fact shape because it states a contract and an option at once, or it is declared an unbookable product with the reason recorded.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

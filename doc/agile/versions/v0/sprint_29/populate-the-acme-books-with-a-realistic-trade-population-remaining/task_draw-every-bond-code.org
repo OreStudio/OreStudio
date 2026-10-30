@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A provisioned tenant holds every bond code the catalogue routes, each with the f
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Drawn and proven on a fresh tenant.    |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Record the PR.                         |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -57,7 +57,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Bond codes drawn | 10 of 10 routed | =select trade_type_code, count(*) from ores_trading_bond_instruments_tbl group by 1= | worktree |
+| Bond instrument rows | 40 (was 24) | =select count(*) ...= | worktree |
+| Option / forward / future / repo / trs / ascot rows | 4 each (was 0) | their tables | worktree |
+| Call dates | 2 | =ores_trading_bond_issue_call_dates_tbl= | worktree |
+| Conversion targets | 1 | =ores_trading_bond_issue_conversion_targets_tbl= | worktree |
+| Bond issues | 21 (was 16) | =ores_trading_bond_issues_tbl= | worktree |
+| Trade rows, latest version | 178 (was 162) | =select count(distinct id) from ores_trading_trades_tbl where valid_to = ...= | worktree |
+| Planner suite | 2,050 assertions in 82 cases | =publish/bin/ores.synthetic.core.tests= | worktree |
 
 * Notes
 
@@ -85,3 +92,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The bond planner draws the ten codes the catalogue routes to the bond instrument
+table, constructs each through its own constructor, and the writer persists what
+the plan states. A provisioned tenant now holds every one of them, four trades
+each across its four bond books, with the facts their tables expect: four
+options, four forwards, four futures, four repos, four total return swaps and
+four asset swapped convertibles, two call dates on the callable security and one
+conversion target on the convertible. The tenant holds 178 trades where it held
+162.
+
+Three things came out of the work and are recorded rather than hidden.
+
+- BondFutureOption is not routed. The catalogue states it as a bond product and
+  leaves its instrument column empty, so no table can hold it and the planner
+  must not draw it. Its constructor is written and never reached until the
+  catalogue routes it, which is captured.
+- The writer carried two `bond_instruments` branches in one dispatch chain, the
+  second unreachable. The duplicate went with this change.
+- The store states a repo's type as Fixed or Floating, not the word the ORE
+  document uses, and the first run was refused by that check. The planner draws
+  from the store's own set.
+
+The population's mix moves again: bonds are 40 of 178 trades, 22% against the 4%
+Trade Population Weights states. Sizing every class to the weights remains its
+own captured task.

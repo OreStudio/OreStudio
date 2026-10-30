@@ -35,7 +35,8 @@ export interface Route {
     tenant_id: string;
     id: string;
     party_id: string;
-    provider_code: string;
+    publisher_code: string;
+    asset_class: string;
     feed_id: string;
     modified_by: string;
     performed_by: string;

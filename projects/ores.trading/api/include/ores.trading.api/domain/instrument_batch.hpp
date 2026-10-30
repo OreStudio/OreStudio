@@ -29,6 +29,15 @@
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche_notional.hpp"
 #include "ores.trading.api/domain/bond_instrument_data.hpp"
+#include "ores.trading.api/domain/bond_issue.hpp"
+#include "ores.trading.api/domain/bond_issue_call_date.hpp"
+#include "ores.trading.api/domain/bond_issue_conversion_target.hpp"
+#include "ores.trading.api/domain/bond_issue_leg.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_amortization.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_amount.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_rate.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_schedule.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_schedule_date.hpp"
 #include "ores.trading.api/domain/callable_swap_call_date.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
@@ -190,6 +199,42 @@ struct instrument_batch {
      * @brief The scripted_instrument rows, keyed by trade id.
      */
     std::vector<scripted_instrument> scripted_instruments;
+    /**
+     * @brief The bond_issue rows, keyed by trade id.
+     */
+    std::vector<bond_issue> bond_issues;
+    /**
+     * @brief The bond_issue_call_date rows, keyed by trade id.
+     */
+    std::vector<bond_issue_call_date> bond_issue_call_dates;
+    /**
+     * @brief The bond_issue_conversion_target rows, keyed by trade id.
+     */
+    std::vector<bond_issue_conversion_target> bond_issue_conversion_targets;
+    /**
+     * @brief The bond_issue_leg rows, keyed by trade id.
+     */
+    std::vector<bond_issue_leg> bond_issue_legs;
+    /**
+     * @brief The bond_issue_leg_amortization rows, keyed by trade id.
+     */
+    std::vector<bond_issue_leg_amortization> bond_issue_leg_amortizations;
+    /**
+     * @brief The bond_issue_leg_amount rows, keyed by trade id.
+     */
+    std::vector<bond_issue_leg_amount> bond_issue_leg_amounts;
+    /**
+     * @brief The bond_issue_leg_rate rows, keyed by trade id.
+     */
+    std::vector<bond_issue_leg_rate> bond_issue_leg_rates;
+    /**
+     * @brief The bond_issue_leg_schedule rows, keyed by trade id.
+     */
+    std::vector<bond_issue_leg_schedule> bond_issue_leg_schedules;
+    /**
+     * @brief The bond_issue_leg_schedule_date rows, keyed by trade id.
+     */
+    std::vector<bond_issue_leg_schedule_date> bond_issue_leg_schedule_dates;
     /**
      * @brief The balance_guaranteed_swap_instrument rows, keyed by trade id.
      */
@@ -511,6 +556,69 @@ inline void append(instrument_batch& batch, rate_instrument v) {
  */
 inline void append(instrument_batch& batch, scripted_instrument v) {
     batch.scripted_instruments.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_issue to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_issue v) {
+    batch.bond_issues.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_issue_call_date to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_issue_call_date v) {
+    batch.bond_issue_call_dates.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_issue_conversion_target to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_issue_conversion_target v) {
+    batch.bond_issue_conversion_targets.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_issue_leg to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_issue_leg v) {
+    batch.bond_issue_legs.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_issue_leg_amortization to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_issue_leg_amortization v) {
+    batch.bond_issue_leg_amortizations.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_issue_leg_amount to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_issue_leg_amount v) {
+    batch.bond_issue_leg_amounts.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_issue_leg_rate to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_issue_leg_rate v) {
+    batch.bond_issue_leg_rates.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_issue_leg_schedule to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_issue_leg_schedule v) {
+    batch.bond_issue_leg_schedules.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_issue_leg_schedule_date to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_issue_leg_schedule_date v) {
+    batch.bond_issue_leg_schedule_dates.push_back(std::move(v));
 }
 
 /**

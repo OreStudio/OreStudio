@@ -76,7 +76,7 @@ namespace {
 std::vector<domain::route> route_read_one(repository::route_repository& repo,
                                           const ores::database::context& ctx,
                                           const messaging::route_key& key) {
-    return repo.read_latest_by_provider_code(ctx, key.provider_code);
+    return repo.read_latest_by_publisher_code(ctx, key.publisher_code);
 }
 
 /**
@@ -87,7 +87,7 @@ std::vector<domain::route> route_read_one(repository::route_repository& repo,
  */
 messaging::route_key route_key_from(const domain::route& v) {
     messaging::route_key key;
-    key.provider_code = v.provider_code;
+    key.publisher_code = v.publisher_code;
     return key;
 }
 
@@ -102,7 +102,8 @@ domain::route route_to_domain(const messaging::route_write& write) {
     domain::route v;
     v.id = write.id;
     v.party_id = write.party_id;
-    v.provider_code = write.provider_code;
+    v.publisher_code = write.publisher_code;
+    v.asset_class = write.asset_class;
     v.feed_id = write.feed_id;
     return v;
 }
@@ -130,10 +131,16 @@ route_service::list_routes(const messaging::list_routes_request& request) {
             refuse(outcome_code::filter_too_large, {.field = "party_id_one_of", .limit = "1000"});
         return response;
     }
-    if (request.filter && request.filter->provider_code_one_of &&
-        request.filter->provider_code_one_of->size() > 1000) {
+    if (request.filter && request.filter->publisher_code_one_of &&
+        request.filter->publisher_code_one_of->size() > 1000) {
         response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "provider_code_one_of", .limit = "1000"});
+                                 {.field = "publisher_code_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->asset_class_one_of &&
+        request.filter->asset_class_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "asset_class_one_of", .limit = "1000"});
         return response;
     }
     if (request.filter && request.filter->feed_id_one_of &&
@@ -447,10 +454,10 @@ std::optional<domain::route> route_service::get_route(const boost::uuids::uuid& 
 }
 
 std::optional<domain::route>
-route_service::get_route_by_provider_code(const std::string& provider_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting route by provider_code: " << provider_code;
+route_service::get_route_by_publisher_code(const std::string& publisher_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting route by publisher_code: " << publisher_code;
     messaging::route_key k;
-    k.provider_code = provider_code;
+    k.publisher_code = publisher_code;
     auto found = route_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
@@ -502,13 +509,13 @@ std::vector<domain::route> route_service::get_route_history(const std::string& k
     // value the storage key never holds, and reports an entity that has a
     // history as having none.
     messaging::route_key k;
-    k.provider_code = key;
+    k.publisher_code = key;
     // A delete here closes the transaction-time window and leaves every version
     // in place, so resolving through a latest read would lose the history at
     // exactly the moment it is wanted. This takes the newest row carrying the
     // declared key whether or not it is still current, which for a record that
     // still exists is the same row the latest read would have returned.
-    const auto found = repo_.read_any_by_provider_code(ctx_, k.provider_code);
+    const auto found = repo_.read_any_by_publisher_code(ctx_, k.publisher_code);
     if (found.empty())
         return {};
     const auto& row = found.front();

@@ -29,14 +29,14 @@ declare
     notification_payload jsonb;
     change_action text;
     changed_version integer := 0;
-    changed_provider_code text;
+    changed_publisher_code text;
     changed_key jsonb;
     changed_tenant_id text;
     changed_party_id text;
 begin
     if TG_OP = 'DELETE' then
         change_action := 'deleted';
-        changed_provider_code := OLD.provider_code;
+        changed_publisher_code := OLD.publisher_code;
         changed_version := OLD.version;
         changed_tenant_id := OLD.tenant_id::text;
         changed_party_id := OLD.party_id::text;
@@ -55,12 +55,12 @@ begin
             change_action := 'updated';
         end if;
         changed_version := NEW.version;
-        changed_provider_code := NEW.provider_code;
+        changed_publisher_code := NEW.publisher_code;
         changed_tenant_id := NEW.tenant_id::text;
         changed_party_id := NEW.party_id::text;
     end if;
 
-    changed_key := jsonb_build_object('provider_code', changed_provider_code);
+    changed_key := jsonb_build_object('publisher_code', changed_publisher_code);
 
     notification_payload := jsonb_build_object(
         'event_id', gen_random_uuid()::text,

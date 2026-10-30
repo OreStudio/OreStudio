@@ -36,13 +36,14 @@
 namespace ores::marketdata::messaging {
 
 struct route_key {
-    std::string provider_code;
+    std::string publisher_code;
 };
 
 struct route_write {
     boost::uuids::uuid id;
     boost::uuids::uuid party_id;
-    std::string provider_code;
+    std::string publisher_code;
+    std::string asset_class;
     boost::uuids::uuid feed_id;
 };
 
@@ -63,11 +64,13 @@ struct route_lookup {
 
 struct routes_filter {
     std::optional<boost::uuids::uuid> party_id;
-    std::optional<std::string> provider_code;
+    std::optional<std::string> publisher_code;
+    std::optional<std::string> asset_class;
     std::optional<boost::uuids::uuid> feed_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
-    std::optional<std::vector<std::string>> provider_code_one_of;
+    std::optional<std::vector<std::string>> publisher_code_one_of;
+    std::optional<std::vector<std::string>> asset_class_one_of;
     std::optional<std::vector<boost::uuids::uuid>> feed_id_one_of;
 };
 

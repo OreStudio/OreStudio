@@ -91,9 +91,12 @@ route_filter_condition(const std::optional<messaging::routes_filter>& filter) {
     if (filter->party_id)
         r.push_back(
             query_builder::equals("party_id", query_builder::filter_value(*filter->party_id)));
-    if (filter->provider_code)
-        r.push_back(query_builder::equals("provider_code",
-                                          query_builder::filter_value(*filter->provider_code)));
+    if (filter->publisher_code)
+        r.push_back(query_builder::equals("publisher_code",
+                                          query_builder::filter_value(*filter->publisher_code)));
+    if (filter->asset_class)
+        r.push_back(query_builder::equals("asset_class",
+                                          query_builder::filter_value(*filter->asset_class)));
     if (filter->feed_id)
         r.push_back(
             query_builder::equals("feed_id", query_builder::filter_value(*filter->feed_id)));
@@ -109,11 +112,17 @@ route_filter_condition(const std::optional<messaging::routes_filter>& filter) {
             values.push_back(query_builder::filter_value(v));
         r.push_back(query_builder::one_of("party_id", std::move(values)));
     }
-    if (filter->provider_code_one_of) {
+    if (filter->publisher_code_one_of) {
         std::vector<query_builder::value> values;
-        for (const auto& v : *filter->provider_code_one_of)
+        for (const auto& v : *filter->publisher_code_one_of)
             values.push_back(query_builder::filter_value(v));
-        r.push_back(query_builder::one_of("provider_code", std::move(values)));
+        r.push_back(query_builder::one_of("publisher_code", std::move(values)));
+    }
+    if (filter->asset_class_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->asset_class_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("asset_class", std::move(values)));
     }
     if (filter->feed_id_one_of) {
         std::vector<query_builder::value> values;
@@ -227,13 +236,13 @@ std::vector<domain::route> route_repository::read_latest(context ctx, const std:
 }
 
 std::vector<domain::route>
-route_repository::read_latest_by_provider_code(context ctx, const std::string& provider_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest route by provider_code: " << provider_code;
+route_repository::read_latest_by_publisher_code(context ctx, const std::string& publisher_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest route by publisher_code: " << publisher_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<route_entity>> |
-        query_builder::where("tenant_id"_c == tid && "provider_code"_c == provider_code &&
+        query_builder::where("tenant_id"_c == tid && "publisher_code"_c == publisher_code &&
                              "valid_to"_c == max);
 
     // A key names a row of one party: another party can hold the same key, so
@@ -244,19 +253,19 @@ route_repository::read_latest_by_provider_code(context ctx, const std::string& p
         query,
         [](const auto& entities) { return route_mapper::map(entities); },
         lg(),
-        "Reading latest route by provider_code.");
+        "Reading latest route by publisher_code.");
     if (const auto party = ctx.party_id(); party.has_value())
         std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
     return found;
 }
 
 std::vector<domain::route>
-route_repository::read_any_by_provider_code(context ctx, const std::string& provider_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any route by provider_code: " << provider_code;
+route_repository::read_any_by_publisher_code(context ctx, const std::string& publisher_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading any route by publisher_code: " << publisher_code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<route_entity>> |
-        query_builder::where("tenant_id"_c == tid && "provider_code"_c == provider_code) |
+        query_builder::where("tenant_id"_c == tid && "publisher_code"_c == publisher_code) |
         query_builder::order_by("valid_from"_c.desc());
 
     auto found = query_builder::execute_read_query<route_entity, domain::route>(
@@ -264,7 +273,7 @@ route_repository::read_any_by_provider_code(context ctx, const std::string& prov
         query,
         [](const auto& entities) { return route_mapper::map(entities); },
         lg(),
-        "Reading any route by provider_code.");
+        "Reading any route by publisher_code.");
     // A key names a row of one party, and another party of the tenant may hold
     // the same key, so the read keeps the session's party's rows. The filter
     // runs before the newest row is taken because the party column may be

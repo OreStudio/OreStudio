@@ -56,7 +56,10 @@ struct route_entity {
     boost::uuids::uuid party_id;
 
 
-    std::string provider_code;
+    std::string publisher_code;
+
+
+    std::string asset_class;
 
     boost::uuids::uuid feed_id;
     std::string modified_by;
@@ -76,7 +79,8 @@ struct route_entity {
                query_builder::bind("tenant_id", &e::tenant_id) |
                query_builder::bind("version", &e::version) |
                query_builder::bind("party_id", &e::party_id) |
-               query_builder::bind("provider_code", &e::provider_code) |
+               query_builder::bind("publisher_code", &e::publisher_code) |
+               query_builder::bind("asset_class", &e::asset_class) |
                query_builder::bind("feed_id", &e::feed_id) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

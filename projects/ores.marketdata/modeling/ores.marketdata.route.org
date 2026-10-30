@@ -57,20 +57,38 @@ The party the route serves. Set server-side from the authenticated session and e
 ctx.generate_uuid()
 #+end_src
 
-** provider_code
+** publisher_code
 :PROPERTIES:
 :type:        text
 :cpp_type:    std::string
 :natural_key: true
-:filterable: true
-:nullable: false
+:filterable:  true
+:nullable:    false
 :no_generator_suffix: true
 :END:
 
-References =provider.code=: the provider the route serves. With the party it is the natural key, so a party has one route for each provider.
+References =provider.code=: the publisher the route serves. With the party and
+the asset class it is the natural key, so a party has one route for each
+publisher and class.
 
 #+begin_src cpp :name generator
 std::string("bloomberg")
+#+end_src
+
+** asset_class
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:filterable:  true
+:nullable:    false
+:END:
+
+The asset class the route serves, such as =fx= or =ir=. The feed must hold a
+scope row for it, so a party routes one feed for each publisher and class.
+
+#+begin_src cpp :name generator
+std::string("fx")
 #+end_src
 
 ** feed_id
@@ -81,7 +99,8 @@ std::string("bloomberg")
 :nullable: false
 :END:
 
-References =feed.id=: the source that serves the party. The source belongs to the provider of the route.
+References =feed.id=: the feed that serves the party. The feed belongs to the publisher
+of the route and its scope names the route's asset class.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()
@@ -133,11 +152,31 @@ ctx.generate_uuid()
         select 1 from ores_marketdata_feeds_tbl
         where tenant_id in (NEW.tenant_id, ores_utility_system_tenant_id_fn())
           and id = NEW.feed_id
-          and publisher_code = NEW.provider_code
+          and publisher_code = NEW.publisher_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid route: source % is not a source of provider %.',
-            NEW.feed_id, NEW.provider_code
+        raise exception 'Invalid route: feed % is not a feed of publisher %.',
+            NEW.feed_id, NEW.publisher_code
+            using errcode = '23514';
+    end if;
+
+    -- A feed that declares a scope must serve the class the route names. A
+    -- feed without scope rows, such as a simulator feed whose items come from
+    -- its generators, is not constrained by this check yet.
+    if exists (
+        select 1 from ores_marketdata_feed_scopes_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and feed_id = NEW.feed_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) and not exists (
+        select 1 from ores_marketdata_feed_scopes_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and feed_id = NEW.feed_id
+          and asset_class = NEW.asset_class
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid route: feed % serves no % scope.',
+            NEW.feed_id, NEW.asset_class
             using errcode = '23514';
     end if;
 
@@ -214,29 +253,31 @@ route_repository::read_latest_all_tenants(context ctx) {
 :domain_class:            ores::marketdata::domain::route
 :protocol_include:        ores.marketdata.api/messaging/route_protocol.hpp
 :collection_name:         routes
-:key_field:               provider_code
+:key_field:               publisher_code
 :has_uuid_primary_key:    true
 :has_change_reason_cache: true
 :END:
 
 *** Detail fields
 
-| field         | label    | widget       | type      | is_key | is_required | placeholder         |
-|---------------+----------+--------------+-----------+--------+-------------+---------------------|
-| provider_code | Provider | providerEdit | line_edit | true   | true        | Enter provider code |
-| feed_id     | Feed     | feedEdit     | line_edit |        | true        | Enter feed id       |
+| field          | label     | widget       | type      | is_key | is_required | placeholder          |
+|----------------+-----------+--------------+-----------+--------+-------------+----------------------|
+| publisher_code | Publisher | providerEdit | line_edit | true   | true        | Enter publisher code |
+| asset_class    | Class     | assetClassEdit | line_edit | true | true        | fx                   |
+| feed_id        | Feed      | feedEdit     | line_edit |        | true        | Enter feed id        |
 
 *** Columns
 
-| enum_name    | field         | header      | type   | width |
-|--------------+---------------+-------------+--------+-------|
-| ProviderCode | provider_code | Provider    | string | 140   |
-| SourceId     | feed_id     | Source      | string | 300   |
+| enum_name    | field          | header      | type   | width |
+|--------------+----------------+-------------+--------+-------|
+| PublisherCode| publisher_code | Publisher   | string | 140   |
+| AssetClass   | asset_class    | Class       | string | 100   |
+| FeedId       | feed_id        | Feed        | string | 300   |
 | Version      | version       | Version     | int    | 80    |
 | ModifiedBy   | modified_by   | Modified By | string | 120   |
 
 * See also
 
-- [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]] -- the rule this table records.
+- [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one feed for each publisher and class]] -- the rule this table records.
 - [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]] -- the subscription a route serves.
 

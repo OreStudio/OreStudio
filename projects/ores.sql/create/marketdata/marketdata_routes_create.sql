@@ -39,7 +39,8 @@ create table if not exists "ores_marketdata_routes_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "party_id" uuid not null,
-    "provider_code" text not null,
+    "publisher_code" text not null,
+    "asset_class" text not null,
     "feed_id" uuid not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -59,8 +60,8 @@ create table if not exists "ores_marketdata_routes_tbl" (
 );
 
 -- Composite natural key: unique combination for active records
-create unique index if not exists routes_party_id_provider_code_uniq_idx
-on "ores_marketdata_routes_tbl" (tenant_id, party_id, provider_code)
+create unique index if not exists routes_party_id_publisher_code_asset_class_uniq_idx
+on "ores_marketdata_routes_tbl" (tenant_id, party_id, publisher_code, asset_class)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
@@ -106,11 +107,31 @@ begin
         select 1 from ores_marketdata_feeds_tbl
         where tenant_id in (NEW.tenant_id, ores_utility_system_tenant_id_fn())
           and id = NEW.feed_id
-          and publisher_code = NEW.provider_code
+          and publisher_code = NEW.publisher_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid route: source % is not a source of provider %.',
-            NEW.feed_id, NEW.provider_code
+        raise exception 'Invalid route: feed % is not a feed of publisher %.',
+            NEW.feed_id, NEW.publisher_code
+            using errcode = '23514';
+    end if;
+
+    -- A feed that declares a scope must serve the class the route names. A
+    -- feed without scope rows, such as a simulator feed whose items come from
+    -- its generators, is not constrained by this check yet.
+    if exists (
+        select 1 from ores_marketdata_feed_scopes_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and feed_id = NEW.feed_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) and not exists (
+        select 1 from ores_marketdata_feed_scopes_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and feed_id = NEW.feed_id
+          and asset_class = NEW.asset_class
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid route: feed % serves no % scope.',
+            NEW.feed_id, NEW.asset_class
             using errcode = '23514';
     end if;
     -- Validate change_reason_code

@@ -77,15 +77,15 @@ std::vector<party_demand> compute_party_demand(const demand_catalogue& catalogue
         party_demand demand;
         demand.tenant_id = route.tenant_id;
         demand.party_id = route.party_id;
-        demand.provider_code = route.provider_code;
+        demand.provider_code = route.publisher_code;
         demand.feed_id = route.feed_id;
         demand.adapter_id = source->name;
         const auto provider =
-            std::ranges::find(catalogue.providers, route.provider_code, &domain::provider::code);
+            std::ranges::find(catalogue.providers, route.publisher_code, &domain::provider::code);
         const bool subscribed =
             std::ranges::any_of(catalogue.subscriptions, [&](const domain::subscription& s) {
                 return s.tenant_id == route.tenant_id && s.party_id == route.party_id &&
-                       s.provider_code == route.provider_code && has_a_right(s);
+                       s.provider_code == route.publisher_code && has_a_right(s);
             });
         // A provider the catalogue does not hold states no terms to meet; its routes still
         // need a subscription.
@@ -95,11 +95,11 @@ std::vector<party_demand> compute_party_demand(const demand_catalogue& catalogue
             demand.refusal = "not_entitled";
         demand.entitled = demand.refusal.empty();
         if (demand.entitled) {
-            const auto items = by_item.find(route.provider_code);
+            const auto items = by_item.find(route.publisher_code);
             if (items != by_item.end()) {
                 std::set<std::string> wanted;
                 const auto restricted =
-                    policy.requirements ? policy.requirements(route.party_id, route.provider_code) :
+                    policy.requirements ? policy.requirements(route.party_id, route.publisher_code) :
                                           std::nullopt;
                 if (restricted) {
                     for (const auto& uri : *restricted) {

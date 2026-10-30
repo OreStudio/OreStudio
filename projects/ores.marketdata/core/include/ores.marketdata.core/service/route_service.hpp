@@ -142,7 +142,7 @@ public:
      *
      * @return The route if found, std::nullopt otherwise.
      */
-    std::optional<domain::route> get_route_by_provider_code(const std::string& provider_code);
+    std::optional<domain::route> get_route_by_publisher_code(const std::string& publisher_code);
 
     /**
      * @brief Retrieves a batch of routes by primary key.

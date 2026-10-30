@@ -277,6 +277,37 @@ where not exists (
       and m.valid_to = ores_utility_infinity_timestamp_fn()
 );
 
+-- The public feeds declare the items they fetch: every mapping of the feed's
+-- publisher, recorded against the feed and its asset class. One publisher has
+-- one default feed for these items, so no item is claimed twice.
+insert into ores_marketdata_feed_scopes_tbl (
+    id, tenant_id, version, feed_id, asset_class, item, vendor_instrument_id,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, f.id, 'fx',
+       m.oresmd_uri, v.id,
+       current_user, current_user, 'system.initial_load',
+       'Initial population of the official rates scopes'
+from ores_marketdata_feeds_tbl f
+join ores_marketdata_market_data_vendor_instruments_tbl v
+  on v.tenant_id = ores_utility_system_tenant_id_fn()
+ and v.provider_code = f.publisher_code
+ and v.valid_to = ores_utility_infinity_timestamp_fn()
+join ores_marketdata_market_data_mappings_tbl m
+  on m.vendor_instrument_id = v.id
+ and m.tenant_id = ores_utility_system_tenant_id_fn()
+ and m.valid_to = ores_utility_infinity_timestamp_fn()
+where f.tenant_id = ores_utility_system_tenant_id_fn()
+  and f.name in ('ecb-frankfurter', 'boc-frankfurter', 'imf-frankfurter', 'tcmb-frankfurter')
+  and f.valid_to = ores_utility_infinity_timestamp_fn()
+  and not exists (
+      select 1 from ores_marketdata_feed_scopes_tbl s
+      where s.tenant_id = ores_utility_system_tenant_id_fn()
+        and s.feed_id = f.id
+        and s.item = m.oresmd_uri
+        and s.valid_to = ores_utility_infinity_timestamp_fn()
+  );
+
 commit;
 
 \echo '--- Official Rates Subscriptions and Routes of the System Party ---'

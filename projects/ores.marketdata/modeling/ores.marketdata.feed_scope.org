@@ -1,0 +1,196 @@
+:PROPERTIES:
+:ID: 1DC777AA-E895-45CA-9F50-1D87F1DADBDD
+:ores.cpp.shell-command.enabled: true
+:ores.cpp.eventing-integration-test.enabled: true
+:END:
+#+title: ores.marketdata.feed_scope
+#+description: Codegen entity model for feed scopes: the items a feed fetches, per asset class, with no item in two feeds of one publisher.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: feed_scope
+#+entity_plural: feed_scopes
+#+entity_title: Feed Scope
+#+brief: One item a feed fetches, with its asset class and the vendor instrument that carries it.
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+A feed scope states what a feed fetches. Each row names the feed, the asset
+class and the item, and may name the vendor instrument the supplier uses for it.
+The scope is the set of rows a feed holds; a read of a feed's scope is the rows
+that name it.
+
+No item belongs to two feeds of one publisher. A publisher may have an
+=end_of_day= feed and a =real_time= feed, but an item arrives through one of
+them, so a party reading the item reads one feed's values and never a mixture.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this scope row.
+
+** feed_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:filterable:  true
+:END:
+
+References =feed.id=: the feed whose scope this row belongs to.
+
+** asset_class
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:filterable:  true
+:END:
+
+References the asset class codes: =fx=, =ir=, =equity= and so on.
+
+#+begin_src cpp :name generator
+std::string("fx")
+#+end_src
+
+** item
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:filterable:  true
+:searchable:  true
+:END:
+
+The internal identity of the value, as an oresmd URI, such as
+=oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD=.
+
+#+begin_src cpp :name generator
+std::string("oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD")
+#+end_src
+
+** vendor_instrument_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    true
+:filterable:  true
+:END:
+
+References =market_data_vendor_instrument.id=: the supplier's id for this item.
+Null when the feed's adapter has no vendor instrument, as the service does for
+a derived item.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                 ores_marketdata_feed_scopes_tbl
+:rls_tenant_isolation:      true
+:rls_own_or_system_tenant_rows: true
+:END:
+
+** Checks
+
+| expression                    |
+|-------------------------------|
+| "item" <> ''                  |
+
+** Indexes
+
+| name  | columns                          | unique | current_only | where_extra |
+|-------+----------------------------------+--------+--------------+-------------|
+| feed  | tenant_id, feed_id               | false  | true         |             |
+| item  | tenant_id, item                  | false  | true         |             |
+| scope | tenant_id, feed_id, asset_class, item | true | true       |             |
+
+* Insert trigger
+** Validations
+
+| column      | validation_function                        |
+|-------------+--------------------------------------------|
+| asset_class | ores_refdata_validate_asset_class_code_fn  |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: scope
+:entity_plural_short:   scopes
+:entity_singular_words: feed scope
+:entity_plural_words:   feed scopes
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: fs
+:END:
+
+** Presentation
+:PROPERTIES:
+:has_pagination:          true
+:domain_include:          ores.marketdata.api/domain/feed_scope.hpp
+:domain_class:            ores::marketdata::domain::feed_scope
+:protocol_include:        ores.marketdata.api/messaging/feed_scope_protocol.hpp
+:collection_name:         feed_scopes
+:key_field:               item
+:has_uuid_primary_key:    true
+:has_change_reason_cache: true
+:END:
+
+*** Detail fields
+
+| field                 | label        | widget                 | type      | is_key | is_required | placeholder            |
+|-----------------------+--------------+------------------------+-----------+--------+-------------+------------------------|
+| feed_id               | Feed         | feedEdit               | line_edit |        | true        | Enter the feed id      |
+| asset_class           | Asset class  | assetClassEdit         | line_edit |        | true        | fx                     |
+| item                  | Item         | itemEdit               | line_edit | true   | true        | oresmd://fx/...        |
+| vendor_instrument_id  | Vendor id    | vendorInstrumentEdit   | line_edit |        |             | Enter the vendor id    |
+
+*** Columns
+
+| enum_name          | field                | header      | type    | width |
+|--------------------+----------------------+-------------+---------+-------|
+| FeedId             | feed_id              | Feed        | string  | 300   |
+| AssetClass         | asset_class          | Asset class | string  | 100   |
+| Item               | item                 | Item        | string  | 400   |
+| VendorInstrumentId | vendor_instrument_id | Vendor id   | string  | 300   |
+| Version            | version              | Version     | int     | 70    |
+| ModifiedBy         | modified_by          | Modified By | string  | 120   |
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] -- the words: feed, scope, item.

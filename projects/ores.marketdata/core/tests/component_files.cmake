@@ -31,6 +31,7 @@ set(files
     "delivery_count_eventing_integration_tests.cpp"
     "demand_interval_eventing_integration_tests.cpp"
     "feed_eventing_integration_tests.cpp"
+    "feed_scope_eventing_integration_tests.cpp"
     "main.cpp"
     "market_data_mapping_eventing_integration_tests.cpp"
     "market_data_vendor_instrument_eventing_integration_tests.cpp"

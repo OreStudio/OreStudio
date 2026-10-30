@@ -40,6 +40,15 @@ namespace ores::synthetic::service {
 
 namespace {
 
+constexpr double coupon_rate = 0.05;
+
+/*
+ * The face value of a generated security. A trade's size is the instrument's
+ * notional, which the engine reads as the bond notional, so the security itself
+ * states a unit face and carries no trade's size.
+ */
+constexpr double security_face_value = 1.0;
+
 namespace domain = ores::synthetic::domain;
 using namespace std::chrono;
 
@@ -260,6 +269,95 @@ std::string_view bond_trade_planner::asset_class_code() const {
     return "bond";
 }
 
+/*
+ * The bond family states its security before it states its instrument: a trade
+ * is written against an issue, and the issue with its rows is the security's
+ * own description. The construction lives here, beside the drawing, so the plan
+ * carries the issue and not a bag of fields.
+ */
+void state_bond_security(const domain::bond_terms& terms,
+                         const std::string& currency,
+                         ores::trading::domain::instrument_batch& batch) {
+    namespace tdom = ores::trading::domain;
+    const auto money = [](double value) { return tdom::decimal::from_double(value).value(); };
+
+    tdom::bond_issue issue;
+    issue.issue_id = terms.issue_id;
+    issue.security_id = terms.security_id;
+    issue.issuer = boost::uuids::to_string(terms.issuer_id);
+    issue.face_value = money(security_face_value);
+    issue.issue_date = terms.issue_date;
+    issue.settlement_days = 2;
+    issue.calendar = terms.calendar;
+    issue.sub_type = "Fixed";
+    issue.price_type = "Clean";
+    /*
+     * The curve the bond is discounted on. The engine resolves the name the
+     * trade states through the market's own forwarding, so a bond that states
+     * none is refused with a curve it could not find rather than priced.
+     */
+    if (!terms.reference_curve_id.empty())
+        issue.reference_curve_id = terms.reference_curve_id;
+    batch.bond_issues.push_back(std::move(issue));
+
+    tdom::bond_issue_leg leg;
+    leg.issue_id = terms.issue_id;
+    leg.leg_number = 1;
+    leg.payer = false;
+    leg.leg_type = "Fixed";
+    leg.currency = currency;
+    leg.payment_convention = "F";
+    leg.day_counter = "ACT/ACT";
+    batch.bond_issue_legs.push_back(std::move(leg));
+
+    tdom::bond_issue_leg_amount notional;
+    notional.issue_id = terms.issue_id;
+    notional.leg_number = 1;
+    notional.amount_role = "notional";
+    notional.sequence_number = 1;
+    notional.value = money(security_face_value);
+    batch.bond_issue_leg_amounts.push_back(std::move(notional));
+
+    /*
+     * The coupon: a fixed leg states a rate and no index, and the reader takes
+     * the rate itself from the amount list under the "rate" role. Without both,
+     * the leg the engine rebuilds has no FixedLegData and refuses to price.
+     */
+    tdom::bond_issue_leg_rate rate;
+    rate.issue_id = terms.issue_id;
+    rate.leg_number = 1;
+    rate.rate_kind = "fixed";
+    batch.bond_issue_leg_rates.push_back(std::move(rate));
+
+    tdom::bond_issue_leg_amount coupon;
+    coupon.issue_id = terms.issue_id;
+    coupon.leg_number = 1;
+    coupon.amount_role = "rate";
+    coupon.sequence_number = 2;
+    coupon.value = money(coupon_rate);
+    batch.bond_issue_leg_amounts.push_back(std::move(coupon));
+
+    /*
+     * The schedule is a rule and not a date list, so the terms stay relative to
+     * the anchor: the tenor and the convention are what the document states,
+     * and the dates follow from them.
+     */
+    tdom::bond_issue_leg_schedule schedule;
+    schedule.issue_id = terms.issue_id;
+    schedule.leg_number = 1;
+    schedule.schedule_role = "schedule";
+    schedule.sequence_number = 1;
+    schedule.schedule_kind = "rules";
+    schedule.start_date = terms.issue_date;
+    schedule.end_date = terms.maturity_date;
+    schedule.tenor = "1Y";
+    schedule.calendar = terms.calendar;
+    schedule.convention = "F";
+    schedule.term_convention = "F";
+    schedule.rule = "Forward";
+    batch.bond_issue_leg_schedules.push_back(std::move(schedule));
+}
+
 domain::trade_population_plan
 bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     validate_scope(scope);
@@ -308,12 +406,7 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         row.issue_id = terms.issue_id;
         row.notional = ores::utility::decimal::decimal::from_double(entry.notional).value();
         entry.instruments.bond_instruments.push_back(ores::trading::domain::construct_bond(row));
-        /*
-         * The security itself is still written from the bag: the run creates the
-         * issue before it books the trade, and the issue's terms are its own.
-         * Flipping the security is the next slice, not this one.
-         */
-        entry.terms = terms;
+        state_bond_security(terms, entry.currency, entry.instruments);
 
         plan.slots.push_back(std::move(entry));
     }

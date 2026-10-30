@@ -26,11 +26,11 @@ Every leaf a segment inherits from its base class reaches the contract, so a seg
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | The base map is read across files; the contract carries the leaves. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close on the pull request.             |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance

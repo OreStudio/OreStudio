@@ -26,11 +26,11 @@ Make db recreate succeed again: the convention publish function must be valid SQ
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E8AAAAAC-F562-4F57-AC12-FC88E8EF5741][Atomise every convention onto the central entity — the remaining work]] |
-| Now          | Fix applied; the recreation and the publish both verified. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review and merge.                      |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance

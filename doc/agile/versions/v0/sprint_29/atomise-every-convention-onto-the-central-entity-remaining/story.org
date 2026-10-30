@@ -40,7 +40,7 @@ Tenor basis swap is rebuilt on the central convention row and the composite pare
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:293E7326-A3A2-48E5-AD05-2EEA68C4E362][Build the composite family get and put]] | BACKLOG | | | Generate the family get, get_many, put and put_many for a composite entity, so one round trip reads a central row with its parts at one instant and one transaction writes them together. Prove the generated operations on an existing composite before the convention pilot depends on them. The generic get and put stay as they are, and the family names follow the codegen pattern library. |
-| [[id:B0E249A2-2544-415B-8975-8B46CE3FA6DB][Let the convention publish parse]] | STARTED | 2026-10-30 | | Task for: Atomise every convention onto the central entity — the remaining work |
+| [[id:B0E249A2-2544-415B-8975-8B46CE3FA6DB][Let the convention publish parse]] | DONE | 2026-10-30 | 2026-10-30 | Task for: Atomise every convention onto the central entity — the remaining work |
 
 * Decisions
 

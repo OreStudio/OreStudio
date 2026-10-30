@@ -26,11 +26,11 @@ A feed declares the class and items it fetches, and no item belongs to two feeds
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -57,7 +57,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Scope rows seeded | 140 across 4 feeds | =select count(*) from ores_marketdata_feed_scopes_tbl= | 6b7280a995 |
+| Scope pgtap cases | 6/6 pass | =run_tests.sh marketdata_feed_scopes_test.sql= | 6b7280a995 |
+| Other marketdata pgtap | 22/22 pass | =run_tests.sh marketdata_feeds_test.sql ...= | 6b7280a995 |
+| Build | green | =./compass.sh build= | 6b7280a995 |
+| Non-heavy gate | all checks pass | =./compass.sh check --exclude-heavy= | 6b7280a995 |
 
 * Notes
 
@@ -85,3 +89,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** Outcome
+
+A feed's scope is its rows in =feed_scopes=: feed, asset class, item (an oresmd
+URI) and optionally the vendor instrument that carries it. The four public
+feeds declare every mapping of their publisher: 140 rows across ECB, BoC, IMF
+and TCMB.
+
+A hand-written trigger refuses an item that already belongs to another feed of
+the same publisher, and a vendor instrument that belongs to another publisher.
+The same item under a different publisher is allowed, which is what makes the
+invariant about one publisher's feeds rather than the whole catalogue.
+
+The entity is wired into the service: handlers, event mapping, history provider
+and shell unit, with its permissions. A read returns the scope of a feed by
+=feed_id=.

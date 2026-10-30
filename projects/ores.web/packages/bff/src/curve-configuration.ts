@@ -413,8 +413,7 @@ function collectionsOf(
 ): readonly CurveCollectionView[] {
     const declared = new Set(wiring.blocks.map((block) => block.element));
     return CURVE_COLLECTIONS.filter(
-        (rule) =>
-            declared.has(rule.element) || vectorOf(document, rule.vector).length > 0,
+        (rule) => declared.has(rule.element) || vectorOf(document, rule.vector).length > 0,
     ).map((rule) => {
         const rows = vectorOf(document, rule.vector)
             .filter((candidate) => text(candidate[rule.parentKey]) === entryId)
@@ -447,9 +446,7 @@ function collectionsOf(
 function leavesOfEntry(entry: CurveEntryView): readonly CurveParameterView[] {
     return [
         ...entry.parameters,
-        ...entry.collections.flatMap((collection) =>
-            collection.rows.flatMap((row) => row.leaves),
-        ),
+        ...entry.collections.flatMap((collection) => collection.rows.flatMap((row) => row.leaves)),
     ];
 }
 
@@ -764,44 +761,49 @@ export function registerCurveConfigurationRoutes(
         const definitions = vectorOf(document, 'definitions');
         const [sectionRows, parameters, sets, values, catalogues, links, segmentTypes] =
             await Promise.all([
-            readAll(session, sectionSubjects.list_curve_sections_request, 'sections', {
-                filter: null,
-                as_of: null,
-            }),
-            readAll(session, parameterSubjects.list_ore_parameters_request, 'parameters', {
-                filter: null,
-                as_of: null,
-            }),
-            readAll(session, valueSetSubjects.list_ore_parameter_value_sets_request, 'sets', {
-                filter: null,
-                as_of: null,
-            }),
-            readAll(
-                session,
-                valueSetValueSubjects.list_ore_parameter_value_set_values_request,
-                'values',
-                {
+                readAll(session, sectionSubjects.list_curve_sections_request, 'sections', {
                     filter: null,
                     as_of: null,
-                },
-            ),
-            readAll(
-                session,
-                valueSetCatalogueSubjects.list_ore_parameter_value_set_catalogues_request,
-                'catalogues',
-                { filter: null, as_of: null },
-            ),
-            readAll(
-                session,
-                settingValueSetSubjects.list_ore_parameter_setting_value_sets_request,
-                'setting_value_sets',
-                { filter: null, as_of: null },
-            ),
-            readAll(session, segmentTypeSubjects.list_curve_segment_types_request, 'segment_types', {
-                filter: null,
-                as_of: null,
-            }),
-        ]);
+                }),
+                readAll(session, parameterSubjects.list_ore_parameters_request, 'parameters', {
+                    filter: null,
+                    as_of: null,
+                }),
+                readAll(session, valueSetSubjects.list_ore_parameter_value_sets_request, 'sets', {
+                    filter: null,
+                    as_of: null,
+                }),
+                readAll(
+                    session,
+                    valueSetValueSubjects.list_ore_parameter_value_set_values_request,
+                    'values',
+                    {
+                        filter: null,
+                        as_of: null,
+                    },
+                ),
+                readAll(
+                    session,
+                    valueSetCatalogueSubjects.list_ore_parameter_value_set_catalogues_request,
+                    'catalogues',
+                    { filter: null, as_of: null },
+                ),
+                readAll(
+                    session,
+                    settingValueSetSubjects.list_ore_parameter_setting_value_sets_request,
+                    'setting_value_sets',
+                    { filter: null, as_of: null },
+                ),
+                readAll(
+                    session,
+                    segmentTypeSubjects.list_curve_segment_types_request,
+                    'segment_types',
+                    {
+                        filter: null,
+                        as_of: null,
+                    },
+                ),
+            ]);
         const contract = new Map(
             parameters
                 .filter((entry) => text(entry['schema_name']) === SCHEMA_NAME)

@@ -128,6 +128,7 @@
 \ir ./dq_image_tags_artefact_drop.sql
 \ir ./dq_images_artefact_drop.sql
 \ir ./dq_lei_bic_artefact_drop.sql
+\ir ./dq_legal_entities_artefact_drop.sql
 \ir ./dq_lei_entities_artefact_drop.sql
 \ir ./dq_lei_relationships_artefact_drop.sql
 \ir ./dq_counterparty_identifiers_artefact_drop.sql

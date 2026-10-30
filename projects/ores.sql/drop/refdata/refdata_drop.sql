@@ -274,10 +274,6 @@
 -- Party and counterparty tables
 \ir ./refdata_counterparties_notify_trigger_drop.sql
 \ir ./refdata_counterparties_drop.sql
-
--- Legal entities (after the counterparties that may reference them)
-\ir ./refdata_legal_entities_notify_trigger_drop.sql
-\ir ./refdata_legal_entities_drop.sql
 \ir ./refdata_parties_notify_trigger_drop.sql
 \ir ./refdata_parties_drop.sql
 

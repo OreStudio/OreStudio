@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 49D05351-4A76-4223-9CB2-CBF4BEB26BA0
+:END:
+#+title: Task: Restore the legal entity publish route
+#+description: The refdata regeneration in this story removed the registrar entry for refdata.v1.ops.publish_legal_entities_from_dq, because the model that branch carried did not declare the operation. The operation was declared on main before this story merged, so the struct and the SQL function are present and nothing answers the subject. A tenant provision now stalls on that workflow step for twenty minutes and then fails, so no environment can be provisioned from main.
+#+type: task
+#+level: s1
+#+filetags: :model_the_route_transport_configuration:sprint_29:v0:
+#+owner: marco
+#+branch: hotfix/restore-the-legal-entity-publish-route
+#+pr: 4092
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The subject refdata.v1.ops.publish_legal_entities_from_dq is answered again, and a fresh provisioning run completes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- The publish-from-DQ handler is registered for the legal entities subject.
+- A fresh ACME provisioning run completes all nine steps and publishes the legal entities.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Legal entities published | 42,388 | =select count(*) from ores_refdata_legal_entities_tbl= | worktree |
+| Provisioning steps completed | 9 of 9 | ACME provisioning recipe | worktree |
+| Failure before the fix | step 1 of 1 silent for 20m 13s | same recipe on main | worktree |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4092][#4092]] | [refdata] Register the legal entity publish route again |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The subject answers again and a fresh tenant provisions end to end: nine steps
+of nine, 42,388 legal entities published from the LEI artefact, and the trades
+generated as before.
+
+The fault was one array entry. The publish-from-DQ handler is registered once
+for a list of subjects, and the legal entities subject was not on the list, so
+the workflow published the command and waited for a reply that no service could
+give. Before the fix the same recipe failed at its first step, silent for
+twenty minutes, and then declared the step dead.
+
+The regression came in with the refdata regeneration this story carried. The
+branch's copy of the model did not declare the operation, so regeneration
+removed the hand-written registrar entry; the declaration landed on main before
+this story merged, which put the struct, the SQL function and the workflow step
+back while the registration stayed gone. The subject is now registered, and the
+model still declares it, so a regeneration keeps both halves.

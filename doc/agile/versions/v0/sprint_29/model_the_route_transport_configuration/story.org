@@ -8,7 +8,7 @@
 #+filetags: :marketdata:publishers:suppliers:sessions:feeds:configuration:sprint_29:v0:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment: prime_origin
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -56,6 +56,7 @@ session and a production session of one supplier differ without a redeploy.
 | [[id:D2C6C741-B1FB-4020-B935-8F929210F0E7][Give a feed a scope]] | BACKLOG | | | Feed scope per class and item, with the disjointness invariant across the feeds of one publisher. |
 | [[id:B1CD376D-53C9-4584-80E8-C6C328332E14][Route a party by class]] | BACKLOG | | | Route key (party, publisher, class) to the feed, with the migration from (party, provider). |
 | [[id:E00182BC-6A71-4F3F-88FA-876A275087FA][Serve the catalogue reads]] | BACKLOG | | | Read APIs and permissions for publishers, suppliers, adapters, sessions and feeds. |
+| [[id:49D05351-4A76-4223-9CB2-CBF4BEB26BA0][Restore the legal entity publish route]] | DONE | 2026-10-30 | 2026-10-30 | The refdata regeneration in this story removed the registrar entry for refdata.v1.ops.publish_legal_entities_from_dq, because the model that branch carried did not declare the operation. The operation was declared on main before this story merged, so the struct and the SQL function are present and nothing answers the subject. A tenant provision now stalls on that workflow step for twenty minutes and then fails, so no environment can be provisioned from main. |
 
 * Decisions
 

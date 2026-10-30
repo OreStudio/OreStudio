@@ -1961,8 +1961,8 @@ private:
         for (const auto& candidate : response.feeds)
             if (candidate.name == source && candidate.publisher_code == provider)
                 return candidate.id;
-        throw std::runtime_error("The catalogue holds no feed '" + source +
-                                 "' of the provider '" + provider + "'.");
+        throw std::runtime_error("The catalogue holds no feed '" + source + "' of the provider '" +
+                                 provider + "'.");
     }
 
     // Gives one party a subscription to a provider and a route to a source. The

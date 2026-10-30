@@ -92,8 +92,7 @@ public:
         try {
             const auto system_ctx =
                 ores::database::service::tenant_context::with_system_tenant(ctx_);
-            const auto sources =
-                repository::feed_repository{}.read_latest(system_ctx);
+            const auto sources = repository::feed_repository{}.read_latest(system_ctx);
             const auto card = repository::rate_card_component_repository{}.read_latest(system_ctx);
             ores::marketdata::service::app::usage_events events;
             events.subscriptions =

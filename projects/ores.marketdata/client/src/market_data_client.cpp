@@ -259,8 +259,7 @@ market_data_client::save_observations(const std::vector<domain::market_observati
     return count;
 }
 
-std::expected<std::vector<domain::feed>, std::string>
-market_data_client::list_feeds() {
+std::expected<std::vector<domain::feed>, std::string> market_data_client::list_feeds() {
     messaging::list_feeds_request req;
     req.limit = all_rows;
     auto resp = send(nats_, req);

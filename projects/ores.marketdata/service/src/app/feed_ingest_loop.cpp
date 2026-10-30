@@ -23,9 +23,9 @@
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.core/repository/feed_repository.hpp"
 #include "ores.marketdata.core/repository/live_tenant_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
-#include "ores.marketdata.core/repository/feed_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_vendor_instrument_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/route_repository.hpp"
@@ -195,8 +195,7 @@ void feed_ingest_loop::refresh() {
     keep_live_tenants(routes, repository::live_tenant_repository{}.read(ctx_));
     std::size_t routed = 0;
     for (const auto& route : routes) {
-        const auto source =
-            std::ranges::find(sources, route.feed_id, &domain::feed::id);
+        const auto source = std::ranges::find(sources, route.feed_id, &domain::feed::id);
         if (source == sources.end())
             continue;
         wanted->by_source[source->name].push_back(consumer_of(route, source->name));
@@ -886,7 +885,8 @@ boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context
     auto existing =
         series_repo.read_latest_by_key(tenant_ctx, series_uri, owner.provider_code, party);
     if (existing.empty()) {
-        const auto cl = classifier_for(tenant_ctx)->classify(core::classification_key_of(named.datum));
+        const auto cl =
+            classifier_for(tenant_ctx)->classify(core::classification_key_of(named.datum));
         BOOST_LOG_SEV(lg(), info) << "Creating market series " << series_uri;
 
         auto series = create_feed_series(

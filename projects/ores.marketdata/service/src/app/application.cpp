@@ -23,8 +23,8 @@
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
-#include "ores.marketdata.api/eventing/market_data_mapping_event.hpp"
 #include "ores.marketdata.api/eventing/feed_event.hpp"
+#include "ores.marketdata.api/eventing/market_data_mapping_event.hpp"
 #include "ores.marketdata.api/eventing/market_data_vendor_instrument_event.hpp"
 #include "ores.marketdata.api/eventing/route_event.hpp"
 #include "ores.marketdata.api/eventing/subscription_event.hpp"
@@ -46,8 +46,8 @@
 #include "ores.marketdata.service/messaging/curve_republish_handler.hpp"
 #include "ores.marketdata.service/messaging/delivery_count_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/demand_interval_event_registrar.hpp"
-#include "ores.marketdata.service/messaging/market_data_mapping_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/feed_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/market_data_mapping_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_data_vendor_instrument_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_fixing_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_series_event_registrar.hpp"
@@ -171,8 +171,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto adapter_sub = mdsm::register_adapter_event_mapping(event_source, event_bus, nats);
     auto supplier_sub = mdsm::register_supplier_event_mapping(event_source, event_bus, nats);
     auto provider_sub = mdsm::register_provider_event_mapping(event_source, event_bus, nats);
-    auto feed_sub =
-        mdsm::register_feed_event_mapping(event_source, event_bus, nats);
+    auto feed_sub = mdsm::register_feed_event_mapping(event_source, event_bus, nats);
     auto session_sub = mdsm::register_session_event_mapping(event_source, event_bus, nats);
     auto market_data_vendor_instrument_sub =
         mdsm::register_market_data_vendor_instrument_event_mapping(event_source, event_bus, nats);
@@ -217,8 +216,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             BOOST_LOG_SEV(lg(), info) << "Subscription changed — refreshing adapter demand.";
             supervisor->refresh();
         });
-    auto source_refresh_sub = event_bus.subscribe<mdm::feed_event>(
-        [ingest, supervisor](const mdm::feed_event&) {
+    auto source_refresh_sub =
+        event_bus.subscribe<mdm::feed_event>([ingest, supervisor](const mdm::feed_event&) {
             BOOST_LOG_SEV(lg(), info) << "Source changed — refreshing ingest loop and demand.";
             ingest->refresh();
             supervisor->refresh();

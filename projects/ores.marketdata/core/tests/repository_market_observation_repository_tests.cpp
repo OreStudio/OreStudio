@@ -132,8 +132,7 @@ TEST_CASE("a_series_keeps_one_history_across_the_sources_that_produced_it", "[re
               return r.feed_id == ores::marketdata::domain::catalogue_ids::ore_import_feed_id();
           }) == 1);
     CHECK(std::ranges::count_if(read, [](const auto& r) {
-              return r.feed_id ==
-                     ores::marketdata::domain::catalogue_ids::ore_derived_feed_id();
+              return r.feed_id == ores::marketdata::domain::catalogue_ids::ore_derived_feed_id();
           }) == 1);
 }
 

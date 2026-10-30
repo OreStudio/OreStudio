@@ -155,8 +155,7 @@ public:
      * Sends marketdata.v1.feeds.list. The catalogue belongs to marketdata, so an
      * adapter that needs to know its sources asks here and reads no table of marketdata.
      */
-    [[nodiscard]] std::expected<std::vector<domain::feed>, std::string>
-    list_feeds();
+    [[nodiscard]] std::expected<std::vector<domain::feed>, std::string> list_feeds();
 
 private:
     ores::nats::service::nats_client& nats_;

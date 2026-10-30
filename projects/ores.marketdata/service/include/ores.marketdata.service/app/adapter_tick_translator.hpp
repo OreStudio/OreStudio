@@ -25,8 +25,8 @@
 #endif
 
 #include "ores.marketdata.api/domain/adapter_limits.hpp"
-#include "ores.marketdata.api/domain/market_data_mapping.hpp"
 #include "ores.marketdata.api/domain/feed.hpp"
+#include "ores.marketdata.api/domain/market_data_mapping.hpp"
 #include "ores.marketdata.api/domain/market_data_vendor_instrument.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"

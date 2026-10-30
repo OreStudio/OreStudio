@@ -87,8 +87,8 @@ adapter_tick_translator::check(std::string_view adapter_id,
     if (source == sources_.end())
         return std::unexpected(adapter_tick_drop::unmapped);
 
-    const auto candidates = mappings_.find(
-        instrument_key{source->second.publisher_code, tick.id_scheme, tick.external_id, tick.field});
+    const auto candidates = mappings_.find(instrument_key{
+        source->second.publisher_code, tick.id_scheme, tick.external_id, tick.field});
     if (candidates == mappings_.end())
         return std::unexpected(adapter_tick_drop::unmapped);
 

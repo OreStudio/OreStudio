@@ -104,11 +104,10 @@ void tick_writer::write(std::span<const tick_row> rows) {
 
     try {
         {
-            result_guard begin(
-                PQexec(conn_,
-                       "copy ores_marketdata_ticks_tbl "
-                       "(tenant_id, party_id, series_id, ts, coord, value, feed_id) "
-                       "from stdin with (format csv)"));
+            result_guard begin(PQexec(conn_,
+                                      "copy ores_marketdata_ticks_tbl "
+                                      "(tenant_id, party_id, series_id, ts, coord, value, feed_id) "
+                                      "from stdin with (format csv)"));
             if (PQresultStatus(begin.result) != PGRES_COPY_IN)
                 throw std::runtime_error(PQerrorMessage(conn_));
         }

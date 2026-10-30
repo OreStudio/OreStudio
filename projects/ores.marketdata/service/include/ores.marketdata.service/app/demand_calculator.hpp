@@ -24,8 +24,8 @@
 #    pragma once
 #endif
 
-#include "ores.marketdata.api/domain/market_data_mapping.hpp"
 #include "ores.marketdata.api/domain/feed.hpp"
+#include "ores.marketdata.api/domain/market_data_mapping.hpp"
 #include "ores.marketdata.api/domain/market_data_vendor_instrument.hpp"
 #include "ores.marketdata.api/domain/provider.hpp"
 #include "ores.marketdata.api/domain/route.hpp"

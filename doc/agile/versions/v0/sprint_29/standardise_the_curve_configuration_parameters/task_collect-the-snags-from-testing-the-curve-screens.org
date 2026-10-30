@@ -97,16 +97,18 @@ The walk that produced the evidence on
 [[id:2543D83D-C11E-46F8-954D-F8B88E29BC45][Draw the quotes a curve segment holds]]
 was taken with a script, not by hand, and it met these:
 
-- *A segment leaf prints its ORE name.* =Conventions= draws with no label and
-  counts as a gap because the contract holds no =Segments/\{Kind\}/Conventions=
-  row. The cause is exact: the leaf is read by =YieldCurveSegment::fromXML=, the
-  segment base class, and the extractor keeps a class's base only when the class
-  is declared in the file it is defined in. Six shared leaves are lost for all
-  twelve kinds. Filed as [[id:3D1208F2-1D51-4733-81FB-01B19D36E8EE][Record the leaves a segment inherits]].
+- *A segment leaf prints its ORE name.* =Conventions= drew with no label and
+  counted as a gap because the contract held no =Segments/\{Kind\}/Conventions=
+  row. The cause was exact: the leaf is read by =YieldCurveSegment::fromXML=, the
+  segment base class, and the extractor kept a class's base only when the class
+  was declared in the file it was defined in. Six shared leaves were lost for all
+  twelve kinds. Fixed by [[id:3D1208F2-1D51-4733-81FB-01B19D36E8EE][Record the leaves a segment inherits]]:
+  the walk on 2026-10-30 reads =Conventions= with its value and the page counts
+  *238 of 238 parameters carry documentation*.
 - *The curve's header counts only the curve's own parameters.* =GBP1D= reads *10
-  parameters · 1 without documentation* while the page reads *221 of 238*: the
-  segment's leaves are in the page's count and not in the curve's tag. A person
-  reading the tag alone undercounts the gaps.
+  parameters* while the page reads *238 of 238*: the segment's leaves are in the
+  page's count and not in the curve's tag. A person reading the tag alone sees a
+  smaller curve than the page holds. Still open.
 - *The instant a row was recorded was drawn as a leaf.* Found and fixed on the
   quotes branch; the scenario confirms it is gone.
 - *Two 401s appear in the console* while the shell settles before the party is
@@ -128,7 +130,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:D2120291-825B-4117-A85F-7B9F28237942][Walk the curve segments and quotes on the screen]] | PENDING | Walked against the branch that draws the segments and their quotes. |
+| [[id:D2120291-825B-4117-A85F-7B9F28237942][Walk the curve segments and quotes on the screen]] | PASSED | Walked twice: against the branch that draws the segments and their quotes, and against a freshly provisioned tenant after the inherited leaves merged. |
 
 * PRs
 

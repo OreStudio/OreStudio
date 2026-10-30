@@ -67,7 +67,8 @@ moved as information, and a count that moved to zero as a failure.
 - Click UK curve configuration.
 - Pass: the page title is *UK curve configuration*, the tabs are *Details*,
   *Curves*, *Used by* and *History*, and the line under the title reads *Version 1
-  · 221 of 238 parameters carry documentation*.
+  · 238 of 238 parameters carry documentation from the ORE parameter
+  contract*.
 
 *** Result
 
@@ -185,14 +186,14 @@ moved as information, and a count that moved to zero as a failure.
 These are the defects already recorded. Meeting one is expected; the step is to
 confirm the current behaviour and say whether it is what the note describes.
 
-- Pass: =Conventions= draws as the word *Conventions* with no label and counts as
-  a gap, so the =GBP1D= header reads *1 without documentation*. The cause is
-  recorded in [[id:3D1208F2-1D51-4733-81FB-01B19D36E8EE][Record the leaves a segment inherits]].
-- Pass: the =GBP1D= header reads *10 parameters · 1 without documentation* while
-  the page reads *221 of 238*, because the curve's tag counts its own parameters
-  and not its segment's.
-- Pass: no row reads =RecordedAt=. That leaf was fixed on this branch, and a row
-  that shows it means the build predates the fix.
+- Pass: =Conventions= draws with its label and its value =GBP-OIS-CONVENTIONS=,
+  and a *Documentation* link. A gap here means the build predates the inherited
+  leaves, [[id:3D1208F2-1D51-4733-81FB-01B19D36E8EE][the task that closed it]].
+- Pass: the =GBP1D= header reads *10 parameters* while the page reads *238 of
+  238*, because the curve's tag counts its own parameters and not its segment's.
+  Still open; it is a snag, not a failure of this walk.
+- Pass: no row reads =RecordedAt=. A row that shows it means the build predates
+  the fix.
 
 *** Result
 
@@ -206,9 +207,10 @@ confirm the current behaviour and say whether it is what the note describes.
 | Field         | Value |
 |---------------+-------|
 | Status        | PASSED |
-| Completed at  | 2026-10-30T12:53:35Z |
-| Branch        | feature/collect-the-snags-from-testing-the-curve-screens |
-| Commit        | 05ecca8a64 |
+| Completed at  | 2026-10-30T17:05:00Z |
+| Branch        | main at ffcf0a5baa, provisioned from a fresh database |
+| Evidence      | [[file:evidence/curve-workbench-provisioned.png][the UK workbench]] |
+| Commit        | ffcf0a5baa |
 | Worktree      | ores_dev_merry_newton |
 
 * Notes

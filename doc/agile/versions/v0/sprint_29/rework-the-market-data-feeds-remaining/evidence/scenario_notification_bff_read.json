@@ -1,0 +1,29 @@
+{
+    "items": [
+        {
+            "id": "7e3c50b1-6ea8-411d-9221-9229a505f793",
+            "kindCode": "scenario.to_run",
+            "messageKey": "notification.scenario.to_run",
+            "raisedBy": "tenant_admin",
+            "raisedAt": "2026-10-30 13:26:53.548284Z",
+            "linkRoute": "/development/tests/BE0384AF-AFAA-49B9-B313-19EE86C02733",
+            "linkId": "",
+            "arguments": [
+                {
+                    "name": "raiser",
+                    "value": "tenant_admin"
+                },
+                {
+                    "name": "reason",
+                    "value": "A feed publishes, its ticks store, the curve's Check computes from them, and the set publishes and reads back."
+                },
+                {
+                    "name": "scenario",
+                    "value": "verify the route from a feed to a published curve"
+                }
+            ],
+            "readAt": null
+        }
+    ],
+    "total": 4
+}

@@ -444,6 +444,32 @@ describe('the notification bell', () => {
         expect(html).toContain('daniel asks for Role request. They wrote: I price the FX book.');
     });
 
+    it('draws the newest five and counts the rest', () => {
+        const many = Array.from({ length: 7 }, (_, index) =>
+            notification({
+                id: `cccccccc-cccc-4ccc-8ccc-cccccccccc0${index}`,
+                arguments: [
+                    { name: 'kind', value: 'Role request' },
+                    { name: 'requester', value: `daniel${index}` },
+                    { name: 'reason', value: `I price the FX book ${index}.` },
+                ],
+            }),
+        );
+        const html = render(
+            (client) => {
+                client.setQueryData(['unread-notifications'], 7);
+                client.setQueryData(['notifications'], { items: many, total: 7 });
+            },
+            <NotificationBell />,
+            '/',
+        );
+
+        expect(html).toContain('I price the FX book 0.');
+        expect(html).toContain('I price the FX book 4.');
+        expect(html).not.toContain('I price the FX book 5.');
+        expect(html).toContain('And 2 more notifications.');
+    });
+
     it('says there is nothing to read rather than drawing an empty list', () => {
         const html = render(
             (client) => {
@@ -462,6 +488,50 @@ describe('the notification bell', () => {
     it('points a notification at the request it names', () => {
         expect(notificationRoute(notification())).toBe(`/requests/${REQUEST}`);
         expect(notificationRoute(notification({ linkId: '' }))).toBe('/requests');
+    });
+
+    /*
+     * A scenario notice names the scenario and where it is run. It is the one
+     * kind whose link is a screen as a whole, so it carries an empty id: the
+     * bell uses the route as it stands and does not add one.
+     */
+    const scenarioNotification = notification({
+        kindCode: 'scenario.to_run',
+        messageKey: 'notification.scenario.to_run',
+        raisedBy: 'tenant_admin',
+        linkRoute: '/development/tests/BE0384AF-AFAA-49B9-B313-19EE86C02733',
+        linkId: '',
+        arguments: [
+            { name: 'raiser', value: 'tenant_admin' },
+            { name: 'scenario', value: 'verify the route from a feed to a published curve' },
+            { name: 'reason', value: 'A feed publishes and its ticks store.' },
+        ],
+    });
+
+    it('renders a scenario notice in words, not as its message key', () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(['unread-notifications'], 1);
+                client.setQueryData(['notifications'], {
+                    items: [scenarioNotification],
+                    total: 1,
+                });
+            },
+            <NotificationBell />,
+            '/',
+        );
+
+        expect(html).toContain(
+            'A test scenario is ready for you: &quot;verify the route from a feed to a published ' +
+                'curve&quot;. A feed publishes and its ticks store.',
+        );
+        expect(html).not.toContain('notification.scenario.to_run');
+    });
+
+    it('points a scenario notice at the page that runs it', () => {
+        expect(notificationRoute(scenarioNotification)).toBe(
+            '/development/tests/BE0384AF-AFAA-49B9-B313-19EE86C02733',
+        );
     });
 });
 

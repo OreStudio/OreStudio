@@ -802,9 +802,24 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
                         },
                         {
                             header: t('marketdata.curveBlueprints.columns.marketSeries'),
-                            cell: (row) => (
-                                <span className="font-mono text-xs">{seriesName(row)}</span>
-                            ),
+                            cell: (row) => {
+                                const named = seriesName(row);
+                                /*
+                                 * A held series opens its evolution, one click; an
+                                 * id the catalogue no longer holds stays text, because
+                                 * a link to nothing tells a reader less than the id.
+                                 */
+                                return named.startsWith('oresmd://') ? (
+                                    <Link
+                                        className="font-mono text-xs text-accent hover:underline"
+                                        to={`/market-data/evolution?uri=${encodeURIComponent(named)}`}
+                                    >
+                                        {named}
+                                    </Link>
+                                ) : (
+                                    <span className="font-mono text-xs">{named}</span>
+                                );
+                            },
                         },
                         {
                             header: t('refdata.fields.version'),

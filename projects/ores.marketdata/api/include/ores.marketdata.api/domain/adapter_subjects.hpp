@@ -25,9 +25,11 @@
 #endif
 
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
+#include <algorithm>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace ores::marketdata::domain {
 
@@ -141,6 +143,80 @@ adapter_ingress_subject_parts(std::string_view subject) {
     if (!adapter || !external || adapter->empty() || external->empty())
         return std::nullopt;
     return adapter_ingress_parts{std::move(*adapter), std::move(*external)};
+}
+
+/**
+ * @brief The two subject families the ingest loop consumes, as the relative wildcards a
+ * subscription takes.
+ *
+ * The loop subscribes to exactly these two values and to nothing else, so a publisher's subject
+ * being in one of these families and the loop subscribing to it are one fact rather than two
+ * that can drift. A test that pins a feed's publish subject to the ingest reads this value
+ * rather than spelling a wildcard of its own.
+ */
+struct ingest_subjects final {
+    /// The synthetic producers that name no adapter, under "synthetic.v1.ops.tick.>".
+    std::string producers;
+    /// Every adapter's ingress, under "marketdata.v1.ingress.>".
+    std::string adapters;
+
+    /// Both families, in the order a caller may walk them.
+    [[nodiscard]] std::vector<std::string> all() const {
+        return {producers, adapters};
+    }
+};
+
+/// The subject families the ingest loop consumes. It subscribes to each of them once.
+inline ingest_subjects ingest_subject_wildcards() {
+    return {.producers = std::string(synthetic_tick_subject).append(".>"),
+            .adapters = adapter_ingress_subject_all()};
+}
+
+/// The subject split into its tokens, as NATS counts them.
+inline std::vector<std::string_view> subject_tokens_of(std::string_view subject) {
+    std::vector<std::string_view> tokens;
+    std::size_t at = 0;
+    while (at <= subject.size()) {
+        const auto dot = subject.find('.', at);
+        const auto end = dot == std::string_view::npos ? subject.size() : dot;
+        tokens.push_back(subject.substr(at, end - at));
+        if (dot == std::string_view::npos)
+            break;
+        at = dot + 1;
+    }
+    return tokens;
+}
+
+/**
+ * @brief Whether @p wildcard, as a subscription takes it, covers @p subject.
+ *
+ * A @c ">" token matches one token or more, and a @c "*" token matches exactly one. Both
+ * subjects are the relative form: the environment prefix that a client adds is outside this
+ * comparison.
+ */
+inline bool subject_matches(std::string_view wildcard, std::string_view subject) {
+    const auto wanted = subject_tokens_of(wildcard);
+    const auto actual = subject_tokens_of(subject);
+    // A subject or a wildcard with an empty token is one NATS refuses, so it is none of the
+    // loop's, whatever its shape.
+    const auto empty = [](auto token) { return token.empty(); };
+    if (std::ranges::any_of(actual, empty) || std::ranges::any_of(wanted, empty))
+        return false;
+    for (std::size_t i = 0; i < wanted.size(); ++i) {
+        if (wanted[i] == ">")
+            return actual.size() > i;
+        if (i >= actual.size())
+            return false;
+        if (wanted[i] != "*" && wanted[i] != actual[i])
+            return false;
+    }
+    return actual.size() == wanted.size();
+}
+
+/// True when one of the ingest loop's subscriptions covers @p subject.
+inline bool ingest_consumes(std::string_view subject) {
+    return std::ranges::any_of(ingest_subject_wildcards().all(),
+                               [subject](const auto& w) { return subject_matches(w, subject); });
 }
 
 }

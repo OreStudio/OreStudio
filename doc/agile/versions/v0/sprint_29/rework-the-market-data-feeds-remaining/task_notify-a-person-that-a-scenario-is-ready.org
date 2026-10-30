@@ -1,0 +1,201 @@
+:PROPERTIES:
+:ID: EF0E71E8-940A-4164-BF4C-85B2FB6AE55A
+:END:
+#+title: Task: Notify a person that a scenario is ready
+#+description: A scenario is created but the person who should run it is never told; the Development area already renders the scenario.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/route-the-synthetic-feeds-into-the-ingest
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Compass can tell a person their scenario is ready, and the bell opens the scenario's Development page.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- compass add test_scenario prints the ready-to-run notify suggestion for the scenario it scaffolds.
+- compass notify scenario resolves the doc, raises a scenario notification to the named person, and the bell shows it with a working link to /development/tests/<id>.
+
+* Plan
+
+The notification itself already exists: =inbox.v1.ops.raise_notification=
+writes the notification, its message arguments, one recipient row per person
+and each person's in-application delivery, in one transaction, as the
+signed-in account. The work is to reach it from a command, to name the kind,
+and to point a person at their scenario.
+
+1. *The shell surface is hand-written, and stays in the generated shape.* The
+   raise takes a list of named values for its message arguments. The generator
+   fills a list field from one comma-separated token, so a list of name/value
+   pairs has no token form and opting the model into the shell facet fails the
+   generator's own refusal of a silent gap. The unit therefore sits beside the
+   generated ones and mirrors them: the same menu, the same
+   positional-then-flag order, the same =__none__= token for an empty list, and
+   the whole JSON answer printed. One deviation is stated in the unit: the link
+   id is a flag and not a positional, because the tokenizer drops an empty
+   argument and an empty link id is the normal case.
+2. *One kind, three languages.* =scenario.to_run= seeds beside the inbox's own
+   kinds, its message key is the server's dotted path, and the message is
+   written in English, French and Portuguese so the bell renders words.
+3. *One command.* =compass notify scenario <doc> --to <username@tenant>=
+   resolves the doc by path or by :ID:, reads the recipient's account id from
+   the database, and drives the raise through =ores.shell=, so the operation
+   runs as the =--from= account and the answer is the notification's id.
+4. *One suggestion.* =compass add test_scenario= prints the ready-to-run
+   command for the scenario it wrote, naming the persona from the first step
+   when the step states one and a placeholder when it does not.
+5. *Evidence.* The scenario is raised to a real recipient and read back through
+   the BFF the app itself calls.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Shell commands the raise adds to the inbox menu | 1 | =grep -c 'menu->Insert' projects/ores.shell/inbox/src/app/commands/inbox/notification_operations_commands.cpp= | 64441caec0 |
+| Notification kinds seeded beside the inbox's own | 1 (=scenario.to_run=), of 5 in the inbox script and 2 in the market data script | =grep -c "ores_utility_system_tenant_id_fn(), '" projects/ores.sql/populate/inbox/inbox_notification_kinds_populate.sql= | 9bd44313dc |
+| compass notify tests | 15, all passing | =python -m pytest projects/ores.compass/tests/test_compass_notify.py= | 796a1a0fe5 |
+| The kind's message in each language | 3 (en, fr, pt) | =grep -c "notification.scenario.to_run" projects/ores.web/packages/web/src/i18n/locales/*.ts= | 9bd44313dc |
+
+The live run, its rows and the BFF's answer are in
+=evidence/scenario_notification_live.txt= and
+=evidence/scenario_notification_bff_read.json= beside this task.
+
+* Notes
+
+- The raise is reached through the hand-written shell unit. The generator has
+  no token form for a list of named values, so the model stays out of the shell
+  facet; the unit repeats the generated shape so a reader of one reads the
+  other.
+- =compass notify= takes the raising account from =ORES_SHELL_LOGIN_USERNAME=
+  and =ORES_SHELL_LOGIN_PASSWORD= in =.env=, which is
+  =tenant_admin@acme_corporation= here. That account raises, because raising
+  asks for =inbox::notifications:write= and TenantAdmin holds the wildcard
+  grant. Any other =--from= account must hold that permission.
+- The response field =raised_by= carries the raiser's username, but the bell
+  renders message arguments only, so the raiser is also passed as an argument.
+- The kinds populate script refuses a second run over a populated database:
+  its =on conflict do nothing= never fires, because the insert goes through the
+  entity's insert function, which raises =already_exists= first. A fresh
+  database applies the script; an existing one needs the one row inserted. This
+  is older than this task and is left as it stands.
+- The banner in =compass add test_scenario= still says the scenario's first step
+  logs in as =tenant_admin@acme_corporation=, which the template does not state;
+  the suggestion beside it names the persona or the placeholder instead.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+No scenario is scaffolded for this task. The proof is a command and the rows
+it writes, which the evidence file records, and a browser scenario would repeat
+the BFF read.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A scenario can be handed to the person who should run it.
+
+- The shell raises a notification through the inbox operation:
+  =notification_operations raise-notification <kind_code> <link_route>
+  <account_ids> [--link_id] [--argument name=value]
+  [--audience_permission_code]=. It is hand-written because the operation's
+  arguments are a list of name-value records and the generator's only
+  container form is a list of strings; the unit mirrors the generated shape and
+  states the one deviation, an empty =--link_id= being the normal case.
+- The kind =scenario.to_run= (=notification.scenario.to_run=) is seeded with the
+  inbox's kinds and the message in en, fr and pt.
+- =compass notify scenario <doc> --to <username@tenant> [--from ...]
+  [--reason ...]= resolves the doc by path or :ID:, reads the recipient from
+  the database, and raises the notice with the link
+  =/development/tests/<:ID:>=. The default raiser is the tenant administrator.
+- =compass add test_scenario= prints the ready-to-run notify command after
+  scaffolding, naming the persona from the first step where it can.
+- The bell needed no change: a route with an empty link id is used as it
+  stands, and a test renders the notice from its arguments.
+
+Evidence: notification 2c081ea7-464d-46dd-89b4-ce46e9f52a17 for henry.jones
+with link /development/tests/BE0384AF-AFAA-49B9-B313-19EE86C02733; the BFF
+returns it with the kind, the arguments and the route; the app's scenario route
+answers 200; raising as a Member is refused and as the tenant administrator
+accepted, so the raiser is the signed-in account. shell inbox, inbox core and
+inbox service suites pass; compass pytest 473 pass; the web inbox and
+development routes tests pass; validate_docs clean. The shell binary and web
+bundle were rebuilt and the web service restarted.
+
+A scenario is written, and the person who should run it is told.
+
+- The shell raises the notice:
+  =notification_operations raise-notification <kind_code> <link_route>
+  <account_ids> [--link_id <v>] [--argument <name=value>]
+  [--audience_permission_code <v>]=. It answered with the notification's id
+  and one recipient, and the database holds the arguments, the recipient row
+  and the recipient's in-application delivery.
+- =scenario.to_run= is the kind. Its message key is
+  =notification.scenario.to_run=, and the message is written in English,
+  French and Portuguese.
+- =compass notify scenario <doc> --to <username@tenant> [--from ...]
+  [--reason ...]= resolves the doc by path or by =:ID:=, reads the recipient's
+  account id from the database, and prints the notification id and the link.
+  Run against the scenario =BE0384AF-AFAA-49B9-B313-19EE86C02733= and
+  =henry.jones@acme_corporation=, it printed notification
+  =2c081ea7-464d-46dd-89b4-ce46e9f52a17= and the link
+  =/development/tests/BE0384AF-AFAA-49B9-B313-19EE86C02733=.
+- =compass add test_scenario= prints the ready-to-run command for the scenario
+  it scaffolded, naming the persona from the first step or a placeholder.
+- The bell renders the notice from the values the server sends, and follows the
+  route as it stands because the link id is empty. The Development route
+  answers, and the BFF returns the scenario doc it renders.
+- The three affected suites pass: =ores.shell.inbox.tests=,
+  =ores.inbox.core.tests= and =ores.inbox.service.tests=.
+- The raiser is the account the shell signs in as, and the operation refuses a
+  caller without =inbox::notifications:write=: raising as =henry.jones=, who
+  holds Member, was refused with =forbidden=, and raising as =tenant_admin=,
+  who holds the wildcard grant, was accepted.

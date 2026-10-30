@@ -137,6 +137,15 @@ public:
         return role_;
     }
 
+    /**
+     * @brief The subject this feed's ticks actually travel on.
+     *
+     * The adapter ingress of a pillar's vendor id when the pillars serve an adapter, and the
+     * producer subject otherwise. It is read for the publish log, so the log names the family the
+     * ticks went out on and not one the feed does not use.
+     */
+    const std::string& published_subject() const;
+
 private:
     ores::nats::service::client& nats_;
     std::string source_name_;

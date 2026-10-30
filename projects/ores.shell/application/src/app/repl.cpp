@@ -58,6 +58,7 @@
 #include "ores.shell/app/commands/inbox/notification_commands.hpp"
 #include "ores.shell/app/commands/inbox/notification_delivery_commands.hpp"
 #include "ores.shell/app/commands/inbox/notification_kind_commands.hpp"
+#include "ores.shell/app/commands/inbox/notification_operations_commands.hpp"
 #include "ores.shell/app/commands/inbox/notification_preference_commands.hpp"
 #include "ores.shell/app/commands/inbox/notification_recipient_commands.hpp"
 #include "ores.shell/app/commands/lei_commands.hpp"
@@ -224,6 +225,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     approval_request_commands::register_commands(*root, session_);
     approval_decision_commands::register_commands(*root, session_);
     notification_kind_commands::register_commands(*root, session_);
+    notification_operations_commands::register_commands(*root, session_);
     notification_channel_commands::register_commands(*root, session_);
     notification_commands::register_commands(*root, session_);
     notification_argument_commands::register_commands(*root, session_);

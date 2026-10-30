@@ -1,0 +1,166 @@
+:PROPERTIES:
+:ID: BAF9151C-3A23-4A52-8012-8DD9E0F7FE85
+:END:
+#+title: Task: Route the synthetic feeds into the ingest
+#+description: The synthetic IR feeds publish, but no synthetic-provider tick reaches the store, so the bootstrap cannot be exercised live.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/route-the-synthetic-feeds-into-the-ingest
+#+pr: 4086
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Synthetic-provider ticks reach the store with oresmd identities, and the live bootstrap reads them through the seeded blueprint.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-10-30                             |
+
+* Acceptance
+
+- A synthetic IR feed's ticks are stored as observations with oresmd series and datum URIs.
+- The seeded blueprint's check reads the stored quotes and builds the curve; a publish completes.
+- The delivery uses the adapter contract rather than a special case, and a test pins the synthetic publish subject to what the ingest consumes.
+
+* Plan
+
+1. Diagnose, on a recreated and provisioned environment, where every tick the
+   IR feeds publish goes, and which party the ingest stores it for.
+2. Put the missing route in the seed the blueprint already uses, so the ladder
+   series the pillars name ticks.
+3. Make a feed started by hand publish through the adapter of its provider, as
+   the demand path already does.
+4. Pin each publish subject the synthetic feeds use to the families the ingest
+   subscribes to.
+5. Prove the store, the check, a raise, a decision and a publish live, and run
+   the affected suites and the ticks smoke check.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Ticks the 12 pillars of the seeded ladder stored for the system party | 60 rows, 12 datum URIs | =compass sql -c "select count(*) from ores_marketdata_ticks_tbl where series_id='f7a1b2c3-8d4e-4f60-9a2b-3c4d5e6f7081'"= | =2c80dd188a= |
+| The seeded blueprint's check | 7 points, 3M to 30Y | =POST /api/curves/compute= as the system administrator | =2c80dd188a= |
+| The publish flow | raise, approve, publish, 7 points read back | =curve_publish_operations= and =POST /api/curves/published= | =2c80dd188a= |
+| The ticks smoke check | passed, 38,096 ticks, bloomberg-a 362/362, demo-a 71/71, lseg-a 14/14 | =compass smoke ticks --fresh= | =2c80dd188a= |
+
+* Notes
+
+** The diagnosis
+
+The IR feeds did publish, and the ingest did store their ticks, but only for a
+party a route named. Two things were missing, and each one hid the other.
+
+- The seeded USD SOFR ladder series belongs to the system tenant's system party.
+  No route named a source for that party, so the ingest found no consumer to
+  store the tick for it and the series held no point. The check therefore
+  answered =no observed rate for pillar '3M' in the raw grid=.
+- A feed a person starts by hand was built with no adapter target, so it
+  published a =market_tick= on =synthetic.v1.ops.tick.<source_name>=. No source
+  and no route names that subject, so the ingest dropped every tick as an
+  unbound source, while the start reported success and the feed's log named that
+  subject on every batch. The feed's log came from the producer subject the feed
+  does not use for a served pillar, which is what made a stored tick and a
+  dropped one look the same in the journal.
+
+** What the fix rests on
+
+The adapter contract, in both places. A feed publishes as a source adapter, on
+the ingress subject the ingest maps, stores and delivers for every routed party;
+and a source and a route are what make demand start an adapter and the ingest
+accept its tick. Neither path has a branch for interest rates or for the
+simulator.
+
+** What the new test pins
+
+=feeds_publish_subject_tests.cpp= asserts that every subject a synthetic feed
+publishes on is one the ingest consumes: the producer subject of a feed with no
+adapter, and the adapter ingress of a feed that serves one. The ingest's two
+families are =ingest_subject_wildcards()= in the market data API, which the
+loop subscribes to and the test reads, so a change to either side fails there.
+
+** The smoke check
+
+=compass smoke ticks --fresh= passed: the tenant provisioned, =generate_trades=
+completed for every entity, and 38,096 ticks arrived. The abort the previous
+session saw was a stale binary: the synthetic service registers
+=synthetic.v1.trade_generation_configs.list= (its journal shows the subscription
+on every start), and the current build runs the step. No registration is
+missing.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:BE0384AF-AFAA-49B9-B313-19EE86C02733][Test scenario: verify the route from a feed to a published curve]] | FAILED | 4 of 9 steps failed: the Check's 403 (not reproducible on a fresh session), the published record opened by URI says no set, the request page as seen via the notification, and the Simulator screen's providers read refused. Diagnoses and fixes recorded in the scenario. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4086][#4086]] | [marketdata] Route the synthetic feeds into the ingest |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Synthetic-provider ticks reach the store with oresmd identities, and the seeded
+blueprint reads them. The system party's subscription and route make the ladder
+series tick; a feed started by hand publishes as its provider's adapter; and one
+test holds the publish subjects to the families the ingest subscribes to.
+
+Live, on a recreated and provisioned environment:
+
+- The ladder series stored 60 ticks over 12 datum URIs, each
+  =oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=<tenor>=.
+- The check returned 7 points for the seeded blueprint, and 7 for an Acme-owned
+  blueprint on the same stored quotes.
+- A raise, an approval and a publish completed between two people of one party,
+  and the published set read back with =point_count= 7.
+- =compass smoke ticks --fresh= passed.
+
+Evidence: =evidence/synthetic_feeds_ingest_diagnosis.txt=,
+=evidence/synthetic_feeds_ingest_live_pass.txt= and
+=evidence/live_pass_curve.sql=.
+
+** What this leaves open
+
+A tick is still stored once for each party that routes to its source, so the
+same quote reaches the store as one series for each party. The story decides one
+tick for each source, owned by the system tenant, in
+[[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]]; the build task for
+that decision is still open, and this task did not take it.

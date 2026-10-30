@@ -1,3 +1,4 @@
+
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
@@ -42,9 +43,9 @@
  *    writes its ticks into it instead of creating a second one.
  *
  * The provider is bloomberg, the provider of the synthetic feed that publishes
- * the pillars, and the party is the system party, matching the party the
- * synthetic dataset publishes into and therefore the party_id on the feed's
- * ticks.
+ * the pillars, and the party is the system party: this script also gives that
+ * party the subscription and the route to bloomberg-a, so the ingest stores the
+ * feed's ticks into the ladder series.
  *
  * Both rows carry a junction row in
  * ores_marketdata_market_series_asset_classes_tbl, since the asset class is no
@@ -120,4 +121,58 @@ where tenant_id = ores_utility_system_tenant_id_fn()
   and oresmd_uri in (
       'oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-FOMC',
       'oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D')
+  and valid_to = ores_utility_infinity_timestamp_fn();
+
+\echo '--- The System Party Reads the Simulated Bloomberg Quotes ---'
+
+-- A series ticks only for a party the ingest finds a route to its source. The ladder above
+-- belongs to the system party, so the system party needs the subscription and the route that
+-- make the ingest store the synthetic Bloomberg feed's ticks into it. Without these two rows
+-- the ladder series holds no point, and the blueprint that reads it refuses every pillar with
+-- "no observed rate".
+--
+-- The subscription is what the demand set is computed from and what entitles the party to read
+-- the quotes; the route is what names the source the ingest delivers for. The provider is the
+-- ladder's own, bloomberg, and the source is the adapter the simulator runs for it, bloomberg-a.
+insert into ores_marketdata_subscriptions_tbl (
+    id, tenant_id, version, party_id, provider_code, display, non_display, derived,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+values (
+    '5f0e2b7a-9c41-5d63-8a2f-3b6c9d1e4f02',
+    ores_utility_system_tenant_id_fn(),
+    0,
+    ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+    'bloomberg', true, true, false,
+    current_user, current_user, 'system.initial_load',
+    'The system party takes the simulated Bloomberg quotes its curve blueprints read'
+)
+on conflict (tenant_id, id)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
+
+insert into ores_marketdata_routes_tbl (
+    id, tenant_id, version, party_id, provider_code, source_id,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+values (
+    '5f0e2b7a-9c41-5d63-8a2f-3b6c9d1e4f03',
+    ores_utility_system_tenant_id_fn(),
+    0,
+    ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+    'bloomberg',
+    '0a42775e-3da7-4c61-a732-6b62cb9f948f',
+    current_user, current_user, 'system.initial_load',
+    'The system party reads the simulated Bloomberg quotes through bloomberg-a'
+)
+on conflict (tenant_id, id)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
+
+-- Summary.
+select 'marketdata_routes (system party)' as entity, count(*) as count
+from ores_marketdata_routes_tbl
+where tenant_id = ores_utility_system_tenant_id_fn()
+  and party_id = ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn())
+  and provider_code = 'bloomberg'
   and valid_to = ores_utility_infinity_timestamp_fn();

@@ -31,6 +31,9 @@ import { RelativeTime } from '../ui/Time.js';
 /** How many notifications the bell lists at once. */
 const LISTED = 20;
 
+/** How many the popover draws; the rest are counted, not listed. */
+const SHOWN = 5;
+
 /** How often the unread count is read again while a screen is open. */
 const POLL_MS = 30_000;
 
@@ -55,7 +58,8 @@ export function notificationRoute(notification: InboxNotificationView): string {
 }
 
 /**
- * The bell: what has happened, and how much of it is unread.
+ * The bell: the unread notices, and how many there are. A read notice leaves the
+ * list; the record of what was told is the notification's own row, not the bell.
  *
  * The count sits on every screen, so it is read on a timer rather than pushed:
  * the client's own default already reads it again when the window takes focus,
@@ -79,7 +83,7 @@ export function NotificationBell(): ReactNode {
     });
     const list = useQuery({
         queryKey: ['notifications'],
-        queryFn: () => api.myNotifications({ unreadOnly: false, offset: 0, limit: LISTED }),
+        queryFn: () => api.myNotifications({ unreadOnly: true, offset: 0, limit: LISTED }),
         refetchInterval: POLL_MS,
     });
     const count = unread.data ?? 0;
@@ -128,6 +132,8 @@ export function NotificationBell(): ReactNode {
     });
 
     const items = list.data?.items ?? [];
+    const shown = items.slice(0, SHOWN);
+    const held = items.length - shown.length;
 
     const openOne = (notification: InboxNotificationView) => {
         if (notification.readAt === null) {
@@ -157,7 +163,7 @@ export function NotificationBell(): ReactNode {
             <div
                 role="menu"
                 hidden={!open}
-                className="absolute right-0 z-30 mt-2 w-80 rounded-md border border-line bg-surface-overlay p-2 shadow-xl"
+                className="absolute right-0 z-30 mt-2 w-96 rounded-md border border-line bg-surface-overlay p-2 shadow-xl"
             >
                 <div className="flex items-center justify-between border-b border-line px-2 pb-2 pt-1">
                     <span className="text-sm font-medium">{t('inbox.bell.title')}</span>
@@ -174,8 +180,8 @@ export function NotificationBell(): ReactNode {
                 {items.length === 0 ? (
                     <p className="px-2 py-3 text-sm text-ink-muted">{t('inbox.bell.empty')}</p>
                 ) : (
-                    <ul className="max-h-80 overflow-y-auto">
-                        {items.map((notification) => (
+                    <ul>
+                        {shown.map((notification) => (
                             <li key={notification.id}>
                                 <button
                                     type="button"
@@ -189,7 +195,7 @@ export function NotificationBell(): ReactNode {
                                             className={`mt-1.5 size-2 shrink-0 rounded-full ${notification.readAt === null ? 'bg-accent' : 'bg-transparent'}`}
                                         />
                                         <span className="min-w-0 flex-1">
-                                            <span className="block text-ink">
+                                            <span className="line-clamp-3 block text-ink">
                                                 {t(notification.messageKey, valuesOf(notification))}
                                             </span>
                                             <span className="block text-xs text-ink-faint">
@@ -201,6 +207,11 @@ export function NotificationBell(): ReactNode {
                             </li>
                         ))}
                     </ul>
+                )}
+                {held > 0 && (
+                    <p className="px-2 py-2 text-xs text-ink-muted">
+                        {t('inbox.bell.more', { count: String(held) })}
+                    </p>
                 )}
             </div>
         </div>

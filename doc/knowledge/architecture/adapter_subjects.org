@@ -25,6 +25,16 @@ The service subscribes once to =marketdata.v1.ingress.>=. The =<adapter>= token
 is the opaque adapter id, for example =bloomberg-sim=. Code never parses the
 token to learn what the adapter is. The registered source says that.
 
+** The two families the ingest consumes
+
+The loop also subscribes to =synthetic.v1.ops.tick.>=, the subject a producer
+publishes on when its quote serves no adapter. Both families are one fact held
+in the market data API: =ingest_subject_wildcards()= returns them, the loop
+subscribes to what it returns, and =ingest_consumes()= answers whether a
+subject is one of them. A synthetic feed that a person starts by hand publishes
+through the adapter of its provider, not through the producer subject, because
+only a source and a route make the ingest store a tick.
+
 ** The token rule
 
 A vendor id can hold characters that NATS does not allow in a token: a RIC such

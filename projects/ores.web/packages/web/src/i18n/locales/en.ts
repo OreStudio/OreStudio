@@ -282,6 +282,7 @@ export const en: SourceCatalogue = {
             title: 'Notifications',
             empty: 'Nothing to tell you.',
             markAll: 'Mark all read',
+            more: 'And {count} more notifications.',
         },
         ask: {
             open: 'Ask for a role',
@@ -501,6 +502,9 @@ export const en: SourceCatalogue = {
         'The curve {curve} of {party} is live from {published_at}, published by {publisher} as of {as_of}. It replaces the set as of {previous_as_of}, or nothing when it is the first.',
     'notification.marketdata.curve_withdrawn':
         'The curve {curve} of {party} was withdrawn on {withdrawn_at} by {withdrawn_by}: {reason}. Its last published set was as of {as_of}.',
+
+    'notification.scenario.to_run':
+        'A test scenario is ready for you: "{scenario}". {reason}',
 
     signIns: {
         title: 'Sign-ins',
@@ -5125,7 +5129,7 @@ export const en: SourceCatalogue = {
                 subscriptions: 'Subscriptions',
                 subscriptionsBody:
                     'The providers a party takes, with the rights it holds, and the source that serves each one.',
-                synthetic: 'Synthetic',
+                synthetic: 'Simulator',
                 syntheticBody:
                     'The feeds the platform generates: what runs by provider, and every feed to start and stop.',
                 evolutionBody:

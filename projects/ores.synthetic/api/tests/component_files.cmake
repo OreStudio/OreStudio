@@ -27,6 +27,7 @@ set(files
     "feed_filter_tests.cpp"
     "feed_overview_tests.cpp"
     "feeds_fixing_calibration_tests.cpp"
+    "feeds_publish_subject_tests.cpp"
     "fx_mixture_conversion_tests.cpp"
     "fx_simple_conversion_tests.cpp"
     "ir_parameter_conversion_tests.cpp"

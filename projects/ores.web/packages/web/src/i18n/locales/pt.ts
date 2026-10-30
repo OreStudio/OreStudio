@@ -282,6 +282,7 @@ const pt: SourceCatalogue = {
             title: 'Notificações',
             empty: 'Nada a comunicar.',
             markAll: 'Marcar tudo como lido',
+            more: 'E mais {count} notificações.',
         },
         ask: {
             open: 'Pedir um papel',
@@ -498,6 +499,9 @@ const pt: SourceCatalogue = {
         'A curva {curve} de {party} esta em vigor desde {published_at}, publicada por {publisher} com data de referencia {as_of}. Substitui o conjunto com data de {previous_as_of}, ou nada quando e o primeiro.',
     'notification.marketdata.curve_withdrawn':
         'A curva {curve} de {party} foi retirada em {withdrawn_at} por {withdrawn_by}: {reason}. O seu ultimo conjunto publicado tinha a data de {as_of}.',
+
+    'notification.scenario.to_run':
+        'Um cenário de teste está pronto para si: « {scenario} ». {reason}',
 
     signIns: {
         title: 'Inícios de sessão',
@@ -5157,7 +5161,7 @@ const pt: SourceCatalogue = {
                 subscriptions: 'Subscrições',
                 subscriptionsBody:
                     'Os fornecedores que uma parte recebe, com os direitos que detém, e a fonte que serve cada um.',
-                synthetic: 'Sintético',
+                synthetic: 'Simulador',
                 syntheticBody:
                     'Os feeds que a plataforma gera: o que corre por fornecedor, e cada feed para iniciar e parar.',
                 evolutionBody:

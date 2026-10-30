@@ -3797,10 +3797,28 @@ def cmd_add(argv):
     # doc_generate.main returns 0 on success but may sys.exit on error;
     # catch SystemExit so the reminder prints only on success and the
     # generator's own error message/code is preserved.
-    try:
-        rc = doc_generate.main(["--type", doc_type, *rest])
-    except SystemExit as exc:
-        rc = exc.code
+    #
+    # A scenario's suggestion names the file the generator wrote, so its print
+    # is held back and the path read from it; the text is then passed on, so
+    # the caller still sees everything the generator said.
+    written = None
+    if doc_type == "test_scenario":
+        import contextlib
+        import io
+        held = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(held):
+                rc = doc_generate.main(["--type", doc_type, *rest])
+        except SystemExit as exc:
+            rc = exc.code
+        written = held.getvalue()
+        sys.stdout.write(written)
+        sys.stdout.flush()
+    else:
+        try:
+            rc = doc_generate.main(["--type", doc_type, *rest])
+        except SystemExit as exc:
+            rc = exc.code
     if rc in (None, 0):
         _stamp_environment(getattr(doc_generate, "LAST_OUTPUT", None))
         wired = _add_wire_task(rest) if doc_type == "task" else False
@@ -3820,6 +3838,10 @@ def cmd_add(argv):
                   "— the scenario's first step logs in as "
                   "tenant_admin@acme_corporation.",
                   file=sys.stderr)
+            suggestion = _notify_suggestion(written)
+            if suggestion:
+                print(f"🔔 Tell the person who runs it:\n   {_ycmd(suggestion)}",
+                      file=sys.stderr)
         if doc_type == "skill":
             print("⚠️  Rebuild the skills bundle after filling in the skill body:",
                   file=sys.stderr)
@@ -3837,6 +3859,28 @@ def cmd_add(argv):
         print(rc, file=sys.stderr)
         return 1
     return rc
+
+def _notify_suggestion(generator_output):
+    """The ready-to-run notify command for the scenario the generator wrote.
+
+    The generator prints the path it wrote, one path per line. The last line
+    that names a file is the scenario, so the rule reads the output rather than
+    rebuilding the file name the generator chose.
+    """
+    if not generator_output:
+        return ""
+    import compass_notify
+    for line in reversed(generator_output.splitlines()):
+        shown = line.strip()
+        if not shown:
+            continue
+        candidate = Path(shown)
+        if not candidate.is_absolute():
+            candidate = PROJECT_ROOT / candidate
+        if candidate.is_file():
+            return compass_notify.notify_suggestion(candidate, PROJECT_ROOT)
+    return ""
+
 
 def _import_generator():
     """Import ores.codegen's doc_generate (needs pystache). Exit on failure."""
@@ -7849,6 +7893,9 @@ def main():
         sys.exit(doc_list.main(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "show":
         sys.exit(doc_show.main(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "notify":
+        import compass_notify
+        sys.exit(compass_notify.run(sys.argv[2:], PROJECT_ROOT, env_file=_resolved))
     if len(sys.argv) >= 2 and sys.argv[1] == "add":
         sys.exit(cmd_add(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "sprint":
@@ -8064,6 +8111,10 @@ def main():
                           help="List/filter docs (--regex/--tag/--type/--under/...); 'list --help' for filters")
     subparsers.add_parser("show",
                           help="Show one doc by UUID/prefix: metadata, blurb, in/out links")
+    subparsers.add_parser("notify",
+                          help="Tell a person about a screen: 'notify scenario <doc> "
+                               "--to <username@tenant>' raises the bell notification "
+                               "that links to their scenario")
     subparsers.add_parser("add",
                           help="Create a doc via ores.codegen (low-level scaffold); 'add --help' for usage")
     subparsers.add_parser("sprint",

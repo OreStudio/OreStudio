@@ -40,7 +40,7 @@ The design states the approach in its *File transfer* section.
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Review #4137, then move the storage routes onto the sink. |
+| Next          | Run the wrapper's transfer tests once the tree builds, then serve the download on B1. |
 | Last touched  | 2026-10-30                               |
 
 * Acceptance
@@ -67,6 +67,7 @@ The design states the approach in its *File transfer* section.
 | [[id:4DE53635-7236-40D7-A86F-26508A186245][Move the storage upload onto the stream]] | DONE | 2026-10-30 | 2026-10-30 | Write the upload through the body's sink to a part file the store names, and publish it by renaming it onto the object. |
 | [[id:266C40A0-CD75-4974-B54C-468BA5E4AE24][Prove the resident cost of an upload]] | STARTED | 2026-10-30 | | Measure the gateway's own resident memory across a 256 MiB upload, and run the grid wrapper's transfer tests against the streamed routes. |
 | [[id:9A622B67-34FA-4426-9526-508CFB7A690C][Serve the download from the file]] | BLOCKED | | | The download still builds the whole object in a response string. Serve it from the file with a fixed buffer, which needs the response streaming that increment B1 owns. |
+| [[id:9A1C38AC-48B2-4F25-905E-A3104FE461F2][Prove the transfer through the wrapper]] | BLOCKED | | | The grid wrapper moves every package through the storage routes. Run its transfer tests against the streamed upload, which needs a fleet and a tree that builds. |
 
 * Decisions
 

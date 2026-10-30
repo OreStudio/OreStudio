@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 9A1C38AC-48B2-4F25-905E-A3104FE461F2
+:END:
+#+title: Task: Prove the transfer through the wrapper
+#+description: The grid wrapper moves every package through the storage routes. Run its transfer tests against the streamed upload, which needs a fleet and a tree that builds.
+#+type: task
+#+level: s1
+#+filetags: :carry_a_large_body_without_holding_it:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: external
+#+blocked_since: 2026-10-31 00:40
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8550935B-A0F4-4BAD-95F3-D3E03B45E044][Carry a large body without holding it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The grid wrapper moves every package, input, output and log through the storage
+routes, and the upload now writes a part file and renames it. Nothing has run the
+wrapper against it: the measurement proves the session's cost, and the sink's tests
+prove the file protocol, but the path a real transfer takes is unproven.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BLOCKED                              |
+| Parent story | [[id:8550935B-A0F4-4BAD-95F3-D3E03B45E044][Carry a large body without holding it]] |
+| Now          | Waiting on a tree that builds and a fleet to run against. |
+| Waiting on   | =ores.trading='s generated batch header, which =ores.synthetic= does not compile without. |
+| Next         | Run the wrapper's transfer tests once the tree builds. |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- The grid wrapper's transfer tests pass against the streamed upload route.
+- A package upload through the wrapper arrives byte for byte, with the digest the
+  route answers.
+- A transfer the wrapper abandons leaves no object and no part file.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

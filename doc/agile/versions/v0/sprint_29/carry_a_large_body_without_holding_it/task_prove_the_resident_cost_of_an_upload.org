@@ -9,8 +9,6 @@
 #+owner: marco
 #+branch: feature/prove-the-resident-cost-of-an-upload
 #+pr: 4159
-#+blocked_on: review
-#+blocked_since: 2026-10-31 00:10
 #+created: 2026-10-30
 #+updated: 2026-10-30
 #+environment: clever_dijkstra
@@ -27,11 +25,11 @@ measures it, so nothing would notice if streaming regressed to buffering.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:8550935B-A0F4-4BAD-95F3-D3E03B45E044][Carry a large body without holding it]] |
-| Now          | The cost is measured: a 256 MiB upload moves the process by under half a megabyte. |
+| Now          | Nothing; #4159 is merged. |
 | Waiting on   | Nothing.                               |
-| Next         | Review, then run the wrapper's transfer tests when the tree builds. |
+| Next         | The wrapper run is its own task now. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -39,8 +37,8 @@ measures it, so nothing would notice if streaming regressed to buffering.
 - A test uploads 256 MiB and reads the gateway process's peak resident memory across
   the request.
 - The peak moves by less than 1 MiB.
-- The grid wrapper's transfer tests pass against the streamed routes. Not done yet:
-  they need a fleet and a tree that builds, so this stays open.
+- The grid wrapper's transfer tests pass against the streamed routes. Moved to
+  [[id:9A1C38AC-48B2-4F25-905E-A3104FE461F2][Prove the transfer through the wrapper]], which needs a fleet and a tree that builds.
 - The measurement names the commit it ran at.
 
 * Plan
@@ -107,3 +105,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+A 256 MiB upload moves the process's resident memory by 136 to 464 kB, against the
+megabyte the story allows, and the same test with a sink that keeps the body costs
+461 MB. The test measures the process, not the gateway alone, and it guards the
+session's read loop rather than the storage route: the wrapper run is what closes
+the second gap.

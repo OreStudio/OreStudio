@@ -359,6 +359,7 @@ describe('the blotter read', () => {
         expect(body.rows[1]).toMatchObject({
             instrument_type: 'Swap',
             instrument_type_name: 'Interest Rate Swap',
+            product_code: 'swap',
         });
     });
 

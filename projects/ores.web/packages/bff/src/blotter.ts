@@ -263,7 +263,10 @@ interface BlotterRow {
     readonly structure: string;
     readonly structure_reference: string;
     readonly instrument_type: string;
+    /** The instrument's own name, as a person reads it: a tooltip's text. */
     readonly instrument_type_name: string;
+    /** The product the type belongs to: swap, fx, bond, and the other families. */
+    readonly product_code: string;
     readonly book_id: string;
     readonly book_name: string;
     readonly counterparty_id: string;
@@ -332,6 +335,9 @@ export function registerBlotterRoutes(
                         text(row['description']) || humanise(text(row['code'])),
                     ] as const,
             ),
+        );
+        const productCodeOf = new Map(
+            types.map((row) => [text(row['code']), text(row['product_type'])] as const),
         );
 
         /* Which structure holds which trade. */
@@ -744,6 +750,10 @@ export function registerBlotterRoutes(
                             ? text(row['instrument_type'])
                             : (instrumentNameOf.get(text(row['instrument_type'])) ??
                               humanise(text(row['instrument_type']))),
+                    product_code:
+                        kind === 'structure'
+                            ? text(row['instrument_type'])
+                            : (productCodeOf.get(text(row['instrument_type'])) ?? ''),
                     book_id: text(row['book_id']),
                     book_name:
                         kind === 'structure'

@@ -43,6 +43,18 @@ test('the blotter reads trades and structures by book, and flattens to the legs'
     await expect(rows.first()).toBeVisible({ timeout: 20_000 });
     expect(await rows.count()).toBe(Math.min(nodeCount, 15));
 
+    // The instrument is the short product code, and the name it stands for is the
+    // cell's tooltip: hovering reveals it, which a screen reader reads too.
+    // The top list's columns: identifier, what, book, counterparty, date, state.
+    const what = page.locator('tbody tr').first().locator('td').nth(1);
+    const trigger = what.locator('span[tabindex="0"]').first();
+    const product = (await trigger.innerText()).trim();
+    expect(product).toMatch(/^[A-Z]{2,}$/);
+    await trigger.hover();
+    // The tooltip names the instrument in full: a phrase for a swap, the kind's
+    // name for a structure.
+    await expect(page.getByRole('tooltip').first()).not.toBeEmpty();
+
     // Flat is every trade: the structure column appears, and a leg names the
     // structure that holds it.
     await page.getByLabel('Flat').check();

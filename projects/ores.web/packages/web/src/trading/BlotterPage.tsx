@@ -26,6 +26,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { blotter, type BlotterNode, type BlotterRow, type BlotterView } from '../api/blotter.js';
 import { RecordList, type ListColumn, type ListSource } from '../refdata/RecordList.js';
 import { Button, Select, Tag } from '../ui/Primitives.js';
+import { Tooltip } from '../ui/Tooltip.js';
 import { bookPath, counterpartyPath, PATHS, tradePath } from '../shell/paths.js';
 import { useAreaParts } from '../shell/AreaTrail.js';
 
@@ -217,10 +218,25 @@ export function BlotterPage(): ReactNode {
             cell: (row) => row.structure_reference || '—',
         },
         {
+            /*
+             * The product a row belongs to, which is short enough to read down a
+             * column; the instrument's own name is the cell's tooltip, and holds
+             * the whole of it.
+             */
             id: 'what',
             header: t('trading.blotter.what'),
             sort: 'instrument_type',
-            cell: (row) => row.instrument_type_name || row.instrument_type || '—',
+            cell: (row) => {
+                const code = row.product_code || row.instrument_type;
+                if (code === '') {
+                    return '—';
+                }
+                return (
+                    <Tooltip text={row.instrument_type_name || row.instrument_type}>
+                        {code.toUpperCase()}
+                    </Tooltip>
+                );
+            },
         },
         {
             id: 'book',

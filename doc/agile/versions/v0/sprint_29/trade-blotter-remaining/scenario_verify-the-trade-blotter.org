@@ -194,3 +194,15 @@ This page documents a test scenario verifying [[id:5057B9A6-66F0-4E4E-967F-DF915
 |--------+-------|
 | Status |       |
 | Notes  |       |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

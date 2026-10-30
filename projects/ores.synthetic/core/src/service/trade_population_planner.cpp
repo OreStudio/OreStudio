@@ -867,7 +867,9 @@ construct_rate_batch(const domain::rate_terms& drawn,
                      const std::string& internal_identifier) {
     namespace tdom = ores::trading::domain;
 
-    const auto money = [](double value) { return tdom::decimal::from_double(value).value(); };
+    const auto money = [](double value) {
+        return tdom::decimal::from_double(value).value();
+    };
 
     tdom::rate_common_terms common;
     common.start_date = drawn.start_date;
@@ -1058,8 +1060,8 @@ rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
          * The rate family states its rows here, where it draws them, and the
          * plan carries no bag for it.
          */
-        entry.instruments = construct_rate_batch(
-            terms, entry.trade_type_code, slot, entry.internal_identifier);
+        entry.instruments =
+            construct_rate_batch(terms, entry.trade_type_code, slot, entry.internal_identifier);
 
         plan.slots.push_back(std::move(entry));
     }

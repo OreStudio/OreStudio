@@ -8,7 +8,7 @@
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
 #+branch: feature/make-the-parameter-data-model-the-source-of-valid-values-and-rules
-#+pr: 4090
+#+pr: 4102
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -34,11 +34,11 @@ parameter loses its set.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | The work is done, proven live, and the local gate is green. PR 4090 waits for review. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review, then merge.                    |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -362,6 +362,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4102][#4102]] | [agile] Close the parameter model task |
 | [[https://github.com/OreStudio/OreStudio/pull/4090][#4090]] | [reporting] Make the value set the one statement of a parameter's rule |
 
 * Review

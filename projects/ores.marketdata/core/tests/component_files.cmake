@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "adapter_eventing_integration_tests.cpp"
     "classification_series_classifier_tests.cpp"
     "composite_eventing_integration_tests.cpp"
     "composite_input_eventing_integration_tests.cpp"
@@ -70,6 +71,7 @@ set(files
     "service_series_tick_reader_tests.cpp"
     "subscription_eventing_integration_tests.cpp"
     "subscription_interval_eventing_integration_tests.cpp"
+    "supplier_eventing_integration_tests.cpp"
     "terms_provider_terms_tests.cpp"
     "vendor_notation_catalogue_tests.cpp"
     "vendor_notation_corpus_tests.cpp"

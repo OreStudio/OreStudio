@@ -47,6 +47,7 @@ set(files
     "curve_pillar_reader.cpp"
     "curve_republish_resolver.cpp"
     "main.cpp"
+    "messaging/adapter_event_registrar.cpp"
     "messaging/composite_event_registrar.cpp"
     "messaging/composite_input_event_registrar.cpp"
     "messaging/curve_publish_event_registrar.cpp"
@@ -64,6 +65,7 @@ set(files
     "messaging/series_classification_rule_event_registrar.cpp"
     "messaging/subscription_event_registrar.cpp"
     "messaging/subscription_interval_event_registrar.cpp"
+    "messaging/supplier_event_registrar.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -101,6 +103,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/config/parser.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/config/parser_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/adapter_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/adapter_status_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/approval_gated_curve_publish_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/bill_handler.hpp"
@@ -124,5 +127,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/series_classification_rule_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/subscription_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/subscription_interval_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/supplier_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/ores.marketdata.service.hpp"
 )

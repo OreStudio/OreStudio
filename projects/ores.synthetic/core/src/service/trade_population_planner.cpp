@@ -389,11 +389,10 @@ construct_commodity_batch(const std::string& trade_type_code,
         }
         if (type == "CommodityOption" || type == "CommodityDigitalOption" ||
             type == "CommodityStrikeResettableOption") {
-            tdom::commodity_option_terms terms{
-                common,
-                drawn.option_type,
-                money(drawn.strike_price).value_or(tdom::decimal{}),
-                drawn.exercise_type};
+            tdom::commodity_option_terms terms{common,
+                                               drawn.option_type,
+                                               money(drawn.strike_price).value_or(tdom::decimal{}),
+                                               drawn.exercise_type};
             if (type == "CommodityOption")
                 return {tdom::construct_commodity_option(terms), {}};
             if (type == "CommodityDigitalOption")
@@ -410,8 +409,7 @@ construct_commodity_batch(const std::string& trade_type_code,
                 drawn.averaging_end_date};
             return {tdom::construct_commodity_asian_option(terms), {}};
         }
-        if (type == "CommodityAveragePriceOption" ||
-            type == "CommodityDigitalAveragePriceOption") {
+        if (type == "CommodityAveragePriceOption" || type == "CommodityDigitalAveragePriceOption") {
             tdom::commodity_average_price_option_terms terms{
                 common,
                 drawn.option_type,
@@ -467,8 +465,7 @@ construct_commodity_batch(const std::string& trade_type_code,
         }
         if (type == "CommodityVarianceSwap" || type == "CommodityPairwiseVarianceSwap" ||
             type == "CommodityBasketVarianceSwap") {
-            tdom::commodity_variance_swap_terms terms{common,
-                                                      drawn.variance_strike.value_or(0.0)};
+            tdom::commodity_variance_swap_terms terms{common, drawn.variance_strike.value_or(0.0)};
             if (type == "CommodityVarianceSwap")
                 return {tdom::construct_commodity_variance_swap(terms), {}};
             if (type == "CommodityPairwiseVarianceSwap")
@@ -870,7 +867,9 @@ construct_rate_batch(const domain::rate_terms& drawn,
                      const std::string& internal_identifier) {
     namespace tdom = ores::trading::domain;
 
-    const auto money = [](double value) { return tdom::decimal::from_double(value).value(); };
+    const auto money = [](double value) {
+        return tdom::decimal::from_double(value).value();
+    };
 
     tdom::rate_common_terms common;
     common.start_date = drawn.start_date;
@@ -1061,8 +1060,8 @@ rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
          * The rate family states its rows here, where it draws them, and the
          * plan carries no bag for it.
          */
-        entry.instruments = construct_rate_batch(
-            terms, entry.trade_type_code, slot, entry.internal_identifier);
+        entry.instruments =
+            construct_rate_batch(terms, entry.trade_type_code, slot, entry.internal_identifier);
 
         plan.slots.push_back(std::move(entry));
     }

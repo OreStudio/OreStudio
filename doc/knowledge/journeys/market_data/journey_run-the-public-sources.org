@@ -129,8 +129,8 @@ example.
 | Word | Meaning | Example |
 |------+---------+---------|
 | /Publisher/ | Owns the ids, the credit and the terms. | =ecb=, =imf=, =ust=, =bloomberg= for its own data |
-| /Supplier/ | Who we contract with and connect to. | =frankfurter=, =bloomberg=, =lseg=, =ecb-data-portal=, =fred= |
-| /Adapter/ | Code module that speaks one supplier protocol. | =frankfurter= 1.4.0 |
+| /Supplier/ | Who we contract with and connect to. | =frankfurter=, =synthetic= |
+| /Adapter/ | Code class that speaks one supplier protocol. | =frankfurter= 0.0.29, =synthetic= 0.0.29 |
 | /Session/ | One configured adapter: supplier, environment, endpoint, credential, settings. | =frankfurter-eu= (production) |
 | /Environment/ | Where a session runs. | =production=, =test=, =dr=, =simulated= |
 | /Service/ | What a session offers; it decides the feed's shape. | =real_time=, =delayed=, =end_of_day=, =reference=, =historical= |

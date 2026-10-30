@@ -70,6 +70,13 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.parameter_value_domains', 16);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.parameters', 17);
 
+    -- The adapter and supplier catalogues. Like the providers, they are
+    -- installation data: the system tenant owns them, every tenant reads them,
+    -- and nobody adds a row from a screen. A session configures one adapter at
+    -- one supplier, so the two publish before anything that names them.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'marketdata.adapters', 18);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'marketdata.suppliers', 19);
+
     -- =============================================================================
     -- Base System Bundle Members
     -- =============================================================================

@@ -22,6 +22,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/version/version.hpp"
 #include <algorithm>
 #include <span>
 
@@ -68,6 +69,8 @@ void simulator_adapter::stop() {
 simulator_adapter_messaging::adapter_announce_request simulator_adapter::announcement() const {
     simulator_adapter_messaging::adapter_announce_request request;
     request.adapter_id = adapter_id_;
+    request.adapter_code = "synthetic";
+    request.module_version = ORES_VERSION;
     request.provider_code = provider_code_;
     request.universe = runner_.universe();
     return request;

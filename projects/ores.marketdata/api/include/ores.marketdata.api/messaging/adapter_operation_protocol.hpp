@@ -62,6 +62,8 @@ struct rejected_id {
  */
 struct adapter_announce_request {
     std::string adapter_id;
+    std::string adapter_code;
+    std::string module_version;
     std::string provider_code;
     std::vector<vendor_id> universe;
 };
@@ -130,6 +132,8 @@ struct adapter_heartbeat {
  */
 struct adapter_status {
     std::string adapter_id;
+    std::string adapter_code;
+    std::string module_version;
     std::string provider_code;
     std::string state;
     std::chrono::system_clock::time_point last_heartbeat_at;

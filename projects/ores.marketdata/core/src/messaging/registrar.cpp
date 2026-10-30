@@ -285,6 +285,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
         ores::service::messaging::step_routes routes;
         routes.on(publish_market_data_observations_from_dq_request::nats_subject,
                   [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
+        routes.on(publish_adapters_from_dq_request::nats_subject,
+                  [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
+        routes.on(publish_suppliers_from_dq_request::nats_subject,
+                  [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
         subs.push_back(ores::service::messaging::serve_step_commands(nats, queue, routes));
     }
 

@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "adapter_commands_tests.cpp"
     "composite_commands_tests.cpp"
     "composite_input_commands_tests.cpp"
     "curve_publish_commands_tests.cpp"
@@ -42,4 +43,5 @@ set(files
     "series_classification_rule_commands_tests.cpp"
     "subscription_commands_tests.cpp"
     "subscription_interval_commands_tests.cpp"
+    "supplier_commands_tests.cpp"
 )

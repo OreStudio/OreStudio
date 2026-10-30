@@ -961,7 +961,7 @@ function pillarFields(
     });
 }
 
-/** One pillar in words, for the title of its dialog and its history entry. */function pillarName(
+/** One pillar in words, for the title of its dialog and its history entry. */ function pillarName(
     t: (key: string, values?: Readonly<Record<string, string>>) => string,
     row: RecordRow,
 ): string {

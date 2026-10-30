@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-641 tables in 21 groups.
+645 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -251,6 +251,7 @@ end note
 entity "dq_staging" as dq_staging {
   ores_dq_account_contact_informations_artefact_tbl
   ores_dq_accounts_artefact_tbl
+  ores_dq_adapters_artefact_tbl
   ores_dq_asset_classes_artefact_tbl
   ores_dq_asset_measures_artefact_tbl
   ores_dq_average_ois_conventions_artefact_tbl
@@ -375,6 +376,7 @@ entity "dq_staging" as dq_staging {
   ores_dq_reporting_regimes_artefact_tbl
   ores_dq_risk_report_configs_artefact_tbl
   ores_dq_supervisory_bodies_artefact_tbl
+  ores_dq_suppliers_artefact_tbl
   ores_dq_swap_conventions_artefact_tbl
   ores_dq_swap_index_conventions_artefact_tbl
   ores_dq_swaption_volatility_configs_artefact_tbl
@@ -395,7 +397,7 @@ entity "dq_staging" as dq_staging {
 }
 note bottom of dq_staging
 Data Staging
-143 tables — ores_schema.dq_staging.puml
+145 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {
@@ -708,6 +710,7 @@ Database Infrastructure
 end note
 
 entity "marketdata" as marketdata {
+  ores_marketdata_adapters_tbl
   ores_marketdata_composite_inputs_tbl
   ores_marketdata_composites_tbl
   ores_marketdata_curve_publishes_tbl
@@ -730,12 +733,13 @@ entity "marketdata" as marketdata {
   ores_marketdata_series_classification_rules_tbl
   ores_marketdata_subscription_intervals_tbl
   ores_marketdata_subscriptions_tbl
+  ores_marketdata_suppliers_tbl
   ores_marketdata_tick_coords_tbl
   ores_marketdata_ticks_tbl
 }
 note bottom of marketdata
 Market Data (Quotes, Fixings, Series)
-24 tables — ores_schema.marketdata.puml
+26 tables — ores_schema.marketdata.puml
 end note
 
 entity "analytics" as analytics {

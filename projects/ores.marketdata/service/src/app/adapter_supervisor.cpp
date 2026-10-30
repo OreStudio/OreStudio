@@ -21,6 +21,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.api/domain/adapter_subjects.hpp"
 #include "ores.marketdata.api/domain/provider.hpp"
+#include "ores.marketdata.core/repository/adapter_repository.hpp"
 #include "ores.marketdata.core/repository/live_tenant_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_source_repository.hpp"
@@ -49,6 +50,8 @@ constexpr auto demand_retry_delay = std::chrono::seconds(2);
 struct adapter_supervisor::snapshot {
     demand_catalogue catalogue;
     std::set<std::string> providers;
+    /// The adapter modules the catalogue defines. A module outside it is refused.
+    std::set<std::string> adapter_codes;
     /// The vendor ids of the catalogue as provider, scheme, id and field, for the universe check.
     std::set<std::tuple<std::string, std::string, std::string, std::string>> ids;
     /// The routes that name each source, by source name. A route that names no catalogue
@@ -88,6 +91,8 @@ void adapter_supervisor::start() {
 void adapter_supervisor::refresh() {
     const auto system_ctx = ores::database::service::tenant_context::with_system_tenant(ctx_);
     auto next = std::make_shared<snapshot>();
+    for (const auto& adapter : repository::adapter_repository{}.read_latest(system_ctx))
+        next->adapter_codes.insert(adapter.code);
     next->catalogue.providers = repository::provider_repository{}.read_latest(system_ctx);
     for (const auto& provider : next->catalogue.providers)
         next->providers.insert(provider.code);
@@ -151,6 +156,9 @@ adapter_supervisor::on_announce(const messaging::adapter_announce_request& reque
                                 std::chrono::system_clock::time_point now) {
     const auto snap = current();
     universe_check check;
+    check.adapter_known = [&](const std::string& adapter) {
+        return snap->adapter_codes.contains(adapter);
+    };
     check.provider_known = [&](const std::string& provider) {
         return snap->providers.contains(provider);
     };

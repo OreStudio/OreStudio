@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 143
+Tables: 145
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -83,6 +83,26 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_accounts_artefact_tbl
     An account that can authenticate against the system: one row per user, service, algorithm or LLM identity, carrying the name it signs in with, the email address and the optional profile and reporting links. The table is bi-temporal and audited (see projects/ores.sql/create/iam/iam_accounts_create.sql): it carries version, the four audit columns and the valid_from/valid_to pair with the GIST exclusion, so the model takes the ordinary audited shape and needs no shape flag. The secret material lives apart, in [[id:59A90BD6-3B23-41BD-92E5-0FFF9875B3D3][ores.iam.account_credential]]. Held here, a profile write replaced the whole row, and the column the domain type could not carry came back empty. Every column this model declares reaches the domain type, so a whole-row write is lossless, and no write through this entity can touch a credential. The table is a composite parent: ores_iam_accounts_touch_version_fn lets a child entity (account contact information, party association) bump this account's own version when the child is written. The model declares :generate_touch_function: true, which renders that function under its existing name rather than leaving it hand-written. The model describes the table and nothing else. image_id and reports_to_account_id are nullable UUID soft references. The hand-written domain struct represented both as a plain boost::uuids::uuid with a nil sentinel, on the claim that a second std::optional<boost::uuids::uuid> member corrupts reflect-cpp aggregate serialisation for multi-element vectors. Re-verified under the generated estate: all three nullable UUIDs are modelled as std::optional<boost::uuids::uuid>, and the api suite's multi-element JSON and table tests plus the core repository's five-account round trip pass, so the workaround is not needed here. The generated read surface is live, and it does not collide with the hand-written one. The hand-written account_operations_protocol.hpp owns the writes, iam.v1.accounts.{save,delete,update,lock,unlock,change-password,reset-password,select-party,set-default-party,switch-party,update-email,publish-from-dq}, and the generated account_protocol.hpp owns the reads, iam.v1.accounts.list and iam.v1.accounts.get, with the version reads alongside them. Both registrars are composed in ores.iam/core/src/messaging/registrar.cpp. This entity sets :read_only: true, so the generated half carries no write verb and the split falls out of the flag rather than out of a suppression. The row holds the account holder's own name and mail address, so the generated reads are not open to every signed-in caller: the generated iam.v1.accounts.list and iam.v1.accounts.get handlers require iam::accounts:read before they serve anything, as every generated read requires its resource's read code. See [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]. Two behavioural facets are switched off, each with a reason: - The entity's CRUD handler and sub-registrar, because the hand-written account_operations_handler already owns the write verbs. - The generated CRUD service, because the hand-written account_operations_service is the authentication surface (login, lock, unlock, password change and reset, party selection, service-credential check) and the generated service's get_account_history(id) collides in name and signature with the hand-written get_account_history(username) while meaning a different read. - Artefact Table
+    end note
+
+    entity ores_dq_adapters_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * module_version : text
+        * description : text
+        * process : text
+        * asset_classes : text
+        * services : text
+        * configuration_schema : text
+        * display_order : integer
+    }
+
+    note right of ores_dq_adapters_artefact_tbl
+    The catalogue of adapter modules. An adapter is a class the release defines; a person configures a session of it and then the feeds that come off the session. The class announces itself when it comes up, and that announce is what marks the module installed on this installation, so an installation that never runs a module never claims it. The catalogue states the module's version, the asset classes it can serve, the services it offers, and the configuration a session must provide, so the screen can build the session form from data instead of from code. The system tenant owns the rows. Every tenant reads them and only the system tenant writes them. - Artefact Table
     end note
 
     entity ores_dq_asset_classes_artefact_tbl  #F7E5FF {
@@ -2617,6 +2637,24 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_supervisory_bodies_artefact_tbl
     Contains a code representing a supervisory body that may be supervising a transaction. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
+    end note
+
+    entity ores_dq_suppliers_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * kind : text
+        * description : text
+        * contract_reference : text
+        * support : text
+        * display_order : integer
+    }
+
+    note right of ores_dq_suppliers_artefact_tbl
+    The catalogue of delivery parties. A publisher owns the data; a supplier is who we connect to for it. The release holds two: Frankfurter, an aggregator that delivers many publishers' rates over one endpoint, and the synthetic simulator the platform runs itself. A supplier has sessions, and a session is one configured adapter at that supplier. The system tenant owns the rows. Every tenant reads them and only the system tenant writes them. - Artefact Table
     end note
 
     entity ores_dq_swap_conventions_artefact_tbl  #F7E5FF {

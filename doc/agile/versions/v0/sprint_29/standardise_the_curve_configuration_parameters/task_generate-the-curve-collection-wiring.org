@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/generate-the-curve-collection-wiring
-#+pr: 4111
+#+pr: 4113
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -118,6 +118,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4113][#4113]] | [agile] Close the curve wiring task |
 | [[https://github.com/OreStudio/OreStudio/pull/4111][#4111]] | [web] Read the curve collections from the projection |
 
 * Review

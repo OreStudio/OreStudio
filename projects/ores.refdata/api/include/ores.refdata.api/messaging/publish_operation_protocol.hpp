@@ -271,11 +271,13 @@ struct publish_commodities_from_dq_request {
      */
     static constexpr bool requires_session = true;
 };
+
 /**
  * @brief Publishes the legal entities a tenant may reference.
  */
 struct publish_legal_entities_from_dq_request {
-    static constexpr std::string_view nats_subject = "refdata.v1.ops.publish_legal_entities_from_dq";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.ops.publish_legal_entities_from_dq";
     /**
      * @brief Whether the caller must have established a session first.
      *

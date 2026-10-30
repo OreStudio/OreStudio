@@ -783,8 +783,9 @@ package "marketdata" #E3F2FD {
 
     entity ores_marketdata_series_classification_rules_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * series_type : text <<PK>>
-        * metric : text <<PK>>
+        * instrument : text <<PK>>
+        * quote : text <<PK>>
+        * key_kind : text <<PK>>
         --
         * version : integer
         * asset_class_source : text
@@ -804,30 +805,42 @@ package "marketdata" #E3F2FD {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Series Classification Rule Table
-    The taxonomy rule for an ORE market data series, one row per series
-    type and metric. An import reads the whole table once, builds a
-    classifier from it, and asks that classifier for the asset classes and
-    the series subclass of every key it meets.
-    The table replaces a compiled C++ map, so the taxonomy is now managed
-    like every other catalogue: a type ORE adds later, or one a user
-    brings, is an inserted row rather than a rebuild. This matters because
-    an import aborts on a type it cannot classify, so a compiled table
-    makes every new ORE type a code change.
-    The class codes name rows in refdata.asset_class_code and the
-    subclass codes name rows in refdata.series_subclass_code, and the
-    insert trigger checks both against those catalogues.
-    Two things a single class column could not hold, and how this table
-    holds them:
-    - A pairwise correlation relates two classes and belongs to both, so
-    neither is a property of the type. Its row names no class at all and
-    its classes are read from the two operands of the key, which is what
-    asset_class_source records.
-    - GENERIC-MD is a wrapper whose metric slot names the instrument
-    inside it, so its rule is keyed by the metric rather than by the type
-    alone.
-    The reader rejects an empty table, because an empty table aborts the
-    first import that reads it and the message should name the table rather
-    than the first series it met.
+    The taxonomy rule for a market series, one row per identity the runtime
+    classifies. The runtime reads the whole table once, builds a classifier from it,
+    and asks that classifier for the asset classes and the series subclass of every
+    series it creates.
+    The table replaces a compiled C++ map, so the taxonomy is managed like every
+    other catalogue: an instrument a corpus adds later, or one a user brings, is an
+    inserted row rather than a rebuild. This matters because an ingest that cannot
+    classify a series it must create aborts on it, so a compiled table makes every
+    new instrument a code change.
+    The key is the oresmd identity and not an ORE key. Two kinds of identity reach
+    this table, and key_kind says which a row is keyed by:
+    - datum, keyed by instrument -- the text the URI writes under
+    instrument, such as ir_swap or discount -- and by quote, the text it
+    writes under quote, or the empty string for a rule that applies to every
+    quote of its instrument. Most instruments classify the same way whatever their
+    quote carries, so their row holds the empty string; a lookup tries the exact
+    quote first and falls back to the empty one.
+    - index, keyed by instrument too, which for this kind holds the index
+    family's oresmd name or the empty string for every family. A fixing series is
+    an index and not a datum, so it is keyed by the index's own vocabulary.
+    asset_class_source says where a row's classes come from:
+    - literal names its class in asset_class_code.
+    - correlation_operands reads the classes from the two operand fields of a
+    correlation datum, because a pairwise correlation belongs to the two classes
+    it relates and to no class of its own.
+    - index_authority reads the class from the index family's schema row, whose
+    asset authority names the market-data namespace the index is written in, and
+    ores.refdata.asset_class_catalogue maps that authority onto a refdata class.
+    One row serves every index family, and a family the catalogue maps to no class
+    leaves the class list empty rather than mis-classing the series.
+    The class codes name rows in refdata.asset_class_code and the subclass codes
+    name rows in refdata.series_subclass_code, and the insert trigger checks both
+    against those catalogues.
+    The reader rejects an empty table, because an empty table aborts the first
+    ingest that reads it and the message should name the table rather than the first
+    series it met.
     end note
 
     entity ores_marketdata_subscription_intervals_tbl <<temporal>> #C6F0D8 {

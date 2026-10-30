@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: refdata
-Tables: 168
+Tables: 170
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -2509,6 +2509,37 @@ package "refdata" #FFF3E0 {
     corpus yield curves write it empty, and the export writes them back empty.
     end note
 
+    entity ores_refdata_curve_configuration_columns_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * entity_name : text
+        * column_name : text
+        * table_name : text
+        * schema_name : text
+        * xpath : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_configuration_columns_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Configuration Column Table
+    A curve configuration is stored one family table per section, and each column of
+    those tables holds one leaf of the ORE document. This table names that leaf, so
+    the store can check a value against the set the leaf accepts without holding a
+    copy of the projection in a trigger body.
+    The rows are generated from the same projection and schema that draw the page's
+    columns, so the map and the screen cannot disagree.
+    end note
+
     entity ores_refdata_curve_configuration_sections_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -4105,6 +4136,7 @@ package "refdata" #FFF3E0 {
         * start_tenor_code : text
         * end_tenor_code : text
         * curve_role_code : text
+        * market_series_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4130,6 +4162,15 @@ package "refdata" #FFF3E0 {
     columns exactly -- tenor validation happens through the
     tenor_resolution machinery at the application layer, not a
     per-consumer DB-level FK.
+    The pillar names the market series it reads, as market_series_id: a
+    soft reference to ores.marketdata.market_series, per
+    [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market
+    series it reads]]. The dependency is stated where a person reads it,
+    and a pillar can read any series the party holds: a synthetic feed's,
+    a vendor's, an official fixing's, or one seeded for a scenario.
+    Only the series is named. The term of the point a pillar reads stays
+    derived, because the pillar's end tenor and the parent config's tenor
+    convention are what say where the point falls.
     end note
 
     entity ores_refdata_ledger_feed_types_tbl <<temporal>> #C6F0D8 {
@@ -4193,6 +4234,45 @@ package "refdata" #FFF3E0 {
     outside codegen; the backend followed to match, same direction as
     Book/BusinessCentre's own moves to ores.refdata, and the same move
     floating_index_type made alongside this one.
+    end note
+
+    entity ores_refdata_legal_entities_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * lei : text <<PK>>
+        --
+        * version : integer
+        * legal_name : text
+          jurisdiction : text
+          entity_status : text
+          entity_category : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_legal_entities_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Legal Entity Table
+    The legal entities a trade may reference, keyed by LEI. A credit trade states
+    the legal entity its risk is on, and until now that reference was a string a
+    caller typed: a credit curve named ACME in an engine document and an LEI were
+    the same column, so nothing could be joined to either.
+    The LEI is the key because it is the identifier the market uses and the one the
+    DQ dataset carries. A published dataset of 38,000 entities becomes readable by
+    every party through this table, which is what world data means: a legal entity
+    is not one tenant's private row.
+    The name, the jurisdiction and the status travel with the entity because they
+    are facts about it, and a screen that shows only an LEI shows nothing a person
+    can read.
+    This model holds the vocabulary only. Which entity a given trade references,
+    and whether that reference is an LEI or an internal identifier, is the trade's
+    statement and lives on the trade.
     end note
 
     entity ores_refdata_local_jurisdictions_tbl <<temporal>> #C6F0D8 {

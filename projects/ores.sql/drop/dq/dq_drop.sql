@@ -256,3 +256,4 @@
 \ir ./dq_todays_market_configurations_artefact_drop.sql
 \ir ./dq_todays_market_configuration_bindings_artefact_drop.sql
 \ir ./dq_report_configurations_artefact_drop.sql
+\ir ./dq_legal_entities_artefact_drop.sql

@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/generate-codecs-for-ores-dq-and-switch-the-wire-codec
-#+pr:
+#+pr: 4083
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -200,7 +200,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4083][#4083]] | [codegen] Generate each dq type's wire codec and prove it against reflect-cpp |
 
 * Review
 

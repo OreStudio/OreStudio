@@ -279,7 +279,9 @@ void state_bond_security(const domain::bond_terms& terms,
                          const std::string& currency,
                          ores::trading::domain::instrument_batch& batch) {
     namespace tdom = ores::trading::domain;
-    const auto money = [](double value) { return tdom::decimal::from_double(value).value(); };
+    const auto money = [](double value) {
+        return tdom::decimal::from_double(value).value();
+    };
 
     tdom::bond_issue issue;
     issue.issue_id = terms.issue_id;
@@ -1526,8 +1528,8 @@ std::string_view credit_trade_planner::asset_class_code() const {
  * to each product's constructor lives here, beside the drawing, and not in the
  * writer: the plan carries the row and the writer persists it.
  */
-ores::trading::domain::credit_instrument
-construct_credit_row(const domain::credit_terms& drawn, const std::string& trade_type_code) {
+ores::trading::domain::credit_instrument construct_credit_row(const domain::credit_terms& drawn,
+                                                              const std::string& trade_type_code) {
     namespace tdom = ores::trading::domain;
     tdom::credit_common_terms terms;
     terms.trade_type_code = trade_type_code;
@@ -1642,15 +1644,15 @@ const domain::equity_underlying_reference& equity_for(const domain::trade_genera
  * draws to each product's constructor lives here, beside the drawing, and not
  * in the writer: the plan carries the rows and the writer persists them.
  */
-ores::trading::domain::instrument_batch
-construct_equity_batch(const domain::equity_terms& drawn, const std::string& trade_type_code) {
+ores::trading::domain::instrument_batch construct_equity_batch(const domain::equity_terms& drawn,
+                                                               const std::string& trade_type_code) {
     namespace tdom = ores::trading::domain;
     ores::trading::domain::instrument_batch batch;
     const auto money = [](double value) {
         return ores::utility::decimal::decimal::from_double(value).value();
     };
-    const auto maybe_money = [&money](std::optional<double> value)
-        -> std::optional<ores::utility::decimal::decimal> {
+    const auto maybe_money =
+        [&money](std::optional<double> value) -> std::optional<ores::utility::decimal::decimal> {
         if (!value.has_value())
             return std::nullopt;
         return money(*value);
@@ -1784,9 +1786,8 @@ construct_equity_batch(const domain::equity_terms& drawn, const std::string& tra
         batch.equity_forward_instruments.push_back(row);
     } else if (type == "EquitySwap" || type == "EquityWorstOfBasketSwap") {
         const auto return_type = drawn.return_type.empty() ? "Price" : drawn.return_type;
-        const auto payment_frequency = drawn.payment_frequency_code.empty() ?
-                                           "Quarterly" :
-                                           drawn.payment_frequency_code;
+        const auto payment_frequency =
+            drawn.payment_frequency_code.empty() ? "Quarterly" : drawn.payment_frequency_code;
         auto basket = std::vector<ores::trading::domain::equity_basket_member_terms>{};
         for (const auto& member : drawn.basket) {
             ores::trading::domain::equity_basket_member_terms terms;
@@ -1872,8 +1873,7 @@ construct_equity_batch(const domain::equity_terms& drawn, const std::string& tra
                     drawn.fixing_frequency.empty() ? "Daily" : drawn.fixing_frequency;
                 terms.long_short = drawn.long_short;
                 terms.knock_out_level = maybe_money(drawn.knock_out_level);
-                terms.payoff_type =
-                    drawn.payoff_type.empty() ? "Accumulator" : drawn.payoff_type;
+                terms.payoff_type = drawn.payoff_type.empty() ? "Accumulator" : drawn.payoff_type;
                 terms.range_bounds = bounds;
                 return ores::trading::domain::construct_equity_accumulator(terms);
             }
@@ -1888,8 +1888,7 @@ construct_equity_batch(const domain::equity_terms& drawn, const std::string& tra
                 drawn.fixing_frequency.empty() ? "Daily" : drawn.fixing_frequency;
             terms.long_short = drawn.long_short;
             terms.knock_out_level = maybe_money(drawn.knock_out_level);
-            terms.payoff_type =
-                drawn.payoff_type.empty() ? "Accumulator" : drawn.payoff_type;
+            terms.payoff_type = drawn.payoff_type.empty() ? "Accumulator" : drawn.payoff_type;
             terms.target_amount = money(drawn.target_amount.value_or(0.0));
             terms.target_type = drawn.target_type;
             terms.range_bounds = bounds;

@@ -99,8 +99,9 @@ std::vector<party_demand> compute_party_demand(const demand_catalogue& catalogue
             if (items != by_item.end()) {
                 std::set<std::string> wanted;
                 const auto restricted =
-                    policy.requirements ? policy.requirements(route.party_id, route.publisher_code) :
-                                          std::nullopt;
+                    policy.requirements ?
+                        policy.requirements(route.party_id, route.publisher_code) :
+                        std::nullopt;
                 if (restricted) {
                     for (const auto& uri : *restricted) {
                         wanted.insert(uri);

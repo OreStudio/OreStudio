@@ -80,7 +80,7 @@ struct app_demand_calculator_world {
         r.id = gen();
         r.party_id = party;
         r.publisher_code = source.publisher_code;
-    r.asset_class = "fx";
+        r.asset_class = "fx";
         r.feed_id = source.id;
         c.routes.push_back(r);
         if (subscribed) {

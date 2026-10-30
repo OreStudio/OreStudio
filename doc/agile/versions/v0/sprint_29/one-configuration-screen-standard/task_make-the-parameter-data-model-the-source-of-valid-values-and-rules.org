@@ -34,11 +34,11 @@ parameter loses its set.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | The work is done, proven live, and the local gate is green. PR 4090 waits for review. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review, then merge.                    |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance

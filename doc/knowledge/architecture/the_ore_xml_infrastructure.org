@@ -26,8 +26,8 @@ The three layers:
 
 The notes:
 
-- [[id:][A projection reads one ORE document family]]
-- [[id:][An ORE document becomes rows in three steps]]
-- [[id:][Rows become an ORE document on the way out]]
-- [[id:][A value set states a parameter's rule]]
-- [[id:][The tables that map ORE XML]]
+- [[id:9697F09E-441A-4B51-869E-FC59433EEA1E][A projection reads one ORE document family]]
+- [[id:948DAC44-404D-4B70-A8FC-3E9D4C05F72D][An ORE document becomes rows in three steps]]
+- [[id:FB734007-5AB3-41D0-8F94-4A37584FE049][Rows become an ORE document on the way out]]
+- [[id:D5FFD498-A6E9-45AA-B80D-E16E3A432BD0][A value set states a parameter's rule]]
+- [[id:8E71C928-6618-455F-AECA-102AACB07883][The tables that map ORE XML]]

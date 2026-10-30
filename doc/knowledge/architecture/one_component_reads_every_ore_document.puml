@@ -1,0 +1,52 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title One import: the XML is read once, and only rows cross the component boundary
+
+actor "Report author" as author
+participant "ores.ore\nrun_configuration_handler" as handler
+participant "ores.ore\nrun_configuration_operations" as ops
+participant "projection\nread / map" as proj
+queue "NATS" as bus
+participant "ores.refdata\nconfiguration_document_handler" as h
+participant "curve_configuration\n_document_service" as svc
+participant "entity mapper" as mapper
+database "ores_refdata_*_configs_tbl" as db
+
+author -> handler : import a report's ORE input
+handler -> handler : start a workflow, answer at once
+handler -> ops : import_run(report definition, the files)
+ops -> proj : read(curveconfig.xml)
+proj --> ops : typed document, renderings as written
+ops -> proj : map(document)
+proj --> ops : rows
+ops -> bus : save_curve_configuration_document_request
+bus -> h : authorise refdata::curve_configurations:write
+h -> svc : save(document)
+svc -> mapper : domain row to entity
+mapper -> mapper : rendering to stored form
+mapper -> db : insert
+db --> svc : accepted, or the value set's name in the error
+
+note over proj
+  Nothing in ores.ore knows a table, and
+  nothing in refdata knows an element.
+end note
+
+@enduml

@@ -48,6 +48,17 @@ schema and an =xpath=. =ores_reporting_ore_parameter_vocabularies_tbl= (4) maps
 a schema and an element to a value set. The first two carry the element
 implicitly in the =xpath=, the third names it, and only the third names a set.
 
+Only the first two are read at runtime. Both guards resolve a set by joining
+the map to the parameter contract on =(schema_name, xpath)= and the contract to
+the setting links on =(scope, name)=
+(=projects/ores.sql/create/refdata/refdata_curve_configuration_columns_validate_create.sql:43=,
+=refdata_convention_terms_validate_create.sql:51=). Nothing reads the
+vocabularies table: =grep -rln "ore_parameter_vocabularies" --include=*.cpp
+--include=*.hpp --include=*.ts --include=*.tsx projects/ apps/= returns nothing.
+So the third is not a rival authority, it is a statement with no enforcer. The
+consolidation either makes it the map the guards read, or removes it; leaving
+it as a row nobody consults is the one outcome that does not finish the task.
+
 ** Write the one map
 
 Key it by the ORE element: =(schema, element)=. Attach the projection columns

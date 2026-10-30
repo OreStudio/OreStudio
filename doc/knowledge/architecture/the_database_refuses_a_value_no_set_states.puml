@@ -1,0 +1,53 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title One verdict, reached from every writer
+
+actor "shell, screen or job" as caller
+participant "service or repository" as svc
+database "the table storing the value" as db
+participant "the family's trigger function" as fn
+participant "ores_reporting_value_in_set_fn\n(security definer)" as verdict
+database "the value set tables\n(system tenant)" as sets
+
+caller -> svc : write a value
+svc -> db : insert or update
+db -> fn : before insert or update, per row
+fn -> verdict : is v in set X?
+verdict -> sets : read the rule
+note right of verdict
+  A definer function, so the read does not meet
+  row level security: a tenant caller reading the
+  sets itself would see none and find no rule.
+end note
+sets --> verdict : source_kind, bounds, pattern, values
+verdict --> fn : in set, or not
+fn --> db : allow, or raise naming the set and the value
+db --> svc : the write, or the error
+svc --> caller : the outcome
+
+note over caller
+  The engine settings proposal service asks
+  ores_reporting_setting_value_verdict_fn before a
+  person is asked to sign, so a proposal nobody
+  could apply is refused at the desk and not at the
+  trigger.
+end note
+
+@enduml

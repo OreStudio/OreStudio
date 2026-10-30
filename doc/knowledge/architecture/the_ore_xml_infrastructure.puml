@@ -1,0 +1,78 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Where an ORE document stops, and what each component owns on either side
+
+skinparam componentStyle rectangle
+left to right direction
+
+file "One ORE input\nore.xml\nconventions.xml\ncurveconfig.xml\ntodaysmarket.xml\npricingengine.xml" as input
+
+package "ores.ore: the only code that parses or writes ORE XML" {
+    component "the five projections\nrun, conventions, curve,\nmarket, engines" as proj
+    component "import and export\nrun_configuration_operations" as ops
+}
+
+queue "NATS\na typed configuration document:\nrows, never XML" as bus
+
+package "ores.refdata" {
+    component "configuration_document_handler\ncurve_configuration_document_service" as rsvc
+    database "ores_refdata_*_configs_tbl\nand the convention tables" as rdb
+}
+
+package "ores.analytics" {
+    component "pricing engines and\ntoday's market services" as asvc
+    database "ores_analytics_*_tbl" as adb
+}
+
+package "ores.reporting" {
+    component "run_document_service" as psvc
+    database "run document and\nengine settings part tables" as pdb
+}
+
+component "ores_reporting_value_in_set_fn\none verdict for every family" as verdict
+database "the value set tables\nand the two link tables" as sets
+
+package "Readers" {
+    component "shell:\nore_parameter_settings check" as shell
+    component "configuration screens" as ui
+}
+
+input --> proj : read
+proj --> ops : typed record
+ops --> bus : save request
+bus --> rsvc
+bus --> asvc
+bus --> psvc
+rsvc --> rdb : repository, then entity mapper
+asvc --> adb
+psvc --> pdb
+rdb ..> verdict : before insert
+adb ..> verdict : before insert
+pdb ..> verdict : before insert
+sets --> verdict : the rule this value must be in
+shell --> sets : reads
+ui --> sets : reads
+
+note bottom of bus
+  The document does not cross this line. The message carries the rows the
+  projection built, so the owner never learns the XML's shape.
+end note
+
+@enduml

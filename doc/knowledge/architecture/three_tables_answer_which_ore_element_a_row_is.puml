@@ -1,0 +1,122 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title The eight tables that touch an ORE document, grouped by the question each answers
+
+hide circle
+skinparam linetype ortho
+top to bottom direction
+
+package "A. Which parameter is this, and where is it in the document" as A {
+    entity "ores_reporting_ore_parameters_tbl\n(the per-tenant contract)" as params <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        --
+        * scope : text
+        * subtype : text
+        * name : text
+        * schema_name : text
+        * xpath : text
+        * ore_parameter_value_domain_code : text
+    }
+    entity "ores_dq_ore_parameters_artefact_tbl\n(staging)" as artefact #ECECEC {
+        * dataset_id : uuid
+        * id : uuid
+        --
+        the same columns, from the guide
+    }
+}
+
+package "B. Which column of which table is that element" as B {
+    entity "ores_refdata_curve_configuration_columns_tbl" as curvec <<temporal>> #C6F0D8 {
+        * code <<PK>>
+        --
+        * entity_name
+        * table_name
+        * column_name
+        * schema_name
+        * xpath
+    }
+    entity "ores_refdata_convention_kind_terms_tbl" as terms <<temporal>> #C6F0D8 {
+        * code <<PK>>
+        --
+        * kind_code
+        * entity_name
+        * column_name
+        * schema_name
+        * xpath
+    }
+    entity "ores_reporting_ore_parameter_vocabularies_tbl" as vocab <<temporal>> #C6F0D8 {
+        * code <<PK>>
+        --
+        * schema_name
+        * element_name
+        * value_set_code
+    }
+}
+
+package "C. What a screen offers" as C {
+    entity "ores_reporting_engine_settings_group_settings_tbl" as groups <<temporal>> {
+        * code <<PK>>
+        --
+        * group_code
+        * column_name
+        * ore_name
+        * changes_numbers
+    }
+    entity "ores_analytics_pricing_pair_settings_tbl" as pairs <<temporal>> {
+        * code <<PK>>
+        --
+        * pricing_engine_type_code
+        * model
+        * engine
+        * scope
+        * name
+        * usual_value
+    }
+}
+
+package "D. Where the rule is" as D {
+    entity "ores_reporting_ore_parameter_setting_value_sets_tbl" as links <<temporal>> {
+        * code : text <<PK>>\n(Scope:Name)
+        --
+        * scope : text
+        * name : text
+        * value_set_code : text
+    }
+}
+
+artefact ..> params : published into, by dataset
+params ||--o{ links : "scope : name"
+curvec }o--|| params : "schema_name + xpath"
+terms }o--|| params : "schema_name + xpath"
+
+note bottom of B
+  One leaf, stated three ways. The two guards read the curve
+  columns and the convention terms and resolve a value set
+  through the contract, B -> A -> D. Nothing reads the
+  vocabularies table at runtime, so it states a decision
+  without an enforcer.
+end note
+
+note bottom of C
+  Screen inventories, not document maps: a screen reads them to
+  draw a control, and no guard consults either.
+end note
+
+@enduml

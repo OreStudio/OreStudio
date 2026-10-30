@@ -96,6 +96,21 @@ for the same value -- and it held for =0.1=, for a negative and for =1e300=,
 which is the answer to the question the shortest-round-trip spelling could have
 made awkward.
 
+The whole-component sweep was tried and it stops on one shape. Every entity
+opted in at once, regenerated and built, and the build refuses on
+=tenor_basis_swap_pay_receive=: a *grouped* entity, whose members sit in an
+=identity= or an =audit= group rather than flat. The codec header states no shape
+for such a type -- the review of the previous task gated the shape on the three
+group flags, because the flat member list the first version stated would have
+been wrong for them -- so a type that *holds* one has nothing to recurse into.
+
+So the sweep waits on the grouped shape, which is a template change of its own
+kind rather than another opt-in: a grouped entity's shape is one field per group
+member (=identity=, =audit=, or the =domain_groups= the entity names), and
+recursing into those groups is what the field-group work above just made
+possible. The 158 opt-ins are reverted until then; =currency= stays, because its
+row is flat.
+
 The field groups followed. =cpp_field_group.hpp.mustache= states each group's
 shape beside the struct now, from the same iteration that writes its members, and
 the group models of both components opt in. Two things about that are worth

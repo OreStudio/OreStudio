@@ -8,7 +8,7 @@
 #+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
 #+owner: marco
 #+branch: feature/flip-equity-onto-its-rows
-#+pr:
+#+pr: 4093
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4093][#4093]] | [synthetic] Let an equity trade state its rows |
 
 * Review
 

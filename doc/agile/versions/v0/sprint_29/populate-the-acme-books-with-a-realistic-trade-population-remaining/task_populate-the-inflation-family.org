@@ -29,7 +29,7 @@ ACME's books hold inflation-linked trades. The refdata asset class names inflati
 | State        | BACKLOG                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | [[id:28F7996E-07CA-4091-9B32-BF96361C64F1][Seed an inflation curve the tenant holds]]: no inflation curve exists to name. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-24                               |
 

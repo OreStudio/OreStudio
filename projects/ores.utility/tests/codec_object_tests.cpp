@@ -59,14 +59,32 @@ TEST_CASE("an object's JSON is the one reflect-cpp writes", "[codec][object]") {
     CHECK(back.when == v.when);
 }
 
-TEST_CASE("an object with an absent member writes the format's null", "[codec][object]") {
+TEST_CASE("an object with an absent member omits it, as reflect-cpp does", "[codec][object]") {
     const auto v = probe{boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000000"),
                          "beta",
                          std::nullopt};
 
     const auto mine = ores::utility::codec::object::write_json(v, probe_fields);
-    CHECK(mine == R"({"id":"00000000-0000-0000-0000-000000000000","label":"beta","when":null})");
-    CHECK_FALSE(ores::utility::codec::object::read_json(mine, probe_fields).when.has_value());
+    CHECK(mine == rfl::json::write(v));
+    CHECK(mine == R"({"id":"00000000-0000-0000-0000-000000000000","label":"beta"})");
+
+    const auto back = ores::utility::codec::object::read_json(mine, probe_fields);
+    CHECK_FALSE(back.when.has_value());
+    CHECK(back.id == v.id);
+}
+
+TEST_CASE("an absent member is nil in MessagePack, as reflect-cpp writes it", "[codec][object]") {
+    const auto v = probe{boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000000"),
+                         "beta",
+                         std::nullopt};
+
+    const auto mine = ores::utility::codec::object::write_msgpack(v, probe_fields);
+    const auto theirs = rfl::msgpack::write(v);
+    CHECK(mine == std::string(theirs.begin(), theirs.end()));
+
+    const auto back = ores::utility::codec::object::read_msgpack(
+        std::span(reinterpret_cast<const std::byte*>(mine.data()), mine.size()), probe_fields);
+    CHECK_FALSE(back.when.has_value());
 }
 
 TEST_CASE("an object's MessagePack round-trips", "[codec][object]") {

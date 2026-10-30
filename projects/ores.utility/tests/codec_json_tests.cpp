@@ -137,3 +137,31 @@ TEST_CASE("a value of another shape is refused with what it should have been", "
     CHECK_THROWS_AS(wire_json::read<std::optional<boost::uuids::uuid>>("\"not a uuid\""),
                     std::invalid_argument);
 }
+
+TEST_CASE("an integer is the number reflect-cpp writes", "[codec][json]") {
+    const auto small = 7;
+    const auto negative = -2;
+    const auto wide = std::int64_t{4'294'967'296};
+
+    CHECK(wire_json::write(small) == rfl::json::write(small));
+    CHECK(wire_json::write(small) == "7");
+    CHECK(wire_json::write(negative) == rfl::json::write(negative));
+    CHECK(wire_json::write(wide) == rfl::json::write(wide));
+
+    CHECK(wire_json::read<int>(wire_json::write(small)) == small);
+    CHECK(wire_json::read<int>(wire_json::write(negative)) == negative);
+    CHECK(wire_json::read<std::int64_t>(wire_json::write(wide)) == wide);
+}
+
+TEST_CASE("a truth value is the word reflect-cpp writes", "[codec][json]") {
+    CHECK(wire_json::write(true) == rfl::json::write(true));
+    CHECK(wire_json::write(false) == rfl::json::write(false));
+    CHECK(wire_json::read<bool>(wire_json::write(true)));
+    CHECK_FALSE(wire_json::read<bool>(wire_json::write(false)));
+}
+
+TEST_CASE("a number read into a type too small to hold it is refused", "[codec][json]") {
+    CHECK_THROWS_AS(wire_json::read<std::uint8_t>("300"), std::invalid_argument);
+    CHECK_THROWS_AS(wire_json::read<int>("\"7\""), std::invalid_argument);
+    CHECK_THROWS_AS(wire_json::read<std::uint32_t>("-1"), std::invalid_argument);
+}

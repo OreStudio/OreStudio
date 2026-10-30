@@ -22,11 +22,13 @@
 
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/codec/msgpack_codec.hpp"
+#include <optional>
 #include <span>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <tuple>
+#include <type_traits>
 
 namespace ores::utility::codec {
 
@@ -45,6 +47,21 @@ struct field {
 };
 
 /**
+ * @brief Whether a member is a value that may be absent.
+ *
+ * The two formats disagree about such a member, and the wire is reflect-cpp's
+ * bytes in both, so the disagreement is stated instead of discovered: JSON
+ * omits a member whose optional is empty, while MessagePack carries it as nil.
+ * The readers accept an absent member either way, because a peer that omits it
+ * and a peer that sends nil are saying the same thing.
+ */
+template <typename Member>
+inline constexpr bool is_optional_member = false;
+
+template <typename Member>
+inline constexpr bool is_optional_member<std::optional<Member>> = true;
+
+/**
  * @brief The two formats, over a list of fields: an object whose members are
  * the fields, in the order the list states them.
  */
@@ -59,11 +76,24 @@ std::string write_json(const T& v, const std::tuple<field<T, Members>...>& field
     yyjson_mut_doc_set_root(doc, root);
     std::apply(
         [&](const auto&... f) {
-            (yyjson_mut_obj_add_val(doc,
-                                    root,
-                                    std::string(f.name).c_str(),
-                                    json_codec<Members>::write(doc, v.*(f.member))),
-             ...);
+            (
+                [&] {
+                    using member_type = std::remove_cvref_t<decltype(v.*(f.member))>;
+                    if constexpr (is_optional_member<member_type>) {
+                        if (!(v.*(f.member)))
+                            return;
+                    }
+                    // The key is copied into the document: the mutable API
+                    // stores the pointer it is given, so a key held anywhere
+                    // shorter-lived than the document would dangle between
+                    // the add and the render.
+                    auto* key = yyjson_mut_strncpy(doc, f.name.data(), f.name.size());
+                    auto* value = json_codec<Members>::write(doc, v.*(f.member));
+                    if (!yyjson_mut_obj_add(root, key, value))
+                        throw std::runtime_error("Could not add " + std::string(f.name) +
+                                                 " to a JSON object");
+                }(),
+                ...);
         },
         fields);
     char* text = yyjson_mut_write(doc, 0, nullptr);
@@ -91,9 +121,15 @@ T read_json(std::string_view text, const std::tuple<field<T, Members>...>& field
             [&](const auto&... f) {
                 (
                     [&] {
+                        using member_type = std::remove_cvref_t<decltype(out.*(f.member))>;
                         auto* value = yyjson_obj_getn(root, f.name.data(), f.name.size());
-                        if (value == nullptr)
-                            throw std::invalid_argument("Missing member: " + std::string(f.name));
+                        if (value == nullptr) {
+                            if constexpr (is_optional_member<member_type>)
+                                return;
+                            else
+                                throw std::invalid_argument("Missing member: " +
+                                                            std::string(f.name));
+                        }
                         out.*(f.member) = json_codec<Members>::read(value);
                     }(),
                     ...);
@@ -166,8 +202,14 @@ T read_msgpack(std::span<const std::byte> data, const std::tuple<field<T, Member
                             found = true;
                             break;
                         }
-                        if (!found)
-                            throw std::invalid_argument("Missing member: " + std::string(f.name));
+                        if (!found) {
+                            using member_type = std::remove_cvref_t<decltype(out.*(f.member))>;
+                            if constexpr (is_optional_member<member_type>)
+                                return;
+                            else
+                                throw std::invalid_argument("Missing member: " +
+                                                            std::string(f.name));
+                        }
                     }(),
                     ...);
             },

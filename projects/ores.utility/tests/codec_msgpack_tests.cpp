@@ -146,3 +146,29 @@ TEST_CASE("a value of another shape is refused with what it should have been", "
 
     CHECK_THROWS_AS(wire_msgpack::read<boost::uuids::uuid>(not_a_string), std::invalid_argument);
 }
+
+TEST_CASE("an integer is the frame reflect-cpp writes", "[codec][msgpack]") {
+    const auto small = 7;
+    const auto negative = -2;
+    const auto wide = std::int64_t{4'294'967'296};
+
+    CHECK(wire_msgpack::write(small) == rfl_msgpack(small));
+    CHECK(wire_msgpack::write(negative) == rfl_msgpack(negative));
+    CHECK(wire_msgpack::write(wide) == rfl_msgpack(wide));
+
+    CHECK(wire_msgpack::read<int>(rfl_msgpack(negative)) == negative);
+    CHECK(wire_msgpack::read<std::int64_t>(rfl_msgpack(wide)) == wide);
+}
+
+TEST_CASE("a truth value is the frame reflect-cpp writes", "[codec][msgpack]") {
+    CHECK(wire_msgpack::write(true) == rfl_msgpack(true));
+    CHECK(wire_msgpack::write(false) == rfl_msgpack(false));
+    CHECK(wire_msgpack::read<bool>(rfl_msgpack(true)));
+    CHECK_FALSE(wire_msgpack::read<bool>(rfl_msgpack(false)));
+}
+
+TEST_CASE("a number packed in a frame too wide for its type is refused", "[codec][msgpack]") {
+    CHECK_THROWS_AS(wire_msgpack::read<std::uint8_t>(rfl_msgpack(300)), std::invalid_argument);
+    CHECK_THROWS_AS(wire_msgpack::read<std::uint32_t>(rfl_msgpack(-1)), std::invalid_argument);
+    CHECK_THROWS_AS(wire_msgpack::read<int>(rfl_msgpack(std::string("7"))), std::invalid_argument);
+}

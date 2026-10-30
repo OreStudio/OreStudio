@@ -291,7 +291,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         [&svc_nats](std::string_view provider_code) -> std::optional<feed::feed_adapter> {
         try {
             ores::marketdata::client::market_data_client client(svc_nats);
-            const auto sources = client.list_market_data_sources();
+            const auto sources = client.list_feeds();
             if (!sources)
                 return std::nullopt;
             for (const auto& source : *sources)

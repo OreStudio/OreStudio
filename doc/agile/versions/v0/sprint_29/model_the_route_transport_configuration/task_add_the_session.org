@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata:implementation:model_the_route_transport_configuration:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-the-session
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A session is a row: supplier, adapter, environment, endpoint, credential referen
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,31 @@ A session is a row: supplier, adapter, environment, endpoint, credential referen
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The session is a codegen entity, like the adapters and suppliers it names. The
+code is the key as well as the label a feed will use, so it is the primary key:
+=frankfurter-eu= names one session as clearly as an id would, and a feed's
+=session_code= stays readable in a query.
+
+The session carries the supplier and the adapter by code, the environment, the
+endpoint, the credential reference, the settings and the enabled flag. The two
+codes are validated against the system-tenant catalogues, so a session cannot
+name an adapter or supplier the release does not define. The environment is a
+check constraint over =production=, =test=, =dr= and =simulated=.
+
+The settings are the one field whose validity depends on another row: the
+adapter's =configuration_schema=. A hand-written trigger validates them, because
+the codegen insert trigger carries only per-column validations. It refuses a key
+the schema does not state, a missing required key, a value of the wrong type,
+and a settings value that is not a JSON object.
+
+The system tenant owns the rows, as it does for the catalogues: one set of
+adapter processes serves the installation, not one per tenant. The session has
+its own event registrar, history provider and handlers, and no shell unit: the
+shell's =sessions= menu belongs to IAM logins, and the Connectivity screen is
+where a person configures a session.
+
+The acceptance's =a read returns a session and its feeds= waits for the feed
+entity (task A3). The read returns the session's own row today.
 
 * Measurements
 
@@ -60,6 +82,12 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The settings validation is a hand-written trigger,
+  =marketdata_sessions_settings_validate_trigger_create.sql=, not part of the
+  generated insert trigger: the generator carries per-column validations only.
+- The session has no shell unit. Its plural, =sessions=, is the IAM login
+  session's shell menu; the Connectivity screen is the surface for sessions.
 
 * Test Scenarios
 

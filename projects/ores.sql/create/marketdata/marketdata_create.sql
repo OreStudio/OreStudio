@@ -55,6 +55,9 @@
 \ir ./marketdata_providers_notify_trigger_create.sql
 \ir ./marketdata_market_data_sources_create.sql
 \ir ./marketdata_market_data_sources_notify_trigger_create.sql
+\ir ./marketdata_sessions_create.sql
+\ir ./marketdata_sessions_notify_trigger_create.sql
+\ir ./marketdata_sessions_settings_validate_trigger_create.sql
 \ir ./marketdata_market_data_vendor_instruments_create.sql
 \ir ./marketdata_market_data_vendor_instruments_notify_trigger_create.sql
 \ir ./marketdata_market_data_mappings_create.sql

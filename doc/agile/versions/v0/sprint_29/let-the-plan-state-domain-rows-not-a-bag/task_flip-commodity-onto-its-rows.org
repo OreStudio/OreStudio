@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A commodity trade states its rows in the plan, and the writer translates nothing
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
-| Now          | Not yet started.                       |
+| Now          | Flipped and proven on a fresh tenant.  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-29                               |
+| Next         | Record the PR, then the rates flip.    |
+| Last touched | 2026-10-30                             |
 
 * Acceptance
 
@@ -57,7 +57,15 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Commodity instrument rows in a fresh tenant | 25 | =select count(*) from ores_trading_commodity_instruments_tbl= | b621f3df19 |
+| Distinct commodity product codes booked | 25 | =select trade_type_code, count(*) ... group by 1= | b621f3df19 |
+| Basket constituent rows | 12 | =select count(*) from ores_trading_commodity_basket_constituents_tbl= | b621f3df19 |
+| Basket products carrying constituents | 4, three each | =select i.trade_type_code, count(c.sequence_number) ... left join= | b621f3df19 |
+| Bond issues written, none nil | 18 | =select count(*) from ores_trading_bond_issues_tbl where issue_id = '000...0'= | b621f3df19 |
+| Bond instrument rows | 24 | =select count(*) from ores_trading_bond_instruments_tbl= | b621f3df19 |
+| Total trades | 863 | =select count(*) from ores_trading_trades_tbl= | b621f3df19 |
+| Planner suite | 1,757 assertions in 79 cases | =publish/bin/ores.synthetic.core.tests= | b621f3df19 |
+| Build | whole tree green | =./compass.sh build= | b621f3df19 |
 
 * Notes
 

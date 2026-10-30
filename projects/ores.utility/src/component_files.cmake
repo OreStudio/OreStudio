@@ -45,6 +45,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/codec/msgpack_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/codec/struct_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/codec/text_form.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/codec/wire_fields.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/codec/wire_traits.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/compression/gzip.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/convert/base64_converter.hpp"

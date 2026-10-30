@@ -740,6 +740,22 @@ CATALOGUE: tuple[Check, ...] = (
             " also where a person provisions a tenant.",
     ),
     Check(
+        id="curve-parameter-paths",
+        title="Every curve parameter path is one the ORE schema declares",
+        argv=("python3", "projects/ores.sql/utility/check_curve_parameter_paths.py"),
+        classes=("sql", "modeling"),
+        paths=(
+            "projects/ores.sql/populate/reporting/reporting_ore_parameters_artefact_populate.sql",
+            "projects/ores.sql/utility/check_curve_parameter_paths.py",
+            "projects/ores.sql/utility/curve_schema_exemptions.json",
+            "projects/ores.sql/utility/extract_curve_terms.py",
+            "external/ore/xsd/curveconfig.xsd",
+        ),
+        fix="Fix the attribution in extract_curve_terms.py, or state why the ORE"
+            " code reads the path where the schema omits it, in"
+            " curve_schema_exemptions.json, with the ORE source line.",
+    ),
+    Check(
         id="curve-column-guards",
         title="The curve column map and its guard are the projection's",
         argv=(

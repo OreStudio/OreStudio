@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every curve parameter's path is a path the ORE schema declares, or one the ORE c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Not yet started.                       |
+| Now          | The attribution is fixed, the check is wired, and the artefact is clean. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Review and merge.                      |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -43,9 +43,19 @@ Every curve parameter's path is a path the ORE schema declares, or one the ORE c
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+#+begin_src text
+1. Attribute a block to the call that follows its read, bounded by the next Read
+   of the same variable, and leave a variable a sibling's call names without a
+   call inside the block unattributed.
+2. Add curve_schema_exemptions.json: one rule for the settings ORE reads and
+   writes on the segment base while the per-kind types declare a subset, and one
+   for the yield volatility's Interpolation.
+3. Add check_curve_parameter_paths.py, which walks every path of the committed
+   artefact through curveconfig.xsd and fails on a path a parent does not
+   declare, and fails on an exemption no path needs.
+4. Wire it into the local checks and prove it against the artefact of the commit
+   before the fix.
+#+end_src
 
 * Measurements
 
@@ -59,7 +69,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Curve paths checked | 309 | =python3 projects/ores.sql/utility/check_curve_parameter_paths.py= | this branch |
+| Problems after the fix | 0 | as above, exit 0 | this branch |
+| Problems before the fix | 4 | as above with =--artefact= on the pre-fix artefact, exit 1 | =9b358a3bf4= |
+| Artefact parameters | 2343, then 2339 | =python3 projects/ores.sql/utility/generate_ore_parameters_dataset.py= | this branch |
+| Leaves the extractor reads | 486, then 483 | =python3 projects/ores.sql/utility/extract_curve_terms.py= | this branch |
+| Exemption rules | 2 | =projects/ores.sql/utility/curve_schema_exemptions.json= | this branch |
 
 * Notes
 
@@ -115,3 +130,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A block is attributed to the call that follows its read, so the four
+=ParametricSmileConfiguration= paths under =Parameters= and =Calibration= are
+gone, =ResidualCorrection/Dimension= remains, and the =Calibration= block's three
+real leaves appear where a copied =Dimension= stood. The =Parameters= block is
+recorded as unresolved, which is the truth: it holds repeated =Parameter= nodes
+the extractor does not model.
+
+The artefact drops from 2343 parameters to 2339.
+
+=check_curve_parameter_paths.py= walks 309 paths through the schema and passes.
+Against the artefact of 9b358a3bf4 it fails on the four smile paths, which is the
+proof it can fail for the reason it exists.
+
+Two paths the schema does not declare stay, each with the ORE source line that
+reads it: the four settings every segment shares, which ORE's base class reads and
+writes while the per-kind types declare a subset, and a yield volatility's
+=Interpolation=, which =genericyieldvolcurveconfig.cpp:236= reads though
+=yieldVolatility= declares no such element.

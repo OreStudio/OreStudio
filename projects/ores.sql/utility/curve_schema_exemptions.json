@@ -1,0 +1,32 @@
+{
+    "rules": [
+        {
+            "reason": "ORE reads and writes the settings every segment kind shares on the base class, and the per-kind types in curveconfig.xsd declare only a subset of them. A kind whose type omits one still reads it, and ORE's writer emits it.",
+            "path": [
+                "YieldCurves",
+                "YieldCurve",
+                "Segments",
+                "*"
+            ],
+            "elements": [
+                "Conventions",
+                "DuplicatePillarPolicy",
+                "MinDistance",
+                "PillarChoice",
+                "Priority"
+            ],
+            "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:408"
+        },
+        {
+            "reason": "ORE reads the interpolation of a yield volatility, and the yieldVolatility type in curveconfig.xsd declares no such element.",
+            "path": [
+                "YieldVolatilities",
+                "YieldVolatility"
+            ],
+            "elements": [
+                "Interpolation"
+            ],
+            "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:236"
+        }
+    ]
+}

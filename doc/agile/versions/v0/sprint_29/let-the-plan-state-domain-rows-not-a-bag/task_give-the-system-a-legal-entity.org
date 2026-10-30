@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A party can reference a legal entity by LEI. A credit trade states an LEI the te
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -150,3 +150,11 @@ and the LEI stops being lost on the way.
 - =legal_name= cannot be a natural key. The dataset holds thousands of entities
   that share a name, so the uniqueness the natural key implied made the publish
   fail on the first duplicate.
+
+The legal entity landed with #4074 and the LEI publish reads the DQ artefact the
+tenant already holds: a provisioned tenant carries 42,388 entities, and a credit
+trade references one by its twenty-character LEI.
+
+The task doc had drifted back to BACKLOG while the story row said DONE, which is
+why this section is written at the story's close rather than when the work
+shipped. The state is now DONE in both places.

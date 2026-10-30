@@ -30,6 +30,8 @@
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <fstream>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <sstream>
@@ -301,20 +303,24 @@ private:
 };
 
 /**
- * @brief One field of this process's memory, in kilobytes, from /proc.
+ * @brief This process's resident memory, in kilobytes.
+ *
+ * Nothing when the process cannot read it, which is a failure of the measurement
+ * and not a memory of zero: an unreadable value must not read as a pass.
  */
-std::size_t process_memory_kb(std::string_view field) {
+std::optional<std::size_t> resident_kb() {
     std::ifstream status("/proc/self/status");
     std::string key;
     while (status >> key) {
-        if (key == field) {
+        if (key == "VmRSS:") {
             std::size_t kb = 0;
-            status >> kb;
-            return kb;
+            if (status >> kb)
+                return kb;
+            return std::nullopt;
         }
         status.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
-    return 0;
+    return std::nullopt;
 }
 
 /**
@@ -325,9 +331,10 @@ public:
     explicit resident_watch(std::chrono::milliseconds interval) {
         thread_ = std::thread([this, interval] {
             while (!stopped_.load()) {
-                const auto now = process_memory_kb("VmRSS:");
-                auto peak = peak_kb_.load();
-                while (now > peak && !peak_kb_.compare_exchange_weak(peak, now)) {
+                if (const auto now = resident_kb(); now.has_value()) {
+                    auto peak = peak_kb_.load();
+                    while (*now > peak && !peak_kb_.compare_exchange_weak(peak, *now)) {
+                    }
                 }
                 std::this_thread::sleep_for(interval);
             }
@@ -639,6 +646,10 @@ TEST_CASE("a_256_mib_upload_does_not_grow_the_process", "[http_streamed_body][me
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that a large upload costs a chunk and not itself";
 
+#if !defined(__linux__)
+    SKIP("resident memory is read from /proc, which this platform does not have");
+#endif
+
     http_server_options options;
     options.address = "127.0.0.1";
     options.port = 0;
@@ -675,7 +686,8 @@ TEST_CASE("a_256_mib_upload_does_not_grow_the_process", "[http_streamed_body][me
     REQUIRE(warm_up->result_int() == 200);
     *received = 0;
 
-    const auto baseline_kb = process_memory_kb("VmRSS:");
+    const auto baseline_kb = resident_kb();
+    REQUIRE(baseline_kb.has_value());
 
     std::optional<http::response<http::string_body>> answered;
     std::size_t peak_kb = 0;
@@ -694,8 +706,8 @@ TEST_CASE("a_256_mib_upload_does_not_grow_the_process", "[http_streamed_body][me
      * The body is 256 MiB. If any of it were held, the resident set would move by
      * it; the bound is the chunk the session reads and the socket buffers.
      */
-    INFO("resident memory: before " << baseline_kb << " kB, peak " << peak_kb << " kB");
-    REQUIRE(peak_kb < baseline_kb + 1024);
+    INFO("resident memory: before " << *baseline_kb << " kB, peak " << peak_kb << " kB");
+    REQUIRE(peak_kb < *baseline_kb + 1024);
 }
 
 TEST_CASE("a_route_without_a_sink_still_receives_its_whole_body", "[http_streamed_body]") {

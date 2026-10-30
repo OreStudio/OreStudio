@@ -11,7 +11,6 @@
 #+pr: 4159
 #+blocked_on: review
 #+blocked_since: 2026-10-31 00:10
-#+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
 #+environment: clever_dijkstra
@@ -46,10 +45,11 @@ measures it, so nothing would notice if streaming regressed to buffering.
 
 * Plan
 
-1. Read =VmHWM= from the test process instead of sampling, so the peak is the kernel's
-   own number and not a poll that can miss it.
-2. Upload 256 MiB that the test generates in chunks, so the client does not hold the
-   object either.
+1. Read =VmRSS= from =/proc/self/status= every 5 ms while the upload runs and keep
+   the peak. =VmHWM= would also count everything the process did before the test, so
+   it cannot answer "what did this upload cost".
+2. Upload 256 MiB in chunked frames written from one 64 KiB buffer, so the client does
+   not hold the object either, and warm the buffers with a small upload first.
 3. Assert the delta, and fail with both numbers so the regression is legible.
 4. Run the wrapper's transfer tests and record them.
 

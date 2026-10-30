@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/the-population-never-draws-the-products-past-its-slot-count
-#+pr:
+#+pr: 4121
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4121][#4121]] | [synthetic] State one trade per routed code in the seeded configs |
 
 * Review
 

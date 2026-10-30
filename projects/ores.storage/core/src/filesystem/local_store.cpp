@@ -28,10 +28,15 @@ namespace ores::storage::filesystem {
 using namespace ores::logging;
 
 namespace {
+
+/// Names a file the store writes before it publishes it, and not an object.
+constexpr std::string_view part_suffix = ".part";
+
 inline auto& local_store_lg() {
     static auto instance = make_logger("ores.storage.filesystem.local_store");
     return instance;
 }
+
 }
 
 object_not_found::object_not_found(const std::string& what)
@@ -77,24 +82,74 @@ bool local_store::is_valid_key(const std::string& bucket, const std::string& key
 }
 
 void local_store::put(const std::string& bucket, const std::string& key, std::string_view data) {
-    const auto path = resolve(bucket, key);
-    if (!path)
-        throw std::runtime_error("Invalid bucket or key: " + bucket + "/" + key);
+    const auto part = begin_put(bucket, key);
 
-    std::error_code ec;
-    std::filesystem::create_directories(path->parent_path(), ec);
-    if (ec)
-        throw std::runtime_error("Cannot create bucket directory: " + ec.message());
-
-    std::ofstream f(*path, std::ios::binary | std::ios::trunc);
-    if (!f)
-        throw std::runtime_error("Cannot write object: " + path->string());
+    std::ofstream f(part, std::ios::binary | std::ios::trunc);
+    if (!f) {
+        abandon_put(part);
+        throw std::runtime_error("Cannot write object: " + part.string());
+    }
     f.write(data.data(), static_cast<std::streamsize>(data.size()));
-    if (!f)
-        throw std::runtime_error("Cannot write object: " + path->string());
+    if (!f) {
+        abandon_put(part);
+        throw std::runtime_error("Cannot write object: " + part.string());
+    }
+    f.close();
+    if (!f) {
+        abandon_put(part);
+        throw std::runtime_error("Cannot write object: " + part.string());
+    }
+
+    commit_put(part, bucket, key);
 
     BOOST_LOG_SEV(local_store_lg(), debug)
         << "put: bucket=" << bucket << " key=" << key << " bytes=" << data.size();
+}
+
+std::filesystem::path local_store::begin_put(const std::string& bucket, const std::string& key) {
+    const auto object = resolve(bucket, key);
+    if (!object)
+        throw std::runtime_error("Invalid bucket or key: " + bucket + "/" + key);
+
+    std::error_code ec;
+    std::filesystem::create_directories(object->parent_path(), ec);
+    if (ec)
+        throw std::runtime_error("Cannot create bucket directory: " + ec.message());
+
+    /*
+     * A part name of its own, so two callers writing one key never share a file:
+     * one cannot publish the other's half-written bytes, and one cannot remove
+     * the file the other is still writing.
+     */
+    static std::atomic<std::uint64_t> next_id{0};
+    const auto id = next_id.fetch_add(1, std::memory_order_relaxed);
+    const auto stamp = std::chrono::steady_clock::now().time_since_epoch().count();
+    auto part = *object;
+    part += "." + std::to_string(stamp) + "-" + std::to_string(id) + std::string(part_suffix);
+
+    return part;
+}
+
+void local_store::commit_put(const std::filesystem::path& part,
+                             const std::string& bucket,
+                             const std::string& key) {
+    const auto object = resolve(bucket, key);
+    if (!object) {
+        abandon_put(part);
+        throw std::runtime_error("Invalid bucket or key: " + bucket + "/" + key);
+    }
+
+    std::error_code ec;
+    std::filesystem::rename(part, *object, ec);
+    if (ec) {
+        abandon_put(part);
+        throw std::runtime_error("Cannot write object: " + object->string() + ": " + ec.message());
+    }
+}
+
+void local_store::abandon_put(const std::filesystem::path& part) noexcept {
+    std::error_code ec;
+    std::filesystem::remove(part, ec);
 }
 
 std::string local_store::get(const std::string& bucket, const std::string& key) const {
@@ -163,6 +218,9 @@ std::vector<local_store::entry> local_store::list(const std::string& bucket,
 
         auto key = std::filesystem::relative(item.path(), dir, item_ec).generic_string();
         if (item_ec)
+            continue;
+        // A part file is an object being written, not an object.
+        if (key.ends_with(part_suffix))
             continue;
         if (!prefix.empty() && !key.starts_with(prefix))
             continue;

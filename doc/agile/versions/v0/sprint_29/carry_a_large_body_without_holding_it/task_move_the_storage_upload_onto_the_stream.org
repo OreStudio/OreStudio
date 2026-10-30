@@ -11,7 +11,6 @@
 #+pr: 4157
 #+blocked_on: review
 #+blocked_since: 2026-10-30 23:40
-#+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
 #+environment: clever_dijkstra
@@ -41,7 +40,8 @@ size in memory. Move them onto the chunk channel and the file on disk.
 - The upload writes each chunk to a temporary file beside the object and renames it
   when the body ends, so a reader never sees a partial object.
 - A request that fails, disconnects, or is refused leaves no file behind.
-- The upload's stated limit and the ceiling are unchanged.
+- The upload's stated limit and the ceiling are unchanged, and the answer carries
+  the digest and the byte count of what was stored.
 - Tests cover an upload of several chunks, an aborted upload, and a key that cannot
   name an object.
 - The download is served from the file by [[id:9A622B67-34FA-4426-9526-508CFB7A690C][Serve the download from the file]], because it needs the
@@ -76,9 +76,12 @@ task and name that file in the Command column.
 - The upload's digest is taken from the part file once the last chunk arrives, so
   the response still carries the same =sha256= the buffered write did, without the
   bytes ever being in memory.
-- The part file is =<key>.part= beside the object, so an object whose key ends in
-  =.part= would collide with an upload of its own name. The store has no atomic put
-  of its own, so this is where the rename lives until it does.
+- The part-file protocol lives in =local_store=: =begin_put= names a part that no
+  other caller shares, =commit_put= publishes it, =abandon_put= removes it. Two
+  uploads of one key therefore never write one file, and neither can publish or
+  remove the other's bytes. =put= is now the same protocol with one write in it.
+- =list= skips a part file, so an object being written is not reported as an
+  object.
 - A factory that refuses the request throws =invalid_argument= and the session
   answers 400; any other failure is a 500. That is why the body has to be read
   after the route is resolved and before the handler runs.

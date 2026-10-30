@@ -48,7 +48,7 @@ public:
      * which the session answers as a bad request rather than as a server fault.
      * @throws std::runtime_error when the part file cannot be created.
      */
-    storage_upload_sink(const storage::filesystem::local_store& store,
+    storage_upload_sink(storage::filesystem::local_store& store,
                         const std::string& bucket,
                         const std::string& key);
 
@@ -71,7 +71,9 @@ protected:
 private:
     void close_part() noexcept;
 
-    std::filesystem::path object_;
+    storage::filesystem::local_store& store_;
+    std::string bucket_;
+    std::string key_;
     std::filesystem::path part_;
     std::ofstream out_;
     std::uint64_t byte_count_ = 0;

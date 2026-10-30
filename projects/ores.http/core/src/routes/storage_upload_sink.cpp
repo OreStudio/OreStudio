@@ -24,35 +24,26 @@
 
 namespace ores::http::server::routes {
 
-namespace {
-
-/// A part file is written beside its object, so the rename stays on one disk.
-std::filesystem::path part_of(const std::filesystem::path& object) {
-    auto part = object;
-    part += ".part";
-    return part;
-}
-
-}
-
-storage_upload_sink::storage_upload_sink(const storage::filesystem::local_store& store,
+storage_upload_sink::storage_upload_sink(storage::filesystem::local_store& store,
                                          const std::string& bucket,
-                                         const std::string& key) {
-    const auto object = store.resolve(bucket, key);
-    if (!object)
-        throw std::invalid_argument("Invalid bucket or key: " + bucket + "/" + key);
-
-    object_ = *object;
-    part_ = part_of(object_);
-
-    std::error_code ec;
-    std::filesystem::create_directories(object_.parent_path(), ec);
-    if (ec)
-        throw std::runtime_error("Cannot create bucket directory: " + ec.message());
+                                         const std::string& key)
+    : store_(store)
+    , bucket_(bucket)
+    , key_(key) {
+    try {
+        part_ = store_.begin_put(bucket_, key_);
+    } catch (const std::exception& e) {
+        // A key that cannot name an object is the caller's mistake, not a fault.
+        if (!store_.resolve(bucket_, key_))
+            throw std::invalid_argument(e.what());
+        throw;
+    }
 
     out_.open(part_, std::ios::binary | std::ios::trunc);
-    if (!out_)
+    if (!out_) {
+        storage::filesystem::local_store::abandon_put(part_);
         throw std::runtime_error("Cannot write object: " + part_.string());
+    }
 }
 
 bool storage_upload_sink::consume_chunk(std::string_view chunk) {
@@ -70,6 +61,11 @@ bool storage_upload_sink::finish_body() {
     if (!ok)
         return false;
 
+    /*
+     * The digest is taken from the part file, so a large upload is read once more
+     * rather than held once. The part file holds the bytes the caller sent and
+     * nothing else.
+     */
     try {
         digest_ = utility::crypto::sha256::hex_digest_of_file(part_);
     } catch (const std::exception&) {
@@ -79,10 +75,11 @@ bool storage_upload_sink::finish_body() {
 }
 
 bool storage_upload_sink::publish_chunk() {
-    std::error_code ec;
-    std::filesystem::rename(part_, object_, ec);
-    if (ec)
+    try {
+        store_.commit_put(part_, bucket_, key_);
+    } catch (const std::exception&) {
         return false;
+    }
     kept_ = true;
     return true;
 }
@@ -92,14 +89,12 @@ void storage_upload_sink::discard() noexcept {
     if (kept_)
         return;
 
-    std::error_code ec;
-    std::filesystem::remove(part_, ec);
+    storage::filesystem::local_store::abandon_put(part_);
 }
 
 void storage_upload_sink::close_part() noexcept {
     if (!out_.is_open())
         return;
-    std::error_code ec;
     out_.close();
 }
 

@@ -10,6 +10,7 @@
 #+branch:
 #+pr:
 #+blocked_on: external
+#+blocked_since: 2026-10-30 23:20
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
@@ -32,7 +33,7 @@ download over once that exists.
 | State        | BLOCKED                              |
 | Parent story | [[id:8550935B-A0F4-4BAD-95F3-D3E03B45E044][Carry a large body without holding it]] |
 | Now          | Waiting on the response streaming that increment B1 brings. |
-| Waiting on   | Nothing.                               |
+| Waiting on   | Increment B1's response streaming.      |
 | Next         | Once B1 streams a response, serve the file through a fixed buffer. |
 | Last touched | 2026-10-30                               |
 

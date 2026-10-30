@@ -301,7 +301,7 @@ asio::awaitable<http_response> storage_routes::handle_put(const http_request& re
 }
 
 std::unique_ptr<::ores::http::domain::body_sink>
-storage_routes::make_upload_sink(const http_request& req) const {
+storage_routes::make_upload_sink(const http_request& req) {
     return std::make_unique<storage_upload_sink>(
         store_, req.get_path_param("bucket"), req.get_path_param("key"));
 }

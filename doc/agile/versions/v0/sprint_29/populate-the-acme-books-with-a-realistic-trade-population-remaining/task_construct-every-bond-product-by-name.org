@@ -28,9 +28,9 @@ Every bond code that routes to the bond instrument table has a named constructor
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Constructors written, unit tests green. |
-| Waiting on   | A green whole-tree build; it is broken elsewhere. |
-| Next         | Record the PR, then draw the codes.    |
+| Now          | Whole tree green; unit tests green.    |
+| Waiting on   | Nothing.                               |
+| Next         | Merge, then draw the codes.            |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -109,3 +109,8 @@ one append. `ores.trading.api.tests "[bond]"` passes with 51 assertions.
 
 The full tree was building when this was written and the build broke elsewhere;
 the whole-tree run is owed once that is fixed.
+
+The whole tree is green: `./compass.sh build` finished, `ores.trading.api.tests`
+passes with 618 assertions in 162 cases, and `ores.synthetic.core.tests` with
+2,050 in 82. The earlier note that the build was broken elsewhere no longer
+applies: main was repaired and this branch was rebased onto it.

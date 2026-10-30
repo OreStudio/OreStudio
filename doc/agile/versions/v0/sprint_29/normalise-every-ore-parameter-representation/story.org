@@ -200,6 +200,47 @@ because the comparison ignores case and the writer states it.
   day counter leaf is the same class. A later task extends the census to the
   leaves, or the value set's own links are taken as the list.
 
+
+* Inventory of the ORE XML mappings
+
+The tree does not hold one mapping table. It holds eight that touch the ORE
+document, and they overlap on the leaf side. The count is from a recreated and
+populated database.
+
+| Table | Rows | Maps | Read by | Verdict |
+|-------+------+------+---------+---------|
+| =ores_reporting_ore_parameters_tbl= | the per-tenant contract | =(scope, subtype, name)= and a document =xpath= to a domain and its text | the shell check, the screens | the parameter catalogue: keep |
+| =ores_dq_ore_parameters_artefact_tbl= | 2295 | the same data, staged from the guide | the publish functions that fill the contract | a staging area, not a second mapping: keep, and say so |
+| =ores_reporting_ore_parameter_setting_value_sets_tbl= | 756 | =(scope, name)= to a value set | the parameter trigger, the screens, the shell | a link: keep |
+| =ores_reporting_ore_parameter_vocabularies_tbl= | 4 | an ORE element =(schema, element)= to a value set | the curve column guard and the value-set seed | a link: keep |
+| =ores_refdata_curve_configuration_columns_tbl= | 212 | a curve column =(entity, table, column)= to a document element and =xpath= | the curve value guard | overlaps the vocabularies: consolidate |
+| =ores_refdata_convention_kind_terms_tbl= | 270 | a convention kind term to =(schema, xpath)= | the convention CRUD and the ORE import | overlaps the vocabularies: consolidate |
+| =ores_reporting_engine_settings_group_settings_tbl= | 15 | a part's column to the =Setup= ORE name | the engine run settings screen | a screen inventory, not a document map: keep |
+| =ores_analytics_pricing_pair_settings_tbl= | 834 | =(type, model, engine, scope, name)= to the setting a pair takes | the pricing screen | a screen inventory: keep |
+
+** What the overlap costs
+
+Three tables answer "which ORE element is this column, and which value set
+states its values": the curve columns table, the convention kind terms table and
+the vocabularies table. They were built at different times, so a leaf can be
+named in one and missing from another, and a value set can be linked from two
+places with no statement of which wins. That is the same defect the story is
+about, one level up: one fact, several statements.
+
+** What this story needs, and what it does not
+
+For the canonical form the story needs exactly one thing: given a column or a
+parameter, find its value set. Two links already do that, one for a parameter
+and one for a leaf. The canonical pointer goes on the values those links find,
+so no new map is added and none of the three leaf tables is a prerequisite.
+
+** What the consolidation is
+
+A task of its own, not a prerequisite: one leaf map keyed by the ORE element,
+with the projection columns attached to it, and the two links collapsed into one
+shape. It is recorded here because the story is where it was found, and it must
+not be lost because the story did not need it.
+
 * Decisions
 
 Proposed, and confirmed or corrected when the census lands.

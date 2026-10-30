@@ -64,4 +64,11 @@ test('the blotter reads trades and structures by book, and flattens to the legs'
         timeout: 20_000,
     });
     await page.screenshot({ path: 'shots/blotter-counterparty.png', fullPage: true });
+
+    // Choosing the tree again draws the tree again, not the counterparties: the
+    // rail belongs to the grouping that was chosen.
+    await page.getByLabel('Grouping').selectOption('portfolio');
+    await expect(rail.getByRole('button', { name: /Global Portfolio/ }).first()).toBeVisible({
+        timeout: 20_000,
+    });
 });

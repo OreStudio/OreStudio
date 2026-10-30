@@ -20,6 +20,7 @@
  */
 
 import { useMemo, useState, type ReactNode } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
 import { blotter, type BlotterNode, type BlotterRow, type BlotterView } from '../api/blotter.js';
@@ -128,7 +129,28 @@ export function BlotterPage(): ReactNode {
     const [view, setView] = useState<BlotterView>('portfolio');
     const [node, setNode] = useState('');
     const [flat, setFlat] = useState(false);
-    const [rail, setRail] = useState<readonly BlotterNode[]>([]);
+    /*
+     * The rail is its own read. It cannot ride on the list's page: the list
+     * caches a page by its key, so returning to a grouping it has already read
+     * answers from the cache and the rail would wait behind a request that never
+     * happens.
+     */
+    const rail = useQuery({
+        queryKey: ['blotter-rail', view],
+        queryFn: () =>
+            blotter.page({
+                view,
+                // The rail is the whole party's: choosing a node narrows the list,
+                // not the tree.
+                node: '',
+                flat: false,
+                search: '',
+                offset: 0,
+                limit: 1,
+                sort: 'trade_date',
+                descending: true,
+            }),
+    });
 
     /*
      * The rail is read with the page, not before it: its figures are the rows
@@ -149,7 +171,6 @@ export function BlotterPage(): ReactNode {
                     sort: page.sort,
                     descending: page.descending,
                 });
-                setRail(answer.tree);
                 return { rows: answer.rows, total: answer.total };
             },
             search: true,
@@ -159,6 +180,7 @@ export function BlotterPage(): ReactNode {
         [view, node, flat],
     );
 
+    const nodes = rail.data?.tree ?? [];
     const columns: readonly ListColumn<BlotterRow>[] = [
         {
             id: 'identifier',
@@ -260,7 +282,13 @@ export function BlotterPage(): ReactNode {
                     <option value="portfolio">{t('trading.blotter.viewPortfolio')}</option>
                     <option value="counterparty">{t('trading.blotter.viewCounterparty')}</option>
                 </Select>
-                <Rail nodes={rail} selected={node} onSelect={setNode} />
+                {nodes.length === 0 ? (
+                    <p className="mt-3 px-2 text-sm text-ink-muted">
+                        {t('trading.blotter.railLoading')}
+                    </p>
+                ) : (
+                    <Rail nodes={nodes} selected={node} onSelect={setNode} />
+                )}
             </aside>
             <div className="min-w-0 flex-1">
                 <RecordList

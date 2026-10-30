@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :data-oriented-design:modeling:refdata:codegen:split_the_types_that_carry_too_many_columns:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/split-the-ore-volatility-entries-by-kind
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,20 +26,55 @@ Each of the five volatility entries holds one kind of entry, and the block that 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | Not yet started.                       |
+| Now          | Cap floor's proxy block is a part; the other four are not. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The swaption proxy part, then the three kind columns. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
 
 - Every one of the five types ends with at most one block per entry, and no column is meaningful only for a value another column selects.
-- The proxy block is one part type that cap floor and swaption both carry, not two copies.
+- The proxy block of each entry is one part of its own, and no part carries a column another entry's kind cannot use.
 - The ORE export and import of a volatility entry writes one typed array per part, and the bytes the reader sees stay what the ORE file states.
 - No compiler flag, unity exclusion or field-group reshuffle is added.
 - The split is argued by the invariant each part holds, not by the entry's member count, and the argument is in the task's Result.
+
+* What the split is, measured
+
+The cap and floor entry's =ProxyConfig= was seven nullable columns. It is now a
+row of =cap_floor_proxy_config=, and the presence of the row is the flag the
+flat shape spelled =has_proxy_config=.
+
+The task was accepted as "the proxy block is one part type that cap floor and
+swaption both carry". Reading the two blocks in the ORE schema shows that is
+false, and the acceptance is corrected:
+
+| Entry | ProxyConfig source | ProxyConfig target |
+|-------+--------------------+--------------------|
+| cap floor | =CurveId=, =Index=, =RateComputationPeriod= | =Index=, =RateComputationPeriod=, =ONCapSettlementDays= |
+| swaption | =CurveId=, =ShortSwapIndexBase=, =SwapIndexBase= | =ShortSwapIndexBase=, =SwapIndexBase= |
+
+The two share a shape, not a type. One part carrying both blocks would be a
+union with nullable columns again, which is the shape this story exists to
+remove. Each entry gets its own part.
+
+* What a split costs beyond the model
+
+Recorded because the next four entries pay the same price:
+
+- the document model gains a vector, so the protocol and its TypeScript twin
+  change;
+- the document service writes, reads and removes the part beside its entry,
+  and the read predicate is over the entries' ids because the part is keyed by
+  its entry and not by the curve definition;
+- the ORE projection builds the part on import and looks it up by the entry's
+  id on export;
+- a new entity generates its whole family -- repository, service, protocol,
+  history provider, shell recipe, ER diagram -- and three of those are
+  hand-wired: the two =component_files.cmake= lists, and the create and drop
+  aggregators.
 
 * Plan
 
@@ -109,7 +144,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Cap and floor entry members, before and after the split | 39 and 31 | `python3 build/scripts/inventory_entity_columns.py \| awk -F'\t' '$3=="cap_floor_volatility_config"'` | `57070a08ad` |
+| Members the new part carries, of which the moved proxy fields | 10, of which 7 | same, for `cap_floor_proxy_config` | `57070a08ad` |
 
 * Notes
 
@@ -137,3 +173,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Cap floor is done and the tree builds. =cap_floor_volatility_config= is 32
+members where it was 39: the proxy block left it for =cap_floor_proxy_config=,
+a type with its own key, the entry's key as a unique natural key, the party for
+row level security and the seven fields.
+
+Verified: `./compass.sh build` exits 0, `validate_schemas.sh` passes over 2937
+files, `er-diagram` and `lint` pass.
+
+Not yet done, in the order the task will take them:
+
+- =swaption_proxy_config=, the second proxy part, which is the same shape with
+  its own fields;
+- the three kind columns: =curve_volatility_config='s =kind= with one curve
+  column per surface, =fx_volatility_config='s =dimension= with the smile block,
+  and =inflation_cap_floor_volatility_config='s =quote_type= with one column per
+  quote structure;
+- the database recreated and the round trip run over the fixtures, which is the
+  first proof that a document carrying a proxy survives the round trip through
+  the part.
+

@@ -30,7 +30,8 @@ Pricing configurations exist because:
    parameters for the same trade population. These differences must be
    explained, not hidden.
 3. Valuations must be reproducible. All model configuration used for a
-   valuation must be snapshotted alongside the market data cut and the deal
+   valuation must be snapshotted alongside the
+   [[id:13BA8962-47D5-4EF3-A9B8-D4E2404AC815][market data cut]] and the deal
    population.
 
 The pricing configuration is what makes it possible to re-run a historical
@@ -244,6 +245,10 @@ A reproducible valuation requires the conjunction of:
 
 Given these five inputs, the engine must produce the same output. This is the
 core reproducibility contract.
+
+The first two are what a cut freezes, and this repository has neither as a
+stored object. See [[id:13BA8962-47D5-4EF3-A9B8-D4E2404AC815][Market data cuts]]
+for what a cut holds and where ORE Studio stands against it.
 
 *ORE Studio*: The equivalent inputs are the ORE XML files (=ore.xml=,
 =pricingengines.xml=, =market.xml=, =portfolio.xml=) plus the market data

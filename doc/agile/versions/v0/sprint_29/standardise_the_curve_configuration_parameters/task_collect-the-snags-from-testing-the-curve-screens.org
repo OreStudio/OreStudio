@@ -106,15 +106,15 @@ was taken with a script, not by hand, and it met these:
   the walk on 2026-10-30 reads =Conventions= with its value and the page counts
   *238 of 238 parameters carry documentation*.
 - *The curve's header counts only the curve's own parameters.* =GBP1D= reads *10
-  parameters* while the page reads *238 of 289*: the segment's leaves are in the
+  parameters* while the page reads *289 of 289*: the segment's leaves are in the
   page's count and not in the curve's tag. A person reading the tag alone sees a
   smaller curve than the page holds. Still open.
-- *Three segment leaves have no contract row.* =PillarChoice=, =Priority= and
-  =MinDistance= draw a dash and the entry reads *3 without documentation*. The
-  extractor reads them from the ORE source; the guide explains them in prose and
-  never lists them as items, so no term carries a text and the contract writes no
-  row. Curating them is [[id:27C8B919-C762-4382-9043-1DE7E2D4A6D5][Curate the
-  shared segment leaves]].
+- *Three segment leaves had no contract row.* Fixed by
+  [[id:27C8B919-C762-4382-9043-1DE7E2D4A6D5][Curate the shared segment leaves]]:
+  =PillarChoice=, =Priority= and =MinDistance= now draw their defaults, and the
+  walk on 2026-10-30 reads *289 of 289*. The extractor always held them; the
+  guide explains them in prose and never lists them as items, so no term carried
+  a text and the contract wrote no row until the four were curated.
 - *The instant a row was recorded was drawn as a leaf.* Found and fixed on the
   quotes branch; the scenario confirms it is gone.
 - *Two 401s appear in the console* while the shell settles before the party is

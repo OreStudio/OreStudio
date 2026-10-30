@@ -26,11 +26,11 @@ Give the four leaves every segment kind shares — PillarChoice, DuplicatePillar
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -84,9 +84,13 @@ minimum distance.
 
 The four leaves reach the contract for every segment kind: the seed grows from
 2295 to 2343 parameters, 48 rows, and the two closed lists take their parser's
-values instead of text. The page reads its three dashed leaves from the contract
-now, so the walk that reads *3 without documentation* must be repeated; the count
-it will read is not claimed here, because only a provisioned tenant shows it.
+values instead of text.
+
+The walk on a database recreated from this branch and an Acme tenant provisioned
+for it reads *289 of 289 parameters carry documentation*, where it read *238 of
+289*, and the segment card reads *Pillar choice* *Default: LastRelevantDate.*,
+*Priority* *Default: 0.* and *Minimum distance* *Default: 1.* where it read three
+dashes. The entry carries no *without documentation* line.
 
 * Test Scenarios
 

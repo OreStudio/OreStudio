@@ -1,0 +1,30 @@
+Version 1. 289 of 289 parameters carry documentation from the ORE parameter contract.
+
+GBP1D
+
+YieldCurves · YieldCurve · position 0
+
+10 parameters
+
+Its Segments
+1 row
+
+Simple
+
+Conventions
+GBP-OIS-CONVENTIONS
+Documentation
+Pillar choice
+Default: LastRelevantDate.
+Documentation
+Priority
+Default: 0.
+Documentation
+Minimum distance
+Default: 1.
+Documentation
+Projection curve
+Default: Not given: ORE applies its own rule.
+Documentation
+
+12 quotes

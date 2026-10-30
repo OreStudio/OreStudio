@@ -26,11 +26,11 @@ The child collections a curve entry holds, their tables and their per-kind leave
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | The generator emits the collection and the leaves each kind reads; the BFF holds no table. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review and merge.                      |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance

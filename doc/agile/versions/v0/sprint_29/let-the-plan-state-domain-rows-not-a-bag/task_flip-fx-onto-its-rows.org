@@ -114,3 +114,8 @@ is captured once for both rather than fixed here.
 
 The plan's bag narrowed again. Fx left the variant, so three remain: bond, whose
 security still travels in it, and the two families that have not flipped.
+
+The run was made twice. The first, on the branch as first written, provisioned
+the same numbers; main then lost the legal entity publish route and no tenant
+could be provisioned from it, which was fixed in #4092. The numbers above were
+measured again after that fix, on the rebased tree, and are identical.

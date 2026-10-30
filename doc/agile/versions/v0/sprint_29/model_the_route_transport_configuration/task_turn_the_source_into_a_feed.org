@@ -8,7 +8,7 @@
 #+filetags: :marketdata:implementation:model_the_route_transport_configuration:sprint_29:v0:
 #+owner: marco
 #+branch: feature/turn-the-source-into-a-feed
-#+pr:
+#+pr: 4103
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -129,7 +129,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4103][#4103]] | [marketdata] Turn the source into a feed |
 
 * Review
 

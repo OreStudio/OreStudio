@@ -233,6 +233,12 @@ shape whichever family states the rows.
 | bond_issue_leg_rate                         |
 | bond_issue_leg_schedule                     |
 | bond_issue_leg_schedule_date                |
+| ascot                                       |
+| bond_forward                                |
+| bond_future                                 |
+| bond_option                                 |
+| bond_repo                                   |
+| bond_trs                                    |
 | balance_guaranteed_swap_instrument          |
 | balance_guaranteed_swap_tranche             |
 | balance_guaranteed_swap_tranche_notional    |

@@ -636,6 +636,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/bond_option_settlement.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/bond_option_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/bond_option_table_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/bond_product_batch.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/bond_repo.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/bond_repo_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/bond_repo_table.hpp"

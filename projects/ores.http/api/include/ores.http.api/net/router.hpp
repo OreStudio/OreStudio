@@ -73,6 +73,14 @@ public:
     route_builder& max_body(std::uint64_t bytes);
 
     /**
+     * @brief Makes the body a stream, and says where it goes.
+     *
+     * A route that states no sink reads its body into the request. One that
+     * states a factory gets a sink per request, filled in chunks by the session.
+     */
+    route_builder& sink(std::function<std::unique_ptr<domain::body_sink>()> factory);
+
+    /**
      * @brief Sets OpenAPI summary.
      */
     route_builder& summary(std::string s);
@@ -176,6 +184,7 @@ private:
     std::vector<std::string> tags_;
     std::vector<domain::query_param> query_params_;
     std::uint64_t max_body_size_ = 0;
+    std::function<std::unique_ptr<domain::body_sink>()> sink_;
     std::optional<domain::request_body_schema> body_schema_;
     std::optional<domain::response_schema> success_response_schema_;
 };

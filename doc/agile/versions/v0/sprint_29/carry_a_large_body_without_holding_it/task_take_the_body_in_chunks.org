@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :carry_a_large_body_without_holding_it:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/take-the-body-in-chunks
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -28,11 +28,11 @@ needs a read loop that hands the chunks on instead of collecting them.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8550935B-A0F4-4BAD-95F3-D3E03B45E044][Carry a large body without holding it]] |
-| Now          | Not yet started.                       |
+| Now          | The session reads chunked bodies and routes them to a sink. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Review, then the storage routes move onto the sink. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -73,9 +73,20 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| =ores.http.api= test cases | 94 cases, 285 assertions, all passing | =./ores.http.api.tests= | =#4110= |
+| Streamed body cases | 5 cases, 25 assertions, all passing | =./ores.http.api.tests "[http_streamed_body]"= | =#4110= |
 
 * Notes
+
+- The read is one loop for every route: a buffered route is a sink that appends to
+  a string, so the buffered and streamed paths cannot drift apart.
+- A body declared past the limit is refused before a sink exists, so nothing is
+  taken and nothing is discarded. A body that runs past it mid-stream is taken in
+  part and then discarded, which the chunked case covers.
+- =ores.trading='s generated batch header lost the bond members on =main=, so
+  =ores.synthetic= does not compile and =ores.http.core= cannot be built without
+  it. The header was restored from =b3a78b33ba^= for the build and the change was
+  reverted; the fix is with the environment that owns the batch.
 
 * Test Scenarios
 

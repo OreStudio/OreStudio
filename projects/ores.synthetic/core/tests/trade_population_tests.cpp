@@ -81,12 +81,10 @@ bond_view bond_of(const domain::trade_population_slot& slot) {
     view.issuer_id = boost::uuids::string_generator()(issue.issuer);
     view.issue_date = *issue.issue_date;
     view.maturity_date = *schedule.end_date;
-    const auto days = std::chrono::sys_days{view.maturity_date} -
-                      std::chrono::sys_days{view.issue_date};
-    view.tenor_years = static_cast<std::uint32_t>(std::chrono::duration_cast<std::chrono::days>(
-                                                      days)
-                                                      .count() /
-                                                  365);
+    const auto days =
+        std::chrono::sys_days{view.maturity_date} - std::chrono::sys_days{view.issue_date};
+    view.tenor_years = static_cast<std::uint32_t>(
+        std::chrono::duration_cast<std::chrono::days>(days).count() / 365);
     return view;
 }
 
@@ -377,8 +375,7 @@ std::size_t header_rows_of(const domain::trade_population_slot& slot) {
            batch.equity_barrier_option_instruments.size() +
            batch.equity_digital_option_instruments.size() + batch.equity_swap_instruments.size() +
            batch.equity_variance_swap_instruments.size() +
-           batch.equity_accumulator_instruments.size() +
-           batch.equity_position_instruments.size();
+           batch.equity_accumulator_instruments.size() + batch.equity_position_instruments.size();
 }
 
 }
@@ -850,8 +847,8 @@ TEST_CASE("the_notional_of_every_slot_sits_in_the_band", "[trade_population]") {
         const auto& schedule = slot.bond_issue_leg_schedules.front();
         REQUIRE(schedule.start_date.has_value());
         REQUIRE(schedule.end_date.has_value());
-        const auto days = std::chrono::sys_days{*schedule.end_date} -
-                          std::chrono::sys_days{*schedule.start_date};
+        const auto days =
+            std::chrono::sys_days{*schedule.end_date} - std::chrono::sys_days{*schedule.start_date};
         CHECK(days.count() >= 300);
         CHECK(days.count() <= 3700);
     }

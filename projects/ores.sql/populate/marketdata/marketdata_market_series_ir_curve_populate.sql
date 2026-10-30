@@ -152,7 +152,7 @@ where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
 
 insert into ores_marketdata_routes_tbl (
-    id, tenant_id, version, party_id, provider_code, feed_id,
+    id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values (
@@ -161,6 +161,7 @@ values (
     0,
     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
     'bloomberg',
+    'ir',
     '0a42775e-3da7-4c61-a732-6b62cb9f948f',
     current_user, current_user, 'system.initial_load',
     'The system party reads the simulated Bloomberg quotes through bloomberg-a'
@@ -174,5 +175,5 @@ select 'marketdata_routes (system party)' as entity, count(*) as count
 from ores_marketdata_routes_tbl
 where tenant_id = ores_utility_system_tenant_id_fn()
   and party_id = ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn())
-  and provider_code = 'bloomberg'
+  and publisher_code = 'bloomberg'
   and valid_to = ores_utility_infinity_timestamp_fn();

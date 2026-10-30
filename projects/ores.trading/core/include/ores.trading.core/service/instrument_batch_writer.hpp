@@ -32,6 +32,15 @@
 #include "ores.trading.core/repository/balance_guaranteed_swap_tranche_notional_repository.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_tranche_repository.hpp"
 #include "ores.trading.core/repository/bond_instrument_repository.hpp"
+#include "ores.trading.core/repository/bond_issue_call_date_repository.hpp"
+#include "ores.trading.core/repository/bond_issue_conversion_target_repository.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_amortization_repository.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_amount_repository.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_rate_repository.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_repository.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_schedule_date_repository.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_schedule_repository.hpp"
+#include "ores.trading.core/repository/bond_issue_repository.hpp"
 #include "ores.trading.core/repository/callable_swap_call_date_repository.hpp"
 #include "ores.trading.core/repository/callable_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/cap_floor_instrument_repository.hpp"
@@ -232,6 +241,23 @@ void write_instrument_batch(ores::database::context ctx,
         ctx, batch.rate_instruments, keys, stamp, claim);
     write_rows<repository::scripted_instrument_repository>(
         ctx, batch.scripted_instruments, keys, stamp, claim);
+    write_rows<repository::bond_issue_repository>(ctx, batch.bond_issues, keys, stamp, claim);
+    write_rows<repository::bond_issue_call_date_repository>(
+        ctx, batch.bond_issue_call_dates, keys, stamp, claim);
+    write_rows<repository::bond_issue_conversion_target_repository>(
+        ctx, batch.bond_issue_conversion_targets, keys, stamp, claim);
+    write_rows<repository::bond_issue_leg_repository>(
+        ctx, batch.bond_issue_legs, keys, stamp, claim);
+    write_rows<repository::bond_issue_leg_amortization_repository>(
+        ctx, batch.bond_issue_leg_amortizations, keys, stamp, claim);
+    write_rows<repository::bond_issue_leg_amount_repository>(
+        ctx, batch.bond_issue_leg_amounts, keys, stamp, claim);
+    write_rows<repository::bond_issue_leg_rate_repository>(
+        ctx, batch.bond_issue_leg_rates, keys, stamp, claim);
+    write_rows<repository::bond_issue_leg_schedule_repository>(
+        ctx, batch.bond_issue_leg_schedules, keys, stamp, claim);
+    write_rows<repository::bond_issue_leg_schedule_date_repository>(
+        ctx, batch.bond_issue_leg_schedule_dates, keys, stamp, claim);
     write_rows<repository::balance_guaranteed_swap_instrument_repository>(
         ctx, batch.balance_guaranteed_swap_instruments, keys, stamp, claim);
     write_rows<repository::balance_guaranteed_swap_tranche_repository>(
@@ -407,6 +433,24 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         !batch.scripted_instruments.empty() || false;
     if (headed)
         return names;
+    if (!batch.bond_issues.empty())
+        names.emplace_back("bond_issues");
+    if (!batch.bond_issue_call_dates.empty())
+        names.emplace_back("bond_issue_call_dates");
+    if (!batch.bond_issue_conversion_targets.empty())
+        names.emplace_back("bond_issue_conversion_targets");
+    if (!batch.bond_issue_legs.empty())
+        names.emplace_back("bond_issue_legs");
+    if (!batch.bond_issue_leg_amortizations.empty())
+        names.emplace_back("bond_issue_leg_amortizations");
+    if (!batch.bond_issue_leg_amounts.empty())
+        names.emplace_back("bond_issue_leg_amounts");
+    if (!batch.bond_issue_leg_rates.empty())
+        names.emplace_back("bond_issue_leg_rates");
+    if (!batch.bond_issue_leg_schedules.empty())
+        names.emplace_back("bond_issue_leg_schedules");
+    if (!batch.bond_issue_leg_schedule_dates.empty())
+        names.emplace_back("bond_issue_leg_schedule_dates");
     if (!batch.balance_guaranteed_swap_instruments.empty())
         names.emplace_back("balance_guaranteed_swap_instruments");
     if (!batch.balance_guaranteed_swap_tranches.empty())

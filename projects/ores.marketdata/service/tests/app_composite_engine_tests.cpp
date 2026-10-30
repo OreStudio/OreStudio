@@ -232,7 +232,8 @@ TEST_CASE("the_demand_and_the_metering_of_a_composite_include_its_inputs",
         ores::marketdata::domain::route r;
         r.id = gen();
         r.party_id = party;
-        r.provider_code = provider;
+        r.publisher_code = provider;
+        r.asset_class = "fx";
         r.feed_id = source.id;
         c.routes.push_back(r);
 

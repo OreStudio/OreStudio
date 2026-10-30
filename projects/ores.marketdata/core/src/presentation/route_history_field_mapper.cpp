@@ -38,7 +38,8 @@ std::vector<ores::diff::domain::field_value> render_route_fields(const domain::r
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
-    fields.push_back({.name = "Provider Code", .value = v.provider_code});
+    fields.push_back({.name = "Publisher Code", .value = v.publisher_code});
+    fields.push_back({.name = "Asset Class", .value = v.asset_class});
     fields.push_back({.name = "Feed ID", .value = boost::uuids::to_string(v.feed_id)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

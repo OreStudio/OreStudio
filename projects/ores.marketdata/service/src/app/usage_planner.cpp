@@ -78,13 +78,13 @@ std::vector<subscription_state> subscription_states(const demand_catalogue& cata
     for (const auto& route : catalogue.routes) {
         for (const auto& s : catalogue.subscriptions) {
             if (s.tenant_id != route.tenant_id || s.party_id != route.party_id ||
-                s.provider_code != route.provider_code)
+                s.provider_code != route.publisher_code)
                 continue;
             if (!(s.display || s.non_display || s.derived))
                 continue;
             out.push_back({route.tenant_id,
                            route.party_id,
-                           route.provider_code,
+                           route.publisher_code,
                            route.feed_id,
                            s.display,
                            s.non_display,

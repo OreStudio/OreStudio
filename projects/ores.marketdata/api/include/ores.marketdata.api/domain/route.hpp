@@ -68,14 +68,20 @@ struct route final {
     boost::uuids::uuid party_id;
 
     /**
-     * @brief References provider.code: the provider the route serves. With the party it is the
-     * natural key, so a party has one route for each provider.
+     * @brief References provider.code: the publisher the route serves. With the party and the asset
+     * class it is the natural key, so a party has one route for each publisher and class.
      */
-    std::string provider_code;
+    std::string publisher_code;
 
     /**
-     * @brief References feed.id: the source that serves the party. The source belongs to the
-     * provider of the route.
+     * @brief The asset class the route serves, such as fx or ir. The feed must hold a scope row for
+     * it, so a party routes one feed for each publisher and class.
+     */
+    std::string asset_class;
+
+    /**
+     * @brief References feed.id: the feed that serves the party. The feed belongs to the publisher
+     * of the route and its scope names the route's asset class.
      */
     boost::uuids::uuid feed_id;
 

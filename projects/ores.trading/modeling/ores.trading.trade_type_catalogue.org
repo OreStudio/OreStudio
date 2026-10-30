@@ -224,6 +224,15 @@ shape whichever family states the rows.
 
 | child                                       |
 |---------------------------------------------|
+| bond_issue                                  |
+| bond_issue_call_date                        |
+| bond_issue_conversion_target                |
+| bond_issue_leg                              |
+| bond_issue_leg_amortization                 |
+| bond_issue_leg_amount                       |
+| bond_issue_leg_rate                         |
+| bond_issue_leg_schedule                     |
+| bond_issue_leg_schedule_date                |
 | balance_guaranteed_swap_instrument          |
 | balance_guaranteed_swap_tranche             |
 | balance_guaranteed_swap_tranche_notional    |

@@ -127,63 +127,65 @@ void route_commands::register_commands(cli::Menu& root_menu, nats_client& sessio
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get(std::ref(out), std::ref(session), std::move(args));
         },
-        "get <provider_code>");
+        "get <publisher_code>");
 
     menu->Insert(
         "get-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-many <provider_code>");
+        "get-many <publisher_code>");
 
     menu->Insert(
         "add",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <party_id> <provider_code> <feed_id> <reason> <commentary>");
+        "add <party_id> <publisher_code> <asset_class> <feed_id> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <party_id> <provider_code> <feed_id> <reason> <commentary> [--version <n>]");
+        "set <id> <party_id> <publisher_code> <asset_class> <feed_id> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <party_id> <provider_code> <feed_id> <reason> <commentary>");
+        "put-many --count <n> <id> <party_id> <publisher_code> <asset_class> <feed_id> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete <provider_code> <reason> <commentary> [--version <n>]");
+        "delete <publisher_code> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "delete-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete-many <provider_code> <reason> <commentary>");
+        "delete-many <publisher_code> <reason> <commentary>");
 
     menu->Insert(
         "versions",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_versions(std::ref(out), std::ref(session), std::move(args));
         },
-        "versions <provider_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+        "versions <publisher_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
     menu->Insert(
         "version",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_version(std::ref(out), std::ref(session), std::move(args));
         },
-        "version <provider_code> --version <n>");
+        "version <publisher_code> --version <n>");
 
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
@@ -265,7 +267,7 @@ void route_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        route_read_token(req.key.provider_code, parsed->positionals[next++], "provider_code");
+        route_read_token(req.key.publisher_code, parsed->positionals[next++], "publisher_code");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -310,7 +312,7 @@ void route_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::route_key key;
-            route_read_token(key.provider_code, parsed->positionals[i + 0], "provider_code");
+            route_read_token(key.publisher_code, parsed->positionals[i + 0], "publisher_code");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -350,15 +352,16 @@ void route_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 3 + 2) {
-            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 4 + 2) {
+            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
         route_read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         route_read_token(
-            req.change.write.provider_code, parsed->positionals[next++], "provider_code");
+            req.change.write.publisher_code, parsed->positionals[next++], "publisher_code");
+        route_read_token(req.change.write.asset_class, parsed->positionals[next++], "asset_class");
         route_read_token(req.change.write.feed_id, parsed->positionals[next++], "feed_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -402,15 +405,16 @@ void route_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 5 + 2) {
+            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         route_read_token(req.change.write.id, parsed->positionals[next++], "id");
         route_read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
         route_read_token(
-            req.change.write.provider_code, parsed->positionals[next++], "provider_code");
+            req.change.write.publisher_code, parsed->positionals[next++], "publisher_code");
+        route_read_token(req.change.write.asset_class, parsed->positionals[next++], "asset_class");
         route_read_token(req.change.write.feed_id, parsed->positionals[next++], "feed_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -466,8 +470,8 @@ void route_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 4 + 2) {
-            fail(out) << "Expected " << (change_count * 4 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 5 + 2) {
+            fail(out) << "Expected " << (change_count * 5 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -476,7 +480,8 @@ void route_commands::process_put_many(std::ostream& out,
             route_read_token(change.write.id, parsed->positionals[next++], "id");
             route_read_token(change.write.party_id, parsed->positionals[next++], "party_id");
             route_read_token(
-                change.write.provider_code, parsed->positionals[next++], "provider_code");
+                change.write.publisher_code, parsed->positionals[next++], "publisher_code");
+            route_read_token(change.write.asset_class, parsed->positionals[next++], "asset_class");
             route_read_token(change.write.feed_id, parsed->positionals[next++], "feed_id");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
@@ -528,7 +533,7 @@ void route_commands::process_delete(std::ostream& out,
             return;
         }
         route_read_token(
-            req.removal.key.provider_code, parsed->positionals[next++], "provider_code");
+            req.removal.key.publisher_code, parsed->positionals[next++], "publisher_code");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -582,7 +587,7 @@ void route_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::route_key key;
-            route_read_token(key.provider_code, parsed->positionals[i * 1 + 0], "provider_code");
+            route_read_token(key.publisher_code, parsed->positionals[i * 1 + 0], "publisher_code");
             req.removals.push_back(messaging::route_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -634,7 +639,7 @@ void route_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        route_read_token(req.key.provider_code, parsed->positionals[next++], "provider_code");
+        route_read_token(req.key.publisher_code, parsed->positionals[next++], "publisher_code");
         route_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -680,7 +685,8 @@ void route_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        route_read_token(req.key.route.provider_code, parsed->positionals[next++], "provider_code");
+        route_read_token(
+            req.key.route.publisher_code, parsed->positionals[next++], "publisher_code");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

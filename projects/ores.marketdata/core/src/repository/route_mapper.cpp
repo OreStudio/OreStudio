@@ -47,7 +47,8 @@ domain::route route_mapper::map(const route_entity& v) {
     r.tenant_id = v.tenant_id;
     r.id = v.id;
     r.party_id = v.party_id;
-    r.provider_code = v.provider_code;
+    r.publisher_code = v.publisher_code;
+    r.asset_class = v.asset_class;
     r.feed_id = v.feed_id;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -67,7 +68,8 @@ route_entity route_mapper::map(const domain::route& v) {
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.party_id = v.party_id;
-    r.provider_code = v.provider_code;
+    r.publisher_code = v.publisher_code;
+    r.asset_class = v.asset_class;
     r.feed_id = v.feed_id;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

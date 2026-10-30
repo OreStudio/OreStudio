@@ -44,7 +44,7 @@ Reads the one row its key addresses. A key states every identifying column, so a
 The command is shaped like this:
 
 #+begin_example
-routes get <provider_code>
+routes get <publisher_code>
 #+end_example
 
 It is addressed at =marketdata.v1.routes.get=.
@@ -65,7 +65,7 @@ Reads several rows in one request, one key group per row.
 The command is shaped like this:
 
 #+begin_example
-routes get-many <provider_code>
+routes get-many <publisher_code>
 #+end_example
 
 It is addressed at =marketdata.v1.routes.get_many=.
@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-routes add <party_id> <provider_code> <feed_id> <reason> <commentary>
+routes add <party_id> <publisher_code> <asset_class> <feed_id> <reason> <commentary>
 #+end_example
 
 It is addressed at =marketdata.v1.routes.put=.
 
 #+name: routes-add
 #+begin_src ores-shell :tangle routes-add.ores :exports none
-routes add 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+routes add 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-routes set <id> <party_id> <provider_code> <feed_id> <reason> <commentary> [--version <n>]
+routes set <id> <party_id> <publisher_code> <asset_class> <feed_id> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =marketdata.v1.routes.put=.
 
 #+name: routes-set
 #+begin_src ores-shell :tangle routes-set.ores :exports none
-routes set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+routes set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-routes put-many --count <n> <id> <party_id> <provider_code> <feed_id> <reason> <commentary>
+routes put-many --count <n> <id> <party_id> <publisher_code> <asset_class> <feed_id> <reason> <commentary>
 #+end_example
 
 It is addressed at =marketdata.v1.routes.put_many=.
 
 #+name: routes-put-many
 #+begin_src ores-shell :tangle routes-put-many.ores :exports none
-routes put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+routes put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 system.new_record generated_script
 #+end_src
 
 ** =delete=
@@ -149,7 +149,7 @@ Removes a row. The change carries a reason and a commentary, which the server re
 The command is shaped like this:
 
 #+begin_example
-routes delete <provider_code> <reason> <commentary> [--version <n>]
+routes delete <publisher_code> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =marketdata.v1.routes.delete=.
@@ -170,7 +170,7 @@ Removes several rows in one request. The change carries a reason and a commentar
 The command is shaped like this:
 
 #+begin_example
-routes delete-many <provider_code> <reason> <commentary>
+routes delete-many <publisher_code> <reason> <commentary>
 #+end_example
 
 It is addressed at =marketdata.v1.routes.delete_many=.
@@ -191,7 +191,7 @@ Reads the row's recorded history, newest first.
 The command is shaped like this:
 
 #+begin_example
-routes versions <provider_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+routes versions <publisher_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
 #+end_example
 
 It is addressed at =marketdata.v1.routes_versions.list=.
@@ -212,7 +212,7 @@ Reads one recorded version of the row.
 The command is shaped like this:
 
 #+begin_example
-routes version <provider_code> --version <n>
+routes version <publisher_code> --version <n>
 #+end_example
 
 It is addressed at =marketdata.v1.routes_versions.get=.

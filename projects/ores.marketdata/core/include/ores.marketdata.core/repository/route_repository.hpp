@@ -105,13 +105,13 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest routes filtered by provider_code.
+     * @brief Reads latest routes filtered by publisher_code.
      */
-    std::vector<domain::route> read_latest_by_provider_code(context ctx,
-                                                            const std::string& provider_code);
+    std::vector<domain::route> read_latest_by_publisher_code(context ctx,
+                                                             const std::string& publisher_code);
 
     /**
-     * @brief Reads the newest routes filtered by provider_code, current or not.
+     * @brief Reads the newest routes filtered by publisher_code, current or not.
      *
      * History is addressed by the key the model declares and must stay readable
      * after a delete, which closes the transaction-time window rather than
@@ -123,8 +123,8 @@ public:
      * column means the row belongs to the whole tenant and is kept for every
      * party.
      */
-    std::vector<domain::route> read_any_by_provider_code(context ctx,
-                                                         const std::string& provider_code);
+    std::vector<domain::route> read_any_by_publisher_code(context ctx,
+                                                          const std::string& publisher_code);
 
 
     /**

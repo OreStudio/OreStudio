@@ -174,7 +174,7 @@ consumer consumer_of(const domain::route& route, const std::string& source_name)
     c.tenant_id = route.tenant_id;
     c.party_id = route.party_id;
     c.source_name = source_name;
-    c.provider_code = route.provider_code;
+    c.provider_code = route.publisher_code;
     c.feed_id = route.feed_id;
     return c;
 }

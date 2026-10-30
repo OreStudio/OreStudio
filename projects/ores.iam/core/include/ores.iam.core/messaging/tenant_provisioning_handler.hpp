@@ -2013,13 +2013,14 @@ private:
             throw std::runtime_error("The routes of party " + party_text +
                                      " were not read: " + routes.result.message);
         const bool has_route = std::ranges::any_of(routes.routes, [&](const auto& r) {
-            return r.party_id == party_id && r.provider_code == provider;
+            return r.party_id == party_id && r.publisher_code == provider;
         });
         if (!has_route) {
             marketdata::messaging::put_route_request put;
             put.change.write.id = uuid_gen();
             put.change.write.party_id = party_id;
-            put.change.write.provider_code = provider;
+            put.change.write.publisher_code = provider;
+            put.change.write.asset_class = "fx";
             put.change.write.feed_id = source_id;
             put.change.precondition.kind = ores::utility::domain::precondition_kind::any;
             put.intent.reason_code = "system.new_record";

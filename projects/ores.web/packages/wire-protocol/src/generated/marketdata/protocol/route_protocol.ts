@@ -29,13 +29,14 @@ import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
 
 export interface RouteKey {
-    provider_code: string;
+    publisher_code: string;
 }
 
 export interface RouteWrite {
     id: string;
     party_id: string;
-    provider_code: string;
+    publisher_code: string;
+    asset_class: string;
     feed_id: string;
 }
 
@@ -56,11 +57,13 @@ export interface RouteLookup {
 
 export interface RoutesFilter {
     party_id: string | null;
-    provider_code: string | null;
+    publisher_code: string | null;
+    asset_class: string | null;
     feed_id: string | null;
     id_one_of: string[] | null;
     party_id_one_of: string[] | null;
-    provider_code_one_of: string[] | null;
+    publisher_code_one_of: string[] | null;
+    asset_class_one_of: string[] | null;
     feed_id_one_of: string[] | null;
 }
 

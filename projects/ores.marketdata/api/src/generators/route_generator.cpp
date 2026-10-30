@@ -35,6 +35,7 @@ namespace ores::marketdata::generators {
 using ores::utility::generation::generation_keys;
 
 domain::route generate_synthetic_route(utility::generation::generation_context& ctx) {
+    [[maybe_unused]] static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
     const auto tid_str =
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
@@ -44,8 +45,10 @@ domain::route generate_synthetic_route(utility::generation::generation_context& 
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
-    r.provider_code = std::string("bloomberg");
+    r.publisher_code = std::string("bloomberg");
+    r.asset_class = std::string("fx") + "-" + std::to_string(idx);
     r.feed_id = ctx.generate_uuid();
     r.modified_by = modified_by;
     r.performed_by = modified_by;

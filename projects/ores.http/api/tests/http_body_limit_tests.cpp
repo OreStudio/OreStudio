@@ -28,6 +28,7 @@
 #include <boost/beast/http.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <optional>
 #include <string>
 #include <thread>
 
@@ -86,12 +87,16 @@ private:
 };
 
 /**
- * @brief Posts a body and returns the response, or a zero status on a timeout.
+ * @brief Posts a body and returns the response, or nothing when none arrived.
+ *
+ * The value is optional because a default-constructed response reports the
+ * status 200. A server that closes the connection without answering would
+ * otherwise read as a success, and a test would pass over a silent refusal.
  */
-http::response<http::string_body> post(std::uint16_t port,
-                                       const std::string& target,
-                                       const std::string& body,
-                                       std::chrono::milliseconds budget) {
+std::optional<http::response<http::string_body>> post(std::uint16_t port,
+                                                      const std::string& target,
+                                                      const std::string& body,
+                                                      std::chrono::milliseconds budget) {
     asio::io_context io;
     beast::tcp_stream stream(io);
     beast::error_code ec;
@@ -99,10 +104,10 @@ http::response<http::string_body> post(std::uint16_t port,
 
     const auto address = asio::ip::make_address("127.0.0.1", ec);
     if (ec)
-        return {};
+        return std::nullopt;
     stream.connect(asio::ip::tcp::endpoint(address, port), ec);
     if (ec)
-        return {};
+        return std::nullopt;
 
     http::request<http::string_body> req{http::verb::post, target, 11};
     req.set(http::field::host, "127.0.0.1");
@@ -110,13 +115,13 @@ http::response<http::string_body> post(std::uint16_t port,
     req.prepare_payload();
     http::write(stream, req, ec);
     if (ec)
-        return {};
+        return std::nullopt;
 
     beast::flat_buffer buffer;
     http::response<http::string_body> res;
     http::read(stream, buffer, res, ec);
     if (ec)
-        return {};
+        return std::nullopt;
 
     stream.socket().shutdown(asio::ip::tcp::socket::shutdown_both, ec);
     return res;
@@ -225,9 +230,10 @@ TEST_CASE("a_body_past_the_default_limit_is_refused_with_413", "[http_body_limit
     const auto refused =
         post(fixture.port(), "/echo", std::string(500, 'x'), std::chrono::seconds(5));
 
-    REQUIRE(refused.result_int() == 413);
+    REQUIRE(refused.has_value());
+    REQUIRE(refused->result_int() == 413);
     // The connection closes with the refusal, because the body was not read.
-    REQUIRE(refused[http::field::connection] == "close");
+    REQUIRE((*refused)[http::field::connection] == "close");
 }
 
 TEST_CASE("a_route_that_raises_its_limit_accepts_the_body", "[http_body_limit]") {
@@ -252,8 +258,98 @@ TEST_CASE("a_route_that_raises_its_limit_accepts_the_body", "[http_body_limit]")
     const auto accepted =
         post(fixture.port(), "/upload", std::string(500, 'x'), std::chrono::seconds(5));
 
-    REQUIRE(accepted.result_int() == 200);
-    REQUIRE(accepted.body() == R"({"byte_count":500})");
+    REQUIRE(accepted.has_value());
+    REQUIRE(accepted->result_int() == 200);
+    REQUIRE(accepted->body() == R"({"byte_count":500})");
+}
+
+TEST_CASE("a_body_past_a_routes_own_limit_is_refused", "[http_body_limit]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a route's own limit is enforced downward";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+
+    test_server fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(router->post("/small")
+                          .summary("Take a small upload")
+                          .auth_optional()
+                          .max_body(64)
+                          .handler(echo_handler())
+                          .build());
+
+    const auto refused =
+        post(fixture.port(), "/small", std::string(500, 'x'), std::chrono::seconds(5));
+
+    REQUIRE(refused.has_value());
+    REQUIRE(refused->result_int() == 413);
+}
+
+TEST_CASE("the_server_ceiling_caps_a_route_that_states_more", "[http_body_limit]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that the server ceiling caps the route's stated limit";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.max_body_size = 1000;
+    options.default_max_body_size = 512;
+    options.worker_threads = 2;
+
+    test_server fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(router->post("/upload")
+                          .summary("Take an upload")
+                          .auth_optional()
+                          .max_body(4096)
+                          .handler(echo_handler())
+                          .build());
+
+    const auto refused =
+        post(fixture.port(), "/upload", std::string(5000, 'x'), std::chrono::seconds(5));
+    REQUIRE(refused.has_value());
+    REQUIRE(refused->result_int() == 413);
+
+    const auto accepted =
+        post(fixture.port(), "/upload", std::string(900, 'x'), std::chrono::seconds(5));
+    REQUIRE(accepted.has_value());
+    REQUIRE(accepted->result_int() == 200);
+    REQUIRE(accepted->body() == R"({"byte_count":900})");
+}
+
+TEST_CASE("a_body_past_a_megabyte_is_taken_on_a_route_that_states_it", "[http_body_limit]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a large stated limit outlives the header read";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+
+    test_server fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(router->post("/upload")
+                          .summary("Take a large upload")
+                          .auth_optional()
+                          .max_body(2 * 1024 * 1024)
+                          .handler(echo_handler())
+                          .build());
+
+    const auto accepted =
+        post(fixture.port(), "/upload", std::string(1536 * 1024, 'x'), std::chrono::seconds(5));
+    REQUIRE(accepted.has_value());
+    REQUIRE(accepted->result_int() == 200);
+
+    /*
+     * A body of this size is still in flight when a refusal is written, so a
+     * client that writes before it reads may lose the answer to a reset. The
+     * declaration is refused on its own here, before any of the body is sent.
+     */
+    const auto reply = expect_continue_reply(fixture.port(), 3 * 1024 * 1024);
+    REQUIRE(reply.rfind("HTTP/1.1 413", 0) == 0);
 }
 
 TEST_CASE("an_expect_continue_is_answered_before_the_body", "[http_body_limit]") {

@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 2FDF2F91-193B-4AB1-8EA1-294EF1D2C058
+:END:
+#+title: Task: Refuse a body past the server ceiling
+#+description: A body that declares more than the server ceiling closes the session with no response, because Beast enforces the parser's own body limit as the headers finish and the ceiling was set there. Read the headers under no body limit, apply the route's limit to the body alone, and test the ceiling, the route's own limit and a body past a megabyte.
+#+type: task
+#+level: s1
+#+filetags: :bound_the_memory_a_request_body_may_cost:sprint_29:v0:
+#+owner: marco
+#+branch: feature/refuse-a-body-past-the-server-ceiling
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8945F7D2-8623-407A-998C-8245ACD1DD8B][Bound the memory a request body may cost]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A request that declares a body larger than the server ceiling is answered with a
+closed connection and no response. Beast compares the declared length with the
+parser's own body limit as the headers finish, and that limit stood at the
+ceiling, so the refusal this story exists to add was replaced by a silent close on
+the one path no test covered. The headers must be read under no body limit, and
+the route's limit must govern the body alone.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8945F7D2-8623-407A-998C-8245ACD1DD8B][Bound the memory a request body may cost]] |
+| Now          | The session reads the headers under no body limit and the ceiling is tested. |
+| Waiting on   | Nothing.                               |
+| Next         | Merge, then increment A3 streams the accepted body. |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- A body that declares more than the server ceiling is answered 413, not a closed
+  connection.
+- A route that states a limit below the ceiling refuses a body past its own limit.
+- A route that states a limit above the ceiling is capped by the ceiling.
+- A body past a megabyte is still accepted on a route that states the room for it,
+  so the header read imposes no limit of its own.
+- The test client reports no answer as no answer, not as the default status 200.
+- The =ores.http.api= suite passes.
+
+* Plan
+
+1. Trace the limit the session computes into a file, because a request that is
+   never answered reads as status 200 on a default-constructed response.
+2. Find that Beast reports =body_limit= from =finish_header= while the headers are
+   read, so the declared length is compared with the parser's limit before any
+   route is resolved.
+3. Read the headers under no body limit, and set the route's limit on the body
+   alone, where the declared-size check and the chunked read both apply it.
+4. Return no response from the test client when none arrives, so a silent close
+   cannot read as a success.
+5. Test the route's own limit, the ceiling over a stated route limit, and a body
+   past a megabyte on a route that states the room for it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =ores.http.api= test cases | 87 cases, 260 assertions, all passing | =./ores.http.api.tests= | branch head |
+| Body-limit cases | 8 cases, 21 assertions, all passing | =./ores.http.api.tests "[http_body_limit]"= | branch head |
+| Ceiling case before the fix | the suite failed: the server answered nothing where 413 is required | =./ores.http.api.tests "the_server_ceiling_caps_a_route_that_states_more"= | =441b4cfbc7= |
+
+* Notes
+
+- The defect was found after the parent task closed. Its ceiling clause was
+  accepted without a test, and the ceiling was the one value that reached the
+  parser before the route was known.
+- A client that writes a large body before it reads may lose the 413 to a reset,
+  because the server closes without draining. The refusal still holds. The test
+  states the declaration through =Expect: 100-continue= so the answer arrives.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The session reads the request headers under no body limit of its own, then
+resolves the route and applies the route's limit, capped by the server ceiling, to
+the body alone. A body that declares more than the ceiling is answered 413 instead
+of a closed connection, a route that states less than the ceiling refuses past its
+own limit, and a body past a megabyte still arrives on a route that states the room
+for it. The test client returns nothing when the server answers nothing, so a
+silent close can no longer pass as status 200.

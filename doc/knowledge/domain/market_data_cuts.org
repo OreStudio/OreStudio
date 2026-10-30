@@ -12,7 +12,9 @@
 * Summary
 
 A *cut* is the fixed population of deals and market data that one trading
-centre values against for one business day. The word carries a second sense in
+valuation is run against at one timepoint. A cut is not defined by being daily or
+by belonging to one centre: the EOD cut is the daily kind, and other kinds of cut
+share the one defining property, a timepoint. The word carries a second sense in
 FX. The *cut code* fixes the time of day at which an option expires. This page
 defines both senses, the kinds of cut, the centres a cut is taken for, what a
 cut holds, and the audit trail it leaves. The sourced material rests on the
@@ -395,7 +397,7 @@ today is not a missing field. There is no cut to name.
 
 | Term                  | Definition                                                              |
 |-----------------------+-------------------------------------------------------------------------|
-| Cut                   | The fixed population of deals and market data a centre values against for one business day |
+| Cut                   | The fixed population of deals and market data at one timepoint |
 | Deal cut              | The component of a cut that freezes the deal population                 |
 | Market data cut       | The component of a cut that freezes the market data set                 |
 | EOD cut               | The primary, authoritative cut of a centre's business day               |

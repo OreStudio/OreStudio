@@ -23,9 +23,9 @@ A curve configuration is drawn like every other configuration that comes off an 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Eighteen of the nineteen tasks are done, and the scenario passes on a provisioned tenant. The page reads *238 of 238 parameters carry documentation*, a segment draws =Conventions= with its value where it drew a gap, and the collection wiring is the projection's own. One task remains: five XPaths name an element no document declares. |
+| Now           | Eighteen of the nineteen tasks are done, and the scenario passes on a provisioned tenant. The collection wiring is the projection's own, so a segment now draws all five leaves its kind reads. Three of them have no contract row, which the page states: *238 of 289 parameters carry documentation*. One task remains: five XPaths name an element no document declares. |
 | Waiting on    | Nothing.                              |
-| Next          | Retire the paths the schema does not declare (FC161D8C). |
+| Next          | Retire the paths the schema does not declare (FC161D8C), then teach the extractor to follow a helper call (inbox EB796F14). |
 | Last touched  | 2026-10-30                               |
 
 * Acceptance

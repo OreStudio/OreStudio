@@ -106,9 +106,15 @@ was taken with a script, not by hand, and it met these:
   the walk on 2026-10-30 reads =Conventions= with its value and the page counts
   *238 of 238 parameters carry documentation*.
 - *The curve's header counts only the curve's own parameters.* =GBP1D= reads *10
-  parameters* while the page reads *238 of 238*: the segment's leaves are in the
+  parameters* while the page reads *238 of 289*: the segment's leaves are in the
   page's count and not in the curve's tag. A person reading the tag alone sees a
   smaller curve than the page holds. Still open.
+- *Three segment leaves have no contract row.* =PillarChoice=, =Priority= and
+  =MinDistance= draw a dash and the entry reads *3 without documentation*, because
+  every kind reads them through =common_settings= and the extractor follows no
+  helper call. The same root cause as the inherited base class, one level in.
+  Filed as [[id:EB796F14-ECCB-4634-BAD9-6958D0F3C10A][The curve term extractor
+  misses leaves a helper reads]].
 - *The instant a row was recorded was drawn as a leaf.* Found and fixed on the
   quotes branch; the scenario confirms it is gone.
 - *Two 401s appear in the console* while the shell settles before the party is

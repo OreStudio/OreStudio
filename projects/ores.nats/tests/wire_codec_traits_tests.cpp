@@ -102,8 +102,8 @@ TEST_CASE("a MessagePack message with a generated codec is written by it", "[wir
 TEST_CASE("a message that cannot be read is an error, not a throw", "[wire_codec]") {
     const ores::nats::wire_codec codec(ores::nats::wire_format::json);
     const std::string not_json = "not json";
-    const auto bytes = std::span(reinterpret_cast<const std::byte*>(not_json.data()),
-                                 not_json.size());
+    const auto bytes =
+        std::span(reinterpret_cast<const std::byte*>(not_json.data()), not_json.size());
 
     const auto read = codec.decode<plain_message>(bytes);
     CHECK_FALSE(read);

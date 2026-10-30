@@ -595,7 +595,7 @@ CATALOGUE: tuple[Check, ...] = (
     ),
     Check(
         id="sql-hygiene",
-        title="The SQL tree has no unterminated comment or repeated index",
+        title="The SQL tree has no split string, unterminated comment or repeated index",
         argv=("python3", "projects/ores.sql/utility/check_sql_hygiene.py", "projects/ores.sql"),
         classes=("sql",),
     ),

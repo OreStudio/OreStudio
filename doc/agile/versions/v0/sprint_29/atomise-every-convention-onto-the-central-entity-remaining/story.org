@@ -8,7 +8,7 @@
 #+filetags: :refdata:conventions:data_oriented_design:codegen:sprint_29:v0:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment: festive_dijkstra
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Tenor basis swap is rebuilt on the central convention row and the composite pare
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Not yet started. Split from [[id:AECE9B3F-CA2C-486E-A5DB-50BBD06AC77B][Atomise every convention onto the central entity]], which closed in sprint 28 with its done tasks.                       |
 | Waiting on    | Nothing.                               |
@@ -40,6 +40,7 @@ Tenor basis swap is rebuilt on the central convention row and the composite pare
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:293E7326-A3A2-48E5-AD05-2EEA68C4E362][Build the composite family get and put]] | BACKLOG | | | Generate the family get, get_many, put and put_many for a composite entity, so one round trip reads a central row with its parts at one instant and one transaction writes them together. Prove the generated operations on an existing composite before the convention pilot depends on them. The generic get and put stay as they are, and the family names follow the codegen pattern library. |
+| [[id:B0E249A2-2544-415B-8975-8B46CE3FA6DB][Let the convention publish parse]] | STARTED | 2026-10-30 | | Task for: Atomise every convention onto the central entity — the remaining work |
 
 * Decisions
 

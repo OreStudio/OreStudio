@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: B0E249A2-2544-415B-8975-8B46CE3FA6DB
+:END:
+#+title: Task: Let the convention publish parse
+#+description: Task for: Atomise every convention onto the central entity — the remaining work
+#+type: task
+#+level: s1
+#+filetags: :atomise-every-convention-onto-the-central-entity-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: hotfix/let-the-convention-publish-parse
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E8AAAAAC-F562-4F57-AC12-FC88E8EF5741][Atomise every convention onto the central entity — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make db recreate succeed again: the convention publish function must be valid SQL.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:E8AAAAAC-F562-4F57-AC12-FC88E8EF5741][Atomise every convention onto the central entity — the remaining work]] |
+| Now          | Fix applied; the recreation and the publish both verified. |
+| Waiting on   | Nothing.                               |
+| Next         | Review and merge.                      |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- A comment no longer breaks the string concatenation of the insert statement.
+- compass db recreate -y -k completes.
+
+* Plan
+
+#+begin_src text
+1. Move the block comment out of the literal run in
+   ores_refdata_publish_conventions_from_dq_fn.
+2. Teach check_sql_hygiene.py to see a comment between two literals, so the
+   next one fails the sql-hygiene check instead of a database recreation.
+3. Recreate the database and publish the corpus twice: the first publish
+   inserts, the second skips.
+#+end_src
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Split literals in the tree | 0 | =python3 projects/ores.sql/utility/check_sql_hygiene.py projects/ores.sql= | this branch |
+| Split literals in main's file | 1, at line 5268 | =python3 projects/ores.sql/utility/check_sql_hygiene.py= on the =origin/main= copy | =769522285a= |
+| Files the check scans | 2955 | as above | this branch |
+| Artefact parameter rows, stale database | 2283 | =compass sql -- -c "select count(*) from ores_dq_ore_parameters_artefact_tbl"= | =dd67116de2= |
+| Artefact parameter rows, after a recreate | 2295 | as above | =769522285a= with this branch |
+| Database recreation | complete, 1m 11s | =compass db recreate -y -k= | this branch |
+| Published parameters, first call | 2295 inserted | =ores_reporting_publish_ore_parameters_from_dq_fn=, rolled back | this branch |
+| Published parameters, second call | 2295 skipped | as above | this branch |
+| Value domains the publish needs first | 5 inserted | =ores_reporting_publish_ore_parameter_value_domains_from_dq_fn= | this branch |
+| Parameters whose XPath is under =/Conventions/= | 248 | =select count(*) ... where xpath like '/Conventions/%'= | this branch |
+
+* Notes
+
+The defect came in with =d1f8da3523=, which wanted a republish of a convention
+to be a skip rather than a duplicate key. It appended =on conflict do nothing=
+to the insert the function executes, and wrote a block comment between the two
+adjacent literals. PostgreSQL joins two constants separated only by whitespace;
+a comment is not whitespace, so the second literal became an argument. Nothing
+ran the function between the merge and this discovery: =setup_schema.sql= failed
+at the file, so =compass db recreate -y -k= aborted with exit 3.
+
+The guard lives in =check_sql_hygiene.py=, which already scans the SQL tree for
+a comment that breaks a recreation. It now also scans inside dollar-quoted
+function bodies, because a body is SQL the server runs.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=compass db recreate -y -k= completes again, and the function publishes as its
+commit intended: 2295 parameters inserted, and the same 2295 skipped on the
+second call. The comment sits above the statement, so the literals run together
+and the insert keeps its =on conflict do nothing=.
+
+The sql-hygiene check now reports the defect that main shipped. On main's own
+file it names line 5268; on this branch it reports nothing across 2955 files.

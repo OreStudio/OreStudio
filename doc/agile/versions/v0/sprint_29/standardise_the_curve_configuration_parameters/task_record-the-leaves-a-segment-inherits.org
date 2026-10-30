@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 3D1208F2-1D51-4733-81FB-01B19D36E8EE
+:END:
+#+title: Task: Record the leaves a segment inherits
+#+description: A segment reads six leaves from its base class before its own: Type, Conventions, PillarChoice, DuplicatePillarPolicy, Priority and MinDistance. The term extractor takes a class's base from the same file it reads, and the segment classes are declared in a header and defined in the source, so it records none of the six. Every segment on the screen therefore shows its conventions as a gap, though ORE documents it.
+#+type: task
+#+level: s1
+#+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
+#+owner: marco
+#+branch: feature/record-the-leaves-a-segment-inherits
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every leaf a segment inherits from its base class reaches the contract, so a segment's conventions and pillar choice carry their words.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
+| Now          | The base map is read across files; the contract carries the leaves. |
+| Waiting on   | Nothing.                               |
+| Next         | Close on the pull request.             |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- The extractor reads a class's base from any file in the checkout, so a class declared in a header and defined in a source keeps its inheritance.
+- The six leaves a yield curve segment inherits are recorded under each of the twelve segment kinds.
+- The regenerated contract carries them, and a query counts the segment leaves before and after.
+- The dataset and value-set checks pass, and the artefact is the generator's.
+
+* Plan
+
+One map, collected before anything is built. `classes()` read `class X : public Y`
+from each file and looked the base up in that file's map, so a class declared in
+`yieldcurveconfig.hpp` and defined in `yieldcurveconfig.cpp` kept no base and every
+leaf it inherits was lost. The base map is now filled from every file the
+extractor reads before any class is built.
+
+The leaves that come back are the ones the base reads: `Type`, `Conventions`,
+`PillarChoice`, `DuplicatePillarPolicy`, `Priority` and `MinDistance`, under each
+of the twelve kinds.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Terms the extractor writes | 434 before, 480 after | `python3 projects/ores.sql/utility/extract_curve_terms.py` | see =* Result= |
+| Segment leaves the contract carries | 26 before, 38 after | a count of `/Segments/` paths in the artefact | see =* Result= |
+| `Conventions` rows under segments | 0 before, 12 after | the same, filtered to paths ending `/Conventions` | see =* Result= |
+| Parameter rows in the artefact | 2283 before, 2295 after | the dataset generator's own count | see =* Result= |
+
+* Notes
+
+- *What the unresolved blocks say.* Walking the base adds 25 blocks the extractor
+  cannot resolve, almost all a segment's `Quotes`: a quote list is a collection of
+  `Quote` elements, not a leaf, so the extractor records it as a block with no
+  parser rather than inventing a leaf for it. That is the honest answer, and it is
+  why the count moved.
+- *The screen follows the contract.* The page reads these leaves by path, so a
+  segment's conventions and pillar choice stop drawing as gaps once the contract
+  carrying them is published; no screen change was needed.
+
+* Result
+
+A segment's inherited leaves reach the contract. The extractor now reads a class's
+base from every file it reads, so the six leaves `YieldCurveSegment::fromXML`
+reads — `Type`, `Conventions`, `PillarChoice`, `DuplicatePillarPolicy`, `Priority`
+and `MinDistance` — are recorded under each of the twelve segment kinds.
+
+Measured on the regenerated tree: 434 terms became 480, the artefact's curve rows
+went from 253 to 265, its segment rows from 26 to 38, and `Conventions` went from
+no row at all to twelve. The dataset and value-set checks pass, and the artefact
+and the value sets are the generators'.
+
+What it does not fix: a segment's `Quotes` is a collection of quote elements, and
+the extractor records it as a block it cannot resolve rather than as leaves —
+which is why the unresolved count rose from 8 to 32.

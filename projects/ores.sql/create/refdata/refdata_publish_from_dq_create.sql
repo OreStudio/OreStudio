@@ -5264,7 +5264,14 @@ begin
               'and not exists (select 1 from %1$I o '
                   'where o.tenant_id = %8$L::uuid%7$s '
                     'and o.id = a.id '
-                    'and o.valid_to = ores_utility_infinity_timestamp_fn())',
+                    'and o.valid_to = ores_utility_infinity_timestamp_fn()) '
+            /*
+             * The guard above keeps a republish from staging the row again, and
+             * the version unique index is the statement's own guarantee: a
+             * published convention whose identity is already live is a skip,
+             * whether the guard saw it or not.
+             */
+            'on conflict do nothing',
             v_target, v_party_target, v_cols, v_party_expr, v_commentary,
             v_artefact, v_party_cond,
             p_target_tenant_id::text, p_dataset_id::text);

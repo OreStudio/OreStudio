@@ -8,7 +8,7 @@
 #+filetags: :marketdata:implementation:sprint_29:v0:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ The signed-off Connectivity prototype becomes the screen: the delivery tree, the
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -42,7 +42,7 @@ The signed-off Connectivity prototype becomes the screen: the delivery tree, the
 | [[id:04C544E6-DFAA-4612-B521-EF1D412EC1B5][Serve the Connectivity writes]] | BACKLOG | | | Write endpoints and permissions for sessions, feeds, scopes, schedules and routes. |
 | [[id:6BC08965-2C4E-4B28-A819-588BBAA7DD19][Draw the supplier tree and dashboard]] | BACKLOG | | | The delivery tree and the supplier dashboard with attention, coverage and recent feeds. |
 | [[id:90A588AE-3A7D-4980-A2DB-31E044F0EC29][Draw the session and feed records]] | BACKLOG | | | Session transport, runtime and feeds; feed overview, scope, schedule and routes. |
-| [[id:A2A85020-A346-4DA4-971A-2B69F4E8799B][Draw the adapter catalogue and publisher]] | BACKLOG | | | The read-only adapter catalogue and the publisher record with its feeds. |
+| [[id:A2A85020-A346-4DA4-971A-2B69F4E8799B][Draw the adapter catalogue and publisher]] | STARTED | 2026-10-30 | | The read-only adapter catalogue and the publisher record with its feeds. |
 | [[id:1994DF76-4830-4510-96BD-3B524E782ED2][Prove the Connectivity screens]] | BACKLOG | | | The new session and new feed flows create rows the adapter reads. |
 
 * Decisions

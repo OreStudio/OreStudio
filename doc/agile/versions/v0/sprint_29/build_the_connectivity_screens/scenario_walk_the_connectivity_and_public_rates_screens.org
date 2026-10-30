@@ -217,8 +217,11 @@ child as PASS, FAIL or PENDING with one line of evidence.
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
+| Status        | PENDING |
 | Completed at  |       |
 | Branch        |       |
 | Commit        |       |
 | Worktree      |       |
+
+* Notes
+

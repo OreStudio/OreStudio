@@ -109,7 +109,8 @@ import { MarketDataPage } from './marketdata/MarketDataPage.js';
 import { PublishedCurvePage } from './marketdata/PublishedCurvePage.js';
 import { PublishedCurvesPage } from './marketdata/PublishedCurvesPage.js';
 import { CurveBlueprintsPage, CurveBlueprintPage } from './marketdata/curveBlueprints.js';
-import { OfficialRatesPage } from './marketdata/OfficialRatesPage.js';
+import { ConnectivityPage } from './marketdata/ConnectivityPage.js';
+import { PublicRatesPage } from './marketdata/PublicRatesPage.js';
 import { SubscriptionsPage } from './marketdata/SubscriptionsPage.js';
 import { FxFeedPage } from './marketdata/synthetic/fxFeeds.js';
 import { IrFeedPage } from './marketdata/synthetic/irFeeds.js';
@@ -686,13 +687,25 @@ export function AppRoutes({
                 )}
             />
             <Route
-                path={PATHS.officialRates}
+                path={PATHS.connectivity}
                 element={signedIn(
                     gate.version,
                     session,
                     shell,
                     () => (
-                        <OfficialRatesPage />
+                        <ConnectivityPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.publicRates}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <PublicRatesPage />
                     ),
                     'workspace',
                 )}

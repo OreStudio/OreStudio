@@ -19,14 +19,15 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import type { OfficialFixings, OfficialProvider } from '../api/client.js';
-import { currenciesOf, pairValues, planPair, seriesOf } from './officialRates.js';
+import type { PublicRatesFixings, PublicRatesProvider } from '../api/client.js';
+import { currenciesOf, pairValues, planPair, seriesOf } from './publicRates.js';
 
-function provider(code: string, pivot: string, quotes: readonly string[]): OfficialProvider {
+function provider(code: string, pivot: string, quotes: readonly string[]): PublicRatesProvider {
     return {
         code,
         version: 3,
         name: code.toUpperCase(),
+        kind: 'central_bank',
         description: '',
         terms_url: `https://${code}.example/terms`,
         terms_credit: '',
@@ -34,7 +35,7 @@ function provider(code: string, pivot: string, quotes: readonly string[]): Offic
         terms_accepted: true,
         terms_accepted_by: 'super_admin',
         terms_accepted_at: null,
-        sources: [],
+        feeds: [],
         series: quotes.map((quote) => ({
             id: `${code}-${quote}`,
             oresmd_uri: `oresmd://fx/${pivot}?type=fixing&index=fx&source=${code.toUpperCase()}&ccy=${quote}`,
@@ -69,7 +70,7 @@ describe('planPair', () => {
 });
 
 describe('pairValues', () => {
-    const fixings: OfficialFixings = {
+    const fixings: PublicRatesFixings = {
         'ecb-USD': [
             { date: '2026-10-26', value: '1.1600' },
             { date: '2026-10-27', value: '1.1500' },

@@ -186,7 +186,7 @@ import {
     type ReportNameChoice,
     type ReportsPage,
 } from '@ores/wire-protocol/browser';
-import { ApiFailure, request } from './transport.js';
+import { ApiFailure, request, requestFile, type ServedFile } from './transport.js';
 
 /**
  * The session and account calls.
@@ -772,17 +772,30 @@ const marketDataCatalogueSchema = z.object({
 
 export type MarketDataCatalogue = z.infer<typeof marketDataCatalogueSchema>;
 
-const officialSeriesSchema = z.object({
+const publicRatesSeriesSchema = z.object({
     id: z.string(),
     oresmd_uri: z.string(),
     base: z.string(),
     quote: z.string(),
 });
 
-const officialProviderSchema = z.object({
+const publicRatesFeedSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    service: z.string(),
+    provider_key: z.string(),
+    is_default: z.boolean(),
+    session_code: z.string(),
+    supplier_code: z.string(),
+    supplier_name: z.string(),
+    asset_classes: z.array(z.string()),
+});
+
+const publicRatesProviderSchema = z.object({
     code: z.string(),
     version: z.number(),
     name: z.string(),
+    kind: z.string(),
     description: z.string(),
     terms_url: z.string(),
     terms_credit: z.string(),
@@ -790,22 +803,130 @@ const officialProviderSchema = z.object({
     terms_accepted: z.boolean(),
     terms_accepted_by: z.string(),
     terms_accepted_at: z.string().nullable(),
-    sources: z.array(z.object({ id: z.string(), name: z.string(), kind: z.string() })),
-    series: z.array(officialSeriesSchema),
+    feeds: z.array(publicRatesFeedSchema),
+    series: z.array(publicRatesSeriesSchema),
 });
 
-const officialRatesSchema = z.object({ providers: z.array(officialProviderSchema) });
+const publicRatesSchema = z.object({ providers: z.array(publicRatesProviderSchema) });
 
-/** An official provider: a publisher of daily rates read through the official rates adapter. */
-export type OfficialProvider = z.infer<typeof officialProviderSchema>;
-export type OfficialSeries = z.infer<typeof officialSeriesSchema>;
+/** A public publisher: one that releases its rates and feeds them through a session. */
+export type PublicRatesProvider = z.infer<typeof publicRatesProviderSchema>;
+export type PublicRatesFeed = z.infer<typeof publicRatesFeedSchema>;
+export type PublicRatesSeries = z.infer<typeof publicRatesSeriesSchema>;
 
-const officialFixingsSchema = z.object({
+const publicRatesFixingsSchema = z.object({
     fixings: z.record(z.string(), z.array(z.object({ date: z.string(), value: z.string() }))),
 });
 
 /** The fixings of each series asked for, oldest first. */
-export type OfficialFixings = z.infer<typeof officialFixingsSchema>['fixings'];
+export type PublicRatesFixings = z.infer<typeof publicRatesFixingsSchema>['fixings'];
+
+const seriesCoverageSchema = z.object({
+    first: z.string(),
+    last: z.string(),
+    count: z.number().int(),
+});
+
+const publicRatesCoverageSchema = z.object({
+    series: z.record(z.string(), seriesCoverageSchema),
+});
+
+/** How far back each series goes, and how many values it holds. */
+export type SeriesCoverage = z.infer<typeof seriesCoverageSchema>;
+
+const connectivityPublisherSchema = z.object({
+    code: z.string(),
+    name: z.string(),
+    kind: z.string(),
+    description: z.string(),
+    terms_url: z.string(),
+    terms_credit: z.string(),
+    terms_accepted: z.boolean(),
+    terms_accepted_by: z.string(),
+    terms_accepted_at: z.string().nullable(),
+});
+
+const connectivitySupplierSchema = z.object({
+    code: z.string(),
+    name: z.string(),
+    kind: z.string(),
+    description: z.string(),
+    contract_reference: z.string(),
+    support: z.string(),
+});
+
+const connectivityAdapterFieldSchema = z.object({
+    name: z.string(),
+    type: z.string(),
+    required: z.boolean(),
+    default: z.string(),
+});
+
+const connectivityAdapterSchema = z.object({
+    code: z.string(),
+    name: z.string(),
+    module_version: z.string(),
+    description: z.string(),
+    process: z.string(),
+    asset_classes: z.array(z.string()),
+    services: z.array(z.string()),
+    schema: z.array(connectivityAdapterFieldSchema),
+});
+
+const connectivitySessionSchema = z.object({
+    code: z.string(),
+    name: z.string(),
+    supplier_code: z.string(),
+    adapter_code: z.string(),
+    environment: z.string(),
+    endpoint: z.string(),
+    credential_ref: z.string(),
+    settings: z.record(z.string(), z.unknown()),
+    enabled: z.boolean(),
+    description: z.string(),
+});
+
+const connectivityScopeSchema = z.object({
+    asset_class: z.string(),
+    item: z.string(),
+    vendor_instrument_id: z.string().nullable(),
+});
+
+const connectivityRouteSchema = z.object({
+    party_id: z.string(),
+    publisher_code: z.string(),
+    asset_class: z.string(),
+});
+
+const connectivityFeedSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    publisher_code: z.string(),
+    session_code: z.string(),
+    service: z.string(),
+    provider_key: z.string(),
+    is_default: z.boolean(),
+    description: z.string(),
+    scopes: z.array(connectivityScopeSchema),
+    routes: z.array(connectivityRouteSchema),
+});
+
+const connectivitySchema = z.object({
+    publishers: z.array(connectivityPublisherSchema),
+    suppliers: z.array(connectivitySupplierSchema),
+    adapters: z.array(connectivityAdapterSchema),
+    sessions: z.array(connectivitySessionSchema),
+    feeds: z.array(connectivityFeedSchema),
+});
+
+/** The delivery catalogue the Connectivity screen draws. */
+export type Connectivity = z.infer<typeof connectivitySchema>;
+export type ConnectivityPublisher = z.infer<typeof connectivityPublisherSchema>;
+export type ConnectivitySupplier = z.infer<typeof connectivitySupplierSchema>;
+export type ConnectivityAdapter = z.infer<typeof connectivityAdapterSchema>;
+export type ConnectivitySession = z.infer<typeof connectivitySessionSchema>;
+export type ConnectivityFeed = z.infer<typeof connectivityFeedSchema>;
+export type ConnectivityScope = z.infer<typeof connectivityScopeSchema>;
 
 /** One provider of the catalogue, as a selector names it. */
 export type MarketDataProvider = MarketDataCatalogue['providers'][number];
@@ -2291,29 +2412,72 @@ export const api = {
             .parse(await request('/api/marketdata/routes', { method: 'GET' })).routes;
     },
 
-    /** The official providers, with their terms, their sources and their fixing series. */
-    async officialRates(): Promise<readonly OfficialProvider[]> {
-        return officialRatesSchema.parse(
-            await request('/api/marketdata/official', { method: 'GET' }),
+    /** The public publishers, with their terms, their feeds and their fixing series. */
+    async publicRates(): Promise<readonly PublicRatesProvider[]> {
+        return publicRatesSchema.parse(
+            await request('/api/marketdata/public-rates', { method: 'GET' }),
         ).providers;
     },
 
+    /** How far back each public series goes, and how many values it holds. */
+    async publicRatesCoverage(): Promise<Readonly<Record<string, SeriesCoverage>>> {
+        return publicRatesCoverageSchema.parse(
+            await request('/api/marketdata/public-rates/coverage', { method: 'GET' }),
+        ).series;
+    },
+
     /** The fixings of up to a dozen series, oldest first. */
-    async officialFixings(series: readonly string[]): Promise<OfficialFixings> {
+    async publicRatesFixings(series: readonly string[]): Promise<PublicRatesFixings> {
         const query = new URLSearchParams({ series: series.join(',') });
-        return officialFixingsSchema.parse(
-            await request(`/api/marketdata/official/fixings?${query.toString()}`, {
+        return publicRatesFixingsSchema.parse(
+            await request(`/api/marketdata/public-rates/fixings?${query.toString()}`, {
                 method: 'GET',
             }),
         ).fixings;
     },
 
-    /** Accepts a provider's terms at the version the person read; the service records who and when. */
+    /**
+     * The historical fixings of one publisher as a file, for a range and,
+     * when named, one item.
+     */
+    async downloadPublicRatesFixings(input: {
+        readonly publisher: string;
+        readonly from: string;
+        readonly to: string;
+        readonly item?: string;
+    }): Promise<ServedFile & { readonly rows: number }> {
+        const query = new URLSearchParams({
+            publisher: input.publisher,
+            from: input.from,
+            to: input.to,
+        });
+        if (input.item !== undefined && input.item !== '') {
+            query.set('item', input.item);
+        }
+        const file = await requestFile(
+            `/api/marketdata/public-rates/fixings.csv?${query.toString()}`,
+            {
+                method: 'GET',
+            },
+        );
+        // The header is one line; every other line is a fixing.
+        const rows = Math.max(0, file.content.trimEnd().split('\n').length - 1);
+        return { ...file, rows };
+    },
+
+    /** Accepts a publisher's terms at the version the person read; the service records who and when. */
     async acceptProviderTerms(code: string, version: number): Promise<void> {
-        await request(`/api/marketdata/official/${encodeURIComponent(code)}/accept-terms`, {
+        await request(`/api/marketdata/public-rates/${encodeURIComponent(code)}/accept-terms`, {
             method: 'POST',
             body: JSON.stringify({ version }),
         });
+    },
+
+    /** The delivery catalogue: publishers, suppliers, adapters, sessions and feeds. */
+    async connectivity(): Promise<Connectivity> {
+        return connectivitySchema.parse(
+            await request('/api/marketdata/connectivity', { method: 'GET' }),
+        );
     },
 
     /** The providers and the sources, which are what a subscription and a route choose from. */

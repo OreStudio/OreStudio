@@ -22,9 +22,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
-import type { OfficialFixings, OfficialProvider } from '../api/client.js';
+import type { PublicRatesFixings, PublicRatesProvider } from '../api/client.js';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { OfficialRatesPage } from './OfficialRatesPage.js';
+import { PublicRatesPage } from './PublicRatesPage.js';
+
+const TODAY = new Date().toISOString().slice(0, 10);
+const YESTERDAY = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
 
 function provider(
     code: string,
@@ -32,11 +35,12 @@ function provider(
     pivot: string,
     quotes: readonly string[],
     accepted: boolean,
-): OfficialProvider {
+): PublicRatesProvider {
     return {
         code,
         version: 3,
         name,
+        kind: 'central_bank',
         description: '',
         terms_url: `https://${code}.example/terms`,
         terms_credit: `Source: ${name}`,
@@ -44,7 +48,19 @@ function provider(
         terms_accepted: accepted,
         terms_accepted_by: accepted ? 'super_admin' : '',
         terms_accepted_at: accepted ? '2026-10-28 09:00:00Z' : null,
-        sources: [{ id: `${code}-source`, name: `${code}-frankfurter`, kind: 'vendor' }],
+        feeds: [
+            {
+                id: `${code}-feed`,
+                name: `${code}-frankfurter`,
+                service: 'end_of_day',
+                provider_key: code.toUpperCase(),
+                is_default: true,
+                session_code: 'frankfurter-eu',
+                supplier_code: 'frankfurter',
+                supplier_name: 'Frankfurter',
+                asset_classes: ['fx'],
+            },
+        ],
         series: quotes.map((quote) => ({
             id: `${code}-${quote}`,
             oresmd_uri: `oresmd://fx/${pivot}?type=fixing&index=fx&source=${code.toUpperCase()}&ccy=${quote}`,
@@ -59,19 +75,18 @@ const PROVIDERS = [
     provider('boc', 'Bank of Canada', 'CAD', ['EUR', 'USD'], false),
 ];
 
-const FIXINGS: OfficialFixings = {
+const FIXINGS: PublicRatesFixings = {
     'ecb-USD': [
-        { date: '2026-10-26', value: '1.1600' },
-        { date: '2026-10-27', value: '1.1500' },
+        { date: YESTERDAY, value: '1.1600' },
+        { date: TODAY, value: '1.1500' },
     ],
-    'boc-USD': [
-        { date: '2026-10-26', value: '1.3900' },
-        { date: '2026-10-27', value: '1.4000' },
-    ],
-    'boc-EUR': [
-        { date: '2026-10-26', value: '1.6000' },
-        { date: '2026-10-27', value: '1.6100' },
-    ],
+};
+
+const COVERAGE = {
+    'ecb-USD': { first: YESTERDAY, last: TODAY, count: 2 },
+    'ecb-GBP': { first: YESTERDAY, last: TODAY, count: 2 },
+    'boc-EUR': { first: '2026-09-01', last: '2026-09-02', count: 2 },
+    'boc-USD': { first: '2026-09-01', last: '2026-09-02', count: 2 },
 };
 
 function render(permissions: readonly string[]): string {
@@ -90,27 +105,31 @@ function render(permissions: readonly string[]): string {
             },
         ],
     });
-    client.setQueryData(['official-rates'], PROVIDERS);
-    client.setQueryData(['official-fixings', 'ecb-USD'], { 'ecb-USD': FIXINGS['ecb-USD'] });
-    client.setQueryData(['official-fixings', 'ecb-USD', 'boc-USD', 'boc-EUR'], FIXINGS);
+    client.setQueryData(['public-rates'], PROVIDERS);
+    client.setQueryData(['public-rates-coverage'], COVERAGE);
+    client.setQueryData(['public-rates-fixings', 'ecb-USD'], { 'ecb-USD': FIXINGS['ecb-USD'] });
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
                 <MemoryRouter>
-                    <OfficialRatesPage />
+                    <PublicRatesPage />
                 </MemoryRouter>
             </TranslationProvider>
         </QueryClientProvider>,
     );
 }
 
-describe('the official rates screen', () => {
-    it('lists each provider with its terms state and its source', () => {
+describe('the public rates screen', () => {
+    it('lists each publisher with its terms state, its feed and its freshness', () => {
         const html = render(['marketdata::providers:read']);
+        expect(html).toContain('Public rates');
         expect(html).toContain('European Central Bank');
         expect(html).toContain('By super_admin on 2026-10-28');
         expect(html).toContain('Not accepted');
-        expect(html).toContain('boc-frankfurter');
+        expect(html).toContain('ecb-frankfurter');
+        expect(html).toContain('Frankfurter');
+        expect(html).toContain('Fresh');
+        expect(html).toContain('Late');
     });
 
     it('offers Accept terms only to a person who may accept them', () => {
@@ -120,16 +139,16 @@ describe('the official rates screen', () => {
         ).toContain('Accept terms');
     });
 
-    it('lists the first provider’s latest fixings, newest first', () => {
+    it('lists the first publisher’s latest fixings, newest first', () => {
         const html = render(['marketdata::providers:read']);
         expect(html).toContain('The rates of European Central Bank');
         expect(html.indexOf('1.1500')).toBeLessThan(html.indexOf('1.1600'));
     });
 
-    it('compares one pair across providers and names a crossed value as such', () => {
+    it('shows the tabs of the screen', () => {
         const html = render(['marketdata::providers:read']);
-        expect(html).toContain('Published');
-        expect(html).toContain('Crossed');
-        expect(html).toContain((1.4 / 1.61).toPrecision(6));
+        expect(html).toContain('Availability — who holds this underlying');
+        expect(html).toContain('Compare — how far apart they are');
+        expect(html).toContain('Fetch — ask for data now');
     });
 });

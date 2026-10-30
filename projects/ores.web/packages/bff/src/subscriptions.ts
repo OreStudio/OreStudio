@@ -23,7 +23,7 @@ import { randomUUID } from 'node:crypto';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as providerSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/provider_protocol';
-import { subjects as sourceSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/market_data_source_protocol';
+import { subjects as feedSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/feed_protocol';
 import { subjects as subscriptionSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/subscription_protocol';
 import { subjects as routeSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/route_protocol';
 import { invalidRequest } from './errors.js';
@@ -175,7 +175,7 @@ export function registerSubscriptionRoutes(
                 filter: null,
                 as_of: null,
             }),
-            readAll(session, sourceSubjects.list_market_data_sources_request, 'sources', {
+            readAll(session, feedSubjects.list_feeds_request, 'feeds', {
                 filter: null,
                 as_of: null,
             }),
@@ -184,7 +184,17 @@ export function registerSubscriptionRoutes(
             providers: providers
                 .map((row) => providerSchema.parse(row))
                 .sort((left, right) => left.code.localeCompare(right.code)),
-            sources: sources.map((row) => sourceSchema.parse(row)),
+            sources: sources.map((row) => {
+                const feed = z
+                    .looseObject({ id: z.string(), name: z.string(), publisher_code: z.string() })
+                    .parse(row);
+                return {
+                    id: feed.id,
+                    name: feed.name,
+                    provider_code: feed.publisher_code,
+                    kind: 'feed',
+                };
+            }),
         };
     });
 

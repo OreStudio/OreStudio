@@ -18,23 +18,23 @@
  *
  */
 
-import type { OfficialFixings, OfficialProvider, OfficialSeries } from '../api/client.js';
+import type { PublicRatesFixings, PublicRatesProvider, PublicRatesSeries } from '../api/client.js';
 
 /** How a provider gives a pair: as it publishes it, the other way round, or through its pivot. */
 export type PairRoute = 'direct' | 'inverse' | 'cross';
 
 /** The series a provider's fixings of a pair are made from, and how. */
 export interface PairPlan {
-    readonly provider: OfficialProvider;
+    readonly provider: PublicRatesProvider;
     readonly route: PairRoute;
     /** The fixing of the pivot in the quote currency; absent when the quote is the pivot. */
-    readonly toQuote: OfficialSeries | undefined;
+    readonly toQuote: PublicRatesSeries | undefined;
     /** The fixing of the pivot in the base currency; absent when the base is the pivot. */
-    readonly toBase: OfficialSeries | undefined;
+    readonly toBase: PublicRatesSeries | undefined;
 }
 
 /** A provider's pivot: the base of its fixings, which is the same for all of them. */
-export function pivotOf(provider: OfficialProvider): string | undefined {
+export function pivotOf(provider: PublicRatesProvider): string | undefined {
     return provider.series[0]?.base;
 }
 
@@ -45,7 +45,7 @@ export function pivotOf(provider: OfficialProvider): string | undefined {
  * the ECB's terms count as a change and so it is shown as derived.
  */
 export function planPair(
-    provider: OfficialProvider,
+    provider: PublicRatesProvider,
     base: string,
     quote: string,
 ): PairPlan | undefined {
@@ -53,7 +53,7 @@ export function planPair(
     if (pivot === undefined || base === quote) {
         return undefined;
     }
-    const leg = (currency: string): OfficialSeries | undefined =>
+    const leg = (currency: string): PublicRatesSeries | undefined =>
         provider.series.find((s) => s.quote === currency);
     if (pivot === base) {
         const toQuote = leg(quote);
@@ -88,8 +88,11 @@ export function seriesOf(plans: readonly PairPlan[]): readonly string[] {
  * The pair by date as @p plan gives it from @p fixings: the units of the quote that one
  * unit of the base buys. A date that lacks a leg has no value.
  */
-export function pairValues(plan: PairPlan, fixings: OfficialFixings): ReadonlyMap<string, number> {
-    const values = (series: OfficialSeries | undefined): ReadonlyMap<string, number> =>
+export function pairValues(
+    plan: PairPlan,
+    fixings: PublicRatesFixings,
+): ReadonlyMap<string, number> {
+    const values = (series: PublicRatesSeries | undefined): ReadonlyMap<string, number> =>
         new Map(
             (series === undefined ? [] : (fixings[series.id] ?? [])).map((f) => [
                 f.date,
@@ -111,7 +114,7 @@ export function pairValues(plan: PairPlan, fixings: OfficialFixings): ReadonlyMa
 }
 
 /** The currencies any official provider quotes, its pivots included, sorted. */
-export function currenciesOf(providers: readonly OfficialProvider[]): readonly string[] {
+export function currenciesOf(providers: readonly PublicRatesProvider[]): readonly string[] {
     const all = new Set<string>();
     for (const provider of providers) {
         for (const series of provider.series) {

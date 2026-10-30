@@ -53,6 +53,37 @@ export interface CurveBlock {
     readonly presence: string;
 }
 
+/** One kind of a collection row, and the leaves the projection reads for it. */
+export interface CurveCollectionKind {
+    /** The element the row is written as, such as =Simple=. */
+    readonly kind: string;
+    readonly leaves: readonly CurveCollectionLeaf[];
+}
+
+/** One leaf of a kind: the column that holds it and the ORE element it is. */
+export interface CurveCollectionLeaf {
+    readonly column: string;
+    readonly ore: string;
+}
+
+/** A child element an entry holds rows of, and the columns that place its leaves. */
+export interface CurveCollection {
+    /** The element the rows are written as, such as =Segments=. */
+    readonly element: string;
+    /** The table that holds a row. */
+    readonly entity: string;
+    /** The document vector that carries the rows. */
+    readonly vector: string;
+    /** The column that joins a row back to the entry it belongs to. */
+    readonly parentKey: string;
+    /** The column that names the element a row is written as, or empty for none. */
+    readonly kindColumn: string;
+    /** The column a quote of one row joins back to, or empty for no quotes. */
+    readonly quoteParent: string;
+    /** The kinds a row may state, and the leaves each kind reads. */
+    readonly kinds: readonly CurveCollectionKind[];
+}
+
 /** One section of the document, with the columns its entries' leaves are read from. */
 export interface CurveSectionWiring {
     readonly section: string;
@@ -63,6 +94,7 @@ export interface CurveSectionWiring {
     readonly entities: readonly CurveEntity[];
     readonly parameters: readonly CurveParameter[];
     readonly blocks: readonly CurveBlock[];
+    readonly collections: readonly CurveCollection[];
 }
 
 /**
@@ -91,6 +123,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             },
         ],
         blocks: [],
+        collections: [],
     },
     {
         section: 'FXVolatilities',
@@ -240,6 +273,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 presence: '',
             },
         ],
+        collections: [],
     },
     {
         section: 'SwaptionVolatilities',
@@ -387,6 +421,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 presence: '',
             },
         ],
+        collections: [],
     },
     {
         section: 'YieldVolatilities',
@@ -472,6 +507,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 presence: '',
             },
         ],
+        collections: [],
     },
     {
         section: 'CapFloorVolatilities',
@@ -683,6 +719,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 presence: '',
             },
         ],
+        collections: [],
     },
     {
         section: 'CDSVolatilities',
@@ -758,6 +795,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 presence: '',
             },
         ],
+        collections: [],
     },
     {
         section: 'DefaultCurves',
@@ -811,6 +849,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 presence: '',
             },
         ],
+        collections: [],
     },
     {
         section: 'YieldCurves',
@@ -908,6 +947,310 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             {
                 element: 'Segments',
                 presence: '',
+            },
+        ],
+        collections: [
+            {
+                element: 'Segments',
+                entity: 'curve_segment',
+                vector: 'segments',
+                parentKey: 'curve_definition_id',
+                kindColumn: 'segment_type',
+                quoteParent: 'curve_segment_id',
+                kinds: [
+                    {
+                        kind: 'Direct',
+                        leaves: [
+                            {
+                                column: 'conventions',
+                                ore: 'Conventions',
+                            },
+                            {
+                                column: 'pillar_choice',
+                                ore: 'PillarChoice',
+                            },
+                            {
+                                column: 'priority',
+                                ore: 'Priority',
+                            },
+                            {
+                                column: 'min_distance',
+                                ore: 'MinDistance',
+                            },
+                        ],
+                    },
+                    {
+                        kind: 'Simple',
+                        leaves: [
+                            {
+                                column: 'conventions',
+                                ore: 'Conventions',
+                            },
+                            {
+                                column: 'pillar_choice',
+                                ore: 'PillarChoice',
+                            },
+                            {
+                                column: 'priority',
+                                ore: 'Priority',
+                            },
+                            {
+                                column: 'min_distance',
+                                ore: 'MinDistance',
+                            },
+                            {
+                                column: 'projection_curve',
+                                ore: 'ProjectionCurve',
+                            },
+                        ],
+                    },
+                    {
+                        kind: 'AverageOIS',
+                        leaves: [
+                            {
+                                column: 'conventions',
+                                ore: 'Conventions',
+                            },
+                            {
+                                column: 'pillar_choice',
+                                ore: 'PillarChoice',
+                            },
+                            {
+                                column: 'priority',
+                                ore: 'Priority',
+                            },
+                            {
+                                column: 'min_distance',
+                                ore: 'MinDistance',
+                            },
+                            {
+                                column: 'projection_curve',
+                                ore: 'ProjectionCurve',
+                            },
+                        ],
+                    },
+                    {
+                        kind: 'TenorBasis',
+                        leaves: [
+                            {
+                                column: 'conventions',
+                                ore: 'Conventions',
+                            },
+                            {
+                                column: 'pillar_choice',
+                                ore: 'PillarChoice',
+                            },
+                            {
+                                column: 'priority',
+                                ore: 'Priority',
+                            },
+                            {
+                                column: 'min_distance',
+                                ore: 'MinDistance',
+                            },
+                            {
+                                column: 'projection_curve_pay',
+                                ore: 'ProjectionCurvePay',
+                            },
+                            {
+                                column: 'projection_curve_receive',
+                                ore: 'ProjectionCurveReceive',
+                            },
+                            {
+                                column: 'projection_curve_long',
+                                ore: 'ProjectionCurveLong',
+                            },
+                            {
+                                column: 'projection_curve_short',
+                                ore: 'ProjectionCurveShort',
+                            },
+                        ],
+                    },
+                    {
+                        kind: 'CrossCurrency',
+                        leaves: [
+                            {
+                                column: 'conventions',
+                                ore: 'Conventions',
+                            },
+                            {
+                                column: 'pillar_choice',
+                                ore: 'PillarChoice',
+                            },
+                            {
+                                column: 'priority',
+                                ore: 'Priority',
+                            },
+                            {
+                                column: 'min_distance',
+                                ore: 'MinDistance',
+                            },
+                            {
+                                column: 'discount_curve',
+                                ore: 'DiscountCurve',
+                            },
+                            {
+                                column: 'spot_rate',
+                                ore: 'SpotRate',
+                            },
+                            {
+                                column: 'projection_curve_domestic',
+                                ore: 'ProjectionCurveDomestic',
+                            },
+                            {
+                                column: 'projection_curve_foreign',
+                                ore: 'ProjectionCurveForeign',
+                            },
+                        ],
+                    },
+                    {
+                        kind: 'ZeroSpread',
+                        leaves: [
+                            {
+                                column: 'conventions',
+                                ore: 'Conventions',
+                            },
+                            {
+                                column: 'pillar_choice',
+                                ore: 'PillarChoice',
+                            },
+                            {
+                                column: 'priority',
+                                ore: 'Priority',
+                            },
+                            {
+                                column: 'min_distance',
+                                ore: 'MinDistance',
+                            },
+                            {
+                                column: 'reference_curve',
+                                ore: 'ReferenceCurve',
+                            },
+                        ],
+                    },
+                    {
+                        kind: 'DiscountRatio',
+                        leaves: [
+                            {
+                                column: 'conventions',
+                                ore: 'Conventions',
+                            },
+                            {
+                                column: 'pillar_choice',
+                                ore: 'PillarChoice',
+                            },
+                            {
+                                column: 'priority',
+                                ore: 'Priority',
+                            },
+                            {
+                                column: 'min_distance',
+                                ore: 'MinDistance',
+                            },
+                        ],
+                    },
+                    {
+                        kind: 'FittedBond',
+                        leaves: [
+                            {
+                                column: 'pillar_choice',
+                                ore: 'PillarChoice',
+                            },
+                            {
+                                column: 'priority',
+                                ore: 'Priority',
+                            },
+                            {
+                                column: 'min_distance',
+                                ore: 'MinDistance',
+                            },
+                            {
+                                column: 'extrapolate_flat',
+                                ore: 'ExtrapolateFlat',
+                            },
+                        ],
+                    },
+                    {
+                        kind: 'BondYieldShifted',
+                        leaves: [
+                            {
+                                column: 'conventions',
+                                ore: 'Conventions',
+                            },
+                            {
+                                column: 'reference_curve',
+                                ore: 'ReferenceCurve',
+                            },
+                            {
+                                column: 'extrapolate_flat',
+                                ore: 'ExtrapolateFlat',
+                            },
+                        ],
+                    },
+                    {
+                        kind: 'WeightedAverage',
+                        leaves: [
+                            {
+                                column: 'reference_curve',
+                                ore: 'ReferenceCurve1',
+                            },
+                            {
+                                column: 'reference_curve_2',
+                                ore: 'ReferenceCurve2',
+                            },
+                            {
+                                column: 'weight_1',
+                                ore: 'Weight1',
+                            },
+                            {
+                                column: 'weight_2',
+                                ore: 'Weight2',
+                            },
+                        ],
+                    },
+                    {
+                        kind: 'YieldPlusDefault',
+                        leaves: [
+                            {
+                                column: 'reference_curve',
+                                ore: 'ReferenceCurve',
+                            },
+                        ],
+                    },
+                    {
+                        kind: 'IborFallback',
+                        leaves: [
+                            {
+                                column: 'pillar_choice',
+                                ore: 'PillarChoice',
+                            },
+                            {
+                                column: 'priority',
+                                ore: 'Priority',
+                            },
+                            {
+                                column: 'min_distance',
+                                ore: 'MinDistance',
+                            },
+                            {
+                                column: 'ibor_index',
+                                ore: 'IborIndex',
+                            },
+                            {
+                                column: 'rfr_curve',
+                                ore: 'RfrCurve',
+                            },
+                            {
+                                column: 'rfr_index',
+                                ore: 'RfrIndex',
+                            },
+                            {
+                                column: 'spread',
+                                ore: 'Spread',
+                            },
+                        ],
+                    },
+                ],
             },
         ],
     },
@@ -1027,6 +1370,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 presence: 'has_quotes',
             },
         ],
+        collections: [],
     },
     {
         section: 'InflationCapFloorVolatilities',
@@ -1176,6 +1520,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 presence: '',
             },
         ],
+        collections: [],
     },
     {
         section: 'EquityCurves',
@@ -1265,6 +1610,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 presence: 'has_quotes',
             },
         ],
+        collections: [],
     },
     {
         section: 'EquityVolatilities',
@@ -1360,6 +1706,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 presence: '',
             },
         ],
+        collections: [],
     },
     {
         section: 'Securities',
@@ -1416,6 +1763,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             },
         ],
         blocks: [],
+        collections: [],
     },
     {
         section: 'BaseCorrelations',
@@ -1538,6 +1886,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             },
         ],
         blocks: [],
+        collections: [],
     },
     {
         section: 'CommodityCurves',
@@ -1639,6 +1988,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 presence: '',
             },
         ],
+        collections: [],
     },
     {
         section: 'CommodityVolatilities',
@@ -1746,6 +2096,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 presence: '',
             },
         ],
+        collections: [],
     },
     {
         section: 'Correlations',
@@ -1856,6 +2207,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             },
         ],
         blocks: [],
+        collections: [],
     },
     {
         section: 'BondFutureVolatilities',
@@ -1935,6 +2287,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
                 presence: 'has_volatility_config',
             },
         ],
+        collections: [],
     },
     {
         section: 'IntradayPowerCurves',
@@ -1985,6 +2338,7 @@ export const CURVE_SECTIONS: readonly CurveSectionWiring[] = [
             },
         ],
         blocks: [],
+        collections: [],
     },
 ];
 

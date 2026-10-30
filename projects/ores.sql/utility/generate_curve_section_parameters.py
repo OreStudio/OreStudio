@@ -193,6 +193,146 @@ def blocks_of(body):
     return names
 
 
+def definition_body(text, name):
+    """The body of the definition of one function or method, by name.
+
+    A declaration ends in a semicolon, so only the run whose arguments are
+    followed by a brace is a definition. The methods of =import_context= are read
+    this way: they are the projection's own statement of what a child row holds.
+    """
+    for match in re.finditer(r"\b" + name + r"\([^;{}]*\)\s*\{", text):
+        index = match.end()
+        depth = 1
+        while depth > 0:
+            character = text[index]
+            if character == "{":
+                depth += 1
+            elif character == "}":
+                depth -= 1
+            index += 1
+        return text[match.end():index - 1]
+    return None
+
+
+def collection_rules(text):
+    """The child rows an entry holds, from the projection's own readers.
+
+    A curve entry's segments are a collection: one row per =Segments= child, the
+    row's kind named by its =Type=, and each row's quotes under it. The projection
+    states every fact that places those leaves -- the row, the vector it fills, the
+    key back to the entry, the column holding the kind, and the column a quote
+    joins its segment by -- so the rule is read from it rather than restated in the
+    BFF.
+    """
+    segment = definition_body(text, "segment")
+    quotes = definition_body(text, "import_quotes")
+    if segment is None:
+        return [], ["the projection has no import_context::segment"]
+    if quotes is None:
+        return [], ["the projection has no import_quotes"]
+    row = re.search(r"refdata::domain::(\w+)\s+(\w+);", segment)
+    vector = re.search(r"out\.(\w+)\.push_back", segment)
+    quote_row = re.search(r"refdata::domain::(\w+)\s+(\w+);", quotes)
+    problems = []
+    for what, found in (("the segment row", row), ("the segment vector", vector),
+                        ("the quote row", quote_row)):
+        if found is None:
+            problems.append(f"the projection does not state {what}")
+    if problems:
+        return [], problems
+    parent = re.search(r"\b" + row.group(2) + r"\.(\w+)\s*=\s*definition_id;", segment)
+    kind = re.search(r"\b" + row.group(2) + r"\.(\w+)\s*=\s*type;", segment)
+    quote_parent = re.search(
+        r"\b" + quote_row.group(2) + r"\.(\w+)\s*=\s*segment_id;", quotes)
+    for what, found in (("the segment's key to its entry", parent),
+                        ("the segment's kind column", kind),
+                        ("the quote's key to its segment", quote_parent)):
+        if found is None:
+            problems.append(f"the projection does not state {what}")
+    if problems:
+        return [], problems
+    return [{
+        "entity": row.group(1),
+        "vector": vector.group(1),
+        "parentKey": parent.group(1),
+        "kindColumn": kind.group(1),
+        "quoteParent": quote_parent.group(1),
+    }], []
+
+
+def kind_leaf(expression, reader):
+    """The element a kind's assignment reads, named after the kind's own reader.
+
+    The kinds are read from a loop variable, not from =v=, so =read_element= does
+    not apply: it is the entry's reader that it knows.
+    """
+    flat = " ".join(expression.split())
+    call = re.fullmatch(r"(\w+)\((.*)\)", flat)
+    if call is not None:
+        first = call.group(2).split(",")[0].strip().lstrip("*")
+        elements = re.findall(r'"(\w+)"', flat)
+        return elements[0] if first == reader and elements else None
+    method = re.fullmatch(r"(\w+)(?:\.|->)\w+\(" r'"(\w+)"\)', flat)
+    return method.group(2) if method is not None and method.group(1) == reader else None
+
+
+KIND_LOOP = re.compile(
+    r'for \(const auto& (\w+) : v\.children\("(\w+)"\)\) \{(.*?)\n    \}', re.S)
+
+# One statement of a kind's loop: a column assigned from the reader, or the call
+# that adds the settings every kind shares.
+KIND_STATEMENT = re.compile(
+    r'\b(\w+)\.(\w+)\s*=\s*([^;]+);|\bcommon_settings\((\w+), (\w+)\);')
+
+
+def kind_leaves(text):
+    """The leaves each segment kind reads, in the order the projection reads them.
+
+    A segment row carries a column for every kind, and what a kind reads is the
+    projection's dispatch: =Simple= reads =Conventions= and =ProjectionCurve=,
+    =Direct= reads =Conventions= alone. The screen must not offer a leaf that
+    belongs to another kind, so the per-kind leaves are read from here rather than
+    taken from the row's columns.
+    """
+    body = definition_body(text, "import_segments")
+    common = definition_body(text, "common_settings")
+    if body is None:
+        return [], ["the projection has no import_segments"]
+    if common is None:
+        return [], ["the projection has no common_settings"]
+    shared = []
+    for _, column, expression in rows_of(common):
+        reader, element = read_element(expression)
+        if reader == "v" and element is not None:
+            shared.append({"column": column, "ore": element})
+    kinds = []
+    problems = []
+    for loop in KIND_LOOP.finditer(body):
+        reader, element, inner = loop.group(1, 2, 3)
+        leaves = []
+        for statement in KIND_STATEMENT.finditer(inner):
+            if statement.group(4) is not None:
+                leaves.extend(dict(leaf) for leaf in shared)
+                continue
+            variable, column, expression = statement.group(1, 2, 3)
+            ore = kind_leaf(expression, reader)
+            if ore is None:
+                continue
+            leaves.append({"column": column, "ore": ore})
+        if not leaves:
+            problems.append(f"the projection reads no leaves for the kind {element}")
+        kinds.append({"kind": element, "leaves": leaves})
+    if not kinds:
+        problems.append("the projection reads no segment kinds")
+    return kinds, problems
+
+
+# The call a section makes when its entries hold segments: the block's name, and
+# the reader that fills the rows.
+SEGMENT_IMPORT = re.compile(
+    r'const auto (\w+) = v\.child\("(\w+)"\); \1\)\s*\n\s*import_segments\(ctx, \*\1\);')
+
+
 def complex_type(text, name):
     """The body of one complex type, or None when the schema does not declare it."""
     match = re.search(r'<xs:complexType name="' + name + r'">(.*?)\n  </xs:complexType>',
@@ -260,7 +400,7 @@ def leaves_of_schema():
     return declared
 
 
-def section_wiring(text, declared, section, entry, import_name):
+def section_wiring(text, declared, section, entry, import_name, segment_rules):
     body = function_body(text, import_name)
     if body is None:
         return None, [f"{section}: the import function {import_name} was not found"]
@@ -315,6 +455,15 @@ def section_wiring(text, declared, section, entry, import_name):
         if parameter["ore"] not in allowed:
             problems.append(
                 f"{section}: the schema declares no {parameter['ore']} under {entry}")
+    collections = []
+    segments = SEGMENT_IMPORT.search(body)
+    if segments is not None:
+        for rule in segment_rules:
+            collections.append({"element": segments.group(2), **rule})
+    elif "Segments" in blocks:
+        # A section that holds segments and whose reader the pattern does not see
+        # would reach the screen as a block with no rows, and nothing would say why.
+        problems.append(f"{section}: holds a Segments block the collection rule does not read")
     return {
         "section": section,
         "entryElement": entry,
@@ -324,6 +473,7 @@ def section_wiring(text, declared, section, entry, import_name):
         "parameters": parameters,
         "blocks": [{"element": element, "presence": presence.get(element, "")}
                    for element in blocks],
+        "collections": collections,
     }, problems
 
 
@@ -331,13 +481,19 @@ def wiring(text, declared):
     imports = entry_imports(text)
     sections = []
     problems = []
+    segment_rules, rule_problems = collection_rules(text)
+    problems += rule_problems
+    kinds, kind_problems = kind_leaves(text)
+    problems += kind_problems
+    for rule in segment_rules:
+        rule["kinds"] = kinds
     for section, entry in declared_sections(text):
         import_name = imports.get(section)
         if import_name is None:
             problems.append(f"{section}: the document mapper does not import the section")
             continue
         found, section_problems = section_wiring(
-            text, declared, section, entry, import_name)
+            text, declared, section, entry, import_name, segment_rules)
         problems += section_problems
         if found is not None:
             sections.append(found)
@@ -384,6 +540,37 @@ export interface CurveBlock {
     readonly presence: string;
 }
 
+/** One kind of a collection row, and the leaves the projection reads for it. */
+export interface CurveCollectionKind {
+    /** The element the row is written as, such as =Simple=. */
+    readonly kind: string;
+    readonly leaves: readonly CurveCollectionLeaf[];
+}
+
+/** One leaf of a kind: the column that holds it and the ORE element it is. */
+export interface CurveCollectionLeaf {
+    readonly column: string;
+    readonly ore: string;
+}
+
+/** A child element an entry holds rows of, and the columns that place its leaves. */
+export interface CurveCollection {
+    /** The element the rows are written as, such as =Segments=. */
+    readonly element: string;
+    /** The table that holds a row. */
+    readonly entity: string;
+    /** The document vector that carries the rows. */
+    readonly vector: string;
+    /** The column that joins a row back to the entry it belongs to. */
+    readonly parentKey: string;
+    /** The column that names the element a row is written as, or empty for none. */
+    readonly kindColumn: string;
+    /** The column a quote of one row joins back to, or empty for no quotes. */
+    readonly quoteParent: string;
+    /** The kinds a row may state, and the leaves each kind reads. */
+    readonly kinds: readonly CurveCollectionKind[];
+}
+
 /** One section of the document, with the columns its entries' leaves are read from. */
 export interface CurveSectionWiring {
     readonly section: string;
@@ -394,6 +581,7 @@ export interface CurveSectionWiring {
     readonly entities: readonly CurveEntity[];
     readonly parameters: readonly CurveParameter[];
     readonly blocks: readonly CurveBlock[];
+    readonly collections: readonly CurveCollection[];
 }
 
 /**
@@ -451,6 +639,40 @@ def render_blocks(blocks):
     return "\n".join(lines)
 
 
+def render_kind_leaves(leaves):
+    return "\n".join(
+        "                            {\n"
+        f"                                column: {quote(leaf['column'])},\n"
+        f"                                ore: {quote(leaf['ore'])},\n"
+        "                            }," for leaf in leaves)
+
+
+def render_kinds(kinds):
+    return "\n".join(
+        "                    {\n"
+        f"                        kind: {quote(kind['kind'])},\n"
+        f"                        leaves: [\n{render_kind_leaves(kind['leaves'])}\n"
+        "                        ],\n"
+        "                    }," for kind in kinds)
+
+
+def render_collections(collections):
+    lines = []
+    for collection in collections:
+        lines.append(
+            "            {\n"
+            f"                element: {quote(collection['element'])},\n"
+            f"                entity: {quote(collection['entity'])},\n"
+            f"                vector: {quote(collection['vector'])},\n"
+            f"                parentKey: {quote(collection['parentKey'])},\n"
+            f"                kindColumn: {quote(collection['kindColumn'])},\n"
+            f"                quoteParent: {quote(collection['quoteParent'])},\n"
+            f"                kinds: [\n{render_kinds(collection['kinds'])}\n"
+            "                ],\n"
+            "            },")
+    return "\n".join(lines)
+
+
 def render(sections):
     body = []
     for section in sections:
@@ -462,6 +684,7 @@ def render(sections):
             f"{render_list('entities', section['entities'], render_entities)}"
             f"{render_list('parameters', section['parameters'], render_parameters)}"
             f"{render_list('blocks', section['blocks'], render_blocks)}"
+            f"{render_list('collections', section['collections'], render_collections)}"
             "    },")
     return LICENCE + HEADER + "\n".join(body) + FOOTER
 

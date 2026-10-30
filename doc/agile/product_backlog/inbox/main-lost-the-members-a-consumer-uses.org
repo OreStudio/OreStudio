@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: A62877EC-7888-44FA-A08C-CD10327FD893
+:END:
+#+title: Main lost the batch members a consumer uses
+#+description: b3a78b33ba regenerated instrument_batch.hpp and removed the bond_issue members 637f5527e2 had hand-added to it. ores.synthetic reads slot.instruments.bond_issues, and no model declares it, so main no longer compiles. The drift gate saw the hand edit and rewrote files in place; the break is in the committed tree.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Decide where the rows a bond needs beside its instrument belong, and get them
+there through a model. Then make a regeneration fail before it can drop something
+a hand-written consumer reads.
+
+=637f5527e2= added five members to =instrument_batch.hpp= by hand, and
+=ores.synthetic= reads them. =b3a78b33ba= regenerated the header from the trade
+type catalogue, which declares none of them, and the members were gone. Main no
+longer compiles: =trading_trade_population_writer.cpp:395= reads
+=slot.instruments.bond_issues=, and =trade_population_planner.cpp:301= writes it.
+
+* Why
+
+The estate has no way to say "a generated type carries this row family beside its
+instrument". The batch is generated from =ores.trading.trade_type_catalogue=, one
+array per trade type's instrument, so a member that is not an instrument has no
+home in the model. A hand edit was the only route, and the next regeneration
+removed it.
+
+Nothing caught the break at merge time. The drift gate compares generated output
+with the models, so it agrees with the regeneration: the file matches its models
+and the models never had the members. Whether a consumer still compiles is a fact
+about the consumer, and no gate reads it.
+
+The gate then made it worse. Its default mode regenerates in place, so running it
+in another worktree rewrote that worktree's trading headers before reporting. That
+behaviour is [[id:AAC3030D-CEDB-47AD-B549-B291294AFEBD][captured separately]], and
+it is why this defect felt like a tree problem rather than a main problem: two
+restores of the tree do not fix a break that is committed.
+
+Two candidates, and the choice is a design one:
+
+- model the carried rows: teach the catalogue to state the rows a trade type
+  carries beside its instrument, so the generator emits =bond_issues= and its four
+  children again. Keeps the writer's single atomic send.
+- hand the issue over separately: =put_bond_issue_composite= already exists, so
+  synthetic could send the issue and the instruments as two interactions. Drops
+  the members from the batch and keeps the generated type strictly per-instrument.
+
+* References
+
+- ~projects/ores.trading/api/include/ores.trading.api/domain/instrument_batch.hpp~ —
+  the generated type, and the five members =b3a78b33ba= removed.
+- ~projects/ores.codegen/library/templates/cpp_trade_type_batch.hpp.mustache~ — the
+  template, whose ={{#batch}}= list comes from the catalogue.
+- ~projects/ores.synthetic/core/src/service/trade_population_planner.cpp~ and
+  ~.../trading/trading_trade_population_writer.cpp~ — the consumer.
+- =637f5527e2= (festive dijkstra) and =b3a78b33ba= (prime origin).
+
+* See also
+
+- [[id:AAC3030D-CEDB-47AD-B549-B291294AFEBD][The codegen tests write into the working tree]].
+- [[id:BBBD07EF-09E0-4FF6-A282-28534429264C][The drift check is destructive on a stale template branch]].

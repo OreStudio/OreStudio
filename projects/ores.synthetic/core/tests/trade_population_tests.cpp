@@ -272,16 +272,73 @@ TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length", "[t
     REQUIRE(types.size() == 16u);
 }
 
+namespace {
+
+/*
+ * The header row a slot states, whichever table its type routes to. A slot
+ * states one, so a reader that wants the drawn underlying does not have to know
+ * the routing table.
+ */
+std::string underlying_of(const domain::trade_population_slot& slot) {
+    const auto& batch = slot.instruments;
+    if (!batch.equity_forward_instruments.empty())
+        return batch.equity_forward_instruments.front().underlying_name;
+    if (!batch.equity_option_instruments.empty())
+        return batch.equity_option_instruments.front().underlying_name;
+    if (!batch.equity_asian_option_instruments.empty())
+        return batch.equity_asian_option_instruments.front().underlying_name;
+    if (!batch.equity_barrier_option_instruments.empty())
+        return batch.equity_barrier_option_instruments.front().underlying_name;
+    if (!batch.equity_digital_option_instruments.empty())
+        return batch.equity_digital_option_instruments.front().underlying_name;
+    if (!batch.equity_swap_instruments.empty())
+        return batch.equity_swap_instruments.front().underlying_name;
+    if (!batch.equity_variance_swap_instruments.empty())
+        return batch.equity_variance_swap_instruments.front().underlying_name;
+    if (!batch.equity_accumulator_instruments.empty())
+        return batch.equity_accumulator_instruments.front().underlying_name;
+    if (!batch.equity_position_instruments.empty())
+        return batch.equity_position_instruments.front().underlying_name;
+    return {};
+}
+
+std::size_t header_rows_of(const domain::trade_population_slot& slot) {
+    const auto& batch = slot.instruments;
+    return batch.equity_forward_instruments.size() + batch.equity_option_instruments.size() +
+           batch.equity_asian_option_instruments.size() +
+           batch.equity_barrier_option_instruments.size() +
+           batch.equity_digital_option_instruments.size() + batch.equity_swap_instruments.size() +
+           batch.equity_variance_swap_instruments.size() +
+           batch.equity_accumulator_instruments.size() +
+           batch.equity_position_instruments.size();
+}
+
+}
+
 TEST_CASE("an_equity_slot_names_an_underlying_the_catalogue_holds", "[trade_population]") {
     const auto plan = plan_of(equity_scope());
 
     std::set<std::string> named;
     for (const auto& slot : plan.slots) {
-        REQUIRE(std::holds_alternative<domain::equity_terms>(slot.terms));
-        const auto& terms = std::get<domain::equity_terms>(slot.terms);
-        REQUIRE_FALSE(terms.underlying_name.empty());
-        REQUIRE_FALSE(terms.underlying_kind.empty());
-        named.insert(terms.underlying_name);
+        /*
+         * The family states its rows and no bag: one header row per slot, in
+         * the table its type routes to.
+         */
+        REQUIRE(std::holds_alternative<std::monostate>(slot.terms));
+        REQUIRE(header_rows_of(slot) == 1u);
+        const auto underlying = underlying_of(slot);
+        if (underlying.empty()) {
+            /*
+             * A worst-of basket names no single underlying on its header: the
+             * names are its constituents, and it states none of its own.
+             */
+            REQUIRE(slot.trade_type_code == "EquityWorstOfBasketSwap");
+            REQUIRE(slot.instruments.equity_basket_constituents.size() == 2u);
+            for (const auto& member : slot.instruments.equity_basket_constituents)
+                named.insert(member.underlying_name);
+        } else {
+            named.insert(underlying);
+        }
     }
 
     // Every underlying the scope states is drawn, and no other is invented.
@@ -300,16 +357,16 @@ TEST_CASE("a_worst_of_basket_states_its_constituents_and_its_periods", "[trade_p
         if (slot.trade_type_code != "EquityWorstOfBasketSwap")
             continue;
         found = true;
-        const auto& terms = std::get<domain::equity_terms>(slot.terms);
+        REQUIRE(slot.instruments.equity_swap_instruments.size() == 1u);
         // Two names over four dates, which is the shape the corpus states.
-        REQUIRE(terms.basket.size() == 2u);
-        REQUIRE(terms.periods.size() == 4u);
-        for (const auto& member : terms.basket) {
-            REQUIRE_FALSE(member.name.empty());
-            REQUIRE_FALSE(member.kind.empty());
+        REQUIRE(slot.instruments.equity_basket_constituents.size() == 2u);
+        REQUIRE(slot.instruments.equity_swap_periods.size() == 4u);
+        for (const auto& member : slot.instruments.equity_basket_constituents) {
+            REQUIRE_FALSE(member.underlying_name.empty());
+            REQUIRE_FALSE(member.underlying_kind.empty());
             REQUIRE(member.initial_price.has_value());
         }
-        for (const auto& period : terms.periods) {
+        for (const auto& period : slot.instruments.equity_swap_periods) {
             REQUIRE(period.period_date.has_value());
             REQUIRE(period.knock_out_level.has_value());
             REQUIRE(period.fixed_trigger_level.has_value());

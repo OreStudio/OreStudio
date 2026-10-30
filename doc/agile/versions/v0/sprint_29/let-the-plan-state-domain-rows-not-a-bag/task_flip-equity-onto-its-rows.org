@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 3C9A2220-AD86-4ACE-B6E7-6E5F6D173381
+:END:
+#+title: Task: Flip equity onto its rows
+#+description: Seventeen equity codes construct today, but the planner still fills a bag and the writer translates it. Move that translation into the planner so the plan carries the rows, and the writer only persists them.
+#+type: task
+#+level: s1
+#+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
+#+owner: marco
+#+branch: feature/flip-equity-onto-its-rows
+#+pr: 4093
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An equity trade states its rows in the plan, and the writer translates nothing for the family.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- The planner builds the header row each type routes to, the worst-of basket's constituents and periods, and the accumulator's range bounds.
+- The writer's equity arm is gone and the batch is persisted with its audit columns stamped, including the children's flat columns.
+- A provisioning run books the same 17 equity headers, 2 constituents, 4 periods and 4 range bounds as before the flip.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Equity header rows | 17 | sum of the nine equity instrument tables | worktree |
+| Forward / option / asian | 1 / 2 / 1 | =ores_trading_equity_*_instruments_tbl= | worktree |
+| Barrier / digital / swap | 3 / 2 / 2 | the same tables | worktree |
+| Variance / accumulator / position | 1 / 3 / 2 | the same tables | worktree |
+| Basket constituents | 2 | =ores_trading_equity_basket_constituents_tbl= | worktree |
+| Swap periods | 4 | =ores_trading_equity_swap_periods_tbl= | worktree |
+| Range bounds | 4 | =ores_trading_range_bounds_tbl= | worktree |
+| Trade rows, latest version | 127 | =select count(distinct id) from ores_trading_trades_tbl where valid_to = ...= | worktree |
+| Planner suite | 1,896 assertions in 79 cases | =publish/bin/ores.synthetic.core.tests= | worktree |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4093][#4093]] | [synthetic] Let an equity trade state its rows |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The equity family states its rows. The planner builds the header row each of the
+seventeen codes routes to, the worst-of basket's constituents and periods, the
+position's option underlyings and the accumulator's range bounds, and the writer
+persists what the plan carries. The writer's equity arm is gone: it was the
+longest of the six, and it carried three stamping idioms of its own.
+
+The population is unchanged: 17 headers across nine tables, 2 basket
+constituents, 4 swap periods, 4 range bounds and 127 trades, which is what a
+fresh tenant held before the flip.
+
+One thing the flip made explicit that the bag had hidden: a worst-of basket
+swap's header row names no underlying. Its names are its constituents, so the
+test now reads the constituents when the header states none, instead of
+asserting that every header names a single name.
+
+The plan's bag narrowed to two: bond, whose security still travels in it, and
+credit, which has not flipped.

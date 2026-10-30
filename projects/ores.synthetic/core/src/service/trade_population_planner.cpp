@@ -20,6 +20,7 @@
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.trading.api/domain/bond_instruments.hpp"
 #include "ores.trading.api/domain/commodity_instruments.hpp"
+#include "ores.trading.api/domain/equity_instruments.hpp"
 #include "ores.trading.api/domain/fx_instruments.hpp"
 #include "ores.trading.api/domain/rate_instruments.hpp"
 #include <boost/uuid/name_generator_sha1.hpp>
@@ -1504,6 +1505,286 @@ const domain::equity_underlying_reference& equity_for(const domain::trade_genera
 
 }
 
+/*
+ * The equity family states its own rows. The mapping from what the planner
+ * draws to each product's constructor lives here, beside the drawing, and not
+ * in the writer: the plan carries the rows and the writer persists them.
+ */
+ores::trading::domain::instrument_batch
+construct_equity_batch(const domain::equity_terms& drawn, const std::string& trade_type_code) {
+    namespace tdom = ores::trading::domain;
+    ores::trading::domain::instrument_batch batch;
+    const auto money = [](double value) {
+        return ores::utility::decimal::decimal::from_double(value).value();
+    };
+    const auto maybe_money = [&money](std::optional<double> value)
+        -> std::optional<ores::utility::decimal::decimal> {
+        if (!value.has_value())
+            return std::nullopt;
+        return money(*value);
+    };
+    const auto& type = trade_type_code;
+
+    /*
+     * The routing table puts seventeen codes in nine tables, so a table
+     * serves more than one type and the payload states the fields all of
+     * them share. The basket is the one product that also states rows: its
+     * constituents and its periods are children of the swap.
+     */
+    if (type == "EquityOption") {
+        ores::trading::domain::equity_option_terms terms;
+        terms.underlying_name = drawn.underlying_name;
+        terms.currency = drawn.currency;
+        terms.notional = money(drawn.notional);
+        terms.option_type = drawn.option_type;
+        terms.strike = money(drawn.strike.value_or(0.0));
+        terms.expiry_date = drawn.expiry_date;
+        terms.exercise_type = drawn.exercise_type;
+        terms.long_short = drawn.long_short;
+        terms.settlement_type = drawn.settlement_type;
+        auto row = ores::trading::domain::construct_equity_option(terms);
+        row.description = "Generated equity trade.";
+        batch.equity_option_instruments.push_back(row);
+    } else if (type == "EquityCliquetOption") {
+        ores::trading::domain::equity_cliquet_option_terms terms;
+        terms.underlying_name = drawn.underlying_name;
+        terms.currency = drawn.currency;
+        terms.notional = money(drawn.notional);
+        terms.option_type = drawn.option_type;
+        terms.strike = money(drawn.strike.value_or(0.0));
+        terms.expiry_date = drawn.expiry_date;
+        terms.exercise_type = drawn.exercise_type;
+        terms.long_short = drawn.long_short;
+        terms.settlement_type = drawn.settlement_type;
+        terms.frequency = drawn.cliquet_frequency;
+        auto row = ores::trading::domain::construct_equity_cliquet_option(terms);
+        row.description = "Generated equity trade.";
+        batch.equity_option_instruments.push_back(row);
+    } else if (type == "EquityAsianOption") {
+        ores::trading::domain::equity_asian_option_terms terms;
+        terms.underlying_name = drawn.underlying_name;
+        terms.currency = drawn.currency;
+        terms.notional = money(drawn.notional);
+        terms.option_type = drawn.option_type;
+        terms.strike = money(drawn.strike.value_or(0.0));
+        terms.expiry_date = drawn.expiry_date;
+        terms.exercise_type = drawn.exercise_type;
+        terms.long_short = drawn.long_short;
+        terms.average_type = drawn.average_type;
+        terms.averaging_start_date = drawn.averaging_start_date.value_or(drawn.start_date);
+        terms.averaging_end_date = drawn.averaging_end_date.value_or(drawn.expiry_date);
+        auto row = ores::trading::domain::construct_equity_asian_option(terms);
+        row.description = "Generated equity trade.";
+        batch.equity_asian_option_instruments.push_back(row);
+    } else if (type == "EquityBarrierOption" || type == "EquityEuropeanBarrierOption") {
+        ores::trading::domain::equity_barrier_option_terms terms;
+        terms.underlying_name = drawn.underlying_name;
+        terms.currency = drawn.currency;
+        terms.notional = money(drawn.notional);
+        terms.option_type = drawn.option_type;
+        terms.strike = money(drawn.strike.value_or(0.0));
+        terms.expiry_date = drawn.expiry_date;
+        terms.exercise_type = drawn.exercise_type;
+        terms.long_short = drawn.long_short;
+        terms.lower_barrier = money(drawn.lower_barrier.value_or(0.0));
+        terms.lower_barrier_type = drawn.lower_barrier_type;
+        terms.rebate = maybe_money(drawn.rebate);
+        auto row = type == "EquityEuropeanBarrierOption" ?
+                       ores::trading::domain::construct_equity_european_barrier_option(terms) :
+                       ores::trading::domain::construct_equity_barrier_option(terms);
+        row.description = "Generated equity trade.";
+        batch.equity_barrier_option_instruments.push_back(row);
+    } else if (type == "EquityDoubleBarrierOption") {
+        ores::trading::domain::equity_double_barrier_option_terms terms;
+        terms.underlying_name = drawn.underlying_name;
+        terms.currency = drawn.currency;
+        terms.notional = money(drawn.notional);
+        terms.option_type = drawn.option_type;
+        terms.strike = money(drawn.strike.value_or(0.0));
+        terms.expiry_date = drawn.expiry_date;
+        terms.exercise_type = drawn.exercise_type;
+        terms.long_short = drawn.long_short;
+        terms.lower_barrier = money(drawn.lower_barrier.value_or(0.0));
+        terms.lower_barrier_type = drawn.lower_barrier_type;
+        terms.upper_barrier = money(drawn.upper_barrier.value_or(0.0));
+        terms.upper_barrier_type = drawn.upper_barrier_type;
+        terms.rebate = maybe_money(drawn.rebate);
+        auto row = ores::trading::domain::construct_equity_double_barrier_option(terms);
+        row.description = "Generated equity trade.";
+        batch.equity_barrier_option_instruments.push_back(row);
+    } else if (type == "EquityDigitalOption") {
+        ores::trading::domain::equity_digital_option_terms terms;
+        terms.underlying_name = drawn.underlying_name;
+        terms.currency = drawn.currency;
+        terms.notional = money(drawn.notional);
+        terms.option_type = drawn.option_type;
+        terms.strike = money(drawn.strike.value_or(0.0));
+        terms.expiry_date = drawn.expiry_date;
+        terms.long_short = drawn.long_short;
+        terms.payout_amount = maybe_money(drawn.payout_amount);
+        auto row = ores::trading::domain::construct_equity_digital_option(terms);
+        row.description = "Generated equity trade.";
+        batch.equity_digital_option_instruments.push_back(row);
+    } else if (type == "EquityTouchOption") {
+        ores::trading::domain::equity_touch_option_terms terms;
+        terms.underlying_name = drawn.underlying_name;
+        terms.currency = drawn.currency;
+        terms.notional = money(drawn.notional);
+        terms.barrier_level = money(drawn.barrier_level.value_or(0.0));
+        terms.barrier_type = drawn.barrier_type;
+        terms.expiry_date = drawn.expiry_date;
+        terms.long_short = drawn.long_short;
+        terms.payout_amount = maybe_money(drawn.payout_amount);
+        auto row = ores::trading::domain::construct_equity_touch_option(terms);
+        row.description = "Generated equity trade.";
+        batch.equity_digital_option_instruments.push_back(row);
+    } else if (type == "EquityForward") {
+        ores::trading::domain::equity_forward_terms terms;
+        terms.underlying_name = drawn.underlying_name;
+        terms.currency = drawn.currency;
+        terms.quantity = drawn.quantity;
+        terms.forward_price = maybe_money(drawn.fixed_price);
+        terms.expiry_date = drawn.expiry_date;
+        terms.long_short = drawn.long_short;
+        terms.settlement_type = drawn.settlement_type;
+        auto row = ores::trading::domain::construct_equity_forward(terms);
+        row.description = "Generated equity trade.";
+        batch.equity_forward_instruments.push_back(row);
+    } else if (type == "EquitySwap" || type == "EquityWorstOfBasketSwap") {
+        const auto return_type = drawn.return_type.empty() ? "Price" : drawn.return_type;
+        const auto payment_frequency = drawn.payment_frequency_code.empty() ?
+                                           "Quarterly" :
+                                           drawn.payment_frequency_code;
+        auto basket = std::vector<ores::trading::domain::equity_basket_member_terms>{};
+        for (const auto& member : drawn.basket) {
+            ores::trading::domain::equity_basket_member_terms terms;
+            terms.underlying_name = member.name;
+            terms.underlying_kind = member.kind;
+            terms.weight = member.weight;
+            terms.initial_price = maybe_money(member.initial_price);
+            basket.push_back(terms);
+        }
+        auto periods = std::vector<ores::trading::domain::equity_swap_period_terms>{};
+        for (const auto& period : drawn.periods) {
+            ores::trading::domain::equity_swap_period_terms terms;
+            terms.period_date = period.period_date.value_or(drawn.start_date);
+            terms.knock_out_level = period.knock_out_level;
+            terms.fixed_trigger_level = period.fixed_trigger_level;
+            periods.push_back(terms);
+        }
+        auto product = [&] {
+            if (type == "EquitySwap") {
+                ores::trading::domain::equity_swap_terms terms;
+                terms.underlying_name = drawn.underlying_name;
+                terms.currency = drawn.currency;
+                terms.notional = money(drawn.notional);
+                terms.return_type = return_type;
+                terms.start_date = drawn.start_date;
+                terms.maturity_date = drawn.maturity_date;
+                terms.long_short = drawn.long_short;
+                terms.payment_frequency_code = payment_frequency;
+                terms.basket = basket;
+                terms.periods = periods;
+                return ores::trading::domain::construct_equity_swap(terms);
+            }
+            ores::trading::domain::equity_basket_swap_terms terms;
+            terms.currency = drawn.currency;
+            terms.notional = money(drawn.notional);
+            terms.return_type = return_type;
+            terms.start_date = drawn.start_date;
+            terms.maturity_date = drawn.maturity_date;
+            terms.long_short = drawn.long_short;
+            terms.payment_frequency_code = payment_frequency;
+            terms.basket = basket;
+            terms.periods = periods;
+            return ores::trading::domain::construct_equity_worst_of_basket_swap(terms);
+        }();
+        product.row.description = "Generated equity trade.";
+        batch.equity_swap_instruments.push_back(product.row);
+        for (auto& constituent : product.constituents) {
+            batch.equity_basket_constituents.push_back(constituent);
+        }
+        for (const auto& child : product.periods)
+            batch.equity_swap_periods.push_back(child);
+    } else if (type == "EquityVarianceSwap") {
+        ores::trading::domain::equity_variance_swap_terms terms;
+        terms.underlying_name = drawn.underlying_name;
+        terms.currency = drawn.currency;
+        terms.notional = money(drawn.notional);
+        terms.variance_strike = drawn.variance_strike.value_or(0.04);
+        terms.start_date = drawn.start_date;
+        terms.maturity_date = drawn.maturity_date;
+        terms.long_short = drawn.long_short;
+        auto row = ores::trading::domain::construct_equity_variance_swap(terms);
+        row.description = "Generated equity trade.";
+        batch.equity_variance_swap_instruments.push_back(row);
+    } else if (type == "EquityAccumulator" || type == "EquityTaRF") {
+        auto bounds = std::vector<ores::trading::domain::equity_range_bound_terms>{};
+        for (const auto& bound : drawn.range_bounds) {
+            ores::trading::domain::equity_range_bound_terms terms;
+            terms.range_from = maybe_money(bound.range_from);
+            terms.range_to = maybe_money(bound.range_to);
+            terms.leverage = bound.leverage;
+            bounds.push_back(terms);
+        }
+        auto product = [&] {
+            if (type == "EquityAccumulator") {
+                ores::trading::domain::equity_accumulator_terms terms;
+                terms.underlying_name = drawn.underlying_name;
+                terms.currency = drawn.currency;
+                terms.strike = money(drawn.strike.value_or(0.0));
+                terms.fixing_amount = money(drawn.notional);
+                terms.start_date = drawn.start_date;
+                terms.expiry_date = drawn.expiry_date;
+                terms.fixing_frequency =
+                    drawn.fixing_frequency.empty() ? "Daily" : drawn.fixing_frequency;
+                terms.long_short = drawn.long_short;
+                terms.knock_out_level = maybe_money(drawn.knock_out_level);
+                terms.payoff_type =
+                    drawn.payoff_type.empty() ? "Accumulator" : drawn.payoff_type;
+                terms.range_bounds = bounds;
+                return ores::trading::domain::construct_equity_accumulator(terms);
+            }
+            ores::trading::domain::equity_tarf_terms terms;
+            terms.underlying_name = drawn.underlying_name;
+            terms.currency = drawn.currency;
+            terms.strike = money(drawn.strike.value_or(0.0));
+            terms.fixing_amount = money(drawn.notional);
+            terms.start_date = drawn.start_date;
+            terms.expiry_date = drawn.expiry_date;
+            terms.fixing_frequency =
+                drawn.fixing_frequency.empty() ? "Daily" : drawn.fixing_frequency;
+            terms.long_short = drawn.long_short;
+            terms.knock_out_level = maybe_money(drawn.knock_out_level);
+            terms.payoff_type =
+                drawn.payoff_type.empty() ? "Accumulator" : drawn.payoff_type;
+            terms.target_amount = money(drawn.target_amount.value_or(0.0));
+            terms.target_type = drawn.target_type;
+            terms.range_bounds = bounds;
+            return ores::trading::domain::construct_equity_target_redemption_forward(terms);
+        }();
+        product.row.description = "Generated equity trade.";
+        batch.equity_accumulator_instruments.push_back(product.row);
+        for (auto& bound : product.range_bounds)
+            batch.range_bounds.push_back(bound);
+    } else if (type == "EquityPosition" || type == "EquityOptionPosition") {
+        ores::trading::domain::equity_position_terms terms;
+        terms.underlying_name = drawn.underlying_name;
+        terms.currency = drawn.currency;
+        terms.quantity = drawn.quantity;
+        terms.price = maybe_money(drawn.fixed_price);
+        auto row = type == "EquityOptionPosition" ?
+                       ores::trading::domain::construct_equity_option_position(terms) :
+                       ores::trading::domain::construct_equity_position(terms);
+        row.description = "Generated equity trade.";
+        batch.equity_position_instruments.push_back(row);
+    } else {
+        throw trade_population_error("The equity trade type " + type +
+                                     " states no product this planner knows.");
+    }
+    return batch;
+}
+
 domain::trade_population_plan
 equity_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     validate_scope(scope);
@@ -1666,7 +1947,11 @@ equity_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         auto entry = common_slot(scope, slot);
         entry.trade_type_code = std::string(type);
         entry.notional = notional;
-        entry.terms = std::move(terms);
+        /*
+         * The equity family states its rows here, where it draws them, and the
+         * plan carries no bag for it.
+         */
+        entry.instruments = construct_equity_batch(terms, entry.trade_type_code);
         plan.slots.push_back(std::move(entry));
     }
 

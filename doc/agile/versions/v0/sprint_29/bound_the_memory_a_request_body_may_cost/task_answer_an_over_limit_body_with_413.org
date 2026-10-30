@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :bound_the_memory_a_request_body_may_cost:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/stop-the-gateway-blocking-its-own-event-loop
 #+pr:
 #+blocked_on:
 #+blocked_since:

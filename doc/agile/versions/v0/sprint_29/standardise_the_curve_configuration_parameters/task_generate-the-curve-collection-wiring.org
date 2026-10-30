@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/generate-the-curve-collection-wiring
-#+pr: 4111
+#+pr: 4113
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -26,11 +26,11 @@ The child collections a curve entry holds, their tables and their per-kind leave
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | The generator emits the collection and the leaves each kind reads; the BFF holds no table. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review and merge.                      |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -118,6 +118,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4113][#4113]] | [agile] Close the curve wiring task |
 | [[https://github.com/OreStudio/OreStudio/pull/4111][#4111]] | [web] Read the curve collections from the projection |
 
 * Review

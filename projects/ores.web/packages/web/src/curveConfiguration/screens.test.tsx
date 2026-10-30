@@ -197,6 +197,24 @@ const CURVE: CurveConfiguration = {
                                             },
                                         ),
                                     ],
+                                    quotes: [
+                                        {
+                                            id: 'quote-1',
+                                            list: '',
+                                            text: 'USD/3M/1Y',
+                                            optional: false,
+                                            rateQuote: '',
+                                            spreadQuote: '',
+                                        },
+                                        {
+                                            id: 'quote-2',
+                                            list: '',
+                                            text: 'USD/3M/2Y',
+                                            optional: true,
+                                            rateQuote: '',
+                                            spreadQuote: '',
+                                        },
+                                    ],
                                 },
                             ],
                         },
@@ -346,6 +364,39 @@ describe('the curve configuration page', () => {
         // as a gap, as an entry's leaf does.
         expect(words).toContain('MaturityDate');
         expect(words).toContain('2 without documentation');
+    });
+
+    it('draws the quotes a segment holds, each part under its own label', () => {
+        const words = textOf(page('curves'));
+        expect(words).toContain('2 quotes');
+        expect(words).toContain('USD/3M/1Y');
+        expect(words).toContain('USD/3M/2Y');
+        // The label above the value, and the flag as a word rather than a bare tag.
+        expect(words).toContain('Quote');
+        expect(words).toContain('Optional');
+        expect(words).toContain('Yes');
+        expect(words).toContain('No');
+    });
+
+    it('draws a composite quote\'s pair rather than a slash between two blanks', () => {
+        const twoQuotes = structuredClone(CURVE);
+        const row = twoQuotes.sections[0]?.entries[0]?.collections[0]?.rows[0];
+        if (row !== undefined) {
+            row.quotes = [
+                {
+                    id: 'quote-3',
+                    list: 'BasisQuotes',
+                    text: '',
+                    optional: false,
+                    rateQuote: 'IR_SWAP/RATE/GBP/0D/1D/1M',
+                    spreadQuote: 'IR_SWAP/BASIS/GBP/0D/1D/1M',
+                },
+            ];
+        }
+        const words = textOf(page('curves', twoQuotes));
+        expect(words).toContain('IR_SWAP/RATE/GBP/0D/1D/1M / IR_SWAP/BASIS/GBP/0D/1D/1M');
+        expect(words).toContain('List');
+        expect(words).toContain('BasisQuotes');
     });
 
     it('names the child elements a curve holds, and says once the ones it draws rows of', () => {

@@ -1,0 +1,166 @@
+:PROPERTIES:
+:ID: BE0384AF-AFAA-49B9-B313-19EE86C02733
+:END:
+#+title: Test scenario: verify the route from a feed to a published curve
+#+description: A feed publishes, its ticks store, the curve's Check computes from them, and the set publishes and reads back.
+#+type: test_scenario
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+target_dialog:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: eager_maxwell
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:BAF9151C-3A23-4A52-8012-8DD9E0F7FE85][Task: Route the synthetic feeds into the ingest]] in [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+
+* Before you start
+
+These are readiness conditions, performed before the tester opens the client.
+The environment is already in this state; the commands are recorded so it can
+be brought back to it.
+
+- The Acme tenant is provisioned and the fleet is running: =compass services
+  status= reports 25 running, none failed, and NATS running.
+- The demo curve is populated by hand from
+  =evidence/acme_ui_curve_seed.sql=: the ladder series
+  =oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D=
+  with seven quotes (3M to 30Y), the output series
+  =oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-UI=,
+  the blueprint =USD-SOFR-UI= for ACME Corporation US Inc, and its seven
+  spot-starting pillars, each naming the ladder series.
+- The set is published through the real flow: =henry.jones= raised
+  =01a18c8f-8f4b-7585-8b54-8f1c6f0e8a26=, =mark.reid= approved it, and
+  =henry.jones= published at =2026-10-30 11:26:28Z=. The published set reads
+  back with state =published= and seven points.
+- The quotes are stamped at =2026-10-30 11:26Z=. The Check's default as-of is
+  now, which is after them; an as-of before them finds no quotes.
+
+* Scenario Info
+
+| Field         | Value |
+|---------------+-------|
+| Verifies task | [[id:BAF9151C-3A23-4A52-8012-8DD9E0F7FE85][Task: Route the synthetic feeds into the ingest]] |
+| Parent story  | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Target screen | Market data: Curve blueprints (Check and Published sets), Published curves, Simulator |
+| Clients       |       |
+| State         | PENDING |
+
+* Steps
+
+** Log in as the maker
+
+- Open the app and sign in as =henry.jones@acme_corporation= with
+  =Secure-Password-123=.
+- Confirm the session's party is ACME Corporation US Inc (ACCOUS); the
+  blueprint and the published set belong to it.
+
+*** Result
+
+** Open the curve blueprint
+
+- Go to *Market data* and then *Curve blueprints*.
+- Confirm the list shows =USD-SOFR-UI= with a published state line.
+- Open it. The record header reads the name, the version and the role; the
+  header offers Copy, Edit and Delete.
+
+*** Result
+
+** Read the blueprint's details
+
+- Open the *Details* tab.
+- Confirm the name =USD-SOFR-UI=, the output series URI ending
+  =curve_id=USD-SOFR-UI= as a link, the currency =USD=, the index tenor
+  =1D=, the role =Funding=, the interpolation method and the day count.
+- Confirm the discount curve reads as an absence, not a nil UUID.
+
+*** Result
+
+** Read the pillars
+
+- Open the *Pillars* tab.
+- Confirm seven rungs in maturity order: a 3M deposit and swaps to 6M,
+  12M, 2Y, 5Y, 10Y and 30Y.
+- Confirm each row shows the market series it names, the ladder URI ending
+  =fwd_start=0D&tenor=1D=, and its version.
+
+*** Result
+
+** Run the check
+
+- Open the *Check* tab and press *Run the test*, leaving the as-of at its
+  default.
+- Confirm all six recipe checks read as passed: one pillar, maturity order,
+  deposit from spot, split tenor, projection funding, funding not a
+  projection.
+- Confirm the test returns seven points with their discount factors and
+  dates, and the forwards between them. Any server refusal must name the
+  pillar and the series it could not read, not a nil-UUID record.
+
+*** Result
+
+** Read the published set
+
+- Open the *Published sets* tab.
+- Confirm the published set at =2026-10-30 11:26Z=, publisher
+  =henry.jones=, seven points, and the state =Published=.
+
+*** Result
+
+** Open the published curves
+
+- Go to *Market data* and then *Published curves*.
+- Confirm the list shows =USD-SOFR-UI= for party =ACCOUS=, published, with
+  its publisher and as-of.
+- Open it and confirm the *Published points* tab draws the seven-point curve
+  and the *History* tab carries the decision that approved the publish.
+
+*** Result
+
+** Read the request as the decider
+
+- Sign out and in as =mark.reid@acme_corporation= with
+  =Secure-Password-123=.
+- Go to *Requests* and open the curve publish request raised by
+  =henry.jones=.
+- Confirm the request names its subject (the curve, the party, the as-of and
+  the point count), reads as approved, and that the decision appears in its
+  History.
+
+*** Result
+
+** Start a feed by hand
+
+- Sign out and in as =henry.jones@acme_corporation= with
+  =Secure-Password-123=.
+- Go to *Market data* and then *Simulator*, find the USD SOFR IR feed and
+  start it by hand.
+- Confirm the feed reports running, and that its ticks reach the store: the
+  sources board shows its adapter active, and the feed's status names the
+  source it published through. Before this task's fix the feed published into
+  a subject nothing consumed, while the log still looked healthy.
+
+*** Result
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes
+
+- The demo curve is hand-applied evidence, not a committed seed. To rebuild
+  the state: recreate and provision the environment, apply
+  =evidence/acme_ui_curve_seed.sql= with the DDL user, then run the
+  raise/decide/publish flow with =curve_publish_operations publish-curve= and
+  =approval_operations decide-approval=, as the maker and the decider.
+- Raising a publish and applying it are shell-only today; the UI shows the
+  request, the decision and the published set, not the raise or the apply.
+- The feed start is the task's second fix; its proof is that the ticks are
+  stored, not only that the feed reports running.

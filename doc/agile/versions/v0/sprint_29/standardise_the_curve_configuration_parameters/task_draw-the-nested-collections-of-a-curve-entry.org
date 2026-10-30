@@ -27,11 +27,11 @@ documents for its kind, instead of naming the block and stopping there.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | The segments are drawn; the quotes are the next slice. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Draw a segment's quotes, whose value is the element itself. |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance

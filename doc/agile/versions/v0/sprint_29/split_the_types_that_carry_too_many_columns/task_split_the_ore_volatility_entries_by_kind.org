@@ -28,9 +28,9 @@ Each of the five volatility entries holds one kind of entry, and the block that 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | Cap floor's proxy block is a part; the other four are not. |
+| Now          | Both proxy blocks are parts; three kind columns remain. |
 | Waiting on   | Nothing.                               |
-| Next         | The swaption proxy part, then the three kind columns. |
+| Next         | The three kind columns, then the round trip over the fixtures. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -146,6 +146,8 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Cap and floor entry members, before and after the split | 39 and 31 | `python3 build/scripts/inventory_entity_columns.py \| awk -F'\t' '$3=="cap_floor_volatility_config"'` | `57070a08ad` |
 | Members the new part carries, of which the moved proxy fields | 10, of which 7 | same, for `cap_floor_proxy_config` | `57070a08ad` |
+| Swaption entry members, before and after the split | 27 and 21 | `python3 build/scripts/inventory_entity_columns.py \| awk -F'\t' '$3=="swaption_volatility_config"'` | `547a51ea1e` |
+| Members the swaption part carries, of which the moved fields | 8, of which 5 | same, for `swaption_proxy_config` | `547a51ea1e` |
 
 * Notes
 
@@ -174,7 +176,7 @@ via its "Verifies task" field.
 
 * Result
 
-Cap floor is done and the tree builds. =cap_floor_volatility_config= is 32
+Both proxy blocks are done and the tree builds. =cap_floor_volatility_config= is 32
 members where it was 39: the proxy block left it for =cap_floor_proxy_config=,
 a type with its own key, the entry's key as a unique natural key, the party for
 row level security and the seven fields.
@@ -182,10 +184,14 @@ row level security and the seven fields.
 Verified: `./compass.sh build` exits 0, `validate_schemas.sh` passes over 2937
 files, `er-diagram` and `lint` pass.
 
+=swaption_proxy_config= is the second part: 27 members to 21, the part carrying
+8 of which 5 are the moved fields. Its first attempt failed on a stray leading
+plus in the model's =#+entity_plural= header, which the loader read as no plural
+at all, so the generated repository asked for =messaging::_filter=. The loader
+was never at fault, and the corrected model loads as =swaption_proxy_configs=.
+
 Not yet done, in the order the task will take them:
 
-- =swaption_proxy_config=, the second proxy part, which is the same shape with
-  its own fields;
 - the three kind columns: =curve_volatility_config='s =kind= with one curve
   column per surface, =fx_volatility_config='s =dimension= with the smile block,
   and =inflation_cap_floor_volatility_config='s =quote_type= with one column per

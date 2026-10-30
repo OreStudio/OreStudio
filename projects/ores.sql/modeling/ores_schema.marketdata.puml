@@ -775,7 +775,8 @@ package "marketdata" #E3F2FD {
         --
         * version : integer
         * party_id : uuid <<FK>>
-        * provider_code : text
+        * publisher_code : text
+        * asset_class : text
         * feed_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text

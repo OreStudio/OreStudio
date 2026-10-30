@@ -280,6 +280,7 @@ const fr: SourceCatalogue = {
             title: 'Notifications',
             empty: 'Rien à vous signaler.',
             markAll: 'Tout marquer comme lu',
+            more: 'Et {count} autres notifications.',
         },
         ask: {
             open: 'Demander un rôle',

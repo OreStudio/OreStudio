@@ -444,6 +444,32 @@ describe('the notification bell', () => {
         expect(html).toContain('daniel asks for Role request. They wrote: I price the FX book.');
     });
 
+    it('draws the newest five and counts the rest', () => {
+        const many = Array.from({ length: 7 }, (_, index) =>
+            notification({
+                id: `cccccccc-cccc-4ccc-8ccc-cccccccccc0${index}`,
+                arguments: [
+                    { name: 'kind', value: 'Role request' },
+                    { name: 'requester', value: `daniel${index}` },
+                    { name: 'reason', value: `I price the FX book ${index}.` },
+                ],
+            }),
+        );
+        const html = render(
+            (client) => {
+                client.setQueryData(['unread-notifications'], 7);
+                client.setQueryData(['notifications'], { items: many, total: 7 });
+            },
+            <NotificationBell />,
+            '/',
+        );
+
+        expect(html).toContain('I price the FX book 0.');
+        expect(html).toContain('I price the FX book 4.');
+        expect(html).not.toContain('I price the FX book 5.');
+        expect(html).toContain('And 2 more notifications.');
+    });
+
     it('says there is nothing to read rather than drawing an empty list', () => {
         const html = render(
             (client) => {
@@ -496,8 +522,8 @@ describe('the notification bell', () => {
         );
 
         expect(html).toContain(
-            'tenant_admin asks you to run the scenario &quot;verify the route from a feed to a ' +
-                'published curve&quot;. Reason given: A feed publishes and its ticks store.',
+            'A test scenario is ready for you: &quot;verify the route from a feed to a published ' +
+                'curve&quot;. A feed publishes and its ticks store.',
         );
         expect(html).not.toContain('notification.scenario.to_run');
     });

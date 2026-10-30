@@ -282,6 +282,7 @@ const pt: SourceCatalogue = {
             title: 'Notificações',
             empty: 'Nada a comunicar.',
             markAll: 'Marcar tudo como lido',
+            more: 'E mais {count} notificações.',
         },
         ask: {
             open: 'Pedir um papel',

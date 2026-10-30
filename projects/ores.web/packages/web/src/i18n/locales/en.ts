@@ -282,6 +282,7 @@ export const en: SourceCatalogue = {
             title: 'Notifications',
             empty: 'Nothing to tell you.',
             markAll: 'Mark all read',
+            more: 'And {count} more notifications.',
         },
         ask: {
             open: 'Ask for a role',

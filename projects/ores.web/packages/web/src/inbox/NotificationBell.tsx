@@ -31,6 +31,9 @@ import { RelativeTime } from '../ui/Time.js';
 /** How many notifications the bell lists at once. */
 const LISTED = 20;
 
+/** How many the popover draws; the rest are counted, not listed. */
+const SHOWN = 5;
+
 /** How often the unread count is read again while a screen is open. */
 const POLL_MS = 30_000;
 
@@ -128,6 +131,8 @@ export function NotificationBell(): ReactNode {
     });
 
     const items = list.data?.items ?? [];
+    const shown = items.slice(0, SHOWN);
+    const held = items.length - shown.length;
 
     const openOne = (notification: InboxNotificationView) => {
         if (notification.readAt === null) {
@@ -175,7 +180,7 @@ export function NotificationBell(): ReactNode {
                     <p className="px-2 py-3 text-sm text-ink-muted">{t('inbox.bell.empty')}</p>
                 ) : (
                     <ul className="max-h-80 overflow-y-auto">
-                        {items.map((notification) => (
+                        {shown.map((notification) => (
                             <li key={notification.id}>
                                 <button
                                     type="button"
@@ -201,6 +206,11 @@ export function NotificationBell(): ReactNode {
                             </li>
                         ))}
                     </ul>
+                )}
+                {held > 0 && (
+                    <p className="px-2 py-2 text-xs text-ink-muted">
+                        {t('inbox.bell.more', { count: String(held) })}
+                    </p>
                 )}
             </div>
         </div>

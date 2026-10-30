@@ -22,6 +22,7 @@
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/publish_helper.hpp"
 
 using ores::refdata::repository::party_repository;
 
@@ -33,6 +34,19 @@ inline boost::uuids::uuid find_system_party_id(party_repository& repo,
         if (p.tenant_id == tid && p.party_category == "System")
             return p.id;
     throw std::runtime_error("No system party for tenant: " + tid.to_string());
+}
+
+/**
+ * Publishes the ISO currency codes.
+ *
+ * A curve configuration states its currency, and the guard on the curve tables
+ * checks the code against the currency catalogue. The database build publishes
+ * nothing, so a case that writes a curve publishes the codes it writes first.
+ */
+inline void publish_currencies(const ores::database::context& ctx) {
+    if (!ores::testing::publish_refdata_dataset(
+            ctx, ctx.tenant_id().to_string(), "iso.currencies", "currencies"))
+        throw std::runtime_error("The tree carries no iso.currencies dataset to publish.");
 }
 
 // An import belongs to a party, so each case writes one and acts for it.

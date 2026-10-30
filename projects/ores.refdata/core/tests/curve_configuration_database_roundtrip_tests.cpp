@@ -48,6 +48,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include "test_helpers.hpp"
 
 /**
  * @file curve_configuration_database_roundtrip_tests.cpp
@@ -187,6 +188,8 @@ TEST_CASE("curve_configuration_roundtrip_through_the_database",
     auto lg(ores::logging::make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "curve_configuration_roundtrip_through_the_database";
     ores::testing::scoped_database_helper h;
+    // The curves state currencies, and their guard reads the currency catalogue.
+    publish_currencies(h.context());
     write_conventions(h.context());
 
     const auto original = load_document(example + "curveconfig.xml");
@@ -216,6 +219,8 @@ TEST_CASE("a segment naming a convention the tenant does not hold is refused",
     auto lg(ores::logging::make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "a segment naming a convention the tenant does not hold is refused";
     ores::testing::scoped_database_helper h;
+    // The curves state currencies, and their guard reads the currency catalogue.
+    publish_currencies(h.context());
     write_conventions(h.context());
 
     auto mapped = curve_configuration_projection::map(load_document(example + "curveconfig.xml"));
@@ -232,6 +237,8 @@ TEST_CASE("a yield curve naming a day counter ORE does not spell is refused",
     auto lg(ores::logging::make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "a yield curve naming a day counter ORE does not spell is refused";
     ores::testing::scoped_database_helper h;
+    // The curves state currencies, and their guard reads the currency catalogue.
+    publish_currencies(h.context());
 
     auto mapped = curve_configuration_projection::map(load_document(example + "curveconfig.xml"));
     REQUIRE(!mapped.yield_curves.empty());
@@ -247,6 +254,8 @@ TEST_CASE("a segment of a type the vocabulary does not hold is refused",
     auto lg(ores::logging::make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "a segment of a type the vocabulary does not hold is refused";
     ores::testing::scoped_database_helper h;
+    // The curves state currencies, and their guard reads the currency catalogue.
+    publish_currencies(h.context());
     write_conventions(h.context());
 
     auto mapped = curve_configuration_projection::map(load_document(example + "curveconfig.xml"));
@@ -264,6 +273,8 @@ TEST_CASE("default, equity and inflation curves and securities round trip throug
     BOOST_LOG_SEV(lg, info)
         << "default, equity and inflation curves and securities round trip through the database";
     ores::testing::scoped_database_helper h;
+    // The curves state currencies, and their guard reads the currency catalogue.
+    publish_currencies(h.context());
     write_input_conventions(h.context());
 
     const auto original = equity_and_securities();
@@ -314,6 +325,8 @@ TEST_CASE("equity and commodity volatility configurations and the report configu
     auto lg(ores::logging::make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "equity and commodity volatility round trip";
     ores::testing::scoped_database_helper h;
+    // The curves state currencies, and their guard reads the currency catalogue.
+    publish_currencies(h.context());
 
     const auto c = load_conventions("external/ore/examples/Products/Input/conventions.xml");
     write_missing(h.context(),
@@ -357,6 +370,8 @@ TEST_CASE("swaption and cap and floor proxies and smiles round trip through the 
           "external/ore/examples/CurveBuilding/Input/curveconfig_sabr.xml"}) {
         INFO(path);
         ores::testing::scoped_database_helper h;
+        // The curves state currencies, and their guard reads the currency catalogue.
+        publish_currencies(h.context());
 
         const auto full = load_document(path);
         curve_document original;
@@ -388,6 +403,8 @@ TEST_CASE("a CDS volatility's terms and strike surface round trip through the da
     BOOST_LOG_SEV(lg, info)
         << "a CDS volatility's terms and strike surface round trip through the database";
     ores::testing::scoped_database_helper h;
+    // The curves state currencies, and their guard reads the currency catalogue.
+    publish_currencies(h.context());
 
     const auto full = load_document(products_example);
     curve_document original;
@@ -415,6 +432,8 @@ TEST_CASE("an FX volatility's report configuration round trips through the datab
     BOOST_LOG_SEV(lg, info)
         << "an FX volatility's report configuration round trips through the database";
     ores::testing::scoped_database_helper h;
+    // The curves state currencies, and their guard reads the currency catalogue.
+    publish_currencies(h.context());
     write_input_conventions(h.context());
 
     // A volatility entry's report states its own columns, which the document
@@ -453,6 +472,8 @@ TEST_CASE("an equity curve naming a calendar ORE does not accept is refused",
     auto lg(ores::logging::make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "an equity curve naming a calendar ORE does not accept is refused";
     ores::testing::scoped_database_helper h;
+    // The curves state currencies, and their guard reads the currency catalogue.
+    publish_currencies(h.context());
 
     auto mapped = curve_configuration_projection::map(equity_and_securities());
     REQUIRE(!mapped.equity_curves.empty());
@@ -468,6 +489,8 @@ TEST_CASE("an equity curve naming a joined calendar ORE accepts is stored",
     auto lg(ores::logging::make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "an equity curve naming a joined calendar ORE accepts is stored";
     ores::testing::scoped_database_helper h;
+    // The curves state currencies, and their guard reads the currency catalogue.
+    publish_currencies(h.context());
 
     auto mapped = curve_configuration_projection::map(equity_and_securities());
     REQUIRE(!mapped.equity_curves.empty());
@@ -484,6 +507,8 @@ TEST_CASE("a party sees only its own curve configuration", "[curveconfig][databa
     auto lg(ores::logging::make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "a party sees only its own curve configuration";
     ores::testing::scoped_database_helper h;
+    // The curves state currencies, and their guard reads the currency catalogue.
+    publish_currencies(h.context());
     auto parties = ores::testing::make_two_parties(h);
     auto mapped = curve_configuration_projection::map(equity_and_securities());
     ores::database::domain::assign_party(mapped, parties.a);

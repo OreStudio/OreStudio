@@ -100,11 +100,19 @@ def vocabularies(schema=SCHEMA):
 
 
 def catalogue_of(value_set):
-    """The catalogue a declared value set draws on, as the declaration states it."""
+    """The catalogue a declared value set draws on, or None for a text set.
+
+    A declaration names a catalogue only when reference data holds the spellings
+    ORE writes. A vocabulary whose registry holds words where ORE writes its own
+    code states no catalogue, and its set is text until the registry carries the
+    spelling the document does.
+    """
     for entry in declared_vocabularies().values():
         if entry["value_set"] != value_set:
             continue
-        catalogue = entry["catalogue"]
+        catalogue = entry.get("catalogue")
+        if catalogue is None:
+            return None
         if catalogue not in CATALOGUES:
             raise ValueError(f"{value_set}: the declaration names {catalogue}, "
                              "which is not a catalogue this generator knows")
@@ -249,7 +257,8 @@ def set_of(term, curated, parsers, section):
                              "states a list for; correct the entry or drop it")
         return parser_set_code(link), link
     if name in VALUE_SET_OF:
-        return VALUE_SET_OF[name], None
+        value_set = VALUE_SET_OF[name]
+        return ("curve.text" if catalogue_of(value_set) is None else value_set), None
     if term["type"] in TYPE_SETS:
         return TYPE_SETS[term["type"]], None
     return "curve.text", None
@@ -266,6 +275,8 @@ def data():
     sets = dict(OWN_SETS)
     for value_set in set(VALUE_SET_OF.values()):
         catalogue = catalogue_of(value_set)
+        if catalogue is None:
+            continue
         sets[value_set] = {
             "name": CATALOGUES[catalogue]["name"],
             "description": f"One of the {CATALOGUES[catalogue]['name'].lower()} "

@@ -26,11 +26,11 @@ The existing source becomes a feed bound to a publisher, a session and a service
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -79,7 +79,15 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Feeds seeded | 10 | =select count(*) from ores_marketdata_feeds_tbl= | be79de12f3 |
+| Sessions seeded | 2 | =select count(*) from ores_marketdata_sessions_tbl= | be79de12f3 |
+| Feed pgtap cases | 6/6 pass | =run_tests.sh marketdata_feeds_test.sql= | be79de12f3 |
+| Session pgtap cases | 7/7 pass | =run_tests.sh marketdata_session_settings_validation_test.sql= | be79de12f3 |
+| Catalogue pgtap cases | 9/9 pass | =run_tests.sh marketdata_catalogue_publish_test.sql= | be79de12f3 |
+| Catalogue repository tests | 9 cases, 19 assertions | =ores.marketdata.core.tests "[repository][catalogue]"= | be79de12f3 |
+| Service app tests | 152/153; the one failure passes alone | =ores.marketdata.service.tests "[app]"= | be79de12f3 |
+| Simulator announce tests | 4 cases, 34 assertions | =ores.synthetic.service.tests "[simulator_adapter][adapter]"= | be79de12f3 |
+| Non-heavy gate | 46/46 pass | =./compass.sh check --exclude-heavy= | be79de12f3 |
 
 * Notes
 
@@ -130,3 +138,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** Outcome
+
+The source table and domain are the feed: same id and unique name,
+=publisher_code= in place of =provider_code=, =session_code=, =service= and
+=provider_key= added, and =kind= removed. The model file is
+=ores.marketdata.feed.org=; the generated source files are gone.
+
+Ten feeds are seeded. The four public feeds run through =frankfurter-eu= at
+=end_of_day= with their publisher keys (=ECB=, =BOC=, =IMF=, =TCMB=); the
+simulated and internal feeds run through =synthetic-local= at =real_time=.
+A hand-written trigger validates the session against the system-tenant
+catalogue, and the default index keeps one default feed per publisher.
+
+The runtime follows the rename: the demand catalogue, tick translator, billing,
+the market data client, the synthetic service and the IAM provisioning handler
+read feeds. Billing treats a feed on the synthetic session as a shadow bill.

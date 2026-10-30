@@ -299,7 +299,8 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:72748A21-F7A2-4B40-B258-123AB7115A36][Verify the trade blotter]] | PENDING | The one Trading screen: the tree and its figures, the rows, narrowing, the flat list, the counterparty grouping, the pages a row opens, and grouping from the screen's button. |
+| [[id:9969BCF5-6C44-4768-90FB-30FBC8A3E32A][Verify the structure screens]] | ABANDONED | The structures list it walked is this screen's rows now. Kept for the record of what the removed list did. |
 
 * PRs
 
@@ -311,6 +312,24 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Standards: the filter omitted the members the view gained; a refused read answered 500; stale comments; the `view` the query stated drew no rail. | `blotter.ts` | Fixed | Every member stated, the refusal answered as a refusal, the counterparty rail drawn. |
+| 2 | Spec: a selected book dropped the structures placed there, and the figures counted legs. | `blotter.ts` | Fixed | The list narrows by placement, and the figures count the top rows once. |
+| 3 | UI: choosing the tree again showed the counterparties; the instrument was the store's code; the date wrapped. | `BlotterPage.tsx` | Fixed | The rail is its own read, the instrument is the code a desk quotes, and the date holds one line with the long columns shortened. |
 
 * Result
+
+The trades list and the structures list are one screen, the trade blotter. The
+read serves it in one page: the top-level trades and each structure as one row,
+placed where its legs are, with the party's books or the counterparties beside
+it. A structure's legs are inside it; the flat list shows them, each naming its
+structure. The two old addresses redirect to the screen, the Trading area offers
+one card, and the trade and structure pages are what a row opens.
+
+Proved by: the BFF suite (1149 cases), the web suite (2328), the list-request
+check against the protocols (1046 requests), and eleven browser cases that walk
+the screen on a provisioned tenant. The screen was reviewed by hand across six
+rounds, and the scenario records what to look at next time.
+
+Still owed, and recorded in the plan: the instrument grouping, which waits on an
+asset class the summary does not carry, and one grouped read for the rail's
+figures.

@@ -25,9 +25,12 @@
 #ifndef ORES_TRADING_API_DOMAIN_INSTRUMENT_BATCH_HPP
 #define ORES_TRADING_API_DOMAIN_INSTRUMENT_BATCH_HPP
 
+#include "ores.trading.api/domain/ascot.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche_notional.hpp"
+#include "ores.trading.api/domain/bond_forward.hpp"
+#include "ores.trading.api/domain/bond_future.hpp"
 #include "ores.trading.api/domain/bond_instrument_data.hpp"
 #include "ores.trading.api/domain/bond_issue.hpp"
 #include "ores.trading.api/domain/bond_issue_call_date.hpp"
@@ -38,6 +41,9 @@
 #include "ores.trading.api/domain/bond_issue_leg_rate.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_schedule.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_schedule_date.hpp"
+#include "ores.trading.api/domain/bond_option.hpp"
+#include "ores.trading.api/domain/bond_repo.hpp"
+#include "ores.trading.api/domain/bond_trs.hpp"
 #include "ores.trading.api/domain/callable_swap_call_date.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
@@ -235,6 +241,30 @@ struct instrument_batch {
      * @brief The bond_issue_leg_schedule_date rows, keyed by trade id.
      */
     std::vector<bond_issue_leg_schedule_date> bond_issue_leg_schedule_dates;
+    /**
+     * @brief The ascot rows, keyed by trade id.
+     */
+    std::vector<ascot> ascots;
+    /**
+     * @brief The bond_forward rows, keyed by trade id.
+     */
+    std::vector<bond_forward> bond_forwards;
+    /**
+     * @brief The bond_future rows, keyed by trade id.
+     */
+    std::vector<bond_future> bond_futures;
+    /**
+     * @brief The bond_option rows, keyed by trade id.
+     */
+    std::vector<bond_option> bond_options;
+    /**
+     * @brief The bond_repo rows, keyed by trade id.
+     */
+    std::vector<bond_repo> bond_repos;
+    /**
+     * @brief The bond_trs rows, keyed by trade id.
+     */
+    std::vector<bond_trs> bond_trs;
     /**
      * @brief The balance_guaranteed_swap_instrument rows, keyed by trade id.
      */
@@ -619,6 +649,48 @@ inline void append(instrument_batch& batch, bond_issue_leg_schedule v) {
  */
 inline void append(instrument_batch& batch, bond_issue_leg_schedule_date v) {
     batch.bond_issue_leg_schedule_dates.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one ascot to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, ascot v) {
+    batch.ascots.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_forward to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_forward v) {
+    batch.bond_forwards.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_future to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_future v) {
+    batch.bond_futures.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_option to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_option v) {
+    batch.bond_options.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_repo to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_repo v) {
+    batch.bond_repos.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_trs to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_trs v) {
+    batch.bond_trs.push_back(std::move(v));
 }
 
 /**

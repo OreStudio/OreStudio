@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 33D80666-EC0D-4484-B8F2-661D5752CED5
+:END:
+#+title: Task: Construct every bond product by name
+#+description: Ten codes route to the bond instrument table and only one of them, a plain Bond, has a constructor. The other nine have their own fact tables and nothing that states them, so the family cannot draw them and their tables are empty in every tenant. Give each code a constructor that states its own facts and cannot fill a column its product does not have.
+#+type: task
+#+level: s1
+#+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/construct-every-bond-product-by-name
+#+pr: 4136
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every bond code that routes to the bond instrument table has a named constructor, and each constructor states the facts that product has.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- Each of the ten routed bond codes has a named constructor, and each refuses what its product cannot state.
+- A bond product is appended to the instrument batch by one seam, not by nine hand-wired vectors.
+- The constructors have tests that state what each product carries and what it refuses.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Bond constructors | 10, one per routed code | =grep -c "construct_.*bond\|construct_ascot" bond_instruments.hpp= | worktree |
+| Constructor tests | 13 cases, 51 assertions | =ores.trading.api.tests "[bond]"= | worktree |
+| Bond children the model states | 13 | =grep -c "^| bond_\|^| ascot" the catalogue's * Batch/Children= | worktree |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4136][#4136]] | [trading] Construct every bond product by name |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Ten constructors, one per routed bond code, and a single append that crosses a
+whole product into the instrument batch. Each constructor states only what its
+product has, and each refuses what its product cannot be: an option with no
+type, a forward with no settlement date, a future with no contract, a repo with
+neither rate nor index, a total return swap with neither return nor funding leg,
+a callable bond with no call date, a convertible with no target.
+
+The batch the constructors fill is generated from the trade type catalogue's
+`* Batch/Children` list, and the bond rows were missing from it: the issue and
+its legs, amounts, rates and schedules had been added to the generated header by
+hand, and a regeneration by another environment deleted them, leaving main
+referring to arrays it no longer declared. The catalogue now states the bond
+children, so a regeneration keeps them, and this task repairs the break as well
+as adding the nine constructors.
+
+Tests: thirteen cases in `domain_bond_instruments_tests.cpp`, asserting each
+product's own row, the refusals above, and that a product crosses the batch in
+one append. `ores.trading.api.tests "[bond]"` passes with 51 assertions.
+
+The full tree was building when this was written and the build broke elsewhere;
+the whole-tree run is owed once that is fixed.
+
+The whole tree is green: `./compass.sh build` finished, `ores.trading.api.tests`
+passes with 618 assertions in 162 cases, and `ores.synthetic.core.tests` with
+2,050 in 82. The earlier note that the build was broken elsewhere no longer
+applies: main was repaired and this branch was rebased onto it.

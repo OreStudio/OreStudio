@@ -22,6 +22,7 @@
 set(files
     "codec_product_type_tests.cpp"
     "domain_activity_type_tests.cpp"
+    "domain_bond_instruments_tests.cpp"
     "domain_commodity_instruments_tests.cpp"
     "domain_economic_digest_tests.cpp"
     "domain_equity_instruments_tests.cpp"

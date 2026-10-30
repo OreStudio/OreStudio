@@ -28,9 +28,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/domain/trade_type_routing.hpp"
+#include "ores.trading.core/repository/ascot_repository.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_tranche_notional_repository.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_tranche_repository.hpp"
+#include "ores.trading.core/repository/bond_forward_repository.hpp"
+#include "ores.trading.core/repository/bond_future_repository.hpp"
 #include "ores.trading.core/repository/bond_instrument_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_call_date_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_conversion_target_repository.hpp"
@@ -41,6 +44,9 @@
 #include "ores.trading.core/repository/bond_issue_leg_schedule_date_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_schedule_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_repository.hpp"
+#include "ores.trading.core/repository/bond_option_repository.hpp"
+#include "ores.trading.core/repository/bond_repo_repository.hpp"
+#include "ores.trading.core/repository/bond_trs_repository.hpp"
 #include "ores.trading.core/repository/callable_swap_call_date_repository.hpp"
 #include "ores.trading.core/repository/callable_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/cap_floor_instrument_repository.hpp"
@@ -258,6 +264,12 @@ void write_instrument_batch(ores::database::context ctx,
         ctx, batch.bond_issue_leg_schedules, keys, stamp, claim);
     write_rows<repository::bond_issue_leg_schedule_date_repository>(
         ctx, batch.bond_issue_leg_schedule_dates, keys, stamp, claim);
+    write_rows<repository::ascot_repository>(ctx, batch.ascots, keys, stamp, claim);
+    write_rows<repository::bond_forward_repository>(ctx, batch.bond_forwards, keys, stamp, claim);
+    write_rows<repository::bond_future_repository>(ctx, batch.bond_futures, keys, stamp, claim);
+    write_rows<repository::bond_option_repository>(ctx, batch.bond_options, keys, stamp, claim);
+    write_rows<repository::bond_repo_repository>(ctx, batch.bond_repos, keys, stamp, claim);
+    write_rows<repository::bond_trs_repository>(ctx, batch.bond_trs, keys, stamp, claim);
     write_rows<repository::balance_guaranteed_swap_instrument_repository>(
         ctx, batch.balance_guaranteed_swap_instruments, keys, stamp, claim);
     write_rows<repository::balance_guaranteed_swap_tranche_repository>(
@@ -451,6 +463,18 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("bond_issue_leg_schedules");
     if (!batch.bond_issue_leg_schedule_dates.empty())
         names.emplace_back("bond_issue_leg_schedule_dates");
+    if (!batch.ascots.empty())
+        names.emplace_back("ascots");
+    if (!batch.bond_forwards.empty())
+        names.emplace_back("bond_forwards");
+    if (!batch.bond_futures.empty())
+        names.emplace_back("bond_futures");
+    if (!batch.bond_options.empty())
+        names.emplace_back("bond_options");
+    if (!batch.bond_repos.empty())
+        names.emplace_back("bond_repos");
+    if (!batch.bond_trs.empty())
+        names.emplace_back("bond_trs");
     if (!batch.balance_guaranteed_swap_instruments.empty())
         names.emplace_back("balance_guaranteed_swap_instruments");
     if (!batch.balance_guaranteed_swap_tranches.empty())

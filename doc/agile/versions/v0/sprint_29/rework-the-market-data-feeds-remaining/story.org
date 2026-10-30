@@ -77,6 +77,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:407E2CD6-3607-4B3E-9A95-61DDD3096CC9][Document the market data path]] | DONE | 2026-10-28 | 2026-10-29 | One path from a public provider's fixing to a report, clean via oresmd, with the in-flight Frankfurter work covered. |
 | [[id:778147AF-0784-4E66-A4E4-56A5171493D6][Use oresmd on the market data generation path]] | DONE | 2026-10-29 | 2026-10-29 | The synthetic IR feed, the series classifier and the oresmd codec still spell data the ORE way at runtime. |
 | [[id:BAF9151C-3A23-4A52-8012-8DD9E0F7FE85][Route the synthetic feeds into the ingest]] | STARTED | 2026-10-29 | | The synthetic IR feeds publish, but no synthetic-provider tick reaches the store, so the bootstrap cannot be exercised live. |
+| [[id:EF0E71E8-940A-4164-BF4C-85B2FB6AE55A][Notify a person that a scenario is ready]] | STARTED | 2026-10-30 | | A scenario is created but the person who should run it is never told; the Development area already renders the scenario. |
 
 * Decisions
 

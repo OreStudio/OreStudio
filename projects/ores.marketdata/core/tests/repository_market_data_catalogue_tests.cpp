@@ -184,8 +184,8 @@ TEST_CASE("a_tenant_reads_a_provider_the_system_tenant_holds", "[repository][cat
     REQUIRE(tenant_ctx.tenant_id().to_string() != tenant_context::system_tenant_id);
 
     auto p = generate_synthetic_provider(ctx);
-    // The row is the system tenant's and stays after the test, so its code is its own and never
-    // meets the code another test generates for its tenant.
+    // The row is the system tenant's, so its code is its own: it never meets the code another test
+    // generates for its own tenant.
     p.code = "system-" + boost::uuids::to_string(boost::uuids::random_generator{}());
     p.tenant_id =
         ores::utility::uuid::tenant_id::from_string(tenant_context::system_tenant_id).value();
@@ -197,6 +197,10 @@ TEST_CASE("a_tenant_reads_a_provider_the_system_tenant_holds", "[repository][cat
     const auto read = repo.read_latest(tenant_ctx, p.code);
     REQUIRE(read.size() == 1);
     CHECK(read.front().code == p.code);
+
+    // The system tenant's catalogue is shared by every tenant and every run, so the row goes when
+    // the case ends: one a case leaves behind is a row no run can reset.
+    repo.remove(system_ctx, p.code);
 }
 
 // The system tenant id on a write means "the session's tenant", so a tenant that writes a provider

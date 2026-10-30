@@ -51,6 +51,10 @@ Both cases now write and read in the run's own tenant, which the read path
 already covers: a read returns the caller's rows and the system tenant's. The
 fixture states why, so the next author does not reintroduce the write.
 
+One case in the same suite wrote a provider into the system tenant and said in
+its own comment that the row stays after it. Every run then added a provider to
+a catalogue no run resets, so the case now removes its row when it ends.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -64,8 +68,10 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | marketdata core cases | 339 of 339 pass | =compass test run -- -R ores.marketdata.core.tests= | branch head |
-| system tenant suppliers after the run | 0 | =compass sql -- -c "select count(*) from ores_marketdata_suppliers_tbl where tenant_id = ores_utility_system_tenant_id_fn()"= | branch head |
-| system tenant adapters after the run | 0 | same query on =ores_marketdata_adapters_tbl= | branch head |
+| shared providers before the run | 11 active | =compass sql -- -c "select count(*) from ores_marketdata_providers_tbl where tenant_id = ores_utility_system_tenant_id_fn() and valid_to = ores_utility_infinity_timestamp_fn()"= | branch head |
+| shared providers after the run | 11 active | same query after the suite | branch head |
+| shared suppliers after the run | 0 active | same query on =ores_marketdata_suppliers_tbl= | branch head |
+| shared adapters after the run | 0 active | same query on =ores_marketdata_adapters_tbl= | branch head |
 
 * Notes
 
@@ -94,7 +100,8 @@ via its "Verifies task" field.
 
 * Result
 
-The catalogue read cases no longer touch shared data, so the order the suite runs
-its cases in no longer decides whether the session eventing case passes.
-=ores.marketdata.core.tests=: 339 of 339 cases pass on a fresh database, with no
-supplier and no adapter left in the system tenant.
+The suite leaves the shared catalogue as it found it, so the order its cases run
+in no longer decides whether the session eventing case passes.
+=ores.marketdata.core.tests=: 339 of 339 cases pass on a freshly recreated
+database. The system tenant holds the 11 seeded providers before the run and the
+same 11 after it, and no supplier and no adapter either side.

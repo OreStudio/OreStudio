@@ -664,6 +664,44 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
                      book_req.instruments.flexi_swap_instruments);
         append_facts(slot.instruments.balance_guaranteed_swap_instruments,
                      book_req.instruments.balance_guaranteed_swap_instruments);
+    } else if (!slot.instruments.fx_forward_instruments.empty() ||
+               !slot.instruments.fx_barrier_option_instruments.empty() ||
+               !slot.instruments.fx_digital_option_instruments.empty() ||
+               !slot.instruments.fx_vanilla_option_instruments.empty() ||
+               !slot.instruments.fx_asian_forward_instruments.empty() ||
+               !slot.instruments.fx_variance_swap_instruments.empty() ||
+               !slot.instruments.fx_accumulator_instruments.empty()) {
+        /*
+         * The rows were built in the planner, so the writer states the audit
+         * columns on each and sends. The accumulator's range bounds carry the
+         * reason and the commentary themselves.
+         */
+        const auto append_rows = [&](const auto& rows, auto& into) {
+            for (auto row : rows) {
+                row.audit.change_reason_code = std::string(population_reason);
+                row.audit.change_commentary = "Generated trade population.";
+                into.push_back(row);
+            }
+        };
+        append_rows(slot.instruments.fx_forward_instruments,
+                    book_req.instruments.fx_forward_instruments);
+        append_rows(slot.instruments.fx_barrier_option_instruments,
+                    book_req.instruments.fx_barrier_option_instruments);
+        append_rows(slot.instruments.fx_digital_option_instruments,
+                    book_req.instruments.fx_digital_option_instruments);
+        append_rows(slot.instruments.fx_vanilla_option_instruments,
+                    book_req.instruments.fx_vanilla_option_instruments);
+        append_rows(slot.instruments.fx_asian_forward_instruments,
+                    book_req.instruments.fx_asian_forward_instruments);
+        append_rows(slot.instruments.fx_variance_swap_instruments,
+                    book_req.instruments.fx_variance_swap_instruments);
+        append_rows(slot.instruments.fx_accumulator_instruments,
+                    book_req.instruments.fx_accumulator_instruments);
+        for (auto bound : slot.instruments.range_bounds) {
+            bound.change_reason_code = std::string(population_reason);
+            bound.change_commentary = "Generated trade population.";
+            book_req.instruments.range_bounds.push_back(bound);
+        }
     } else if (const auto* bond = std::get_if<domain::bond_terms>(&slot.terms)) {
         ores::trading::domain::bond_instrument_data row;
         row.instrument.issue_id = bond->issue_id;
@@ -962,165 +1000,6 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             book_req.instruments.equity_position_instruments.push_back(row);
         } else {
             throw trade_population_write_error("The equity trade type " + type +
-                                               " states no table this writer knows.");
-        }
-
-    } else if (const auto* fx = std::get_if<domain::fx_terms>(&slot.terms)) {
-        namespace tdom = ores::trading::domain;
-        const auto money = [](double value) {
-            return tdom::decimal::from_double(value).value();
-        };
-        const auto maybe_money =
-            [&money](std::optional<double> value) -> std::optional<tdom::decimal> {
-            if (!value.has_value())
-                return std::nullopt;
-            return money(*value);
-        };
-        const auto& type = slot.trade_type_code;
-
-        tdom::fx_legs_terms legs;
-        legs.bought_currency = fx->bought_currency;
-        legs.bought_amount = money(fx->bought_amount);
-        legs.sold_currency = fx->sold_currency;
-        legs.sold_amount = money(fx->sold_amount);
-
-        /*
-         * One routed table per shape. An FX row is the whole instrument, so
-         * there is no fact row beside it and nothing to forget: the fields the
-         * table states are the fields the row carries.
-         */
-        if (type == "FxForward" || type == "FxSwap") {
-            tdom::fx_forward_terms terms{legs, fx->value_date, fx->settlement};
-            auto row = type == "FxForward" ? tdom::construct_fx_forward(terms) :
-                                             tdom::construct_fx_swap(terms);
-            row.description = "Generated FX trade.";
-            row.audit.change_reason_code = std::string(population_reason);
-            row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.fx_forward_instruments.push_back(row);
-        } else if (type == "FxOption") {
-            tdom::fx_vanilla_option_terms terms{
-                legs, fx->option_type, fx->expiry_date, fx->exercise_style, fx->settlement};
-            auto row = tdom::construct_fx_option(terms);
-            row.description = "Generated FX trade.";
-            row.audit.change_reason_code = std::string(population_reason);
-            row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.fx_vanilla_option_instruments.push_back(row);
-        } else if (type.starts_with("FxBarrier") || type == "FxDoubleBarrierOption" ||
-                   type == "FxEuropeanBarrierOption" || type == "FxGenericBarrierOption" ||
-                   type == "FxKIKOBarrierOption") {
-            tdom::fx_barrier_option_terms terms{legs,
-                                                fx->option_type,
-                                                fx->expiry_date,
-                                                fx->settlement,
-                                                fx->barrier_type,
-                                                maybe_money(fx->lower_barrier),
-                                                maybe_money(fx->upper_barrier),
-                                                fx->underlying_code};
-            auto row = [&] {
-                if (type == "FxBarrierOption")
-                    return tdom::construct_fx_barrier_option(terms);
-                if (type == "FxDoubleBarrierOption")
-                    return tdom::construct_fx_double_barrier_option(terms);
-                if (type == "FxEuropeanBarrierOption")
-                    return tdom::construct_fx_european_barrier_option(terms);
-                if (type == "FxGenericBarrierOption")
-                    return tdom::construct_fx_generic_barrier_option(terms);
-                return tdom::construct_fx_kiko_barrier_option(terms);
-            }();
-            row.description = "Generated FX trade.";
-            row.audit.change_reason_code = std::string(population_reason);
-            row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.fx_barrier_option_instruments.push_back(row);
-        } else if (type == "FxDigitalOption" || type == "FxTouchOption" ||
-                   type == "FxDoubleTouchOption" || type == "FxDigitalBarrierOption") {
-            tdom::fx_digital_option_terms terms{fx->foreign_currency,
-                                                fx->domestic_currency,
-                                                fx->payoff_currency,
-                                                money(fx->payoff_amount.value_or(0.0)),
-                                                fx->option_type,
-                                                fx->expiry_date,
-                                                fx->long_short,
-                                                maybe_money(fx->strike),
-                                                fx->barrier_type,
-                                                maybe_money(fx->lower_barrier),
-                                                maybe_money(fx->upper_barrier)};
-            auto row = [&] {
-                if (type == "FxDigitalOption")
-                    return tdom::construct_fx_digital_option(terms);
-                if (type == "FxTouchOption")
-                    return tdom::construct_fx_touch_option(terms);
-                if (type == "FxDoubleTouchOption")
-                    return tdom::construct_fx_double_touch_option(terms);
-                return tdom::construct_fx_digital_barrier_option(terms);
-            }();
-            row.description = "Generated FX trade.";
-            row.audit.change_reason_code = std::string(population_reason);
-            row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.fx_digital_option_instruments.push_back(row);
-        } else if (type == "FxAverageForward") {
-            tdom::fx_asian_forward_terms terms{fx->fx_index,
-                                               fx->reference_currency,
-                                               maybe_money(fx->reference_notional),
-                                               fx->settlement_currency,
-                                               maybe_money(fx->settlement_notional),
-                                               fx->payment_date,
-                                               fx->long_short,
-                                               fx->currency,
-                                               maybe_money(fx->fixing_amount),
-                                               maybe_money(fx->strike)};
-            auto row = tdom::construct_fx_average_forward(terms);
-            row.description = "Generated FX trade.";
-            row.audit.change_reason_code = std::string(population_reason);
-            row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.fx_asian_forward_instruments.push_back(row);
-        } else if (type == "FxTaRF") {
-            tdom::fx_tarf_terms terms{fx->fx_index,
-                                      fx->reference_currency,
-                                      maybe_money(fx->reference_notional),
-                                      fx->settlement_currency,
-                                      maybe_money(fx->settlement_notional),
-                                      fx->payment_date,
-                                      fx->long_short,
-                                      fx->currency,
-                                      maybe_money(fx->fixing_amount),
-                                      maybe_money(fx->strike),
-                                      money(fx->target_amount.value_or(0.0))};
-            auto row = tdom::construct_fx_target_redemption_forward(terms);
-            row.description = "Generated FX trade.";
-            row.audit.change_reason_code = std::string(population_reason);
-            row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.fx_asian_forward_instruments.push_back(row);
-        } else if (type == "FxVarianceSwap") {
-            tdom::fx_variance_swap_terms terms{fx->start_date,
-                                               fx->end_date,
-                                               fx->currency,
-                                               fx->underlying_code,
-                                               fx->long_short,
-                                               fx->strike.value_or(0.0),
-                                               money(fx->reference_notional),
-                                               fx->moment_type};
-            auto row = tdom::construct_fx_variance_swap(terms);
-            row.description = "Generated FX trade.";
-            row.audit.change_reason_code = std::string(population_reason);
-            row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.fx_variance_swap_instruments.push_back(row);
-        } else if (type == "FxAccumulator") {
-            tdom::fx_accumulator_terms terms{fx->currency,
-                                             money(fx->fixing_amount),
-                                             fx->underlying_code,
-                                             fx->long_short,
-                                             fx->start_date,
-                                             money(fx->strike.value_or(0.0)),
-                                             maybe_money(fx->knock_out_barrier)};
-            auto built = tdom::construct_fx_accumulator(terms);
-            built.row.description = "Generated FX trade.";
-            built.row.audit.change_reason_code = std::string(population_reason);
-            built.row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.fx_accumulator_instruments.push_back(built.row);
-            for (const auto& bound : built.range_bounds)
-                book_req.instruments.range_bounds.push_back(bound);
-        } else {
-            throw trade_population_write_error("The FX trade type " + type +
                                                " states no table this writer knows.");
         }
 

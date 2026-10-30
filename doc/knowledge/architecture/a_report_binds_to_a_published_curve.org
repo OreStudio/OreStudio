@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: FB8F701C-E56A-49A9-AA90-1B6BD0B02092
+:END:
+#+title: A report binds to a published curve, not to a name
+#+description: The target for a report's market binding: it names the publish record and the as-of, the export enforces the published state, and the ORE XML is built from the published set.
+#+type: knowledge
+#+level: cross
+#+filetags: :reporting:marketdata:publish:binding:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+* Summary
+
+A report's market binding names a market configuration set by name, and the
+report's curve provenance stops at that name. The target is a binding that names
+the published set itself: the publish record, its as-of and its party, under the
+market role the report binds. The ORE export then builds the market configuration
+from the published set's points, and it refuses a set that is not in the published
+state. The name the market document carries is derived, not typed. This closes the
+chain described in [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]].
+
+* Why a name is not enough
+
+The binding's =market_configuration_name= is a free string that matches a
+configuration set in =todaysmarket.xml=, which =ores.analytics= owns. See
+[[id:90B90247-376D-4EDA-958D-5ABE66A8B14D][ores.reporting.configuration_market_binding]]. Three things follow, and
+each is a provenance hole.
+
+The name says nothing about which curve it means. A run names "USD-SOFR", and
+whether that is the curve a person published last week, the curve a candidate
+holds, or a curve a hand-written XML block describes is not in the record.
+
+The name does not carry the as-of. Two runs under one binding can price from two
+different market instants without either run saying which, so a report result
+cannot be reproduced from the binding alone.
+
+The name does not carry the state. A set that was withdrawn or superseded can
+still be named, and the export will happily build the XML from it.
+
+* The decision
+
+A market binding names the published set:
+
+| Field | Meaning |
+|-------+---------|
+| =configuration_id= | The report configuration the binding belongs to, unchanged |
+| =role= | The ORE market role, unchanged |
+| =publish_id= | The publish record the binding names: the set, its party and its as-of |
+| =market_configuration_name= | Derived from the set's curve, not typed |
+
+The binding no longer carries a free name. The run's market configuration is the
+curve the publish record names, at the as-of the record holds, in the party that
+owns it.
+
+** The export enforces the state
+
+The ORE export resolves =publish_id= through the published read. A set in the
+published state is exported. A candidate is refused, because nobody approved it.
+A withdrawn or superseded set is refused unless the run explicitly asks for a
+historical as-of, which is the only way a rerun reproduces an old result. The
+refusal names the set and its state, so a person sees why the run cannot start.
+
+** The XML is built from the set
+
+The export writes the market configuration from the set's published points: the
+curve identity, the as-of and the points, in the ORE vocabulary of the boundary,
+as [[id:D1A25B9E-B1A0-4E7C-AB5C-1C7C3EF07F90][ORE import and export]] describes. The
+derivation is recorded on the report run, so a result names the publish record it
+priced from.
+
+* Consequences and the work
+
+The entity changes: =configuration_market_binding= gains =publish_id= and loses
+the free name as an input. The binding screen picks a published curve with the
+standard record picker, drawn by the curve and its as-of, and shows the state.
+The ORE export reads the set instead of a name. The report run records the
+publish record it used.
+
+The demonstration needs the binding of its report configuration to the published
+USD-SOFR curve, so a run can be shown end to end.
+
+* What this does not settle
+
+- Whether a binding may name more than one set, for a report that needs several
+  curves. The first slice binds one set per role.
+- Whether other market data, such as FX spots, binds the same way. The first
+  slice binds the curve; the same shape would carry any published series.
+- Whether the curve configuration document remains an input alongside the
+  binding, or retires once the binding names the set. That is the next decision
+  after the first slice runs.
+
+* See also
+
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]]
+- [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]]
+- [[id:90B90247-376D-4EDA-958D-5ABE66A8B14D][ores.reporting.configuration_market_binding]]
+- [[id:D1A25B9E-B1A0-4E7C-AB5C-1C7C3EF07F90][ORE import and export]]
+- [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]]

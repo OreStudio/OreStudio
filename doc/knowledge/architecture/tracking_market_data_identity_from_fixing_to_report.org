@@ -220,8 +220,9 @@ series and its coordinates rather than a set of unrelated records.
 Three changes remain to be built, and each is a change to a named part of the
 system rather than an open design question.
 
-The first is the report's market binding. A report will name the published set,
-and the published read will refuse a set that is not in the published state. The
+The first is the report's market binding, designed in
+[[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]]. A report will name the
+published set, and the published read will refuse a set that is not in the published state. The
 binding carries the output series, the as-of and the publish record, and the ORE
 export builds the XML from those. This closes the chain described above.
 

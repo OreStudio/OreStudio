@@ -211,7 +211,7 @@ TEST_CASE("the_demand_and_the_metering_of_a_composite_include_its_inputs",
         source.id = gen();
         source.name = provider + "-sim";
         source.provider_code = provider;
-        c.sources.push_back(source);
+        c.feeds.push_back(source);
 
         ores::marketdata::domain::market_data_vendor_instrument v;
         v.id = gen();

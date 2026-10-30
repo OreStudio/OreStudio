@@ -155,7 +155,7 @@ source_bill rate_source(const domain::feed& source,
     source_bill bill;
     bill.feed_id = source.id;
     bill.source_name = source.name;
-    bill.shadow = source.kind == "simulated";
+    bill.shadow = source.session_code == "synthetic-local";
     bill.period = period;
 
     const auto c = count_events(source.id, events, period);

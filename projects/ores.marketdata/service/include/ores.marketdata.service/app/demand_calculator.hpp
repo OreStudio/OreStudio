@@ -50,7 +50,7 @@ namespace ores::marketdata::service::app {
 struct demand_catalogue {
     /// The providers, whose terms decide whether their sources are asked for anything.
     std::vector<domain::provider> providers;
-    std::vector<domain::feed> sources;
+    std::vector<domain::feed> feeds;
     std::vector<domain::market_data_vendor_instrument> instruments;
     std::vector<domain::market_data_mapping> mappings;
     std::vector<domain::route> routes;

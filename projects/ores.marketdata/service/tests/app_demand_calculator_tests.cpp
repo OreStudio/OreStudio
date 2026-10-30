@@ -48,7 +48,7 @@ struct app_demand_calculator_world {
         live.id = gen();
         live.name = "bloomberg-live";
         live.provider_code = "bloomberg";
-        c.sources = {sim, live};
+        c.feeds = {sim, live};
         instrument("bloomberg", "EURUSD Curncy", eur_usd);
         instrument("bloomberg", "GBPUSD Curncy", gbp_usd);
         instrument("lseg", "EUR=", eur_usd);

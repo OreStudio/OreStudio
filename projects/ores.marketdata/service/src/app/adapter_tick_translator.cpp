@@ -88,7 +88,7 @@ adapter_tick_translator::check(std::string_view adapter_id,
         return std::unexpected(adapter_tick_drop::unmapped);
 
     const auto candidates = mappings_.find(
-        instrument_key{source->second.provider_code, tick.id_scheme, tick.external_id, tick.field});
+        instrument_key{source->second.publisher_code, tick.id_scheme, tick.external_id, tick.field});
     if (candidates == mappings_.end())
         return std::unexpected(adapter_tick_drop::unmapped);
 
@@ -127,7 +127,7 @@ adapter_tick_translator::check(std::string_view adapter_id,
     out.tick.value = tick.value;
     out.tick.observation_time = tick.vendor_time;
     out.tick.source = source->second.name;
-    out.provider_code = source->second.provider_code;
+    out.provider_code = source->second.publisher_code;
     out.feed_id = source->second.id;
     return out;
 }

@@ -268,7 +268,7 @@ market_data_client::list_feeds() {
         return std::unexpected(resp.error());
     if (resp->result.outcome != ores::utility::domain::outcome::ok)
         return std::unexpected(describe(resp->result));
-    return std::move(resp->sources);
+    return std::move(resp->feeds);
 }
 
 }

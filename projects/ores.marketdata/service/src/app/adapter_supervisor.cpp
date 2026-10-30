@@ -96,7 +96,7 @@ void adapter_supervisor::refresh() {
     next->catalogue.providers = repository::provider_repository{}.read_latest(system_ctx);
     for (const auto& provider : next->catalogue.providers)
         next->providers.insert(provider.code);
-    next->catalogue.sources = repository::feed_repository{}.read_latest(system_ctx);
+    next->catalogue.feeds = repository::feed_repository{}.read_latest(system_ctx);
     next->catalogue.instruments =
         repository::market_data_vendor_instrument_repository{}.read_latest(system_ctx);
     next->catalogue.mappings = repository::market_data_mapping_repository{}.read_latest(system_ctx);
@@ -110,7 +110,7 @@ void adapter_supervisor::refresh() {
     keep_live_tenants(next->catalogue.subscriptions, live);
 
     std::map<boost::uuids::uuid, std::string> source_names;
-    for (const auto& source : next->catalogue.sources)
+    for (const auto& source : next->catalogue.feeds)
         source_names.emplace(source.id, source.name);
     for (const auto& route : next->catalogue.routes)
         if (const auto found = source_names.find(route.feed_id); found != source_names.end())

@@ -71,8 +71,8 @@ std::vector<party_demand> compute_party_demand(const demand_catalogue& catalogue
     std::vector<party_demand> out;
     for (const auto& route : catalogue.routes) {
         const auto source =
-            std::ranges::find(catalogue.sources, route.feed_id, &domain::feed::id);
-        if (source == catalogue.sources.end())
+            std::ranges::find(catalogue.feeds, route.feed_id, &domain::feed::id);
+        if (source == catalogue.feeds.end())
             continue;
 
         party_demand demand;

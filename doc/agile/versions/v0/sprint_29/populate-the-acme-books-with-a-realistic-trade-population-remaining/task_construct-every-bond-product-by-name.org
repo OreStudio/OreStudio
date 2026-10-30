@@ -28,9 +28,9 @@ Every bond code that routes to the bond instrument table has a named constructor
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Constructors written, unit tests green. |
+| Waiting on   | A green whole-tree build; it is broken elsewhere. |
+| Next         | Record the PR, then draw the codes.    |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -57,7 +57,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Bond constructors | 10, one per routed code | =grep -c "construct_.*bond\|construct_ascot" bond_instruments.hpp= | worktree |
+| Constructor tests | 13 cases, 51 assertions | =ores.trading.api.tests "[bond]"= | worktree |
+| Bond children the model states | 13 | =grep -c "^| bond_\|^| ascot" the catalogue's * Batch/Children= | worktree |
 
 * Notes
 
@@ -85,3 +87,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Ten constructors, one per routed bond code, and a single append that crosses a
+whole product into the instrument batch. Each constructor states only what its
+product has, and each refuses what its product cannot be: an option with no
+type, a forward with no settlement date, a future with no contract, a repo with
+neither rate nor index, a total return swap with neither return nor funding leg,
+a callable bond with no call date, a convertible with no target.
+
+The batch the constructors fill is generated from the trade type catalogue's
+`* Batch/Children` list, and the bond rows were missing from it: the issue and
+its legs, amounts, rates and schedules had been added to the generated header by
+hand, and a regeneration by another environment deleted them, leaving main
+referring to arrays it no longer declared. The catalogue now states the bond
+children, so a regeneration keeps them, and this task repairs the break as well
+as adding the nine constructors.
+
+Tests: thirteen cases in `domain_bond_instruments_tests.cpp`, asserting each
+product's own row, the refusals above, and that a product crosses the batch in
+one append. `ores.trading.api.tests "[bond]"` passes with 51 assertions.
+
+The full tree was building when this was written and the build broke elsewhere;
+the whole-tree run is owed once that is fixed.

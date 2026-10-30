@@ -115,6 +115,8 @@ via its "Verifies task" field.
 | 1 | A quote cannot be a leaf: the contract carries no row for `Quote`, `RateQuote` or `SpreadQuote`, so joining it to the contract would show every part as a gap. | curve-configuration.ts | Accept | The quote is its own shape, with the words the screen states, and the task records the deviation rather than hiding it. |
 | 2 | Quotes a section attaches to the curve rather than to a segment are not drawn. | curve-configuration.ts | Deferred | They are rows of the same table with no segment. Filed as part of the collection work still open, not needed for a segment's quotes. |
 | 3 | The corpus holds no composite quote and no named list, so those two paths are tested and not observed. | ores_refdata_curve_quotes_tbl | No change | Said plainly in the notes and the pull request's limitations. |
+| 4 | The instant a row was recorded reached the screen as a leaf, because it is a field of the document row and not a column of the table the exclusion list was written from. | curve-configuration.ts | Accept | The row's recorded instant is excluded, and the test's segment row carries one so the exclusion is held. Seen on a provisioned environment: a segment drew `RecordedAt` beside its leaves until this. |
+| 5 | A segment draws its conventions as a gap though ORE documents it. | curve_term_curation / extractor | Deferred | The contract has no `Segments/<Kind>/Conventions` row at all: the leaf is read by the segment base class, and the extractor keeps no base for a class declared in a header and defined in a source. Filed as [[id:3D1208F2-1D51-4733-81FB-01B19D36E8EE][Record the leaves a segment inherits]]. |
 
 * Result
 
@@ -126,9 +128,11 @@ The BFF reads a segment's quotes by the column the collection rule states, so a
 quote arrives with the segment that holds it and never with another. The page
 draws them under the segment's leaves.
 
-Not seen in the browser, and why: the environment's database was recreated for
-this checkout, and provisioning then stopped — the workflow published the
-`provision_tenant` step and no service consumed it, leaving the tenant in
-`bootstrapping` and the workflow waiting. That is the workflow defect another
-story owns, and it is recorded in `* Measurements`' commit rather than fixed
-here. The evidence is the suites.
+Seen on a provisioned environment, through the route the page reads: every yield
+curve of the UK configuration reports one `Segments` row of kind `Simple`, two
+leaves and twelve quotes, the first being `IR_SWAP/RATE/GBP/0D/1D/1M`. The whole
+configuration counts 221 of 238 parameters documented.
+
+Two things that only the live run showed, both fixed or filed: the row's recorded
+instant was drawn as a leaf, and a segment's conventions arrive as a gap because
+the contract holds no row for them (task 3D1208F2, "Record the leaves a segment inherits").

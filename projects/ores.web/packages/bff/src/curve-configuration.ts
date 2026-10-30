@@ -358,6 +358,9 @@ const NOT_A_LEAF: ReadonlySet<string> = new Set([
     'change_commentary',
     'valid_from',
     'valid_to',
+    // The instant a row was recorded, which the document carries for every
+    // entity and which no ORE element holds.
+    'recorded_at',
     'curve_definition_id',
     'curve_segment_id',
     'curve_configuration_id',

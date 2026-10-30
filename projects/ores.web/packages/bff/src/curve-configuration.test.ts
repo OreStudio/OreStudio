@@ -126,6 +126,9 @@ function document(): Record<string, unknown> {
                 projection_curve: 'USD-3M',
                 pillar_choice: 'MaturityDate',
                 min_distance: null,
+                // The document carries the instant the row was recorded, which no
+                // ORE element holds, so it is not a leaf of the segment.
+                recorded_at: '2026-10-30 10:26:32.965385Z',
             },
             {
                 id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',

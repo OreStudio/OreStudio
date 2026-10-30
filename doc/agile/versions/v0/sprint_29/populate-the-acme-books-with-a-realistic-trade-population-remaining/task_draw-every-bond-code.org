@@ -26,11 +26,11 @@ A provisioned tenant holds every bond code the catalogue routes, each with the f
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Drawn and proven on a fresh tenant.    |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Record the PR.                         |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance

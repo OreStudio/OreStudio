@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 7B1D4017-457C-4A6B-B5BD-45578ECF396C
+:END:
+#+title: Task: Guard the shell's command units
+#+description: Two branches wired the legal entity unit, the merge kept both registrations, and ores.shell stopped at start-up, which is also where a tenant is provisioned. Nothing caught it: the guard runs when the menu is built, and no test builds the whole menu. State the guard's rules over the source.
+#+type: task
+#+level: s1
+#+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
+#+owner: marco
+#+branch: feature/guard-the-shell-command-units
+#+pr: 4108
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make a repeated command registration fail a check, not the first shell a person
+opens. The shell is how a tenant is provisioned, so a start-up break stops every
+test that needs a tenant.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
+| Now          | The check is written and passes on main. |
+| Waiting on   | Nothing.                               |
+| Next         | Review and merge.                      |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- A check reports a unit an aggregator registers twice.
+- A check reports a menu name two units build.
+
+* Plan
+
+#+begin_src text
+1. State the guard's two rules over the source: one unit builds one menu name,
+   and one aggregator names each unit once.
+2. Wire the check into the local checks, so a pull request runs it.
+3. Prove it on the merge that broke the shell and on main, which is clean.
+#+end_src
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Files the check reads | 478 | =python3 build/scripts/check_shell_command_units.py projects/ores.shell= | this branch |
+| Problems on main | 0 | as above | =91f66308dd= |
+| Problems in the merge that broke the shell | 1, =legal_entity_commands= registered twice | as above, on the file main carried before #4107 | =ffcf0a5baa= |
+| Cost of the check | 0.3s | =compass check --exclude-heavy --only shell-command-units= | this branch |
+
+* Notes
+
+=20a6ec0707= and =ef5800d37a= each wired the legal entity unit, from two
+branches, and #4107 removed the second registration from main. The guard that
+raised the error already lived in =shell_root_menu=, so the defect was known and
+stated; what was missing was a reader of that statement before start-up.
+
+The check skips a =tests= directory, because a test file registers a unit once
+per test case, into a menu of its own.
+
+* Result
+
+Two rules now run on every pull request: a menu name is built by one unit, and
+an aggregator names each unit once. The check reports the merge that broke the
+shell and reports nothing on main.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4108][#4108]] | [shell] Check that each command unit is composed once |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

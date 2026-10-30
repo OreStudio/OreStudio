@@ -8,7 +8,7 @@
 #+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
 #+owner: marco
 #+branch: feature/flip-credit-onto-its-rows
-#+pr:
+#+pr: 4094
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4094][#4094]] | [synthetic] Let a credit trade state its row |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :open_sprint_29:sprint_29:v0:
 #+owner: marco
 #+branch: chore/tidy-the-population-stories
-#+pr:
+#+pr: 4105
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4105][#4105]] | [agile] Close the flip story and hand coverage to the population story |
 
 * Review
 

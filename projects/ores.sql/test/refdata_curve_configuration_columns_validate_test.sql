@@ -117,7 +117,7 @@ select throws_like(
 
 select throws_like(
     $$select pg_temp.yield_curve('GBP', 'ACT/999', null)$$,
-    '%Invalid value ACT/999 for yield_curve_config.day_counter%',
+    '%Invalid day_counter: ACT/999. No active day counter found with this spelling.%',
     'a day counter outside the catalogue is refused');
 
 select lives_ok(

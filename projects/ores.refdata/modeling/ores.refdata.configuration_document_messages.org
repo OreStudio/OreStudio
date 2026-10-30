@@ -61,6 +61,7 @@ message, and no family of conventions has a type here.
 #include "ores.refdata.api/domain/equity_curve_config.hpp"
 #include "ores.refdata.api/domain/equity_volatility_config.hpp"
 #include "ores.refdata.api/domain/fx_volatility_config.hpp"
+#include "ores.refdata.api/domain/fx_volatility_smile.hpp"
 #include "ores.refdata.api/domain/inflation_cap_floor_volatility_config.hpp"
 #include "ores.refdata.api/domain/inflation_curve_config.hpp"
 #include "ores.refdata.api/domain/inflation_seasonality_factor.hpp"
@@ -161,6 +162,11 @@ message, and no family of conventions has a type here.
 *** fx_volatilities
 :PROPERTIES:
 :cpp_type: std::vector<ores::refdata::domain::fx_volatility_config>
+:END:
+
+*** fx_volatility_smiles
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::fx_volatility_smile>
 :END:
 
 *** yield_volatilities

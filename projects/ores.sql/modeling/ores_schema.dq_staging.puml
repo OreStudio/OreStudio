@@ -1740,10 +1740,7 @@ package "dq_staging" #F3E5F5 {
         * party_id : uuid <<FK>>
         * curve_definition_id : uuid <<FK>>
         * dimension : text
-          smile_type : text
-          smile_interpolation : text
           deltas : text
-          smile_delta : text
           conventions : text
           expiries : text
           fx_spot_id : text <<FK>>
@@ -1754,14 +1751,10 @@ package "dq_staging" #F3E5F5 {
           fx_index_tag : text
           base_volatility_1 : text
           base_volatility_2 : text
-          smile_extrapolation : text
-          time_interpolation : text
-          time_weighting : text
-          butterfly_error_tolerance : double
     }
 
     note right of ores_dq_fx_volatility_configs_artefact_tbl
-    The settings of one FXVolatility entry of a curveconfig.xml, one row per curve_definition in the FXVolatilities section: the surface's dimension and smile, the deltas and expiries it is quoted on, and the curves and spot it is built with. Its Report is a row of curve_report_configuration. The schema also allows a ParametricSmileConfiguration, which no corpus document writes; the mapper refuses an entry that has one rather than lose it. - Artefact Table
+    The settings of one FXVolatility entry of a curveconfig.xml, one row per curve_definition in the FXVolatilities section: the surface's dimension, the deltas and expiries it is quoted on, and the curves and spot it is built with. Its Report is a row of curve_report_configuration. The smile is not here. ORE makes every smile element optional, so a flat row cannot say that a smile surface has a smile and an ATM one does not; that condition is the presence of a fx_volatility_smile row. dimension stays, because it also decides how deltas is read. The schema also allows a ParametricSmileConfiguration, which no corpus document writes; the mapper refuses an entry that has one rather than lose it. - Artefact Table
     end note
 
     entity ores_dq_gmm_components_artefact_tbl  #F7E5FF {

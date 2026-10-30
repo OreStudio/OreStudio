@@ -52,6 +52,7 @@
 #include "ores.refdata.core/repository/equity_curve_config_repository.hpp"
 #include "ores.refdata.core/repository/equity_volatility_config_repository.hpp"
 #include "ores.refdata.core/repository/fx_volatility_config_repository.hpp"
+#include "ores.refdata.core/repository/fx_volatility_smile_repository.hpp"
 #include "ores.refdata.core/repository/inflation_cap_floor_volatility_config_repository.hpp"
 #include "ores.refdata.core/repository/inflation_curve_config_repository.hpp"
 #include "ores.refdata.core/repository/inflation_seasonality_factor_repository.hpp"
@@ -128,6 +129,8 @@ void curve_configuration_document_service::save(messaging::curve_configuration_d
                     commentary);
     write_amendment(
         ctx_, fx_volatility_config_repository(), std::move(v.fx_volatilities), reason, commentary);
+    write_amendment(
+        ctx_, fx_volatility_smile_repository(), std::move(v.fx_volatility_smiles), reason, commentary);
     write_amendment(ctx_,
                     base_correlation_config_repository(),
                     std::move(v.base_correlations),
@@ -274,6 +277,12 @@ curve_configuration_document_service::get(const boost::uuids::uuid& config_id) {
     r.intraday_power_curves =
         read_where(ctx_, intraday_power_curve_config_repository(), of_definition);
     r.fx_volatilities = read_where(ctx_, fx_volatility_config_repository(), of_definition);
+    std::set<boost::uuids::uuid> fx_volatility_entries;
+    for (const auto& c : r.fx_volatilities)
+        fx_volatility_entries.insert(c.id);
+    r.fx_volatility_smiles = read_where(ctx_, fx_volatility_smile_repository(), [&](const auto& row) {
+        return fx_volatility_entries.contains(row.fx_volatility_config_id);
+    });
     r.base_correlations = read_where(ctx_, base_correlation_config_repository(), of_definition);
     r.correlations = read_where(ctx_, curve_correlation_config_repository(), of_definition);
     r.report_configurations =
@@ -401,6 +410,8 @@ void curve_configuration_document_service::remove(const boost::uuids::uuid& id) 
         curve_correlation_config_repository().remove(ctx_, ids_of(d.correlations));
     if (!d.base_correlations.empty())
         base_correlation_config_repository().remove(ctx_, ids_of(d.base_correlations));
+    if (!d.fx_volatility_smiles.empty())
+        fx_volatility_smile_repository().remove(ctx_, ids_of(d.fx_volatility_smiles));
     if (!d.fx_volatilities.empty())
         fx_volatility_config_repository().remove(ctx_, ids_of(d.fx_volatilities));
     if (!d.intraday_power_curves.empty())

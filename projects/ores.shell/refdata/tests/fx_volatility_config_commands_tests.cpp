@@ -157,7 +157,7 @@ TEST_CASE("fx_volatility_config_commands_process_add_requires_a_session", "[comm
     std::ostringstream out;
 
     command_feedback::reset();
-    fx_volatility_config_commands::process_add(out, session, fx_volatility_config_tokens(21));
+    fx_volatility_config_commands::process_add(out, session, fx_volatility_config_tokens(14));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -191,7 +191,7 @@ TEST_CASE("fx_volatility_config_commands_process_set_requires_a_session", "[comm
     std::ostringstream out;
 
     command_feedback::reset();
-    fx_volatility_config_commands::process_set(out, session, fx_volatility_config_tokens(21));
+    fx_volatility_config_commands::process_set(out, session, fx_volatility_config_tokens(14));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -225,7 +225,7 @@ TEST_CASE("fx_volatility_config_commands_process_put_many_requires_a_session", "
     std::ostringstream out;
 
     command_feedback::reset();
-    fx_volatility_config_commands::process_put_many(out, session, fx_volatility_config_tokens(21));
+    fx_volatility_config_commands::process_put_many(out, session, fx_volatility_config_tokens(14));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

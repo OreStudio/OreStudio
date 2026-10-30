@@ -1,0 +1,212 @@
+:PROPERTIES:
+:ID: 7E4C1D92-6B08-4F3A-9C51-2D8B7A0E5F14
+:END:
+#+title: ores.refdata.fx_volatility_smile
+#+description: Codegen entity model for the refdata =fx_volatility_smile= part: the smile a two dimensional ORE FX volatility states.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: fx_volatility_smile
+#+entity_plural: fx_volatility_smiles
+#+entity_title: FX Volatility Smile
+#+brief: The smile a two dimensional FX volatility surface is quoted with.
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+ORE's =fxVolatility= is one =xs:all= with a mandatory =Dimension= and every
+smile element optional, so the schema says only that the smile fields may be
+absent. It cannot say that they are meaningless in one dimension: an ATM surface
+has no smile, and a smile surface has one. That is the deficiency this part
+corrects, because a part row exists only where the surface has a smile.
+
+The part holds =SmileType=, =SmileInterpolation=, =SmileDelta=,
+=SmileExtrapolation=, =TimeInterpolation=, =TimeWeighting= and
+=ButterflyErrorTolerance=. =Dimension= stays on the entry, because it does not
+only decide whether a smile exists: it also decides how the entry's =Deltas= are
+read.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this part row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** fx_volatility_config_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:unique:      true
+:END:
+
+The entry this smile belongs to. One smile per entry, so the generated table
+adds the unique index on the live rows of =(tenant_id, fx_volatility_config_id)=.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the entry this smile belongs to. Carried so row level
+security can isolate the part without a join.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** smile_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the smile is quoted.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** smile_interpolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the smile interpolates across its deltas.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** smile_delta
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The delta convention the smile is quoted in.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** smile_extrapolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the smile extrapolates past its last delta.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** time_interpolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the smile interpolates along time.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** time_weighting
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The time weighting the smile's time interpolation uses.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** butterfly_error_tolerance
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The tolerance the smile's butterfly arbitrage check allows.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_fx_volatility_smiles_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: fx_volatility_smile
+:entity_plural_short:   fx_volatility_smiles
+:entity_singular_words: FX volatility smile
+:entity_plural_words:   FX volatility smiles
+:END:
+
+* Foreign keys
+
+** fx_volatility_config_id
+:PROPERTIES:
+:table:         ores_refdata_fx_volatility_configs_tbl
+:target_column: id
+:parent_entity: fx_volatility_config
+:nullable:      false
+:error_message: Invalid fx_volatility_config_id: %. No active FX volatility entry found with this id.
+:END:
+
+* See also
+
+- [[id:BDBBC2A5-0698-426A-8951-363BBB792EB2][ores.refdata.fx_volatility_config]] — the entry this smile belongs to.
+- [[id:8C947D0F-E4AB-41C0-BA1A-C5AFE23A48E9][Split the ORE volatility entries by kind]] — the task that introduced it.

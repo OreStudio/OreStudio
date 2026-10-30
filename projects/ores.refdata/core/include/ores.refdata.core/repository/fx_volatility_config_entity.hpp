@@ -56,10 +56,7 @@ struct fx_volatility_config_entity {
     boost::uuids::uuid party_id;
     boost::uuids::uuid curve_definition_id;
     std::string dimension;
-    std::optional<std::string> smile_type;
-    std::optional<std::string> smile_interpolation;
     std::optional<std::string> deltas;
-    std::optional<std::string> smile_delta;
     std::optional<std::string> conventions;
     std::optional<std::string> expiries;
     std::optional<std::string> fx_spot_id;
@@ -70,10 +67,6 @@ struct fx_volatility_config_entity {
     std::optional<std::string> fx_index_tag;
     std::optional<std::string> base_volatility_1;
     std::optional<std::string> base_volatility_2;
-    std::optional<std::string> smile_extrapolation;
-    std::optional<std::string> time_interpolation;
-    std::optional<std::string> time_weighting;
-    std::optional<double> butterfly_error_tolerance;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -93,10 +86,7 @@ struct fx_volatility_config_entity {
                query_builder::bind("party_id", &e::party_id) |
                query_builder::bind("curve_definition_id", &e::curve_definition_id) |
                query_builder::bind("dimension", &e::dimension) |
-               query_builder::bind("smile_type", &e::smile_type) |
-               query_builder::bind("smile_interpolation", &e::smile_interpolation) |
                query_builder::bind("deltas", &e::deltas) |
-               query_builder::bind("smile_delta", &e::smile_delta) |
                query_builder::bind("conventions", &e::conventions) |
                query_builder::bind("expiries", &e::expiries) |
                query_builder::bind("fx_spot_id", &e::fx_spot_id) |
@@ -107,10 +97,6 @@ struct fx_volatility_config_entity {
                query_builder::bind("fx_index_tag", &e::fx_index_tag) |
                query_builder::bind("base_volatility_1", &e::base_volatility_1) |
                query_builder::bind("base_volatility_2", &e::base_volatility_2) |
-               query_builder::bind("smile_extrapolation", &e::smile_extrapolation) |
-               query_builder::bind("time_interpolation", &e::time_interpolation) |
-               query_builder::bind("time_weighting", &e::time_weighting) |
-               query_builder::bind("butterfly_error_tolerance", &e::butterfly_error_tolerance) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

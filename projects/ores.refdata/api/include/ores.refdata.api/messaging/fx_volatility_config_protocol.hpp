@@ -49,10 +49,7 @@ struct fx_volatility_config_write {
     boost::uuids::uuid id;
     boost::uuids::uuid curve_definition_id;
     std::string dimension;
-    std::optional<std::string> smile_type;
-    std::optional<std::string> smile_interpolation;
     std::optional<std::string> deltas;
-    std::optional<std::string> smile_delta;
     std::optional<std::string> conventions;
     std::optional<std::string> expiries;
     std::optional<std::string> fx_spot_id;
@@ -63,10 +60,6 @@ struct fx_volatility_config_write {
     std::optional<std::string> fx_index_tag;
     std::optional<std::string> base_volatility_1;
     std::optional<std::string> base_volatility_2;
-    std::optional<std::string> smile_extrapolation;
-    std::optional<std::string> time_interpolation;
-    std::optional<std::string> time_weighting;
-    std::optional<double> butterfly_error_tolerance;
 };
 
 struct fx_volatility_config_change {

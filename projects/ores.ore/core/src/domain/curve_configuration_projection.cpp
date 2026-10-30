@@ -1067,10 +1067,7 @@ void import_fx_volatility(ores::refdata::messaging::curve_configuration_document
     r.id = curve_configuration_projection_new_uuid();
     r.curve_definition_id = d.id;
     r.dimension = required_spelling(v, "Dimension");
-    r.smile_type = v.spelling("SmileType");
-    r.smile_interpolation = v.text("SmileInterpolation");
     r.deltas = v.text("Deltas");
-    r.smile_delta = v.text("SmileDelta");
     r.conventions = v.text("Conventions");
     r.expiries = v.text("Expiries");
     r.fx_spot_id = v.text("FXSpotID");
@@ -1081,12 +1078,28 @@ void import_fx_volatility(ores::refdata::messaging::curve_configuration_document
     r.fx_index_tag = v.text("FXIndexTag");
     r.base_volatility_1 = v.text("BaseVolatility1");
     r.base_volatility_2 = v.text("BaseVolatility2");
-    r.smile_extrapolation = v.spelling("SmileExtrapolation");
-    r.time_interpolation = v.text("TimeInterpolation");
-    r.time_weighting = v.text("TimeWeighting");
-    r.butterfly_error_tolerance = v.real("ButterflyErrorTolerance");
     curve_configuration_projection_set_audit(r);
+    const auto entry_id = r.id;
     out.fx_volatilities.push_back(std::move(r));
+
+    const bool states_a_smile = v.has("SmileType") || v.has("SmileInterpolation") ||
+                                v.has("SmileDelta") || v.has("SmileExtrapolation") ||
+                                v.has("TimeInterpolation") || v.has("TimeWeighting") ||
+                                v.has("ButterflyErrorTolerance");
+    if (states_a_smile) {
+        refdata::domain::fx_volatility_smile smile;
+        smile.id = curve_configuration_projection_new_uuid();
+        smile.fx_volatility_config_id = entry_id;
+        smile.smile_type = v.spelling("SmileType");
+        smile.smile_interpolation = v.text("SmileInterpolation");
+        smile.smile_delta = v.text("SmileDelta");
+        smile.smile_extrapolation = v.spelling("SmileExtrapolation");
+        smile.time_interpolation = v.text("TimeInterpolation");
+        smile.time_weighting = v.text("TimeWeighting");
+        smile.butterfly_error_tolerance = v.real("ButterflyErrorTolerance");
+        curve_configuration_projection_set_audit(smile);
+        out.fx_volatility_smiles.push_back(std::move(smile));
+    }
     if (const auto smile = v.child("ParametricSmileConfiguration"); smile)
         import_parametric_smile(out, d.id, *smile);
     if (const auto report = v.child("Report"); report)
@@ -1512,6 +1525,15 @@ const Part* part_of(const std::map<boost::uuids::uuid, const Part*>& parts,
                     const boost::uuids::uuid& kind_id) {
     const auto it = parts.find(kind_id);
     return it == parts.end() ? nullptr : it->second;
+}
+
+const refdata::domain::fx_volatility_smile* fx_smile_of(
+    const std::vector<refdata::domain::fx_volatility_smile>& rows,
+    const boost::uuids::uuid& entry_id) {
+    for (const auto& r : rows)
+        if (r.fx_volatility_config_id == entry_id)
+            return &r;
+    return nullptr;
 }
 
 // Pairs each entry with its kinds and each kind with its part, keyed by the
@@ -2550,18 +2572,22 @@ void export_commodity_curve(
 void export_fx_volatility(record_writer r,
                           const refdata::domain::curve_definition& d,
                           const refdata::domain::fx_volatility_config& v,
+                          const refdata::domain::fx_volatility_smile* fx_smile,
                           const refdata::domain::curve_report_configuration* report,
                           const smile_export& smile) {
     r.set_text("CurveId", d.curve_id);
     r.set_text("CurveDescription", d.description.value_or(""));
     r.set_spelling("Dimension", v.dimension, "dimension");
-    r.set_optional_spelling("SmileType", v.smile_type, "smile type");
-    r.set_optional_text("SmileInterpolation", v.smile_interpolation);
+    if (fx_smile) {
+        r.set_optional_spelling("SmileType", fx_smile->smile_type, "smile type");
+        r.set_optional_text("SmileInterpolation", fx_smile->smile_interpolation);
+    }
     if (smile.row)
         export_parametric_smile(
             r.child("ParametricSmileConfiguration"), *smile.row, smile.parameters);
     r.set_optional_text("Deltas", v.deltas);
-    r.set_optional_text("SmileDelta", v.smile_delta);
+    if (fx_smile)
+        r.set_optional_text("SmileDelta", fx_smile->smile_delta);
     r.set_optional_text("Conventions", v.conventions);
     r.set_optional_text("Expiries", v.expiries);
     r.set_optional_text("FXSpotID", v.fx_spot_id);
@@ -2574,10 +2600,12 @@ void export_fx_volatility(record_writer r,
     r.set_optional_text("BaseVolatility2", v.base_volatility_2);
     if (report)
         export_report(r.child("Report"), *report);
-    r.set_optional_spelling("SmileExtrapolation", v.smile_extrapolation, "extrapolation");
-    r.set_optional_text("TimeInterpolation", v.time_interpolation);
-    r.set_optional_text("TimeWeighting", v.time_weighting);
-    r.set_optional_real("ButterflyErrorTolerance", v.butterfly_error_tolerance);
+    if (fx_smile) {
+        r.set_optional_spelling("SmileExtrapolation", fx_smile->smile_extrapolation, "extrapolation");
+        r.set_optional_text("TimeInterpolation", fx_smile->time_interpolation);
+        r.set_optional_text("TimeWeighting", fx_smile->time_weighting);
+        r.set_optional_real("ButterflyErrorTolerance", fx_smile->butterfly_error_tolerance);
+    }
 }
 
 void export_yield_volatility(record_writer r,
@@ -3254,9 +3282,11 @@ curve_configuration_projection::document curve_configuration_projection::reverse
             continue;
         }
         if (d->section_code == fx_volatilities_section) {
+            const auto& settings = settings_of(fx_vol_by_definition, *d);
             export_fx_volatility(written.child("FXVolatilities").append("FXVolatility"),
                                  *d,
-                                 settings_of(fx_vol_by_definition, *d),
+                                 settings,
+                                 fx_smile_of(v.fx_volatility_smiles, settings.id),
                                  report_of(*d),
                                  smile_of(*d));
             continue;

@@ -547,10 +547,15 @@ TEST_CASE("an FX volatility's report configuration round trips through the datab
 </CurveConfiguration>)");
     const auto mapped = curve_configuration_projection::map(original);
     REQUIRE(mapped.report_configurations.size() == 1);
+    // The surface names a dimension and no smile element, so it states no smile
+    // and the part's absence is what says so. A smile surface is walked in
+    // memory over the whole corpus by the projection's own round trip.
+    CHECK(mapped.fx_volatility_smiles.empty());
 
     write(h.context(), mapped);
     const auto back = read_back(h.context(), mapped);
     REQUIRE(back.report_configurations.size() == 1);
+    CHECK(back.fx_volatility_smiles.empty());
     CHECK(back.report_configurations.front().deltas == "10P, ATM, 10C");
 
     const auto exported = curve_configuration_projection::read(

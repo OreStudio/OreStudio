@@ -106,10 +106,7 @@ fx_volatility_config_to_domain(const messaging::fx_volatility_config_write& writ
     v.id = write.id;
     v.curve_definition_id = write.curve_definition_id;
     v.dimension = write.dimension;
-    v.smile_type = write.smile_type;
-    v.smile_interpolation = write.smile_interpolation;
     v.deltas = write.deltas;
-    v.smile_delta = write.smile_delta;
     v.conventions = write.conventions;
     v.expiries = write.expiries;
     v.fx_spot_id = write.fx_spot_id;
@@ -120,10 +117,6 @@ fx_volatility_config_to_domain(const messaging::fx_volatility_config_write& writ
     v.fx_index_tag = write.fx_index_tag;
     v.base_volatility_1 = write.base_volatility_1;
     v.base_volatility_2 = write.base_volatility_2;
-    v.smile_extrapolation = write.smile_extrapolation;
-    v.time_interpolation = write.time_interpolation;
-    v.time_weighting = write.time_weighting;
-    v.butterfly_error_tolerance = write.butterfly_error_tolerance;
     return v;
 }
 

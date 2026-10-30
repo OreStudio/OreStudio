@@ -50,10 +50,7 @@ fx_volatility_config_mapper::map(const fx_volatility_config_entity& v) {
     r.party_id = v.party_id;
     r.curve_definition_id = v.curve_definition_id;
     r.dimension = v.dimension;
-    r.smile_type = v.smile_type;
-    r.smile_interpolation = v.smile_interpolation;
     r.deltas = v.deltas;
-    r.smile_delta = v.smile_delta;
     r.conventions = v.conventions;
     r.expiries = v.expiries;
     r.fx_spot_id = v.fx_spot_id;
@@ -64,10 +61,6 @@ fx_volatility_config_mapper::map(const fx_volatility_config_entity& v) {
     r.fx_index_tag = v.fx_index_tag;
     r.base_volatility_1 = v.base_volatility_1;
     r.base_volatility_2 = v.base_volatility_2;
-    r.smile_extrapolation = v.smile_extrapolation;
-    r.time_interpolation = v.time_interpolation;
-    r.time_weighting = v.time_weighting;
-    r.butterfly_error_tolerance = v.butterfly_error_tolerance;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -89,10 +82,7 @@ fx_volatility_config_mapper::map(const domain::fx_volatility_config& v) {
     r.party_id = v.party_id;
     r.curve_definition_id = v.curve_definition_id;
     r.dimension = v.dimension;
-    r.smile_type = v.smile_type;
-    r.smile_interpolation = v.smile_interpolation;
     r.deltas = v.deltas;
-    r.smile_delta = v.smile_delta;
     r.conventions = v.conventions;
     r.expiries = v.expiries;
     r.fx_spot_id = v.fx_spot_id;
@@ -103,10 +93,6 @@ fx_volatility_config_mapper::map(const domain::fx_volatility_config& v) {
     r.fx_index_tag = v.fx_index_tag;
     r.base_volatility_1 = v.base_volatility_1;
     r.base_volatility_2 = v.base_volatility_2;
-    r.smile_extrapolation = v.smile_extrapolation;
-    r.time_interpolation = v.time_interpolation;
-    r.time_weighting = v.time_weighting;
-    r.butterfly_error_tolerance = v.butterfly_error_tolerance;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

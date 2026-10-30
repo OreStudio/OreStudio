@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: refdata
-Tables: 178
+Tables: 179
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -3921,10 +3921,7 @@ package "refdata" #FFF3E0 {
         * party_id : uuid <<FK>>
         * curve_definition_id : uuid <<FK>>
         * dimension : text
-          smile_type : text
-          smile_interpolation : text
           deltas : text
-          smile_delta : text
           conventions : text
           expiries : text
           fx_spot_id : text <<FK>>
@@ -3935,10 +3932,6 @@ package "refdata" #FFF3E0 {
           fx_index_tag : text
           base_volatility_1 : text
           base_volatility_2 : text
-          smile_extrapolation : text
-          time_interpolation : text
-          time_weighting : text
-          butterfly_error_tolerance : double
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3953,11 +3946,54 @@ package "refdata" #FFF3E0 {
     To modify, update the template and regenerate.
     FX Volatility Config Table
     The settings of one FXVolatility entry of a curveconfig.xml, one row per
-    curve_definition in the FXVolatilities section: the surface's dimension and
-    smile, the deltas and expiries it is quoted on, and the curves and spot it is
-    built with. Its Report is a row of curve_report_configuration.
+    curve_definition in the FXVolatilities section: the surface's dimension, the
+    deltas and expiries it is quoted on, and the curves and spot it is built with.
+    Its Report is a row of curve_report_configuration.
+    The smile is not here. ORE makes every smile element optional, so a flat row
+    cannot say that a smile surface has a smile and an ATM one does not; that
+    condition is the presence of a fx_volatility_smile row. dimension stays,
+    because it also decides how deltas is read.
     The schema also allows a ParametricSmileConfiguration, which no corpus
     document writes; the mapper refuses an entry that has one rather than lose it.
+    end note
+
+    entity ores_refdata_fx_volatility_smiles_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * fx_volatility_config_id : uuid <<FK>>
+          smile_type : text
+          smile_interpolation : text
+          smile_delta : text
+          smile_extrapolation : text
+          time_interpolation : text
+          time_weighting : text
+          butterfly_error_tolerance : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_fx_volatility_smiles_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Volatility Smile Table
+    ORE's fxVolatility is one xs:all with a mandatory Dimension and every
+    smile element optional, so the schema says only that the smile fields may be
+    absent. It cannot say that they are meaningless in one dimension: an ATM surface
+    has no smile, and a smile surface has one. That is the deficiency this part
+    corrects, because a part row exists only where the surface has a smile.
+    The part holds SmileType, SmileInterpolation, SmileDelta,
+    SmileExtrapolation, TimeInterpolation, TimeWeighting and
+    ButterflyErrorTolerance. Dimension stays on the entry, because it does not
+    only decide whether a smile exists: it also decides how the entry's Deltas are
+    read.
     end note
 
     entity ores_refdata_ibor_index_conventions_tbl <<temporal>> #C6F0D8 {
@@ -6432,6 +6468,7 @@ ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_equity_volatility_configs
 ores_refdata_day_counters_tbl ||--o{ ores_refdata_equity_volatility_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_fx_volatility_configs_tbl : "has"
 ores_refdata_day_counters_tbl ||--o{ ores_refdata_fx_volatility_configs_tbl : "has"
+ores_refdata_fx_volatility_configs_tbl ||--o{ ores_refdata_fx_volatility_smiles_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_inflation_cap_floor_volatility_configs_tbl : "has"
 ores_refdata_day_counters_tbl ||--o{ ores_refdata_inflation_cap_floor_volatility_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_inflation_curve_configs_tbl : "has"

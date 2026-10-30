@@ -400,6 +400,8 @@
 \ir ./refdata_curve_report_configurations_notify_trigger_create.sql
 \ir ./refdata_fx_volatility_configs_create.sql
 \ir ./refdata_fx_volatility_configs_notify_trigger_create.sql
+\ir ./refdata_fx_volatility_smiles_create.sql
+\ir ./refdata_fx_volatility_smiles_notify_trigger_create.sql
 \ir ./refdata_yield_volatility_configs_create.sql
 \ir ./refdata_yield_volatility_configs_notify_trigger_create.sql
 \ir ./refdata_base_correlation_configs_create.sql

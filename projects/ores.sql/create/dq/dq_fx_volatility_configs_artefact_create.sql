@@ -24,7 +24,7 @@
  */
 
 -- =============================================================================
--- The settings of one FXVolatility entry of a curveconfig.xml, one row per curve_definition in the FXVolatilities section: the surface's dimension and smile, the deltas and expiries it is quoted on, and the curves and spot it is built with. Its Report is a row of curve_report_configuration. The schema also allows a ParametricSmileConfiguration, which no corpus document writes; the mapper refuses an entry that has one rather than lose it. - Artefact Table
+-- The settings of one FXVolatility entry of a curveconfig.xml, one row per curve_definition in the FXVolatilities section: the surface's dimension, the deltas and expiries it is quoted on, and the curves and spot it is built with. Its Report is a row of curve_report_configuration. The smile is not here. ORE makes every smile element optional, so a flat row cannot say that a smile surface has a smile and an ATM one does not; that condition is the presence of a fx_volatility_smile row. dimension stays, because it also decides how deltas is read. The schema also allows a ParametricSmileConfiguration, which no corpus document writes; the mapper refuses an entry that has one rather than lose it. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_fx_volatility_configs_artefact_tbl" (
@@ -35,10 +35,7 @@ create table if not exists "ores_dq_fx_volatility_configs_artefact_tbl" (
     "party_id" uuid not null,
     "curve_definition_id" uuid not null,
     "dimension" text not null,
-    "smile_type" text null,
-    "smile_interpolation" text null,
     "deltas" text null,
-    "smile_delta" text null,
     "conventions" text null,
     "expiries" text null,
     "fx_spot_id" text null,
@@ -48,11 +45,7 @@ create table if not exists "ores_dq_fx_volatility_configs_artefact_tbl" (
     "day_counter" text null,
     "fx_index_tag" text null,
     "base_volatility_1" text null,
-    "base_volatility_2" text null,
-    "smile_extrapolation" text null,
-    "time_interpolation" text null,
-    "time_weighting" text null,
-    "butterfly_error_tolerance" double precision null
+    "base_volatility_2" text null
 );
 
 create index if not exists dq_fx_volatility_configs_artefact_dataset_idx

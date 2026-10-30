@@ -58,6 +58,7 @@ import type { DefaultCurveConfiguration } from '../domain/default_curve_configur
 import type { EquityCurveConfig } from '../domain/equity_curve_config.js';
 import type { EquityVolatilityConfig } from '../domain/equity_volatility_config.js';
 import type { FxVolatilityConfig } from '../domain/fx_volatility_config.js';
+import type { FxVolatilitySmile } from '../domain/fx_volatility_smile.js';
 import type { InflationCapFloorVolatilityConfig } from '../domain/inflation_cap_floor_volatility_config.js';
 import type { InflationCurveConfig } from '../domain/inflation_curve_config.js';
 import type { InflationSeasonalityFactor } from '../domain/inflation_seasonality_factor.js';
@@ -95,6 +96,7 @@ export interface CurveConfigurationDocument {
     default_curves: DefaultCurveConfig[];
     commodity_curves: CommodityCurveConfig[];
     fx_volatilities: FxVolatilityConfig[];
+    fx_volatility_smiles: FxVolatilitySmile[];
     yield_volatilities: YieldVolatilityConfig[];
     base_correlations: BaseCorrelationConfig[];
     correlations: CurveCorrelationConfig[];

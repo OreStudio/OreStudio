@@ -300,6 +300,7 @@
 #include "ores.refdata.core/messaging/fx_option_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/fx_volatility_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/fx_volatility_config_registrar.hpp"
+#include "ores.refdata.core/messaging/fx_volatility_smile_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/ibor_index_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/inflation_cap_floor_volatility_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/inflation_cap_floor_volatility_config_registrar.hpp"
@@ -840,6 +841,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_curve_volatility_proxy_surface_history_provider(hist_registry);
         register_curve_volatility_strike_surface_history_provider(hist_registry);
         register_swaption_proxy_config_history_provider(hist_registry);
+        register_fx_volatility_smile_history_provider(hist_registry);
 
         subs.push_back(ores::history::messaging::register_history_handlers(
             nats, hist_registry, "refdata", registrar_queue_group, ctx, verifier));

@@ -61,6 +61,7 @@
 #include "ores.refdata.api/domain/equity_curve_config.hpp"
 #include "ores.refdata.api/domain/equity_volatility_config.hpp"
 #include "ores.refdata.api/domain/fx_volatility_config.hpp"
+#include "ores.refdata.api/domain/fx_volatility_smile.hpp"
 #include "ores.refdata.api/domain/inflation_cap_floor_volatility_config.hpp"
 #include "ores.refdata.api/domain/inflation_curve_config.hpp"
 #include "ores.refdata.api/domain/inflation_seasonality_factor.hpp"
@@ -103,6 +104,7 @@ struct curve_configuration_document {
     std::vector<ores::refdata::domain::default_curve_config> default_curves;
     std::vector<ores::refdata::domain::commodity_curve_config> commodity_curves;
     std::vector<ores::refdata::domain::fx_volatility_config> fx_volatilities;
+    std::vector<ores::refdata::domain::fx_volatility_smile> fx_volatility_smiles;
     std::vector<ores::refdata::domain::yield_volatility_config> yield_volatilities;
     std::vector<ores::refdata::domain::base_correlation_config> base_correlations;
     std::vector<ores::refdata::domain::curve_correlation_config> correlations;

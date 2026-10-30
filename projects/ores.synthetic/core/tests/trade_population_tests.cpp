@@ -332,17 +332,23 @@ TEST_CASE("an_equity_population_with_no_catalogue_is_refused", "[trade_populatio
     REQUIRE_THROWS_AS(plan_of(empty), trade_population_error);
 }
 
-TEST_CASE("a_commodity_slot_states_its_own_terms_and_names_a_catalogue_commodity",
+TEST_CASE("a_commodity_slot_states_its_own_rows_and_names_a_catalogue_commodity",
           "[trade_population]") {
     const auto plan = plan_of(commodity_scope());
 
     std::set<std::string> commodities;
     for (const auto& slot : plan.slots) {
-        REQUIRE(std::holds_alternative<domain::commodity_terms>(slot.terms));
-        const auto& terms = std::get<domain::commodity_terms>(slot.terms);
-        REQUIRE_FALSE(terms.commodity_code.empty());
-        REQUIRE_FALSE(terms.unit.empty());
-        commodities.insert(terms.commodity_code);
+        /*
+         * The family states its rows and no bag: the plan carries what the
+         * writer persists. A slot with no bag must not read as any family,
+         * and the bond writer takes the first alternative it finds.
+         */
+        REQUIRE(std::holds_alternative<std::monostate>(slot.terms));
+        REQUIRE(slot.instruments.commodity_instruments.size() == 1u);
+        const auto& row = slot.instruments.commodity_instruments.front();
+        REQUIRE_FALSE(row.commodity_code.empty());
+        REQUIRE_FALSE(row.unit.empty());
+        commodities.insert(row.commodity_code);
     }
 
     // Every commodity the scope states is drawn, and no other is invented.

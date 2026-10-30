@@ -538,8 +538,20 @@ struct equity_terms final {
     std::vector<equity_range_bound> range_bounds;
 };
 
-using trade_terms =
-    std::variant<bond_terms, commodity_terms, credit_terms, rate_terms, fx_terms, equity_terms>;
+/**
+ * @brief The bag a family fills while it still draws facts rather than rows.
+ *
+ * The monostate comes first so a slot whose family states its rows holds no
+ * bag at all. Without it the variant's default is the first alternative, and
+ * a slot that states rows would read as a bond with empty terms.
+ */
+using trade_terms = std::variant<std::monostate,
+                                 bond_terms,
+                                 commodity_terms,
+                                 credit_terms,
+                                 rate_terms,
+                                 fx_terms,
+                                 equity_terms>;
 
 /**
  * @brief One trade the population states, with every reference already
@@ -565,7 +577,12 @@ struct trade_population_slot final {
     double notional = 0.0;
     std::string currency;
     bool intra_group = false;
-    /// The facts that belong to this slot's own family, and to no other.
+    /**
+     * @brief The facts that belong to this slot's own family, and to no other.
+     *
+     * A family that states rows holds the monostate here, so nothing reads its
+     * empty slot as facts of another family.
+     */
     trade_terms terms;
     /**
      * @brief The domain rows this slot states, when its family has been flipped.

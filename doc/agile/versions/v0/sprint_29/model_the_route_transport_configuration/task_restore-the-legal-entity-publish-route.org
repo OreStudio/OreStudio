@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The subject refdata.v1.ops.publish_legal_entities_from_dq is answered again, and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -56,7 +56,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Legal entities published | 42,388 | =select count(*) from ores_refdata_legal_entities_tbl= | worktree |
+| Provisioning steps completed | 9 of 9 | ACME provisioning recipe | worktree |
+| Failure before the fix | step 1 of 1 silent for 20m 13s | same recipe on main | worktree |
 
 * Notes
 
@@ -84,3 +86,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The subject answers again and a fresh tenant provisions end to end: nine steps
+of nine, 42,388 legal entities published from the LEI artefact, and the trades
+generated as before.
+
+The fault was one array entry. The publish-from-DQ handler is registered once
+for a list of subjects, and the legal entities subject was not on the list, so
+the workflow published the command and waited for a reply that no service could
+give. Before the fix the same recipe failed at its first step, silent for
+twenty minutes, and then declared the step dead.
+
+The regression came in with the refdata regeneration this story carried. The
+branch's copy of the model did not declare the operation, so regeneration
+removed the hand-written registrar entry; the declaration landed on main before
+this story merged, which put the struct, the SQL function and the workflow step
+back while the registration stayed gone. The subject is now registered, and the
+model still declares it, so a regeneration keeps both halves.

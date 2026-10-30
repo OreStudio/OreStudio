@@ -8,7 +8,7 @@
 #+filetags: :bound_the_memory_a_request_body_may_cost:sprint_29:v0:
 #+owner: marco
 #+branch: feature/refuse-a-body-past-the-server-ceiling
-#+pr:
+#+pr: 4110
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#4110](https://github.com/OreStudio/OreStudio/pull/4110) | [http] Refuse a body the server ceiling exceeds |
 
 * Review
 

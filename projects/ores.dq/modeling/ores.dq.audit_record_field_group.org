@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 7C09B0D6-47EF-4007-8236-42DDB93DFD2D
 :END:
 #+title: ores.dq.audit_record

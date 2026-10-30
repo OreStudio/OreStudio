@@ -25,8 +25,10 @@
 #ifndef ORES_REFDATA_API_DOMAIN_TENOR_BASIS_SWAP_LONG_LEG_HPP
 #define ORES_REFDATA_API_DOMAIN_TENOR_BASIS_SWAP_LONG_LEG_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace ores::refdata::domain {
 
@@ -64,6 +66,20 @@ struct tenor_basis_swap_long_leg {
     friend bool operator==(const tenor_basis_swap_long_leg&,
                            const tenor_basis_swap_long_leg&) = default;
 };
+/**
+ * @brief The members of tenor_basis_swap_long_leg, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_long_leg&) {
+    return std::tuple{
+        utility::codec::field{"long_index", &tenor_basis_swap_long_leg::long_index},
+        utility::codec::field{"long_pay_tenor", &tenor_basis_swap_long_leg::long_pay_tenor},
+    };
+}
 
 }
 

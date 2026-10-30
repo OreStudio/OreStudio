@@ -25,9 +25,11 @@
 #ifndef ORES_REFDATA_API_DOMAIN_CONVENTION_IDENTITY_HPP
 #define ORES_REFDATA_API_DOMAIN_CONVENTION_IDENTITY_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <string>
+#include <tuple>
 
 namespace ores::refdata::domain {
 
@@ -80,6 +82,23 @@ struct convention_identity {
      */
     friend bool operator==(const convention_identity&, const convention_identity&) = default;
 };
+/**
+ * @brief The members of convention_identity, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const convention_identity&) {
+    return std::tuple{
+        utility::codec::field{"version", &convention_identity::version},
+        utility::codec::field{"tenant_id", &convention_identity::tenant_id},
+        utility::codec::field{"id", &convention_identity::id},
+        utility::codec::field{"party_id", &convention_identity::party_id},
+        utility::codec::field{"kind_code", &convention_identity::kind_code},
+    };
+}
 
 }
 

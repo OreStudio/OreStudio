@@ -25,8 +25,10 @@
 #ifndef ORES_REFDATA_API_DOMAIN_TENOR_BASIS_SWAP_PART_IDENTITY_HPP
 #define ORES_REFDATA_API_DOMAIN_TENOR_BASIS_SWAP_PART_IDENTITY_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <tuple>
 
 namespace ores::refdata::domain {
 
@@ -80,6 +82,23 @@ struct tenor_basis_swap_part_identity {
     friend bool operator==(const tenor_basis_swap_part_identity&,
                            const tenor_basis_swap_part_identity&) = default;
 };
+/**
+ * @brief The members of tenor_basis_swap_part_identity, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_part_identity&) {
+    return std::tuple{
+        utility::codec::field{"version", &tenor_basis_swap_part_identity::version},
+        utility::codec::field{"tenant_id", &tenor_basis_swap_part_identity::tenant_id},
+        utility::codec::field{"id", &tenor_basis_swap_part_identity::id},
+        utility::codec::field{"convention_id", &tenor_basis_swap_part_identity::convention_id},
+        utility::codec::field{"party_id", &tenor_basis_swap_part_identity::party_id},
+    };
+}
 
 }
 

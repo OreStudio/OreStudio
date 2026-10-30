@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 18181334-ff75-418a-94f9-9d71aa6cda14
 :END:
 #+title: ores.refdata.tenor_basis_swap_short_leg

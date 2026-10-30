@@ -26,11 +26,17 @@
 #define ORES_DQ_API_MESSAGING_TREATMENT_DIMENSION_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/treatment_dimension.hpp"
+#include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::dq::messaging {
@@ -272,6 +278,743 @@ inline constexpr std::string_view updated = "dq.v1.treatment_dimensions_events.u
 inline constexpr std::string_view deleted = "dq.v1.treatment_dimensions_events.deleted";
 }
 
+/**
+ * @brief The members of treatment_dimension_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const treatment_dimension_key&) {
+    return std::tuple{
+        utility::codec::field{"code", &treatment_dimension_key::code},
+    };
+}
+
+/**
+ * @brief The members of treatment_dimension_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const treatment_dimension_write&) {
+    return std::tuple{
+        utility::codec::field{"code", &treatment_dimension_write::code},
+        utility::codec::field{"name", &treatment_dimension_write::name},
+        utility::codec::field{"description", &treatment_dimension_write::description},
+    };
+}
+
+/**
+ * @brief The members of treatment_dimension_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const treatment_dimension_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &treatment_dimension_change::write},
+        utility::codec::field{"precondition", &treatment_dimension_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of treatment_dimension_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const treatment_dimension_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &treatment_dimension_removal::key},
+        utility::codec::field{"precondition", &treatment_dimension_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of treatment_dimension_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const treatment_dimension_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &treatment_dimension_lookup::key},
+        utility::codec::field{"treatment_dimension",
+                              &treatment_dimension_lookup::treatment_dimension},
+    };
+}
+
+/**
+ * @brief The members of treatment_dimensions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const treatment_dimensions_filter&) {
+    return std::tuple{
+        utility::codec::field{"code_one_of", &treatment_dimensions_filter::code_one_of},
+    };
+}
+
+/**
+ * @brief The members of treatment_dimension_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const treatment_dimension_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &treatment_dimension_event::event_id},
+        utility::codec::field{"key", &treatment_dimension_event::key},
+        utility::codec::field{"action", &treatment_dimension_event::action},
+        utility::codec::field{"version", &treatment_dimension_event::version},
+        utility::codec::field{"occurred_at", &treatment_dimension_event::occurred_at},
+        utility::codec::field{"correlation_id", &treatment_dimension_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of treatment_dimension_version_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const treatment_dimension_version_key&) {
+    return std::tuple{
+        utility::codec::field{"treatment_dimension",
+                              &treatment_dimension_version_key::treatment_dimension},
+        utility::codec::field{"version", &treatment_dimension_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of treatment_dimension_versions_filter, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const treatment_dimension_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &treatment_dimension_versions_filter::version},
+        utility::codec::field{"from_version", &treatment_dimension_versions_filter::from_version},
+        utility::codec::field{"to_version", &treatment_dimension_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_treatment_dimensions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_treatment_dimensions_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_treatment_dimensions_request::offset},
+        utility::codec::field{"limit", &list_treatment_dimensions_request::limit},
+        utility::codec::field{"order", &list_treatment_dimensions_request::order},
+        utility::codec::field{"filter", &list_treatment_dimensions_request::filter},
+        utility::codec::field{"as_of", &list_treatment_dimensions_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_treatment_dimensions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_treatment_dimensions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_treatment_dimensions_response::result},
+        utility::codec::field{"dimensions", &list_treatment_dimensions_response::dimensions},
+        utility::codec::field{"total", &list_treatment_dimensions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_treatment_dimension_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_treatment_dimension_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_treatment_dimension_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_treatment_dimension_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_treatment_dimension_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_treatment_dimension_response::result},
+        utility::codec::field{"treatment_dimension",
+                              &get_treatment_dimension_response::treatment_dimension},
+    };
+}
+
+/**
+ * @brief The members of get_many_treatment_dimensions_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_treatment_dimensions_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_treatment_dimensions_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_treatment_dimensions_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_treatment_dimensions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_treatment_dimensions_response::result},
+        utility::codec::field{"entries", &get_many_treatment_dimensions_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_treatment_dimension_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_treatment_dimension_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_treatment_dimension_request::change},
+        utility::codec::field{"intent", &put_treatment_dimension_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_treatment_dimension_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_treatment_dimension_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_treatment_dimension_response::result},
+        utility::codec::field{"treatment_dimension",
+                              &put_treatment_dimension_response::treatment_dimension},
+    };
+}
+
+/**
+ * @brief The members of put_many_treatment_dimensions_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_treatment_dimensions_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_treatment_dimensions_request::changes},
+        utility::codec::field{"intent", &put_many_treatment_dimensions_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_treatment_dimensions_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_treatment_dimensions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_treatment_dimensions_response::result},
+        utility::codec::field{"dimensions", &put_many_treatment_dimensions_response::dimensions},
+    };
+}
+
+/**
+ * @brief The members of delete_treatment_dimension_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_treatment_dimension_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_treatment_dimension_request::removal},
+        utility::codec::field{"intent", &delete_treatment_dimension_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_treatment_dimension_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_treatment_dimension_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_treatment_dimension_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_treatment_dimensions_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_treatment_dimensions_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_treatment_dimensions_request::removals},
+        utility::codec::field{"intent", &delete_many_treatment_dimensions_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_treatment_dimensions_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_treatment_dimensions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_treatment_dimensions_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_treatment_dimension_versions_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_treatment_dimension_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_treatment_dimension_versions_request::key},
+        utility::codec::field{"offset", &list_treatment_dimension_versions_request::offset},
+        utility::codec::field{"limit", &list_treatment_dimension_versions_request::limit},
+        utility::codec::field{"order", &list_treatment_dimension_versions_request::order},
+        utility::codec::field{"filter", &list_treatment_dimension_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_treatment_dimension_versions_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_treatment_dimension_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_treatment_dimension_versions_response::result},
+        utility::codec::field{"versions", &list_treatment_dimension_versions_response::versions},
+        utility::codec::field{"total", &list_treatment_dimension_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_treatment_dimension_version_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_treatment_dimension_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_treatment_dimension_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_treatment_dimension_version_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_treatment_dimension_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_treatment_dimension_version_response::result},
+        utility::codec::field{"version", &get_treatment_dimension_version_response::version},
+    };
+}
+
+}
+
+namespace ores::utility::codec {
+
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::treatment_dimension_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::treatment_dimension_key& v);
+    static ores::dq::messaging::treatment_dimension_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::treatment_dimension_key& v);
+    static ores::dq::messaging::treatment_dimension_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::treatment_dimension_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::treatment_dimension_write& v);
+    static ores::dq::messaging::treatment_dimension_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::treatment_dimension_write& v);
+    static ores::dq::messaging::treatment_dimension_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::treatment_dimension_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::treatment_dimension_change& v);
+    static ores::dq::messaging::treatment_dimension_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::treatment_dimension_change& v);
+    static ores::dq::messaging::treatment_dimension_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::treatment_dimension_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::treatment_dimension_removal& v);
+    static ores::dq::messaging::treatment_dimension_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::treatment_dimension_removal& v);
+    static ores::dq::messaging::treatment_dimension_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::treatment_dimension_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::treatment_dimension_lookup& v);
+    static ores::dq::messaging::treatment_dimension_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::treatment_dimension_lookup& v);
+    static ores::dq::messaging::treatment_dimension_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::treatment_dimensions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::treatment_dimensions_filter& v);
+    static ores::dq::messaging::treatment_dimensions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::treatment_dimensions_filter& v);
+    static ores::dq::messaging::treatment_dimensions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::treatment_dimension_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::treatment_dimension_event& v);
+    static ores::dq::messaging::treatment_dimension_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::treatment_dimension_event& v);
+    static ores::dq::messaging::treatment_dimension_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::treatment_dimension_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::treatment_dimension_version_key& v);
+    static ores::dq::messaging::treatment_dimension_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::treatment_dimension_version_key& v);
+    static ores::dq::messaging::treatment_dimension_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::treatment_dimension_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::treatment_dimension_versions_filter& v);
+    static ores::dq::messaging::treatment_dimension_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::treatment_dimension_versions_filter& v);
+    static ores::dq::messaging::treatment_dimension_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_treatment_dimensions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_treatment_dimensions_request& v);
+    static ores::dq::messaging::list_treatment_dimensions_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_treatment_dimensions_request& v);
+    static ores::dq::messaging::list_treatment_dimensions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_treatment_dimensions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_treatment_dimensions_response& v);
+    static ores::dq::messaging::list_treatment_dimensions_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_treatment_dimensions_response& v);
+    static ores::dq::messaging::list_treatment_dimensions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_treatment_dimension_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_treatment_dimension_request& v);
+    static ores::dq::messaging::get_treatment_dimension_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_treatment_dimension_request& v);
+    static ores::dq::messaging::get_treatment_dimension_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_treatment_dimension_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_treatment_dimension_response& v);
+    static ores::dq::messaging::get_treatment_dimension_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_treatment_dimension_response& v);
+    static ores::dq::messaging::get_treatment_dimension_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_many_treatment_dimensions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::get_many_treatment_dimensions_request& v);
+    static ores::dq::messaging::get_many_treatment_dimensions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_many_treatment_dimensions_request& v);
+    static ores::dq::messaging::get_many_treatment_dimensions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_many_treatment_dimensions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::get_many_treatment_dimensions_response& v);
+    static ores::dq::messaging::get_many_treatment_dimensions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_many_treatment_dimensions_response& v);
+    static ores::dq::messaging::get_many_treatment_dimensions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_treatment_dimension_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_treatment_dimension_request& v);
+    static ores::dq::messaging::put_treatment_dimension_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::put_treatment_dimension_request& v);
+    static ores::dq::messaging::put_treatment_dimension_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_treatment_dimension_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_treatment_dimension_response& v);
+    static ores::dq::messaging::put_treatment_dimension_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::put_treatment_dimension_response& v);
+    static ores::dq::messaging::put_treatment_dimension_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_many_treatment_dimensions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::put_many_treatment_dimensions_request& v);
+    static ores::dq::messaging::put_many_treatment_dimensions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::put_many_treatment_dimensions_request& v);
+    static ores::dq::messaging::put_many_treatment_dimensions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_many_treatment_dimensions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::put_many_treatment_dimensions_response& v);
+    static ores::dq::messaging::put_many_treatment_dimensions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::put_many_treatment_dimensions_response& v);
+    static ores::dq::messaging::put_many_treatment_dimensions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_treatment_dimension_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::delete_treatment_dimension_request& v);
+    static ores::dq::messaging::delete_treatment_dimension_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_treatment_dimension_request& v);
+    static ores::dq::messaging::delete_treatment_dimension_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_treatment_dimension_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::delete_treatment_dimension_response& v);
+    static ores::dq::messaging::delete_treatment_dimension_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_treatment_dimension_response& v);
+    static ores::dq::messaging::delete_treatment_dimension_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::delete_many_treatment_dimensions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::delete_many_treatment_dimensions_request& v);
+    static ores::dq::messaging::delete_many_treatment_dimensions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_many_treatment_dimensions_request& v);
+    static ores::dq::messaging::delete_many_treatment_dimensions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::delete_many_treatment_dimensions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::delete_many_treatment_dimensions_response& v);
+    static ores::dq::messaging::delete_many_treatment_dimensions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_many_treatment_dimensions_response& v);
+    static ores::dq::messaging::delete_many_treatment_dimensions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::list_treatment_dimension_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::list_treatment_dimension_versions_request& v);
+    static ores::dq::messaging::list_treatment_dimension_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_treatment_dimension_versions_request& v);
+    static ores::dq::messaging::list_treatment_dimension_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::list_treatment_dimension_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::list_treatment_dimension_versions_response& v);
+    static ores::dq::messaging::list_treatment_dimension_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_treatment_dimension_versions_response& v);
+    static ores::dq::messaging::list_treatment_dimension_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::get_treatment_dimension_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::get_treatment_dimension_version_request& v);
+    static ores::dq::messaging::get_treatment_dimension_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_treatment_dimension_version_request& v);
+    static ores::dq::messaging::get_treatment_dimension_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::get_treatment_dimension_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::get_treatment_dimension_version_response& v);
+    static ores::dq::messaging::get_treatment_dimension_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_treatment_dimension_version_response& v);
+    static ores::dq::messaging::get_treatment_dimension_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
 }
 
 #endif

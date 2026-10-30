@@ -26,11 +26,17 @@
 #define ORES_DQ_API_MESSAGING_LEI_ENTITY_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/lei_entity.hpp"
+#include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::dq::messaging {
@@ -129,6 +135,259 @@ inline constexpr std::string_view updated = "dq.v1.lei_entities_events.updated";
 inline constexpr std::string_view deleted = "dq.v1.lei_entities_events.deleted";
 }
 
+/**
+ * @brief The members of lei_entity_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const lei_entity_key&) {
+    return std::tuple{
+        utility::codec::field{"lei", &lei_entity_key::lei},
+    };
+}
+
+/**
+ * @brief The members of lei_entity_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const lei_entity_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &lei_entity_lookup::key},
+        utility::codec::field{"lei_entity", &lei_entity_lookup::lei_entity},
+    };
+}
+
+/**
+ * @brief The members of lei_entities_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const lei_entities_filter&) {
+    return std::tuple{
+        utility::codec::field{"lei_one_of", &lei_entities_filter::lei_one_of},
+    };
+}
+
+/**
+ * @brief The members of lei_entity_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const lei_entity_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &lei_entity_event::event_id},
+        utility::codec::field{"key", &lei_entity_event::key},
+        utility::codec::field{"action", &lei_entity_event::action},
+        utility::codec::field{"version", &lei_entity_event::version},
+        utility::codec::field{"occurred_at", &lei_entity_event::occurred_at},
+        utility::codec::field{"correlation_id", &lei_entity_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of list_lei_entities_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_lei_entities_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_lei_entities_request::offset},
+        utility::codec::field{"limit", &list_lei_entities_request::limit},
+        utility::codec::field{"order", &list_lei_entities_request::order},
+        utility::codec::field{"filter", &list_lei_entities_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_lei_entities_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_lei_entities_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_lei_entities_response::result},
+        utility::codec::field{"entities", &list_lei_entities_response::entities},
+        utility::codec::field{"total", &list_lei_entities_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_lei_entity_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_lei_entity_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_lei_entity_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_lei_entity_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_lei_entity_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_lei_entity_response::result},
+        utility::codec::field{"lei_entity", &get_lei_entity_response::lei_entity},
+    };
+}
+
+/**
+ * @brief The members of get_many_lei_entities_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_lei_entities_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_lei_entities_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_lei_entities_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_lei_entities_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_lei_entities_response::result},
+        utility::codec::field{"entries", &get_many_lei_entities_response::entries},
+    };
+}
+
+}
+
+namespace ores::utility::codec {
+
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::lei_entity_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::lei_entity_key& v);
+    static ores::dq::messaging::lei_entity_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::lei_entity_key& v);
+    static ores::dq::messaging::lei_entity_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::lei_entity_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::lei_entity_lookup& v);
+    static ores::dq::messaging::lei_entity_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::lei_entity_lookup& v);
+    static ores::dq::messaging::lei_entity_lookup read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::lei_entities_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::lei_entities_filter& v);
+    static ores::dq::messaging::lei_entities_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::lei_entities_filter& v);
+    static ores::dq::messaging::lei_entities_filter read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::lei_entity_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::lei_entity_event& v);
+    static ores::dq::messaging::lei_entity_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::lei_entity_event& v);
+    static ores::dq::messaging::lei_entity_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_lei_entities_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_lei_entities_request& v);
+    static ores::dq::messaging::list_lei_entities_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::list_lei_entities_request& v);
+    static ores::dq::messaging::list_lei_entities_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_lei_entities_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_lei_entities_response& v);
+    static ores::dq::messaging::list_lei_entities_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::list_lei_entities_response& v);
+    static ores::dq::messaging::list_lei_entities_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_lei_entity_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_lei_entity_request& v);
+    static ores::dq::messaging::get_lei_entity_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_lei_entity_request& v);
+    static ores::dq::messaging::get_lei_entity_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_lei_entity_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_lei_entity_response& v);
+    static ores::dq::messaging::get_lei_entity_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_lei_entity_response& v);
+    static ores::dq::messaging::get_lei_entity_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_many_lei_entities_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_many_lei_entities_request& v);
+    static ores::dq::messaging::get_many_lei_entities_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_many_lei_entities_request& v);
+    static ores::dq::messaging::get_many_lei_entities_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_many_lei_entities_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_many_lei_entities_response& v);
+    static ores::dq::messaging::get_many_lei_entities_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_many_lei_entities_response& v);
+    static ores::dq::messaging::get_many_lei_entities_response
+    read_msgpack(std::span<const std::byte> data);
+};
 }
 
 #endif

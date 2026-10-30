@@ -26,11 +26,17 @@
 #define ORES_DQ_API_MESSAGING_DATASET_BUNDLE_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/dataset_bundle.hpp"
+#include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::dq::messaging {
@@ -273,6 +279,708 @@ inline constexpr std::string_view updated = "dq.v1.dataset_bundles_events.update
 inline constexpr std::string_view deleted = "dq.v1.dataset_bundles_events.deleted";
 }
 
+/**
+ * @brief The members of dataset_bundle_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const dataset_bundle_key&) {
+    return std::tuple{
+        utility::codec::field{"code", &dataset_bundle_key::code},
+    };
+}
+
+/**
+ * @brief The members of dataset_bundle_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const dataset_bundle_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &dataset_bundle_write::id},
+        utility::codec::field{"code", &dataset_bundle_write::code},
+        utility::codec::field{"name", &dataset_bundle_write::name},
+        utility::codec::field{"description", &dataset_bundle_write::description},
+    };
+}
+
+/**
+ * @brief The members of dataset_bundle_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const dataset_bundle_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &dataset_bundle_change::write},
+        utility::codec::field{"precondition", &dataset_bundle_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of dataset_bundle_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const dataset_bundle_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &dataset_bundle_removal::key},
+        utility::codec::field{"precondition", &dataset_bundle_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of dataset_bundle_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const dataset_bundle_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &dataset_bundle_lookup::key},
+        utility::codec::field{"dataset_bundle", &dataset_bundle_lookup::dataset_bundle},
+    };
+}
+
+/**
+ * @brief The members of dataset_bundles_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const dataset_bundles_filter&) {
+    return std::tuple{
+        utility::codec::field{"id_one_of", &dataset_bundles_filter::id_one_of},
+    };
+}
+
+/**
+ * @brief The members of dataset_bundle_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const dataset_bundle_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &dataset_bundle_event::event_id},
+        utility::codec::field{"key", &dataset_bundle_event::key},
+        utility::codec::field{"action", &dataset_bundle_event::action},
+        utility::codec::field{"version", &dataset_bundle_event::version},
+        utility::codec::field{"occurred_at", &dataset_bundle_event::occurred_at},
+        utility::codec::field{"correlation_id", &dataset_bundle_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of dataset_bundle_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const dataset_bundle_version_key&) {
+    return std::tuple{
+        utility::codec::field{"dataset_bundle", &dataset_bundle_version_key::dataset_bundle},
+        utility::codec::field{"version", &dataset_bundle_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of dataset_bundle_versions_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const dataset_bundle_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &dataset_bundle_versions_filter::version},
+        utility::codec::field{"from_version", &dataset_bundle_versions_filter::from_version},
+        utility::codec::field{"to_version", &dataset_bundle_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_dataset_bundles_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_dataset_bundles_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_dataset_bundles_request::offset},
+        utility::codec::field{"limit", &list_dataset_bundles_request::limit},
+        utility::codec::field{"order", &list_dataset_bundles_request::order},
+        utility::codec::field{"filter", &list_dataset_bundles_request::filter},
+        utility::codec::field{"as_of", &list_dataset_bundles_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_dataset_bundles_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_dataset_bundles_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_dataset_bundles_response::result},
+        utility::codec::field{"bundles", &list_dataset_bundles_response::bundles},
+        utility::codec::field{"total", &list_dataset_bundles_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_dataset_bundle_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_dataset_bundle_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_dataset_bundle_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_dataset_bundle_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_dataset_bundle_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_dataset_bundle_response::result},
+        utility::codec::field{"dataset_bundle", &get_dataset_bundle_response::dataset_bundle},
+    };
+}
+
+/**
+ * @brief The members of get_many_dataset_bundles_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_dataset_bundles_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_dataset_bundles_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_dataset_bundles_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_dataset_bundles_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_dataset_bundles_response::result},
+        utility::codec::field{"entries", &get_many_dataset_bundles_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_dataset_bundle_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_dataset_bundle_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_dataset_bundle_request::change},
+        utility::codec::field{"intent", &put_dataset_bundle_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_dataset_bundle_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_dataset_bundle_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_dataset_bundle_response::result},
+        utility::codec::field{"dataset_bundle", &put_dataset_bundle_response::dataset_bundle},
+    };
+}
+
+/**
+ * @brief The members of put_many_dataset_bundles_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_dataset_bundles_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_dataset_bundles_request::changes},
+        utility::codec::field{"intent", &put_many_dataset_bundles_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_dataset_bundles_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_dataset_bundles_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_dataset_bundles_response::result},
+        utility::codec::field{"bundles", &put_many_dataset_bundles_response::bundles},
+    };
+}
+
+/**
+ * @brief The members of delete_dataset_bundle_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_dataset_bundle_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_dataset_bundle_request::removal},
+        utility::codec::field{"intent", &delete_dataset_bundle_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_dataset_bundle_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_dataset_bundle_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_dataset_bundle_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_dataset_bundles_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_dataset_bundles_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_dataset_bundles_request::removals},
+        utility::codec::field{"intent", &delete_many_dataset_bundles_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_dataset_bundles_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_dataset_bundles_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_dataset_bundles_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_dataset_bundle_versions_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_dataset_bundle_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_dataset_bundle_versions_request::key},
+        utility::codec::field{"offset", &list_dataset_bundle_versions_request::offset},
+        utility::codec::field{"limit", &list_dataset_bundle_versions_request::limit},
+        utility::codec::field{"order", &list_dataset_bundle_versions_request::order},
+        utility::codec::field{"filter", &list_dataset_bundle_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_dataset_bundle_versions_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_dataset_bundle_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_dataset_bundle_versions_response::result},
+        utility::codec::field{"versions", &list_dataset_bundle_versions_response::versions},
+        utility::codec::field{"total", &list_dataset_bundle_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_dataset_bundle_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_dataset_bundle_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_dataset_bundle_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_dataset_bundle_version_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_dataset_bundle_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_dataset_bundle_version_response::result},
+        utility::codec::field{"version", &get_dataset_bundle_version_response::version},
+    };
+}
+
+}
+
+namespace ores::utility::codec {
+
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::dataset_bundle_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::dataset_bundle_key& v);
+    static ores::dq::messaging::dataset_bundle_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::dataset_bundle_key& v);
+    static ores::dq::messaging::dataset_bundle_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::dataset_bundle_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::dataset_bundle_write& v);
+    static ores::dq::messaging::dataset_bundle_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::dataset_bundle_write& v);
+    static ores::dq::messaging::dataset_bundle_write read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::dataset_bundle_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::dataset_bundle_change& v);
+    static ores::dq::messaging::dataset_bundle_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::dataset_bundle_change& v);
+    static ores::dq::messaging::dataset_bundle_change read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::dataset_bundle_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::dataset_bundle_removal& v);
+    static ores::dq::messaging::dataset_bundle_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::dataset_bundle_removal& v);
+    static ores::dq::messaging::dataset_bundle_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::dataset_bundle_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::dataset_bundle_lookup& v);
+    static ores::dq::messaging::dataset_bundle_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::dataset_bundle_lookup& v);
+    static ores::dq::messaging::dataset_bundle_lookup read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::dataset_bundles_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::dataset_bundles_filter& v);
+    static ores::dq::messaging::dataset_bundles_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::dataset_bundles_filter& v);
+    static ores::dq::messaging::dataset_bundles_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::dataset_bundle_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::dataset_bundle_event& v);
+    static ores::dq::messaging::dataset_bundle_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::dataset_bundle_event& v);
+    static ores::dq::messaging::dataset_bundle_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::dataset_bundle_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::dataset_bundle_version_key& v);
+    static ores::dq::messaging::dataset_bundle_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::dataset_bundle_version_key& v);
+    static ores::dq::messaging::dataset_bundle_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::dataset_bundle_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::dataset_bundle_versions_filter& v);
+    static ores::dq::messaging::dataset_bundle_versions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::dataset_bundle_versions_filter& v);
+    static ores::dq::messaging::dataset_bundle_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_dataset_bundles_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_dataset_bundles_request& v);
+    static ores::dq::messaging::list_dataset_bundles_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::list_dataset_bundles_request& v);
+    static ores::dq::messaging::list_dataset_bundles_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_dataset_bundles_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_dataset_bundles_response& v);
+    static ores::dq::messaging::list_dataset_bundles_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::list_dataset_bundles_response& v);
+    static ores::dq::messaging::list_dataset_bundles_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_dataset_bundle_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_dataset_bundle_request& v);
+    static ores::dq::messaging::get_dataset_bundle_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_dataset_bundle_request& v);
+    static ores::dq::messaging::get_dataset_bundle_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_dataset_bundle_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_dataset_bundle_response& v);
+    static ores::dq::messaging::get_dataset_bundle_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_dataset_bundle_response& v);
+    static ores::dq::messaging::get_dataset_bundle_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_many_dataset_bundles_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_many_dataset_bundles_request& v);
+    static ores::dq::messaging::get_many_dataset_bundles_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_many_dataset_bundles_request& v);
+    static ores::dq::messaging::get_many_dataset_bundles_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_many_dataset_bundles_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_many_dataset_bundles_response& v);
+    static ores::dq::messaging::get_many_dataset_bundles_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_many_dataset_bundles_response& v);
+    static ores::dq::messaging::get_many_dataset_bundles_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_dataset_bundle_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_dataset_bundle_request& v);
+    static ores::dq::messaging::put_dataset_bundle_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::put_dataset_bundle_request& v);
+    static ores::dq::messaging::put_dataset_bundle_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_dataset_bundle_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_dataset_bundle_response& v);
+    static ores::dq::messaging::put_dataset_bundle_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::put_dataset_bundle_response& v);
+    static ores::dq::messaging::put_dataset_bundle_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_many_dataset_bundles_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_many_dataset_bundles_request& v);
+    static ores::dq::messaging::put_many_dataset_bundles_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::put_many_dataset_bundles_request& v);
+    static ores::dq::messaging::put_many_dataset_bundles_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_many_dataset_bundles_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_many_dataset_bundles_response& v);
+    static ores::dq::messaging::put_many_dataset_bundles_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::put_many_dataset_bundles_response& v);
+    static ores::dq::messaging::put_many_dataset_bundles_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_dataset_bundle_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::delete_dataset_bundle_request& v);
+    static ores::dq::messaging::delete_dataset_bundle_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::delete_dataset_bundle_request& v);
+    static ores::dq::messaging::delete_dataset_bundle_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_dataset_bundle_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::delete_dataset_bundle_response& v);
+    static ores::dq::messaging::delete_dataset_bundle_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::delete_dataset_bundle_response& v);
+    static ores::dq::messaging::delete_dataset_bundle_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_many_dataset_bundles_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::delete_many_dataset_bundles_request& v);
+    static ores::dq::messaging::delete_many_dataset_bundles_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_many_dataset_bundles_request& v);
+    static ores::dq::messaging::delete_many_dataset_bundles_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_many_dataset_bundles_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::delete_many_dataset_bundles_response& v);
+    static ores::dq::messaging::delete_many_dataset_bundles_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_many_dataset_bundles_response& v);
+    static ores::dq::messaging::delete_many_dataset_bundles_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_dataset_bundle_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::list_dataset_bundle_versions_request& v);
+    static ores::dq::messaging::list_dataset_bundle_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_dataset_bundle_versions_request& v);
+    static ores::dq::messaging::list_dataset_bundle_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_dataset_bundle_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::list_dataset_bundle_versions_response& v);
+    static ores::dq::messaging::list_dataset_bundle_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_dataset_bundle_versions_response& v);
+    static ores::dq::messaging::list_dataset_bundle_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_dataset_bundle_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_dataset_bundle_version_request& v);
+    static ores::dq::messaging::get_dataset_bundle_version_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_dataset_bundle_version_request& v);
+    static ores::dq::messaging::get_dataset_bundle_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_dataset_bundle_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::get_dataset_bundle_version_response& v);
+    static ores::dq::messaging::get_dataset_bundle_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_dataset_bundle_version_response& v);
+    static ores::dq::messaging::get_dataset_bundle_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
 }
 
 #endif

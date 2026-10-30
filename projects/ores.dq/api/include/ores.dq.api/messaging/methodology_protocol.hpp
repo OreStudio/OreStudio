@@ -26,11 +26,17 @@
 #define ORES_DQ_API_MESSAGING_METHODOLOGY_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/methodology.hpp"
+#include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::dq::messaging {
@@ -274,6 +280,692 @@ inline constexpr std::string_view updated = "dq.v1.methodologies_events.updated"
 inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted";
 }
 
+/**
+ * @brief The members of methodology_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const methodology_key&) {
+    return std::tuple{
+        utility::codec::field{"name", &methodology_key::name},
+    };
+}
+
+/**
+ * @brief The members of methodology_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const methodology_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &methodology_write::id},
+        utility::codec::field{"name", &methodology_write::name},
+        utility::codec::field{"description", &methodology_write::description},
+        utility::codec::field{"logic_reference", &methodology_write::logic_reference},
+        utility::codec::field{"implementation_details", &methodology_write::implementation_details},
+    };
+}
+
+/**
+ * @brief The members of methodology_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const methodology_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &methodology_change::write},
+        utility::codec::field{"precondition", &methodology_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of methodology_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const methodology_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &methodology_removal::key},
+        utility::codec::field{"precondition", &methodology_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of methodology_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const methodology_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &methodology_lookup::key},
+        utility::codec::field{"methodology", &methodology_lookup::methodology},
+    };
+}
+
+/**
+ * @brief The members of methodologies_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const methodologies_filter&) {
+    return std::tuple{
+        utility::codec::field{"id_one_of", &methodologies_filter::id_one_of},
+    };
+}
+
+/**
+ * @brief The members of methodology_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const methodology_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &methodology_event::event_id},
+        utility::codec::field{"key", &methodology_event::key},
+        utility::codec::field{"action", &methodology_event::action},
+        utility::codec::field{"version", &methodology_event::version},
+        utility::codec::field{"occurred_at", &methodology_event::occurred_at},
+        utility::codec::field{"correlation_id", &methodology_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of methodology_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const methodology_version_key&) {
+    return std::tuple{
+        utility::codec::field{"methodology", &methodology_version_key::methodology},
+        utility::codec::field{"version", &methodology_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of methodology_versions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const methodology_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &methodology_versions_filter::version},
+        utility::codec::field{"from_version", &methodology_versions_filter::from_version},
+        utility::codec::field{"to_version", &methodology_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_methodologies_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_methodologies_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_methodologies_request::offset},
+        utility::codec::field{"limit", &list_methodologies_request::limit},
+        utility::codec::field{"order", &list_methodologies_request::order},
+        utility::codec::field{"filter", &list_methodologies_request::filter},
+        utility::codec::field{"as_of", &list_methodologies_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_methodologies_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_methodologies_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_methodologies_response::result},
+        utility::codec::field{"methodologies", &list_methodologies_response::methodologies},
+        utility::codec::field{"total", &list_methodologies_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_methodology_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_methodology_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_methodology_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_methodology_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_methodology_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_methodology_response::result},
+        utility::codec::field{"methodology", &get_methodology_response::methodology},
+    };
+}
+
+/**
+ * @brief The members of get_many_methodologies_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_methodologies_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_methodologies_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_methodologies_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_methodologies_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_methodologies_response::result},
+        utility::codec::field{"entries", &get_many_methodologies_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_methodology_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_methodology_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_methodology_request::change},
+        utility::codec::field{"intent", &put_methodology_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_methodology_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_methodology_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_methodology_response::result},
+        utility::codec::field{"methodology", &put_methodology_response::methodology},
+    };
+}
+
+/**
+ * @brief The members of put_many_methodologies_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_methodologies_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_methodologies_request::changes},
+        utility::codec::field{"intent", &put_many_methodologies_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_methodologies_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_methodologies_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_methodologies_response::result},
+        utility::codec::field{"methodologies", &put_many_methodologies_response::methodologies},
+    };
+}
+
+/**
+ * @brief The members of delete_methodology_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_methodology_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_methodology_request::removal},
+        utility::codec::field{"intent", &delete_methodology_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_methodology_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_methodology_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_methodology_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_methodologies_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_methodologies_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_methodologies_request::removals},
+        utility::codec::field{"intent", &delete_many_methodologies_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_methodologies_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_methodologies_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_methodologies_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_methodology_versions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_methodology_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_methodology_versions_request::key},
+        utility::codec::field{"offset", &list_methodology_versions_request::offset},
+        utility::codec::field{"limit", &list_methodology_versions_request::limit},
+        utility::codec::field{"order", &list_methodology_versions_request::order},
+        utility::codec::field{"filter", &list_methodology_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_methodology_versions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_methodology_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_methodology_versions_response::result},
+        utility::codec::field{"versions", &list_methodology_versions_response::versions},
+        utility::codec::field{"total", &list_methodology_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_methodology_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_methodology_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_methodology_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_methodology_version_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_methodology_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_methodology_version_response::result},
+        utility::codec::field{"version", &get_methodology_version_response::version},
+    };
+}
+
+}
+
+namespace ores::utility::codec {
+
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::methodology_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::methodology_key& v);
+    static ores::dq::messaging::methodology_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::methodology_key& v);
+    static ores::dq::messaging::methodology_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::methodology_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::methodology_write& v);
+    static ores::dq::messaging::methodology_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::methodology_write& v);
+    static ores::dq::messaging::methodology_write read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::methodology_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::methodology_change& v);
+    static ores::dq::messaging::methodology_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::methodology_change& v);
+    static ores::dq::messaging::methodology_change read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::methodology_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::methodology_removal& v);
+    static ores::dq::messaging::methodology_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::methodology_removal& v);
+    static ores::dq::messaging::methodology_removal read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::methodology_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::methodology_lookup& v);
+    static ores::dq::messaging::methodology_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::methodology_lookup& v);
+    static ores::dq::messaging::methodology_lookup read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::methodologies_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::methodologies_filter& v);
+    static ores::dq::messaging::methodologies_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::methodologies_filter& v);
+    static ores::dq::messaging::methodologies_filter read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::methodology_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::methodology_event& v);
+    static ores::dq::messaging::methodology_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::methodology_event& v);
+    static ores::dq::messaging::methodology_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::methodology_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::methodology_version_key& v);
+    static ores::dq::messaging::methodology_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::methodology_version_key& v);
+    static ores::dq::messaging::methodology_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::methodology_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::methodology_versions_filter& v);
+    static ores::dq::messaging::methodology_versions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::methodology_versions_filter& v);
+    static ores::dq::messaging::methodology_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_methodologies_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_methodologies_request& v);
+    static ores::dq::messaging::list_methodologies_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::list_methodologies_request& v);
+    static ores::dq::messaging::list_methodologies_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_methodologies_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_methodologies_response& v);
+    static ores::dq::messaging::list_methodologies_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::list_methodologies_response& v);
+    static ores::dq::messaging::list_methodologies_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_methodology_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_methodology_request& v);
+    static ores::dq::messaging::get_methodology_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_methodology_request& v);
+    static ores::dq::messaging::get_methodology_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_methodology_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_methodology_response& v);
+    static ores::dq::messaging::get_methodology_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_methodology_response& v);
+    static ores::dq::messaging::get_methodology_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_many_methodologies_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_many_methodologies_request& v);
+    static ores::dq::messaging::get_many_methodologies_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_many_methodologies_request& v);
+    static ores::dq::messaging::get_many_methodologies_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_many_methodologies_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_many_methodologies_response& v);
+    static ores::dq::messaging::get_many_methodologies_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_many_methodologies_response& v);
+    static ores::dq::messaging::get_many_methodologies_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_methodology_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_methodology_request& v);
+    static ores::dq::messaging::put_methodology_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::put_methodology_request& v);
+    static ores::dq::messaging::put_methodology_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_methodology_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_methodology_response& v);
+    static ores::dq::messaging::put_methodology_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::put_methodology_response& v);
+    static ores::dq::messaging::put_methodology_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_many_methodologies_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_many_methodologies_request& v);
+    static ores::dq::messaging::put_many_methodologies_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::put_many_methodologies_request& v);
+    static ores::dq::messaging::put_many_methodologies_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_many_methodologies_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_many_methodologies_response& v);
+    static ores::dq::messaging::put_many_methodologies_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::put_many_methodologies_response& v);
+    static ores::dq::messaging::put_many_methodologies_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_methodology_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::delete_methodology_request& v);
+    static ores::dq::messaging::delete_methodology_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::delete_methodology_request& v);
+    static ores::dq::messaging::delete_methodology_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_methodology_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::delete_methodology_response& v);
+    static ores::dq::messaging::delete_methodology_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::delete_methodology_response& v);
+    static ores::dq::messaging::delete_methodology_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_many_methodologies_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::delete_many_methodologies_request& v);
+    static ores::dq::messaging::delete_many_methodologies_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_many_methodologies_request& v);
+    static ores::dq::messaging::delete_many_methodologies_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_many_methodologies_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::delete_many_methodologies_response& v);
+    static ores::dq::messaging::delete_many_methodologies_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_many_methodologies_response& v);
+    static ores::dq::messaging::delete_many_methodologies_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_methodology_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_methodology_versions_request& v);
+    static ores::dq::messaging::list_methodology_versions_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_methodology_versions_request& v);
+    static ores::dq::messaging::list_methodology_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_methodology_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_methodology_versions_response& v);
+    static ores::dq::messaging::list_methodology_versions_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_methodology_versions_response& v);
+    static ores::dq::messaging::list_methodology_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_methodology_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_methodology_version_request& v);
+    static ores::dq::messaging::get_methodology_version_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_methodology_version_request& v);
+    static ores::dq::messaging::get_methodology_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_methodology_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_methodology_version_response& v);
+    static ores::dq::messaging::get_methodology_version_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_methodology_version_response& v);
+    static ores::dq::messaging::get_methodology_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
 }
 
 #endif

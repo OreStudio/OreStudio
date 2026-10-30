@@ -26,11 +26,17 @@
 #define ORES_DQ_API_MESSAGING_FSM_TRANSITION_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/fsm_transition.hpp"
+#include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::dq::messaging {
@@ -275,6 +281,710 @@ inline constexpr std::string_view updated = "dq.v1.fsm_transitions_events.update
 inline constexpr std::string_view deleted = "dq.v1.fsm_transitions_events.deleted";
 }
 
+/**
+ * @brief The members of fsm_transition_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fsm_transition_key&) {
+    return std::tuple{
+        utility::codec::field{"name", &fsm_transition_key::name},
+    };
+}
+
+/**
+ * @brief The members of fsm_transition_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fsm_transition_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &fsm_transition_write::id},
+        utility::codec::field{"machine_id", &fsm_transition_write::machine_id},
+        utility::codec::field{"from_state_id", &fsm_transition_write::from_state_id},
+        utility::codec::field{"to_state_id", &fsm_transition_write::to_state_id},
+        utility::codec::field{"name", &fsm_transition_write::name},
+        utility::codec::field{"guard_function", &fsm_transition_write::guard_function},
+    };
+}
+
+/**
+ * @brief The members of fsm_transition_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fsm_transition_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &fsm_transition_change::write},
+        utility::codec::field{"precondition", &fsm_transition_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of fsm_transition_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fsm_transition_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &fsm_transition_removal::key},
+        utility::codec::field{"precondition", &fsm_transition_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of fsm_transition_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fsm_transition_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &fsm_transition_lookup::key},
+        utility::codec::field{"fsm_transition", &fsm_transition_lookup::fsm_transition},
+    };
+}
+
+/**
+ * @brief The members of fsm_transitions_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fsm_transitions_filter&) {
+    return std::tuple{
+        utility::codec::field{"id_one_of", &fsm_transitions_filter::id_one_of},
+    };
+}
+
+/**
+ * @brief The members of fsm_transition_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fsm_transition_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &fsm_transition_event::event_id},
+        utility::codec::field{"key", &fsm_transition_event::key},
+        utility::codec::field{"action", &fsm_transition_event::action},
+        utility::codec::field{"version", &fsm_transition_event::version},
+        utility::codec::field{"occurred_at", &fsm_transition_event::occurred_at},
+        utility::codec::field{"correlation_id", &fsm_transition_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of fsm_transition_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fsm_transition_version_key&) {
+    return std::tuple{
+        utility::codec::field{"fsm_transition", &fsm_transition_version_key::fsm_transition},
+        utility::codec::field{"version", &fsm_transition_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of fsm_transition_versions_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fsm_transition_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &fsm_transition_versions_filter::version},
+        utility::codec::field{"from_version", &fsm_transition_versions_filter::from_version},
+        utility::codec::field{"to_version", &fsm_transition_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_fsm_transitions_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_fsm_transitions_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_fsm_transitions_request::offset},
+        utility::codec::field{"limit", &list_fsm_transitions_request::limit},
+        utility::codec::field{"order", &list_fsm_transitions_request::order},
+        utility::codec::field{"filter", &list_fsm_transitions_request::filter},
+        utility::codec::field{"as_of", &list_fsm_transitions_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_fsm_transitions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_fsm_transitions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_fsm_transitions_response::result},
+        utility::codec::field{"transitions", &list_fsm_transitions_response::transitions},
+        utility::codec::field{"total", &list_fsm_transitions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_fsm_transition_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_fsm_transition_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_fsm_transition_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_fsm_transition_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_fsm_transition_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_fsm_transition_response::result},
+        utility::codec::field{"fsm_transition", &get_fsm_transition_response::fsm_transition},
+    };
+}
+
+/**
+ * @brief The members of get_many_fsm_transitions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_fsm_transitions_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_fsm_transitions_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_fsm_transitions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_fsm_transitions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_fsm_transitions_response::result},
+        utility::codec::field{"entries", &get_many_fsm_transitions_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_fsm_transition_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_fsm_transition_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_fsm_transition_request::change},
+        utility::codec::field{"intent", &put_fsm_transition_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_fsm_transition_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_fsm_transition_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_fsm_transition_response::result},
+        utility::codec::field{"fsm_transition", &put_fsm_transition_response::fsm_transition},
+    };
+}
+
+/**
+ * @brief The members of put_many_fsm_transitions_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_fsm_transitions_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_fsm_transitions_request::changes},
+        utility::codec::field{"intent", &put_many_fsm_transitions_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_fsm_transitions_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_fsm_transitions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_fsm_transitions_response::result},
+        utility::codec::field{"transitions", &put_many_fsm_transitions_response::transitions},
+    };
+}
+
+/**
+ * @brief The members of delete_fsm_transition_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_fsm_transition_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_fsm_transition_request::removal},
+        utility::codec::field{"intent", &delete_fsm_transition_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_fsm_transition_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_fsm_transition_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_fsm_transition_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_fsm_transitions_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_fsm_transitions_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_fsm_transitions_request::removals},
+        utility::codec::field{"intent", &delete_many_fsm_transitions_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_fsm_transitions_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_fsm_transitions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_fsm_transitions_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_fsm_transition_versions_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_fsm_transition_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_fsm_transition_versions_request::key},
+        utility::codec::field{"offset", &list_fsm_transition_versions_request::offset},
+        utility::codec::field{"limit", &list_fsm_transition_versions_request::limit},
+        utility::codec::field{"order", &list_fsm_transition_versions_request::order},
+        utility::codec::field{"filter", &list_fsm_transition_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_fsm_transition_versions_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_fsm_transition_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_fsm_transition_versions_response::result},
+        utility::codec::field{"versions", &list_fsm_transition_versions_response::versions},
+        utility::codec::field{"total", &list_fsm_transition_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_fsm_transition_version_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_fsm_transition_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_fsm_transition_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_fsm_transition_version_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_fsm_transition_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_fsm_transition_version_response::result},
+        utility::codec::field{"version", &get_fsm_transition_version_response::version},
+    };
+}
+
+}
+
+namespace ores::utility::codec {
+
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::fsm_transition_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::fsm_transition_key& v);
+    static ores::dq::messaging::fsm_transition_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::fsm_transition_key& v);
+    static ores::dq::messaging::fsm_transition_key read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::fsm_transition_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::fsm_transition_write& v);
+    static ores::dq::messaging::fsm_transition_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::fsm_transition_write& v);
+    static ores::dq::messaging::fsm_transition_write read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::fsm_transition_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::fsm_transition_change& v);
+    static ores::dq::messaging::fsm_transition_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::fsm_transition_change& v);
+    static ores::dq::messaging::fsm_transition_change read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::fsm_transition_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::fsm_transition_removal& v);
+    static ores::dq::messaging::fsm_transition_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::fsm_transition_removal& v);
+    static ores::dq::messaging::fsm_transition_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::fsm_transition_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::fsm_transition_lookup& v);
+    static ores::dq::messaging::fsm_transition_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::fsm_transition_lookup& v);
+    static ores::dq::messaging::fsm_transition_lookup read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::fsm_transitions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::fsm_transitions_filter& v);
+    static ores::dq::messaging::fsm_transitions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::fsm_transitions_filter& v);
+    static ores::dq::messaging::fsm_transitions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::fsm_transition_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::fsm_transition_event& v);
+    static ores::dq::messaging::fsm_transition_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::fsm_transition_event& v);
+    static ores::dq::messaging::fsm_transition_event read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::fsm_transition_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::fsm_transition_version_key& v);
+    static ores::dq::messaging::fsm_transition_version_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::fsm_transition_version_key& v);
+    static ores::dq::messaging::fsm_transition_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::fsm_transition_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::fsm_transition_versions_filter& v);
+    static ores::dq::messaging::fsm_transition_versions_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::fsm_transition_versions_filter& v);
+    static ores::dq::messaging::fsm_transition_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_fsm_transitions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_fsm_transitions_request& v);
+    static ores::dq::messaging::list_fsm_transitions_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::list_fsm_transitions_request& v);
+    static ores::dq::messaging::list_fsm_transitions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_fsm_transitions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::list_fsm_transitions_response& v);
+    static ores::dq::messaging::list_fsm_transitions_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::list_fsm_transitions_response& v);
+    static ores::dq::messaging::list_fsm_transitions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_fsm_transition_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_fsm_transition_request& v);
+    static ores::dq::messaging::get_fsm_transition_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_fsm_transition_request& v);
+    static ores::dq::messaging::get_fsm_transition_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_fsm_transition_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_fsm_transition_response& v);
+    static ores::dq::messaging::get_fsm_transition_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::get_fsm_transition_response& v);
+    static ores::dq::messaging::get_fsm_transition_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_many_fsm_transitions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_many_fsm_transitions_request& v);
+    static ores::dq::messaging::get_many_fsm_transitions_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_many_fsm_transitions_request& v);
+    static ores::dq::messaging::get_many_fsm_transitions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_many_fsm_transitions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_many_fsm_transitions_response& v);
+    static ores::dq::messaging::get_many_fsm_transitions_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_many_fsm_transitions_response& v);
+    static ores::dq::messaging::get_many_fsm_transitions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_fsm_transition_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_fsm_transition_request& v);
+    static ores::dq::messaging::put_fsm_transition_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::put_fsm_transition_request& v);
+    static ores::dq::messaging::put_fsm_transition_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_fsm_transition_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_fsm_transition_response& v);
+    static ores::dq::messaging::put_fsm_transition_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::put_fsm_transition_response& v);
+    static ores::dq::messaging::put_fsm_transition_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_many_fsm_transitions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_many_fsm_transitions_request& v);
+    static ores::dq::messaging::put_many_fsm_transitions_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::put_many_fsm_transitions_request& v);
+    static ores::dq::messaging::put_many_fsm_transitions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_many_fsm_transitions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_many_fsm_transitions_response& v);
+    static ores::dq::messaging::put_many_fsm_transitions_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::put_many_fsm_transitions_response& v);
+    static ores::dq::messaging::put_many_fsm_transitions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_fsm_transition_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::delete_fsm_transition_request& v);
+    static ores::dq::messaging::delete_fsm_transition_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::delete_fsm_transition_request& v);
+    static ores::dq::messaging::delete_fsm_transition_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_fsm_transition_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::delete_fsm_transition_response& v);
+    static ores::dq::messaging::delete_fsm_transition_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::delete_fsm_transition_response& v);
+    static ores::dq::messaging::delete_fsm_transition_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_many_fsm_transitions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::delete_many_fsm_transitions_request& v);
+    static ores::dq::messaging::delete_many_fsm_transitions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_many_fsm_transitions_request& v);
+    static ores::dq::messaging::delete_many_fsm_transitions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_many_fsm_transitions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::delete_many_fsm_transitions_response& v);
+    static ores::dq::messaging::delete_many_fsm_transitions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_many_fsm_transitions_response& v);
+    static ores::dq::messaging::delete_many_fsm_transitions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_fsm_transition_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::list_fsm_transition_versions_request& v);
+    static ores::dq::messaging::list_fsm_transition_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_fsm_transition_versions_request& v);
+    static ores::dq::messaging::list_fsm_transition_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_fsm_transition_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::list_fsm_transition_versions_response& v);
+    static ores::dq::messaging::list_fsm_transition_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_fsm_transition_versions_response& v);
+    static ores::dq::messaging::list_fsm_transition_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_fsm_transition_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_fsm_transition_version_request& v);
+    static ores::dq::messaging::get_fsm_transition_version_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_fsm_transition_version_request& v);
+    static ores::dq::messaging::get_fsm_transition_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_fsm_transition_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::get_fsm_transition_version_response& v);
+    static ores::dq::messaging::get_fsm_transition_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_fsm_transition_version_response& v);
+    static ores::dq::messaging::get_fsm_transition_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
 }
 
 #endif

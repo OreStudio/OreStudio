@@ -33,6 +33,7 @@ set(files
     "domain_codec_tests.cpp"
     "generators_tests.cpp"
     "main.cpp"
+    "message_codec_tests.cpp"
     "nature_dimension_eventing_integration_tests.cpp"
     "origin_dimension_eventing_integration_tests.cpp"
     "repository_artefact_type_repository_tests.cpp"

@@ -26,11 +26,17 @@
 #define ORES_DQ_API_MESSAGING_CHANGE_REASON_CATEGORY_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/change_reason_category.hpp"
+#include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::dq::messaging {
@@ -271,6 +277,761 @@ inline constexpr std::string_view updated = "dq.v1.change_reason_categories_even
 inline constexpr std::string_view deleted = "dq.v1.change_reason_categories_events.deleted";
 }
 
+/**
+ * @brief The members of change_reason_category_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const change_reason_category_key&) {
+    return std::tuple{
+        utility::codec::field{"code", &change_reason_category_key::code},
+    };
+}
+
+/**
+ * @brief The members of change_reason_category_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const change_reason_category_write&) {
+    return std::tuple{
+        utility::codec::field{"code", &change_reason_category_write::code},
+        utility::codec::field{"description", &change_reason_category_write::description},
+    };
+}
+
+/**
+ * @brief The members of change_reason_category_change, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const change_reason_category_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &change_reason_category_change::write},
+        utility::codec::field{"precondition", &change_reason_category_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of change_reason_category_removal, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const change_reason_category_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &change_reason_category_removal::key},
+        utility::codec::field{"precondition", &change_reason_category_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of change_reason_category_lookup, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const change_reason_category_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &change_reason_category_lookup::key},
+        utility::codec::field{"change_reason_category",
+                              &change_reason_category_lookup::change_reason_category},
+    };
+}
+
+/**
+ * @brief The members of change_reason_categories_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const change_reason_categories_filter&) {
+    return std::tuple{
+        utility::codec::field{"code_one_of", &change_reason_categories_filter::code_one_of},
+    };
+}
+
+/**
+ * @brief The members of change_reason_category_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const change_reason_category_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &change_reason_category_event::event_id},
+        utility::codec::field{"key", &change_reason_category_event::key},
+        utility::codec::field{"action", &change_reason_category_event::action},
+        utility::codec::field{"version", &change_reason_category_event::version},
+        utility::codec::field{"occurred_at", &change_reason_category_event::occurred_at},
+        utility::codec::field{"correlation_id", &change_reason_category_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of change_reason_category_version_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const change_reason_category_version_key&) {
+    return std::tuple{
+        utility::codec::field{"change_reason_category",
+                              &change_reason_category_version_key::change_reason_category},
+        utility::codec::field{"version", &change_reason_category_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of change_reason_category_versions_filter, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const change_reason_category_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &change_reason_category_versions_filter::version},
+        utility::codec::field{"from_version",
+                              &change_reason_category_versions_filter::from_version},
+        utility::codec::field{"to_version", &change_reason_category_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_change_reason_categories_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_change_reason_categories_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_change_reason_categories_request::offset},
+        utility::codec::field{"limit", &list_change_reason_categories_request::limit},
+        utility::codec::field{"order", &list_change_reason_categories_request::order},
+        utility::codec::field{"filter", &list_change_reason_categories_request::filter},
+        utility::codec::field{"as_of", &list_change_reason_categories_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_change_reason_categories_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_change_reason_categories_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_change_reason_categories_response::result},
+        utility::codec::field{"categories", &list_change_reason_categories_response::categories},
+        utility::codec::field{"total", &list_change_reason_categories_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_change_reason_category_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_change_reason_category_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_change_reason_category_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_change_reason_category_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_change_reason_category_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_change_reason_category_response::result},
+        utility::codec::field{"change_reason_category",
+                              &get_change_reason_category_response::change_reason_category},
+    };
+}
+
+/**
+ * @brief The members of get_many_change_reason_categories_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_change_reason_categories_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_change_reason_categories_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_change_reason_categories_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_change_reason_categories_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_change_reason_categories_response::result},
+        utility::codec::field{"entries", &get_many_change_reason_categories_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_change_reason_category_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_change_reason_category_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_change_reason_category_request::change},
+        utility::codec::field{"intent", &put_change_reason_category_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_change_reason_category_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_change_reason_category_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_change_reason_category_response::result},
+        utility::codec::field{"change_reason_category",
+                              &put_change_reason_category_response::change_reason_category},
+    };
+}
+
+/**
+ * @brief The members of put_many_change_reason_categories_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_change_reason_categories_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_change_reason_categories_request::changes},
+        utility::codec::field{"intent", &put_many_change_reason_categories_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_change_reason_categories_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_change_reason_categories_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_change_reason_categories_response::result},
+        utility::codec::field{"categories",
+                              &put_many_change_reason_categories_response::categories},
+    };
+}
+
+/**
+ * @brief The members of delete_change_reason_category_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_change_reason_category_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_change_reason_category_request::removal},
+        utility::codec::field{"intent", &delete_change_reason_category_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_change_reason_category_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_change_reason_category_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_change_reason_category_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_change_reason_categories_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_change_reason_categories_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_change_reason_categories_request::removals},
+        utility::codec::field{"intent", &delete_many_change_reason_categories_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_change_reason_categories_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_change_reason_categories_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_change_reason_categories_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_change_reason_category_versions_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_change_reason_category_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_change_reason_category_versions_request::key},
+        utility::codec::field{"offset", &list_change_reason_category_versions_request::offset},
+        utility::codec::field{"limit", &list_change_reason_category_versions_request::limit},
+        utility::codec::field{"order", &list_change_reason_category_versions_request::order},
+        utility::codec::field{"filter", &list_change_reason_category_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_change_reason_category_versions_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_change_reason_category_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_change_reason_category_versions_response::result},
+        utility::codec::field{"versions", &list_change_reason_category_versions_response::versions},
+        utility::codec::field{"total", &list_change_reason_category_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_change_reason_category_version_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_change_reason_category_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_change_reason_category_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_change_reason_category_version_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_change_reason_category_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_change_reason_category_version_response::result},
+        utility::codec::field{"version", &get_change_reason_category_version_response::version},
+    };
+}
+
+}
+
+namespace ores::utility::codec {
+
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::change_reason_category_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::change_reason_category_key& v);
+    static ores::dq::messaging::change_reason_category_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::change_reason_category_key& v);
+    static ores::dq::messaging::change_reason_category_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::change_reason_category_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::change_reason_category_write& v);
+    static ores::dq::messaging::change_reason_category_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::change_reason_category_write& v);
+    static ores::dq::messaging::change_reason_category_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::change_reason_category_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::change_reason_category_change& v);
+    static ores::dq::messaging::change_reason_category_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::change_reason_category_change& v);
+    static ores::dq::messaging::change_reason_category_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::change_reason_category_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::change_reason_category_removal& v);
+    static ores::dq::messaging::change_reason_category_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::change_reason_category_removal& v);
+    static ores::dq::messaging::change_reason_category_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::change_reason_category_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::change_reason_category_lookup& v);
+    static ores::dq::messaging::change_reason_category_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::change_reason_category_lookup& v);
+    static ores::dq::messaging::change_reason_category_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::change_reason_categories_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::change_reason_categories_filter& v);
+    static ores::dq::messaging::change_reason_categories_filter read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::change_reason_categories_filter& v);
+    static ores::dq::messaging::change_reason_categories_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::change_reason_category_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::change_reason_category_event& v);
+    static ores::dq::messaging::change_reason_category_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::dq::messaging::change_reason_category_event& v);
+    static ores::dq::messaging::change_reason_category_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::change_reason_category_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::change_reason_category_version_key& v);
+    static ores::dq::messaging::change_reason_category_version_key read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::change_reason_category_version_key& v);
+    static ores::dq::messaging::change_reason_category_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::change_reason_category_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::change_reason_category_versions_filter& v);
+    static ores::dq::messaging::change_reason_category_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::change_reason_category_versions_filter& v);
+    static ores::dq::messaging::change_reason_category_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_change_reason_categories_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::list_change_reason_categories_request& v);
+    static ores::dq::messaging::list_change_reason_categories_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_change_reason_categories_request& v);
+    static ores::dq::messaging::list_change_reason_categories_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::list_change_reason_categories_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::list_change_reason_categories_response& v);
+    static ores::dq::messaging::list_change_reason_categories_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_change_reason_categories_response& v);
+    static ores::dq::messaging::list_change_reason_categories_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_change_reason_category_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::get_change_reason_category_request& v);
+    static ores::dq::messaging::get_change_reason_category_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_change_reason_category_request& v);
+    static ores::dq::messaging::get_change_reason_category_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_change_reason_category_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::get_change_reason_category_response& v);
+    static ores::dq::messaging::get_change_reason_category_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_change_reason_category_response& v);
+    static ores::dq::messaging::get_change_reason_category_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::get_many_change_reason_categories_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::get_many_change_reason_categories_request& v);
+    static ores::dq::messaging::get_many_change_reason_categories_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_many_change_reason_categories_request& v);
+    static ores::dq::messaging::get_many_change_reason_categories_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::get_many_change_reason_categories_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::get_many_change_reason_categories_response& v);
+    static ores::dq::messaging::get_many_change_reason_categories_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_many_change_reason_categories_response& v);
+    static ores::dq::messaging::get_many_change_reason_categories_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_change_reason_category_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::dq::messaging::put_change_reason_category_request& v);
+    static ores::dq::messaging::put_change_reason_category_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::put_change_reason_category_request& v);
+    static ores::dq::messaging::put_change_reason_category_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::put_change_reason_category_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::put_change_reason_category_response& v);
+    static ores::dq::messaging::put_change_reason_category_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::put_change_reason_category_response& v);
+    static ores::dq::messaging::put_change_reason_category_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::put_many_change_reason_categories_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::put_many_change_reason_categories_request& v);
+    static ores::dq::messaging::put_many_change_reason_categories_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::put_many_change_reason_categories_request& v);
+    static ores::dq::messaging::put_many_change_reason_categories_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::put_many_change_reason_categories_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::put_many_change_reason_categories_response& v);
+    static ores::dq::messaging::put_many_change_reason_categories_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::put_many_change_reason_categories_response& v);
+    static ores::dq::messaging::put_many_change_reason_categories_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_change_reason_category_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::delete_change_reason_category_request& v);
+    static ores::dq::messaging::delete_change_reason_category_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_change_reason_category_request& v);
+    static ores::dq::messaging::delete_change_reason_category_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::delete_change_reason_category_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::delete_change_reason_category_response& v);
+    static ores::dq::messaging::delete_change_reason_category_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_change_reason_category_response& v);
+    static ores::dq::messaging::delete_change_reason_category_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::delete_many_change_reason_categories_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::delete_many_change_reason_categories_request& v);
+    static ores::dq::messaging::delete_many_change_reason_categories_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_many_change_reason_categories_request& v);
+    static ores::dq::messaging::delete_many_change_reason_categories_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::delete_many_change_reason_categories_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::delete_many_change_reason_categories_response& v);
+    static ores::dq::messaging::delete_many_change_reason_categories_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::delete_many_change_reason_categories_response& v);
+    static ores::dq::messaging::delete_many_change_reason_categories_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::list_change_reason_category_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::list_change_reason_category_versions_request& v);
+    static ores::dq::messaging::list_change_reason_category_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_change_reason_category_versions_request& v);
+    static ores::dq::messaging::list_change_reason_category_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::list_change_reason_category_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::list_change_reason_category_versions_response& v);
+    static ores::dq::messaging::list_change_reason_category_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::list_change_reason_category_versions_response& v);
+    static ores::dq::messaging::list_change_reason_category_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::get_change_reason_category_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::get_change_reason_category_version_request& v);
+    static ores::dq::messaging::get_change_reason_category_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_change_reason_category_version_request& v);
+    static ores::dq::messaging::get_change_reason_category_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_DQ_API_EXPORT
+    wire_traits<ores::dq::messaging::get_change_reason_category_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::dq::messaging::get_change_reason_category_version_response& v);
+    static ores::dq::messaging::get_change_reason_category_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::dq::messaging::get_change_reason_category_version_response& v);
+    static ores::dq::messaging::get_change_reason_category_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
 }
 
 #endif

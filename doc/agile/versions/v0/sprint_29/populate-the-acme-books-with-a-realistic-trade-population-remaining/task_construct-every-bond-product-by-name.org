@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/construct-every-bond-product-by-name
-#+pr:
+#+pr: 4136
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4136][#4136]] | [trading] Construct every bond product by name |
 
 * Review
 

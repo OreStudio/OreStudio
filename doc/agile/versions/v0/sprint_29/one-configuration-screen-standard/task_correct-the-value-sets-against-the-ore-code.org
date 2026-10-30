@@ -26,11 +26,11 @@ Every seeded value set states what ORE 1.8.17 accepts for its parameter, and the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -83,3 +83,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The audit's findings are applied, and the three that do not hold are stated in
+the investigation with their evidence.
+
+- Eleven sets that stated text became the list or the switch ORE reads:
+  =bounds=, =timingadjustment=, =bootstrap_mode=, =yieldcurvemodel=,
+  =infmodeltype=, =floatspreadmapping=, =irvolatilitytype=,
+  =regression_vargroupmode=, =heston_calibrationmethod=,
+  =heston_processdiscretization= and =trainingsamples=; =globalmodel=,
+  =usead= and =useindexcurveforindexcds= became boolean sets.
+- Nine sets that stated text became numbers: =displacement=, =irreversion=,
+  =infjyrealratereversion=, =bootstrap_mesherconcentration=,
+  =regressionvariancecutoff= and the three smoothing settings.
+- The bounds ORE enforces are stated: =beta= and 21 whole numbers stored in a
+  QuantLib =Size= take a floor of 0, and the four seeds are left signed, as
+  ORE reads them.
+- =calibrationstrategy= gained =UnderlyingATM= and =UnderlyingDealStrike=, and
+  =scheme= gained =GaussLobatto= with its description naming the two engine
+  families the union serves.
+- The period patterns accept a signed period, and the interpolation method set
+  gained the deprecated =DefaultLogMixedLinearCubic= alias.
+- =curve.business_day_convention= and =curve.day_counter= are catalogue sets
+  again. The business day convention catalogue states the 26 spellings ORE's
+  parser maps onto seven conventions, and the day counter registry already
+  held ORE's spellings.
+
+Not applied, and recorded with the evidence: =Model= and =Engine= (the
+population holds fifteen or more builder names and the valid one depends on the
+product type) and =Calibration= (five values in the IR builders, an unvalidated
+string in a scripted trade).
+
+Verified live: the catalogue views answer 26 and 71 values, the guard accepts
+=F= and =Following= and refuses =XX=, and =ore_parameter_settings check=
+answers OK over 266 drawn parameters. The nine C++ suites and the 639-test
+pgTAP suite pass.

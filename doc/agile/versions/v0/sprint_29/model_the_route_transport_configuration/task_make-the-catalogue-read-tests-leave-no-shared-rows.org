@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 9D8709D1-5509-4F4C-9290-9829B17C2C0F
+:END:
+#+title: Task: Make the catalogue read tests leave no shared rows
+#+description: The marketdata catalogue read tests write their fixture rows into the system tenant, which is shared reference data that outlives the test. The session write guard turns on once any active supplier exists, so a later test in the same run fails on the row an earlier one left behind.
+#+type: task
+#+level: s1
+#+filetags: :model_the_route_transport_configuration:sprint_29:v0:
+#+owner: marco
+#+branch: feature/make-the-catalogue-read-tests-leave-no-shared-rows
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the catalogue read tests order independent: the supplier and adapter cases write into the run's own tenant, and no test leaves a row in the shared system catalogue.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:9E70A684-203C-472B-88E0-3E913B822EF7][Model suppliers, sessions and feeds]] |
+| Now          | The fix is written and the suite passes. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the PR and merge.                |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- The supplier and adapter catalogue read cases write and read in the test tenant, not the system tenant
+- The marketdata suite passes in any test order, with no row left in the shared system catalogue
+
+* Plan
+
+The two cases that need a row of their own -- supplier and adapter, because the
+populate scripts leave those two catalogues empty -- wrote it into the system
+tenant, which is shared reference data and outlives the test. The supplier case
+also switched on the session insert guard: that guard validates a supplier only
+while the system tenant holds an active one, so the row one case left behind
+rejected the supplier the session eventing case states.
+
+Both cases now write and read in the run's own tenant, which the read path
+already covers: a read returns the caller's rows and the system tenant's. The
+fixture states why, so the next author does not reintroduce the write.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| marketdata core cases | 339 of 339 pass | =compass test run -- -R ores.marketdata.core.tests= | branch head |
+| system tenant suppliers after the run | 0 | =compass sql -- -c "select count(*) from ores_marketdata_suppliers_tbl where tenant_id = ores_utility_system_tenant_id_fn()"= | branch head |
+| system tenant adapters after the run | 0 | same query on =ores_marketdata_adapters_tbl= | branch head |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The catalogue read cases no longer touch shared data, so the order the suite runs
+its cases in no longer decides whether the session eventing case passes.
+=ores.marketdata.core.tests=: 339 of 339 cases pass on a fresh database, with no
+supplier and no adapter left in the system tenant.

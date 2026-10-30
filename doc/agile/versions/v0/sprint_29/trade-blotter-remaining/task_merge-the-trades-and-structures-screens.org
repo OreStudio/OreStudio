@@ -8,7 +8,7 @@
 #+filetags: :trading:web:ux:analysis:trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/merge-the-trades-and-structures-screens
-#+pr:
+#+pr: 4081
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -39,12 +39,12 @@ follows the decision, and the screen follows the prototype.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-29                               |
+| Now          | Nothing. |
+| Waiting on   | Marco's review of the screen, which the merge rule holds until he has looked. |
+| Next         | Nothing. |
+| Last touched | 2026-10-30                               |
 
 * Acceptance
 
@@ -193,6 +193,43 @@ artefact: a portfolio tree beside the list, the row kinds, the flat option, the
 three perspectives, and the trade view and structure view reached from a row. It
 is the shape the screen is built from, as with the pages this arc already built.
 
+** The build, in units
+
+The prototypes are signed off, so the work is the screens. The summary view already
+states both row kinds, and =GET /api/blotter= reads one page of them with the tree
+beside it — the party, its portfolios and their books, each with the count of the
+rows under it. What remains, in order:
+
+1. *The read, finished.* The page narrows after it is read, because the summary has
+   no structure column a filter can name, and the tree asks for a count per node
+   rather than one grouped read. Both want the summary view to state the structure
+   a trade is a leg of, and a grouped count per book and portfolio.
+2. *The blotter screen.* A tree panel on the left and the list beside it, a flat
+   option, and the perspective control. It reuses =RecordList= for the rows, so
+   the pager, the search and the empty and error states are the house ones.
+3. *The routes.* A trade row opens =/trading/trades/:id= and a structure row
+   =/trading/structures/:reference=, which already exist and stay.
+4. *The removal.* The trades list and the structures list become redirects to the
+   blotter, and the Trading area offers one card, *Trade blotter*, whose permission
+   is the trades read and the structures read together.
+
+** State of the build
+
+- [X] The read: one page of top rows, the rail beside it, placement at the lowest
+  common ancestor, the flat list, and the counterparty grouping.
+- [X] The two schema facts the read asked for: the summary states the structure a
+  trade is a leg of, and whether the row is a leg.
+- [X] The screen: a rail of portfolios and books or counterparties, the list, the
+  flat option and the grouping control.
+- [X] The routes: a trade row opens the trade view, a structure row the structure
+  view.
+- [X] The removal: the two lists are gone, their addresses redirect to the
+  blotter, and the area offers one card.
+- [ ] The instrument grouping: the summary carries no asset class, so the third
+  perspective waits on a column.
+- [ ] One grouped read for the rail's figures: the read still reads the party's
+  rows to count them.
+
 ** What this task does not do
 
 It does not build the screen, move the routes, or change the read. It decides,
@@ -262,18 +299,37 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:72748A21-F7A2-4B40-B258-123AB7115A36][Verify the trade blotter]] | PENDING | The one Trading screen: the tree and its figures, the rows, narrowing, the flat list, the counterparty grouping, the pages a row opens, and grouping from the screen's button. |
+| [[id:9969BCF5-6C44-4768-90FB-30FBC8A3E32A][Verify the structure screens]] | ABANDONED | The structures list it walked is this screen's rows now. Kept for the record of what the removed list did. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4081][#4081]] | [web,trading,shell] Read the blotter and place its rows where a person opens them |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Standards: the filter omitted the members the view gained; a refused read answered 500; stale comments; the `view` the query stated drew no rail. | `blotter.ts` | Fixed | Every member stated, the refusal answered as a refusal, the counterparty rail drawn. |
+| 2 | Spec: a selected book dropped the structures placed there, and the figures counted legs. | `blotter.ts` | Fixed | The list narrows by placement, and the figures count the top rows once. |
+| 3 | UI: choosing the tree again showed the counterparties; the instrument was the store's code; the date wrapped. | `BlotterPage.tsx` | Fixed | The rail is its own read, the instrument is the code a desk quotes, and the date holds one line with the long columns shortened. |
 
 * Result
+
+The trades list and the structures list are one screen, the trade blotter. The
+read serves it in one page: the top-level trades and each structure as one row,
+placed where its legs are, with the party's books or the counterparties beside
+it. A structure's legs are inside it; the flat list shows them, each naming its
+structure. The two old addresses redirect to the screen, the Trading area offers
+one card, and the trade and structure pages are what a row opens.
+
+Proved by: the BFF suite (1149 cases), the web suite (2328), the list-request
+check against the protocols (1046 requests), and eleven browser cases that walk
+the screen on a provisioned tenant. The screen was reviewed by hand across six
+rounds, and the scenario records what to look at next time.
+
+Still owed, and recorded in the plan: the instrument grouping, which waits on an
+asset class the summary does not carry, and one grouped read for the rail's
+figures.

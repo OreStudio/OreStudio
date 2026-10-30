@@ -33,10 +33,9 @@ import { RecordTable, type ListSource } from '../refdata/RecordList.js';
 import { RecordTimeline } from '../refdata/RecordTimeline.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
-import { PATHS } from '../shell/paths.js';
+import { PATHS, structurePath } from '../shell/paths.js';
 import { Button, Fact, Field, Notice, Select, Tag } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
-import { structurePathFor } from './StructuresPage.js';
 
 const TABS = ['details', 'members', 'price', 'history'] as const;
 
@@ -133,7 +132,7 @@ function TreeNodeRow({
                 {isStructure ? (
                     <Link
                         className="text-accent hover:text-accent-bright"
-                        to={structurePathFor(node)}
+                        to={structurePath(label)}
                     >
                         {label}
                     </Link>

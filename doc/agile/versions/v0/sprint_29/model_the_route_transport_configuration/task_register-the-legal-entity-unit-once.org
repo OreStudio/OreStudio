@@ -97,6 +97,6 @@ list` answers that the caller is not logged in, which is the command's own
 refusal and not the menu's.
 
 Both calls arrived in the same session's legal entity wiring, one from
-[[commit ef5800d37a]] and one from [[commit 20a6ec0707]]; neither noticed the
+=ef5800d37a= and one from =20a6ec0707=; neither noticed the
 other because the file is generated in alphabetical order and the second landed
 out of sequence.

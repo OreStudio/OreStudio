@@ -1,0 +1,188 @@
+:PROPERTIES:
+:ID: 33E879B7-496A-406D-B3F2-72637379AD02
+:END:
+#+title: Kinds of cut
+#+description: The classification of cuts by the occasion they are taken for: the official end-of-day valuation, the independent verification of prices, the intraday flash view and the start of the day, with what each is for, what it fixes, the attributes its occasion gives it, and its relation to the components.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:cut:valuation:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+This page classifies cuts by the occasion they are taken for. The
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] structure note gives the
+definition, the single purpose and the body; this page states why the occasion is
+the property that classifies a cut, and places each kind under the occasion that
+produces it.
+
+* Summary
+
+The kinds of cut classify the occasion a cut is taken for, and not the size of
+the body. The purpose is single, a valuation that can be reproduced, so the body
+is the entire fixed world of one valuation in every kind. Four occasions are in
+use, the official valuation, the verification of prices, the intraday view and
+the start of the day, and a process may name an instant of its own. Each kind is
+stated by what it is for, what it fixes, the attributes its occasion gives it,
+and its relation to the two reviewed halves of the body.
+
+* The principle
+
+A cut fixes a body of data at one timepoint, and its purpose is single: to make a
+valuation reproducible. The
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] structure note argues that
+purpose and the size of the body that follows from it. Since the purpose is the
+same for every cut, the body is the same for every cut. A verification and an
+official report that read the same valuation must each hold every input to it, or
+neither of them can be reproduced.
+
+What varies is the occasion. A cut is taken at an instant, by a process, for a
+use, and from a base. Those facts are what a kind records: the recurrence of the
+instant, the centre that owns it, the use the result serves, and the base the cut
+builds on. The classification is therefore a classification of occasions, and the
+body is held constant across it.
+
+Two consequences follow. An attribute that follows from the occasion is entailed
+by the kind and needs no separate justification. And a cut missing a part of the
+body is incomplete rather than smaller, whatever its kind: it holds less than the
+definition requires, and the defect is the same defect in every occasion.
+Completeness belongs to every kind, and the kinds differ in the occasion they
+serve rather than in the standard they meet.
+
+* The official valuation: end of day cut
+
+*What it is for.* The day's official revaluation of a book, the movement from
+the previous cut to this one, and the reports built on both.
+
+*What it fixes.* The complete body, at the centre's close, with the approved
+rates applied. The
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] structure note argues the
+extent of that body, and the
+[[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]] and
+[[id:19630B5D-A163-42B5-B9C4-61A87BAE8F5F][Trade cut]] pages state the two data
+halves of it.
+
+*What the occasion gives it.* Recurrence is daily, because a business day is the
+period the reports cover. The instant is the centre's close, because a business
+day ends at a close and the close belongs to a centre. Ownership is the centre's,
+because the approved rates are the rates that centre signed off. The close is a
+stated instant published by the settlement system for the currency, as one
+settlement system's published hours show
+([[https://www.federalreserve.gov/paymentsystems/fedfunds_about.htm][Fedwire Funds Service]]).
+
+*How it relates to the components.* Both components, complete. The deals supply
+the population, the market data the values, and neither is taken at a different
+instant from the other.
+
+The label *independent cut* is also applied to this kind, on the ground that
+approved rates replace the rates the front office used during the day. The ground
+is sound as far as it goes, and the label is better kept for the verification
+kind below. The difference is one of provenance. The end of day cut's values are
+approved by finance, which is to say that the firm signs off data the firm
+produced. The verification cut's values originate with parties other than the
+firm. Independence admits degrees, and the stronger degree belongs to the second
+kind.
+
+* The verification of prices: independent price verification cut
+
+*What it is for.* Testing the firm's own marks against data the firm did not
+produce. A firm that marks its book with its own prices cannot test those prices
+from the same source. Replacing selected values with externally sourced ones
+produces a second valuation, and the difference between the two measures how much
+of the day's value rests on the firm's own marks.
+
+*What it fixes.* The complete body of the end of day cut, with selected market
+data items replaced.
+
+*What the occasion gives it.* Recurrence, centre and instant are inherited from
+the cut it is built on, since a second valuation of the same day must read the
+same body at the same instant or the difference it measures includes the day.
+What the kind adds is a condition on provenance, which is the whole of its
+contribution to the definition.
+
+A prudential standard fixes what may count as an independent source. It accepts
+exchange prices in a liquid market, trades in the same or a very similar
+instrument, tradable quotes from brokers and other market participants,
+consensus service data, indicative broker quotes, and counterparty collateral
+valuations
+([[https://www.legislation.gov.uk/eur/2016/101/chapter/I][EBA RTS (EU) 2016/101 on prudent valuation]], Article 3). The same article
+names the independent price verification process as the process whose market data
+range those sources serve. The standard fixes the admissible sources and leaves
+the choice of items to the firm's own policy.
+
+*How it relates to the components.* The market data component is altered, since
+the substitution applies to values. The trade component is carried over
+unchanged, since the test is of prices and the population is the object the
+prices are tested on.
+
+* The intraday view: flash cut
+
+*What it is for.* An indicative view of value while the day is still moving,
+delivered before the day's data settles so that a decision can act on it.
+
+*What it fixes.* The complete body the run reads, at an instant before the official authorisation, with the values current at that instant. The body records the taking identity and the authorisation as pending; the official cut later records the authorisation. The deadline shortens the
+interval and not the body, since a run that left out an input could not be
+reproduced from what it kept.
+
+*What the occasion gives it.* The instant precedes the official authorisation, which is entailed
+by the occasion, since a view that arrived after the official statement would
+serve no decision. Recurrence is intraday, since the view answers a question that
+recurs while the market moves.
+
+*How it relates to the components.* Both reviewed halves, at the flash instant.
+The run values deals and reads prices, so it holds the deal population and the
+market data of that instant, and the rest of the body is recorded with it.
+
+The output is indicative by construction. Authorisation converts a candidate into
+official data, and a cut taken to inform a decision precedes that conversion.
+
+* The start of the day: start of day cut
+
+*What it is for.* Opening a day from a known reference, so that the day's
+movement has a recorded starting point and can be reproduced later.
+
+*What it fixes.* The complete body of the previous end of day cut, carried forward.
+
+*What the occasion gives it.* Recurrence is daily, since the day it opens is the
+unit the reports cover. The instant is the centre's opening, which is a stated
+instant for the same reason the close is. Ownership is the centre's, for the same
+reason as at the close.
+
+*How it relates to the components.* Both components, inherited rather than
+approved at the opening. What the kind adds is a direction of inheritance.
+
+* Where a kind sits against a component
+
+A kind qualifies the cut as a whole, and the process that takes the cut chooses
+it. A component names one half of the body, and the component pages take each
+half. The kind does not select the components, since the body is the whole fixed
+world in every kind. A complete description of a cut states its kind, which fixes
+the occasion, and its body, which the purpose fixes.
+
+* An instant a process names
+
+A process may fix a body of data at an instant that answers to no schedule and no
+centre: a rerun at a stated instant, a stress valuation, a verification run
+before a report. Purpose is singular in such a case and therefore supplies no
+recurring kind. The cut satisfies the definition on the same ground as the four
+kinds above, since the body is fixed and one instant fixes it.
+
+* What the sources establish
+
+Two claims on this page have a public source. The admissible sources of an
+independent price verification rest on the prudential standard cited above. The
+stated open and close of one centre's business day rests on the settlement
+system's published hours, cited above.
+
+The rest is our working convention. The existence of the flash runs and of the
+start of day cut, the order in which the components are fixed, and the arbitrary
+instant a process may name have no public source we could verify. The definitions
+of the four occasions are ours. Practice at a particular firm is a matter for that
+firm's own record.
+
+* See also
+
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]] — the component a kind alters when its occasion concerns values.
+- [[id:19630B5D-A163-42B5-B9C4-61A87BAE8F5F][Trade cut]] — the component a kind inherits when its occasion concerns the population.
+- [[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][The option-expiry cut code]] — the expiry sense of the word, classified here as an instant rather than an occasion.
+- [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — the settings whose reproducibility an official cut serves.

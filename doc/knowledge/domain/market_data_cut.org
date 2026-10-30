@@ -1,0 +1,168 @@
+:PROPERTIES:
+:ID: DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6
+:END:
+#+title: Market data cut
+#+description: The market data component of a cut: the values a valuation reads at the timepoint, the resolution that fixes them, the published sets and their provenance, approved rates and overrides, and where ORE Studio stands.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:marketdata:cut:valuation:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+This page states the market data component of a cut. The
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] structure note gives the
+definition, the kinds and the body; this page takes the half of the body that
+holds values.
+
+* Summary
+
+A market data cut holds the values a valuation reads at the timepoint: spots,
+curves, forward points, volatility surfaces, fixings and market-driven
+parameters, together with the approved rates that replace some of them. It is one
+half of the body, and the reference data, the settings and the engine version are
+recorded beside it, as the
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note sets out. Two properties
+follow from the purpose of a cut. The values must be attributable, because a
+valuation defended in a verification is defended value by value. The set must be
+reproducible from rules and store state, because a set a person assembled records
+an outcome without the procedure that produced it.
+
+* What it fixes
+
+| Item             | What the cut holds                                               |
+|------------------+------------------------------------------------------------------|
+| Spot rates       | One per currency pair, from an approved feed or an override      |
+| Interest rates   | The discount curve per currency, as discount factors             |
+| Forward points   | Per currency pair and tenor, consistent with the interest rates  |
+| Volatility       | The surface per pair, at its quoted tenors and deltas            |
+| Fixings          | The authorised fixings whose date falls on or before the cut     |
+| Model parameters | The market-driven parameters the pricing models calibrated from  |
+
+A currency pair names a family of rates, and the members of the family differ by
+the location that approved them and the instant of approval. Identification
+therefore takes the pair, the rates centre and the instant together. A value
+keyed on the pair alone denotes whichever centre answered first. See
+[[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]] for
+how a book carries the centre whose rates it revalues against.
+
+** Approved rates and overrides
+
+Finance replaces raw values with *approved rates*, which are values signed off
+for official valuation. The practice has a public shape. The ECB publishes one
+reference rate per currency pair per working day, at around 16:00 CET, after a
+concertation procedure among central banks
+([[https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html][ECB euro foreign exchange reference rates]]).
+One value per pair, published at a stated time, exhibits the form an approved
+rate takes: a value acquires official standing at a stated instant and from a
+stated authority.
+
+An override carries a record: the asset or currency pair, the rates centre, the
+tenor, the value and the date, with the proposer, the reviewer, the approver and
+a mandatory comment. The record has a function. An override replaces a value that
+another party may later wish to re-derive, and the record is what makes the
+replacement answerable at that distance, when the reason has left memory.
+
+Replacing one rate changes values derived from it. Forward points and interest
+rates are linked by covered interest parity, so a new value for one currency's
+rate tenor implies new cross-currency rates against the other currency. The
+derived values must be recomputed, and that recomputation is *curve realignment*.
+See
+[[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][Covered Interest Parity and FX Forward Pricing]].
+
+** How it is built
+
+The component is produced by resolving a set of rules against the store, and the
+choice of mechanism follows from the purpose. A cut exists so that a valuation
+can be reproduced. A set of values assembled by hand records the outcome and
+loses the procedure, so a later run can copy the values and can neither check
+them nor account for a gap. A rule-based resolution records the procedure: the
+same rules against the same store state yield the same values, and a requirement
+no rule satisfies appears as a gap.
+
+A *profile* is such a set of rules. It maps a logical requirement to a physical
+instance, so a spot requirement resolves to one centre's approved rate and a
+forward requirement resolves to one curve's bootstrapped pillars. A profile is a
+declaration, and it carries no values.
+
+A *snapshot* is the profile materialised at one instant, with every rule resolved
+to a specific versioned item and the result given a stable identity. That
+identity is what a later valuation replays. A *floating* snapshot is
+re-evaluated as the reference instant advances. A *fixed* snapshot is pinned to
+the values it resolved, and the market data half of an end of day cut is a fixed
+snapshot. The
+[[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] page states what the
+end of day kind is for and why its instant falls at a centre's close.
+
+* Published sets and their provenance
+
+A curve reaches official standing through a procedure. It is bootstrapped from
+quotes into a candidate, checked, and published, and the publish record states
+that the set is official. See
+[[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]]
+for the recipe and the checks, and
+[[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] for the
+act.
+
+The publish record holds the as-of, the party, the publisher, the time of
+publication, and the withdrawal and supersession that can follow. It is modelled
+in
+[[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]].
+
+The record fixes one series at one as-of. The body of an EOD cut holds many
+series, the deals that are valued with them, and the reference data that gives
+both their meaning. The relation between a published set and a cut is therefore
+part to whole, and it explains a fact recorded elsewhere in this repository: a
+binding that names a published set settles the curve and leaves the population
+open. See
+[[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]].
+
+Provenance descends to the individual point. A stored point records whether it
+was quoted, derived or manually set, and a derived point names the recipe and the
+as-of that built it. See
+[[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] and
+[[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineage and provenance]].
+
+* Where ORE Studio stands
+
+The repository serves an as-of read over stored observations.
+=marketdata.v1.curve_snapshot.get= returns the latest value of every node of one
+composite object at the service's own clock, and its request carries no as-of
+field. Two consequences follow. The read reports what the store holds at the
+instant it runs, so a later call over a corrected store answers the same question
+differently. And a node with no point at or before the instant appears as a hole,
+which states that the store held no value for it. Provenance is available for
+each point when the caller asks. See
+[[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]].
+
+The resolution-side snapshot exists here as a definition.
+[[id:CEC7844C-B3AE-4858-BF67-71F511007F82][Market Data Snapshot]] defines the
+fixed and floating snapshot as the materialisation of a resolved market data set,
+and records that the engines it surveyed name no such concept. No entity, service
+or read in this repository implements it. The repository holds the vocabulary of the
+mechanism and the stored-data read, and the note describes the mechanism as a
+concept.
+
+Measured against the definition of a cut, neither mechanism suffices. A cut fixes
+the values a valuation read. The read fixes none, because it re-resolves on every
+call. The published set fixes one series, because a valuation reads many. The two
+together supply the resolution and the provenance a cut would need, and a cut
+would add an identity, an authorisation and the reference data the hub sets out.
+
+* What the sources establish
+
+The approved-rate claim on this page rests on the central bank reference rates
+cited above. The remaining claims are definitions of terms or our working
+convention, and the hub records which conventions those are. The claims about our
+own system rest on the code, and each links the note or the model that shows it.
+
+* See also
+
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — the classification of the kinds that hold this component, and what each of them is for.
+- [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]] — the stored-data reads this page's position section depends on.
+- [[id:CEC7844C-B3AE-4858-BF67-71F511007F82][Market Data Snapshot]] — the resolution-side snapshot this page's profiles materialise.
+- [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — how a logical need becomes a concrete market data item.
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — where a stored point's source is recorded.
+- [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]] — how a candidate becomes a published set.
+- [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] — the publish record a published set leaves.
+- [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]] — the binding that reads a published set, and why one curve is not the whole body.

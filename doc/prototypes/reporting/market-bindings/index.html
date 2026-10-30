@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Market bindings — prototype</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--line-strong:#4a5568;
+  --ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;
+  --accent:#58a6ff;--accent-bright:#8ab4f8;--accent-dim:#202835;
+  --ok:#22c55e;--warn:#eab308;--stale:#e3b341;--bad:#ef4444;--info:#3b82f6;--violet:#a855f7;--inactive:#6b7280;
+  --radius:8px;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+h1,h2,h3{margin:0;font-weight:600}
+p{margin:0}
+button{font:inherit;color:inherit}
+a{color:var(--accent-bright);text-decoration:none}
+.mono{font-family:var(--mono)}
+.dim{color:var(--ink-dim)}
+.faint{color:var(--ink-faint)}
+.dash{color:var(--ink-faint)}
+.nowrap{white-space:nowrap}
+
+/* Prototype chrome, deliberately unlike the design on trial. */
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:4px 16px;background:#2a2113;border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:60;display:flex;align-items:center;flex-wrap:wrap;justify-content:center;gap:4px;max-width:96vw;padding:4px 8px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;font-size:12px}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:4px 8px;border-radius:999px;cursor:pointer}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}
+.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px;color:var(--ink-faint);white-space:nowrap}
+.proto-bar .sep{color:var(--line)}
+
+/* A gap the screen draws because the server does not answer yet. */
+.gap{margin-top:16px;border-left:2px solid var(--warn);padding:4px 0 4px 12px;font-size:12px;color:var(--ink-dim)}
+.gap b{color:var(--warn)}
+body.nogaps .gap{display:none}
+
+/* The application shell, as the product draws it. */
+.shell-head{position:fixed;top:26px;left:0;right:0;z-index:50;height:44px;display:flex;align-items:center;gap:16px;padding:0 16px;background:var(--bg);border-bottom:1px solid var(--line);font-size:13px}
+.shell-head .brand{font-weight:600;letter-spacing:-.01em}
+.shell-head nav{display:flex;gap:4px;flex-wrap:wrap}
+.shell-head nav span{color:var(--ink-dim);padding:4px 8px;border-radius:6px}
+.shell-head nav span.on{color:var(--ink);background:var(--panel-2)}
+.shell-head .who{margin-left:auto;color:var(--ink-dim);white-space:nowrap}
+.shell-head .who b{color:var(--ink);font-weight:500}
+
+.page{padding:86px 24px 96px;max-width:1180px;margin:0 auto}
+.crumbs{font-size:12px;color:var(--ink-faint);margin:0 0 8px}
+.crumbs .sep{padding:0 4px}
+.crumbs a{color:var(--ink-dim)}
+.crumbs a:hover{color:var(--ink);text-decoration:underline}
+.pagehead{display:flex;align-items:flex-start;gap:16px;margin:0 0 16px;flex-wrap:wrap}
+.pagehead h1{font-size:24px;font-weight:600;letter-spacing:-.02em}
+.pagehead .lead{margin:4px 0 0;color:var(--ink-dim);font-size:13px}
+.pagehead .actions{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* Buttons, marks, badges, notices. */
+.btn{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;border:1px solid var(--line);background:var(--panel-2);border-radius:var(--radius);padding:8px 16px;font-size:13px;cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--line-strong)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#06121f;font-weight:600}
+.btn.ghost{background:none;border-color:transparent;color:var(--ink-dim)}
+.btn.ghost:hover:not(:disabled){color:var(--ink);background:var(--panel-2)}
+.btn.small{padding:4px 12px;font-size:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.badge{display:inline-block;border:1px solid currentColor;border-radius:999px;padding:0 8px;font-size:12px;line-height:20px;white-space:nowrap}
+.badge.ok{color:var(--ok)}
+.badge.pending{color:var(--info)}
+.badge.caution{color:var(--warn)}
+.badge.bad{color:var(--bad)}
+.badge.inactive{color:var(--inactive)}
+.badge.mono{font-family:var(--mono);font-size:11px}
+.access{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:0 8px;font-size:12px;color:var(--ink-dim)}
+.notice{border-radius:var(--radius);padding:12px 16px;font-size:13px;margin:0 0 16px;border:1px solid}
+.notice.info{background:#12161f;border-color:#24344d}
+.notice.success{background:#12281d;border-color:#23543a;color:#a8e6c4}
+.notice.warn{background:#2a2113;border-color:#4a3a17;color:#efd39a}
+.notice.error{background:#2b1614;border-color:#5c2a24;color:#f0b7ae}
+.notice b{font-weight:600}
+.notice .acts{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
+
+/* Cards and panels. */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:24px}
+.card h2{font-size:18px;font-weight:600;margin:0 0 4px}
+.card .lede{margin:0 0 24px;color:var(--ink-dim);font-size:13px}
+.card h3{font-size:13px;font-weight:600;margin:24px 0 8px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.panel h2{font-size:13px;font-weight:600;margin:0 0 12px}
+.panel h2 .sub{font-weight:400;color:var(--ink-faint)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin:0 0 16px}
+.fact .k{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);margin:0 0 2px}
+.fact .v{font-size:13px}
+
+/* Tabs, as the record page draws them. */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:0 0 16px;flex-wrap:wrap}
+.tabs span{padding:8px 12px;font-size:13px;color:var(--ink-dim);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs span.on{color:var(--ink);border-bottom-color:var(--accent)}
+
+/* Lists: tools, tables, pager. */
+.listtools{display:flex;gap:8px;align-items:center;margin:0 0 12px;flex-wrap:wrap}
+.searchbox{position:relative;flex:1 1 240px;max-width:360px}
+.searchbox input{width:100%;background:#0e1218;border:1px solid var(--line);border-radius:var(--radius);color:var(--ink);padding:8px 12px;font:inherit;font-size:13px}
+select{background:#0e1218;border:1px solid var(--line);border-radius:var(--radius);color:var(--ink);padding:8px 12px;font:inherit;font-size:13px}
+.toggle{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-dim);border:1px solid var(--line);border-radius:var(--radius);padding:6px 12px}
+.toggle.on{color:var(--ink);border-color:var(--accent)}
+.listnote{font-size:12px;color:var(--ink-faint);margin:0 0 8px}
+.rows{width:100%;border-collapse:collapse;font-size:13px}
+.rows th{text-align:left;color:var(--ink-faint);font-weight:500;font-size:11px;letter-spacing:.05em;text-transform:uppercase;padding:0 12px 8px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+.rows td{padding:10px 12px 10px 0;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+.rows tr.pick{cursor:pointer}
+.rows tr.pick:hover td{background:#1e1e23}
+.rows tr.sel td{background:#1b2333}
+.rows tr.ended td{background:#161619}
+.rows tr.candidate td{background:#17171b}
+.rows .key{font-family:var(--mono);color:var(--ink)}
+.rows .num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.rows .sub{display:block;font-size:12px;color:var(--ink-faint);margin-top:2px}
+.rows .same{color:var(--ink-faint)}
+.rows .acts{white-space:nowrap;text-align:right}
+.rows tr.unbound td{background:#151518}
+.tblstate{padding:40px 24px;text-align:center;color:var(--ink-dim);font-size:13px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}
+.tblstate b{color:var(--ink);display:block;margin-bottom:8px;font-size:14px}
+.tblstate .btn{margin-top:16px}
+
+/* The dialog, as the record standard draws it: one scrolling card. */
+.backdrop{position:fixed;inset:0;z-index:40;background:rgba(6,8,12,.62)}
+.dialog{position:fixed;z-index:45;top:9vh;left:50%;transform:translateX(-50%);width:min(760px,94vw);max-height:80vh;overflow:auto;background:var(--panel);border:1px solid var(--line-strong);border-radius:var(--radius);box-shadow:0 20px 60px rgba(0,0,0,.55)}
+.dialog .head{padding:20px 24px 0}
+.dialog .head h2{font-size:16px}
+.dialog .head .note{font-size:12px;color:var(--ink-faint);margin-top:4px}
+.dialog .body{padding:16px 24px}
+.dialog .foot{padding:16px 24px;border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--panel)}
+.footrow{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+.pickline{flex-wrap:wrap}
+.pickline{display:flex;gap:16px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:var(--radius);padding:12px 16px;margin:0 0 12px;font-size:13px}
+.pickline .k{color:var(--ink-faint);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:13px;margin:0 0 8px}
+.check .box{width:16px;height:16px;border:1px solid var(--line-strong);border-radius:3px;flex:0 0 auto;margin-top:2px;text-align:center;line-height:14px;font-size:11px;color:var(--ink)}
+.check .box.on{background:var(--accent);border-color:var(--accent);color:#06121f}
+.sentence{margin:0 0 16px;font-size:13px;color:var(--ink-dim)}
+.sentence b{color:var(--ink);font-weight:500}
+.rule{font-size:12px;color:var(--ink-faint);margin:8px 0 0}
+.savebar{display:flex;gap:8px;align-items:center;margin:24px 0 0;padding:16px 0 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.savebar .right{margin-left:auto;display:flex;gap:8px}
+code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
+</style>
+</head>
+<body class="nogaps">
+<div class="proto-note">Prototype &middot; mock data &middot; reads no server &middot; doc/prototypes/reporting/market-bindings</div>
+<header class="shell-head" id="shell"></header>
+<main class="page" id="app"></main>
+<div class="proto-bar" id="bar"></div>
+
+<script>
+(function () {
+    'use strict';
+
+    /* ---------------------------------------------------------------- */
+    /* The query string is the state, as every prototype here does.       */
+    /* ---------------------------------------------------------------- */
+
+    var Q = new URLSearchParams(location.search);
+    var S = {
+        surface: Q.get('surface') || 'tab',
+        tab: Q.get('tab') || 'bindings',
+        fcase: Q.get('case') || '',
+        pick: Q.get('pick') || '',
+        pin: Q.get('pin') === '1',
+        show: Q.get('show') || '',
+        search: Q.get('q') || '',
+        run: Q.get('run') || ''
+    };
+
+    /* ---------------------------------------------------------------- */
+    /* The fixtures. Everything on the page is one of these.              */
+    /* The mock tenant's clock is 07 October 2026, 09:00 UTC.             */
+    /* ---------------------------------------------------------------- */
+
+    var NOW = Date.parse('2026-10-07T09:00:00Z');
+    var PARTY = 'ACME London';
+    var CONFIG = 'Acme official EOD run settings';
+
+    var SETS = [
+        { id: 's1', publish: '8f2a4c19', curve: 'USD-SOFR-3M', party: 'ACME London',
+          asof: '2026-10-06T16:00:00Z', state: 'published', publisher: 'a.reyes',
+          published_at: '2026-10-06T16:41:00Z', points: 12 },
+        { id: 's2', publish: '7d19b2e4', curve: 'USD-SOFR-3M', party: 'ACME London',
+          asof: '2026-10-05T16:00:00Z', state: 'superseded', publisher: 'a.reyes',
+          published_at: '2026-10-05T16:40:00Z', points: 12,
+          ended_at: '2026-10-06T16:41:00Z', successor_asof: '2026-10-06T16:00:00Z' },
+        { id: 's3', publish: '5b8e70aa', curve: 'USD-SOFR-3M', party: 'ACME London',
+          asof: '2026-10-03T16:00:00Z', state: 'superseded', publisher: 'j.silva',
+          published_at: '2026-10-03T16:29:00Z', points: 12,
+          ended_at: '2026-10-05T16:40:00Z', successor_asof: '2026-10-05T16:00:00Z' },
+        { id: 's4', publish: '2c40f8d1', curve: 'EUR-ESTR-6M', party: 'ACME London',
+          asof: '2026-10-06T16:00:00Z', state: 'published', publisher: 'j.silva',
+          published_at: '2026-10-06T16:44:00Z', points: 9 },
+        { id: 's5', publish: '6a11c3f7', curve: 'USD-SOFR-3M', party: 'ACME London',
+          asof: '2026-10-07T08:10:00Z', state: 'candidate', publisher: '',
+          published_at: '', points: 12, raised_by: 'a.reyes',
+          raised_at: '2026-10-07T07:55:00Z' },
+        { id: 's6', publish: '9e02bb45', curve: 'GBP-SONIA-3M', party: 'ACME London',
+          asof: '2026-10-03T16:00:00Z', state: 'withdrawn', publisher: 'j.silva',
+          published_at: '2026-10-03T16:31:00Z', points: 8,
+          ended_at: '2026-10-06T08:12:00Z', ended_by: 'j.silva',
+          ended_reason: 'common.material_error' },
+        { id: 's7', publish: '4f7d90c2', curve: 'USD-SOFR-3M', party: 'ACME New York',
+          asof: '2026-10-06T21:00:00Z', state: 'published', publisher: 'a.reyes',
+          published_at: '2026-10-06T21:02:00Z', points: 12 }
+    ];
+
+    var BY_ID = {};
+    SETS.forEach(function (s) { BY_ID[s.id] = s; });
+
+    var DEFINITIONS = ['Group Consolidated Exposure', 'Board Risk Dashboard',
+                       'Headline Position', 'NPV'];
+
+    /* The bindings, as the case states them. One row per market role.     */
+    function bindings() {
+        var b = [{ role: 'pricing', set: BY_ID.s1, pinned: '' },
+                 { role: 'simulation', set: null, pinned: '' }];
+        switch (S.fcase) {
+        case 'none':
+            b = [{ role: 'pricing', set: null, pinned: '' },
+                 { role: 'simulation', set: null, pinned: '' }];
+            break;
+        case 'candidate':
+            b = [{ role: 'pricing', set: BY_ID.s5, pinned: '' },
+                 { role: 'simulation', set: null, pinned: '' }];
+            break;
+        case 'ended':
+            b = [{ role: 'pricing', set: BY_ID.s2, pinned: '' },
+                 { role: 'simulation', set: null, pinned: '' }];
+            break;
+        case 'pinned':
+            b = [{ role: 'pricing', set: BY_ID.s2, pinned: '2026-10-05T16:00:00Z' },
+                 { role: 'simulation', set: null, pinned: '' }];
+            break;
+        }
+        return b;
+    }
+
+    /* What one binding reads as: the state word the tab draws, and the    */
+    /* sentence the run gives. A state is a function of the set's facts.   */
+    function verdict(b) {
+        if (!b.set)
+            return { word: 'No binding', cls: 'inactive',
+                     why: 'The role names no published curve, so a run is refused before it starts.' };
+        var s = b.set;
+        if (s.state === 'candidate')
+            return { word: 'Refused', cls: 'bad',
+                     why: 'This set is a candidate. Nobody has approved it, so a run cannot price from it.' };
+        if (s.state === 'published')
+            return { word: 'Published', cls: 'ok',
+                     why: 'The set in use. A run prices from its points at its as-of.' };
+        if (b.pinned)
+            return { word: 'Historical', cls: 'caution',
+                     why: 'The set ended, and the binding names its as-of, so a run prices ' +
+                          'from it at that instant on purpose.' };
+        return { word: 'Ended', cls: 'bad',
+                 why: 'The set ended and the binding names no as-of, so a run cannot price from it.' };
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Small helpers.                                                     */
+    /* ---------------------------------------------------------------- */
+
+    function esc(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function dt(ts) {
+        if (!ts) return '';
+        var d = new Date(ts);
+        var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getUTCMonth()];
+        function p(n) { return (n < 10 ? '0' : '') + n; }
+        return p(d.getUTCDate()) + ' ' + m + ' ' + d.getUTCFullYear() + ' ' +
+               p(d.getUTCHours()) + ':' + p(d.getUTCMinutes()) + 'Z';
+    }
+
+    function rel(ts) {
+        if (!ts) return '';
+        var mins = Math.round((NOW - Date.parse(ts)) / 60000);
+        if (mins < 1) return 'just now';
+        if (mins < 60) return mins + ' minutes ago';
+        var hours = Math.round(mins / 60);
+        if (hours < 24) return hours + (hours === 1 ? ' hour ago' : ' hours ago');
+        var days = Math.round(hours / 24);
+        return days + (days === 1 ? ' day ago' : ' days ago');
+    }
+
+    function badge(word, cls) {
+        return '<span class="badge ' + cls + '">' + esc(word) + '</span>';
+    }
+
+    function stateBadge(state) {
+        var m = { published: 'ok', candidate: 'pending', superseded: 'inactive',
+                  withdrawn: 'bad', ended: 'inactive' };
+        var w = state.charAt(0).toUpperCase() + state.slice(1);
+        return badge(w, m[state] || 'inactive');
+    }
+
+    function link(href, text) {
+        return '<a href="' + href + '">' + esc(text) + '</a>';
+    }
+
+    function q(params) {
+        var base = { surface: S.surface, tab: S.tab, fcase: S.fcase };
+        Object.keys(params || {}).forEach(function (k) {
+            var v = params[k];
+            if (v === undefined || v === null || v === '') delete base[k];
+            else base[k] = v;
+        });
+        var parts = [];
+        Object.keys(base).forEach(function (k) {
+            var key = k === 'fcase' ? 'case' : k;
+            if (base[k]) parts.push(key + '=' + encodeURIComponent(base[k]));
+        });
+        return '?' + parts.join('&');
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* The shell and the bar.                                             */
+    /* ---------------------------------------------------------------- */
+
+    var AREAS = ['Home', 'Reference data', 'Organisation', 'Market data', 'Trades',
+                 'Requests', 'Operations', 'Reporting', 'Development', 'Tenants'];
+
+    function shell() {
+        return '<span class="brand">ORE Studio</span><nav>' +
+            AREAS.map(function (a) {
+                return '<span' + (a === 'Reporting' ? ' class="on"' : '') + '>' + a + '</span>';
+            }).join('') +
+            '</nav><span class="who">acting in <b>ACME London</b> &middot; <b>m.oduya</b></span>';
+    }
+
+    function bar() {
+        function b(label, params, on) {
+            return '<button class="' + (on ? 'on' : '') + '" data-go="' + q(params) + '">' +
+                   esc(label) + '</button>';
+        }
+        var surfaces = [['The tab', { surface: 'tab', pick: '', run: '' }, 'tab'],
+                        ['The picker', { surface: 'pick' }, 'pick'],
+                        ['The report page', { surface: 'report' }, 'report'],
+                        ['The run', { surface: 'run' }, 'run']];
+        var cases = [['no binding', 'none'], ['published', ''], ['candidate', 'candidate'],
+                     ['ended', 'ended'], ['historical as-of', 'pinned'],
+                     ['loading', 'loading'], ['error', 'error']];
+        return '<span class="label">Surface</span>' +
+            surfaces.map(function (s) {
+                return b(s[0], s[1], S.surface === s[2]);
+            }).join('') +
+            '<span class="sep">&middot;</span><span class="label">State</span>' +
+            cases.map(function (c) {
+                return b(c[0], { fcase: c[1] }, S.fcase === c[1]);
+            }).join('');
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Surface 1: the report page, and the door into the bindings.        */
+    /* ---------------------------------------------------------------- */
+
+    function surfaceReport() {
+        var binds = bindings();
+        var pricing = binds.filter(function (b) { return b.role === 'pricing'; })[0];
+        var v = verdict(pricing);
+        return '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reporting <span class="sep">&rsaquo;</span> ' +
+            'Reports <span class="sep">&rsaquo;</span> Group Consolidated Exposure</p>' +
+            '<div class="pagehead"><div><h1>Group Consolidated Exposure</h1>' +
+            '<p class="lead">risk &middot; eod &middot; on-demand &middot; party ACME London</p></div>' +
+            '<div class="actions"><span class="access">Editable</span>' +
+            '<button class="btn">Run now</button></div></div>' +
+            '<div class="tabs"><span>Definition</span><span>Scope</span><span>Analytics</span>' +
+            '<span class="on">Market and pricing</span><span>Conventions</span><span>History</span></div>' +
+            '<div class="card"><h2>The market this report prices from</h2>' +
+            '<p class="lede">One sentence per fact, in the words the run uses.</p>' +
+            '<div class="facts">' +
+            '<div class="fact"><p class="k">Market data kind</p><p class="v">End of day</p></div>' +
+            '<div class="fact"><p class="k">Run settings</p><p class="v">' + esc(CONFIG) + '</p></div>' +
+            '<div class="fact"><p class="k">Pricing role</p><p class="v">' + stateBadge(
+                pricing.set ? pricing.set.state : 'none') + '</p></div>' +
+            '<div class="fact"><p class="k">Latest run</p><p class="v">#4823 &middot; completed</p></div>' +
+            '</div>' +
+            '<p class="sentence">The report prices from the published set its run settings bind to the ' +
+            '<b>pricing</b> role' + (pricing.set
+                ? ': <b>' + esc(pricing.set.curve) + '</b> of <b>' + esc(pricing.set.party) +
+                  '</b> at <b>' + dt(pricing.set.asof) + '</b>, ' + esc(v.word.toLowerCase()) + '.'
+                : ', and this configuration binds nothing to that role yet.') + '</p>' +
+            '<h3>Where it is bound</h3>' +
+            '<div class="panel"><table class="rows"><thead><tr><th>Configuration</th>' +
+            '<th>What it decides</th><th class="acts"></th></tr></thead><tbody>' +
+            '<tr><td class="key">' + esc(CONFIG) + '<span class="sub">run settings &middot; version 7</span></td>' +
+            '<td>Which published curve each market role prices from</td>' +
+            '<td class="acts">' + link(q({ surface: 'tab', pick: '', run: '' }), 'Open its market bindings') + '</td></tr>' +
+            '<tr><td class="key">Product pricing &middot; Acme official engines</td>' +
+            '<td>How each product type is priced</td><td class="acts faint">No screen yet</td></tr>' +
+            '<tr><td class="key">Curve configuration &middot; Acme USD set</td>' +
+            '<td>How each curve is defined and bootstrapped</td><td class="acts faint">No screen yet</td></tr>' +
+            '</tbody></table></div>' +
+            '<p class="rule">The run settings are shared: the change a person makes on the tab below ' +
+            'reaches the next run of ' + DEFINITIONS.length + ' definitions, and no run already produced.</p>' +
+            '<div class="gap"><b>Gap.</b> The report page, the run settings screen and its tabs are not ' +
+            'built: no BFF route serves reporting today. The prototype draws the surfaces the ' +
+            'journey needs and names the gap.</div>' +
+            '</div>';
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Surface 2: the Market bindings tab of the run settings record.     */
+    /* ---------------------------------------------------------------- */
+
+    function surfaceTab(behind) {
+        var binds = bindings();
+        var rows = binds.map(function (b) {
+            var v = verdict(b);
+            var s = b.set;
+            if (!s) {
+                return '<tr class="unbound"><td class="key">' + esc(b.role) + '</td>' +
+                    '<td colspan="6" class="dash">No published curve bound</td>' +
+                    '<td class="dash">&mdash;</td>' +
+                    '<td class="acts">' + link(q({ surface: 'pick', pick: '' }), 'Bind a set') + '</td></tr>';
+            }
+            var writes = s.curve + '.' + s.party.replace(/ /g, '-');
+            var ended = (s.state === 'superseded' || s.state === 'withdrawn');
+            return '<tr' + (ended && !b.pinned ? ' class="ended"' : '') + '>' +
+                '<td class="key">' + esc(b.role) + '</td>' +
+                '<td>' + esc(s.curve) + '<span class="sub">' + esc(s.party) + '</span></td>' +
+                '<td class="mono nowrap">' + dt(s.asof) + '</td>' +
+                '<td>' + badge(v.word, v.cls) +
+                '<span class="sub">set is ' + esc(s.state) + '</span></td>' +
+                '<td>' + (s.publisher || '<span class="dash">&mdash;</span>') + '</td>' +
+                '<td class="nowrap">' + (s.published_at
+                    ? '<span title="' + dt(s.published_at) + '">' + rel(s.published_at) + '</span>'
+                    : '<span class="dash">&mdash;</span>') + '</td>' +
+                '<td class="num">' + s.points + '</td>' +
+                '<td class="key">' + esc(writes) + '</td>' +
+                '<td class="acts">' + link(q({ surface: 'pick', pick: s.id }), 'Change') +
+                ' &middot; <a href="' + q({ surface: 'tab', fcase: 'none' }) + '">Clear</a></td></tr>';
+        }).join('');
+
+        var problems = binds.filter(function (b) {
+            var v = verdict(b);
+            return v.cls === 'bad';
+        }).map(function (b) {
+            var v = verdict(b);
+            return '<div class="notice error"><b>' + esc(b.role) + ': ' + esc(v.word) + '.</b> ' +
+                esc(v.why) + ' ' + link(q({ surface: 'pick', pick: b.set.id }), 'Change it') + '.' +
+                (b.set.state !== 'candidate' && !b.pinned
+                    ? ' <b>Or pin its as-of:</b> a rerun may price from an ended set at its own as-of, ' +
+                      'on purpose, and then it says so on the run.' : '') + '</div>';
+        }).join('');
+
+        if (S.fcase === 'loading') {
+            return tabFrame('<div class="tblstate"><b>Loading&hellip;</b>Reading the market roles of this configuration.</div>');
+        }
+        if (S.fcase === 'error') {
+            return tabFrame('<div class="notice error"><b>The market roles could not be read.</b> ' +
+                'The server said: reporting.v1.configuration_market_bindings.list_by_configuration_id ' +
+                'answered with an error. <button class="btn small">Retry</button></div>');
+        }
+        if (S.fcase === 'none') {
+            return tabFrame(
+                '<div class="notice info"><b>This configuration binds no published curve yet.</b> ' +
+                'Until a role names a set, every run of the ' + DEFINITIONS.length +
+                ' reports bound to it is refused before it starts. ' +
+                'Bind the pricing role first: that is the set the run discounts with.</div>' +
+                '<div class="panel"><table class="rows"><thead><tr><th>Role</th><th>Published curve</th>' +
+                '<th>As-of</th><th>State</th><th>Publisher</th><th>Published</th><th>Points</th>' +
+                '<th>Writes</th><th class="acts"></th></tr></thead><tbody>' + rows +
+                '</tbody></table></div>' + notes(binds) + savebar());
+        }
+        return tabFrame(problems +
+            '<div class="panel"><table class="rows"><thead><tr><th>Role</th><th>Published curve</th>' +
+            '<th>As-of</th><th>State</th><th>Publisher</th><th>Published</th><th>Points</th>' +
+            '<th>Writes</th><th class="acts"></th></tr></thead><tbody>' + rows +
+            '</tbody></table></div>' + notes(binds) + savebar());
+    }
+
+    function notes(binds) {
+        var unbound = binds.filter(function (b) { return !b.set; });
+        var pinned = binds.filter(function (b) { return b.pinned; });
+        var out = '';
+        if (pinned.length) {
+            out += '<div class="notice warn"><b>' + esc(pinned[0].role) + ' prices from a set that ended.</b> ' +
+                'The set published at ' + dt(pinned[0].set.asof) + ' ended on ' + dt(pinned[0].set.ended_at) +
+                '. The binding names its as-of, so every run of this configuration prices from it at ' +
+                'that instant until somebody changes it. That is the only way a run reproduces an ' +
+                'earlier result, and the run says so when it finishes.</div>';
+        }
+        if (unbound.length) {
+            out += '<div class="notice info"><b>' + esc(unbound.map(function (b) { return b.role; }).join(', ')) +
+                ' binds nothing.</b> A run names no published curve for that role, so it is refused before ' +
+                'it starts rather than pricing from whatever the export happens to find.</div>';
+        }
+        out += '<p class="sentence"><b>What this decides.</b> It decides which published curve each market ' +
+            'role prices from. <b>It does not decide</b> the valuation date, the curve configuration or the ' +
+            'pricing engines: the date is a setting of this configuration, and the other two are ' +
+            'configurations of their own.</p>';
+        out += '<p class="rule"><b>Derived, never typed.</b> The market configuration name the ORE document ' +
+            'carries is derived from the set\'s curve and party. It is drawn here so a person sees what ' +
+            'the file will say, and no field asks for it.</p>';
+        out += '<p class="rule"><b>The reach.</b> A change reaches the next run of ' + DEFINITIONS.length +
+            ' definitions bound to this configuration: ' + DEFINITIONS.join(', ') +
+            '. A run already produced keeps the set it priced from, and its own record names it.</p>';
+        out += '<p class="rule"><b>Who may change it.</b> A person who holds ' +
+            '<code>reporting::configuration_market_bindings:write</code> on this party, and who may read the ' +
+            'published sets through <code>marketdata::market_series:read</code>. A set of another party is ' +
+            'not offered: the same curve code in two parties is two curves.</p>';
+        out += '<div class="gap"><b>Gap.</b> The role is a free string ORE\'s schema leaves open, and no ' +
+            'vocabulary table holds the roles a run may name. The screen draws the codes the run document ' +
+            'carries and states that the list is not a vocabulary.</div>';
+        return out;
+    }
+
+    function savebar() {
+        return '<div class="savebar"><span class="faint">Change reason</span> ' +
+            '<select><option>common.non_material_update</option><option>common.material_update</option>' +
+            '</select><span>Commentary</span><input class="searchbox" style="max-width:240px" placeholder="Why the market moved">' +
+            '<div class="right"><button class="btn">Cancel</button>' +
+            '<button class="btn primary">Save the market</button></div></div>' +
+            '<p class="rule">The rows are a collection of this configuration, so the document is saved once, ' +
+            'claiming version 7. A save against a version somebody else moved is a conflict, and the page ' +
+            'offers to read it again.</p>';
+    }
+
+    function tabFrame(body) {
+        return '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reporting <span class="sep">&rsaquo;</span> ' +
+            'Run settings <span class="sep">&rsaquo;</span> ' + esc(CONFIG) +
+            ' <span class="sep">&rsaquo;</span> Market bindings</p>' +
+            '<div class="pagehead"><div><h1>' + esc(CONFIG) + '</h1>' +
+            '<p class="lead">run settings &middot; version 7 &middot; party ACME London &middot; ' +
+            'bound by ' + DEFINITIONS.length + ' reports</p></div>' +
+            '<div class="actions"><span class="access">Editable</span>' +
+            '<button class="btn">Refresh</button></div></div>' +
+            '<div class="tabs"><span>Details</span><span>Global parameters</span><span>Settings</span>' +
+            '<span class="on">Market bindings</span><span>Used by</span><span>History</span></div>' +
+            body;
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Surface 3: the picker over the published sets.                     */
+    /* ---------------------------------------------------------------- */
+
+    function visibleSets() {
+        var any = SETS.filter(function (s) { return s.party === PARTY; });
+        if (!S.show) return any.filter(function (s) { return s.state === 'published'; });
+        if (S.show === 'ended')
+            return any.filter(function (s) { return s.state !== 'candidate'; });
+        return any;
+    }
+
+    function pickerRows(rows) {
+        return rows.map(function (s) {
+            var cls = 'pick' + (s.state === 'candidate' ? ' candidate' :
+                                (s.state === 'published' ? '' : ' ended')) +
+                      (s.id === S.pick ? ' sel' : '');
+            var under = (s.state === 'superseded' || s.state === 'withdrawn')
+                ? '<span class="sub">left use ' + dt(s.ended_at) + '</span>' : '';
+            return '<tr class="' + cls + '" data-pick="' + s.id + '">' +
+                '<td class="key">' + esc(s.curve) + under + '</td>' +
+                '<td>' + esc(s.party) + '</td>' +
+                '<td class="mono nowrap">' + dt(s.asof) + '</td>' +
+                '<td>' + stateBadge(s.state) + '</td>' +
+                '<td>' + (s.publisher || '<span class="dash">&mdash;</span>') + '</td>' +
+                '<td class="num">' + s.points + '</td></tr>';
+        }).join('');
+    }
+
+    function surfacePick() {
+        var rows = visibleSets();
+        if (S.search) {
+            var needle = S.search.toLowerCase();
+            rows = rows.filter(function (s) {
+                return (s.curve + ' ' + s.party).toLowerCase().indexOf(needle) >= 0;
+            });
+        }
+        /* The row the person chose stands in the table even when the two
+           toggles would hide its kind, so the refusal has something to bite. */
+        var chosen = S.pick ? BY_ID[S.pick] : null;
+        if (chosen && !rows.some(function (s) { return s.id === chosen.id; }))
+            rows = rows.concat([chosen]);
+
+        var table = rows.length
+            ? '<table class="rows"><thead><tr><th>Curve</th><th>Party</th><th>Published as-of</th>' +
+              '<th>State</th><th>Publisher</th><th>Points</th></tr></thead><tbody>' +
+              pickerRows(rows) + '</tbody></table>'
+            : '<div class="tblstate"><b>No published curve matches the search.</b>' +
+              'Nothing of this party matches &ldquo;' + esc(S.search) + '&rdquo;. ' +
+              '<button class="btn small">Clear the search</button></div>';
+
+        var footer = chosen ? pickFooter(chosen) : emptyFooter();
+
+        return surfaceTab('') +
+            '<div class="backdrop"></div>' +
+            '<div class="dialog"><div class="head"><h2>Bind a published curve</h2>' +
+            '<p class="note">The published sets of ACME London, read ' + rel('2026-10-07T08:58:00Z') +
+            '. A candidate is a set nobody approved and an ended set is one that left use, and neither is ' +
+            'drawn until it is asked for.</p></div>' +
+            '<div class="body"><div class="listtools">' +
+            '<div class="searchbox"><input placeholder="Search the curve or the party" value="' + esc(S.search) + '"></div>' +
+            '<select><option>Party: ACME London</option><option>Party: ACME New York</option></select>' +
+            '<span class="toggle' + (S.show === 'all' ? ' on' : '') + '" data-show="all">Show candidates</span>' +
+            '<span class="toggle' + (S.show === 'ended' ? ' on' : '') + '" data-show="ended">Show ended sets</span>' +
+            '</div>' + table +
+            '<div class="gap"><b>Gap.</b> The standard picker reads its whole kind once and searches in the ' +
+            'browser, and it draws no state column. A published set is filtered on the server ' +
+            '(<code>marketdata.v1.ops.list_published_curves</code>), so this picker is a new part or the ' +
+            'shared one gains a filtered form.</div></div>' +
+            '<div class="foot">' + footer + '</div></div>';
+    }
+
+    function emptyFooter() {
+        return '<p class="faint">Pick the set the run should price from.</p>' +
+            '<div class="footrow"><button class="btn">Cancel</button></div>';
+    }
+
+    function pickFooter(s) {
+        var head = chosenFacts(s);
+        if (s.state === 'candidate') {
+            return head +
+                '<div class="notice error"><b>A candidate is refused.</b> That set is a candidate. ' +
+                'Nobody has approved it, so a run cannot price from it. ' +
+                'Ask for the publish to be approved, or pick the published set.</div>' +
+                '<div class="footrow"><button class="btn">Cancel</button></div>';
+        }
+        if (s.state === 'published') {
+            return head + '<p class="rule">A run prices from this set\'s points at its own as-of. ' +
+                'The publish record is written into the binding, and no name is typed.</p>' +
+                '<div class="footrow"><button class="btn">Cancel</button>' +
+                '<button class="btn primary">Bind this set</button></div>';
+        }
+        /* An ended set: refused, with the pin as the one route past it. */
+        var ended = s.state === 'withdrawn'
+            ? 'That set was withdrawn by ' + esc(s.ended_by) + ' on ' + dt(s.ended_at) + '.'
+            : 'That set ended on ' + dt(s.ended_at) + ', superseded by the set published at ' +
+              dt(s.successor_asof) + '.';
+        return head +
+            '<div class="notice error"><b>An ended set is refused.</b> ' + ended +
+            ' A run prices from it only when the binding names its as-of.</div>' +
+            '<div class="check"><span class="box' + (S.pin ? ' on' : '') + '">' + (S.pin ? '&#10003;' : '') +
+            '</span><span><b>Price from this set at its as-of ' + dt(s.asof) + '.</b>' +
+            'The binding then names a historical as-of, and every run of this configuration prices from ' +
+            'that set at that instant until somebody changes it. It is the only way a rerun reproduces an ' +
+            'earlier result.</span></div>' +
+            '<div class="footrow"><button class="btn">Cancel</button>' +
+            (S.pin ? '<button class="btn primary">Bind it as historical</button>' : '') + '</div>';
+    }
+
+    function chosenFacts(s) {
+        return '<div class="pickline"><div><p class="k">Curve and party</p>' +
+            '<p class="key">' + esc(s.curve) + ' &middot; ' + esc(s.party) + '</p></div>' +
+            '<div><p class="k">As-of</p><p class="mono">' + dt(s.asof) + '</p></div>' +
+            '<div><p class="k">State</p><p>' + stateBadge(s.state) + '</p></div>' +
+            '<div><p class="k">Publisher</p><p>' + (s.publisher || '<span class="dash">&mdash;</span>') + '</p></div>' +
+            '<div><p class="k">Points</p><p class="mono">' + s.points + '</p></div>' +
+            '<div><p class="k">Publish record</p><p class="mono">' + esc(s.publish) + '</p></div></div>';
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Surface 4: the run, refused, and the run that priced.              */
+    /* ---------------------------------------------------------------- */
+
+    function runsFor() {
+        var binds = bindings();
+        var pricing = binds.filter(function (b) { return b.role === 'pricing'; })[0];
+        var v = verdict(pricing);
+        var completed = { id: '#4819', when: '2026-10-06T18:05:00Z', state: 'completed',
+            market: 'pricing: USD-SOFR-3M &middot; ACME London at 06 Oct 16:00Z',
+            why: '', publish: BY_ID.s1, pinned: false };
+        var runs;
+        switch (S.fcase) {
+        case 'candidate':
+            runs = [{ id: '#4821', when: '2026-10-07T08:14:00Z', state: 'refused',
+                market: 'pricing: candidate ' + pricing.set.publish + ' at ' + dt(pricing.set.asof),
+                why: 'The set is a candidate. Nobody has approved it, so the run cannot price from it.' },
+                completed];
+            break;
+        case 'none':
+            runs = [{ id: '#4820', when: '2026-10-07T08:12:00Z', state: 'refused',
+                market: 'pricing: no published curve bound',
+                why: 'The configuration binds no published curve to the pricing role.' }, completed];
+            break;
+        case 'ended':
+            runs = [{ id: '#4822', when: '2026-10-07T08:12:00Z', state: 'refused',
+                market: 'pricing: ' + pricing.set.curve + ' ended, no as-of named',
+                why: 'The set ended on ' + dt(pricing.set.ended_at) +
+                     ' and the binding names no as-of, so the run cannot price from it.' }, completed];
+            break;
+        default:
+            runs = [{ id: '#4823', when: '2026-10-07T07:40:00Z', state: 'completed',
+                market: 'pricing: USD-SOFR-3M &middot; ACME London at ' +
+                    (S.fcase === 'pinned' ? dt(BY_ID.s2.asof) : dt(BY_ID.s1.asof)),
+                why: '', publish: S.fcase === 'pinned' ? BY_ID.s2 : BY_ID.s1,
+                pinned: S.fcase === 'pinned' }, completed];
+        }
+        return { runs: runs, binds: binds, verdict: v, refused: runs[0].state !== 'completed',
+                 pricing: pricing };
+    }
+
+    function surfaceRun() {
+        var r = runsFor();
+        var subject = r.runs[0];
+        var priced = r.runs.filter(function (x) { return x.state === 'completed'; })[0];
+        var rows = r.runs.map(function (x) {
+            var st = x.state === 'completed' ? badge('Completed', 'ok') : badge('Refused', 'bad');
+            return '<tr><td class="key">' + x.id + '<span class="sub">' + rel(x.when) + '</span></td>' +
+                '<td>' + x.market + '</td><td>' + st + '</td>' +
+                '<td>' + (x.why ? esc(x.why) : 'Priced from the set named beside it') + '</td></tr>';
+        }).join('');
+
+        var head = r.refused
+            ? '<div class="notice error"><b>This run was refused, and it says why.</b> ' +
+              esc(r.verdict.why) + ' <b>It was refused before the engine was reached</b>, so nothing was ' +
+              'priced and no result exists. The press names the market before it is made, so this refusal ' +
+              'is visible before the run and not only after it.</div>'
+            : '<div class="notice success"><b>The run priced from the set the binding names.</b> ' +
+              'The run, its package and its numbers are that set at that as-of.</div>';
+
+        var card = priced ? marketCard(priced, priced.id !== subject.id ? subject.id : '') :
+            '<div class="panel"><h2>The market it priced from</h2>' +
+            '<p class="sentence">This run never reached the market. A run that was refused has no set to ' +
+            'name, and that is the answer.</p></div>';
+
+        return '<p class="crumbs">Home <span class="sep">&rsaquo;</span> Reporting <span class="sep">&rsaquo;</span> ' +
+            'Reports <span class="sep">&rsaquo;</span> Group Consolidated Exposure <span class="sep">&rsaquo;</span> ' +
+            'Runs <span class="sep">&rsaquo;</span> ' + subject.id + '</p>' +
+            '<div class="pagehead"><div><h1>Run ' + subject.id + '</h1>' +
+            '<p class="lead">Group Consolidated Exposure &middot; on-demand &middot; ' +
+            (subject.state === 'completed' ? 'completed' : 'refused') + ' &middot; ' + rel(subject.when) +
+            '</p></div><div class="actions"><button class="btn">Refresh</button></div></div>' +
+            head +
+            '<div class="panel"><h2>The runs of this report, and the market each met</h2>' +
+            '<table class="rows"><thead><tr><th>Run</th><th>Market the run resolves</th><th>State</th>' +
+            '<th>What happened</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+            '<div style="height:16px"></div>' + card +
+            '<p class="rule" style="margin-top:16px"><b>The audit.</b> The binding\'s version is in the ' +
+            'configuration\'s History tab: the role, the set\'s curve and as-of, the publish record before ' +
+            'and after, the account and the reason. The set\'s own record should name the reports bound to ' +
+            'it and the runs that priced from it, and no read answers that yet.</p>';
+    }
+
+    function marketCard(market, refusedId) {
+        var p = market.publish;
+        return '<div class="panel"><h2>The market it priced from <span class="sub">run ' + market.id +
+            ' &middot; read from the run, never from the binding</span></h2>' +
+            (refusedId
+                ? '<p class="sentence">Run ' + refusedId + ' never reached the market, so the last run that ' +
+                  'did is shown here: a refused run names no set, and the one before it names the set it used.</p>'
+                : '') +
+            '<div class="facts">' +
+            '<div class="fact"><p class="k">Role</p><p class="v mono">pricing</p></div>' +
+            '<div class="fact"><p class="k">Curve and party</p><p class="v mono">' + esc(p.curve) +
+            ' &middot; ' + esc(p.party) + '</p></div>' +
+            '<div class="fact"><p class="k">As-of priced at</p><p class="v mono">' + dt(p.asof) + '</p></div>' +
+            '<div class="fact"><p class="k">State of the set</p><p class="v">' + stateBadge(p.state) + '</p></div>' +
+            '<div class="fact"><p class="k">Publisher</p><p class="v">' + esc(p.publisher) + '</p></div>' +
+            '<div class="fact"><p class="k">Published</p><p class="v">' + dt(p.published_at) + '</p></div>' +
+            '<div class="fact"><p class="k">Publish record</p><p class="v mono">' + esc(p.publish) + '</p></div>' +
+            '<div class="fact"><p class="k">Points read</p><p class="v mono">' + p.points + '</p></div>' +
+            '</div>' +
+            (market.pinned
+                ? '<p class="sentence">The set ended on ' + dt(p.ended_at) + ', and the binding names its ' +
+                  'as-of, so this run priced from it at <b>' + dt(p.asof) + '</b> on purpose. ' +
+                  'Every figure in the run is that set at that instant.</p>'
+                : '<p class="sentence">The set was in use when the run priced, and it is the set the ' +
+                  'report still names today.</p>') +
+            '<p class="rule">The run names the set it used, not the set the configuration names today: the ' +
+            'binding may move, and a result that moved with it would be unreadable.</p>' +
+            '<div class="gap"><b>Gap.</b> <code>report_instance</code> carries <code>priced_at</code> and ' +
+            '<code>price_note</code> and nothing that names a publish record, and the pipeline resolves no ' +
+            'binding at all: today the gathering step exports every series at a date. Both are missing.</div>' +
+            '</div>';
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Render.                                                            */
+    /* ---------------------------------------------------------------- */
+
+    function render() {
+        document.getElementById('shell').innerHTML = shell();
+        document.getElementById('bar').innerHTML = bar();
+        var app = document.getElementById('app');
+        switch (S.surface) {
+        case 'report':
+            app.innerHTML = surfaceReport();
+            break;
+        case 'pick':
+            app.innerHTML = surfacePick();
+            break;
+        case 'run':
+            app.innerHTML = surfaceRun();
+            break;
+        default:
+            app.innerHTML = surfaceTab('');
+        }
+        window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+        var go = e.target.closest('[data-go]');
+        if (go) {
+            e.preventDefault();
+            location.search = go.getAttribute('data-go');
+            return;
+        }
+        var sh = e.target.closest('[data-show]');
+        if (sh) {
+            e.preventDefault();
+            var v = sh.getAttribute('data-show');
+            location.search = q({ surface: 'pick', pick: S.pick, show: S.show === v ? '' : v });
+            return;
+        }
+        var p = e.target.closest('[data-pick]');
+        if (p) {
+            var id = p.getAttribute('data-pick');
+            var pin = (S.pick === id && S.pin) ? '1' : '';
+            location.search = q({ surface: 'pick', pick: id, pin: pin, show: S.show });
+        }
+    });
+
+    render();
+})();
+</script>
+</body>
+</html>

@@ -71,6 +71,14 @@ struct http_server_options final {
     std::uint64_t max_body_size = 256 * 1024 * 1024;
 
     /**
+     * @brief How much of a streamed body is read at a time, in bytes.
+     *
+     * The chunk is the whole memory bound of a streamed body: the session holds
+     * one of these, hands it on, and reads the next.
+     */
+    std::size_t body_chunk_size = 64 * 1024;
+
+    /**
      * @brief Maximum accepted size of the request headers, in bytes.
      *
      * Beast's default header_limit is 8KB. The access token a session sends in the

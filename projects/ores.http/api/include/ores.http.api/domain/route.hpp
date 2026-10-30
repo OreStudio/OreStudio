@@ -20,12 +20,14 @@
 #ifndef ORES_HTTP_DOMAIN_ROUTE_HPP
 #define ORES_HTTP_DOMAIN_ROUTE_HPP
 
+#include "ores.http.api/domain/body_sink.hpp"
 #include "ores.http.api/domain/http_method.hpp"
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/export.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <functional>
+#include <memory>
 #include <optional>
 #include <regex>
 #include <string>
@@ -129,6 +131,16 @@ struct ORES_HTTP_API_EXPORT route final {
      * @brief Required roles for accessing this route (empty = any authenticated user).
      */
     std::vector<std::string> required_roles;
+
+    /**
+     * @brief Says the body of this route is a stream, and where it goes.
+     *
+     * Empty means the body is read into the request, which is what every JSON
+     * route wants. A route that takes an object states a factory instead: the
+     * session reads the body in chunks straight into the sink the factory
+     * returns, so the object never sits in memory.
+     */
+    std::function<std::unique_ptr<body_sink>()> sink;
 
     /**
      * @brief The most this route will read for one request body, in bytes.

@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 5B166095-7D72-4D11-BA88-34A278589E98
+:END:
+#+title: Task: Port the market data cuts reference
+#+description: The external cuts reference defines the concept the report binding depends on; our docs have only fragments.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/bind-a-report-to-the-published-curve
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A durable knowledge page defines a market data cut, its kinds and its lifecycle, connected to the snapshot notes and the backlog story.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- The external summary is ported in our voice and structure, with the source named.
+- The page is registered, linked from the snapshot and pricing notes, and states what the system has and lacks.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A durable reference for cuts, as a structure note and four child pages.
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] states the definition and the
+body, and beneath it sit [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]],
+[[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]],
+[[id:19630B5D-A163-42B5-B9C4-61A87BAE8F5F][Trade cut]] and
+[[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][The option-expiry cut code]]. The
+single page this task first produced was split into those pages at the product
+owner's direction, and its verified content moved with it. The kinds later moved
+out of the hub into a page of their own, since a classification is a subject in
+its own right.
+
+- The cluster carries both senses of the word, what a cut is, the deal cut and
+  the market data cut, the four kinds, the end of day process and its rate
+  overrides, multiple centres, what a cut holds, profiles, one cut per book,
+  option-expiry cut codes, audit and rerun, our position, a glossary and
+  references. No notebook is referenced, and no vendor system appears in the
+  conceptual pages. The prior-art survey in [[id:6810B313-1BE8-4889-A3C0-30174ADCBEDD][Naming the cut]] names
+  systems, because the naming question requires it.
+- Every non-repository claim rests on a public source fetched and read while
+  writing: EBA RTS (EU) 2016/101 Art. 3 for independent price verification and
+  its accepted sources; the ECB euro reference rates for an official daily rate;
+  Fedwire operating hours for a centre's stated business day.
+- Claims with no verifiable public source are marked as our working convention
+  and listed under What the sources establish: the deal-cut then market-data-cut
+  order, the flash and start-of-day runs, the six-step end of day sequence, one
+  cut per book, the after-hours rule and the specific option cut times. The
+  advisory sentence about inferring a cut from the volatility surface was
+  dropped.
+- Our own position is verified against the notes and the schema and linked: the
+  as-of read and its lack of an as-of parameter; the resolution-side snapshot as
+  a definition with no implementation; the cut time as a designed lookup with no
+  table; the population as unmodelled; the report binding as unable to name the
+  population.
+- The hub is registered in the knowledge index as a hub, and linked from the two
+  snapshot notes, the pricing configuration, the market data architecture hub,
+  risk reporting, report processing, the reports index, the report-binding
+  design and its journey, the market bindings prototype and the backlog story.
+  Each child links the hub back, and the structure note check passes.
+- The report binding's open question now points at the hub: a binding names a
+  published set and cannot name the population, so the cut model is the
+  binding's missing foundation.
+
+Checks: compass lint valid; the org link check 0 unresolved; the structure note
+back-link check green across 25 notes; compass site page published the sixteen
+touched pages with no failures. Open on the pages: the option cut times, whether
+a book may hold more than one cut, and whether the story's cut time and a
+population cut are one entity.
+
+The consequence for the report binding: binding a population needs a cut that
+does not exist yet, so the cut model is the binding's foundation.

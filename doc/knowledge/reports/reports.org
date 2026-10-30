@@ -106,3 +106,4 @@ contract is on
 
 - [[id:645A06C7-D9D5-4ED1-969B-B6366D122BC9][Workflow pages]] — the same
   pattern for server-side processes rather than reports.
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the structure note for the cluster: the eod reports in this folder run against an authorised cut, and a cut is the fixed world each of them reads.

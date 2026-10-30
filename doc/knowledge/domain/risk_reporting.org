@@ -587,3 +587,4 @@ ORE Studio trading desk UI.
   wider currency-role vocabulary this document uses.
 - [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business Unit]] — the organisational hierarchy the aggregation
   level rolls up through.
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the structure note for the cluster: an =eod= report runs against an authorised cut, and a cut fixes everything the run read, the market data and the reference data included.

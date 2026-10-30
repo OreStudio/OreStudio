@@ -1,0 +1,77 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 2 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - REPORTING: THE MARKET A REPORT PRICES FROM</b>
+  Home > Reporting > Run settings > Acme official EOD run settings > Market bindings
+  --
+  <b>MARKET BINDINGS</b> | Editable | version 7
+  It decides which published curve each market role prices from. It does not decide
+  the valuation date, the curve configuration or the pricing engines.
+  Four reports bind this configuration: Group Consolidated Exposure, Board Risk
+  Dashboard, Headline Position, NPV. A change here reaches the next run of all four.
+  --
+  {#
+    Role | Published curve | As-of | State | Publisher | Points
+    pricing | USD-SOFR-3M / ACME London | 06 Oct 16:00 | Published | a.reyes | 12
+    simulation | NO PUBLISHED CURVE BOUND | - | - | - | -
+  }
+  Writes, derived and never typed: Markets parameter pricing = USD-SOFR-3M.ACME-London.
+  A role with no set bound refuses the run before it starts. It does not price
+  from whatever the export happens to find.
+  --
+  <b>THE PICKER: THE PUBLISHED SETS (RECORD PICKER)</b>
+  [ search the curve or the party ] [ Party: ACME London v ] [ ] Show candidates [ ] Show ended sets
+  {#
+    Curve | Party | As-of | State | Publisher | Points
+    USD-SOFR-3M | ACME London | 06 Oct 16:00 | Published | a.reyes | 12
+    USD-SOFR-3M | ACME London | 05 Oct 16:00 | Superseded | a.reyes | 12
+    EUR-ESTR-6M | ACME London | 06 Oct 16:00 | Published | j.silva | 9
+    USD-SOFR-3M | ACME London | 07 Oct 08:10 | Candidate | - | 12
+    GBP-SONIA-3M | ACME London | 03 Oct 16:00 | Withdrawn | j.silva | 8
+  }
+  --
+  <b>THE REFUSALS, IN THE DIALOG'S FOOTER</b>
+  <color:#ef4444>A CANDIDATE IS REFUSED.</color> That set is a candidate. Nobody has approved it,
+  so a run cannot price from it. Ask for the publish to be approved, or pick the published set.
+  <color:#ef4444>AN ENDED SET IS REFUSED.</color> That set ended on 06 Oct 16:41Z, superseded by the set
+  published at 06 Oct 16:00Z. A run prices from it only when the binding names its as-of.
+  [x] Price from this set at its as-of 05 Oct 16:00Z   <- the only route past the refusal
+  The binding then names a historical as-of, and every run of this configuration prices
+  from that set at that instant until somebody changes it.
+  --
+  <b>THE RUN: REFUSED, AND THE RUN THAT PRICED</b>
+  {#
+    Run | Market the run resolves | Outcome
+    #4821 | pricing: the candidate 8f3c... | REFUSED: not published
+    #4822 | pricing: USD-SOFR-3M ended, no as-of | REFUSED: ended
+    #4823 | pricing: USD-SOFR-3M, 05 Oct 16:00 | COMPLETED
+  }
+  The run that completed names the set it priced from: publish record 8f2a...,
+  published by a.reyes at 05 Oct 16:40Z, priced at its as-of on purpose.
+  A run names the set it used, not the set the configuration names today.
+  --
+  <b>THE AUDIT</b>
+  The configuration's History tab: the role, the set's curve and as-of, the publish_id
+  before and after, the account and the reason. The set's record: the reports bound to
+  it and the runs that priced from it (NO READ YET).
+}
+
+@enduml

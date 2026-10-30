@@ -7,41 +7,47 @@
 #+level: s1
 #+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/post-process-a-runs-results-into-rows
+#+pr: 3916
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
-#+updated: 2026-10-27
-#+environment:
+#+updated: 2026-10-30
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A run's figures are rows a query reads: one row per subject, measure and currency at the run's priced date, in a hypertable the tenant and the party each see only their own part of.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-27                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-10-30                               |
 
 * Acceptance
 
--
+- The table holds one row per tenant, party, run, priced date, subject, measure and currency, with the figure and the file it came from, and the counterparty when the engine stated one.
+- The table is a TimescaleDB hypertable on =as_of=, in 30-day chunks.
+- Tenant isolation and party isolation are policies on the table rather than checks in the service.
+- A natural key index and an =as_of= index serve the run read and a subject's history.
+- The DDL is generated from =ores.reporting.report_result_row=, and =projects/ores.sql/create/reporting/reporting_create.sql= includes it, so a database built from nothing has the table.
+- The table declares no retention interval; that is recorded as an open capture rather than claimed here.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The table is modelled in =projects/ores.reporting/modeling/ores.reporting.report_result_row.org=
+on the =readonly-timeseries= profile, so codegen emits the entity, the mapper, the
+repository, the service, the handler and the DDL, and the hypertable is applied by
+the generated SQL.
 
 * Measurements
 
@@ -55,9 +61,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The table is a hypertable | =ores_reporting_report_result_rows_tbl=, one dimension on =as_of= | =compass sql -- -c "select hypertable_name, num_dimensions from timescaledb_information.hypertables where hypertable_name like '%result%'"= | 55e53d5c56 |
+| The chunk interval | 30 days on =as_of= | =compass sql -- -c "select hypertable_name, column_name, time_interval from timescaledb_information.dimensions where hypertable_name = 'ores_reporting_report_result_rows_tbl'"= | 55e53d5c56 |
+| Isolation is two policies | =report_result_rows_tbl_tenant_isolation_policy= and =report_result_rows_tbl_party_isolation_policy= | =compass sql -- -c "select polname from pg_policy where polrelid = 'ores_reporting_report_result_rows_tbl'::regclass"= | 55e53d5c56 |
+| The indexes | the primary key on =(id, as_of)=, the natural key unique index and =..._as_of_idx= | =compass sql -- -c "select indexname from pg_indexes where tablename = 'ores_reporting_report_result_rows_tbl'"= | 55e53d5c56 |
+| The retention | none, and no Timescale retention job exists on any table in this environment | =compass sql -- -c "select job_id, hypertable_name, proc_name from timescaledb_information.jobs where hypertable_name is not null"= | 55e53d5c56 |
 
 * Notes
+
+- The table, the node's projection and the post-processing step all landed inside
+  #3916, and the PR was recorded on
+  [[id:7D867B23-569E-47FC-A3E1-003F94B787F0][Post-process a run's results into rows]] alone.
+  This task is closed with the record it was missing.
+- The description asks for the retention the market data ticks use. The tick model
+  declares =:hypertable_retention_interval: 7 days=, and this table declares none.
+  Filed as [[id:CDEFB4C6-1064-4917-8CF8-5490A0E30BFC][Declare the retention the result rows keep]].
+- The primary key is =(id, as_of)=, which is what the hypertable needs and what a
+  point read of one figure uses.
 
 * Test Scenarios
 
@@ -68,13 +88,13 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:6171D630-64A0-4D98-85DA-07BB553CE79E][Run a report through the grid and read every result]] | PENDING | The scenario reads the result rows table and checks that it is a hypertable. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3916][#3916]] | [reporting] Post-process a run's results into rows |
 
 * Review
 
@@ -83,3 +103,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The result rows table exists and is a hypertable on =as_of=, in 30-day chunks. It
+holds one row per tenant, party, run, priced date, subject, measure and currency,
+with the figure, its currency, the counterparty the engine stated and the file
+the row came from. Two policies confine a reader to its tenant and its party, so
+the service applies no rule of its own. The natural key index and the =as_of=
+index serve the run read and a subject's history.
+
+The model emits the create and drop scripts and the reporting schema includes
+them, so a database built from nothing has the table. The table keeps its rows
+indefinitely: it declares no retention interval, and this environment runs no
+Timescale retention job.

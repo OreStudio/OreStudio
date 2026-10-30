@@ -7,41 +7,49 @@
 #+level: s1
 #+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/post-process-a-runs-results-into-rows
 #+pr: 3916
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
-#+updated: 2026-10-27
-#+environment:
+#+updated: 2026-10-30
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+After the compute results are retrieved, the rows the node marshalled become the figures the run's screens read, and the run states what was written.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-27                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-10-30                               |
 
 * Acceptance
 
--
+- The run's workflow carries a =post_process_results= step after =submit_compute=, so the rows are loaded once the batch exists.
+- For each result of the batch the step downloads the canonical rows the node wrote, and reads them with one reader.
+- A refusal names the result, the header or the row that caused it, and loads nothing: a partial load would read as a complete one.
+- Every row of every result lands in one insert for the run.
+- The step answers the number of rows it loaded and a message naming the run.
+- The run's log rows are written once, before the rows are loaded, so a run whose rows are refused still states what the engine said.
+- Nothing in the step parses the run's archive; the rows come from the canonical file.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The step asks the batch's workunits for their results, checks each result's
+outcome, downloads each result's rows into a =read_outcome=, maps them onto
+=ores.reporting.api::domain::report_result_row= with the instance's party,
+definition and priced date, and inserts them once. The archive stays the run's
+output and is not read here.
 
 * Measurements
 
@@ -55,9 +63,18 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Rows one run loaded | 24: 8 trades for each of =npv=, =npv_base= and =notional= | =compass sql -- -c "select measure, count(*) from ores_reporting_report_result_rows_tbl where report_instance_id = 'e31abdee-0dbe-404c-977d-80539b44fe17' group by measure"=; the measurement is recorded on [[id:77CC92BD-4F9E-42A6-84F8-45265F2DAA91][Run a report from its page and read its rows]] | 3ffd149319 |
 
 * Notes
+
+- The description asks for "one reader per analytic". One reader serves every
+  analytic, because the canonical file states its measures as rows rather than as
+  columns; what is per analytic is the projection the node runs before upload.
+  Only =npv.csv= has one today, so one analytic's rows load and 34 of the 35
+  seeded analytic codes would load none. Filed as
+  [[id:D85DDFBD-056B-4857-8C91-6E8D2828B0B7][Project each analytic's file into canonical rows]].
+- The step records the run's account through =record_run_logs= before it loads
+  the rows, so the ordering is a property of the step rather than of the archive.
 
 * Test Scenarios
 
@@ -68,7 +85,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:6171D630-64A0-4D98-85DA-07BB553CE79E][Run a report through the grid and read every result]] | PENDING | The scenario checks the rows the step loaded against the run's figures. |
 
 * PRs
 
@@ -83,3 +100,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The run's workflow loads its figures after the batch is submitted. The step asks
+each workunit for its results, refuses a result whose outcome is not success, and
+downloads the canonical rows the node wrote for each one. One reader parses the
+file; a header it does not know, a field it cannot read or a figure it cannot
+parse is refused with the reason, and a refusal loads nothing.
+
+The rows are mapped onto the run's party, definition and priced date and inserted
+in one call, and the step answers the count it loaded. The run's log rows are
+written first, so a run whose rows are refused still carries the engine's account.
+
+The service no longer parses the run's archive for errors: the account comes from
+the rows the node wrote, which is where the figures come from too.

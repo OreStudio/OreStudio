@@ -20,7 +20,6 @@
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/emitter.hpp"
 #include "ores.ore.core/xml/record.hpp"
-#include "conventions_fields.hpp"
 #include "ores.refdata.api/domain/base_correlation_config.hpp"
 #include "ores.refdata.api/domain/bond_future_volatility_config.hpp"
 #include "ores.refdata.api/domain/cap_floor_volatility_config.hpp"
@@ -1079,7 +1078,7 @@ void import_yield_volatility(ores::refdata::messaging::curve_configuration_docum
     r.extrapolation = required_spelling(v, "Extrapolation");
     r.day_counter = required_spelling(v, "DayCounter");
     r.calendar = required_text(v, "Calendar");
-    r.business_day_convention = conventions_fields::bdc_of(v, "BusinessDayConvention");
+    r.business_day_convention = required_spelling(v, "BusinessDayConvention");
     r.option_tenors = required_text(v, "OptionTenors");
     r.bond_tenors = required_text(v, "BondTenors");
     curve_configuration_projection_set_audit(r);
@@ -1108,7 +1107,7 @@ void import_base_correlation(ores::refdata::messaging::curve_configuration_docum
     r.detachment_points = required_text(v, "DetachmentPoints");
     r.settlement_days = required_real(v, "SettlementDays");
     r.calendar = required_text(v, "Calendar");
-    r.business_day_convention = conventions_fields::bdc_of(v, "BusinessDayConvention");
+    r.business_day_convention = required_spelling(v, "BusinessDayConvention");
     r.day_counter = required_spelling(v, "DayCounter");
     r.extrapolate = v.spelling("Extrapolate");
     r.quote_name = v.text("QuoteName");
@@ -1587,7 +1586,7 @@ void import_inflation_cap_floor_volatility(
     r.strikes = v.text("Strikes");
     r.calendar = required_text(v, "Calendar");
     r.day_counter = required_spelling(v, "DayCounter");
-    r.business_day_convention = conventions_fields::bdc_of(v, "BusinessDayConvention");
+    r.business_day_convention = required_spelling(v, "BusinessDayConvention");
     r.index = required_text(v, "Index");
     r.index_curve = required_text(v, "IndexCurve");
     r.index_interpolated = v.spelling("IndexInterpolated");
@@ -1624,7 +1623,7 @@ void import_swaption_volatility(ores::refdata::messaging::curve_configuration_do
     r.output_shift = v.text("OutputShift");
     r.day_counter = v.spelling("DayCounter");
     r.calendar = v.text("Calendar");
-    r.business_day_convention = conventions_fields::opt_bdc(v, "BusinessDayConvention");
+    r.business_day_convention = v.spelling("BusinessDayConvention");
     r.option_tenors = v.text("OptionTenors");
     r.swap_tenors = v.text("SwapTenors");
     r.short_swap_index_base = v.text("ShortSwapIndexBase");
@@ -1674,7 +1673,7 @@ void import_cap_floor_volatility(ores::refdata::messaging::curve_configuration_d
     r.include_atm = v.spelling("IncludeAtm");
     r.day_counter = v.spelling("DayCounter");
     r.calendar = v.text("Calendar");
-    r.business_day_convention = conventions_fields::opt_bdc(v, "BusinessDayConvention");
+    r.business_day_convention = v.spelling("BusinessDayConvention");
     r.tenors = v.text("Tenors");
     r.strikes = v.text("Strikes");
     r.optional_quotes = v.spelling("OptionalQuotes");
@@ -1741,7 +1740,7 @@ void import_correlation(ores::refdata::messaging::curve_configuration_document& 
     r.extrapolation = v.spelling("Extrapolation");
     r.day_counter = v.spelling("DayCounter");
     r.calendar = v.text("Calendar");
-    r.business_day_convention = conventions_fields::opt_bdc(v, "BusinessDayConvention");
+    r.business_day_convention = v.spelling("BusinessDayConvention");
     r.option_tenors = v.text("OptionTenors");
     curve_configuration_projection_set_audit(r);
     out.correlations.push_back(std::move(r));
@@ -2417,7 +2416,7 @@ void export_yield_volatility(record_writer r,
     r.set_spelling("Extrapolation", v.extrapolation, "extrapolation");
     r.set_spelling("DayCounter", v.day_counter, "day counter");
     r.set_text("Calendar", v.calendar);
-    conventions_fields::put_bdc(r, "BusinessDayConvention", v.business_day_convention);
+    r.set_spelling("BusinessDayConvention", v.business_day_convention, "business day convention");
     r.set_text("OptionTenors", v.option_tenors);
     r.set_text("BondTenors", v.bond_tenors);
     if (report)
@@ -2433,7 +2432,7 @@ void export_base_correlation(record_writer r,
     r.set_text("DetachmentPoints", v.detachment_points);
     r.set_real("SettlementDays", v.settlement_days);
     r.set_text("Calendar", v.calendar);
-    conventions_fields::put_bdc(r, "BusinessDayConvention", v.business_day_convention);
+    r.set_spelling("BusinessDayConvention", v.business_day_convention, "business day convention");
     r.set_spelling("DayCounter", v.day_counter, "day counter");
     r.set_optional_spelling("Extrapolate", v.extrapolate, "ORE boolean");
     r.set_optional_text("QuoteName", v.quote_name);
@@ -2499,7 +2498,7 @@ void export_inflation_cap_floor_volatility(
     r.set_optional_text("Strikes", v.strikes);
     r.set_text("Calendar", v.calendar);
     r.set_spelling("DayCounter", v.day_counter, "day counter");
-    conventions_fields::put_bdc(r, "BusinessDayConvention", v.business_day_convention);
+    r.set_spelling("BusinessDayConvention", v.business_day_convention, "business day convention");
     r.set_text("Index", v.index);
     r.set_text("IndexCurve", v.index_curve);
     r.set_optional_spelling("IndexInterpolated", v.index_interpolated, "ORE boolean");
@@ -2542,7 +2541,8 @@ void export_swaption_volatility(record_writer r,
     r.set_optional_text("OutputShift", v.output_shift);
     r.set_optional_spelling("DayCounter", v.day_counter, "day counter");
     r.set_optional_text("Calendar", v.calendar);
-    conventions_fields::put_bdc(r, "BusinessDayConvention", v.business_day_convention);
+    r.set_optional_spelling(
+        "BusinessDayConvention", v.business_day_convention, "business day convention");
     r.set_optional_text("OptionTenors", v.option_tenors);
     r.set_optional_text("SwapTenors", v.swap_tenors);
     r.set_optional_text("ShortSwapIndexBase", v.short_swap_index_base);
@@ -2584,7 +2584,8 @@ void export_cap_floor_volatility(record_writer r,
     r.set_optional_spelling("IncludeAtm", v.include_atm, "ORE boolean");
     r.set_optional_spelling("DayCounter", v.day_counter, "day counter");
     r.set_optional_text("Calendar", v.calendar);
-    conventions_fields::put_bdc(r, "BusinessDayConvention", v.business_day_convention);
+    r.set_optional_spelling(
+        "BusinessDayConvention", v.business_day_convention, "business day convention");
     r.set_optional_text("Tenors", v.tenors);
     r.set_optional_text("Strikes", v.strikes);
     r.set_optional_spelling("OptionalQuotes", v.optional_quotes, "ORE boolean");
@@ -2698,7 +2699,8 @@ void export_correlation(record_writer r,
     r.set_optional_spelling("Extrapolation", v.extrapolation, "ORE boolean");
     r.set_optional_spelling("DayCounter", v.day_counter, "day counter");
     r.set_optional_text("Calendar", v.calendar);
-    conventions_fields::put_bdc(r, "BusinessDayConvention", v.business_day_convention);
+    r.set_optional_spelling(
+        "BusinessDayConvention", v.business_day_convention, "business day convention");
     r.set_optional_text("OptionTenors", v.option_tenors);
 }
 

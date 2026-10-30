@@ -611,6 +611,59 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             row.instrument.audit.change_commentary = "Generated trade population.";
             book_req.instruments.bond_instruments.push_back(row);
         }
+    } else if (!slot.instruments.rate_instruments.empty()) {
+        /*
+         * The rows were built in the planner, so the writer states the audit
+         * columns on each and sends. The strikes carry the reason and the
+         * commentary themselves rather than an audit block.
+         */
+        for (auto row : slot.instruments.rate_instruments) {
+            row.audit.change_reason_code = std::string(population_reason);
+            row.audit.change_commentary = "Generated trade population.";
+            book_req.instruments.rate_instruments.push_back(row);
+        }
+        for (auto leg : slot.instruments.swap_legs) {
+            leg.audit.change_reason_code = std::string(population_reason);
+            leg.audit.change_commentary = "Generated trade population.";
+            book_req.instruments.swap_legs.push_back(leg);
+        }
+        for (auto amount : slot.instruments.swap_leg_amounts) {
+            amount.change_reason_code = std::string(population_reason);
+            amount.change_commentary = "Generated trade population.";
+            book_req.instruments.swap_leg_amounts.push_back(amount);
+        }
+        for (auto leg_rate : slot.instruments.swap_leg_rates) {
+            leg_rate.change_reason_code = std::string(population_reason);
+            leg_rate.change_commentary = "Generated trade population.";
+            book_req.instruments.swap_leg_rates.push_back(leg_rate);
+        }
+        for (auto strike : slot.instruments.instrument_strikes) {
+            strike.change_reason_code = std::string(population_reason);
+            strike.change_commentary = "Generated trade population.";
+            book_req.instruments.instrument_strikes.push_back(strike);
+        }
+        const auto append_facts = [&](const auto& facts, auto& into) {
+            for (auto fact : facts) {
+                fact.change_reason_code = std::string(population_reason);
+                fact.change_commentary = "Generated trade population.";
+                into.push_back(fact);
+            }
+        };
+        append_facts(slot.instruments.vanilla_swap_instruments,
+                     book_req.instruments.vanilla_swap_instruments);
+        append_facts(slot.instruments.fra_instruments, book_req.instruments.fra_instruments);
+        append_facts(slot.instruments.cap_floor_instruments,
+                     book_req.instruments.cap_floor_instruments);
+        append_facts(slot.instruments.swaption_instruments,
+                     book_req.instruments.swaption_instruments);
+        append_facts(slot.instruments.callable_swap_instruments,
+                     book_req.instruments.callable_swap_instruments);
+        append_facts(slot.instruments.knock_out_swap_instruments,
+                     book_req.instruments.knock_out_swap_instruments);
+        append_facts(slot.instruments.flexi_swap_instruments,
+                     book_req.instruments.flexi_swap_instruments);
+        append_facts(slot.instruments.balance_guaranteed_swap_instruments,
+                     book_req.instruments.balance_guaranteed_swap_instruments);
     } else if (const auto* bond = std::get_if<domain::bond_terms>(&slot.terms)) {
         ores::trading::domain::bond_instrument_data row;
         row.instrument.issue_id = bond->issue_id;
@@ -619,114 +672,6 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
         row.instrument.audit.change_reason_code = std::string(population_reason);
         row.instrument.audit.change_commentary = "Generated trade population.";
         book_req.instruments.bond_instruments.push_back(row);
-    } else if (const auto* rate = std::get_if<domain::rate_terms>(&slot.terms)) {
-        namespace tdom = ores::trading::domain;
-        const auto money = [](double value) {
-            return tdom::decimal::from_double(value).value();
-        };
-
-        tdom::rate_common_terms common;
-        common.start_date = rate->start_date;
-        common.maturity_date = rate->maturity_date;
-        common.fixed.leg_type_code = "Fixed";
-        common.fixed.day_count_fraction_code = rate->fixed_day_count_fraction_code;
-        common.fixed.business_day_convention_code = rate->fixed_business_day_convention_code;
-        common.fixed.payment_frequency_code = rate->fixed_payment_frequency_code;
-        common.fixed.currency = rate->currency;
-        common.fixed.rate_role = "fixed";
-        common.fixed.value = money(rate->fixed_rate);
-        common.fixed.notional = money(rate->notional);
-        common.fixed.payer = true;
-        common.floating.leg_type_code = "Floating";
-        common.floating.day_count_fraction_code = rate->floating_day_count_fraction_code;
-        common.floating.business_day_convention_code =
-            rate->floating_business_day_convention_code;
-        common.floating.payment_frequency_code = rate->floating_payment_frequency_code;
-        common.floating.floating_index_code = rate->floating_index_code;
-        common.floating.currency =
-            rate->floating_currency.empty() ? rate->currency : rate->floating_currency;
-        common.floating.rate_role = "spread";
-        common.floating.value = money(rate->spread);
-        common.floating.notional = money(rate->notional);
-        common.floating.payer = false;
-
-        const auto direction = std::string(slot.slot % 2 == 0 ? "Long" : "Short");
-        const auto& type = slot.trade_type_code;
-        auto product = [&]() -> tdom::rate_product {
-            if (type == "Swap")
-                return tdom::construct_rate_swap(tdom::rate_swap_terms{common, 2});
-            if (type == "CrossCurrencySwap")
-                return tdom::construct_rate_cross_currency_swap(tdom::rate_swap_terms{common, 2});
-            if (type == "ForwardRateAgreement")
-                return tdom::construct_rate_fra(tdom::rate_fra_terms{common, direction});
-            if (type == "CapFloor")
-                return tdom::construct_rate_cap_floor(
-                    tdom::rate_cap_floor_terms{common, money(rate->strike.value_or(0.0))});
-            if (type == "Swaption") {
-                tdom::rate_swaption_terms terms{common,
-                                                rate->expiry_date.value_or(rate->start_date),
-                                                direction, "European", "Cash"};
-                return tdom::construct_rate_swaption(terms);
-            }
-            if (type == "CallableSwap")
-                return tdom::construct_rate_callable_swap(tdom::rate_callable_swap_terms{common});
-            if (type == "KnockOutSwap")
-                return tdom::construct_rate_knock_out_swap(
-                    tdom::rate_knock_out_swap_terms{common, rate->start_date, "UpAndOut"});
-            if (type == "FlexiSwap")
-                return tdom::construct_rate_flexi_swap(tdom::rate_flexi_swap_terms{common, direction});
-            if (type == "BalanceGuaranteedSwap")
-                return tdom::construct_rate_balance_guaranteed_swap(
-                    tdom::rate_balance_guaranteed_swap_terms{common, slot.internal_identifier});
-            throw trade_population_write_error("The rate trade type " + type +
-                                               " states no fact row this writer knows.");
-        }();
-
-        product.row.audit.change_reason_code = std::string(population_reason);
-        product.row.audit.change_commentary = "Generated trade population.";
-        for (auto& leg : product.legs) {
-            leg.audit.change_reason_code = std::string(population_reason);
-            leg.audit.change_commentary = "Generated trade population.";
-        }
-        for (auto& amount : product.amounts) {
-            amount.change_reason_code = std::string(population_reason);
-            amount.change_commentary = "Generated trade population.";
-        }
-        for (auto& leg_rate : product.rates) {
-            leg_rate.change_reason_code = std::string(population_reason);
-            leg_rate.change_commentary = "Generated trade population.";
-        }
-
-        book_req.instruments.rate_instruments.push_back(product.row);
-        for (const auto& leg : product.legs)
-            book_req.instruments.swap_legs.push_back(leg);
-        for (const auto& amount : product.amounts)
-            book_req.instruments.swap_leg_amounts.push_back(amount);
-        for (const auto& leg_rate : product.rates)
-            book_req.instruments.swap_leg_rates.push_back(leg_rate);
-        for (const auto& strike : product.strikes)
-            book_req.instruments.instrument_strikes.push_back(strike);
-        std::visit(
-            [&](const auto& fact) {
-                using fact_type = std::decay_t<decltype(fact)>;
-                if constexpr (std::is_same_v<fact_type, tdom::vanilla_swap_instrument>)
-                    book_req.instruments.vanilla_swap_instruments.push_back(fact);
-                else if constexpr (std::is_same_v<fact_type, tdom::fra_instrument>)
-                    book_req.instruments.fra_instruments.push_back(fact);
-                else if constexpr (std::is_same_v<fact_type, tdom::cap_floor_instrument>)
-                    book_req.instruments.cap_floor_instruments.push_back(fact);
-                else if constexpr (std::is_same_v<fact_type, tdom::swaption_instrument>)
-                    book_req.instruments.swaption_instruments.push_back(fact);
-                else if constexpr (std::is_same_v<fact_type, tdom::callable_swap_instrument>)
-                    book_req.instruments.callable_swap_instruments.push_back(fact);
-                else if constexpr (std::is_same_v<fact_type, tdom::knock_out_swap_instrument>)
-                    book_req.instruments.knock_out_swap_instruments.push_back(fact);
-                else if constexpr (std::is_same_v<fact_type, tdom::flexi_swap_instrument>)
-                    book_req.instruments.flexi_swap_instruments.push_back(fact);
-                else
-                    book_req.instruments.balance_guaranteed_swap_instruments.push_back(fact);
-            },
-            product.fact);
     } else if (const auto* equity = std::get_if<domain::equity_terms>(&slot.terms)) {
         const auto money = [](double value) {
             return ores::utility::decimal::decimal::from_double(value).value();

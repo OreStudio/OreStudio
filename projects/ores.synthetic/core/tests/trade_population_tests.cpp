@@ -61,10 +61,6 @@ const domain::bond_terms& bond_of(const domain::trade_population_slot& slot) {
     return std::get<domain::bond_terms>(slot.terms);
 }
 
-const domain::rate_terms& rate_of(const domain::trade_population_slot& slot) {
-    return std::get<domain::rate_terms>(slot.terms);
-}
-
 const domain::fx_terms& fx_of(const domain::trade_population_slot& slot) {
     return std::get<domain::fx_terms>(slot.terms);
 }
@@ -503,25 +499,41 @@ TEST_CASE("a_rate_population_states_two_legs_of_one_currency", "[trade_populatio
 
     REQUIRE(!plan.slots.empty());
     for (const auto& slot : plan.slots) {
-        const auto& terms = rate_of(slot);
-        REQUIRE(terms.start_date < terms.maturity_date);
-        CHECK(terms.fixed_rate > 0.0);
-        CHECK(terms.fixed_rate < 0.1);
-        CHECK_FALSE(terms.floating_index_code.empty());
-        CHECK(terms.notional >= scope.min_notional);
-        CHECK(terms.notional <= scope.max_notional);
+        /*
+         * The family states its rows and no bag: the legs, the amounts, the
+         * rates and the strikes are what the writer persists.
+         */
+        REQUIRE(std::holds_alternative<std::monostate>(slot.terms));
+        REQUIRE(slot.instruments.rate_instruments.size() == 1u);
+        REQUIRE(slot.instruments.swap_legs.size() == 2u);
+        REQUIRE(slot.instruments.swap_leg_amounts.size() == 2u);
+        REQUIRE(slot.instruments.swap_leg_rates.size() == 2u);
+
+        const auto& row = slot.instruments.rate_instruments.front();
+        REQUIRE(row.start_date.has_value());
+        REQUIRE(row.maturity_date.has_value());
+        CHECK(*row.start_date < *row.maturity_date);
+
+        const auto& floating = slot.instruments.swap_legs.back();
+        CHECK(floating.leg_type_code == "Floating");
+        CHECK(floating.payer.has_value());
+        CHECK_FALSE(*floating.payer);
         if (slot.trade_type_code == "CrossCurrencySwap") {
             // Two legs of one currency are not a cross currency swap, so the
             // floating side states a currency the book does not.
-            CHECK_FALSE(terms.floating_currency.empty());
-            CHECK(terms.floating_currency != scope.currency_code);
+            CHECK_FALSE(floating.currency.empty());
+            CHECK(floating.currency != scope.currency_code);
         } else {
-            CHECK(terms.floating_currency.empty());
+            CHECK(floating.currency == scope.currency_code);
         }
-        if (slot.trade_type_code == "Swaption") {
-            REQUIRE(terms.expiry_date.has_value());
-            CHECK(*terms.expiry_date > scope.as_of_date);
-        }
+
+        // Only the cap floor states a strike; the swaption constructor it is
+        // drawn for states its own terms and no strike.
+        const bool struck = slot.trade_type_code == "CapFloor";
+        CHECK(slot.instruments.instrument_strikes.size() == (struck ? 1u : 0u));
+
+        CHECK(slot.notional >= scope.min_notional);
+        CHECK(slot.notional <= scope.max_notional);
     }
 }
 

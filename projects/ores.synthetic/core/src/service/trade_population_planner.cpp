@@ -20,6 +20,7 @@
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.trading.api/domain/bond_instruments.hpp"
 #include "ores.trading.api/domain/commodity_instruments.hpp"
+#include "ores.trading.api/domain/rate_instruments.hpp"
 #include <boost/uuid/name_generator_sha1.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -857,6 +858,120 @@ const std::string& index_for(const domain::trade_generation_scope& scope, std::u
     return scope.floating_index_codes[slot % scope.floating_index_codes.size()];
 }
 
+/*
+ * The rate family states its own rows. The mapping from what the planner draws
+ * to each product's constructor lives here, beside the drawing, and not in the
+ * writer: the plan carries the rows and the writer persists them.
+ */
+ores::trading::domain::instrument_batch
+construct_rate_batch(const domain::rate_terms& drawn,
+                     const std::string& trade_type_code,
+                     std::uint32_t slot,
+                     const std::string& internal_identifier) {
+    namespace tdom = ores::trading::domain;
+
+    const auto money = [](double value) { return tdom::decimal::from_double(value).value(); };
+
+    tdom::rate_common_terms common;
+    common.start_date = drawn.start_date;
+    common.maturity_date = drawn.maturity_date;
+    common.fixed.leg_type_code = "Fixed";
+    common.fixed.day_count_fraction_code = drawn.fixed_day_count_fraction_code;
+    common.fixed.business_day_convention_code = drawn.fixed_business_day_convention_code;
+    common.fixed.payment_frequency_code = drawn.fixed_payment_frequency_code;
+    common.fixed.currency = drawn.currency;
+    common.fixed.rate_role = "fixed";
+    common.fixed.value = money(drawn.fixed_rate);
+    common.fixed.notional = money(drawn.notional);
+    common.fixed.payer = true;
+    common.floating.leg_type_code = "Floating";
+    common.floating.day_count_fraction_code = drawn.floating_day_count_fraction_code;
+    common.floating.business_day_convention_code = drawn.floating_business_day_convention_code;
+    common.floating.payment_frequency_code = drawn.floating_payment_frequency_code;
+    common.floating.floating_index_code = drawn.floating_index_code;
+    /*
+     * A leg without a currency of its own is in the trade's, which is what a
+     * single-currency rate product states.
+     */
+    common.floating.currency =
+        drawn.floating_currency.empty() ? drawn.currency : drawn.floating_currency;
+    common.floating.rate_role = "spread";
+    common.floating.value = money(drawn.spread);
+    common.floating.notional = money(drawn.notional);
+    common.floating.payer = false;
+
+    /*
+     * The direction alternates with the slot so a population states both sides
+     * of the book rather than every trade the same way round.
+     */
+    const auto direction = std::string(slot % 2 == 0 ? "Long" : "Short");
+    const auto& type = trade_type_code;
+    auto product = [&]() -> tdom::rate_product {
+        if (type == "Swap")
+            return tdom::construct_rate_swap(tdom::rate_swap_terms{common, 2});
+        if (type == "CrossCurrencySwap")
+            return tdom::construct_rate_cross_currency_swap(tdom::rate_swap_terms{common, 2});
+        if (type == "ForwardRateAgreement")
+            return tdom::construct_rate_fra(tdom::rate_fra_terms{common, direction});
+        if (type == "CapFloor")
+            return tdom::construct_rate_cap_floor(
+                tdom::rate_cap_floor_terms{common, money(drawn.strike.value_or(0.0))});
+        if (type == "Swaption") {
+            tdom::rate_swaption_terms terms{common,
+                                            drawn.expiry_date.value_or(drawn.start_date),
+                                            direction,
+                                            "European",
+                                            "Cash"};
+            return tdom::construct_rate_swaption(terms);
+        }
+        if (type == "CallableSwap")
+            return tdom::construct_rate_callable_swap(tdom::rate_callable_swap_terms{common});
+        if (type == "KnockOutSwap")
+            return tdom::construct_rate_knock_out_swap(
+                tdom::rate_knock_out_swap_terms{common, drawn.start_date, "UpAndOut"});
+        if (type == "FlexiSwap")
+            return tdom::construct_rate_flexi_swap(tdom::rate_flexi_swap_terms{common, direction});
+        if (type == "BalanceGuaranteedSwap")
+            return tdom::construct_rate_balance_guaranteed_swap(
+                tdom::rate_balance_guaranteed_swap_terms{common, internal_identifier});
+        throw trade_population_error("The rate trade type " + type +
+                                     " states no product this planner knows.");
+    }();
+
+    tdom::instrument_batch batch;
+    batch.rate_instruments.push_back(product.row);
+    for (const auto& leg : product.legs)
+        batch.swap_legs.push_back(leg);
+    for (const auto& amount : product.amounts)
+        batch.swap_leg_amounts.push_back(amount);
+    for (const auto& leg_rate : product.rates)
+        batch.swap_leg_rates.push_back(leg_rate);
+    for (const auto& strike : product.strikes)
+        batch.instrument_strikes.push_back(strike);
+    std::visit(
+        [&batch](const auto& fact) {
+            using fact_type = std::decay_t<decltype(fact)>;
+            if constexpr (std::is_same_v<fact_type, tdom::vanilla_swap_instrument>)
+                batch.vanilla_swap_instruments.push_back(fact);
+            else if constexpr (std::is_same_v<fact_type, tdom::fra_instrument>)
+                batch.fra_instruments.push_back(fact);
+            else if constexpr (std::is_same_v<fact_type, tdom::cap_floor_instrument>)
+                batch.cap_floor_instruments.push_back(fact);
+            else if constexpr (std::is_same_v<fact_type, tdom::swaption_instrument>)
+                batch.swaption_instruments.push_back(fact);
+            else if constexpr (std::is_same_v<fact_type, tdom::callable_swap_instrument>)
+                batch.callable_swap_instruments.push_back(fact);
+            else if constexpr (std::is_same_v<fact_type, tdom::knock_out_swap_instrument>)
+                batch.knock_out_swap_instruments.push_back(fact);
+            else if constexpr (std::is_same_v<fact_type, tdom::flexi_swap_instrument>)
+                batch.flexi_swap_instruments.push_back(fact);
+            else
+                batch.balance_guaranteed_swap_instruments.push_back(fact);
+        },
+        product.fact);
+    return batch;
+}
+
 }
 
 std::string_view rate_trade_planner::asset_class_code() const {
@@ -942,7 +1057,12 @@ rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         auto entry = common_slot(scope, slot);
         entry.trade_type_code = std::string(type);
         entry.notional = terms.notional;
-        entry.terms = terms;
+        /*
+         * The rate family states its rows here, where it draws them, and the
+         * plan carries no bag for it.
+         */
+        entry.instruments = construct_rate_batch(
+            terms, entry.trade_type_code, slot, entry.internal_identifier);
 
         plan.slots.push_back(std::move(entry));
     }

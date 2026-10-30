@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: D574B3E7-87F3-422B-98D5-500A9A7DB117
+:END:
+#+title: The rate population never draws the knock-out swap. The rate…
+#+description: The rate population never draws the knock-out swap. The rate planner cycles nine routed types, but a config draws only as many slots as its trades_per_book and each seeded rate config states eight, so slot 0 to 7 selects the first eight types and index 8 is never reached. A provisioned tenant books 24 rate trades over eight types, three each, and holds no knock-out swap at all: its knock-out fact table is empty. Either the config states nine slots or more, or the type is drawn by name rather than by position, so a population of any length states every type it routes.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

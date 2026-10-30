@@ -134,7 +134,6 @@ inline constexpr std::string_view created = "dq.v1.lei_relationships_events.crea
 inline constexpr std::string_view updated = "dq.v1.lei_relationships_events.updated";
 inline constexpr std::string_view deleted = "dq.v1.lei_relationships_events.deleted";
 }
-
 /**
  * @brief The members of lei_relationship_key, named as the wire names them and in the order
  * the type declares them.
@@ -290,8 +289,8 @@ inline constexpr std::string_view deleted = "dq.v1.lei_relationships_events.dele
     };
 }
 
-}
 
+}
 namespace ores::utility::codec {
 
 template <>
@@ -398,5 +397,6 @@ struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_many_lei_relation
     read_msgpack(std::span<const std::byte> data);
 };
 }
+
 
 #endif

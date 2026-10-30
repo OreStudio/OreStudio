@@ -276,7 +276,6 @@ inline constexpr std::string_view created = "dq.v1.data_domains_events.created";
 inline constexpr std::string_view updated = "dq.v1.data_domains_events.updated";
 inline constexpr std::string_view deleted = "dq.v1.data_domains_events.deleted";
 }
-
 /**
  * @brief The members of data_domain_key, named as the wire names them and in the order
  * the type declares them.
@@ -688,8 +687,8 @@ inline constexpr std::string_view deleted = "dq.v1.data_domains_events.deleted";
     };
 }
 
-}
 
+}
 namespace ores::utility::codec {
 
 template <>
@@ -961,5 +960,6 @@ struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_data_domain_versi
     read_msgpack(std::span<const std::byte> data);
 };
 }
+
 
 #endif

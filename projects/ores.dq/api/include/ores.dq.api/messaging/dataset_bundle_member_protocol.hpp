@@ -239,7 +239,6 @@ struct list_by_bundle_code_dataset_bundle_members_response {
     std::uint64_t total;
 };
 
-
 /**
  * @brief The members of dataset_bundle_member_key, named as the wire names them and in the order
  * the type declares them.
@@ -610,7 +609,6 @@ wire_fields(const list_by_bundle_code_dataset_bundle_members_response&) {
 }
 
 }
-
 namespace ores::utility::codec {
 
 template <>

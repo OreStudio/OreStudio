@@ -238,7 +238,6 @@ struct list_by_code_domain_code_badge_mappings_response {
     std::uint64_t total;
 };
 
-
 /**
  * @brief The members of badge_mapping_key, named as the wire names them and in the order
  * the type declares them.
@@ -597,7 +596,6 @@ struct list_by_code_domain_code_badge_mappings_response {
 }
 
 }
-
 namespace ores::utility::codec {
 
 template <>

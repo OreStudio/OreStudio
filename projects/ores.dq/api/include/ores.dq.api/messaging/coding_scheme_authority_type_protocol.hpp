@@ -280,7 +280,6 @@ inline constexpr std::string_view created = "dq.v1.coding_scheme_authority_types
 inline constexpr std::string_view updated = "dq.v1.coding_scheme_authority_types_events.updated";
 inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types_events.deleted";
 }
-
 /**
  * @brief The members of coding_scheme_authority_type_key, named as the wire names them and in the
  * order the type declares them.
@@ -715,8 +714,8 @@ wire_fields(const list_coding_scheme_authority_type_versions_response&) {
     };
 }
 
-}
 
+}
 namespace ores::utility::codec {
 
 template <>
@@ -1085,5 +1084,6 @@ struct ORES_DQ_API_EXPORT
     read_msgpack(std::span<const std::byte> data);
 };
 }
+
 
 #endif

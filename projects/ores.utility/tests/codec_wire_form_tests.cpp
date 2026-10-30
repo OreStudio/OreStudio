@@ -113,9 +113,9 @@ TEST_CASE("a member that is itself a type with a shape recurses", "[codec][objec
 
     const auto json = ores::utility::codec::json::write(v);
     CHECK(json == rfl::json::write(v));
-    CHECK(json.find("\"one\":{\"count\":7,\"label\":\"beta\"}") != std::string::npos);
-    CHECK(json.find("\"many\":[{\"count\":1,\"label\":\"one\"},") != std::string::npos);
-    CHECK(json.find("\"maybe\":{\"count\":3,\"label\":\"three\"}") != std::string::npos);
+    CHECK(json.contains("\"one\":{\"count\":7,\"label\":\"beta\"}"));
+    CHECK(json.contains("\"many\":[{\"count\":1,\"label\":\"one\"},"));
+    CHECK(json.contains("\"maybe\":{\"count\":3,\"label\":\"three\"}"));
 
     const auto back = ores::utility::codec::json::read<outer>(json);
     CHECK(back.name == v.name);

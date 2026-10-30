@@ -45,6 +45,7 @@ static_assert(sizeof({{entity_singular}}) == 0,
     "grouped: its codec has to encode the groups, and no template in this "
     "facet does that yet.");
 {{/has_domain_groups}}
+}
 {{^has_domain_groups}}
 {{#has_identity_group}}
 static_assert(sizeof({{entity_singular}}) == 0,
@@ -65,7 +66,6 @@ static_assert(sizeof({{entity_singular}}) == 0,
 {{/has_audit_group}}
 {{/has_identity_group}}
 {{/has_domain_groups}}
-}
 
 {{^has_domain_groups}}
 {{^has_identity_group}}

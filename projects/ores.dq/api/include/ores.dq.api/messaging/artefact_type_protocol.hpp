@@ -281,7 +281,6 @@ inline constexpr std::string_view created = "dq.v1.artefact_types_events.created
 inline constexpr std::string_view updated = "dq.v1.artefact_types_events.updated";
 inline constexpr std::string_view deleted = "dq.v1.artefact_types_events.deleted";
 }
-
 /**
  * @brief The members of artefact_type_key, named as the wire names them and in the order
  * the type declares them.
@@ -698,8 +697,8 @@ inline constexpr std::string_view deleted = "dq.v1.artefact_types_events.deleted
     };
 }
 
-}
 
+}
 namespace ores::utility::codec {
 
 template <>
@@ -980,5 +979,6 @@ struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_artefact_type_ver
     read_msgpack(std::span<const std::byte> data);
 };
 }
+
 
 #endif

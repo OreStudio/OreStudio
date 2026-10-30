@@ -49,6 +49,9 @@ The full template source. Edit here and re-tangle with
 
 namespace ores::{{component}}::domain {
 
+{{^has_domain_groups}}
+{{^has_identity_group}}
+{{^has_audit_group}}
 /**
  * @brief The members of {{entity_singular}}, named as the wire names them and
  * in the order the type declares them.
@@ -83,6 +86,9 @@ namespace ores::{{component}}::domain {
 {{/has_audit_columns}}
     };
 }
+{{/has_audit_group}}
+{{/has_identity_group}}
+{{/has_domain_groups}}
 
 }
 

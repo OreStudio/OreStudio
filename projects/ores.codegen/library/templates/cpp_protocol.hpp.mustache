@@ -10,14 +10,16 @@
 #include <vector>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/domain/protocol.hpp"
+{{#has_generated_wire_codec}}
+#include <cstddef>
+#include <span>
+#include <tuple>
+{{/has_generated_wire_codec}}
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
 {{#has_generated_wire_codec}}
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.{{component_include}}/export.hpp"
-#include <cstddef>
-#include <span>
-#include <tuple>
 {{/has_generated_wire_codec}}
 <<paste:8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F>>
 
@@ -63,9 +65,8 @@ namespace {{entity_singular}}_event_subjects {
 inline constexpr std::string_view {{action}} = "{{subject}}";
 {{/events}}
 }
-
-{{#messages}}
 {{#has_generated_wire_codec}}
+{{#messages}}
 /**
  * @brief The members of {{name}}, named as the wire names them and in the order
  * the type declares them.
@@ -80,16 +81,15 @@ inline constexpr std::string_view {{action}} = "{{subject}}";
 {{/fields}}    };
 }
 
-{{/has_generated_wire_codec}}
 {{/messages}}
+{{/has_generated_wire_codec}}
+
 <<paste:2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F>>
 }
-
 {{#has_generated_wire_codec}}
 namespace ores::utility::codec {
 
 {{#messages}}
-{{#has_generated_wire_codec}}
 template <>
 struct ORES_{{component_include_upper}}_EXPORT
 wire_traits<ores::{{component}}::messaging::{{name}}> {
@@ -100,11 +100,11 @@ wire_traits<ores::{{component}}::messaging::{{name}}> {
     static std::string write_msgpack(const ores::{{component}}::messaging::{{name}}& v);
     static ores::{{component}}::messaging::{{name}} read_msgpack(std::span<const std::byte> data);
 };
-{{/has_generated_wire_codec}}
 {{/messages}}
 }
 
 {{/has_generated_wire_codec}}
+
 #endif
 {{/domain_entity}}
 {{#junction}}
@@ -117,14 +117,16 @@ wire_traits<ores::{{component}}::messaging::{{name}}> {
 #include <vector>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/domain/protocol.hpp"
+{{#has_generated_wire_codec}}
+#include <cstddef>
+#include <span>
+#include <tuple>
+{{/has_generated_wire_codec}}
 #include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
 {{#has_generated_wire_codec}}
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.{{component_include}}/export.hpp"
-#include <cstddef>
-#include <span>
-#include <tuple>
 {{/has_generated_wire_codec}}
 
 namespace ores::{{component}}::messaging {
@@ -156,9 +158,8 @@ struct {{name}} {
 };
 
 {{/messages}}
-
-{{#messages}}
 {{#has_generated_wire_codec}}
+{{#messages}}
 /**
  * @brief The members of {{name}}, named as the wire names them and in the order
  * the type declares them.
@@ -173,10 +174,9 @@ struct {{name}} {
 {{/fields}}    };
 }
 
-{{/has_generated_wire_codec}}
 {{/messages}}
+{{/has_generated_wire_codec}}
 }
-
 {{#has_generated_wire_codec}}
 namespace ores::utility::codec {
 

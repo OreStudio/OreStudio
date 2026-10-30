@@ -124,11 +124,17 @@ task and name that file in the Command column.
 
 * Notes
 
-Every message a dq protocol header declares now carries a generated codec, and
-the protocol header is what every sender includes, so the component's NATS
-traffic takes the generated path end to end -- not only the domain types the
-previous task proved. The seam needed no change: =wire_traits= was already the
-one name.
+Every message of a *modelled* dq entity now carries a generated codec, and the
+protocol header those entities send is what every sender includes, so their
+traffic takes the generated path end to end. The seam needed no change:
+=wire_traits= was already the one name.
+
+Six of the component's protocol headers are not modelled -- =lei_entity_summary=,
+=publish_bundle=, =publish_datasets=, =publish_from_dq=,
+=report_definition_template= and =publish_params= -- so they declare no field
+list, generate no codec and still travel through reflect-cpp. They are the
+component's own hand-written message surfaces, and switching them is work of the
+same kind as the envelope's, not of this facet.
 
 ** The shape is stated once, by the template that declares the struct
 
@@ -142,6 +148,11 @@ The list is in a codec header rather than beside the struct because a struct's
 own header is rendered for every component: stating the shape there means
 gating that template on the codec facet's opt-in, which is machinery for no
 gain while the order is stated once either way.
+
+That is true of a message and only half true of a domain type: the domain
+half's =wire_fields= comes from the codec template, so it is the second
+statement of the order the class template writes. The per-type byte comparison
+is what holds the two together, as it did before this task.
 
 ** The trait specialisation is the codec
 
@@ -166,6 +177,19 @@ The protocol header is rendered for every component, so the field list and the
 specialisations sit behind the facet's own opt-in: a component that has not
 opted in renders the header it has, byte for byte. The flag is resolved by the
 same helper the other opt-in facets use, in =core.py=.
+
+** What the implementation changed about this plan
+
+- No ={entity}_protocol_codec.hpp=. The specialisations live in the protocol
+  header itself, behind the facet's opt-in, so a sender needs no extra include
+  and there is no header to drift from the structs. The .cpp remains, one per
+  entity.
+- The message comparison's values are literals, not the component's generators:
+  the generators produce domain rows, and a message is a caller's record. The
+  nested domain type inside a message is generated, and the test says so.
+- The reader of a message is proved by writing back what it read, not by
+  comparing with reflect-cpp's reader as the domain half does: a message has no
+  value equality, so there is nothing to compare.
 
 ** One thing the field loop could not say
 
@@ -208,6 +232,18 @@ seconds on this repository. Each row is a finding from that pass.
 | 8 | Two anonymous-namespace helpers of the same name collided in the unity build | message_codec_tests.cpp | Fixed | Named for what they encode. |
 | 9 | Messages have no value equality, so a round-trip comparison could not be written as one | message_codec_tests.cpp | Noted | The reader is proved by writing back what it read; the value form is the domain types' case. |
 | 10 | =ores.dq.core.tests= includes the protocol header, so the specialisations are visible to every sender | protocol header | Noted | That is the point: no sender includes the codec by hand. |
+| 11 | **Review pass, standards.** The gate leaked the blank lines that sit outside it, so every component's protocol header would change by whitespace: the opt-in claim was false | protocol template | Fixed | Every added character now sits between the gate's tags. Proved by a render comparison against =main= (byte-identical with the flag off), a new pytest, and =check_component_drift --component refdata --dry-run= reporting no drift. |
+| 12 | **Review pass, standards.** The gate asked the facet whether it was enabled; generation asks each archetype's address, so naming one archetype's address would emit a declaration without its definition | core.py | Fixed | One =_facet_enabled= resolves every address the facet renders, and both =_wire_codec_enabled= and the parsed-twice helper are gone. |
+| 13 | **Review pass, standards.** A grouped entity would fail to compile in the codec *header* before reaching the intended =static_assert= | codec header template | Fixed | The shape is gated on the three group flags. |
+| 14 | **Review pass, standards.** Include order put the new standard headers below the project ones | protocol template | Fixed | Standard headers first, then the project's. |
+| 15 | **Review pass, standards.** =find() != npos= instead of =contains()= in four places | the two new tests | Fixed | C++23. |
+| 16 | **Review pass, standards.** The tangle banner's em dash in the three new templates | template org sources | Not changed | The banner is identical in every template in the library and comes from the tangle; making only the new ones ASCII would read as drift. |
+| 17 | **Review pass, standards.** The =wire_fields= and =wire_traits= blocks are pasted into both mustache branches, and the four-function block into three templates, where =<<paste:UUID>>= could hold one copy | templates | Not changed | Worth doing, and it is a change to how the library is organised rather than to this facet: the paste blocks are keyed by org IDs the tangle resolves, so it wants its own pass. |
+| 18 | **Review pass, standards.** =object::read_json<T>= and =read_msgpack<T>= only forward to the =json::= and =msgpack::= forms | struct_codec.hpp | Not changed | They are the no-list form every generated codec unit calls, so cutting them moves the call sites rather than removing the indirection. |
+| 19 | **Review pass, standards.** Every generated codec unit carries an empty =namespace ores::{{component}}::domain {}= | codec impl template | Not changed | The namespace holds the =static_assert= a grouped entity reaches; emitting it only when one of three flags is set wants an OR the template context does not carry. |
+| 20 | **Review pass, spec.** "Every message a dq protocol header declares" was overstated: six hand-written protocol headers generate no codec and still use reflect-cpp | task page, PR | Fixed | The page now names the six. |
+| 21 | **Review pass, spec.** The plan's ={entity}_protocol_codec.hpp= and "the protocol header includes it at its end" were not what landed, and the deviation was unrecorded | task page | Fixed | Recorded under what changed about the plan, with the reason. |
+| 22 | **Review pass, spec.** No message holding a list of messages, or another message by value, was exercised | message_codec_tests.cpp | Fixed | =delete_many_catalogs_request= (a vector of removals) and =catalog_version_key= (a message by value) joined the comparison. |
 
 * Result
 

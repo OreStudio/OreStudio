@@ -182,7 +182,7 @@ TEST_CASE("a message and the domain type it holds agree about the domain type",
     // codec, so the two cannot drift.
     const auto catalog_json =
         ores::utility::codec::wire_traits<ores::dq::domain::catalog>::write_json(catalog);
-    CHECK(json.find(catalog_json) != std::string::npos);
+    CHECK(json.contains(catalog_json));
 
     const auto back = ores::utility::codec::wire_traits<list_catalogs_response>::read_json(json);
     REQUIRE(back.catalogs.size() == 1);

@@ -278,7 +278,6 @@ inline constexpr std::string_view created = "dq.v1.badge_severities_events.creat
 inline constexpr std::string_view updated = "dq.v1.badge_severities_events.updated";
 inline constexpr std::string_view deleted = "dq.v1.badge_severities_events.deleted";
 }
-
 /**
  * @brief The members of badge_severity_key, named as the wire names them and in the order
  * the type declares them.
@@ -692,8 +691,8 @@ inline constexpr std::string_view deleted = "dq.v1.badge_severities_events.delet
     };
 }
 
-}
 
+}
 namespace ores::utility::codec {
 
 template <>
@@ -982,5 +981,6 @@ struct ORES_DQ_API_EXPORT wire_traits<ores::dq::messaging::get_badge_severity_ve
     read_msgpack(std::span<const std::byte> data);
 };
 }
+
 
 #endif

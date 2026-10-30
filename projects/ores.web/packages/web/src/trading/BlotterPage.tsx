@@ -226,14 +226,22 @@ export function BlotterPage(): ReactNode {
             id: 'book',
             header: t('trading.blotter.book'),
             mono: true,
-            cell: (row) =>
-                row.book_id === '' ? (
-                    '—'
+            /*
+             * A structure states the books its legs sit in and has no book of its
+             * own to link to; a trade has one, and its name is the way to it.
+             */
+            cell: (row) => {
+                if (row.book_name === '') {
+                    return '—';
+                }
+                return row.book_id === '' ? (
+                    row.book_name
                 ) : (
                     <Link className="hover:underline" to={bookPath(row.book_id)}>
-                        {row.book_name || '—'}
+                        {row.book_name}
                     </Link>
-                ),
+                );
+            },
         },
         {
             id: 'counterparty',

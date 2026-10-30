@@ -58,11 +58,20 @@ test('the blotter reads trades and structures by book, and flattens to the legs'
 
     // The counterparty grouping is the same rows by another topology.
     await page.getByLabel('Grouping').selectOption('counterparty');
-    // The rail is the counterparties the rows face now, not the books: the read
-    // answers both, so the wait is for a name only the counterparty request has.
-    await expect(rail.getByRole('button', { name: /BPCE|LLOYDS|NATWEST/ }).first()).toBeVisible({
-        timeout: 20_000,
-    });
+    // The rail is the counterparties the rows face now. The names come from the
+    // provisioned data, so the case proves the topology by narrowing: choosing a
+    // counterparty shows exactly as many rows as its node counted.
+    const counterpartyNode = rail.getByRole('button').nth(1);
+    await counterpartyNode.waitFor({ state: 'visible', timeout: 20_000 });
+    const counterpartyCount = Number(
+        (await counterpartyNode.innerText()).match(/(\d+)\s*$/)?.[1] ?? '0',
+    );
+    expect(counterpartyCount).toBeGreaterThan(0);
+    await counterpartyNode.click();
+    await expect(rows.first()).toBeVisible({ timeout: 20_000 });
+    const pager = await page.getByText(/^\d+\u2013\d+ of \d+$/).first().innerText();
+    const of = pager.match(/of (\d+)/);
+    expect(Number(of?.[1] ?? '0')).toBe(counterpartyCount);
     await page.screenshot({ path: 'shots/blotter-counterparty.png', fullPage: true });
 
     // Choosing the tree again draws the tree again, not the counterparties: the

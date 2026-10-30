@@ -40,7 +40,7 @@ export interface BillLineView {
  * of a live source, and nobody pays it.
  */
 export interface SourceBillView {
-    source_id: string;
+    feed_id: string;
     source_name: string;
     currency: string;
     shadow: boolean;
@@ -54,7 +54,7 @@ export interface SourceBillView {
 export interface PartyChargeView {
     tenant_id: string;
     party_id: string;
-    source_id: string;
+    feed_id: string;
     driver: string;
     licence_right: string;
     total_micros: number;

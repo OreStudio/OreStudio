@@ -39,7 +39,7 @@ export interface DeliveryCountWrite {
     oresmd_uri: string;
     period_start: string;
     flushed_at: string;
-    source_id: string;
+    feed_id: string;
     deliveries: number;
 }
 
@@ -61,11 +61,11 @@ export interface DeliveryCountLookup {
 export interface DeliveryCountsFilter {
     party_id: string | null;
     provider_code: string | null;
-    source_id: string | null;
+    feed_id: string | null;
     id_one_of: string[] | null;
     party_id_one_of: string[] | null;
     provider_code_one_of: string[] | null;
-    source_id_one_of: string[] | null;
+    feed_id_one_of: string[] | null;
 }
 
 export interface DeliveryCountEvent {

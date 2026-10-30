@@ -86,7 +86,7 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-delivery_counts add <party_id> <provider_code> <oresmd_uri> <period_start> <flushed_at> <source_id> <deliveries> <reason> <commentary>
+delivery_counts add <party_id> <provider_code> <oresmd_uri> <period_start> <flushed_at> <feed_id> <deliveries> <reason> <commentary>
 #+end_example
 
 It is addressed at =marketdata.v1.delivery_counts.put=.
@@ -107,7 +107,7 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-delivery_counts set <id> <party_id> <provider_code> <oresmd_uri> <period_start> <flushed_at> <source_id> <deliveries> <reason> <commentary> [--version <n>]
+delivery_counts set <id> <party_id> <provider_code> <oresmd_uri> <period_start> <flushed_at> <feed_id> <deliveries> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =marketdata.v1.delivery_counts.put=.
@@ -128,7 +128,7 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-delivery_counts put-many --count <n> <id> <party_id> <provider_code> <oresmd_uri> <period_start> <flushed_at> <source_id> <deliveries> <reason> <commentary>
+delivery_counts put-many --count <n> <id> <party_id> <provider_code> <oresmd_uri> <period_start> <flushed_at> <feed_id> <deliveries> <reason> <commentary>
 #+end_example
 
 It is addressed at =marketdata.v1.delivery_counts.put_many=.

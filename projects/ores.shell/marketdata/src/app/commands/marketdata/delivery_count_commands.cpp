@@ -369,8 +369,7 @@ void delivery_count_commands::process_add(std::ostream& out,
             req.change.write.period_start, parsed->positionals[next++], "period_start");
         delivery_count_read_token(
             req.change.write.flushed_at, parsed->positionals[next++], "flushed_at");
-        delivery_count_read_token(
-            req.change.write.feed_id, parsed->positionals[next++], "feed_id");
+        delivery_count_read_token(req.change.write.feed_id, parsed->positionals[next++], "feed_id");
         delivery_count_read_token(
             req.change.write.deliveries, parsed->positionals[next++], "deliveries");
         req.intent.reason_code = parsed->positionals[next++];
@@ -431,8 +430,7 @@ void delivery_count_commands::process_set(std::ostream& out,
             req.change.write.period_start, parsed->positionals[next++], "period_start");
         delivery_count_read_token(
             req.change.write.flushed_at, parsed->positionals[next++], "flushed_at");
-        delivery_count_read_token(
-            req.change.write.feed_id, parsed->positionals[next++], "feed_id");
+        delivery_count_read_token(req.change.write.feed_id, parsed->positionals[next++], "feed_id");
         delivery_count_read_token(
             req.change.write.deliveries, parsed->positionals[next++], "deliveries");
         req.intent.reason_code = parsed->positionals[next++];
@@ -507,8 +505,7 @@ void delivery_count_commands::process_put_many(std::ostream& out,
                 change.write.period_start, parsed->positionals[next++], "period_start");
             delivery_count_read_token(
                 change.write.flushed_at, parsed->positionals[next++], "flushed_at");
-            delivery_count_read_token(
-                change.write.feed_id, parsed->positionals[next++], "feed_id");
+            delivery_count_read_token(change.write.feed_id, parsed->positionals[next++], "feed_id");
             delivery_count_read_token(
                 change.write.deliveries, parsed->positionals[next++], "deliveries");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

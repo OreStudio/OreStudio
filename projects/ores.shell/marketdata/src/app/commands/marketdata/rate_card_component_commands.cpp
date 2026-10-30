@@ -157,8 +157,8 @@ void rate_card_component_commands::register_commands(cli::Menu& root_menu, nats_
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <feed_id> <driver> <licence_right> <effective_from> "
-        "<currency> <charge_micros> <effective_to> <reason> <commentary>");
+        "put-many --count <n> <id> <feed_id> <driver> <licence_right> <effective_from> <currency> "
+        "<charge_micros> <effective_to> <reason> <commentary>");
 
     menu->Insert(
         "delete",

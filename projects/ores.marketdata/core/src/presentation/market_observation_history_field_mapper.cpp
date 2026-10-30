@@ -45,7 +45,7 @@ render_market_observation_fields(const domain::market_observation& v) {
     fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri});
     fields.push_back({.name = "Value", .value = v.value});
     fields.push_back({.name = "Source", .value = v.source});
-    fields.push_back({.name = "Source ID", .value = boost::uuids::to_string(v.feed_id)});
+    fields.push_back({.name = "Feed ID", .value = boost::uuids::to_string(v.feed_id)});
 
     return fields;
 }

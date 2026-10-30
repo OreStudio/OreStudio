@@ -67,37 +67,59 @@ on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
 
-\echo '--- Market Data Sources ---'
 
-insert into ores_marketdata_feeds_tbl (
-    id, tenant_id, version, name, provider_code, kind, is_default, description,
+\echo '--- Market Data Sessions ---'
+
+insert into ores_marketdata_sessions_tbl (
+    code, tenant_id, version, name, supplier_code, adapter_code, environment,
+    endpoint, credential_ref, settings, enabled, description,
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values
+    ('frankfurter-eu', ores_utility_system_tenant_id_fn(), 0, 'Frankfurter EU',
+     'frankfurter', 'frankfurter', 'production', 'https://api.frankfurter.dev', '',
+     '{"url":"https://api.frankfurter.dev","backfill_days":400,"poll_minutes":60}', true,
+     'The Frankfurter session every public feed reads through.',
+     current_user, current_user, 'system.initial_load', 'Initial population of sessions'),
+    ('synthetic-local', ores_utility_system_tenant_id_fn(), 0, 'Simulator local',
+     'synthetic', 'synthetic', 'simulated', '', '', '{}', true,
+     'The simulator session the synthetic and internal feeds run through.',
+     current_user, current_user, 'system.initial_load', 'Initial population of sessions')
+on conflict (tenant_id, code)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
+
+\echo '--- Market Data Feeds ---'
+
+insert into ores_marketdata_feeds_tbl (
+    id, tenant_id, version, name, publisher_code, session_code, service, provider_key,
+    is_default, description, modified_by, performed_by, change_reason_code, change_commentary
+)
+values
     ('26772cc0-57d6-4fac-be36-2ae75eb56b6b', ores_utility_system_tenant_id_fn(), 0,
-     'ore-import', 'ore', 'replay', true,
+     'ore-import', 'ore', 'synthetic-local', 'reference', '', true,
      'The values of an ORE market data file, as the import and the DQ publish write them.',
-     current_user, current_user, 'system.initial_load', 'Initial population of sources'),
+     current_user, current_user, 'system.initial_load', 'Initial population of feeds')
     ('0a42775e-3da7-4c61-a732-6b62cb9f948f', ores_utility_system_tenant_id_fn(), 0,
-     'bloomberg-a', 'bloomberg', 'simulated', true,
+     'bloomberg-a', 'bloomberg', 'synthetic-local', 'real_time', '', true,
      'The values that the simulator generates for the ids of Bloomberg.',
-     current_user, current_user, 'system.initial_load', 'Initial population of sources'),
+     current_user, current_user, 'system.initial_load', 'Initial population of feeds')
     ('c0f53bf1-a03a-4557-9906-7213091fcd82', ores_utility_system_tenant_id_fn(), 0,
-     'lseg-a', 'lseg', 'simulated', true,
+     'lseg-a', 'lseg', 'synthetic-local', 'real_time', '', true,
      'The values that the simulator generates for the ids of LSEG.',
-     current_user, current_user, 'system.initial_load', 'Initial population of sources'),
+     current_user, current_user, 'system.initial_load', 'Initial population of feeds')
     ('8c0aa62c-3e8e-4174-9dca-010180c6fed0', ores_utility_system_tenant_id_fn(), 0,
-     'demo-a', 'demo', 'simulated', true,
+     'demo-a', 'demo', 'synthetic-local', 'real_time', '', true,
      'The values that the simulator generates for the exercises and demonstrations.',
-     current_user, current_user, 'system.initial_load', 'Initial population of sources'),
+     current_user, current_user, 'system.initial_load', 'Initial population of feeds')
     ('437b14be-6443-4492-b421-a51ce34f318a', ores_utility_system_tenant_id_fn(), 0,
-     'ore-derived', 'ore', 'derived', false,
+     'ore-derived', 'ore', 'synthetic-local', 'real_time', '', false,
      'The values that the service computes from other series, such as a bootstrapped curve.',
-     current_user, current_user, 'system.initial_load', 'Initial population of sources'),
+     current_user, current_user, 'system.initial_load', 'Initial population of feeds')
     ('615e89cb-6a9c-46fb-beac-5b6d9b47a8ec', ores_utility_system_tenant_id_fn(), 0,
-     'composite-derived', 'composite', 'derived', true,
+     'composite-derived', 'composite', 'synthetic-local', 'real_time', '', true,
      'The values that the service computes from the inputs of a composite.',
-     current_user, current_user, 'system.initial_load', 'Initial population of sources')
+     current_user, current_user, 'system.initial_load', 'Initial population of feeds')
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;

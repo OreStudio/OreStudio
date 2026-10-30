@@ -39,7 +39,7 @@ export interface DeliveryCount {
     oresmd_uri: string;
     period_start: string;
     flushed_at: string;
-    source_id: string;
+    feed_id: string;
     deliveries: number;
     modified_by: string;
     performed_by: string;

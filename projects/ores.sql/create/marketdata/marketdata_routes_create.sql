@@ -106,7 +106,7 @@ begin
         select 1 from ores_marketdata_feeds_tbl
         where tenant_id in (NEW.tenant_id, ores_utility_system_tenant_id_fn())
           and id = NEW.feed_id
-          and provider_code = NEW.provider_code
+          and publisher_code = NEW.provider_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid route: source % is not a source of provider %.',

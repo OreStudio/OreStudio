@@ -157,8 +157,8 @@ void subscription_interval_commands::register_commands(cli::Menu& root_menu, nat
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <party_id> <provider_code> <interval_from> <feed_id> "
-        "<display> <non_display> <derived> <interval_to> <reason> <commentary>");
+        "put-many --count <n> <id> <party_id> <provider_code> <interval_from> <feed_id> <display> "
+        "<non_display> <derived> <interval_to> <reason> <commentary>");
 
     menu->Insert(
         "delete",

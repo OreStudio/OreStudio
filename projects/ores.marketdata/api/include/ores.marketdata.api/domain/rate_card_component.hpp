@@ -64,8 +64,8 @@ struct rate_card_component final {
     boost::uuids::uuid id;
 
     /**
-     * @brief References feed.id: the source whose vendor charges this way. A rate
-     * card belongs to a source.
+     * @brief References feed.id: the source whose vendor charges this way. A rate card belongs to a
+     * source.
      */
     boost::uuids::uuid feed_id;
 

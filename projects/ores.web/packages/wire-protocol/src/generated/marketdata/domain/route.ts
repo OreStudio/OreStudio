@@ -36,7 +36,7 @@ export interface Route {
     id: string;
     party_id: string;
     provider_code: string;
-    source_id: string;
+    feed_id: string;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

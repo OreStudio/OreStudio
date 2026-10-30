@@ -38,7 +38,7 @@ export interface DemandIntervalWrite {
     provider_code: string;
     oresmd_uri: string;
     interval_from: string;
-    source_id: string;
+    feed_id: string;
     interval_to: string | null;
 }
 
@@ -60,11 +60,11 @@ export interface DemandIntervalLookup {
 export interface DemandIntervalsFilter {
     party_id: string | null;
     provider_code: string | null;
-    source_id: string | null;
+    feed_id: string | null;
     id_one_of: string[] | null;
     party_id_one_of: string[] | null;
     provider_code_one_of: string[] | null;
-    source_id_one_of: string[] | null;
+    feed_id_one_of: string[] | null;
 }
 
 export interface DemandIntervalEvent {

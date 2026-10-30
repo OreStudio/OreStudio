@@ -95,8 +95,8 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <party_id> <provider_code> <interval_from> <feed_id> <display>
-     * <non_display> <derived> <interval_to> <reason> <commentary> [--version <n>]
+     * @brief set <id> <party_id> <provider_code> <interval_from> <feed_id> <display> <non_display>
+     * <derived> <interval_to> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,

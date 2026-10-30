@@ -133,7 +133,7 @@ ctx.generate_uuid()
         select 1 from ores_marketdata_feeds_tbl
         where tenant_id in (NEW.tenant_id, ores_utility_system_tenant_id_fn())
           and id = NEW.feed_id
-          and provider_code = NEW.provider_code
+          and publisher_code = NEW.provider_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid route: source % is not a source of provider %.',
@@ -224,7 +224,7 @@ route_repository::read_latest_all_tenants(context ctx) {
 | field         | label    | widget       | type      | is_key | is_required | placeholder         |
 |---------------+----------+--------------+-----------+--------+-------------+---------------------|
 | provider_code | Provider | providerEdit | line_edit | true   | true        | Enter provider code |
-| feed_id     | Source   | sourceEdit   | line_edit |        | true        | Enter source id     |
+| feed_id     | Feed     | feedEdit     | line_edit |        | true        | Enter feed id       |
 
 *** Columns
 

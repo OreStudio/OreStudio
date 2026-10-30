@@ -36,7 +36,7 @@ export interface RouteWrite {
     id: string;
     party_id: string;
     provider_code: string;
-    source_id: string;
+    feed_id: string;
 }
 
 export interface RouteChange {
@@ -57,11 +57,11 @@ export interface RouteLookup {
 export interface RoutesFilter {
     party_id: string | null;
     provider_code: string | null;
-    source_id: string | null;
+    feed_id: string | null;
     id_one_of: string[] | null;
     party_id_one_of: string[] | null;
     provider_code_one_of: string[] | null;
-    source_id_one_of: string[] | null;
+    feed_id_one_of: string[] | null;
 }
 
 export interface RouteEvent {

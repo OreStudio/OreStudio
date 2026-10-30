@@ -37,7 +37,7 @@ export interface SubscriptionInterval {
     party_id: string;
     provider_code: string;
     interval_from: string;
-    source_id: string;
+    feed_id: string;
     display: boolean;
     non_display: boolean;
     derived: boolean;

@@ -149,8 +149,8 @@ void demand_interval_commands::register_commands(cli::Menu& root_menu, nats_clie
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <party_id> <provider_code> <oresmd_uri> <interval_from> <feed_id> "
-        "<interval_to> <reason> <commentary> [--version <n>]");
+        "set <id> <party_id> <provider_code> <oresmd_uri> <interval_from> <feed_id> <interval_to> "
+        "<reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",

@@ -62,7 +62,7 @@ on "ores_marketdata_market_fixings_tbl" (tenant_id, party_id, series_id, fixing_
 create index if not exists market_fixings_fixings_tenant_date_idx
 on "ores_marketdata_market_fixings_tbl" (tenant_id, party_id, fixing_date desc);
 
-create index if not exists market_fixings_fixings_feed_idx
+create index if not exists market_fixings_fixings_source_idx
 on "ores_marketdata_market_fixings_tbl" (tenant_id, party_id, source, fixing_date desc)
 where source is not null;
 

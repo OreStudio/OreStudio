@@ -68,7 +68,7 @@ on "ores_marketdata_market_observations_tbl" (tenant_id, party_id, series_id, ob
 create index if not exists market_observations_observations_tenant_datetime_idx
 on "ores_marketdata_market_observations_tbl" (tenant_id, party_id, observation_datetime desc);
 
-create index if not exists market_observations_observations_feed_idx
+create index if not exists market_observations_observations_source_idx
 on "ores_marketdata_market_observations_tbl" (tenant_id, party_id, source, observation_datetime desc)
 where source is not null;
 

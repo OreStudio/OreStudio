@@ -83,8 +83,8 @@ struct demand_interval final {
     std::chrono::system_clock::time_point interval_from;
 
     /**
-     * @brief References feed.id: the source that served the party when the event
-     * happened. A rate card is on the source, so the rating step needs it.
+     * @brief References feed.id: the source that served the party when the event happened. A rate
+     * card is on the source, so the rating step needs it.
      */
     boost::uuids::uuid feed_id;
 

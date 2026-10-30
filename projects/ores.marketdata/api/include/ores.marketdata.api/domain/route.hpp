@@ -74,8 +74,8 @@ struct route final {
     std::string provider_code;
 
     /**
-     * @brief References feed.id: the source that serves the party. The source belongs
-     * to the provider of the route.
+     * @brief References feed.id: the source that serves the party. The source belongs to the
+     * provider of the route.
      */
     boost::uuids::uuid feed_id;
 

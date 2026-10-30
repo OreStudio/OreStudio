@@ -141,8 +141,8 @@ void market_observation_commands::register_commands(cli::Menu& root_menu, nats_c
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <party_id> <series_id> <observation_datetime> <oresmd_uri> <value> <source> "
-        "<feed_id> <reason> <commentary>");
+        "add <party_id> <series_id> <observation_datetime> <oresmd_uri> <value> <source> <feed_id> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "set",

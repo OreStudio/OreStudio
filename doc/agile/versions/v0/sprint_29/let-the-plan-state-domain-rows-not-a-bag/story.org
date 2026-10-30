@@ -21,11 +21,11 @@ A trade has one description, in the domain. The planner draws a product and cons
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                |
+| State         | DONE                                |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Closed. The plan states rows for all six families. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | None; population coverage continues in its own story. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-30                             |
 
 * Acceptance
@@ -211,3 +211,36 @@ The reasoning is written up in
 [[file:../../../../../knowledge/domain/what-a-trade-population-is-made-of.org][What a trade population is made of]],
 which states the three kinds of thing, the defect underneath and the order of
 work.
+
+* Result
+
+The plan states rows and the bag is gone. Every family that books constructs its
+products through named constructors, the planner puts the rows in the batch, and
+the writer persists what it is given: no family translates a bag any more, and
+=trade_terms=, the slot's =terms= and the writer's six bag arms were deleted
+with the last of them.
+
+Six families flipped, in the order the story set — bond, commodity, rates, fx,
+equity, credit — and the bond security followed, which is what made the bag
+removable. Each flip was proved by a provisioning run against a fresh tenant,
+and every one booked the population it booked before its flip: 24 bonds, 25
+commodity rows and 12 constituents, 24 rate headers with their legs, amounts,
+rates and strikes, 32 fx rows with 4 range bounds, 17 equity rows with their
+children, and 5 credit rows. The tenant holds 127 trades after every run.
+
+Two defects surfaced that were not the story's own.
+
+- A slot that filled no bag read as a bond, because the bag's variant defaulted
+  to its first alternative. Commodity flipped first and the run died on the bond
+  issue table with a nil id. The variant held =std::monostate= first until the
+  bag was deleted.
+- =main= could not provision any tenant: the catalogues work had removed the
+  registrar entry for the legal entity publish route while the model still
+  declared it, so the subject had no handler and every run stalled for twenty
+  minutes. Fixed in #4092, without which no flip could be proved.
+
+What this story did not do: it did not widen coverage. Bond still draws one of
+its ten codes, the rate planner never reaches its knock-out swap, the fx planner
+never reaches its variance swap or accumulator, and a swaption's drawn strike is
+dropped by its constructor. Those are population questions and are tracked
+there, in [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population]].

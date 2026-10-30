@@ -79,7 +79,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Session settings cases | 7/7 pass | =projects/ores.sql/test/run_tests.sh marketdata_session_settings_validation_test.sql= | ae8f8f3d0d |
+| Catalogue publish cases | 9/9 pass | =projects/ores.sql/test/run_tests.sh marketdata_catalogue_publish_test.sql= | ae8f8f3d0d |
+| Build | green | =./compass.sh build= | ae8f8f3d0d |
 
 * Notes
 
@@ -113,3 +115,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** Outcome
+
+The =sessions= table and domain exist: code, name, supplier, adapter,
+environment, endpoint, credential reference, settings, enabled and
+description, with bitemporal history. The supplier and adapter codes validate
+against the system-tenant catalogues; the environment is a check over
+production, test, dr and simulated.
+
+The settings are validated against the adapter's configuration schema by
+=marketdata_sessions_settings_validate_trigger_create.sql=. It refuses a key
+outside the schema, a missing required key, a value of the wrong type, and a
+settings value that is not a JSON object.
+
+The entity is wired into the service handlers, the event mapping and the
+history provider. It has no shell unit: =sessions= is the IAM login session's
+menu, and the Connectivity screen is where a session is configured.
+
+The acceptance's =a read returns a session and its feeds= waits for the feed
+entity (task A3). The read returns the session's own row today.

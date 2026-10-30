@@ -8,7 +8,7 @@
 #+filetags: :atomise-every-convention-onto-the-central-entity-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: hotfix/let-the-convention-publish-parse
-#+pr:
+#+pr: 4100
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -101,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4100][#4100]] | [refdata] Let the convention publish parse again |
 
 * Review
 

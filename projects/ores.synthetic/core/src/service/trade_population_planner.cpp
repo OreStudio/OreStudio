@@ -389,11 +389,10 @@ construct_commodity_batch(const std::string& trade_type_code,
         }
         if (type == "CommodityOption" || type == "CommodityDigitalOption" ||
             type == "CommodityStrikeResettableOption") {
-            tdom::commodity_option_terms terms{
-                common,
-                drawn.option_type,
-                money(drawn.strike_price).value_or(tdom::decimal{}),
-                drawn.exercise_type};
+            tdom::commodity_option_terms terms{common,
+                                               drawn.option_type,
+                                               money(drawn.strike_price).value_or(tdom::decimal{}),
+                                               drawn.exercise_type};
             if (type == "CommodityOption")
                 return {tdom::construct_commodity_option(terms), {}};
             if (type == "CommodityDigitalOption")
@@ -410,8 +409,7 @@ construct_commodity_batch(const std::string& trade_type_code,
                 drawn.averaging_end_date};
             return {tdom::construct_commodity_asian_option(terms), {}};
         }
-        if (type == "CommodityAveragePriceOption" ||
-            type == "CommodityDigitalAveragePriceOption") {
+        if (type == "CommodityAveragePriceOption" || type == "CommodityDigitalAveragePriceOption") {
             tdom::commodity_average_price_option_terms terms{
                 common,
                 drawn.option_type,
@@ -467,8 +465,7 @@ construct_commodity_batch(const std::string& trade_type_code,
         }
         if (type == "CommodityVarianceSwap" || type == "CommodityPairwiseVarianceSwap" ||
             type == "CommodityBasketVarianceSwap") {
-            tdom::commodity_variance_swap_terms terms{common,
-                                                      drawn.variance_strike.value_or(0.0)};
+            tdom::commodity_variance_swap_terms terms{common, drawn.variance_strike.value_or(0.0)};
             if (type == "CommodityVarianceSwap")
                 return {tdom::construct_commodity_variance_swap(terms), {}};
             if (type == "CommodityPairwiseVarianceSwap")

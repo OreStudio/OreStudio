@@ -46,16 +46,17 @@ binding]] answers it.
 
 * The facts a cut records
 
-A cut records six groups of facts. Five of them are the body the
-[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note argues for; the sixth
-is the act that fixed it.
+A cut records six groups of facts. The parts are the body the
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note argues for; the other
+five groups name the occasion, the scope, what the assembly could not fill and
+who acted.
 
 | Fact | What it holds | Why it belongs in the body |
 |------+---------------+----------------------------|
 | The kind | The occasion, from the closed set [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] classifies, and the instant a process names where no kind applies | The kind fixes the instant, the recurrence and the centre, and it says whether authorisation precedes the values or follows them |
 | The timepoint | The instant, with its timezone, and the cut time it came from where a named cut time supplied it | A body fixed at an instant is not fixed until the instant is stated with its clock |
 | The scope | The books whose deals the valuation values, and the rates centre whose market data they revalue against | A body that names no population values nothing, and a market data half with no centre denotes whichever centre answered first |
-| The parts | One reference per part of the body: the fixed market data set, the deal population, the versions of the reference data and the settings, the engine and code versions, and the taking identity | The five parts are what the reproducibility argument requires, and a reference is what a rerun replays |
+| The parts | One reference per part of the body: the fixed market data set, the deal population, the versions of the reference data and the settings, the engine and code versions | The four inputs are what the reproducibility argument requires, and a reference is what a rerun replays |
 | The gaps | Every part the assembly could not fill, with the item, the part and the reason | A body that could not be assembled is a fact a person acts on, and silence makes the cut look smaller rather than incomplete |
 | The acts | Who took the cut and when; the authorisation request, its decision, the decider and the instant, or the refusal and its reason; the later cut that replaced this one as the cut in use | An unsigned body is a candidate, and the sign-off is what makes a cut official |
 
@@ -86,8 +87,8 @@ order of the tests is the order a reader needs them.
 
 | State | The facts that hold | What a run may do | The mark |
 |-------+---------------------+-------------------+----------|
-| Draft | No body is fixed: no taking instant | Nothing. It is not a cut yet | Grey, the mark of an inactive record |
-| Incomplete | A taking was attempted and the assembly left one or more gaps | Nothing. The gaps are the answer | Red, because the body failed its own standard |
+| Draft | No taking instant holds, and no gap stands; the assembled body is saved before the take | Nothing. It is not a cut yet | Grey, the mark of an inactive record |
+| Incomplete | No taking instant holds, and one or more gaps stand; the attempt is saved as a draft | Nothing. The gaps are the answer | Red, because the body failed its own standard |
 | Taken | The body is fixed, the taking instant holds, and no authorisation is recorded | Nothing. It is the candidate the decider reads | Blue, the mark of a pending item |
 | Authorised | An authorisation instant and its decider hold | Price from it. The gate admits it | Green |
 | Refused | The authorisation was refused, with the reason | Nothing. A refusal is terminal for that body | Red |

@@ -128,7 +128,8 @@ configuration: it reads the version in force and records it.
 ** Step 3: assemble the body, and read the gaps
 
 8. *Assemble.* The second step runs the assembly and draws one row per part of the
-   body. Each row is a part, what the assembly resolved, and its state.
+   body, and one for the taking identity. Each row is a part, what the assembly
+   resolved, and its state.
 
    | Part | What the row holds |
    |------+-------------------|

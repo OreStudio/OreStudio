@@ -33,7 +33,8 @@ answers a separate question.
 - The *timepoint* fixes the cut. It is the instant held still, with its timezone.
 - The *object* is the body of data the cut fixes. The rest of this note calls it
   the body. It holds the deals, the market data, the reference data, the engine
-  and code versions, and the taking identity and the authorisation record.
+  and code versions, and the taking identity. The cut records the acts that took
+  and authorised it beside the body.
 
 The label answers which cut is meant. The timepoint answers when it holds. The
 object answers what it holds. A statement that omits one of the three leaves the
@@ -137,8 +138,8 @@ and input data underlying computational science publications.
 
 The three steps share one conclusion. Data, code, settings and environment belong
 to one class: each is an input whose variation changes the output. A cut holds
-the valuation's inputs, so it holds that class in full. A cut therefore holds
-five parts.
+the valuation's inputs, so it holds that class in full. The body therefore holds
+four inputs.
 
 - The *deals*. The population the valuation values.
 - The *market data*. Spots, curves, forward points, volatility surfaces,
@@ -148,12 +149,14 @@ five parts.
   the run reads to turn a deal and a quote into a number.
 - The *engine and the code*. The version of the risk engine and the revision of
   the code that computed the result.
-- The *taking identity and the authorisation*. Who took the cut, who
-  authorised it, and when.
+- The *taking identity and the authorisation*. Not inputs to the valuation: the
+  cut records who took it, who authorised it and when, as the acts that made
+  the body official.
 
 The list admits a test. Take a result the cut claims to support and ask which
-changes would make the number differ. Each of the five parts answers yes. A
-proposed field that answers no is provenance about the run, and provenance is
+changes would make the number differ. Each of the four inputs answers yes. A
+field that answers no — the taking identity, the authorisation — is provenance
+about the run, and provenance is
 worth keeping, but the body is the set of things whose variation moves the
 number.
 

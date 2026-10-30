@@ -122,11 +122,10 @@ before they try to run one.
 
 ** The record, and the four tabs**
 
-*The body* is the design's own tab, and it draws the five parts the
+*The body* is the design's own tab, and it draws the four inputs the
 [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note argues for: the deals
 with their counts and states, the market data as a fixed snapshot with its sets,
-values and fixings, the reference data by version, the engine and the code, and
-the taking identity. A sixth panel draws the identity: the derived label, the
+values and fixings, the reference data by version, and the engine and the code. A sixth panel draws the identity: the derived label, the
 kind, the timepoint with its timezone, the cut time it read, and the take ordinal.
 
 The gap list is drawn where a body could not be assembled, as a table of part,
@@ -328,7 +327,7 @@ The operations exist except where the design note says they do not. The inbox's
 Open. It is offered for sign-off with the decision it draws.
 
 The design to sign off is: cuts in Reporting with the list, the record and the
-four-step take; the body drawn as five parts with a gap table that stops the take;
+four-step take; the body drawn as four inputs with a gap table that stops the take;
 the six states derived and drawn in the UX Language's colours; the picker refusing
 a taken, incomplete or refused cut and offering an indicative flash; the run's
 card read through the cut and its comparison in three verdicts; and the named cut

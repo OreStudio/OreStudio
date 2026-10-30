@@ -41,11 +41,12 @@ once taken.
 
 * What a cut is here
 
-The cluster states it. A cut holds the deals, the market data, the reference
-data, the engine and code versions, and the taking identity and the
-authorisation. The occasion a cut is taken for classifies it, and the purpose —
-a valuation that can be reproduced — fixes the body for every occasion, so a
-flash cut and an end of day cut hold the same five parts.
+The cluster states it. The body holds the deals, the market data, the reference
+data, and the engine and code versions; the cut records the taking identity, the
+authorisation and the gaps as the acts around the body. The occasion a cut is
+taken for classifies it, and the purpose — a valuation that can be reproduced —
+fixes the body for every occasion, so a flash cut and an end of day cut hold the
+same four inputs.
 
 Two facts about our system shape all three journeys. No cut exists today: no
 component, no table, no read and no screen. And where a cut would fix a body, the

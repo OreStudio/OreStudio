@@ -152,8 +152,9 @@ export interface CurveBlockView {
  *
  * A quote is not a leaf with a name of its own: it is the text of a `Quote`
  * element, or a pair of `RateQuote` and `SpreadQuote` elements, inside the list
- * its `quote_list` names. The contract documents the `Quotes` element and not its
- * parts, so the screen names the parts in its own words.
+ * its `quote_list` names. The contract carries no entry for a segment's `Quotes`
+ * at all — the rows it has are an entry's own — so there is nothing to join a
+ * quote's parts to and the screen names them in its own words.
  */
 export interface CurveQuoteView {
     readonly id: string;
@@ -161,7 +162,7 @@ export interface CurveQuoteView {
     readonly list: string;
     readonly text: string;
     /** Whether ORE may carry the quote as absent, which the element states. */
-    readonly optional: string;
+    readonly optional: boolean;
     readonly rateQuote: string;
     readonly spreadQuote: string;
 }
@@ -428,23 +429,32 @@ function collectionLeaves(
     return found;
 }
 
+/**
+ * Whether a row states a flag as set.
+ *
+ * The document writes a flag as the attribute's text, and ORE writes =true= and
+ * =false=; a value it does not write is not set. Reading it as a flag here rather
+ * than on the screen keeps the one place that knows the spellings.
+ */
+function isSet(value: unknown): boolean {
+    const text = String(value ?? '').trim().toLowerCase();
+    return text === 'true' || text === 't' || text === 'y' || text === 'yes' || text === '1';
+}
+
 /** The quotes a segment holds, in the order the document writes them. */
 function quotesOf(
     document: Readonly<Record<string, unknown>>,
     segmentId: string,
-    rule: CurveCollectionRule,
+    parentKey: string,
 ): readonly CurveQuoteView[] {
-    if (rule.quoteParent === '') {
-        return [];
-    }
     return vectorOf(document, 'quotes')
-        .filter((row) => text(row[rule.quoteParent]) === segmentId)
+        .filter((row) => text(row[parentKey]) === segmentId)
         .sort((left, right) => numberOf(left['position']) - numberOf(right['position']))
         .map((row) => ({
             id: text(row['id']),
             list: text(row['quote_list']),
             text: text(row['quote_text']),
-            optional: text(row['optional_flag']),
+            optional: isSet(row['optional_flag']),
             rateQuote: text(row['rate_quote']),
             spreadQuote: text(row['spread_quote']),
         }));
@@ -480,7 +490,10 @@ function collectionsOf(
                         contract,
                         valueSetOf,
                     ),
-                    quotes: quotesOf(document, text(candidate['id']), rule),
+                    quotes:
+                        rule.quoteParent === ''
+                            ? []
+                            : quotesOf(document, text(candidate['id']), rule.quoteParent),
                 };
             });
         return { element: rule.element, rows };

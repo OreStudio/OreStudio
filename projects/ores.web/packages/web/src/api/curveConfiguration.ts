@@ -75,7 +75,7 @@ const quoteSchema = z.object({
     id: z.string(),
     list: z.string(),
     text: z.string(),
-    optional: z.string(),
+    optional: z.boolean(),
     rateQuote: z.string(),
     spreadQuote: z.string(),
 });

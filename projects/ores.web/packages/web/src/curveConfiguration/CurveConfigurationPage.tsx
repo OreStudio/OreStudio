@@ -30,6 +30,7 @@ import {
     type CurveConfiguration,
     type CurveEntry,
     type CurveParameter,
+    type CurveQuote,
     type CurveSection,
 } from '../api/curveConfiguration.js';
 import { ApiFailure } from '../api/transport.js';
@@ -737,36 +738,51 @@ function CurveWorkbench({
                                     {row.leaves.map(leafOfRow(row.id))}
                                 </ul>
                                 {row.quotes.length > 0 && (
-                                    <div className="mt-2 space-y-1 border-t border-line-subtle pt-2">
+                                    <div className="mt-2 space-y-2 border-t border-line-subtle pt-2">
                                         <p className="text-xs text-ink-faint">
                                             {plural(
                                                 'curveConfiguration.curves.quotes',
                                                 row.quotes.length,
                                             )}
                                         </p>
-                                        <ul className="space-y-1">
+                                        <ul className="space-y-2">
                                             {row.quotes.map((quote) => (
-                                                <li
-                                                    key={quote.id}
-                                                    className="flex flex-wrap items-baseline gap-2 text-xs"
-                                                >
-                                                    <span className="font-mono">
-                                                        {quote.text === ''
-                                                            ? `${quote.rateQuote} / ${quote.spreadQuote}`
-                                                            : quote.text}
-                                                    </span>
-                                                    {quote.list === '' ? null : (
-                                                        <span className="text-ink-faint">
-                                                            {quote.list}
+                                                <li key={quote.id} className="space-y-1">
+                                                    <ParameterRow
+                                                        label={t(
+                                                            'curveConfiguration.curves.quote',
+                                                        )}
+                                                    >
+                                                        <span className="font-mono text-xs">
+                                                            {quote.text !== ''
+                                                                ? quote.text
+                                                                : compositeOf(quote, t)}
                                                         </span>
-                                                    )}
-                                                    {quote.optional === '' ? null : (
-                                                        <Tag small>
-                                                            {t(
-                                                                'curveConfiguration.curves.optionalQuote',
+                                                    </ParameterRow>
+                                                    {quote.list === '' ? null : (
+                                                        <ParameterRow
+                                                            label={t(
+                                                                'curveConfiguration.curves.quoteList',
                                                             )}
-                                                        </Tag>
+                                                        >
+                                                            <span className="text-xs">
+                                                                {quote.list}
+                                                            </span>
+                                                        </ParameterRow>
                                                     )}
+                                                    <ParameterRow
+                                                        label={t(
+                                                            'curveConfiguration.curves.quoteOptional',
+                                                        )}
+                                                    >
+                                                        <span className="text-xs">
+                                                            {t(
+                                                                quote.optional
+                                                                    ? 'oreParameter.yes'
+                                                                    : 'oreParameter.no',
+                                                            )}
+                                                        </span>
+                                                    </ParameterRow>
                                                 </li>
                                             ))}
                                         </ul>
@@ -801,6 +817,22 @@ function CurveWorkbench({
             {foot}
         </div>
     );
+}
+
+/**
+ * A composite quote's pair, as one string. A quote that states its own text uses
+ * that instead, and a quote that states neither is left empty rather than drawn
+ * as a slash between two blanks.
+ */
+function compositeOf(
+    quote: CurveQuote,
+    t: (key: string, values?: Record<string, string | number>) => string,
+): string {
+    if (quote.rateQuote === '' && quote.spreadQuote === '') return '';
+    return t('curveConfiguration.curves.quotePair', {
+        rate: quote.rateQuote,
+        spread: quote.spreadQuote,
+    });
 }
 
 /** One leaf: its label, the value in force, and the documentation under it. */

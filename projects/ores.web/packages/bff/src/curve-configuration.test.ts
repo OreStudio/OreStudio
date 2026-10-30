@@ -144,7 +144,7 @@ function document(): Record<string, unknown> {
                 curve_segment_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
                 quote_list: '',
                 quote_text: 'USD/3M/1Y',
-                optional_flag: null,
+                optional_flag: 'false',
                 position: 1,
             },
             {
@@ -155,6 +155,17 @@ function document(): Record<string, unknown> {
                 quote_text: 'USD/3M/2Y',
                 optional_flag: 'true',
                 position: 0,
+            },
+            {
+                id: 'ffffffff-ffff-4fff-8fff-ffffffffffff',
+                curve_definition_id: DEFINITION_ID,
+                curve_segment_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+                quote_list: 'BasisQuotes',
+                quote_text: '',
+                optional_flag: null,
+                rate_quote: 'IR_SWAP/RATE/GBP/0D/1D/1M',
+                spread_quote: 'IR_SWAP/BASIS/GBP/0D/1D/1M',
+                position: 2,
             },
             {
                 id: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
@@ -630,9 +641,17 @@ describe('the curve configuration a report binds', () => {
 
         // The quotes the segment holds, in the order the document writes them, and
         // none of another segment's.
-        expect(row?.quotes.map((quote) => quote.text)).toEqual(['USD/3M/2Y', 'USD/3M/1Y']);
-        expect(row?.quotes[0]?.optional).toBe('true');
-        expect(row?.quotes[1]?.optional).toBe('');
+        expect(row?.quotes.map((quote) => quote.text)).toEqual(['USD/3M/2Y', 'USD/3M/1Y', '']);
+        // A composite quote names its list and its pair, which the page draws when
+        // the quote states no text of its own.
+        const composite = row?.quotes[2];
+        expect(composite?.list).toBe('BasisQuotes');
+        expect(composite?.rateQuote).toBe('IR_SWAP/RATE/GBP/0D/1D/1M');
+        expect(composite?.spreadQuote).toBe('IR_SWAP/BASIS/GBP/0D/1D/1M');
+        // The flag is a flag, not the attribute's text: a quote that states false
+        // is not optional, and one that states nothing is not either.
+        expect(row?.quotes[0]?.optional).toBe(true);
+        expect(row?.quotes[1]?.optional).toBe(false);
     });
 
     it('names the block an entry holds and whether the entry states it', async () => {

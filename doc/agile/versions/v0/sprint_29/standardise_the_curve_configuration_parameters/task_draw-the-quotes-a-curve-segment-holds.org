@@ -28,10 +28,10 @@ A person reads, under each segment, the quotes it bootstraps from: their list, t
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Quotes and their parts are drawn; the entry-level quotes are not. |
+| Now          | Quotes and their parts are drawn, and walked in a browser. |
 | Waiting on   | Nothing.                               |
-| Next         | Close on the pull request once seen in the browser. |
-| Last touched | 2026-10-29                               |
+| Next         | Close on the pull request.             |
+| Last touched | 2026-10-30                               |
 
 * Acceptance
 
@@ -73,12 +73,11 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Quotes a provisioned document held | 420 | `compass sql -- -c "select count(*) from ores_refdata_curve_quotes_tbl where valid_to = ores_utility_infinity_timestamp_fn()"` | f9144787e5 |
-| Quotes that name a segment | 420 | the same, filtered by `curve_segment_id` | f9144787e5 |
+| Quotes that name a segment | 420 | `compass sql -- -c "select count(*) from ores_refdata_curve_quotes_tbl where curve_segment_id is not null and curve_segment_id <> ores_utility_nil_uuid_fn() and valid_to = ores_utility_infinity_timestamp_fn()"` | f9144787e5 |
 | Quotes the contract documents the parts of | 0 | `compass sql -- -c "select count(*) from ores_reporting_ore_parameters_tbl where xpath like '%/Segments/%Quote%' and valid_to = ores_utility_infinity_timestamp_fn()"` | f9144787e5 |
 | BFF tests | 1144 | `npm run test` in `packages/bff` | cadc240799 |
 | Browser tests | 2332 | `npm run test` in `packages/web` | cadc240799 |
-| Screens walked in a browser | Segments card, 1 row, 2 leaves, 12 quotes | `node evidence/curve_screens.mjs` against the running environment | cadc240799 |
-| Browser tests | 2332 | `npm run test` in `packages/web` | f9144787e5 |
+| Screens walked in a browser | 1 row, 2 leaves, 12 quotes, 221 of 238 documented | `node evidence/curve_screens.mjs` from `projects/ores.web`, which writes `01-signin.png` … `10-segments.png`; `curve-segments-and-quotes.png` is the copy kept as evidence | cadc240799 |
 
 * Notes
 
@@ -90,8 +89,12 @@ task and name that file in the Command column.
   the element's text. Reading it as a leaf would have meant an xpath no document
   holds, which is the defect the columns already fixed for the other direction.
 - *The corpus is plain quotes.* All 420 quotes a provisioned document holds carry
-  a text and no list, no rate and no spread, so the composite and named-list paths
-  are covered by the tests and not by the data.
+  a text and no list, no rate and no spread. The composite and named-list paths
+  are therefore covered only by the fixtures, which state a quote with a
+  =BasisQuotes= list and a =RateQuote=/=SpreadQuote= pair.
+- *The list is never filled.* No caller of the projection's =import_quotes= passes
+  a list name, so =quote_list= is null for every row the system writes today; the
+  screen draws the field, and the projection owes it a value.
 
 * Test Scenarios
 
@@ -102,7 +105,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:D2120291-825B-4117-A85F-7B9F28237942][Walk the curve segments and quotes on the screen]] | PENDING | Walks the quotes under each segment, and the states they draw. |
 
 * PRs
 
@@ -115,10 +118,16 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | A quote cannot be a leaf: the contract carries no row for `Quote`, `RateQuote` or `SpreadQuote`, so joining it to the contract would show every part as a gap. | curve-configuration.ts | Accept | The quote is its own shape, with the words the screen states, and the task records the deviation rather than hiding it. |
-| 2 | Quotes a section attaches to the curve rather than to a segment are not drawn. | curve-configuration.ts | Deferred | They are rows of the same table with no segment. Filed as part of the collection work still open, not needed for a segment's quotes. |
+| 2 | Quotes a section attaches to the curve rather than to a segment are not drawn. | curve-configuration.ts | Deferred | They are rows of the same table with no segment, and no task owns them yet: the nested-collections task defers the quotes here, and this one defers the entry-level quotes to a task that does not exist. |
 | 3 | The corpus holds no composite quote and no named list, so those two paths are tested and not observed. | ores_refdata_curve_quotes_tbl | No change | Said plainly in the notes and the pull request's limitations. |
 | 4 | The instant a row was recorded reached the screen as a leaf, because it is a field of the document row and not a column of the table the exclusion list was written from. | curve-configuration.ts | Accept | The row's recorded instant is excluded, and the test's segment row carries one so the exclusion is held. Seen on a provisioned environment: a segment drew `RecordedAt` beside its leaves until this. |
 | 5 | A segment draws its conventions as a gap though ORE documents it. | curve_term_curation / extractor | Deferred | The contract has no `Segments/<Kind>/Conventions` row at all: the leaf is read by the segment base class, and the extractor keeps no base for a class declared in a header and defined in a source. Filed as [[id:3D1208F2-1D51-4733-81FB-01B19D36E8EE][Record the leaves a segment inherits]]. |
+| 6 | A quote drew as a bare value: no label, no words for its list or its flag, and the flag's tag printed even for `optional="false"`. | CurveConfigurationPage.tsx | Accept | Each part is drawn under its own label, the flag as Yes or No, and the composite pair through a translated pattern. |
+| 7 | The view's justification said the contract documents the `Quotes` element; it carries no entry for a segment's quotes at all. | curve-configuration.ts | Accept | The comment now says what is true, and why the screen names the parts itself. |
+| 8 | The `quotes` plurality key was unreachable, because the plural rules always find `.one`/`.other`. | locales | Accept | The dead key is gone from all three locales. |
+| 9 | The page test asserted `toContain('optional')`, which passes on a missing translation because the key itself contains the word. | screens.test.tsx | Accept | The test names the labels and the Yes/No words, and a second test covers the composite pair and its list. |
+| 10 | The BFF test never checked the list, the rate or the spread, and `default([])` would hide a dropped field. | curve-configuration.test.ts | Accept | The fixture carries a composite quote on a named list, and the test asserts all three. |
+| 11 | The measurements cited a command that does not produce the number, and one commit no branch contains. | task doc | Accept | The commands are the ones that ran, and the rows name the commits that hold them. |
 
 * Result
 

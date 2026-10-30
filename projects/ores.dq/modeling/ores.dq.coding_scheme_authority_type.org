@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 5D3432F6-503B-4D4C-BF81-BDAC29A3AFF2
 :END:
 #+title: ores.dq.coding_scheme_authority_type

@@ -22,10 +22,13 @@
 
 #include "ores.utility/codec/text_form.hpp"
 #include "ores.utility/serialization/error_code.hpp"
+#include <cstdint>
+#include <limits>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <vector>
 #include <yyjson.h>
 
@@ -37,8 +40,9 @@ namespace ores::utility::codec {
  *
  * A type whose wire form is a string states it through =text_form= and takes
  * the implementation below; a type with another shape states its own
- * specialisation. Everything this estate puts on the wire is a string, so the
- * generic case is the one that is used.
+ * specialisation. Most of what this estate puts on the wire is a string, and
+ * the rest is a number or a truth value, which the specialisations further
+ * down state.
  *
  * Writing takes the document because a value is built against it; reading takes
  * the immutable value the parser produced.
@@ -59,10 +63,9 @@ struct json_codec {
 };
 
 /**
- * @brief An error code is the one type the wire states as a number: its
- * reflector names the underlying integer, so the JSON carries the integer and
- * not its name. The sentinel past the last real value is refused, as the
- * reflector refuses it.
+ * @brief An error code travels as the underlying integer, which is the type
+ * its reflector names: the JSON carries the integer and not its name. The
+ * sentinel past the last real value is refused, as the reflector refuses it.
  */
 template <>
 struct json_codec<serialization::error_code> {
@@ -77,6 +80,65 @@ struct json_codec<serialization::error_code> {
         if (number > static_cast<std::uint16_t>(serialization::error_code::limit_exceeded))
             throw std::invalid_argument("Not an error code: " + std::to_string(number));
         return static_cast<serialization::error_code>(number);
+    }
+};
+
+/**
+ * @brief An integer is the second shape the wire states: a number, with no
+ * text in between.
+ *
+ * A type whose value is a number has no text form to state, and a generated
+ * field list holds every member a model declares -- a version number, a
+ * display order -- so the carriers have to cover numbers as well as text.
+ * The number is the one reflect-cpp writes, because that is the encoding this
+ * replaces.
+ */
+template <typename T>
+    requires std::is_integral_v<T> && (!std::is_same_v<T, bool>)
+struct json_codec<T> {
+    static yyjson_mut_val* write(yyjson_mut_doc* doc, const T& v) {
+        if constexpr (std::is_signed_v<T>)
+            return yyjson_mut_sint(doc, static_cast<std::int64_t>(v));
+        else
+            return yyjson_mut_uint(doc, static_cast<std::uint64_t>(v));
+    }
+
+    static T read(yyjson_val* v) {
+        if (!yyjson_is_int(v))
+            throw std::invalid_argument("Not an integer: the JSON value is not one");
+        if constexpr (std::is_signed_v<T>) {
+            const auto number = yyjson_get_sint(v);
+            if (number < static_cast<std::int64_t>(std::numeric_limits<T>::min()) ||
+                number > static_cast<std::int64_t>(std::numeric_limits<T>::max()))
+                throw std::invalid_argument("Not an integer: " + std::to_string(number) +
+                                            " is out of range");
+            return static_cast<T>(number);
+        } else {
+            if (yyjson_is_sint(v) && yyjson_get_sint(v) < 0)
+                throw std::invalid_argument("Not an unsigned integer: the number is negative");
+            const auto number = yyjson_get_uint(v);
+            if (number > static_cast<std::uint64_t>(std::numeric_limits<T>::max()))
+                throw std::invalid_argument("Not an unsigned integer: " + std::to_string(number) +
+                                            " is out of range");
+            return static_cast<T>(number);
+        }
+    }
+};
+
+/**
+ * @brief A truth value is the third shape the wire states: the format's own
+ * =true= and =false=, not the word.
+ */
+template <>
+struct json_codec<bool> {
+    static yyjson_mut_val* write(yyjson_mut_doc* doc, const bool& v) {
+        return yyjson_mut_bool(doc, v);
+    }
+
+    static bool read(yyjson_val* v) {
+        if (!yyjson_is_bool(v))
+            throw std::invalid_argument("Not a truth value: the JSON value is not one");
+        return yyjson_get_bool(v);
     }
 };
 

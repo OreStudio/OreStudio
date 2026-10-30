@@ -41,9 +41,16 @@
 \ir ./marketdata_market_data_vendor_instruments_notify_trigger_drop.sql
 \ir ./marketdata_market_data_vendor_instruments_drop.sql
 \ir ./marketdata_market_data_sources_notify_trigger_drop.sql
+\ir ./marketdata_sessions_settings_validate_trigger_drop.sql
+\ir ./marketdata_sessions_notify_trigger_drop.sql
+\ir ./marketdata_sessions_drop.sql
 \ir ./marketdata_market_data_sources_drop.sql
 \ir ./marketdata_providers_notify_trigger_drop.sql
 \ir ./marketdata_providers_drop.sql
+\ir ./marketdata_suppliers_notify_trigger_drop.sql
+\ir ./marketdata_suppliers_drop.sql
+\ir ./marketdata_adapters_notify_trigger_drop.sql
+\ir ./marketdata_adapters_drop.sql
 \ir ./marketdata_market_fixings_notify_trigger_drop.sql
 \ir ./marketdata_market_fixings_drop.sql
 \ir ./marketdata_curve_publishes_notify_trigger_drop.sql

@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: A6630FE3-8B74-4DA5-B303-A091F852CE26
+:END:
+#+title: Task: Flip rates onto its rows
+#+description: Ten rate codes construct today, but the planner still fills a bag and the writer translates it. Move that translation into the planner so the plan carries the rows, and the writer only persists them.
+#+type: task
+#+level: s1
+#+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
+#+owner: marco
+#+branch: feature/flip-rates-onto-its-rows
+#+pr: 4085
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A rate trade states its rows in the plan, and the writer translates nothing for the family.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- The planner builds the rate product with its legs, amounts, rates and strikes from what it draws.
+- The writer's rates arm is gone and the batch is persisted with its audit columns stamped.
+- A provisioning run books the same rate rows as before the flip: 24 headers, 48 legs, 48 amounts, 48 rates and 3 strikes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Rate instrument headers | 24 | =select count(*) from ores_trading_rate_instruments_tbl= | worktree |
+| Swap legs | 48 | =select count(*) from ores_trading_swap_legs_tbl= | worktree |
+| Leg amounts | 48 | =select count(*) from ores_trading_swap_leg_amounts_tbl= | worktree |
+| Leg rates | 48 | =select count(*) from ores_trading_swap_leg_rates_tbl= | worktree |
+| Instrument strikes | 3 | =select count(*) from ores_trading_instrument_strikes_tbl= | worktree |
+| Rate types booked | 8, three each | =select trade_type_code, count(*) ... group by 1= | worktree |
+| Trade rows, latest version | 127 | =select count(distinct id) from ores_trading_trades_tbl where valid_to = ...= | worktree |
+| Distinct asset families unchanged | bond 24, commodity 25 + 12, credit 4, equity 18, fx 32 | group-by over the trades' latest version | worktree |
+| Planner suite | 1,881 assertions in 79 cases | =publish/bin/ores.synthetic.core.tests= | worktree |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4085][#4085]] | [synthetic] Let a rate trade state its rows |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The rate family states its rows. The planner builds the product with its two
+legs, their amounts, their rates and its strike, and the writer persists what
+the plan carries. The writer's rates arm is gone: the translation that named
+each product's constructor moved to the planner beside the drawing.
+
+The population is unchanged. A fresh tenant books 24 rate headers, 48 legs, 48
+amounts, 48 rates and 3 strikes, which is what it booked before the flip, and
+every other family's count is unchanged too: 127 trades in total.
+
+Two facts about the family came out of the measurement and neither is a defect
+the flip introduced:
+
+- Only the cap floor states a strike. The planner draws a strike for the
+  swaption as well, but the constructor it calls takes the expiry and no
+  strike, so the drawn value is dropped. That is how the family booked before
+  the flip and the rows are the same.
+- The knock-out swap is never drawn. Each seeded rate config states eight
+  slots and the planner cycles nine routed types, so the ninth is never
+  reached. Captured rather than fixed here, because a flip moves rows and does
+  not add products.
+
+The facts and the strikes now carry their change reason and commentary. Before
+the flip the writer stamped the headers and the legs, and left the strikes and
+the fact rows with empty audit columns while writing them; the walk over the
+batch stamps every row it sends.
+
+The plan's bag narrowed as part of the same move. A family that states its rows
+no longer has its terms in the slot's variant, so commodity and rates left it
+and four remain: bond, whose security still travels in the bag, and the three
+families that have not flipped. The two removed structs stay as what their
+planners draw, and their comments say so.

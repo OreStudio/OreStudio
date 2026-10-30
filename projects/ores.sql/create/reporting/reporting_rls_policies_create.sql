@@ -237,3 +237,20 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- -----------------------------------------------------------------------------
+-- Engine Settings Changes
+-- -----------------------------------------------------------------------------
+alter table ores_reporting_engine_settings_changes_tbl enable row level security;
+
+drop policy if exists engine_settings_changes_tenant_isolation_policy
+    on ores_reporting_engine_settings_changes_tbl;
+
+create policy engine_settings_changes_tenant_isolation_policy
+on ores_reporting_engine_settings_changes_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

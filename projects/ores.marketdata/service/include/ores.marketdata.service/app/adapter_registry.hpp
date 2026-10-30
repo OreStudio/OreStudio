@@ -60,6 +60,8 @@ enum class adapter_state {
  * @brief What the registry asks the catalogue when an adapter announces itself.
  */
 struct universe_check {
+    /// Whether the catalogue holds the adapter module.
+    std::function<bool(const std::string& adapter_code)> adapter_known;
     /// Whether the catalogue holds the provider.
     std::function<bool(const std::string& provider_code)> provider_known;
     /// Whether the catalogue holds the vendor id for the provider.

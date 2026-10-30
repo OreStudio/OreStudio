@@ -1,0 +1,231 @@
+:PROPERTIES:
+:ID: 9A5DB007-BF55-43DC-9C2F-479A501BA44A
+:END:
+#+title: ores.cpp.wire-codec.codec_header
+#+description: Declares a type's four wire functions and the wire_traits specialisation naming them. =wire-codec= facet.
+#+type: archetype
+#+output: projects/{component_dir}/include/ores.{component_include}/domain/{entity}_codec.hpp
+#+facet: ores.cpp.wire-codec
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-10-29
+#+updated: 2026-10-29
+
+Declares a type's four wire functions — =to_json=, =from_json=, =to_msgpack=,
+=from_msgpack= — and the =ores::utility::codec::wire_traits= specialisation that
+names them.
+
+The specialisation has to be visible in every translation unit that names the
+trait for the type, because a template argument the compiler cannot see here is
+resolved against the primary template there, and two translations of one type
+disagreeing about its encoding is the one thing the seam exists to prevent. So
+the specialisation is stated in a header, and this is it.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_domain_type_codec.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_domain_type_codec.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.wire-codec.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_include_upper}}_DOMAIN_{{entity_singular_upper}}_CODEC_HPP
+#define ORES_{{component_include_upper}}_DOMAIN_{{entity_singular_upper}}_CODEC_HPP
+
+#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
+#include "ores.{{component_include}}/export.hpp"
+#include "ores.utility/codec/wire_traits.hpp"
+#include <cstddef>
+#include <span>
+#include <string>
+#include <string_view>
+
+namespace ores::{{component}}::domain {
+
+/**
+ * @brief The wire form of {{entity_singular}}, in each format the wire states.
+ *
+ * The four functions are this type's own: an overload set in the domain
+ * namespace would collide on the read direction, where two types differ only
+ * in what they return, so they are named here instead.
+ */
+struct ORES_{{component_include_upper}}_EXPORT {{entity_singular}}_codec final {
+    /**
+     * @brief Writes @p v as JSON: an object whose members are the members of
+     * the type.
+     *
+     * The bytes are reflect-cpp's for the same value, because this states the
+     * encoding that reflector derives, and the type's own test compares the
+     * two.
+     */
+    static std::string to_json(const {{entity_singular}}& v);
+
+    /**
+     * @brief Reads a {{entity_singular}} back out of its JSON form.
+     */
+    static {{entity_singular}} from_json(std::string_view text);
+
+    /**
+     * @brief Writes @p v as MessagePack: a map whose keys are the members of
+     * the type.
+     */
+    static std::string to_msgpack(const {{entity_singular}}& v);
+
+    /**
+     * @brief Reads a {{entity_singular}} back out of its MessagePack form.
+     */
+    static {{entity_singular}} from_msgpack(std::span<const std::byte> data);
+};
+
+}
+
+namespace ores::utility::codec {
+
+/**
+ * @brief The generated codec, which is how the wire codec reaches this type.
+ *
+ * A translation unit that only sends the type includes this header and is
+ * done: the wire codec names wire_traits, and this states what it resolves to
+ * here.
+ */
+template <>
+struct wire_traits<ores::{{component}}::domain::{{entity_singular}}> {
+    /**
+     * @brief States that this is a generated codec.
+     *
+     * A test asserts this rather than the encoding, because the encoding is
+     * what the type's own case already compares with the reflector: what it
+     * cannot see is whether the seam resolved to this specialisation or fell
+     * through to the primary template, and a marker that only this
+     * specialisation declares is that answer at compile time.
+     */
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::{{component}}::domain::{{entity_singular}}& v) {
+        return ores::{{component}}::domain::{{entity_singular}}_codec::to_json(v);
+    }
+
+    static ores::{{component}}::domain::{{entity_singular}} read_json(std::string_view text) {
+        return ores::{{component}}::domain::{{entity_singular}}_codec::from_json(text);
+    }
+
+    static std::string write_msgpack(const ores::{{component}}::domain::{{entity_singular}}& v) {
+        return ores::{{component}}::domain::{{entity_singular}}_codec::to_msgpack(v);
+    }
+
+    static ores::{{component}}::domain::{{entity_singular}} read_msgpack(
+        std::span<const std::byte> data) {
+        return ores::{{component}}::domain::{{entity_singular}}_codec::from_msgpack(data);
+    }
+};
+
+}
+
+#endif
+{{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_include_upper}}_DOMAIN_{{name_singular_upper}}_CODEC_HPP
+#define ORES_{{component_include_upper}}_DOMAIN_{{name_singular_upper}}_CODEC_HPP
+
+#include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
+#include "ores.{{component_include}}/export.hpp"
+#include "ores.utility/codec/wire_traits.hpp"
+#include <cstddef>
+#include <span>
+#include <string>
+#include <string_view>
+
+namespace ores::{{component}}::domain {
+
+/**
+ * @brief The wire form of {{name_singular}}, in each format the wire states.
+ *
+ * The four functions are this type's own: an overload set in the domain
+ * namespace would collide on the read direction, where two types differ only
+ * in what they return, so they are named here instead.
+ */
+struct ORES_{{component_include_upper}}_EXPORT {{name_singular}}_codec final {
+    /**
+     * @brief Writes @p v as JSON: an object whose members are the members of
+     * the type.
+     *
+     * The bytes are reflect-cpp's for the same value, because this states the
+     * encoding that reflector derives, and the type's own test compares the
+     * two.
+     */
+    static std::string to_json(const {{name_singular}}& v);
+
+    /**
+     * @brief Reads a {{name_singular}} back out of its JSON form.
+     */
+    static {{name_singular}} from_json(std::string_view text);
+
+    /**
+     * @brief Writes @p v as MessagePack: a map whose keys are the members of
+     * the type.
+     */
+    static std::string to_msgpack(const {{name_singular}}& v);
+
+    /**
+     * @brief Reads a {{name_singular}} back out of its MessagePack form.
+     */
+    static {{name_singular}} from_msgpack(std::span<const std::byte> data);
+};
+
+}
+
+namespace ores::utility::codec {
+
+/**
+ * @brief The generated codec, which is how the wire codec reaches this type.
+ *
+ * A translation unit that only sends the type includes this header and is
+ * done: the wire codec names wire_traits, and this states what it resolves to
+ * here.
+ */
+template <>
+struct wire_traits<ores::{{component}}::domain::{{name_singular}}> {
+    /**
+     * @brief States that this is a generated codec.
+     *
+     * A test asserts this rather than the encoding, because the encoding is
+     * what the type's own case already compares with the reflector: what it
+     * cannot see is whether the seam resolved to this specialisation or fell
+     * through to the primary template, and a marker that only this
+     * specialisation declares is that answer at compile time.
+     */
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::{{component}}::domain::{{name_singular}}& v) {
+        return ores::{{component}}::domain::{{name_singular}}_codec::to_json(v);
+    }
+
+    static ores::{{component}}::domain::{{name_singular}} read_json(std::string_view text) {
+        return ores::{{component}}::domain::{{name_singular}}_codec::from_json(text);
+    }
+
+    static std::string write_msgpack(const ores::{{component}}::domain::{{name_singular}}& v) {
+        return ores::{{component}}::domain::{{name_singular}}_codec::to_msgpack(v);
+    }
+
+    static ores::{{component}}::domain::{{name_singular}} read_msgpack(
+        std::span<const std::byte> data) {
+        return ores::{{component}}::domain::{{name_singular}}_codec::from_msgpack(data);
+    }
+};
+
+}
+
+#endif
+{{/junction}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:EDCD6B28-B9D8-4D69-A30D-3B503B9838AB][ores.cpp.wire-codec]]
+- [[id:82D600B6-D48F-4BED-B4CB-BFF0DFCEC5B0][ores.cpp.wire-codec.codec_impl]] — the definitions this header declares.

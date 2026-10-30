@@ -21,6 +21,7 @@
 #define ORES_NATS_DOMAIN_WIRE_CODEC_HPP
 
 #include "ores.nats/domain/wire_format.hpp"
+#include "ores.utility/codec/wire_traits.hpp"
 #include <cstddef>
 #include <rfl/json.hpp>
 #include <rfl/msgpack.hpp>
@@ -60,14 +61,10 @@ public:
     template <typename T>
     [[nodiscard]] std::vector<std::byte> encode(const T& obj) const {
         switch (format_) {
-            case wire_format::json: {
-                const auto s = rfl::json::write(obj);
-                return to_bytes(s);
-            }
-            case wire_format::msgpack: {
-                const auto b = rfl::msgpack::write(obj);
-                return to_bytes(b);
-            }
+            case wire_format::json:
+                return to_bytes(utility::codec::wire_traits<T>::write_json(obj));
+            case wire_format::msgpack:
+                return to_bytes(utility::codec::wire_traits<T>::write_msgpack(obj));
         }
         std::unreachable();
     }
@@ -78,13 +75,18 @@ public:
      */
     template <typename T>
     [[nodiscard]] rfl::Result<T> decode(std::span<const std::byte> data) const {
-        switch (format_) {
-            case wire_format::json: {
-                const std::string_view sv(reinterpret_cast<const char*>(data.data()), data.size());
-                return rfl::json::read<T>(sv);
+        try {
+            switch (format_) {
+                case wire_format::json: {
+                    const std::string_view sv(reinterpret_cast<const char*>(data.data()),
+                                              data.size());
+                    return utility::codec::wire_traits<T>::read_json(sv);
+                }
+                case wire_format::msgpack:
+                    return utility::codec::wire_traits<T>::read_msgpack(data);
             }
-            case wire_format::msgpack:
-                return rfl::msgpack::read<T>(data);
+        } catch (const std::exception& e) {
+            return rfl::Unexpected(rfl::Error(e.what()));
         }
         std::unreachable();
     }

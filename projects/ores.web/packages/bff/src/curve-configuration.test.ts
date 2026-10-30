@@ -126,11 +126,54 @@ function document(): Record<string, unknown> {
                 projection_curve: 'USD-3M',
                 pillar_choice: 'MaturityDate',
                 min_distance: null,
+                // The document carries the instant the row was recorded, which no
+                // ORE element holds, so it is not a leaf of the segment.
+                recorded_at: '2026-10-30 10:26:32.965385Z',
             },
             {
                 id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
                 curve_definition_id: EQUITY_DEFINITION_ID,
                 segment_type: 'Zero',
+                position: 0,
+            },
+        ],
+        quotes: [
+            {
+                id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+                curve_definition_id: DEFINITION_ID,
+                curve_segment_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+                quote_list: '',
+                quote_text: 'USD/3M/1Y',
+                optional_flag: 'false',
+                position: 1,
+            },
+            {
+                id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+                curve_definition_id: DEFINITION_ID,
+                curve_segment_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+                quote_list: '',
+                quote_text: 'USD/3M/2Y',
+                optional_flag: 'true',
+                position: 0,
+            },
+            {
+                id: 'ffffffff-ffff-4fff-8fff-ffffffffffff',
+                curve_definition_id: DEFINITION_ID,
+                curve_segment_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+                quote_list: 'BasisQuotes',
+                quote_text: '',
+                optional_flag: null,
+                rate_quote: 'IR_SWAP/RATE/GBP/0D/1D/1M',
+                spread_quote: 'IR_SWAP/BASIS/GBP/0D/1D/1M',
+                position: 2,
+            },
+            {
+                id: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
+                curve_definition_id: EQUITY_DEFINITION_ID,
+                curve_segment_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+                quote_list: '',
+                quote_text: 'ACME/1Y',
+                optional_flag: null,
                 position: 0,
             },
         ],
@@ -595,6 +638,20 @@ describe('the curve configuration a report binds', () => {
         const pillar = row?.leaves.find((leaf) => leaf.ore === 'PillarChoice');
         expect(pillar?.value).toBe('MaturityDate');
         expect(pillar?.documented).toBe(false);
+
+        // The quotes the segment holds, in the order the document writes them, and
+        // none of another segment's.
+        expect(row?.quotes.map((quote) => quote.text)).toEqual(['USD/3M/2Y', 'USD/3M/1Y', '']);
+        // A composite quote names its list and its pair, which the page draws when
+        // the quote states no text of its own.
+        const composite = row?.quotes[2];
+        expect(composite?.list).toBe('BasisQuotes');
+        expect(composite?.rateQuote).toBe('IR_SWAP/RATE/GBP/0D/1D/1M');
+        expect(composite?.spreadQuote).toBe('IR_SWAP/BASIS/GBP/0D/1D/1M');
+        // The flag is a flag, not the attribute's text: a quote that states false
+        // is not optional, and one that states nothing is not either.
+        expect(row?.quotes[0]?.optional).toBe(true);
+        expect(row?.quotes[1]?.optional).toBe(false);
     });
 
     it('names the block an entry holds and whether the entry states it', async () => {

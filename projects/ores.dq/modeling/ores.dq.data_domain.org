@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: B6E4D3E4-1257-40F8-982D-F92C4CAC74D2
 :END:
 #+title: ores.dq.data_domain

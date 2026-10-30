@@ -50,8 +50,8 @@ code use them. Each word has one meaning and one example.
 | Word | Meaning | Example |
 |------+---------+---------|
 | /Publisher/ | Owns the ids, the credit and the terms. It may be a central bank, a treasury, an exchange or a data vendor. | =ecb=, =imf=, =ust=, =bloomberg= for its own data |
-| /Supplier/ | Who we contract with and connect to. A supplier may also be a publisher. | =frankfurter=, =bloomberg=, =lseg=, =ecb-data-portal=, =fred= |
-| /Adapter/ | A code module that speaks one supplier protocol. The release installs it with a version, a description and a configuration schema. | =frankfurter= 1.4.0, =bloomberg-api= 3.2.0 |
+| /Supplier/ | Who we contract with and connect to. A supplier may also be a publisher. | =frankfurter= (an aggregator), =synthetic= (the platform's own) |
+| /Adapter/ | A code class that speaks one supplier protocol. The release defines it with a version, a description and a configuration schema; an installation claims it when the class announces itself. | =frankfurter= 0.0.29, =synthetic= 0.0.29 |
 | /Session/ | One configured adapter: supplier, environment, endpoint, credential and the schema's settings. | =frankfurter-eu= (production), =bloomberg-test= (test) |
 | /Environment/ | Where a session runs. | =production=, =test=, =dr=, =simulated= |
 | /Service/ | What a session offers. It decides the shape of the feed and its schedule. | =real_time=, =delayed=, =end_of_day=, =reference=, =historical= |

@@ -38,7 +38,8 @@ vendor_id id(const std::string& external) {
 }
 
 universe_check app_adapter_registry_catalogue() {
-    return universe_check{.provider_known = [](const std::string& p) { return p == "bloomberg"; },
+    return universe_check{.adapter_known = [](const std::string& a) { return a == "synthetic"; },
+                          .provider_known = [](const std::string& p) { return p == "bloomberg"; },
                           .id_known =
                               [](const std::string&, const vendor_id& v) {
                                   return v.external_id == "EURUSD Curncy" ||
@@ -49,6 +50,8 @@ universe_check app_adapter_registry_catalogue() {
 adapter_announce_request announce(const std::string& provider = "bloomberg") {
     adapter_announce_request r;
     r.adapter_id = "bloomberg-sim";
+    r.adapter_code = "synthetic";
+    r.module_version = "0.0.29";
     r.provider_code = provider;
     r.universe = {id("EURUSD Curncy"), id("GBPUSD Curncy"), id("XAUUSD Curncy")};
     return r;
@@ -68,6 +71,9 @@ TEST_CASE("an_adapter_of_a_known_provider_is_ready_after_its_announce", "[app][a
     CHECK(response.unknown_count == 1);
     CHECK(sut.state_of("bloomberg-sim") == adapter_state::ready);
     CHECK(sut.provider_of("bloomberg-sim") == "bloomberg");
+    REQUIRE(sut.status().size() == 1);
+    CHECK(sut.status().front().adapter_code == "synthetic");
+    CHECK(sut.status().front().module_version == "0.0.29");
 }
 
 TEST_CASE("an_adapter_of_an_unknown_provider_is_rejected", "[app][adapter_registry]") {
@@ -79,6 +85,18 @@ TEST_CASE("an_adapter_of_an_unknown_provider_is_rejected", "[app][adapter_regist
     CHECK_FALSE(response.message.empty());
     CHECK(sut.state_of("bloomberg-sim") == adapter_state::rejected);
     CHECK(sut.demandable().empty());
+}
+
+TEST_CASE("an_adapter_of_an_unknown_module_is_rejected", "[app][adapter_registry]") {
+    adapter_registry sut;
+
+    auto request = announce();
+    request.adapter_code = "bloomberg-api";
+    const auto response = sut.announce(request, app_adapter_registry_catalogue(), t0);
+
+    CHECK_FALSE(response.success);
+    CHECK(response.message.find("bloomberg-api") != std::string::npos);
+    CHECK(sut.state_of("bloomberg-sim") == adapter_state::rejected);
 }
 
 TEST_CASE("an_announce_with_no_adapter_id_is_refused", "[app][adapter_registry]") {

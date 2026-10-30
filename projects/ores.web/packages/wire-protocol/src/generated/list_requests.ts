@@ -1247,6 +1247,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [],
         rows: ['notifications'],
     },
+    'marketdata.v1.adapters.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['adapters'],
+    },
+    'marketdata.v1.adapters_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'marketdata.v1.composite_inputs.list': {
         asOf: true,
         filter: [
@@ -1519,6 +1529,25 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'marketdata.v1.sessions.list': {
+        asOf: true,
+        filter: [
+            'supplier_code',
+            'adapter_code',
+            'environment',
+            'code_one_of',
+            'supplier_code_one_of',
+            'adapter_code_one_of',
+            'environment_one_of',
+            'search',
+        ],
+        rows: ['sessions'],
+    },
+    'marketdata.v1.sessions_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'marketdata.v1.subscription_intervals.list': {
         asOf: true,
         filter: [
@@ -1549,6 +1578,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['subscriptions'],
     },
     'marketdata.v1.subscriptions_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'marketdata.v1.suppliers.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['suppliers'],
+    },
+    'marketdata.v1.suppliers_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -2781,6 +2820,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['types'],
     },
     'refdata.v1.leg_types_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.legal_entities.list': {
+        asOf: true,
+        filter: ['lei_one_of'],
+        rows: ['legal_entities'],
+    },
+    'refdata.v1.legal_entities_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: A13436CF-5292-485C-A69A-FCC5EB2153C7
 :END:
 #+title: ores.dq.origin_dimension

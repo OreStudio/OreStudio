@@ -52,6 +52,8 @@
 \ir ./dq_fx_spot_fixing_items_artefact_drop.sql
 \ir ./dq_fx_spot_generation_configs_artefact_drop.sql
 \ir ./dq_market_data_providers_artefact_drop.sql
+\ir ./dq_adapters_artefact_drop.sql
+\ir ./dq_suppliers_artefact_drop.sql
 \ir ./dq_market_observations_artefact_drop.sql
 \ir ./dq_crm_topology_configs_artefact_drop.sql
 \ir ./dq_books_artefact_drop.sql

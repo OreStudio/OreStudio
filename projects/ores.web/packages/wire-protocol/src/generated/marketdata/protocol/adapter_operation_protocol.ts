@@ -52,6 +52,8 @@ export interface RejectedId {
  */
 export interface AdapterAnnounceRequest {
     adapter_id: string;
+    adapter_code: string;
+    module_version: string;
     provider_code: string;
     universe: VendorId[];
 }
@@ -120,6 +122,8 @@ export interface AdapterHeartbeat {
  */
 export interface AdapterStatus {
     adapter_id: string;
+    adapter_code: string;
+    module_version: string;
     provider_code: string;
     state: string;
     last_heartbeat_at: string;

@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 55C9F620-03D7-421C-BC6B-911CF956AC7F
 :END:
 #+title: ores.dq.catalog

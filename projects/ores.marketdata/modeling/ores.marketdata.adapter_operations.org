@@ -112,6 +112,22 @@ What an adapter tells the service when it starts.
 
 The opaque id of the adapter. No code parses it.
 
+*** adapter_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The code of the adapter module that sent the announce, as the catalogue spells it. It is
+what makes an adapter installed: the service lists a module as installed from the first
+announce it answers, so an installation that never runs a module never claims it.
+
+*** module_version
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The version of the module that sent the announce.
+
 *** provider_code
 :PROPERTIES:
 :cpp_type: std::string
@@ -316,6 +332,20 @@ One adapter as the service sees it.
 :END:
 
 The opaque id of the adapter.
+
+*** adapter_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The code of the adapter module.
+
+*** module_version
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The version of the module.
 
 *** provider_code
 :PROPERTIES:

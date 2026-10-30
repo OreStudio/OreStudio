@@ -23,11 +23,13 @@
 #include "ores.utility/codec/text_form.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include <cstddef>
+#include <limits>
 #include <msgpack.h>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <vector>
 
 namespace ores::utility::codec {
@@ -37,8 +39,9 @@ namespace ores::utility::codec {
  * one value read back out of a parsed object.
  *
  * The contract is the JSON carrier's, one format over: a type whose wire form is
- * a string states it through =text_form= and takes the implementation below.
- * The text is the same text, so the two formats cannot disagree about a value --
+ * a string states it through =text_form= and takes the implementation below,
+ * and a number or a truth value takes the specialisations further down. The
+ * text is the same text, so the two formats cannot disagree about a value --
  * only about how they frame it.
  */
 template <typename T>
@@ -75,6 +78,66 @@ struct msgpack_codec<serialization::error_code> {
         if (v.via.u64 > static_cast<std::uint64_t>(serialization::error_code::limit_exceeded))
             throw std::invalid_argument("Not an error code: " + std::to_string(v.via.u64));
         return static_cast<serialization::error_code>(v.via.u64);
+    }
+};
+
+/**
+ * @brief An integer is a number here too, packed in the frame that holds it.
+ *
+ * The packer picks the narrowest of the integer frames for the value, which is
+ * what the reflector this replaces asks of the same packer, so the two agree
+ * byte for byte rather than only in value.
+ */
+template <typename T>
+    requires std::is_integral_v<T> && (!std::is_same_v<T, bool>)
+struct msgpack_codec<T> {
+    static void write(msgpack_packer* pk, const T& v) {
+        if constexpr (std::is_signed_v<T>) {
+            if (msgpack_pack_int64(pk, static_cast<std::int64_t>(v)) != 0)
+                throw std::runtime_error("Could not pack an integer");
+        } else {
+            if (msgpack_pack_uint64(pk, static_cast<std::uint64_t>(v)) != 0)
+                throw std::runtime_error("Could not pack an unsigned integer");
+        }
+    }
+
+    static T read(const msgpack_object& v) {
+        const bool positive = v.type == MSGPACK_OBJECT_POSITIVE_INTEGER;
+        if (!positive && v.type != MSGPACK_OBJECT_NEGATIVE_INTEGER)
+            throw std::invalid_argument("Not an integer: the MessagePack value is not one");
+        if constexpr (std::is_signed_v<T>) {
+            if (positive) {
+                if (v.via.u64 > static_cast<std::uint64_t>(std::numeric_limits<T>::max()))
+                    throw std::invalid_argument("Not an integer: it is out of range");
+                return static_cast<T>(v.via.u64);
+            }
+            if (v.via.i64 < static_cast<std::int64_t>(std::numeric_limits<T>::min()))
+                throw std::invalid_argument("Not an integer: it is out of range");
+            return static_cast<T>(v.via.i64);
+        } else {
+            if (!positive)
+                throw std::invalid_argument("Not an unsigned integer: the number is negative");
+            if (v.via.u64 > static_cast<std::uint64_t>(std::numeric_limits<T>::max()))
+                throw std::invalid_argument("Not an unsigned integer: it is out of range");
+            return static_cast<T>(v.via.u64);
+        }
+    }
+};
+
+/**
+ * @brief A truth value is the format's own =true= and =false=.
+ */
+template <>
+struct msgpack_codec<bool> {
+    static void write(msgpack_packer* pk, const bool& v) {
+        if ((v ? msgpack_pack_true(pk) : msgpack_pack_false(pk)) != 0)
+            throw std::runtime_error("Could not pack a truth value");
+    }
+
+    static bool read(const msgpack_object& v) {
+        if (v.type != MSGPACK_OBJECT_BOOLEAN)
+            throw std::invalid_argument("Not a truth value: the MessagePack value is not one");
+        return v.via.boolean;
     }
 };
 

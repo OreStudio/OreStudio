@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: DF18CCF5-EF2A-41A6-9EB2-07438BB09613
 :END:
 #+title: ores.dq.methodology

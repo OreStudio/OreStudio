@@ -147,12 +147,33 @@ export interface CurveBlockView {
     readonly present: boolean | null;
 }
 
+/**
+ * One quote a segment holds.
+ *
+ * A quote is not a leaf with a name of its own: it is the text of a `Quote`
+ * element, or a pair of `RateQuote` and `SpreadQuote` elements, inside the list
+ * its `quote_list` names. The contract carries no entry for a segment's `Quotes`
+ * at all — the rows it has are an entry's own — so there is nothing to join a
+ * quote's parts to and the screen names them in its own words.
+ */
+export interface CurveQuoteView {
+    readonly id: string;
+    /** The list element the quote sits in, or empty for `Quotes` itself. */
+    readonly list: string;
+    readonly text: string;
+    /** Whether ORE may carry the quote as absent, which the element states. */
+    readonly optional: boolean;
+    readonly rateQuote: string;
+    readonly spreadQuote: string;
+}
+
 /** One row of a child collection, with the leaves the contract names for it. */
 export interface CurveCollectionRowView {
     readonly id: string;
     /** The element the row is written as, such as a segment's kind, or empty. */
     readonly kind: string;
     readonly leaves: readonly CurveParameterView[];
+    readonly quotes: readonly CurveQuoteView[];
 }
 
 /** A child collection an entry holds rows of, such as its segments. */
@@ -299,6 +320,8 @@ interface CurveCollectionRule {
     readonly kindColumn: string;
     /** The path from the entry to the leaves that kind holds, the entry left off. */
     readonly pathOf: (kind: string) => string;
+    /** The column a quote of one row joins back to, or empty for no quotes. */
+    readonly quoteParent: string;
 }
 
 /**
@@ -320,6 +343,7 @@ const CURVE_COLLECTIONS: readonly CurveCollectionRule[] = [
         parentKey: 'curve_definition_id',
         kindColumn: 'segment_type',
         pathOf: (kind: string) => `Segments/${kind}`,
+        quoteParent: 'curve_segment_id',
     },
 ];
 
@@ -335,6 +359,9 @@ const NOT_A_LEAF: ReadonlySet<string> = new Set([
     'change_commentary',
     'valid_from',
     'valid_to',
+    // The instant a row was recorded, which the document carries for every
+    // entity and which no ORE element holds.
+    'recorded_at',
     'curve_definition_id',
     'curve_segment_id',
     'curve_configuration_id',
@@ -402,6 +429,37 @@ function collectionLeaves(
     return found;
 }
 
+/**
+ * Whether a row states a flag as set.
+ *
+ * The document writes a flag as the attribute's text, and ORE writes =true= and
+ * =false=; a value it does not write is not set. Reading it as a flag here rather
+ * than on the screen keeps the one place that knows the spellings.
+ */
+function isSet(value: unknown): boolean {
+    const text = String(value ?? '').trim().toLowerCase();
+    return text === 'true' || text === 't' || text === 'y' || text === 'yes' || text === '1';
+}
+
+/** The quotes a segment holds, in the order the document writes them. */
+function quotesOf(
+    document: Readonly<Record<string, unknown>>,
+    segmentId: string,
+    parentKey: string,
+): readonly CurveQuoteView[] {
+    return vectorOf(document, 'quotes')
+        .filter((row) => text(row[parentKey]) === segmentId)
+        .sort((left, right) => numberOf(left['position']) - numberOf(right['position']))
+        .map((row) => ({
+            id: text(row['id']),
+            list: text(row['quote_list']),
+            text: text(row['quote_text']),
+            optional: isSet(row['optional_flag']),
+            rateQuote: text(row['rate_quote']),
+            spreadQuote: text(row['spread_quote']),
+        }));
+}
+
 /** The rows of every child collection an entry holds, in document order. */
 function collectionsOf(
     document: Readonly<Record<string, unknown>>,
@@ -413,8 +471,7 @@ function collectionsOf(
 ): readonly CurveCollectionView[] {
     const declared = new Set(wiring.blocks.map((block) => block.element));
     return CURVE_COLLECTIONS.filter(
-        (rule) =>
-            declared.has(rule.element) || vectorOf(document, rule.vector).length > 0,
+        (rule) => declared.has(rule.element) || vectorOf(document, rule.vector).length > 0,
     ).map((rule) => {
         const rows = vectorOf(document, rule.vector)
             .filter((candidate) => text(candidate[rule.parentKey]) === entryId)
@@ -432,6 +489,10 @@ function collectionsOf(
                         contract,
                         valueSetOf,
                     ),
+                    quotes:
+                        rule.quoteParent === ''
+                            ? []
+                            : quotesOf(document, text(candidate['id']), rule.quoteParent),
                 };
             });
         return { element: rule.element, rows };
@@ -447,9 +508,7 @@ function collectionsOf(
 function leavesOfEntry(entry: CurveEntryView): readonly CurveParameterView[] {
     return [
         ...entry.parameters,
-        ...entry.collections.flatMap((collection) =>
-            collection.rows.flatMap((row) => row.leaves),
-        ),
+        ...entry.collections.flatMap((collection) => collection.rows.flatMap((row) => row.leaves)),
     ];
 }
 
@@ -764,44 +823,49 @@ export function registerCurveConfigurationRoutes(
         const definitions = vectorOf(document, 'definitions');
         const [sectionRows, parameters, sets, values, catalogues, links, segmentTypes] =
             await Promise.all([
-            readAll(session, sectionSubjects.list_curve_sections_request, 'sections', {
-                filter: null,
-                as_of: null,
-            }),
-            readAll(session, parameterSubjects.list_ore_parameters_request, 'parameters', {
-                filter: null,
-                as_of: null,
-            }),
-            readAll(session, valueSetSubjects.list_ore_parameter_value_sets_request, 'sets', {
-                filter: null,
-                as_of: null,
-            }),
-            readAll(
-                session,
-                valueSetValueSubjects.list_ore_parameter_value_set_values_request,
-                'values',
-                {
+                readAll(session, sectionSubjects.list_curve_sections_request, 'sections', {
                     filter: null,
                     as_of: null,
-                },
-            ),
-            readAll(
-                session,
-                valueSetCatalogueSubjects.list_ore_parameter_value_set_catalogues_request,
-                'catalogues',
-                { filter: null, as_of: null },
-            ),
-            readAll(
-                session,
-                settingValueSetSubjects.list_ore_parameter_setting_value_sets_request,
-                'setting_value_sets',
-                { filter: null, as_of: null },
-            ),
-            readAll(session, segmentTypeSubjects.list_curve_segment_types_request, 'segment_types', {
-                filter: null,
-                as_of: null,
-            }),
-        ]);
+                }),
+                readAll(session, parameterSubjects.list_ore_parameters_request, 'parameters', {
+                    filter: null,
+                    as_of: null,
+                }),
+                readAll(session, valueSetSubjects.list_ore_parameter_value_sets_request, 'sets', {
+                    filter: null,
+                    as_of: null,
+                }),
+                readAll(
+                    session,
+                    valueSetValueSubjects.list_ore_parameter_value_set_values_request,
+                    'values',
+                    {
+                        filter: null,
+                        as_of: null,
+                    },
+                ),
+                readAll(
+                    session,
+                    valueSetCatalogueSubjects.list_ore_parameter_value_set_catalogues_request,
+                    'catalogues',
+                    { filter: null, as_of: null },
+                ),
+                readAll(
+                    session,
+                    settingValueSetSubjects.list_ore_parameter_setting_value_sets_request,
+                    'setting_value_sets',
+                    { filter: null, as_of: null },
+                ),
+                readAll(
+                    session,
+                    segmentTypeSubjects.list_curve_segment_types_request,
+                    'segment_types',
+                    {
+                        filter: null,
+                        as_of: null,
+                    },
+                ),
+            ]);
         const contract = new Map(
             parameters
                 .filter((entry) => text(entry['schema_name']) === SCHEMA_NAME)

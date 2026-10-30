@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Live adapter status | bloomberg-a serving, 5 routes, 26 demanded, 26 accepted, 298 ticks/min, last tick 0.0s | =marketdata adapters status= | 23b08e7612 |
+| Live adapter status | bloomberg-a serving, 5 routes, 26 demanded, 26 accepted, 298 ticks/min, last tick 0.0s | =marketdata adapter-status show= | 23b08e7612 |
 | Adapters with no routes | demo-a and lseg-a, 0 routes and 0 demand | same | same |
 
 * Result
@@ -108,7 +108,7 @@ The demand is self-correcting and visible.
 - The adapter status carries the routes that name the adapter's source, the
   ticks the ingest received from it in the last minute, and the age of its last
   tick. The handler merges the ingest's health into the supervisor's reply.
-- =marketdata adapters status= prints one row per adapter. Against the live
+- =marketdata adapter-status show= prints one row per adapter. Against the live
   system: =bloomberg-a= serving, 5 routes, 26 demanded and accepted, 298
   ticks/min, last tick 0.0s; =demo-a= and =lseg-a= ready with no routes and no
   demand.

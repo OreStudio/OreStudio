@@ -30,6 +30,7 @@ import {
     type CurveConfiguration,
     type CurveEntry,
     type CurveParameter,
+    type CurveQuote,
     type CurveSection,
 } from '../api/curveConfiguration.js';
 import { ApiFailure } from '../api/transport.js';
@@ -466,9 +467,7 @@ function CurveWorkbench({
     const visible = parameters.filter((leaf) => !setOnly || leaf.value !== null);
     const gaps = [
         ...parameters,
-        ...entry.collections.flatMap((collection) =>
-            collection.rows.flatMap((row) => row.leaves),
-        ),
+        ...entry.collections.flatMap((collection) => collection.rows.flatMap((row) => row.leaves)),
     ].filter((leaf) => !leaf.documented).length;
     const keyOf = (leaf: CurveParameter): string => `${leaf.entity}.${leaf.column}`;
     const changed =
@@ -523,7 +522,9 @@ function CurveWorkbench({
     const drawable = [
         ...parameters.map((leaf) => documentationKey(entry.id, leaf)),
         ...entry.collections.flatMap((collection) =>
-            collection.rows.flatMap((row) => row.leaves.map((leaf) => documentationKey(row.id, leaf))),
+            collection.rows.flatMap((row) =>
+                row.leaves.map((leaf) => documentationKey(row.id, leaf)),
+            ),
         ),
     ];
     const allOpen = drawable.length > 0 && drawable.every((key) => opened.has(key));
@@ -681,11 +682,7 @@ function CurveWorkbench({
                         <button
                             type="button"
                             className="text-xs text-accent hover:text-accent-bright"
-                            onClick={() =>
-                                setOpened(
-                                    allOpen ? new Set() : new Set(drawable),
-                                )
-                            }
+                            onClick={() => setOpened(allOpen ? new Set() : new Set(drawable))}
                         >
                             {allOpen
                                 ? t('oreParameter.hideAllDocumentation')
@@ -736,35 +733,105 @@ function CurveWorkbench({
                                 <ul className="divide-y divide-line-subtle">
                                     {row.leaves.map(leafOfRow(row.id))}
                                 </ul>
+                                {row.quotes.length > 0 && (
+                                    <div className="mt-2 space-y-2 border-t border-line-subtle pt-2">
+                                        <p className="text-xs text-ink-faint">
+                                            {plural(
+                                                'curveConfiguration.curves.quotes',
+                                                row.quotes.length,
+                                            )}
+                                        </p>
+                                        <ul className="space-y-2">
+                                            {row.quotes.map((quote) => (
+                                                <li key={quote.id} className="space-y-1">
+                                                    <ParameterRow
+                                                        label={t(
+                                                            'curveConfiguration.curves.quote',
+                                                        )}
+                                                    >
+                                                        <span className="font-mono text-xs">
+                                                            {quote.text !== ''
+                                                                ? quote.text
+                                                                : compositeOf(quote, t)}
+                                                        </span>
+                                                    </ParameterRow>
+                                                    {quote.list === '' ? null : (
+                                                        <ParameterRow
+                                                            label={t(
+                                                                'curveConfiguration.curves.quoteList',
+                                                            )}
+                                                        >
+                                                            <span className="text-xs">
+                                                                {quote.list}
+                                                            </span>
+                                                        </ParameterRow>
+                                                    )}
+                                                    <ParameterRow
+                                                        label={t(
+                                                            'curveConfiguration.curves.quoteOptional',
+                                                        )}
+                                                    >
+                                                        <span className="text-xs">
+                                                            {t(
+                                                                quote.optional
+                                                                    ? 'oreParameter.yes'
+                                                                    : 'oreParameter.no',
+                                                            )}
+                                                        </span>
+                                                    </ParameterRow>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
                             </li>
                         ))}
                     </ul>
                 </section>
             ))}
             {blocks.length > 0 && (
-                <section className="card p-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs text-ink-faint">
-                            {t('curveConfiguration.curves.blocks')}
-                        </span>
+                <section className="card space-y-1 p-4">
+                    <h3 className="text-sm font-medium">
+                        {t('curveConfiguration.curves.blocks')}
+                    </h3>
+                    <dl className="divide-y divide-line-subtle">
                         {blocks.map((block) => (
-                            <span key={block.element} className="flex items-center gap-1">
-                                <Tag small>{block.element}</Tag>
-                                <span className="text-xs text-ink-faint">
+                            <div
+                                key={block.element}
+                                className="flex flex-wrap items-baseline justify-between gap-2 py-2"
+                            >
+                                <dt className="text-sm">{block.element}</dt>
+                                <dd className="text-xs text-ink-faint">
                                     {block.present === null
                                         ? t('curveConfiguration.curves.blockNotRecorded')
                                         : block.present
                                           ? t('curveConfiguration.curves.blockStated')
                                           : t('curveConfiguration.curves.blockAbsent')}
-                                </span>
-                            </span>
+                                </dd>
+                            </div>
                         ))}
-                    </div>
+                    </dl>
                 </section>
             )}
             {foot}
         </div>
     );
+}
+
+/**
+ * A composite quote's pair, as one string. A quote that states its own text uses
+ * that instead, and a quote that states neither is left empty rather than drawn
+ * as a slash between two blanks.
+ */
+function compositeOf(
+    quote: CurveQuote,
+    t: (key: string, values?: Record<string, string | number>) => string,
+): string {
+    if (quote.rateQuote === '' && quote.spreadQuote === '') return '';
+    return t('curveConfiguration.curves.quotePair', {
+        rate: quote.rateQuote,
+        spread: quote.spreadQuote,
+    });
 }
 
 /** One leaf: its label, the value in force, and the documentation under it. */

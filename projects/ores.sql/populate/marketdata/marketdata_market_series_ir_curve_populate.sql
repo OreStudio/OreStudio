@@ -175,5 +175,5 @@ select 'marketdata_routes (system party)' as entity, count(*) as count
 from ores_marketdata_routes_tbl
 where tenant_id = ores_utility_system_tenant_id_fn()
   and party_id = ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn())
-  and provider_code = 'bloomberg'
+  and publisher_code = 'bloomberg'
   and valid_to = ores_utility_infinity_timestamp_fn();

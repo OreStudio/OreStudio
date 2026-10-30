@@ -56,7 +56,8 @@ create table if not exists "ores_marketdata_routes_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("provider_code" <> '')
+    check ("publisher_code" <> ''),
+    check ("asset_class" <> '')
 );
 
 -- Composite natural key: unique combination for active records
@@ -85,19 +86,19 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate provider_code
-    NEW.provider_code := ores_marketdata_validate_provider_fn(NEW.tenant_id, NEW.provider_code);
+    -- Validate publisher_code
+    NEW.publisher_code := ores_marketdata_validate_provider_fn(NEW.tenant_id, NEW.publisher_code);
 
     -- The party holds a subscription to the provider the route serves.
     if not exists (
         select 1 from ores_marketdata_subscriptions_tbl
         where tenant_id = NEW.tenant_id
           and party_id = NEW.party_id
-          and provider_code = NEW.provider_code
+          and provider_code = NEW.publisher_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid route: party % holds no subscription to provider %.',
-            NEW.party_id, NEW.provider_code
+            NEW.party_id, NEW.publisher_code
             using errcode = '23503';
     end if;
 

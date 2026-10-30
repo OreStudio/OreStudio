@@ -120,7 +120,8 @@ ctx.generate_uuid()
 
 | expression |
 |------------|
-| "provider_code" <> '' |
+| "publisher_code" <> '' |
+| "asset_class" <> '' |
 
 
 * Insert trigger
@@ -128,7 +129,7 @@ ctx.generate_uuid()
 
 | column        | validation_function                    |
 |---------------+----------------------------------------|
-| provider_code | ores_marketdata_validate_provider_fn   |
+| publisher_code | ores_marketdata_validate_provider_fn   |
 
 
 
@@ -138,11 +139,11 @@ ctx.generate_uuid()
         select 1 from ores_marketdata_subscriptions_tbl
         where tenant_id = NEW.tenant_id
           and party_id = NEW.party_id
-          and provider_code = NEW.provider_code
+          and provider_code = NEW.publisher_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid route: party % holds no subscription to provider %.',
-            NEW.party_id, NEW.provider_code
+            NEW.party_id, NEW.publisher_code
             using errcode = '23503';
     end if;
 

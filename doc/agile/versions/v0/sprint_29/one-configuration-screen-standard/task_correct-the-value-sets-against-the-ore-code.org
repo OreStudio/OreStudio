@@ -8,7 +8,7 @@
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
 #+branch: feature/correct-the-value-sets-against-the-ore-code
-#+pr:
+#+pr: 4106
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4106][#4106]] | [reporting] Correct the value sets against the ORE code |
 
 * Review
 

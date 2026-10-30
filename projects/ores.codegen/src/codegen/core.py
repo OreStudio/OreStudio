@@ -1642,6 +1642,69 @@ def validate_cached_by(domain_entity):
             f"{domain_entity.get('entity_singular', '?')}: cached_by requires has_tenant_id")
 
 
+def _codec_includes(domain_entity, model_path):
+    """The codec headers of the types this one holds.
+
+    A type recurses into a member's shape, and the shape is declared in that
+    member's codec header. So a unit that encodes a message or a row holding
+    another generated type has to include the header that declares it, or the
+    compiler reads the recursion as a type with no shape at all.
+    """
+    import re
+
+    names = set()
+    groups = set()
+    if model_path:
+        from .org_loader import _entity_singulars_in
+        names |= set(_entity_singulars_in(str(Path(model_path).resolve().parent)))
+        for m in Path(model_path).resolve().parent.glob("*_junction.org"):
+            found = re.findall(r"^#\+name_singular:\s*(\S+)\s*$",
+                               m.read_text(encoding="utf-8"), re.M)
+            names |= set(found)
+        for m in Path(model_path).resolve().parent.glob("*_field_group.org"):
+            found = re.findall(r"^#\+(?:entity_singular|name_singular):\s*(\S+)\s*$",
+                               m.read_text(encoding="utf-8"), re.M)
+            groups |= set(found)
+
+    component_include = domain_entity.get("component_include") or (
+        f"{domain_entity.get('component')}.{domain_entity.get('subcomponent')}")
+    out = []
+
+    def add(header):
+        if header not in out:
+            out.append(header)
+
+    def add_codec(header):
+        add(header.replace(".hpp", "_codec.hpp"))
+
+    # A field group states its shape in its own header; an entity or a junction
+    # states it in the codec header beside it.
+    for group in domain_entity.get("domain_groups") or []:
+        if group.get("header"):
+            add(group["header"].strip('"'))
+    if domain_entity.get("has_audit_group"):
+        # "ores::dq::domain::audit_record" -> the group's own header
+        qualified = domain_entity.get("audit_group_qualified", "")
+        parts = [p for p in qualified.split("::") if p and p != "domain"]
+        if len(parts) == 3:
+            add(f"{parts[0]}.{parts[1]}.api/domain/{parts[2]}.hpp")
+
+    for col in (list(domain_entity.get("columns") or [])
+                + list((domain_entity.get("primary_key") or {}).get("columns") or [])
+                + list(domain_entity.get("natural_keys") or [])):
+        cpp_type = str(col.get("cpp_type", ""))
+        for namespace, name in re.findall(r"((?:\w+::)+)domain::(\w+)", cpp_type):
+            parts = [p for p in namespace.split("::") if p]
+            if len(parts) == 2:
+                add(f"{parts[0]}.{parts[1]}.api/domain/{name}.hpp")
+        for name in re.findall(r"(?<![\w:])([a-z][a-z0-9_]*)(?![\w:])", cpp_type):
+            if name in groups:
+                add(f"{component_include}/domain/{name}.hpp")
+            elif name in names:
+                add_codec(f"{component_include}/domain/{name}.hpp")
+    return out
+
+
 def _facet_enabled(model_path, facet, addresses):
     """Whether a model enables a facet, after its own overrides.
 
@@ -6191,6 +6254,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Whether this model's types state their own wire shape, which decides
         # whether the protocol header carries the field list and the codec
         # specialisations with it.
+        domain_entity['wire_codec_includes'] = _codec_includes(domain_entity, model_path)
         domain_entity['has_generated_wire_codec'] = _facet_enabled(
             model_path, "ores.cpp.wire-codec",
             ("ores.cpp.wire-codec.codec_header", "ores.cpp.wire-codec.codec_impl",
@@ -6518,6 +6582,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Same two facts as a domain entity: whether its types state their own
         # wire shape, and the name each message states a second time so the
         # field loop can reach it.
+        junction['wire_codec_includes'] = _codec_includes(junction, model_path)
         junction['has_generated_wire_codec'] = _facet_enabled(
             model_path, "ores.cpp.wire-codec",
             ("ores.cpp.wire-codec.codec_header", "ores.cpp.wire-codec.codec_impl",

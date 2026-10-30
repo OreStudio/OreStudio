@@ -4,6 +4,9 @@
 #include "ores.{{component_include}}/domain/{{entity_singular}}_codec.hpp"
 
 #include "ores.utility/codec/struct_codec.hpp"
+{{#wire_codec_includes}}
+#include "{{{.}}}"
+{{/wire_codec_includes}}
 
 namespace ores::utility::codec {
 

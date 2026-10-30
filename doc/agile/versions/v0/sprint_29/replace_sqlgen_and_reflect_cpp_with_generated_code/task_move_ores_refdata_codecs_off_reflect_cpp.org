@@ -115,7 +115,11 @@ A second sweep followed the grouped shape, and it stops on two more boundaries,
 both worth stating because they are not about carriers:
 
 - **A generated codec unit does not include the codec headers of the types its
-  members hold.** A junction holding a =csa= recurses into =wire_fields(csa)=,
+  members hold.** This one is now derived, from the columns and the groups a row
+  is made of, and it carries a row's recursion to its end. It does not carry a
+  *composite message*: =put_counterparty_composite_request= holds
+  =csa_eligible_currency=, which no column of the counterparty row names, so the
+  message's own field types are the second source the include set needs. A junction holding a =csa= recurses into =wire_fields(csa)=,
   which is declared in another header the unit never includes, so the compile
   fails as though the type had no shape. The include has to be derived from the
   member types, which is a template change and not an opt-in.

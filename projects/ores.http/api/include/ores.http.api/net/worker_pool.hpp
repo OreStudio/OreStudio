@@ -21,11 +21,11 @@
 #define ORES_HTTP_API_NET_WORKER_POOL_HPP
 
 #include "ores.http.api/export.hpp"
-#include <atomic>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/thread_pool.hpp>
 #include <boost/asio/use_awaitable.hpp>
+#include <atomic>
 #include <cstddef>
 #include <type_traits>
 #include <utility>
@@ -74,8 +74,7 @@ public:
 
     /// Whether the pool is at its in-flight cap.
     [[nodiscard]] bool saturated() const noexcept {
-        return max_inflight_ != 0 &&
-            inflight_.load(std::memory_order_relaxed) >= max_inflight_;
+        return max_inflight_ != 0 && inflight_.load(std::memory_order_relaxed) >= max_inflight_;
     }
 
     [[nodiscard]] std::size_t threads() const noexcept {
@@ -95,8 +94,7 @@ public:
      * coroutine cancels the spawned one.
      */
     template <typename Invoke>
-    boost::asio::awaitable<typename std::invoke_result_t<Invoke>::value_type>
-    run(Invoke invoke) {
+    boost::asio::awaitable<typename std::invoke_result_t<Invoke>::value_type> run(Invoke invoke) {
         struct inflight_guard final {
             std::atomic<std::size_t>& counter;
             ~inflight_guard() {

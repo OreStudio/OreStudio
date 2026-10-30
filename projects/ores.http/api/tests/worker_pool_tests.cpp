@@ -48,9 +48,7 @@ auto run_on_pool(boost::asio::io_context& io, worker_pool& pool, Invoke invoke) 
     result_type value{};
     boost::asio::co_spawn(
         io,
-        [&]() -> boost::asio::awaitable<void> {
-            value = co_await pool.run(std::move(invoke));
-        },
+        [&]() -> boost::asio::awaitable<void> { value = co_await pool.run(std::move(invoke)); },
         boost::asio::detached);
     io.run();
     io.restart();

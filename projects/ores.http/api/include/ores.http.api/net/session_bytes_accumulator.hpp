@@ -186,8 +186,7 @@ private:
             owing.reserve(entries_.size());
             for (auto it = entries_.begin(); it != entries_.end();) {
                 const auto& entry = it->second;
-                if (entry.sent != entry.written_sent ||
-                    entry.received != entry.written_received)
+                if (entry.sent != entry.written_sent || entry.received != entry.written_received)
                     owing.emplace_back(it->first, entry);
                 if (now - entry.last_activity > retain_)
                     it = entries_.erase(it);

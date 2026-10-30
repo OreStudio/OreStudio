@@ -34,8 +34,7 @@ http_server::http_server(asio::io_context& io_ctx, const http_server_options& op
     , options_(options)
     , router_(std::make_shared<router>())
     , registry_(std::make_shared<openapi::endpoint_registry>())
-    , workers_(std::make_shared<worker_pool>(options.worker_threads,
-                                            options.max_inflight_requests))
+    , workers_(std::make_shared<worker_pool>(options.worker_threads, options.max_inflight_requests))
     , bytes_accumulator_(std::make_shared<session_bytes_accumulator>(
           io_ctx_,
           [this](const std::string& session_id,
@@ -48,12 +47,13 @@ http_server::http_server(asio::io_context& io_ctx, const http_server_options& op
           *workers_,
           options.bytes_flush_interval,
           options.bytes_retain))
-    , accumulate_([accumulator = bytes_accumulator_](const std::string& session_id,
-                                                     std::chrono::system_clock::time_point start_time,
-                                                     std::size_t bytes_sent,
-                                                     std::size_t bytes_received) {
-        accumulator->add(session_id, start_time, bytes_sent, bytes_received);
-    }) {
+    , accumulate_(
+          [accumulator = bytes_accumulator_](const std::string& session_id,
+                                             std::chrono::system_clock::time_point start_time,
+                                             std::size_t bytes_sent,
+                                             std::size_t bytes_received) {
+              accumulator->add(session_id, start_time, bytes_sent, bytes_received);
+          }) {
 
     BOOST_LOG_SEV(lg(), info) << "HTTP server initializing with options: " << options_;
 

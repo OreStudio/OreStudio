@@ -21,12 +21,12 @@
 #include "ores.http.api/net/http_server.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "test_suite.hpp"
-#include <atomic>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
+#include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <string>
@@ -48,7 +48,8 @@ namespace {
  * returns well inside it, and a server whose only thread is blocked does not
  * answer at all.
  */
-unsigned get_within(std::uint16_t port, const std::string& target, std::chrono::milliseconds budget) {
+unsigned
+get_within(std::uint16_t port, const std::string& target, std::chrono::milliseconds budget) {
     asio::io_context io;
     beast::tcp_stream stream(io);
     beast::error_code ec;
@@ -105,19 +106,19 @@ TEST_CASE("a_blocked_handler_does_not_stop_health_answering", "[http_server][wor
 
     auto router = server->get_router();
     router->add_route(router->get("/slow")
-        .summary("A handler that blocks like a slow service")
-        .auth_optional()
-                 .handler([&handler_entered, &release_handler](
-                              const http_request&) -> asio::awaitable<http_response> {
-                     handler_entered = true;
-                     while (!release_handler.load())
-                         std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                     co_return http_response::json(R"({"status":"slow"})");
-                 })
-                 .build());
+                          .summary("A handler that blocks like a slow service")
+                          .auth_optional()
+                          .handler([&handler_entered, &release_handler](
+                                       const http_request&) -> asio::awaitable<http_response> {
+                              handler_entered = true;
+                              while (!release_handler.load())
+                                  std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                              co_return http_response::json(R"({"status":"slow"})");
+                          })
+                          .build());
 
-    asio::co_spawn(io, [server]() -> asio::awaitable<void> { co_await server->run(); },
-                   asio::detached);
+    asio::co_spawn(
+        io, [server]() -> asio::awaitable<void> { co_await server->run(); }, asio::detached);
 
     std::thread io_thread([&io] { io.run(); });
 
@@ -130,9 +131,8 @@ TEST_CASE("a_blocked_handler_does_not_stop_health_answering", "[http_server][wor
 
     // Start the slow request and wait until its handler is running.
     std::atomic<unsigned> slow_status{0};
-    std::thread slow_client([&] {
-        slow_status = get_within(port, "/slow", std::chrono::seconds(5));
-    });
+    std::thread slow_client(
+        [&] { slow_status = get_within(port, "/slow", std::chrono::seconds(5)); });
     auto entered = false;
     for (auto waited = 0; waited < 500 && !handler_entered.load(); ++waited)
         std::this_thread::sleep_for(std::chrono::milliseconds(10));

@@ -219,19 +219,17 @@ asio::awaitable<void> http_session::handle_request(http::request<http::string_bo
      */
     domain::http_response response;
     if (workers_ != nullptr && workers_->saturated()) {
-        BOOST_LOG_SEV(lg(), warn) << "Refusing " << matched->pattern
-                                  << ": the handler pool holds " << workers_->inflight()
-                                  << " requests already";
+        BOOST_LOG_SEV(lg(), warn) << "Refusing " << matched->pattern << ": the handler pool holds "
+                                  << workers_->inflight() << " requests already";
         response = domain::http_response::error(domain::http_status::service_unavailable,
-                                               "The server is saturated. Try again shortly.");
+                                                "The server is saturated. Try again shortly.");
     } else {
         try {
             BOOST_LOG_SEV(lg(), trace) << "Executing handler for: " << matched->pattern;
             if (workers_ != nullptr) {
                 const auto handler = matched->handler;
-                response = co_await workers_->run([&handler, &domain_req]() {
-                    return handler(domain_req);
-                });
+                response = co_await workers_->run(
+                    [&handler, &domain_req]() { return handler(domain_req); });
             } else {
                 response = co_await matched->handler(domain_req);
             }

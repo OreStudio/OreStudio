@@ -110,7 +110,10 @@ The seam landed first, because the generated half cannot be called without it:
 primary template keeps reflect-cpp and whose specialisation a generated codec
 will state in the type's own translation unit. =ores.nats.lib= builds with it.
 
-The generated half is blocked on the tree, not on this task: trunk does not build
+The seam is green after the rebase onto =bde243a595=, the hotfix that
+regenerated the legal entity's timestamps: the four cases pass and the whole
+ores.nats suite is 170 assertions in 56 cases. The generated half had been
+blocked on the tree rather than on this task: trunk did not build
 at =481292e5e8= for two refdata reasons, and neither is this branch's. The
 generated =legal_entity= entity and repository still state the pre-step-4 shape --
 a =db_timestamp= member initialised from a string, and =make_timestamp= calls --
@@ -118,8 +121,12 @@ so the component's artefacts are stale against the templates step 4 landed.
 Regenerating refdata fixes those two and then stops on a hand-written file: the
 refdata =messaging/registrar.cpp= calls =publish_legal_entities_from_dq_request=,
 which the merged models no longer name (=publish_lei_parties_from_dq_request= is
-what they produce). Both want the owners of that rename: a regeneration sweep by
-the component that holds it, not a patch here.
+what they produce). Both wanted the owners of that rename rather than a patch here; the first is
+fixed by the hotfix, and the second is still open.
+
+Next: the codegen template that emits the four functions and the =wire_traits=
+specialisation into each type's =_json_io.cpp=, then regenerate ores.dq and
+compare its bytes with reflect-cpp's.
 
 * Test Scenarios
 

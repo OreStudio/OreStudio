@@ -25,7 +25,7 @@ Every ORE parameter whose reader accepts more than one rendering of a value is s
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | The story is written; the census is the first task. |
 | Waiting on    | The owner's sign-off on the two decisions the census confirms: the canonical form per class, and where the crosswalk data lives. |
-| Next          | Confirm the canonical form per class, then extend the value set with it. |
+| Next          | Consolidate the three element maps, then confirm the canonical form per class. |
 | Last touched  | 2026-10-30                               |
 
 * Acceptance
@@ -40,6 +40,7 @@ Every ORE parameter whose reader accepts more than one rendering of a value is s
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
+| [[id:17032DC3-55F4-42FD-B3C1-C33D8DCED488][Consolidate the ORE element maps]] | BACKLOG | | | Runs first. Three tables answer which ORE element a leaf column is and which value set states its values: the curve configuration columns, the convention kind terms and the vocabularies. One leaf states a fact three times, so the story makes one map keyed by the ORE element before anything else reads a set. |
 | [[id:ABCEDE72-7A51-4D82-8232-DC9BA9CC9291][Scaffold story: Normalise every ORE parameter representation]] | DONE | 2026-10-30 | 2026-10-30 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:300CD9D6-19F9-4826-B771-49B04A9DD2E7][Take the census of the representations ORE accepts]] | DONE | 2026-10-30 | 2026-10-30 | Initial task for: Normalise every ORE parameter representation |
 
@@ -236,10 +237,11 @@ so no new map is added and none of the three leaf tables is a prerequisite.
 
 ** What the consolidation is
 
-A task of its own, not a prerequisite: one leaf map keyed by the ORE element,
-with the projection columns attached to it, and the two links collapsed into one
-shape. It is recorded here because the story is where it was found, and it must
-not be lost because the story did not need it.
+The first task of the story, not a later clean-up: one leaf map keyed by the ORE
+element, with the projection columns attached to it, and the two links collapsed
+into one shape. It runs before the canonical form, because every later task
+reads a value set through a link, and a link with three homes is what makes a
+reader guess which one wins.
 
 * Decisions
 

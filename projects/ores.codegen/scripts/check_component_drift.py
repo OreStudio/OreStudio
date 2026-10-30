@@ -25,23 +25,29 @@ because a component's pre-existing drift belongs to that component's own
 clean-up. It renders into a temporary root and writes nothing, so it is safe
 on a branch whose templates are older than main's.
 
-Two modes choose whether it writes, and the difference is the point of
-this script:
+The mode chooses whether it writes, and the default is the one that writes
+nothing:
 
-  (default)       WRITES. It regenerates each component in place and then
-                  compares the working tree with `git diff`. This is the
-                  authoritative check, and it is destructive: it overwrites
-                  the component's generated files, and a model sitting in a
-                  modeling directory materialises its whole output even when
-                  nobody authorised it.
-  --dry-run       WRITES NOTHING. It renders each component's models into a
+  (default)       WRITES NOTHING. It renders each component's models into a
                   throw-away temporary root and compares that tree with the
                   repository's files, reporting what would change and what
                   would be created. No byte lands in the repository: no
                   cmd_regenerate, no in-place generation, no temporary file
-                  inside the tree. Reach for this one whenever a model is
-                  being drafted, because a draft model in a modeling
-                  directory is exactly what makes the in-place mode unsafe.
+                  inside the tree.
+  --write         WRITES. It regenerates each component in place and then
+                  compares the working tree with `git diff`. It is the
+                  authoritative comparison, and it is destructive: it
+                  overwrites the component's generated files, and a model
+                  sitting in a modeling directory materialises its whole
+                  output even when nobody authorised it. It refuses to run
+                  when the working tree holds changes, because a check that
+                  overwrites them cannot tell its own writes from the work it
+                  was asked to inspect -- and because restoring the tree does
+                  not undo a regeneration someone already committed.
+
+A check must not be able to cause the defect it looks for. That is why the
+default is the safe mode: a caller that says nothing gets an answer and a clean
+tree.
 
 Both modes cover the same components and addresses. The TypeScript
 projection is mid-rollout, one component at a time, so a component is
@@ -64,7 +70,7 @@ Usage:
   check_component_drift.py --all
   check_component_drift.py --component refdata
   check_component_drift.py --all --address ores.cpp
-  check_component_drift.py --all --dry-run
+  check_component_drift.py --all --write
   check_component_drift.py --sweep
   check_component_drift.py --sweep --base origin/main
 """
@@ -218,6 +224,21 @@ def _addresses_for(component: str, graph) -> list:
     addresses = [space for space in _technical_spaces(graph) if space != TS_SPACE]
     addresses.extend(_committed_ts_facets(component, graph))
     return addresses
+
+
+def _changed_files() -> list:
+    """Every path the working tree holds a change to, tracked or not."""
+    status = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if status.returncode != 0:
+        print(f"git status failed:\n{status.stderr}", file=sys.stderr)
+        sys.exit(status.returncode)
+    return [line for line in status.stdout.splitlines() if line.strip()]
 
 
 def _untracked_files() -> set:
@@ -599,11 +620,15 @@ def main() -> int:
         "against (default: the merge base with origin/main)",
     )
     ap.add_argument(
+        "--write",
+        action="store_true",
+        help="regenerate in place and compare the working tree with git. "
+        "Destructive, and refused when the tree holds changes",
+    )
+    ap.add_argument(
         "--dry-run",
         action="store_true",
-        help="render into a temporary root and report every file that would "
-        "change or be created; write nothing into the repository (safe while "
-        "a model is being drafted)",
+        help="the default. Kept so a caller can state the safe mode out loud",
     )
     ap.add_argument("-v", "--verbose", action="store_true")
     args = ap.parse_args()
@@ -634,8 +659,21 @@ def main() -> int:
     else:
         components = list(COMPONENTS_UNDER_TEST) if args.all else [args.component]
 
-    if args.dry_run:
+    if not args.write:
         return _dry_run(components, args.address, args.verbose)
+
+    changed = _changed_files()
+    if changed:
+        print("refusing to regenerate in place: the working tree holds "
+              f"{len(changed)} change(s), and this mode overwrites the files "
+              "it touches. Commit or stash them, then run again. The default "
+              "mode renders into a temporary root and writes nothing.",
+              file=sys.stderr)
+        for path in changed[:10]:
+            print(f"  {path}", file=sys.stderr)
+        if len(changed) > 10:
+            print(f"  ... and {len(changed) - 10} more", file=sys.stderr)
+        return 2
 
     untracked_before = _untracked_files()
     graph = load_graph(TEMPLATES_DIR)

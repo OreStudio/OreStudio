@@ -28,10 +28,10 @@ Each of the five volatility entries holds one kind of entry, and the block that 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | The kind row and the strike surface part exist; the entry still holds every kind's columns. |
+| Now          | Cap and floor, swaption and curve volatility are split end to end; the FX and inflation cap and floor entries still carry their block. |
 | Waiting on   | Nothing.                               |
-| Next         | Wire the kind through the document and the projection, then move each kind's columns off the entry. |
-| Last touched | 2026-10-29                               |
+| Next         | Decide the FX smile's shape and read the inflation entry's =Type=, then split both. |
+| Last touched | 2026-10-30                               |
 
 * Acceptance
 
@@ -234,6 +234,10 @@ task and name that file in the Command column.
 | Members the new part carries, of which the moved proxy fields | 10, of which 7 | same, for `cap_floor_proxy_config` | `57070a08ad` |
 | Swaption entry members, before and after the split | 27 and 21 | `python3 build/scripts/inventory_entity_columns.py \| awk -F'\t' '$3=="swaption_volatility_config"'` | `547a51ea1e` |
 | Members the swaption part carries, of which the moved fields | 8, of which 5 | same, for `swaption_proxy_config` | `547a51ea1e` |
+| Curve volatility entry members, before and after the split | 32 and 4 | `python3 build/scripts/inventory_entity_columns.py \| awk -F'\t' '$3=="curve_volatility_config"'` | `b4fc185da2` |
+| Members the kind row carries | 9 | same, for `curve_volatility_kind` | `b4fc185da2` |
+| Members the five kind parts carry | 4, 6, 11, 16 and 7 | same, for `curve_volatility_constant`, `..._curve`, `..._strike_surface`, `..._delta_surface` and `..._proxy_surface` | `b4fc185da2` |
+| Tables the schema states | 654 | `python3 projects/ores.codegen/src/plantuml_er_parse_sql.py --create-dir projects/ores.sql/create --drop-dir projects/ores.sql/drop --output build/output/codegen/plantuml_er_model.json --ignore-file projects/ores.sql/utility/validation_ignore.txt --warn --strict` | `d6f963d868` |
 
 * Notes
 
@@ -262,49 +266,63 @@ via its "Verifies task" field.
 
 * Result
 
-Three of the five entries are modelled and the third one's shape is in place.
+Three of the five entries are split end to end, and the fourth is modelled.
 
 Cap and floor and swaption are done: their proxy blocks are parts, the entries
 lost the columns, and the document, service and projection carry the parts.
 
-=curve_volatility_config= is modelled but not yet wired. Two entities exist:
+=curve_volatility_config= is done in one change, because its five kinds share
+four terms and a half-wired kind would have stated each of them twice. The
+entry is the holder alone. Its kinds are rows of =curve_volatility_kind=, and
+each kind's own fields are the row of that kind's part.
 
 | Entity | Members | What it is |
 |--------+---------+------------|
-| =curve_volatility_kind= | 9 | the entry's key, =kind_code=, =priority= and the four terms every kind states |
-| =curve_volatility_strike_surface= | 11 | the strike and expiry grid of one =StrikeSurface= kind |
+| =curve_volatility_config= | 4 | the holder: its curve definition and whether the document wrapped the kinds in a =VolatilityConfig= element |
+| =curve_volatility_kind= | 9 | the kind's code, ORE's =priority=, the party, and the four terms five of the seven kinds repeat |
+| =curve_volatility_constant= | 4 | the one quote a =Constant= states |
+| =curve_volatility_curve= | 6 | how a =Curve= interpolates and extrapolates |
+| =curve_volatility_strike_surface= | 11 | the strike and expiry grid |
+| =curve_volatility_delta_surface= | 16 | the delta grid, its types, and the future price correction |
+| =curve_volatility_proxy_surface= | 7 | the curves a =ProxySurface= is built from |
 
-The entry itself still carries every kind's columns -- 32 members, unchanged --
-because nothing reads the new entities yet. Wiring the kind through the document
-and the ORE projection is what lets each kind's columns leave the entry, one kind
-at a time, and that is the next step rather than a part of this one: a half-wired
-kind would give the same fact two homes.
+The entry was 32 members of which 26 are now zero. The four terms are the kind
+row's because the row is what makes them appear once: seven kinds sharing four
+columns is a group, seven kinds each having their own four is a union again.
+The kind's own fields live in the kind's part, so a part mirrors one ORE
+complex type and the seven columns =DeltaSurface= shares with =StrikeSurface=
+are stated in both: a column shared with a sibling type is not a fact held
+twice, because neither row can stand for the other.
 
-Verified: build exit 0, =validate_schemas.sh= exit 0 over 2949 files,
-=component-drift=, =er-diagram= and =lint= pass.
+=position= left the entry with the kinds. The order an entry's kinds are
+written in is ORE's own =priority= and, where none is stated, ORE's own kind
+order, so no column restores it and none can drift from it.
 
+The two facts the schema cannot state are now stated by the model instead of
+by a comment: a =ProxySurface= states none of the four terms, so the terms are
+read only where the holder's type declares them, and the ORE booleans
+(=Extrapolation= and its relatives) are enumerations, so they are read and
+written as spellings.
 
-Both proxy blocks are done and the tree builds. =cap_floor_volatility_config= is 32
-members where it was 39: the proxy block left it for =cap_floor_proxy_config=,
-a type with its own key, the entry's key as a unique natural key, the party for
-row level security and the seven fields.
+Verified: =./compass.sh build= exits 0; =ores.refdata.core.tests=,
+=ores.ore.core.tests=, =ores.shell.refdata.tests= and the refdata api, client,
+service and http suites pass; =validate_schemas.sh= passes over 2989 files;
+the strict ER parse reports 654 tables and no warnings; =component-drift
+--sweep= is clean; the ER diagrams are regenerated; =compass lint=, the event
+and history registrar composition gates, the shell command composition gate
+and the protocol twin gate pass.
 
-Verified: `./compass.sh build` exits 0, `validate_schemas.sh` passes over 2937
-files, `er-diagram` and `lint` pass.
+The branch was 166 commits behind =origin/main=, and rebasing it first is part
+of this result: the tree it started from was missing main's inflation cap and
+floor write, which the round trip test caught and this work restored.
 
-=swaption_proxy_config= is the second part: 27 members to 21, the part carrying
-8 of which 5 are the moved fields. Its first attempt failed on a stray leading
-plus in the model's =#+entity_plural= header, which the loader read as no plural
-at all, so the generated repository asked for =messaging::_filter=. The loader
-was never at fault, and the corrected model loads as =swaption_proxy_configs=.
+Still to do:
 
-Not yet done, in the order the task will take them:
-
-- the three kind columns: =curve_volatility_config='s =kind= with one curve
-  column per surface, =fx_volatility_config='s =dimension= with the smile block,
-  and =inflation_cap_floor_volatility_config='s =quote_type= with one column per
-  quote structure;
-- the database recreated and the round trip run over the fixtures, which is the
-  first proof that a document carrying a proxy survives the round trip through
-  the part.
-
+- =fx_volatility_config='s =dimension= with the smile block, where the schema
+  states one =xs:all= and no kind choice, so the split is ours and the smile is
+  a part only when the dimension is two;
+- =inflation_cap_floor_volatility_config='s =quote_type= with one column per
+  quote structure, and =Type= read before deciding whether it is a
+  discriminator;
+- the proxy and kind parts reused on the entries that still carry a block, and
+  the round trip re-run over every fixture that states a surface.

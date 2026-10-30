@@ -28,9 +28,9 @@ Each of the five volatility entries holds one kind of entry, and the block that 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | Both proxy blocks are parts; three kind columns remain. |
+| Now          | The kind row and the strike surface part exist; the entry still holds every kind's columns. |
 | Waiting on   | Nothing.                               |
-| Next         | The three kind columns, then the round trip over the fixtures. |
+| Next         | Wire the kind through the document and the projection, then move each kind's columns off the entry. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -261,6 +261,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Three of the five entries are modelled and the third one's shape is in place.
+
+Cap and floor and swaption are done: their proxy blocks are parts, the entries
+lost the columns, and the document, service and projection carry the parts.
+
+=curve_volatility_config= is modelled but not yet wired. Two entities exist:
+
+| Entity | Members | What it is |
+|--------+---------+------------|
+| =curve_volatility_kind= | 9 | the entry's key, =kind_code=, =priority= and the four terms every kind states |
+| =curve_volatility_strike_surface= | 11 | the strike and expiry grid of one =StrikeSurface= kind |
+
+The entry itself still carries every kind's columns -- 32 members, unchanged --
+because nothing reads the new entities yet. Wiring the kind through the document
+and the ORE projection is what lets each kind's columns leave the entry, one kind
+at a time, and that is the next step rather than a part of this one: a half-wired
+kind would give the same fact two homes.
+
+Verified: build exit 0, =validate_schemas.sh= exit 0 over 2949 files,
+=component-drift=, =er-diagram= and =lint= pass.
+
 
 Both proxy blocks are done and the tree builds. =cap_floor_volatility_config= is 32
 members where it was 39: the proxy block left it for =cap_floor_proxy_config=,

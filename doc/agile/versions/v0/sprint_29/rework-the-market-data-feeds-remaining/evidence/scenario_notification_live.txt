@@ -1,0 +1,58 @@
+# The scenario notice, raised live in the eager_maxwell environment.
+#
+# Two raises are recorded. The first is the command as a person runs it; the
+# second runs the shell command by hand, to show the answer the command reads.
+# The shell session signs in as tenant_admin@acme_corporation from
+# ORES_SHELL_LOGIN_USERNAME and ORES_SHELL_LOGIN_PASSWORD in .env.
+#
+# The BFF read of the newest of them is in
+# scenario_notification_bff_read.json beside this file.
+
+$ compass notify scenario BE0384AF-AFAA-49B9-B313-19EE86C02733 --to henry.jones@acme_corporation
+✅ Notified henry.jones@acme_corporation (8e940c9e-8aea-4c61-9e99-ec33c4abfe2c) as tenant_admin@acme_corporation
+   kind:         scenario.to_run
+   notification: 2c081ea7-464d-46dd-89b4-ce46e9f52a17
+   recipients:   1
+   link:         /development/tests/BE0384AF-AFAA-49B9-B313-19EE86C02733
+   app:          http://localhost:21402/development/tests/BE0384AF-AFAA-49B9-B313-19EE86C02733
+
+# The same raise, driven through ores.shell by hand, so the operation's own
+# answer is on the record. The command reads the notification id from it.
+
+$ ores.shell --login-username tenant_admin@acme_corporation --load raise.ores
+ores-shell> Loading script: raise.ores
+> notification_operations raise-notification scenario.to_run /development/tests/BE0384AF-AFAA-49B9-B313-19EE86C02733 8e940c9e-8aea-4c61-9e99-ec33c4abfe2c --argument "scenario=verify the route from a feed to a published curve" --argument "reason=A feed publishes, its ticks store, the curve's Check computes from them, and the set publishes and reads back." --argument raiser=tenant_admin
+{"result":{"outcome":"ok","code":"","message":"","fields":[]},"notification_id":"7e3c50b1-6ea8-411d-9221-9229a505f793","recipient_count":1}
+Script complete: 1 command executed.
+
+# The rows the operation wrote, read back from the database.
+
+notification  2c081ea7-464d-46dd-89b4-ce46e9f52a17  scenario.to_run
+              /development/tests/BE0384AF-AFAA-49B9-B313-19EE86C02733
+              link_id empty   raised_by tenant_admin
+argument      scenario  verify the route from a feed to a published curve
+argument      reason    A feed publishes, its ticks store, the curve's Check computes from them, and the set publishes and reads back.
+argument      raiser    tenant_admin
+recipient     8e940c9e-8aea-4c61-9e99-ec33c4abfe2c  henry.jones
+delivery      in_app    delivered   henry.jones
+
+# The link the notice carries. The BFF answers with the doc the page renders,
+# and the app route answers: the Development page is a client route, so its
+# text is the built bundle, and the doc it loads is the BFF's answer above.
+
+$ curl -b henry.jar 'http://localhost:21402/api/qa/scenarios/BE0384AF-AFAA-49B9-B313-19EE86C02733'
+{"scenario":{"id":"BE0384AF-AFAA-49B9-B313-19EE86C02733","title":"verify the route from a feed to a published curve","state":"FAILED",...}}
+
+$ curl -o /dev/null -w '%{http_code}' http://localhost:21402/development/tests/BE0384AF-AFAA-49B9-B313-19EE86C02733
+200
+
+# The raiser is the account the shell signs in as, and the operation refuses a
+# caller without inbox::notifications:write. Henry holds Member and Trading, so
+# raising as him is refused; tenant_admin holds TenantAdmin, whose grant is the
+# wildcard, and raising as that account is accepted.
+
+$ compass notify scenario BE0384AF --to henry.jones@acme_corporation --from henry.jones@acme_corporation
+✓ Logged in as: henry.jones
+✗ Request failed: the server refused 'inbox.v1.ops.raise_notification': forbidden
+❌ The raise did not finish. ores.shell exited 1.
+

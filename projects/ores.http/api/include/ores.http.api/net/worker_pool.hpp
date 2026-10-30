@@ -62,7 +62,6 @@ public:
      */
     explicit worker_pool(std::size_t threads, std::size_t max_inflight = 1024)
         : pool_(threads == 0 ? 8 : threads)
-        , threads_(threads == 0 ? 8 : threads)
         , max_inflight_(max_inflight) {}
 
     ~worker_pool() {
@@ -77,10 +76,6 @@ public:
         return max_inflight_ != 0 && inflight_.load(std::memory_order_relaxed) >= max_inflight_;
     }
 
-    [[nodiscard]] std::size_t threads() const noexcept {
-        return threads_;
-    }
-
     /// The requests in flight or queued on the pool.
     [[nodiscard]] std::size_t inflight() const noexcept {
         return inflight_.load(std::memory_order_relaxed);
@@ -90,8 +85,8 @@ public:
      * @brief Runs an awaitable on the pool and returns its result.
      *
      * The caller stays suspended on its own executor, so the connection is not
-     * pinned to a worker while the handler blocks. Cancelling the awaiting
-     * coroutine cancels the spawned one.
+     * pinned to a worker while the handler blocks. The slot is released when the
+     * awaitable finishes, cancellation included.
      */
     template <typename Invoke>
     boost::asio::awaitable<typename std::invoke_result_t<Invoke>::value_type> run(Invoke invoke) {
@@ -118,7 +113,6 @@ public:
 
 private:
     boost::asio::thread_pool pool_;
-    std::size_t threads_;
     std::size_t max_inflight_;
     std::atomic<std::size_t> inflight_{0};
 };

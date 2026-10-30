@@ -81,22 +81,33 @@ asio::awaitable<void> http_session::run() {
 
             const auto limit = body_limit_for(parser.get());
 
-            // A client that asks before sending is told whether to send at all.
-            if (beast::iequals(parser.get()[http::field::expect], "100-continue")) {
-                static constexpr std::string_view cont = "HTTP/1.1 100 Continue\r\n\r\n";
-                co_await asio::async_write(stream_, asio::buffer(cont), asio::use_awaitable);
-            }
-
-            const auto declared = parser.content_length().value_or(0);
-            if (declared > limit) {
-                BOOST_LOG_SEV(lg(), warn) << "Refusing " << subject << ": a body of " << declared
-                                          << " bytes is past the route's limit of " << limit;
+            /*
+             * The refusal is written here, not by the failed read, so the caller
+             * is told why instead of watching the socket close. It answers both
+             * the declared size below and the chunked body that declares none.
+             */
+            const auto refuse_too_large =
+                [this, version, &subject](std::uint64_t size) -> asio::awaitable<void> {
+                BOOST_LOG_SEV(lg(), warn) << "Refusing " << subject << ": a body of " << size
+                                          << " bytes is past the route's limit";
                 auto too_large = domain::http_response::error(
                     domain::http_status::payload_too_large,
                     "The request body is larger than this route accepts.");
                 auto beast_resp = convert_response(too_large, version, false);
                 co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+            };
+
+            const auto declared = parser.content_length().value_or(0);
+            if (declared > limit) {
+                co_await refuse_too_large(declared);
                 break;
+            }
+
+            // A client that asks before sending is told to send, and only once
+            // the body is known to be acceptable.
+            if (beast::iequals(parser.get()[http::field::expect], "100-continue")) {
+                static constexpr std::string_view cont = "HTTP/1.1 100 Continue\r\n\r\n";
+                co_await asio::async_write(stream_, asio::buffer(cont), asio::use_awaitable);
             }
 
             parser.body_limit(limit);
@@ -112,13 +123,7 @@ asio::awaitable<void> http_session::run() {
             }
 
             if (body_too_large) {
-                BOOST_LOG_SEV(lg(), warn)
-                    << "Refusing " << subject << ": the body passed the route's limit of " << limit;
-                auto too_large = domain::http_response::error(
-                    domain::http_status::payload_too_large,
-                    "The request body is larger than this route accepts.");
-                auto beast_resp = convert_response(too_large, version, false);
-                co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+                co_await refuse_too_large(limit);
                 break;
             }
 

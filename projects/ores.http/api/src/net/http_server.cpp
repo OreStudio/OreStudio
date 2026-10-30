@@ -201,10 +201,15 @@ void http_server::stop() {
         }
     }
 
-    // Write what is still in memory before the process goes. The totals are
-    // the only thing here that is not reproducible.
-    if (bytes_accumulator_)
-        bytes_accumulator_->stop();
+    /*
+     * Write what is still in memory before the process goes: the totals are the
+     * only thing here that is not reproducible. The stop is posted rather than
+     * called, because it cancels a timer and a timer belongs to its own context.
+     */
+    if (bytes_accumulator_) {
+        const auto accumulator = bytes_accumulator_;
+        boost::asio::post(io_ctx_, [accumulator] { accumulator->stop(); });
+    }
 
     BOOST_LOG_SEV(lg(), info) << "HTTP server stop initiated, " << "waiting for "
                               << active_connections_.load() << " active connections";

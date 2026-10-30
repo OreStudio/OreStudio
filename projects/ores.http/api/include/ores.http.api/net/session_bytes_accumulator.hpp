@@ -29,6 +29,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/use_awaitable.hpp>
+#include <atomic>
 #include <chrono>
 #include <cstdint>
 #include <mutex>
@@ -84,7 +85,7 @@ public:
         , timer_(io) {}
 
     ~session_bytes_accumulator() {
-        stopped_ = true;
+        stopped_.store(true);
         cancel_timer();
     }
 
@@ -109,16 +110,25 @@ public:
         const auto now = std::chrono::system_clock::now();
         std::lock_guard lock(mu_);
         auto& entry = entries_[session_id];
-        if (entry.sent == 0 && entry.received == 0)
+        if (!entry.seen) {
             entry.start_time = start_time;
+            entry.seen = true;
+        }
         entry.sent += bytes_sent;
         entry.received += bytes_received;
         entry.last_activity = now;
     }
 
     /// Stops the timer and writes whatever is pending, on the calling thread.
+    /**
+     * @brief Stops the timer and writes what is pending.
+     *
+     * Must run on the accumulator's own context: a timer is not safe to cancel
+     * from another thread. The server posts this rather than calling it, so a
+     * shutdown on the signal thread cannot race a flush in flight.
+     */
     void stop() {
-        stopped_ = true;
+        stopped_.store(true);
         cancel_timer();
         write_pending();
     }
@@ -128,14 +138,9 @@ public:
         write_pending();
     }
 
-    /// The sessions currently holding a total. For a test and for a log line.
-    [[nodiscard]] std::size_t tracked_sessions() const {
-        std::lock_guard lock(mu_);
-        return entries_.size();
-    }
-
 private:
     struct totals final {
+        bool seen{false};
         std::chrono::system_clock::time_point start_time{};
         std::uint64_t sent{0};
         std::uint64_t received{0};
@@ -153,11 +158,11 @@ private:
     }
 
     void schedule() {
-        if (stopped_)
+        if (stopped_.load())
             return;
         timer_.expires_after(interval_);
         timer_.async_wait([this](const boost::system::error_code& ec) {
-            if (ec || stopped_)
+            if (ec || stopped_.load())
                 return;
             /*
              * The write belongs to a worker, not to this context: a database
@@ -179,6 +184,9 @@ private:
     }
 
     void write_pending() {
+        // One writer at a time: a flush and a shutdown write must not reach the
+        // database together.
+        std::lock_guard writing(write_mu_);
         std::vector<std::pair<std::string, totals>> owing;
         const auto now = std::chrono::system_clock::now();
         {
@@ -222,8 +230,9 @@ private:
     std::chrono::milliseconds retain_;
     boost::asio::steady_timer timer_;
     mutable std::mutex mu_;
+    std::mutex write_mu_;
     std::unordered_map<std::string, totals> entries_;
-    bool stopped_{false};
+    std::atomic<bool> stopped_{false};
 };
 
 }

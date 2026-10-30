@@ -164,6 +164,44 @@ request_handler echo_handler() {
     };
 }
 
+
+namespace {
+
+/// Gets one path and returns its status, or zero when it did not answer in time.
+/// Distinct from the blocking suite's helper of the same shape, because both
+/// files land in one translation unit.
+unsigned
+get_status_within(std::uint16_t port, const std::string& target, std::chrono::milliseconds budget) {
+    asio::io_context io;
+    beast::tcp_stream stream(io);
+    beast::error_code ec;
+    stream.expires_after(budget);
+
+    const auto address = asio::ip::make_address("127.0.0.1", ec);
+    if (ec)
+        return 0;
+    stream.connect(asio::ip::tcp::endpoint(address, port), ec);
+    if (ec)
+        return 0;
+
+    http::request<http::string_body> req{http::verb::get, target, 11};
+    req.set(http::field::host, "127.0.0.1");
+    http::write(stream, req, ec);
+    if (ec)
+        return 0;
+
+    beast::flat_buffer buffer;
+    http::response<http::string_body> res;
+    http::read(stream, buffer, res, ec);
+    if (ec)
+        return 0;
+
+    stream.socket().shutdown(asio::ip::tcp::socket::shutdown_both, ec);
+    return res.result_int();
+}
+
+}
+
 }
 
 TEST_CASE("a_body_past_the_default_limit_is_refused_with_413", "[http_body_limit]") {
@@ -238,4 +276,70 @@ TEST_CASE("an_expect_continue_is_answered_before_the_body", "[http_body_limit]")
     const auto reply = expect_continue_reply(fixture.port(), 16);
 
     REQUIRE(reply.rfind("HTTP/1.1 100 Continue", 0) == 0);
+}
+
+TEST_CASE("an_over_limit_expect_is_refused_without_inviting_the_body", "[http_body_limit]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a client is not told to send a body that is refused";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.default_max_body_size = 64;
+
+    test_server fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(router->post("/echo")
+                          .summary("Echo the size of the body")
+                          .auth_optional()
+                          .handler(echo_handler())
+                          .build());
+
+    const auto reply = expect_continue_reply(fixture.port(), 5000);
+
+    REQUIRE(reply.rfind("HTTP/1.1 413", 0) == 0);
+}
+
+TEST_CASE("a_saturated_pool_refuses_with_503", "[http_body_limit][worker_pool]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a full pool refuses rather than queueing";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 1;
+    options.max_inflight_requests = 1;
+
+    test_server fixture(options);
+    auto router = fixture.server().get_router();
+
+    std::atomic<bool> entered{false};
+    std::atomic<bool> release{false};
+    router->add_route(
+        router->get("/slow")
+            .summary("Block the only worker")
+            .auth_optional()
+            .handler([&entered, &release](const http_request&) -> asio::awaitable<http_response> {
+                entered = true;
+                while (!release.load())
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                co_return http_response::json(R"({"status":"slow"})");
+            })
+            .build());
+
+    std::atomic<unsigned> slow_status{0};
+    std::thread slow(
+        [&] { slow_status = get_status_within(fixture.port(), "/slow", std::chrono::seconds(5)); });
+    for (auto waited = 0; waited < 500 && !entered.load(); ++waited)
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    const auto refused =
+        get_status_within(fixture.port(), "/health", std::chrono::milliseconds(2000));
+
+    release = true;
+    slow.join();
+
+    REQUIRE(entered.load());
+    REQUIRE(slow_status.load() == 200);
+    REQUIRE(refused == 503);
 }

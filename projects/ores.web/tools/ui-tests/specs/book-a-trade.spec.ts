@@ -11,7 +11,8 @@ import { signIn } from './support/sign-in';
  */
 test('a trade books from the form and opens its own page', async ({ page }) => {
     await signIn(page);
-    await page.goto('/trading/trades');
+    await page.goto('/trading/blotter');
+    await page.getByLabel('Flat').check();
     await page.getByRole('button', { name: /book a trade/i }).click();
     await expect(page).toHaveURL(/\/trading\/trades\/new$/);
 

@@ -85,9 +85,16 @@ const REVEALED =
 export function Tooltip({
     text,
     children,
+    triggerClassName,
 }: {
     readonly text: string;
     readonly children: ReactNode;
+    /**
+     * Extra classes on the trigger, for a trigger that is already a marker: a
+     * badge brings its own shape, so the dotted underline would only clutter it.
+     * The hover, focus and tap behaviour stays.
+     */
+    readonly triggerClassName?: string;
 }): ReactNode {
     const id = useId();
     const root = useRef<HTMLSpanElement>(null);
@@ -101,7 +108,7 @@ export function Tooltip({
             <span
                 tabIndex={0}
                 aria-describedby={id}
-                className={TRIGGER}
+                className={cx(TRIGGER, triggerClassName)}
                 onMouseEnter={() => act('hover')}
                 onMouseLeave={() => act('unhover')}
                 onFocus={() => act('focus')}

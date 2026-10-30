@@ -57,19 +57,12 @@ export interface CardDef extends Pick<MenuItem, 'permission'> {
 }
 
 export const CARDS = {
-    trades: {
-        titleKey: 'trading.trades.title',
-        bodyKey: 'trading.trades.lead',
-        to: PATHS.trades,
+    blotter: {
+        titleKey: 'trading.blotter.title',
+        bodyKey: 'trading.blotter.lead',
+        to: PATHS.blotter,
         icon: 'document',
         permission: 'trading::trade_summaries:read',
-    },
-    structures: {
-        titleKey: 'trading.structures.title',
-        bodyKey: 'trading.structures.lead',
-        to: PATHS.structures,
-        icon: 'document',
-        permission: 'trading::structures:read',
     },
     parties: {
         titleKey: 'home.tenant.parties',
@@ -425,7 +418,7 @@ export const AREA_CARDS = {
         'engineSettings',
     ],
     tenants: ['tenants'],
-    trading: ['trades', 'structures'],
+    trading: ['blotter'],
 } as const satisfies Record<string, readonly CardId[]>;
 
 export type CardArea = keyof typeof AREA_CARDS;

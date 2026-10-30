@@ -105,6 +105,18 @@ struct trade_summary final {
     int trade_count = 0;
 
     /**
+     * @brief The structure that holds the trade, when one does: null for a trade no structure
+     * holds, and for a structure row.
+     */
+    std::optional<boost::uuids::uuid> structure_id;
+
+    /**
+     * @brief Whether the row is a leg of a structure. A boolean, so a filter can ask for the rows
+     * that are legs and for the rows that are not; a null id cannot say "none".
+     */
+    bool is_leg = false;
+
+    /**
      * @brief Every identifier of the trade as one text, which the list searches.
      */
     std::string search_text;

@@ -16,17 +16,17 @@ test('a Trading persona signs in and leaves the sign-in page', async ({ page }) 
     await expect(page).not.toHaveURL(/\/login$/);
 });
 
-test('the trade list answers and shows a row', async ({ page }) => {
+test('the blotter answers and shows a row', async ({ page }) => {
     const refusals: string[] = [];
     page.on('response', (response) => {
-        if (response.url().includes('/api/trades') && response.status() >= 400) {
+        if (response.url().includes('/api/blotter') && response.status() >= 400) {
             refusals.push(`${response.status()} ${response.url()}`);
         }
     });
 
     await signIn(page);
-    await page.goto('/trading/trades');
-    await expect(page.getByRole('heading', { name: /trades/i })).toBeVisible();
+    await page.goto('/trading/blotter');
+    await expect(page.getByRole('heading', { name: /trade blotter/i })).toBeVisible();
 
     expect(refusals, `the trades route refused: ${refusals.join(' | ')}`).toHaveLength(0);
 });

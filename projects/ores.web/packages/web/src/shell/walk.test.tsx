@@ -239,8 +239,15 @@ describe('the routes of the application', () => {
         `${PATHS.pricingEngines}/import`,
     ]);
 
+    /**
+     * The addresses that only redirect: the trade list and the structures list,
+     * both of which the blotter now answers.
+     */
+    const REDIRECTS = new Set<string>([PATHS.trades, PATHS.structures]);
+
     /** Routes that are a record's page, a redirect or outside the signed-in shell. */
     const exempt = (path: string): boolean =>
+        REDIRECTS.has(path) ||
         path.includes(':') ||
         path === '*' ||
         path === '/login' ||

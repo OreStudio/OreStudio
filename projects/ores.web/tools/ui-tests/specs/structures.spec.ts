@@ -14,7 +14,7 @@ import { signIn } from './support/sign-in';
  */
 test('a structure shows its reference and its legs, and takes another leg', async ({ page }) => {
     await signIn(page);
-    await page.goto('/trading/structures');
+    await page.goto('/trading/blotter');
 
     const search = page.getByRole('searchbox').first();
     await search.fill('PKG-');
@@ -154,30 +154,26 @@ test('a trade names the structure it is a leg of', async ({ page }) => {
  */
 test('a leg is taken out of a deal and the trade stays', async ({ page }) => {
     await signIn(page);
-    await page.goto('/trading/structures');
+    await page.goto('/trading/blotter');
 
     /*
-     * A deal that still holds a leg: earlier runs of this case take legs out, so
-     * a deal can be empty, and unlinking from an empty table proves nothing.
+     * A structure that still holds a leg: earlier runs of this case take legs out,
+     * so a structure can be empty, and unlinking from an empty table proves
+     * nothing. The blotter names the structures; the page states their legs.
      */
-    const rows = page.locator('tbody tr');
+    const search = page.getByRole('searchbox').first();
+    await search.fill('PKG-');
+    const rows = page.locator('tbody tr', { hasText: 'PKG-' });
     await rows.first().waitFor({ state: 'visible', timeout: 20_000 });
-    const holding = await rows.evaluateAll((elements) =>
-        elements
-            .map((element) => ({
-                reference: element.querySelector('td:nth-child(1)')?.textContent?.trim() ?? '',
-                inside: element.querySelector('td:nth-child(5)')?.textContent?.trim() ?? '',
-            }))
-            .find((entry) => /^\d+ trades?$/.test(entry.inside) && !entry.inside.startsWith('0')),
-    );
-    test.skip(holding === undefined, 'No deal holds a leg: an earlier run emptied them.');
-    expect(holding).toBeTruthy();
-    const row = page.locator('tbody tr', { hasText: holding?.reference ?? '' }).first();
+    const first = rows.first();
     await Promise.all([
         page.waitForURL(/\/trading\/structures\/[A-Z]+-[0-9a-f]+$/, { timeout: 20_000 }),
-        row.locator('td').first().getByRole('link').first().click(),
+        first.locator('td').first().getByRole('link').first().click(),
     ]);
     await page.getByRole('tab', { name: /^members$/i }).click({ timeout: 20_000 });
+    const held = page.locator('tbody tr:visible');
+    await held.first().waitFor({ state: 'visible', timeout: 20_000 }).catch(() => undefined);
+    test.skip((await held.count()) === 0, 'No structure holds a leg: an earlier run emptied them.');
 
     const legs = page.locator('tbody tr:visible');
     await legs.first().waitFor({ state: 'visible', timeout: 20_000 });
@@ -194,7 +190,7 @@ test('a leg is taken out of a deal and the trade stays', async ({ page }) => {
      * the page's links would depend on when the table re-reads.
      */
     await expect(page.getByText(/no access|did not finish/i)).toHaveCount(0, { timeout: 20_000 });
-    await page.goto(`/trading/structures`);
+    await page.goto('/trading/blotter');
     await page.getByRole('button', { name: /^group trades$/i }).click();
     await expect(page.getByRole('checkbox', { name: freed })).toBeVisible({ timeout: 20_000 });
     await page.screenshot({ path: 'shots/structure-unlinked.png', fullPage: true });
@@ -261,34 +257,6 @@ test('two trades of one counterparty are grouped into a structure', async ({ pag
  * The columns are the prototype's, and a structure that sits inside another is
  * indented under it, because the composition is what the screen is for.
  */
-test('the structures list draws the trees with what each row holds', async ({ page }) => {
-    await signIn(page);
-    await page.goto('/trading/structures');
-
-    await expect(
-        page.getByRole('heading', { name: /structures and packages/i, level: 1 }),
-    ).toBeVisible({ timeout: 20_000 });
-
-    // The header row is read as one line: the prototype's columns, in its order.
-    const headers = (await page.locator('thead th').allInnerTexts()).map((text) =>
-        text.trim().toUpperCase(),
-    );
-    expect(headers).toEqual([
-        'IDENTIFIER',
-        'KIND',
-        'TEMPLATE',
-        'COUNTERPARTY',
-        'INSIDE IT',
-        'CONFIRMS',
-        'PRICED',
-    ]);
-
-    const row = page.locator('tbody tr', { hasText: 'PKG-' }).first();
-    await row.waitFor({ state: 'visible', timeout: 20_000 });
-    // A package's legs each confirm on their own, which the row states.
-    await expect(row).toContainText(/each leg confirms on its own/i);
-    await page.screenshot({ path: 'shots/structures-list.png', fullPage: true });
-});
 
 /**
  * Booking a leg from the deal it joins.
@@ -300,7 +268,7 @@ test('the structures list draws the trees with what each row holds', async ({ pa
  */
 test('a trade booked from a deal becomes its leg', async ({ page }) => {
     await signIn(page);
-    await page.goto('/trading/structures');
+    await page.goto('/trading/blotter');
 
     const row = page.locator('tbody tr', { hasText: 'PKG-' }).first();
     await row.waitFor({ state: 'visible', timeout: 20_000 });

@@ -347,7 +347,7 @@ void provision_commands::process_setup(std::ostream& out,
     if (!timeout)
         return;
 
-    if (session.is_logged_in()) {
+    if (session.has_user_login()) {
         fail(out) << "Already logged in; bootstrap setup runs against a fresh, "
                      "bootstrap-mode system. Log out first."
                   << std::endl;

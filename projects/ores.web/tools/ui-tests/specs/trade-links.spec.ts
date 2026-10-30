@@ -15,10 +15,11 @@ import { signIn } from './support/sign-in';
  */
 test('a link is recorded and named by both its type and its trade', async ({ page }) => {
     await signIn(page);
-    await page.goto('/trading/trades');
+    await page.goto('/trading/blotter');
+    await page.getByLabel('Flat').check();
     const row = page.locator('tbody tr').first();
     await row.waitFor({ state: 'visible' });
-    await row.locator('td').first().click();
+    await row.locator('td').first().getByRole('link').first().click();
     await page.getByRole('tab', { name: 'Links' }).click();
 
     // The field's label is 'Link': the table column beside it says what it is.

@@ -160,7 +160,7 @@ confirm the *current* behaviour and say whether it is what the note describes.
 | Status        |       |
 | Completed at  |       |
 | Branch        | feature/collect-the-snags-from-testing-the-curve-screens |
-| Commit        |       |
+| Commit        | 1bc6322bf6 |
 | Worktree      | ores_dev_merry_newton |
 
 * Notes

@@ -8,7 +8,7 @@
 #+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
 #+owner: marco
 #+branch: feature/flip-commodity-onto-its-rows
-#+pr:
+#+pr: 4084
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4084][#4084]] | [synthetic] Let a commodity trade state its rows |
 
 * Review
 

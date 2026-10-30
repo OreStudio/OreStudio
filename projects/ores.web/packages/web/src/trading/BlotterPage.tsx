@@ -241,16 +241,14 @@ export function BlotterPage(): ReactNode {
                 }
                 return (
                     <span className="whitespace-nowrap">
-                        <Tooltip
-                            text={
+                        <span
+                            className="font-mono"
+                            title={
                                 row.product_name || row.instrument_type_name || row.instrument_type
                             }
-                            triggerClassName="no-underline"
                         >
-                            <span className="font-mono">
-                                <Tag small>{code.toUpperCase()}</Tag>
-                            </span>
-                        </Tooltip>
+                            <Tag small>{code.toUpperCase()}</Tag>
+                        </span>
                     </span>
                 );
             },

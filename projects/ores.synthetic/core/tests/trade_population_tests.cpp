@@ -291,6 +291,19 @@ TEST_CASE("a_credit_slot_states_its_row_and_names_a_legal_entity", "[trade_popul
     }
 }
 
+/*
+ * The codes a plan states. A planner cycles its routed list by the slot's
+ * position, so a plan shorter than the list states a prefix of it and the codes
+ * past that position are never drawn. A config that wants every code states one
+ * slot per code, which is what the seeded profiles do.
+ */
+std::set<std::string> codes_of(const domain::trade_population_plan& plan) {
+    std::set<std::string> codes;
+    for (const auto& slot : plan.slots)
+        codes.insert(slot.trade_type_code);
+    return codes;
+}
+
 TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", "[trade_population]") {
     auto wide = commodity_scope();
     wide.trades_per_book = 25;
@@ -665,12 +678,30 @@ TEST_CASE("every_routed_rate_type_appears_in_a_population_of_that_length", "[tra
     const auto scope = rate_scope();
     const auto plan = plan_of(scope);
 
-    std::set<std::string> types;
-    for (const auto& slot : plan.slots)
-        types.insert(slot.trade_type_code);
-
     // The nine the router sends to rate_instrument, less the inflation swap.
-    CHECK(types.size() == 9);
+    CHECK(codes_of(plan).size() == 9);
+}
+
+TEST_CASE("a_rate_config_that_states_one_slot_per_routed_code_draws_every_code",
+          "[trade_population]") {
+    /*
+     * The seeded rate configs state one trade per routed code, because a plan
+     * cycles the list by position: a config of eight slots into nine codes
+     * never reaches the ninth, and the knock-out swap was the code it missed.
+     */
+    auto wide = rate_scope();
+    wide.trades_per_book = 64;
+    const auto routed = codes_of(plan_of(wide));
+    REQUIRE(routed.size() == 9);
+
+    auto seeded = rate_scope();
+    seeded.book_ids = {bond_book};
+    seeded.trades_per_book = static_cast<std::uint32_t>(routed.size());
+
+    const auto plan = plan_of(seeded);
+    REQUIRE(plan.slots.size() == routed.size());
+    CHECK(codes_of(plan) == routed);
+    CHECK(codes_of(plan).contains("KnockOutSwap"));
 }
 
 TEST_CASE("a_rate_population_without_an_index_catalogue_is_refused", "[trade_population]") {
@@ -752,6 +783,29 @@ TEST_CASE("every_routed_fx_type_appears_in_a_population_of_that_length", "[trade
         types.insert(slot.trade_type_code);
 
     CHECK(types.size() == 16);
+}
+
+TEST_CASE("an_fx_config_that_states_one_slot_per_routed_code_draws_every_code",
+          "[trade_population]") {
+    /*
+     * The fx planner cycles sixteen routed codes. A config of eight slots never
+     * reaches the variance swap or the accumulator, which is what a tenant held
+     * before the seeded configs stated one trade per code.
+     */
+    auto wide = fx_scope();
+    wide.trades_per_book = 64;
+    const auto routed = codes_of(plan_of(wide));
+    REQUIRE(routed.size() == 16);
+
+    auto seeded = fx_scope();
+    seeded.book_ids = {bond_book};
+    seeded.trades_per_book = static_cast<std::uint32_t>(routed.size());
+
+    const auto plan = plan_of(seeded);
+    REQUIRE(plan.slots.size() == routed.size());
+    CHECK(codes_of(plan) == routed);
+    CHECK(codes_of(plan).contains("FxVarianceSwap"));
+    CHECK(codes_of(plan).contains("FxAccumulator"));
 }
 
 TEST_CASE("an_fx_population_prefers_the_pairs_that_name_the_book_currency", "[trade_population]") {

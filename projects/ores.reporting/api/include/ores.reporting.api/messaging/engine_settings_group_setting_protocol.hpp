@@ -44,11 +44,7 @@ struct engine_settings_group_setting_write {
     std::string group_code;
     std::string column_name;
     std::string ore_name;
-    std::string kind;
     bool changes_numbers;
-    std::string options;
-    std::optional<double> minimum;
-    std::optional<double> maximum;
     int position;
 };
 

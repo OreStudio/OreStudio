@@ -6273,7 +6273,10 @@ const fr: SourceCatalogue = {
         },
         problem: {
             whole: '{setting} doit être un nombre entier.',
+            number: '{setting} doit être un nombre.',
             choice: '{setting} doit être l’une des valeurs de la liste.',
+            flag: '{setting} doit valoir vrai ou faux.',
+            text: '{setting} doit être une valeur que ce paramètre accepte.',
             min: '{setting} doit valoir au moins {min}.',
             max: '{setting} doit valoir au plus {max}.',
         },

@@ -378,7 +378,7 @@ describe('the curve configuration page', () => {
         expect(words).toContain('No');
     });
 
-    it('draws a composite quote\'s pair rather than a slash between two blanks', () => {
+    it("draws a composite quote's pair rather than a slash between two blanks", () => {
         const twoQuotes = structuredClone(CURVE);
         const row = twoQuotes.sections[0]?.entries[0]?.collections[0]?.rows[0];
         if (row !== undefined) {

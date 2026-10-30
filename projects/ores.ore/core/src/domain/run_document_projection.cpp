@@ -89,9 +89,6 @@ bool parse_flag(const std::string& name, const std::string& value) {
 
 int parse_int(const std::string& name, const std::string& value);
 
-constexpr std::array<std::string_view, 4> observation_models = {
-    "None", "Disable", "Defer", "Unregister"};
-
 template <typename Part>
 engine_binding flag_binding(std::string_view parameter,
                             std::optional<Part> engine_t::* part,
@@ -145,11 +142,10 @@ const std::vector<engine_binding>& engine_bindings() {
         int_binding("ignoreFixingLead", &engine_t::fixings, &fixings_t::ignore_fixing_lead),
         {"observationModel",
          [](engine_t& e, const std::string& v) {
-             if (std::ranges::find(observation_models, v) == observation_models.end())
-                 throw std::runtime_error(
-                     "run_document_projection: Setup parameter 'observationModel' is not one of "
-                     "None, Disable, Defer or Unregister: '" +
-                     v + "'");
+             /*
+              * The document states a word here and the store refuses one its set
+              * does not accept, so no list of the words lives in this codec.
+              */
              if (!e.building)
                  e.building.emplace();
              e.building->observation_model = v;

@@ -55,8 +55,7 @@ create table if not exists "ores_reporting_engine_settings_building_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("observation_model" is null or "observation_model" in ('None', 'Disable', 'Defer', 'Unregister'))
+    check ("id" <> ores_utility_nil_uuid_fn())
 );
 
 -- Version uniqueness for optimistic concurrency

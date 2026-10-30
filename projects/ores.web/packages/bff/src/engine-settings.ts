@@ -33,6 +33,10 @@ import { subjects as bindingSubjects } from '@ores/wire-protocol/generated/repor
 import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_definition_protocol';
 import { subjects as configurationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/configuration_protocol';
 import { subjects as proposalSubjects } from '@ores/wire-protocol/generated/reporting/protocol/engine_settings_proposal_operations_protocol';
+import { subjects as valueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_protocol';
+import { subjects as valueSetValueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_value_protocol';
+import { subjects as valueSetCatalogueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_catalogue_protocol';
+import { subjects as settingValueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_setting_value_set_protocol';
 import { HttpFailure, invalidRequest, notFound, otherParty } from './errors.js';
 import {
     input,
@@ -44,6 +48,7 @@ import {
     text,
     write,
 } from './refdata-calls.js';
+import { NO_SOURCE_KIND, readValueSets, type ValueFields } from './ore-value-sets.js';
 import type { LiveSession } from './sessions.js';
 
 /*
@@ -57,11 +62,11 @@ import type { LiveSession } from './sessions.js';
  * in force. A write to a part makes the next version of the central row, in the
  * service, so a part is written alone and the document is never saved whole.
  *
- * What a setting is, its range and its control, comes from the engine settings
- * groups tables, so a group and its settings are rows and never a change here.
- * What a setting means is documentation, and it comes from the ore parameter of
- * the same name, so the wording too is edited in the data and never in this
- * file.
+ * What a setting is comes from the engine settings groups tables, so a group
+ * and its settings are rows and never a change here. Its control and the values
+ * it accepts come from the value set of the ore parameter of the same name, the
+ * same four tables the pricing screen reads and the write path enforces. What a
+ * setting means is documentation, and it too is edited in the data.
  *
  * The subjects a group's part is read and written under, and the key its rows
  * travel as, stay here: they are the wiring of the service, not the model of the
@@ -82,9 +87,6 @@ const NIL = '00000000-0000-0000-0000-000000000000';
 
 const idSchema = z.guid();
 
-/** The kind of value a setting takes, which is the control the screen draws. */
-const kindSchema = z.enum(['flag', 'whole', 'choice']);
-
 /** One group of settings, as the reporting service states it. */
 const groupRowSchema = z.looseObject({
     code: z.string().trim().min(1),
@@ -96,28 +98,23 @@ const settingRowSchema = z.looseObject({
     group_code: z.string().trim().min(1),
     column_name: z.string().trim().min(1),
     ore_name: z.string().trim().min(1),
-    kind: kindSchema,
     changes_numbers: z.boolean().default(false),
-    /** The words a choice accepts, comma separated, and empty for a setting that is not one. */
-    options: z.string().default(''),
-    minimum: z.number().nullable().default(null),
-    maximum: z.number().nullable().default(null),
     position: z.number().default(0),
 });
 
 type GroupRow = z.infer<typeof groupRowSchema>;
 type SettingRow = z.infer<typeof settingRowSchema>;
 
-/** One setting of a group: the column its value travels under, its control, and the values it accepts. */
+/**
+ * One setting of a group: the column its value travels under, the ORE parameter
+ * that documents it, and whether it moves the numbers a run computes. Its
+ * control and the values it accepts are the value set of that ORE parameter.
+ */
 interface EngineSetting {
     readonly column: string;
     readonly ore: string;
-    readonly kind: z.infer<typeof kindSchema>;
     /** Whether the setting changes the numbers a run computes, and is not only operational. */
     readonly changesNumbers: boolean;
-    readonly options: readonly string[];
-    readonly min: number | null;
-    readonly max: number | null;
 }
 
 /** One group of settings, in the order the data places it in the screen. */
@@ -179,14 +176,7 @@ function settingOf(row: SettingRow): EngineSetting {
     return {
         column: row.column_name,
         ore: row.ore_name,
-        kind: row.kind,
         changesNumbers: row.changes_numbers,
-        options: row.options
-            .split(',')
-            .map((option) => option.trim())
-            .filter((option) => option !== ''),
-        min: row.minimum,
-        max: row.maximum,
     };
 }
 
@@ -228,6 +218,33 @@ async function readGroups(session: LiveSession): Promise<readonly EngineGroup[]>
         });
 }
 
+/**
+ * The value set of each =Setup= parameter, read from the four value set tables
+ * once per request.
+ *
+ * The engine settings screen draws its controls from these fields, exactly as
+ * the pricing screen does, so a setting's rule is stated once in the data and
+ * neither server restates it.
+ */
+async function readSetupValueSets(session: LiveSession): Promise<(ore: string) => ValueFields> {
+    const rows = (subject: string, key: string) =>
+        readAll(session, subject, key, { filter: null, as_of: null });
+    const [sets, values, catalogues, links] = await Promise.all([
+        rows(valueSetSubjects.list_ore_parameter_value_sets_request, 'sets'),
+        rows(valueSetValueSubjects.list_ore_parameter_value_set_values_request, 'values'),
+        rows(
+            valueSetCatalogueSubjects.list_ore_parameter_value_set_catalogues_request,
+            'catalogues',
+        ),
+        rows(
+            settingValueSetSubjects.list_ore_parameter_setting_value_sets_request,
+            'setting_value_sets',
+        ),
+    ]);
+    const fieldsOf = await readValueSets(session, { sets, values, catalogues, links });
+    return (ore) => fieldsOf(SETUP_SCOPE, ore);
+}
+
 /** The group with this code, or a 404 when the data does not hold it. */
 function groupOf(groups: readonly EngineGroup[], id: string): EngineGroup {
     const group = groups.find((candidate) => candidate.id === id);
@@ -246,26 +263,75 @@ function transportOf(group: EngineGroup): GroupTransport {
     return transport;
 }
 
-/** One setting's value: null for the engine default, else a value its kind accepts. */
-function valueSchema(setting: EngineSetting): z.ZodType<boolean | number | string | null> {
-    switch (setting.kind) {
-        case 'flag':
-            return z.boolean().nullable();
-        case 'whole': {
-            let whole = z.int().min(setting.min ?? 0);
-            if (setting.max !== null) {
-                whole = whole.max(setting.max);
-            }
-            return whole.nullable();
+/**
+ * One setting's value: null for the engine default, else a value its value set
+ * accepts.
+ *
+ * Every kind a set states answers for itself, so a kind this build does not
+ * know, and a setting the model holds no set for, are refusals a person reads
+ * rather than a control that checks nothing.
+ */
+function valueSchema(
+    fields: ValueFields,
+    column: string,
+): z.ZodType<boolean | number | string | null> {
+    const bounded = <T extends z.ZodNumber>(number: T): T => {
+        let out = number;
+        if (fields.minimum !== null) {
+            out = out.min(fields.minimum) as T;
         }
-        case 'choice':
-            return z.enum(setting.options as [string, ...string[]]).nullable();
+        if (fields.maximum !== null) {
+            out = out.max(fields.maximum) as T;
+        }
+        return out;
+    };
+    switch (fields.sourceKind) {
+        case 'boolean':
+            return z.boolean().nullable();
+        case 'integer':
+            return bounded(z.int()).nullable();
+        case 'number':
+        case 'range':
+            return bounded(z.number()).nullable();
+        case 'enumerated':
+        case 'catalogue': {
+            const choices = fields.choices.map((choice) => choice.value);
+            if (choices.length === 0) {
+                throw new Error(
+                    `The setting "${column}" draws a list, and its value set states none.`,
+                );
+            }
+            return z.enum(choices as [string, ...string[]]).nullable();
+        }
+        case 'regex': {
+            const pattern = fields.pattern === '' ? null : new RegExp(fields.pattern);
+            return z
+                .string()
+                .refine((value) => pattern === null || pattern.test(value), {
+                    message: `The value must match ${fields.pattern}.`,
+                })
+                .nullable();
+        }
+        case 'text':
+            return z.string().nullable();
+        case NO_SOURCE_KIND:
+            throw new Error(
+                `The setting "${column}" names no value set, so the value it holds cannot be checked.`,
+            );
     }
 }
 
-function valuesSchema(group: EngineGroup): z.ZodType<Readonly<Record<string, unknown>>> {
+function valuesSchema(
+    group: EngineGroup,
+    fieldsOf: (ore: string) => ValueFields,
+): z.ZodType<Readonly<Record<string, unknown>>> {
     return z.strictObject(
-        Object.fromEntries(group.settings.map((setting) => [setting.column, valueSchema(setting)])),
+        Object.fromEntries(
+            group.settings.map((setting) => [
+                setting.column,
+                valueSchema(fieldsOf(setting.ore), setting.column),
+            ]),
+        ),
     );
 }
 
@@ -503,6 +569,7 @@ async function documentation(
             )
             .map((parameter) => [text(parameter['name']), parameter]),
     );
+    const fieldsOf = await readSetupValueSets(session);
     return {
         groups: groups.map((group) => ({
             id: group.id,
@@ -512,11 +579,8 @@ async function documentation(
                 return {
                     column: setting.column,
                     ore: setting.ore,
-                    kind: setting.kind,
                     changesNumbers: setting.changesNumbers,
-                    options: setting.options,
-                    min: setting.min,
-                    max: setting.max,
+                    ...fieldsOf(setting.ore),
                     documented: doc !== undefined,
                     label: text(doc?.['label']),
                     help: text(doc?.['help']),
@@ -838,7 +902,7 @@ export function registerEngineSettingsRoutes(
         const groups = await readGroups(session);
         const group = groupOf(groups, code);
         const body = input(groupBodySchema, request.body);
-        const values = input(valuesSchema(group), body.values);
+        const values = input(valuesSchema(group, await readSetupValueSets(session)), body.values);
         const central = await readCentral(session, id);
         requireOwningParty(session, central);
         if (group.changesNumbers) {

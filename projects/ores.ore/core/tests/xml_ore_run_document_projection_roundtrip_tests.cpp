@@ -263,7 +263,7 @@ TEST_CASE("a_setup_parameter_the_model_does_not_hold_is_dropped_with_a_warning",
     CHECK_THAT(warnings[2], Catch::Matchers::ContainsSubstring("'dateCalendar'"));
 }
 
-TEST_CASE("an_engine_setting_with_a_value_ore_does_not_read_is_refused",
+TEST_CASE("a_flag_with_no_flag_spelling_is_refused_and_a_word_is_carried",
           "[ore][xml][roundtrip][ore][run_document]") {
     auto lg(make_logger(test_suite));
 
@@ -277,10 +277,16 @@ TEST_CASE("an_engine_setting_with_a_value_ore_does_not_read_is_refused",
 </ORE>)",
                                                          parameter));
     };
-    CHECK_THROWS_WITH(
-        run_document_projection::map(
-            document("<Parameter name=\"observationModel\">Move</Parameter>")),
-        Catch::Matchers::ContainsSubstring("is not one of None, Disable, Defer or Unregister"));
+    /*
+     * A word is a word: the set of observationModel decides which words ORE
+     * takes, and the store refuses one outside it, so the codec carries it and
+     * states no list of its own.
+     */
+    const auto carried = run_document_projection::map(
+        document("<Parameter name=\"observationModel\">Move</Parameter>"));
+    REQUIRE(carried.engine_settings.has_value());
+    REQUIRE(carried.engine_settings->building.has_value());
+    CHECK(carried.engine_settings->building->observation_model == "Move");
     CHECK_THROWS_WITH(run_document_projection::map(
                           document("<Parameter name=\"lazyMarketBuilding\">maybe</Parameter>")),
                       Catch::Matchers::ContainsSubstring("is not a flag"));

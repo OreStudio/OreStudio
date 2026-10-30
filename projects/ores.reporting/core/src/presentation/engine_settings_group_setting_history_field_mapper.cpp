@@ -41,13 +41,7 @@ render_engine_settings_group_setting_fields(const domain::engine_settings_group_
     fields.push_back({.name = "Group Code", .value = v.group_code});
     fields.push_back({.name = "Column Name", .value = v.column_name});
     fields.push_back({.name = "Ore Name", .value = v.ore_name});
-    fields.push_back({.name = "Kind", .value = v.kind});
     fields.push_back({.name = "Changes Numbers", .value = v.changes_numbers ? "true" : "false"});
-    fields.push_back({.name = "Options", .value = v.options});
-    fields.push_back(
-        {.name = "Minimum", .value = v.minimum ? std::to_string(*v.minimum) : std::string{}});
-    fields.push_back(
-        {.name = "Maximum", .value = v.maximum ? std::to_string(*v.maximum) : std::string{}});
     fields.push_back({.name = "Position", .value = std::to_string(v.position)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

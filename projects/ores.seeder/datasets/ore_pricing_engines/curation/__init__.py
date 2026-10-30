@@ -40,6 +40,15 @@ NAME_SECTIONS = ("types", "models", "engines", "settings", "label_words")
 
 SETTING_SECTIONS = ("text", "not_a_setting")
 
+# A group of engine run settings states the column its value travels under, the
+# ORE name that documents it, and the value set that states its control. The
+# set is the control, so a setting that states one as well contradicts it.
+GROUP_SECTIONS = ("value_sets", "groups")
+
+GROUP_SETTING_KEYS = ("column", "ore", "value_set")
+
+CONTROL_KEYS = ("kind", "options", "minimum", "maximum")
+
 
 class CurationError(ValueError):
     pass
@@ -104,6 +113,38 @@ class Curation:
         for name, entry in self.globals.items():
             if "default_text" not in entry:
                 raise CurationError(f"globals.json: {name} has no default_text")
+        self.engine_settings_groups = self._groups("engine-settings-groups.json")
+
+    def _groups(self, name):
+        """The engine run settings, whose sets state the control of a setting.
+
+        A set is a curated fact like any other and carries the provenance every
+        entry carries. A setting names its set and states no control of its own:
+        the set is the control, and two statements of it would drift.
+        """
+        data = self._sections(name, GROUP_SECTIONS)
+        for code, entry in data["value_sets"].items():
+            _require(entry, ("name", "description", "source_kind"), f"{name} set {code}")
+        for group in data["groups"]:
+            where = f"{name} group {group.get('code', '')}"
+            for key in ("code", "name", "description"):
+                if not str(group.get(key) or "").strip():
+                    raise CurationError(f"{where} has no {key}")
+            for setting in group.get("settings", []):
+                for key in GROUP_SETTING_KEYS:
+                    if not str(setting.get(key) or "").strip():
+                        raise CurationError(
+                            f"{where}: the setting {setting.get('ore', '')} has no {key}")
+                stated = [key for key in CONTROL_KEYS if setting.get(key) is not None]
+                if stated:
+                    raise CurationError(
+                        f"{where}: the setting {setting['ore']} states the control "
+                        f"{', '.join(stated)} beside its set")
+                if setting["value_set"] not in data["value_sets"]:
+                    raise CurationError(
+                        f"{where}: the setting {setting['ore']} names the set "
+                        f"{setting['value_set']!r}, which the file does not state")
+        return data
 
     def _load(self, name, keys):
         return _entries(_read(self.directory, name), keys, name)

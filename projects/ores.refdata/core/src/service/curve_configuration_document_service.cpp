@@ -148,6 +148,11 @@ void curve_configuration_document_service::save(messaging::curve_configuration_d
                     reason,
                     commentary);
     write_amendment(ctx_,
+                    inflation_cap_floor_volatility_config_repository(),
+                    std::move(v.inflation_cap_floor_volatilities),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
                     swaption_volatility_config_repository(),
                     std::move(v.swaption_volatilities),
                     reason,

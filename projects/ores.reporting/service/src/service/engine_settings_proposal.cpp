@@ -21,6 +21,7 @@
 #include "ores.database/domain/context_transact.hpp"
 #include "ores.database/pq/statement.hpp"
 #include "ores.database/pq/transaction.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
@@ -144,61 +145,65 @@ std::optional<std::string> as_choice(const std::optional<std::string>& text) {
     return v;
 }
 
-/** The words a choice accepts, as the seed states them, comma separated. */
-std::vector<std::string> words_of(const std::string& options) {
-    std::vector<std::string> words;
-    std::size_t start = 0;
-    while (start <= options.size()) {
-        const auto end = options.find(',', start);
-        const auto word =
-            trim(options.substr(start, end == std::string::npos ? std::string::npos : end - start));
-        if (!word.empty())
-            words.push_back(word);
-        if (end == std::string::npos)
-            break;
-        start = end + 1;
-    }
-    return words;
-}
-
 /**
- * @brief Refuses a value the setting does not accept.
+ * @brief Refuses a value the setting's value set does not accept.
  *
  * The same check a direct write meets, made before a person is asked to decide
- * it: a proposal nobody could apply is a proposal nobody should sign.
+ * it: a proposal nobody could apply is a proposal nobody should sign. The rule
+ * is the store's own, so a proposal asks the function the parameter trigger
+ * asks, and no copy of the rule lives here to drift from it. Every setting a
+ * group holds names a set, so a setting with no set is a broken model and not a
+ * value that passes unchecked.
  */
-void validate(const domain::engine_settings_group_setting& setting,
-              const std::optional<std::string>& text) {
-    if (setting.kind == "flag") {
-        as_flag(text);
+void validate(const ores::database::context& ctx,
+              const domain::engine_settings_group_setting& setting,
+              const std::optional<std::string>& text,
+              ores::logging::logger_t& lg) {
+    const auto value = trim(text.value_or(std::string{}));
+    if (value.empty())
         return;
+
+    /*
+     * The verdict comes from one security definer function, so a caller whose
+     * tenant cannot see the shared value set rows still reads the rule rather
+     * than an empty answer.
+     */
+    const std::string sql = "select found::text, value_set_code, source_kind, is_in_set::text"
+                            " from ores_reporting_setting_value_verdict_fn($1, $2)";
+
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx,
+        sql,
+        {"Setup:" + setting.ore_name, value},
+        lg,
+        "validate an engine setting against its value set");
+
+    if (rows.empty() || rows.front().size() < 4 || !rows.front()[3].has_value())
+        throw std::runtime_error("The store did not answer a value set check for " +
+                                 setting.column_name + ".");
+
+    if (rows.front()[0].value_or(std::string{}) != "true")
+        throw std::invalid_argument(setting.column_name +
+                                    " has no value set, so the value it holds cannot be checked.");
+
+    const auto set_code = rows.front()[1].value_or(std::string{});
+    const auto kind = rows.front()[2].value_or(std::string{});
+
+    /*
+     * A kind the set states as a whole has a column of its own, and a number the
+     * column cannot hold is content the setting cannot hold. The parse is the
+     * one the apply makes, so a value refused here is the value refused there,
+     * and the refusal is permanent rather than retried.
+     */
+    if (kind == "integer") {
+        static_cast<void>(as_whole(value));
     }
-    if (setting.kind == "whole") {
-        const auto parsed = as_whole(text);
-        if (!parsed)
-            return;
-        if (setting.minimum && static_cast<double>(*parsed) < *setting.minimum)
-            throw std::invalid_argument(setting.column_name + " is below its minimum.");
-        if (setting.maximum && static_cast<double>(*parsed) > *setting.maximum)
-            throw std::invalid_argument(setting.column_name + " is above its maximum.");
+
+    if (rows.front()[3].value_or(std::string{}) == "true")
         return;
-    }
-    if (setting.kind == "choice") {
-        const auto parsed = as_choice(text);
-        if (!parsed)
-            return;
-        std::string allowed;
-        bool found = false;
-        for (const auto& word : words_of(setting.options)) {
-            if (word == *parsed)
-                found = true;
-            allowed += (allowed.empty() ? "" : ", ") + word;
-        }
-        if (!found)
-            throw std::invalid_argument(setting.column_name + " is not one of: " + allowed + ".");
-        return;
-    }
-    throw std::invalid_argument("The setting " + setting.code + " has an unknown kind.");
+
+    throw std::invalid_argument(setting.column_name + " is not a value its value set " + set_code +
+                                " accepts, so the proposal would be refused when it is applied.");
 }
 
 /**
@@ -254,16 +259,16 @@ std::optional<group_row> read_fixings(const ores::database::context& ctx,
     if (rows.empty())
         return std::nullopt;
     const auto& r = rows.front();
-    return group_row{.id = r.id,
-                     .version = r.version,
-                     .party_id = r.party_id,
-                     .values = {{"imply_todays_fixings", text_of(r.imply_todays_fixings)},
-                                {"include_todays_cash_flows", text_of(r.include_todays_cash_flows)},
-                                {"include_reference_date_events",
-                                 text_of(r.include_reference_date_events)},
-                                {"enrich_index_fixings", text_of(r.enrich_index_fixings)},
-                                {"ignore_fixing_lag", text_of(r.ignore_fixing_lag)},
-                                {"ignore_fixing_lead", text_of(r.ignore_fixing_lead)}}};
+    return group_row{
+        .id = r.id,
+        .version = r.version,
+        .party_id = r.party_id,
+        .values = {{"imply_todays_fixings", text_of(r.imply_todays_fixings)},
+                   {"include_todays_cash_flows", text_of(r.include_todays_cash_flows)},
+                   {"include_reference_date_events", text_of(r.include_reference_date_events)},
+                   {"enrich_index_fixings", text_of(r.enrich_index_fixings)},
+                   {"ignore_fixing_lag", text_of(r.ignore_fixing_lag)},
+                   {"ignore_fixing_lead", text_of(r.ignore_fixing_lead)}}};
 }
 
 std::optional<group_row> read_building(const ores::database::context& ctx,
@@ -274,17 +279,16 @@ std::optional<group_row> read_building(const ores::database::context& ctx,
     if (rows.empty())
         return std::nullopt;
     const auto& r = rows.front();
-    return group_row{.id = r.id,
-                     .version = r.version,
-                     .party_id = r.party_id,
-                     .values = {{"observation_model", text_of(r.observation_model)},
-                                {"lazy_market_building", text_of(r.lazy_market_building)},
-                                {"build_failed_trades", text_of(r.build_failed_trades)},
-                                {"continue_on_error", text_of(r.continue_on_error)},
-                                {"use_at_par_coupons_curves",
-                                 text_of(r.use_at_par_coupons_curves)},
-                                {"use_at_par_coupons_trades",
-                                 text_of(r.use_at_par_coupons_trades)}}};
+    return group_row{
+        .id = r.id,
+        .version = r.version,
+        .party_id = r.party_id,
+        .values = {{"observation_model", text_of(r.observation_model)},
+                   {"lazy_market_building", text_of(r.lazy_market_building)},
+                   {"build_failed_trades", text_of(r.build_failed_trades)},
+                   {"continue_on_error", text_of(r.continue_on_error)},
+                   {"use_at_par_coupons_curves", text_of(r.use_at_par_coupons_curves)},
+                   {"use_at_par_coupons_trades", text_of(r.use_at_par_coupons_trades)}}};
 }
 
 std::optional<group_row> read_execution(const ores::database::context& ctx,
@@ -300,8 +304,7 @@ std::optional<group_row> read_execution(const ores::database::context& ctx,
                      .party_id = r.party_id,
                      .values = {{"n_threads", text_of(r.n_threads)},
                                 {"log_mask", text_of(r.log_mask)},
-                                {"gzip_compression_level",
-                                 text_of(r.gzip_compression_level)}}};
+                                {"gzip_compression_level", text_of(r.gzip_compression_level)}}};
 }
 
 void write_fixings(const ores::database::context& ctx,
@@ -475,8 +478,7 @@ void write_group(const ores::database::context& ctx,
                  const std::optional<group_row>& row_in_force,
                  const value_map& values,
                  const std::string& reason) {
-    part_of(group_code).write(
-        ctx, engine_settings_id, party_id, row_in_force, values, reason);
+    part_of(group_code).write(ctx, engine_settings_id, party_id, row_in_force, values, reason);
 }
 
 /**
@@ -726,8 +728,14 @@ engine_settings_proposal_service::raise(
                 return response;
             }
             try {
-                validate(*setting, v.text_value);
-            } catch (const std::exception& e) {
+                validate(ctx, *setting, v.text_value, lg());
+            } catch (const std::invalid_argument& e) {
+                /*
+                 * The setting refuses the content, which is permanent. Any other
+                 * exception is the store failing to answer, and a caller that
+                 * read it as a bad value would never retry a failure that a
+                 * retry fixes.
+                 */
                 response.result = refusal_of(outcome::invalid, e.what());
                 return response;
             }
@@ -844,8 +852,7 @@ std::vector<std::string> engine_settings_proposal_service::refusals(const std::s
         const auto group_rows = rows_of_group(rows, code);
         if (group_rows.empty())
             continue;
-        const auto in_force =
-            version_of(row_at(ctx_, code, group_rows.front().engine_settings_id));
+        const auto in_force = version_of(row_at(ctx_, code, group_rows.front().engine_settings_id));
         if (in_force != group_rows.front().base_version) {
             out.push_back("The " + code +
                           " group has moved since the proposal was raised: it is "

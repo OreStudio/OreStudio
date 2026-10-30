@@ -6220,7 +6220,10 @@ const pt: SourceCatalogue = {
         },
         problem: {
             whole: '{setting} deve ser um número inteiro.',
+            number: '{setting} deve ser um número.',
             choice: '{setting} deve ser um dos valores da lista.',
+            flag: '{setting} deve ser verdadeiro ou falso.',
+            text: '{setting} deve ser um valor que este parâmetro aceita.',
             min: '{setting} deve ser no mínimo {min}.',
             max: '{setting} deve ser no máximo {max}.',
         },

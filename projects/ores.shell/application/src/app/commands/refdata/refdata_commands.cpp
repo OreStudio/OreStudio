@@ -284,6 +284,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     ledger_feed_type_commands::register_commands(root_menu, session);
     leg_type_commands::register_commands(root_menu, session);
     local_jurisdiction_commands::register_commands(root_menu, session);
+    legal_entity_commands::register_commands(root_menu, session);
     monetary_nature_commands::register_commands(root_menu, session);
     netting_agreement_commands::register_commands(root_menu, session);
     netting_set_commands::register_commands(root_menu, session);

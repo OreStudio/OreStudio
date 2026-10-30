@@ -24,11 +24,14 @@
  *
  * Engine Settings Group Setting Table
  *
- * One setting of one group, as the screen draws it: the column its value travels
- * under, the ORE parameter that documents it, the kind of control it takes, and
- * the range or the list of words the value must be one of. The group's settings are
- * what a screen shows and what a write to the group accepts, so a setting is data
- * here and no longer a list in the browser's server code.
+ * One setting of one group, as the screen lists it: the column its value travels
+ * under, and the ORE parameter that documents it and that names its value set. The
+ * group's settings are what a screen shows and what a write to the group accepts,
+ * so a setting is data here and no longer a list in the browser's server code.
+ *
+ * The control the screen draws and the values the setting accepts are not stated
+ * here. They belong to the value set of the ORE parameter, which the Setup scope
+ * link names, so one rule serves this table, the pricing screen and the write path.
  *
  * Whether a setting changes the numbers a run computes is stated here, so the
  * screen can warn a person before a write that moves them.
@@ -41,11 +44,7 @@ create table if not exists "ores_reporting_engine_settings_group_settings_tbl" (
     "group_code" text not null,
     "column_name" text not null,
     "ore_name" text not null,
-    "kind" text not null,
     "changes_numbers" boolean not null,
-    "options" text not null,
-    "minimum" double precision null,
-    "maximum" double precision null,
     "position" integer not null,
     "modified_by" text not null,
     "performed_by" text not null,

@@ -24,6 +24,7 @@
 #include "ores.platform/environment/environment.hpp"
 #include "ores.platform/process/pid.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.testing/publish_helper.hpp"
 #include <boost/log/attributes/scoped_attribute.hpp>
 #include <chrono>
 #include <random>
@@ -174,6 +175,14 @@ std::string test_database_manager::provision_test_tenant(database::context& ctx,
     const auto& tenant_id = results[0];
     BOOST_LOG_SEV(lg(), info) << "Successfully provisioned test tenant: " << tenant_code
                               << " (id: " << tenant_id << ")";
+
+    /*
+     * A test tenant holds the world data its components' guards read. The
+     * build publishes nothing, so the ISO currency codes are published here:
+     * a curve configuration states a currency, and the guard on the curve
+     * tables checks it against the currency catalogue.
+     */
+    ores::testing::publish_refdata_dataset(ctx, tenant_id, "iso.currencies", "currencies");
 
     return tenant_id;
 }

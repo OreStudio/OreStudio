@@ -74,7 +74,7 @@ import { EditingModeToggle, useEditingMode, type EditingMode } from '../ui/Editi
 import { FilterChip, ParameterDocumentationPanel } from '../ui/OreParameter.js';
 import { ParameterControl } from '../parameters/ParameterControl.js';
 import { ParameterRow } from '../parameters/ParameterRow.js';
-import { controlOfEngineSetting, shortDefault } from '../parameters/control.js';
+import { controlOfValueSet, shortDefault } from '../parameters/control.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { useTabs } from '../ui/Tabs.js';
 import { Button, Detail, Dialog, Field, Input, Notice, Tag, Textarea } from '../ui/Primitives.js';
@@ -867,7 +867,7 @@ function Control({
     readonly onText: (text: string) => void;
     readonly onFocus: () => void;
 }): ReactNode {
-    const model = controlOfEngineSetting(setting.kind, setting.options, setting.min, setting.max);
+    const model = controlOfValueSet(setting);
     // The shared control states a flag as true and false; the group holds the
     // words its own reading of a flag is written in.
     const flag = model.kind === 'boolean';

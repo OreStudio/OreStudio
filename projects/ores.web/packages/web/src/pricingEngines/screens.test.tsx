@@ -130,6 +130,7 @@ const VOCABULARY: PricingVocabulary = {
         'ModelParameters|Calibration': {
             valueSet: 'calibration',
             sourceKind: 'enumerated',
+            catalogue: '',
             choices: [
                 { value: 'Bootstrap', label: 'Bootstrap calibration' },
                 { value: 'BestFit', label: 'Best fit' },
@@ -141,6 +142,7 @@ const VOCABULARY: PricingVocabulary = {
         'EngineParameters|TimeSteps': {
             valueSet: 'timesteps',
             sourceKind: 'range',
+            catalogue: '',
             choices: [],
             minimum: 1,
             maximum: 500,
@@ -149,6 +151,7 @@ const VOCABULARY: PricingVocabulary = {
         'EngineParameters|Training.Samples': {
             valueSet: 'training_samples',
             sourceKind: 'integer',
+            catalogue: '',
             choices: [],
             minimum: null,
             maximum: null,
@@ -157,6 +160,7 @@ const VOCABULARY: PricingVocabulary = {
         'EngineParameters|Training.Sequence': {
             valueSet: 'training_sequence',
             sourceKind: 'enumerated',
+            catalogue: '',
             choices: [
                 { value: 'MersenneTwister', label: 'MersenneTwister' },
                 { value: 'SobolBrownianBridge', label: 'SobolBrownianBridge' },
@@ -168,6 +172,7 @@ const VOCABULARY: PricingVocabulary = {
         'EngineParameters|SensitivityTemplate': {
             valueSet: 'sensitivity_template',
             sourceKind: 'catalogue',
+            catalogue: 'analytics.sensitivity_template',
             choices: [
                 { value: 'IR_FD', label: 'IR_FD' },
                 { value: 'IR_Analytical', label: 'IR_Analytical' },
@@ -179,6 +184,7 @@ const VOCABULARY: PricingVocabulary = {
         'EngineParameters|TimestepPeriod': {
             valueSet: 'tenor',
             sourceKind: 'catalogue',
+            catalogue: 'refdata.tenor',
             choices: [
                 { value: '3M', label: '3M' },
                 { value: '6M', label: '6M' },
@@ -214,9 +220,7 @@ const VOCABULARY: PricingVocabulary = {
             engine: 'Grid',
             scope: 'engine',
             name: 'SensitivityTemplate',
-            kind: 'reference',
             usual: 'IR_FD',
-            options: [],
             required: false,
             help: 'The sensitivity template of the product.',
             description: 'The sensitivity template of the product.',
@@ -232,9 +236,7 @@ const VOCABULARY: PricingVocabulary = {
             engine: 'Grid',
             scope: 'engine',
             name: 'TimestepPeriod',
-            kind: 'tenor',
             usual: '3M',
-            options: [],
             required: true,
             help: 'The step of the grid.',
             description: 'The step of the grid.',
@@ -245,11 +247,10 @@ const VOCABULARY: PricingVocabulary = {
             engine: 'Grid',
             scope: 'model',
             name: 'Calibration',
-            kind: 'select',
             usual: 'Bootstrap',
-            options: ['Bootstrap', 'BestFit'],
             valueSet: 'calibration',
             sourceKind: 'enumerated',
+            catalogue: '',
             choices: [
                 { value: 'Bootstrap', label: 'Bootstrap calibration' },
                 { value: 'BestFit', label: 'Best fit' },
@@ -267,11 +268,10 @@ const VOCABULARY: PricingVocabulary = {
             engine: 'Grid',
             scope: 'engine',
             name: 'TimeSteps',
-            kind: 'number',
             usual: '100',
-            options: [],
             valueSet: 'timesteps',
             sourceKind: 'range',
+            catalogue: '',
             choices: [],
             minimum: 1,
             maximum: 500,
@@ -284,11 +284,10 @@ const VOCABULARY: PricingVocabulary = {
             engine: '',
             scope: 'engine',
             name: 'Training.Sequence',
-            kind: 'text',
             usual: 'SobolBrownianBridge',
-            options: [],
             valueSet: 'training_sequence',
             sourceKind: 'enumerated',
+            catalogue: '',
             choices: [
                 { value: 'MersenneTwister', label: 'MersenneTwister' },
                 { value: 'SobolBrownianBridge', label: 'SobolBrownianBridge' },
@@ -304,11 +303,10 @@ const VOCABULARY: PricingVocabulary = {
             engine: 'Grid',
             scope: 'engine',
             name: 'Training.Samples',
-            kind: 'text',
             usual: '1024',
-            options: [],
             valueSet: 'training_samples',
             sourceKind: 'integer',
+            catalogue: '',
             choices: [],
             minimum: null,
             maximum: null,

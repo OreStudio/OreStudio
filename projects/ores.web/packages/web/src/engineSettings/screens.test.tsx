@@ -140,11 +140,13 @@ const setting = (
 ): EngineDocumentation['groups'][number]['settings'][number] => ({
     column,
     ore,
-    kind: 'flag',
     changesNumbers: true,
-    options: [],
-    min: null,
-    max: null,
+    valueSet: 'setup.flag',
+    sourceKind: 'boolean',
+    choices: [],
+    minimum: null,
+    maximum: null,
+    pattern: '',
     documented: true,
     label,
     help: 'A flag.',
@@ -165,8 +167,9 @@ const DOCUMENTATION: EngineDocumentation = {
             settings: [
                 setting('imply_todays_fixings', 'implyTodaysFixings', 'Imply today’s fixings'),
                 setting('ignore_fixing_lag', 'ignoreFixingLag', 'Ignore fixing lag', {
-                    kind: 'whole',
-                    min: 0,
+                    valueSet: 'setup.fixing_lag_days',
+                    sourceKind: 'integer',
+                    minimum: 0,
                 }),
             ],
         },
@@ -180,13 +183,15 @@ const DOCUMENTATION: EngineDocumentation = {
             changesNumbers: false,
             settings: [
                 setting('n_threads', 'nThreads', 'Threads', {
-                    kind: 'whole',
+                    valueSet: 'setup.n_threads',
+                    sourceKind: 'integer',
                     changesNumbers: false,
-                    min: 1,
+                    minimum: 1,
                     defaultText: '1.',
                 }),
                 setting('log_mask', 'logMask', 'Log mask', {
-                    kind: 'whole',
+                    valueSet: 'setup.log_mask',
+                    sourceKind: 'integer',
                     changesNumbers: false,
                     documented: false,
                     label: '',

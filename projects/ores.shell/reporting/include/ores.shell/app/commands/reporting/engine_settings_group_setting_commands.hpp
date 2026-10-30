@@ -87,24 +87,24 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <code> <group_code> <column_name> <ore_name> <kind> <changes_numbers> <options>
-     * <minimum> <maximum> <position> <reason> <commentary>
+     * @brief add <code> <group_code> <column_name> <ore_name> <changes_numbers> <position> <reason>
+     * <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <code> <group_code> <column_name> <ore_name> <kind> <changes_numbers> <options>
-     * <minimum> <maximum> <position> <reason> <commentary> [--version <n>]
+     * @brief set <code> <group_code> <column_name> <ore_name> <changes_numbers> <position> <reason>
+     * <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <code> <group_code> <column_name> <ore_name> <kind>
-     * <changes_numbers> <options> <minimum> <maximum> <position> <reason> <commentary>
+     * @brief put-many --count <n> <code> <group_code> <column_name> <ore_name> <changes_numbers>
+     * <position> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

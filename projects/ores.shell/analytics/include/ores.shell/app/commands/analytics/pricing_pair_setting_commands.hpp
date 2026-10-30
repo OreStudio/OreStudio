@@ -87,16 +87,16 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <code> <model> <engine> <pricing_engine_type_code> <scope> <name> <kind>
-     * <usual_value> <options> <is_required> <note> <reason> <commentary>
+     * @brief add <code> <model> <engine> <pricing_engine_type_code> <scope> <name> <usual_value>
+     * <is_required> <note> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <code> <model> <engine> <pricing_engine_type_code> <scope> <name> <kind>
-     * <usual_value> <options> <is_required> <note> <reason> <commentary> [--version <n>]
+     * @brief set <code> <model> <engine> <pricing_engine_type_code> <scope> <name> <usual_value>
+     * <is_required> <note> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +104,7 @@ public:
 
     /**
      * @brief put-many --count <n> <code> <model> <engine> <pricing_engine_type_code> <scope> <name>
-     * <kind> <usual_value> <options> <is_required> <note> <reason> <commentary>
+     * <usual_value> <is_required> <note> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

@@ -53,6 +53,105 @@ function siteConfiguration(): ReturnType<typeof loadSiteConfiguration> {
 
 const ok = { outcome: 'ok', code: '', message: '' };
 
+/**
+ * The four value set tables, empty unless a test states them. Every route that
+ * draws a control or checks a value reads them, so a test that cares about a
+ * setting's rule states the set it belongs to.
+ */
+const NO_VALUE_SETS: Replies = {
+    'reporting.v1.ore_parameter_value_sets.list': { result: ok, sets: [] },
+    'reporting.v1.ore_parameter_value_set_values.list': { result: ok, values: [] },
+    'reporting.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
+    'reporting.v1.ore_parameter_setting_value_sets.list': { result: ok, setting_value_sets: [] },
+};
+
+/** One value set, as a test states it, with the ORE names that take it. */
+interface TestValueSet {
+    readonly code: string;
+    readonly source_kind: string;
+    readonly minimum?: number;
+    readonly maximum?: number;
+    readonly values?: readonly string[];
+}
+
+/** The replies of the four tables for these sets and the ORE names that name them. */
+function valueSetsOf(
+    sets: readonly TestValueSet[],
+    links: Readonly<Record<string, string>>,
+): Replies {
+    return {
+        'reporting.v1.ore_parameter_value_sets.list': {
+            result: ok,
+            sets: sets.map((set) => ({
+                code: set.code,
+                name: set.code,
+                description: '',
+                source_kind: set.source_kind,
+                catalogue_code: null,
+                minimum: set.minimum ?? null,
+                maximum: set.maximum ?? null,
+                pattern: '',
+                is_ordered: false,
+            })),
+        },
+        'reporting.v1.ore_parameter_value_set_values.list': {
+            result: ok,
+            values: sets.flatMap((set) =>
+                (set.values ?? []).map((value, display_order) => ({
+                    value_set_code: set.code,
+                    value,
+                    label: value,
+                    description: '',
+                    display_order,
+                    is_active: true,
+                })),
+            ),
+        },
+        'reporting.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
+        'reporting.v1.ore_parameter_setting_value_sets.list': {
+            result: ok,
+            setting_value_sets: Object.entries(links).map(([ore, value_set_code]) => ({
+                scope: 'Setup',
+                name: ore,
+                value_set_code,
+            })),
+        },
+    };
+}
+
+/** The value sets the engine run settings seed states, for the tests that need them. */
+const SETUP_SETS = valueSetsOf(
+    [
+        { code: 'setup.flag', source_kind: 'boolean' },
+        { code: 'setup.fixing_lag_days', source_kind: 'integer', minimum: 0 },
+        { code: 'setup.n_threads', source_kind: 'integer', minimum: 1 },
+        { code: 'setup.log_mask', source_kind: 'integer', minimum: 0 },
+        { code: 'setup.gzip_compression_level', source_kind: 'integer', minimum: 0, maximum: 9 },
+        {
+            code: 'setup.observation_model',
+            source_kind: 'enumerated',
+            values: ['None', 'Disable', 'Defer', 'Unregister'],
+        },
+    ],
+    {
+        implyTodaysFixings: 'setup.flag',
+        includeTodaysCashFlows: 'setup.flag',
+        includeReferenceDateEvents: 'setup.flag',
+        enrichIndexFixings: 'setup.flag',
+        ignoreFixingLag: 'setup.fixing_lag_days',
+        ignoreFixingLead: 'setup.fixing_lag_days',
+        observationModel: 'setup.observation_model',
+        lazyMarketBuilding: 'setup.flag',
+        buildFailedTrades: 'setup.flag',
+        continueOnError: 'setup.flag',
+        useAtParCouponsCurves: 'setup.flag',
+        useAtParCouponsTrades: 'setup.flag',
+        nThreads: 'setup.n_threads',
+        logMask: 'setup.log_mask',
+        gzipCompressionLevel: 'setup.gzip_compression_level',
+    },
+);
+
 const HK_PARTY = {
     id: '0a12c57f-1111-4222-8333-444444444444',
     name: 'ACME Corporation HK',
@@ -79,10 +178,11 @@ function buildTestServer(
             schema: { parse: (value: unknown) => unknown },
         ): Promise<unknown> {
             calls.push({ subject, body });
-            if (!(subject in replies)) {
+            const all: Replies = { ...NO_VALUE_SETS, ...replies };
+            if (!(subject in all)) {
                 throw new Error(`No canned reply for ${subject}`);
             }
-            return schema.parse(replies[subject]);
+            return schema.parse(all[subject]);
         },
         async close(): Promise<void> {
             return undefined;
@@ -190,11 +290,7 @@ const execution = {
 type SettingRow = {
     readonly column_name: string;
     readonly ore_name: string;
-    readonly kind: 'flag' | 'whole' | 'choice';
     readonly changes_numbers: boolean;
-    readonly options?: readonly string[];
-    readonly minimum?: number;
-    readonly maximum?: number;
 };
 
 /** The rows of one group's settings, in the order the group shows them. */
@@ -206,11 +302,7 @@ function settingsOf(
     group_code: string;
     column_name: string;
     ore_name: string;
-    kind: string;
     changes_numbers: boolean;
-    options: string;
-    minimum: number | null;
-    maximum: number | null;
     position: number;
 }[] {
     return settings.map((setting, position) => ({
@@ -218,11 +310,7 @@ function settingsOf(
         group_code: groupCode,
         column_name: setting.column_name,
         ore_name: setting.ore_name,
-        kind: setting.kind,
         changes_numbers: setting.changes_numbers,
-        options: (setting.options ?? []).join(','),
-        minimum: setting.minimum ?? null,
-        maximum: setting.maximum ?? null,
         position,
     }));
 }
@@ -238,78 +326,63 @@ const settings = [
         {
             column_name: 'imply_todays_fixings',
             ore_name: 'implyTodaysFixings',
-            kind: 'flag',
             changes_numbers: true,
         },
         {
             column_name: 'include_todays_cash_flows',
             ore_name: 'includeTodaysCashFlows',
-            kind: 'flag',
             changes_numbers: true,
         },
         {
             column_name: 'include_reference_date_events',
             ore_name: 'includeReferenceDateEvents',
-            kind: 'flag',
             changes_numbers: true,
         },
         {
             column_name: 'enrich_index_fixings',
             ore_name: 'enrichIndexFixings',
-            kind: 'flag',
             changes_numbers: true,
         },
         {
             column_name: 'ignore_fixing_lag',
             ore_name: 'ignoreFixingLag',
-            kind: 'whole',
             changes_numbers: true,
-            minimum: 0,
         },
         {
             column_name: 'ignore_fixing_lead',
             ore_name: 'ignoreFixingLead',
-            kind: 'whole',
             changes_numbers: true,
-            minimum: 0,
         },
     ]),
     ...settingsOf('building', [
         {
             column_name: 'observation_model',
             ore_name: 'observationModel',
-            kind: 'choice',
             changes_numbers: false,
-            options: ['None', 'Disable', 'Defer', 'Unregister'],
         },
         {
             column_name: 'lazy_market_building',
             ore_name: 'lazyMarketBuilding',
-            kind: 'flag',
             changes_numbers: false,
         },
         {
             column_name: 'build_failed_trades',
             ore_name: 'buildFailedTrades',
-            kind: 'flag',
             changes_numbers: true,
         },
         {
             column_name: 'continue_on_error',
             ore_name: 'continueOnError',
-            kind: 'flag',
             changes_numbers: true,
         },
         {
             column_name: 'use_at_par_coupons_curves',
             ore_name: 'useAtParCouponsCurves',
-            kind: 'flag',
             changes_numbers: true,
         },
         {
             column_name: 'use_at_par_coupons_trades',
             ore_name: 'useAtParCouponsTrades',
-            kind: 'flag',
             changes_numbers: true,
         },
     ]),
@@ -317,29 +390,23 @@ const settings = [
         {
             column_name: 'n_threads',
             ore_name: 'nThreads',
-            kind: 'whole',
             changes_numbers: false,
-            minimum: 1,
         },
         {
             column_name: 'log_mask',
             ore_name: 'logMask',
-            kind: 'whole',
             changes_numbers: false,
-            minimum: 0,
         },
         {
             column_name: 'gzip_compression_level',
             ore_name: 'gzipCompressionLevel',
-            kind: 'whole',
             changes_numbers: false,
-            minimum: 0,
-            maximum: 9,
         },
     ]),
 ];
 
 const reads = {
+    ...SETUP_SETS,
     'iam.v1.ops.get_my_parties': {
         result: ok,
         default_party_id: PARTY_ID,
@@ -485,13 +552,37 @@ describe('engine settings routes', () => {
         );
         expect(observation).toMatchObject({
             changesNumbers: false,
-            options: ['None', 'Disable', 'Defer', 'Unregister'],
+            valueSet: 'setup.observation_model',
+            sourceKind: 'enumerated',
+            choices: [
+                { value: 'None', label: 'None' },
+                { value: 'Disable', label: 'Disable' },
+                { value: 'Defer', label: 'Defer' },
+                { value: 'Unregister', label: 'Unregister' },
+            ],
         });
-        expect(threads).toMatchObject({ changesNumbers: false, min: 1, max: null });
+        expect(threads).toMatchObject({
+            changesNumbers: false,
+            valueSet: 'setup.n_threads',
+            sourceKind: 'integer',
+            minimum: 1,
+            maximum: null,
+        });
     });
 
-    it('takes a group and its settings from the tables, with the bounds and the words each states', async () => {
+    it('takes a group and its settings from the tables, with the bounds and the words of each set', async () => {
         const { server, sessionId } = buildTestServer({
+            ...valueSetsOf(
+                [
+                    { code: 'setup.n_threads', source_kind: 'integer', minimum: 2, maximum: 8 },
+                    {
+                        code: 'setup.observation_model',
+                        source_kind: 'enumerated',
+                        values: ['None', 'Simple'],
+                    },
+                ],
+                { nThreads: 'setup.n_threads', observationModel: 'setup.observation_model' },
+            ),
             'reporting.v1.engine_settings_groups.list': {
                 result: ok,
                 groups: [
@@ -506,19 +597,14 @@ describe('engine settings routes', () => {
                         {
                             column_name: 'n_threads',
                             ore_name: 'nThreads',
-                            kind: 'whole',
                             changes_numbers: true,
-                            minimum: 2,
-                            maximum: 8,
                         },
                     ]),
                     ...settingsOf('building', [
                         {
                             column_name: 'observation_model',
                             ore_name: 'observationModel',
-                            kind: 'choice',
                             changes_numbers: false,
-                            options: ['None', 'Simple'],
                         },
                     ]),
                 ],
@@ -537,10 +623,11 @@ describe('engine settings routes', () => {
             changesNumbers: boolean;
             settings: {
                 column: string;
-                kind: string;
-                options: string[];
-                min: number | null;
-                max: number | null;
+                valueSet: string;
+                sourceKind: string;
+                choices: { value: string; label: string }[];
+                minimum: number | null;
+                maximum: number | null;
                 changesNumbers: boolean;
             }[];
         }[];
@@ -548,7 +635,14 @@ describe('engine settings routes', () => {
         expect(documented[0]).toMatchObject({
             changesNumbers: true,
             settings: [
-                { column: 'n_threads', kind: 'whole', min: 2, max: 8, changesNumbers: true },
+                {
+                    column: 'n_threads',
+                    valueSet: 'setup.n_threads',
+                    sourceKind: 'integer',
+                    minimum: 2,
+                    maximum: 8,
+                    changesNumbers: true,
+                },
             ],
         });
         expect(documented[1]).toMatchObject({
@@ -556,8 +650,12 @@ describe('engine settings routes', () => {
             settings: [
                 {
                     column: 'observation_model',
-                    kind: 'choice',
-                    options: ['None', 'Simple'],
+                    valueSet: 'setup.observation_model',
+                    sourceKind: 'enumerated',
+                    choices: [
+                        { value: 'None', label: 'None' },
+                        { value: 'Simple', label: 'Simple' },
+                    ],
                     changesNumbers: false,
                 },
             ],
@@ -566,6 +664,10 @@ describe('engine settings routes', () => {
 
     it('accepts a value the tables state and refuses one outside their bounds', async () => {
         const tables = {
+            ...valueSetsOf(
+                [{ code: 'setup.n_threads', source_kind: 'integer', minimum: 2, maximum: 8 }],
+                { nThreads: 'setup.n_threads' },
+            ),
             'reporting.v1.engine_settings_groups.list': {
                 result: ok,
                 groups: [{ code: 'execution', name: 'Execution', description: '', position: 0 }],
@@ -576,10 +678,7 @@ describe('engine settings routes', () => {
                     {
                         column_name: 'n_threads',
                         ore_name: 'nThreads',
-                        kind: 'whole',
                         changes_numbers: false,
-                        minimum: 2,
-                        maximum: 8,
                     },
                 ]),
             },

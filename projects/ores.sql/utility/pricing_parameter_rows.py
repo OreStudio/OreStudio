@@ -82,11 +82,9 @@ def first_sentence(text):
     return match.group(1) if match else text
 
 
-def format_of(kind, options):
+def format_of(kind):
     if kind == "select":
-        if options:
-            return "One of: " + ", ".join(options) + "."
-        return "A choice from a fixed list."
+        return "A choice from a fixed list, which its value set states."
     return FORMAT_OF.get(kind, "Text.")
 
 
@@ -124,7 +122,7 @@ def setting_rows():
             "help": first_sentence(text),
             "description": text,
             "default_text": setting.get("usual") or "Not set in the examples.",
-            "format": format_of(setting.get("kind"), setting.get("options") or []),
+            "format": format_of(setting.get("kind")),
             "introduced_in": releases_by_name.get(name) or "1.8.0.7 or earlier",
             "removed_in": None,
             "xpath": (f"/PricingEngines/Product[@type='{type_code}']/"

@@ -52,10 +52,7 @@ create table if not exists "ores_reporting_engine_settings_execution_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("n_threads" is null or "n_threads" >= 1),
-    check ("log_mask" is null or "log_mask" >= 0),
-    check ("gzip_compression_level" is null or "gzip_compression_level" between 0 and 9)
+    check ("id" <> ores_utility_nil_uuid_fn())
 );
 
 -- Version uniqueness for optimistic concurrency

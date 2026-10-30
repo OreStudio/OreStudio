@@ -20,7 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { controlOfEngineSetting, controlOfValueSet, type ValueSetFields } from './control.js';
+import { controlOfValueSet, type ValueSetFields } from './control.js';
 
 /** A value set that states nothing beyond what a case gives it. */
 function fields(overrides: Partial<ValueSetFields>): ValueSetFields {
@@ -120,30 +120,5 @@ describe('the control a pricing value set calls for', () => {
             pattern: '',
         });
         expect(controlOfValueSet(undefined)).toEqual({ kind: 'text', pattern: '' });
-    });
-});
-
-describe('the control an engine setting calls for', () => {
-    it('draws a flag as true and false', () => {
-        expect(controlOfEngineSetting('flag', [], null, null)).toEqual({ kind: 'boolean' });
-    });
-
-    it('draws a whole as a whole number bounded by the row', () => {
-        expect(controlOfEngineSetting('whole', [], 1, null)).toEqual({
-            kind: 'number',
-            minimum: 1,
-            maximum: null,
-            whole: true,
-        });
-    });
-
-    it('draws a choice as the options the row states, each its own label', () => {
-        expect(controlOfEngineSetting('choice', ['Defer', 'Abort'], null, null)).toEqual({
-            kind: 'choice',
-            choices: [
-                { value: 'Defer', label: 'Defer' },
-                { value: 'Abort', label: 'Abort' },
-            ],
-        });
     });
 });

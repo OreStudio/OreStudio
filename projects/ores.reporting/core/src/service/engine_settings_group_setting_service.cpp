@@ -103,11 +103,7 @@ domain::engine_settings_group_setting engine_settings_group_setting_to_domain(
     v.group_code = write.group_code;
     v.column_name = write.column_name;
     v.ore_name = write.ore_name;
-    v.kind = write.kind;
     v.changes_numbers = write.changes_numbers;
-    v.options = write.options;
-    v.minimum = write.minimum;
-    v.maximum = write.maximum;
     v.position = write.position;
     return v;
 }

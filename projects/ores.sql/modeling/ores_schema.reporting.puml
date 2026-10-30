@@ -416,11 +416,7 @@ package "reporting" #E0F7FA {
         * group_code : text
         * column_name : text
         * ore_name : text
-        * kind : text
         * changes_numbers : boolean
-        * options : text
-          minimum : double
-          maximum : double
         * position : integer
         * modified_by : text
         * performed_by : text
@@ -435,11 +431,13 @@ package "reporting" #E0F7FA {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Engine Settings Group Setting Table
-    One setting of one group, as the screen draws it: the column its value travels
-    under, the ORE parameter that documents it, the kind of control it takes, and
-    the range or the list of words the value must be one of. The group's settings are
-    what a screen shows and what a write to the group accepts, so a setting is data
-    here and no longer a list in the browser's server code.
+    One setting of one group, as the screen lists it: the column its value travels
+    under, and the ORE parameter that documents it and that names its value set. The
+    group's settings are what a screen shows and what a write to the group accepts,
+    so a setting is data here and no longer a list in the browser's server code.
+    The control the screen draws and the values the setting accepts are not stated
+    here. They belong to the value set of the ORE parameter, which the Setup scope
+    link names, so one rule serves this table, the pricing screen and the write path.
     Whether a setting changes the numbers a run computes is stated here, so the
     screen can warn a person before a write that moves them.
     end note

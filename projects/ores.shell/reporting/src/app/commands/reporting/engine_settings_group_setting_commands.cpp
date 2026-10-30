@@ -144,24 +144,24 @@ void engine_settings_group_setting_commands::register_commands(cli::Menu& root_m
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <code> <group_code> <column_name> <ore_name> <kind> <changes_numbers> <options> "
-        "<minimum> <maximum> <position> <reason> <commentary>");
+        "add <code> <group_code> <column_name> <ore_name> <changes_numbers> <position> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <code> <group_code> <column_name> <ore_name> <kind> <changes_numbers> <options> "
-        "<minimum> <maximum> <position> <reason> <commentary> [--version <n>]");
+        "set <code> <group_code> <column_name> <ore_name> <changes_numbers> <position> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <code> <group_code> <column_name> <ore_name> <kind> "
-        "<changes_numbers> <options> <minimum> <maximum> <position> <reason> <commentary>");
+        "put-many --count <n> <code> <group_code> <column_name> <ore_name> <changes_numbers> "
+        "<position> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -355,8 +355,8 @@ void engine_settings_group_setting_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -369,15 +369,7 @@ void engine_settings_group_setting_commands::process_add(std::ostream& out,
         engine_settings_group_setting_read_token(
             req.change.write.ore_name, parsed->positionals[next++], "ore_name");
         engine_settings_group_setting_read_token(
-            req.change.write.kind, parsed->positionals[next++], "kind");
-        engine_settings_group_setting_read_token(
             req.change.write.changes_numbers, parsed->positionals[next++], "changes_numbers");
-        engine_settings_group_setting_read_token(
-            req.change.write.options, parsed->positionals[next++], "options");
-        engine_settings_group_setting_read_token(
-            req.change.write.minimum, parsed->positionals[next++], "minimum");
-        engine_settings_group_setting_read_token(
-            req.change.write.maximum, parsed->positionals[next++], "maximum");
         engine_settings_group_setting_read_token(
             req.change.write.position, parsed->positionals[next++], "position");
         req.intent.reason_code = parsed->positionals[next++];
@@ -422,8 +414,8 @@ void engine_settings_group_setting_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -436,15 +428,7 @@ void engine_settings_group_setting_commands::process_set(std::ostream& out,
         engine_settings_group_setting_read_token(
             req.change.write.ore_name, parsed->positionals[next++], "ore_name");
         engine_settings_group_setting_read_token(
-            req.change.write.kind, parsed->positionals[next++], "kind");
-        engine_settings_group_setting_read_token(
             req.change.write.changes_numbers, parsed->positionals[next++], "changes_numbers");
-        engine_settings_group_setting_read_token(
-            req.change.write.options, parsed->positionals[next++], "options");
-        engine_settings_group_setting_read_token(
-            req.change.write.minimum, parsed->positionals[next++], "minimum");
-        engine_settings_group_setting_read_token(
-            req.change.write.maximum, parsed->positionals[next++], "maximum");
         engine_settings_group_setting_read_token(
             req.change.write.position, parsed->positionals[next++], "position");
         req.intent.reason_code = parsed->positionals[next++];
@@ -500,8 +484,8 @@ void engine_settings_group_setting_commands::process_put_many(
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 10 + 2) {
-            fail(out) << "Expected " << (change_count * 10 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 6 + 2) {
+            fail(out) << "Expected " << (change_count * 6 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -516,15 +500,7 @@ void engine_settings_group_setting_commands::process_put_many(
             engine_settings_group_setting_read_token(
                 change.write.ore_name, parsed->positionals[next++], "ore_name");
             engine_settings_group_setting_read_token(
-                change.write.kind, parsed->positionals[next++], "kind");
-            engine_settings_group_setting_read_token(
                 change.write.changes_numbers, parsed->positionals[next++], "changes_numbers");
-            engine_settings_group_setting_read_token(
-                change.write.options, parsed->positionals[next++], "options");
-            engine_settings_group_setting_read_token(
-                change.write.minimum, parsed->positionals[next++], "minimum");
-            engine_settings_group_setting_read_token(
-                change.write.maximum, parsed->positionals[next++], "maximum");
             engine_settings_group_setting_read_token(
                 change.write.position, parsed->positionals[next++], "position");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

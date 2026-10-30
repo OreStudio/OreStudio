@@ -258,6 +258,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_ledger_feed_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_leg_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_local_jurisdiction_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_legal_entity_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_monetary_nature_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_id_scheme_event_mapping(event_source, event_bus, nats));

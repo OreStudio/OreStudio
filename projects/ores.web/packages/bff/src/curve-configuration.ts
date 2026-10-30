@@ -437,7 +437,9 @@ function collectionLeaves(
  * than on the screen keeps the one place that knows the spellings.
  */
 function isSet(value: unknown): boolean {
-    const text = String(value ?? '').trim().toLowerCase();
+    const text = String(value ?? '')
+        .trim()
+        .toLowerCase();
     return text === 'true' || text === 't' || text === 'y' || text === 'yes' || text === '1';
 }
 

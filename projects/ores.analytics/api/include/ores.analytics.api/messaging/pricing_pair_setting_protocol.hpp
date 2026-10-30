@@ -46,9 +46,7 @@ struct pricing_pair_setting_write {
     std::string pricing_engine_type_code;
     std::string scope;
     std::string name;
-    std::string kind;
     std::string usual_value;
-    std::string options;
     bool is_required;
     std::string note;
 };

@@ -27,21 +27,19 @@ setting is the place it takes in the file, so the file is the order.
 """
 
 import argparse
-import json
 import os
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import setup_value_sets  # noqa: E402
+
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-CURATION = os.path.join(ROOT, "projects", "ores.seeder", "datasets",
-                        "ore_pricing_engines", "curation", "engine-settings-groups.json")
 OUT = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
                    "reporting_engine_settings_groups_populate.sql")
 
 TENANT = "ores_utility_system_tenant_id_fn()"
 ACTOR = "'ores_reporting_service', 'system.initial_load'"
 SEED = "Seed engine settings groups"
-
-KINDS = ("flag", "whole", "choice")
 
 LICENCE = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -102,10 +100,9 @@ def rows_of(data):
         for setting_position, setting in enumerate(group.get("settings", [])):
             settings.append([
                 q(f"{group['code']}:{setting['column']}"), TENANT, "0", q(group["code"]),
-                q(setting["column"]), q(setting["ore"]), q(setting["kind"]),
-                q(setting.get("changes_numbers", False)),
-                q(",".join(setting.get("options", []))), q(setting.get("minimum")),
-                q(setting.get("maximum")), str(setting_position), ACTOR, q(SEED)])
+                q(setting["column"]), q(setting["ore"]),
+                q(setting.get("changes_numbers", False)), str(setting_position),
+                ACTOR, q(SEED)])
     return groups, settings
 
 
@@ -124,13 +121,7 @@ def validate(data):
             if key in seen_settings:
                 problems.append(f"{key}: stated twice")
             seen_settings.add(key)
-            if setting.get("kind") not in KINDS:
-                problems.append(f"{key}: unknown kind {setting.get('kind')}")
-            if setting.get("kind") == "choice" and not setting.get("options"):
-                problems.append(f"{key}: a choice with no options")
-            if setting.get("kind") != "choice" and setting.get("options"):
-                problems.append(f"{key}: options on a setting that is not a choice")
-    return problems
+    return problems + setup_value_sets.problems()
 
 
 def render(data):
@@ -152,8 +143,8 @@ def render(data):
                 "change_reason_code, change_commentary", groups)
         + write("Engine Settings Group Settings",
                 "ores_reporting_engine_settings_group_settings_tbl",
-                "code, tenant_id, version, group_code, column_name, ore_name, kind, "
-                "changes_numbers, options, minimum, maximum, position, modified_by, "
+                "code, tenant_id, version, group_code, column_name, ore_name, "
+                "changes_numbers, position, modified_by, "
                 "change_reason_code, change_commentary", settings))
 
 
@@ -162,8 +153,7 @@ def main():
     parser.add_argument("--check", action="store_true",
                         help="fail if the committed script differs from the data")
     args = parser.parse_args()
-    with open(CURATION, encoding="utf-8") as handle:
-        data = json.load(handle)
+    data = setup_value_sets.groups()
     problems = validate(data)
     if problems:
         print("\n".join(problems), file=sys.stderr)

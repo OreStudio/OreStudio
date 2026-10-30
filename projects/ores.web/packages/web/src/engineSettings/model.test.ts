@@ -41,11 +41,13 @@ import {
 const setting = (overrides: Partial<EngineGroup['settings'][number]>) => ({
     column: 'n_threads',
     ore: 'nThreads',
-    kind: 'whole' as const,
     changesNumbers: false,
-    options: [],
-    min: 1,
-    max: null,
+    valueSet: 'setup.n_threads',
+    sourceKind: 'integer',
+    choices: [],
+    minimum: 1,
+    maximum: null,
+    pattern: '',
     documented: true,
     label: 'Threads',
     help: '',
@@ -63,12 +65,19 @@ const EXECUTION: EngineGroup = {
     changesNumbers: false,
     settings: [
         setting({}),
-        setting({ column: 'log_mask', ore: 'logMask', min: 0, label: 'Log mask' }),
+        setting({
+            column: 'log_mask',
+            ore: 'logMask',
+            valueSet: 'setup.log_mask',
+            minimum: 0,
+            label: 'Log mask',
+        }),
         setting({
             column: 'gzip_compression_level',
             ore: 'gzipCompressionLevel',
-            min: 0,
-            max: 9,
+            valueSet: 'setup.gzip_compression_level',
+            minimum: 0,
+            maximum: 9,
             label: 'Gzip compression level',
         }),
     ],
@@ -81,17 +90,22 @@ const BUILDING: EngineGroup = {
         setting({
             column: 'observation_model',
             ore: 'observationModel',
-            kind: 'choice',
-            options: ['None', 'Disable', 'Defer', 'Unregister'],
-            min: null,
+            valueSet: 'setup.observation_model',
+            sourceKind: 'enumerated',
+            choices: ['None', 'Disable', 'Defer', 'Unregister'].map((value) => ({
+                value,
+                label: value,
+            })),
+            minimum: null,
             label: 'Observation model',
         }),
         setting({
             column: 'build_failed_trades',
             ore: 'buildFailedTrades',
-            kind: 'flag',
+            valueSet: 'setup.flag',
+            sourceKind: 'boolean',
             changesNumbers: true,
-            min: null,
+            minimum: null,
             label: 'Build failed trades',
         }),
     ],
@@ -153,7 +167,6 @@ describe('the text of a control', () => {
 
     it.each([
         ['a fraction', 0, '1.5'],
-        ['a negative number', 0, '-1'],
         ['words in a number', 0, 'four'],
         ['a flag that is not yes or no', 1, 'maybe'],
     ])('does not read %s', (_what, index, text) => {
@@ -163,6 +176,15 @@ describe('the text of a control', () => {
 
     it('does not read a word that is not in the list', () => {
         expect(valueOfText(BUILDING.settings[0]!, 'Bogus')).toBe('invalid');
+    });
+
+    it('reads a negative whole number as a number, and the bound refuses it', () => {
+        const threads = EXECUTION.settings[0]!;
+        expect(valueOfText(threads, '-1')).toBe(-1);
+        expect(problemOf(threads, '-1', 'Threads')).toEqual({
+            key: 'engineSettings.problem.min',
+            params: { setting: 'Threads', min: '1' },
+        });
     });
 });
 

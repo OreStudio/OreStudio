@@ -745,9 +745,7 @@ function CurveWorkbench({
                                             {row.quotes.map((quote) => (
                                                 <li key={quote.id} className="space-y-1">
                                                     <ParameterRow
-                                                        label={t(
-                                                            'curveConfiguration.curves.quote',
-                                                        )}
+                                                        label={t('curveConfiguration.curves.quote')}
                                                     >
                                                         <span className="font-mono text-xs">
                                                             {quote.text !== ''
@@ -791,9 +789,7 @@ function CurveWorkbench({
             ))}
             {blocks.length > 0 && (
                 <section className="card space-y-1 p-4">
-                    <h3 className="text-sm font-medium">
-                        {t('curveConfiguration.curves.blocks')}
-                    </h3>
+                    <h3 className="text-sm font-medium">{t('curveConfiguration.curves.blocks')}</h3>
                     <dl className="divide-y divide-line-subtle">
                         {blocks.map((block) => (
                             <div

@@ -20,6 +20,7 @@
 
 import { z } from 'zod';
 import { request } from './transport.js';
+import { valueSetFields } from './valueSets.js';
 
 /**
  * The engine settings screens' reads and writes.
@@ -97,12 +98,9 @@ const summarySchema = z.object({
 const settingSchema = z.object({
     column: z.string(),
     ore: z.string(),
-    kind: z.enum(['flag', 'whole', 'choice']),
     /** Whether the setting changes the numbers a run computes, and is not only operational. */
     changesNumbers: z.boolean(),
-    options: z.array(z.string()),
-    min: z.int().nullable(),
-    max: z.int().nullable(),
+    ...valueSetFields,
     /** False when the ore parameter of the setting is not in the data. */
     documented: z.boolean(),
     label: z.string(),

@@ -26,6 +26,7 @@ import type {
     GroupId,
     SettingValue,
 } from '../api/engineSettings.js';
+import { NO_SOURCE_KIND, type ValueSetKind } from '../api/valueSets.js';
 
 /**
  * What the engine settings screens decide, apart from how they draw it: the
@@ -79,20 +80,30 @@ export function controlText(value: SettingValue): string {
 
 /**
  * The value a control's text means for a setting, or `invalid` when the text is
- * not a value the setting's kind can hold. An empty text is the default.
+ * not a value the setting's value set holds. An empty text is the default.
+ *
+ * The set is the only source: its kind says whether the text is a switch, a
+ * whole number, a number or one of the choices, and its bounds are applied by
+ * problemOf.
  */
 export function valueOfText(setting: EngineSetting, text: string): SettingValue | 'invalid' {
     const trimmed = text.trim();
     if (trimmed === '') {
         return null;
     }
-    switch (setting.kind) {
-        case 'flag':
+    switch (setting.sourceKind) {
+        case 'boolean':
             return trimmed === 'yes' ? true : trimmed === 'no' ? false : 'invalid';
-        case 'whole':
-            return /^\d{1,9}$/.test(trimmed) ? Number(trimmed) : 'invalid';
-        case 'choice':
-            return setting.options.includes(trimmed) ? trimmed : 'invalid';
+        case 'integer':
+            return /^-?\d{1,9}$/.test(trimmed) ? Number(trimmed) : 'invalid';
+        case 'number':
+        case 'range':
+            return Number.isFinite(Number(trimmed)) ? Number(trimmed) : 'invalid';
+        case 'enumerated':
+        case 'catalogue':
+            return setting.choices.some((choice) => choice.value === trimmed) ? trimmed : 'invalid';
+        default:
+            return trimmed;
     }
 }
 
@@ -102,25 +113,51 @@ export interface Problem {
     readonly params: Readonly<Record<string, string>>;
 }
 
+/**
+ * The words for a text its set does not hold, by the kind the set states.
+ *
+ * Every kind answers for itself, so a kind this build does not know is a
+ * compile error rather than a sentence about a list of choices.
+ */
+function problemKeyOf(kind: ValueSetKind): string {
+    switch (kind) {
+        case 'integer':
+            return 'engineSettings.problem.whole';
+        case 'number':
+        case 'range':
+            return 'engineSettings.problem.number';
+        case 'boolean':
+            return 'engineSettings.problem.flag';
+        case 'enumerated':
+        case 'catalogue':
+            return 'engineSettings.problem.choice';
+        case 'regex':
+        case 'text':
+        case NO_SOURCE_KIND:
+            return 'engineSettings.problem.text';
+    }
+}
+
 /** What is wrong with the text a person typed for a setting, or null when it is a value the setting takes. */
 export function problemOf(setting: EngineSetting, text: string, label: string): Problem | null {
     const value = valueOfText(setting, text);
     if (value === 'invalid') {
-        return setting.kind === 'whole'
-            ? { key: 'engineSettings.problem.whole', params: { setting: label } }
-            : { key: 'engineSettings.problem.choice', params: { setting: label } };
+        return {
+            key: problemKeyOf(setting.sourceKind),
+            params: { setting: label },
+        };
     }
     if (typeof value === 'number') {
-        if (setting.min !== null && value < setting.min) {
+        if (setting.minimum !== null && value < setting.minimum) {
             return {
                 key: 'engineSettings.problem.min',
-                params: { setting: label, min: String(setting.min) },
+                params: { setting: label, min: String(setting.minimum) },
             };
         }
-        if (setting.max !== null && value > setting.max) {
+        if (setting.maximum !== null && value > setting.maximum) {
             return {
                 key: 'engineSettings.problem.max',
-                params: { setting: label, max: String(setting.max) },
+                params: { setting: label, max: String(setting.maximum) },
             };
         }
     }

@@ -397,9 +397,7 @@ package "analytics" #E8F5E9 {
         * pricing_engine_type_code : text
         * scope : text
         * name : text
-        * kind : text
           usual_value : text
-          options : text
         * is_required : boolean
           note : text
         * modified_by : text
@@ -415,7 +413,13 @@ package "analytics" #E8F5E9 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Pricing Pair Setting Table
-    The settings a pair of model and engine takes. The pricing engine screens draw a select where this table knows the options and a text field where it does not know the setting.
+    The settings a pair of model and engine takes. The table states which settings a
+    pair accepts, the value ORE's examples use and whether ORE needs the setting. The
+    control the screen draws and the values it accepts belong to the value set of the
+    setting, which
+    ores_reporting_ore_parameter_setting_value_sets_tbl links by scope and name,
+    so the same rule serves every pair that takes the setting and the write path
+    that refuses a value outside it.
     end note
 
     entity ores_analytics_sensitivity_asset_classes_tbl <<temporal>> #C6F0D8 {

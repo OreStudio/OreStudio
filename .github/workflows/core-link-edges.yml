@@ -18,7 +18,8 @@ name: Core link edges
 on:  # yamllint disable-line rule:truthy
   # The check reads every CMakeLists under projects, including the tests and
   # modeling directories that state a core's name, so it fires on any of them,
-  # and on the check, its baseline and this file.
+  # and on the check, its baseline and this file. It runs on main and by hand:
+  # the local runner is the gate, and no workflow triggers on a pull request.
   push:
     branches: ["main"]
     paths:

@@ -172,8 +172,8 @@ select throws_ok(
       from ores_reporting_engine_settings_execution_tbl e
       where e.valid_to = ores_utility_infinity_timestamp_fn()
         and e.engine_settings_id in (select id from t_live)$$,
-    '23514',
-    null,
+    'P0001',
+    'Invalid value 0 for execution.n_threads, the value is not in its value set.',
     'zero threads is refused');
 
 select throws_ok(
@@ -183,8 +183,8 @@ select throws_ok(
       select gen_random_uuid(), r.tenant_id, 0, r.id, r.party_id, 'Move',
           current_user, current_user, 'system.test', 'pgTAP'
       from t_live r$$,
-    '23514',
-    null,
+    'P0001',
+    'Invalid value Move for building.observation_model, the value is not in its value set.',
     'an observation model that ORE does not read is refused');
 
 select throws_ok(

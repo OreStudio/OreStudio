@@ -47,6 +47,15 @@ select * from ores_reporting_publish_ore_parameters_from_dq_fn(
         and valid_to = ores_utility_infinity_timestamp_fn()),
     ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb);
 
+-- A currency column is checked against the currency catalogue, which the
+-- publishing step fills; a fresh database has published nothing, so the test
+-- publishes the ISO codes here.
+select * from ores_refdata_publish_currencies_from_dq_fn(
+    (select id from ores_dq_datasets_tbl
+      where code = 'iso.currencies'
+        and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb);
+
 insert into ores_refdata_parties_tbl (
     id, tenant_id, version, full_name, short_code, party_category, party_type,
     parent_party_id, business_center_code, status,
@@ -126,7 +135,7 @@ select throws_like(
 
 select throws_like(
     $$select pg_temp.yield_curve('GBP', 'ACT/999', null)$$,
-    '%Invalid value ACT/999 for yield_curve_config.day_counter%',
+    '%Invalid day_counter: ACT/999. No active day counter found with this spelling.%',
     'a day counter outside the catalogue is refused');
 
 select lives_ok(

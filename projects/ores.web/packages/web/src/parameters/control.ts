@@ -18,17 +18,15 @@
  *
  */
 
-import type { EngineSetting } from '../api/engineSettings.js';
 import type { PricingVocabulary } from '../api/pricingEngines.js';
+import { NO_SOURCE_KIND, type ValueSetKind } from '../api/valueSets.js';
 
 /**
  * The control a parameter's value needs, apart from the screen that draws it.
  *
- * Two screens hold the same kind of thing in two vocabularies: the pricing
- * engine screen reads a value set, which names a source kind, and the engine
- * settings screen reads a setting row, which names a kind. Both name one of
- * four controls, so the mapping is done here instead of in each screen, and a
- * control is added by adding it to the model rather than to both screens.
+ * Both configuration screens read a value set, which names a source kind, so
+ * one mapping serves the pricing screen and the engine run settings screen. A
+ * control is added by adding it to this model rather than to both screens.
  */
 
 /** One value a choice offers, as the person reads it. */
@@ -57,7 +55,7 @@ export type ValueSetFields = PricingVocabulary['valueSets'][string];
 
 /** The fields of a value set that decide its control, as any leaf carries them. */
 export interface ValueSetShape {
-    readonly sourceKind: string;
+    readonly sourceKind: ValueSetKind;
     readonly catalogue?: string;
     readonly choices: readonly ControlChoice[];
     readonly minimum: number | null;
@@ -115,34 +113,10 @@ export function controlOfValueSet(fields: ValueSetShape | undefined): ControlMod
                 maximum: fields.maximum,
                 whole: false,
             };
-        default:
+        case 'regex':
+        case 'text':
+        case NO_SOURCE_KIND:
             return { kind: 'text', pattern: fields.pattern };
-    }
-}
-
-/**
- * The control an engine setting's kind calls for.
- *
- * The row states the list a choice offers and the bounds a whole number takes,
- * so the options are both the value and the label: an engine setting's words
- * are the ORE codes it accepts.
- */
-export function controlOfEngineSetting(
-    kind: EngineSetting['kind'],
-    options: readonly string[],
-    min: number | null,
-    max: number | null,
-): ControlModel {
-    switch (kind) {
-        case 'flag':
-            return { kind: 'boolean' };
-        case 'whole':
-            return { kind: 'number', minimum: min, maximum: max, whole: true };
-        case 'choice':
-            return {
-                kind: 'choice',
-                choices: options.map((option) => ({ value: option, label: option })),
-            };
     }
 }
 

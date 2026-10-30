@@ -42,9 +42,7 @@ render_pricing_pair_setting_fields(const domain::pricing_pair_setting& v) {
     fields.push_back({.name = "Pricing Engine Type Code", .value = v.pricing_engine_type_code});
     fields.push_back({.name = "Scope", .value = v.scope});
     fields.push_back({.name = "Name", .value = v.name});
-    fields.push_back({.name = "Kind", .value = v.kind});
     fields.push_back({.name = "Usual Value", .value = v.usual_value});
-    fields.push_back({.name = "Options", .value = v.options});
     fields.push_back({.name = "Is Required", .value = v.is_required ? "true" : "false"});
     fields.push_back({.name = "Note", .value = v.note});
     using ores::history::domain::provenance_fields;

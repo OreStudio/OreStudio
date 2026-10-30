@@ -6,14 +6,20 @@
 #+type: ores.codegen.entity
 #+component: analytics
 #+filetags: :model:entity:analytics:
-#+brief: A setting a model and engine pair takes, with its kind and usual value.
+#+brief: A setting a model and engine pair takes, with its usual value.
 #+entity_singular: pricing_pair_setting
 #+entity_plural: pricing_pair_settings
 #+entity_title: Pricing Pair Setting
 #+created: 2026-10-21
-#+updated: 2026-10-21
+#+updated: 2026-10-29
 
-The settings a pair of model and engine takes. The pricing engine screens draw a select where this table knows the options and a text field where it does not know the setting.
+The settings a pair of model and engine takes. The table states which settings a
+pair accepts, the value ORE's examples use and whether ORE needs the setting. The
+control the screen draws and the values it accepts belong to the value set of the
+setting, which
+=ores_reporting_ore_parameter_setting_value_sets_tbl= links by scope and name,
+so the same rule serves every pair that takes the setting and the write path
+that refuses a value outside it.
 
 * Flags
 :PROPERTIES:
@@ -106,19 +112,6 @@ Examples: 'Calibration', 'BootstrapTolerance'.
 std::string("Calibration")
 #+end_src
 
-** kind
-:PROPERTIES:
-:type:         text
-:cpp_type:     std::string
-:nullable:     false
-:END:
-
-How the screen draws the setting: select, number, tenor, reference or text.
-
-#+begin_src cpp :name generator
-std::string("text")
-#+end_src
-
 ** usual_value
 :PROPERTIES:
 :type:         text
@@ -127,15 +120,6 @@ std::string("text")
 :END:
 
 The value ORE's examples use.
-
-** options
-:PROPERTIES:
-:type:         text
-:cpp_type:     std::string
-:nullable:     true
-:END:
-
-The allowed values of a select setting, separated by commas.
 
 ** is_required
 :PROPERTIES:
@@ -206,7 +190,6 @@ A note on what the setting does.
 | pricing_engine_type_code | Product type |
 | scope       | Scope       |
 | name        | Name        |
-| kind        | Kind        |
 | usual_value | Usual value |
 | is_required | Required    |
 | modified_by | Modified By |
@@ -228,9 +211,7 @@ A note on what the setting does.
 | pricing_engine_type_code | Product type | typeEdit | line_edit | | true | Enter the pricing engine type |
 | scope | Scope | scopeEdit | line_edit | | true | model or engine |
 | name        | Name        | nameEdit       | line_edit |        | true        | Enter the setting name                             |
-| kind        | Kind        | kindEdit       | line_edit |        | true        | select, number, tenor, reference or text                             |
 | usual_value | Usual value | usualValueEdit | line_edit |        |             | Enter the usual value                              |
-| options     | Options     | optionsEdit    | line_edit |        |             | Enter the options, separated by commas             |
 | note        | Note        | noteEdit       | text_edit |        |             | Enter a note                                       |
 
 *** Columns
@@ -243,7 +224,6 @@ A note on what the setting does.
 | PricingEngineTypeCode | pricing_engine_type_code | Product type | string | 160 |
 | Scope | scope | Scope | string | 70 |
 | Name       | name        | Name        | string    | 200   |
-| Kind       | kind        | Kind        | string    | 80    |
 | UsualValue | usual_value | Usual value | string    | 140   |
 | IsRequired | is_required | Required    | bool      | 70    |
 | Version    | version     | Version     | int       | 70    |

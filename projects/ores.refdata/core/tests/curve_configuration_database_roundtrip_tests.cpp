@@ -26,6 +26,7 @@
 #include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.refdata.core/repository/average_ois_convention_repository.hpp"
+#include "ores.refdata.core/repository/business_day_convention_code.hpp"
 #include "ores.refdata.core/repository/cds_convention_repository.hpp"
 #include "ores.refdata.core/repository/commodity_future_convention_repository.hpp"
 #include "ores.refdata.core/repository/curve_configuration_repository.hpp"
@@ -83,6 +84,36 @@ void keep(curve_document& d, std::string_view name) {
             &d,
             name))
         throw std::runtime_error("the curve configuration table has no " + std::string(name));
+}
+
+/// The rows the store receives: the conventions stated as the store keeps them.
+auto as_stored(const ores::refdata::messaging::curve_configuration_document& rows) {
+    auto stored = rows;
+    const auto canonical = [](auto& family) {
+        for (auto& row : family)
+            if constexpr (requires { row.business_day_convention; })
+                row.business_day_convention =
+                    ores::refdata::repository::stored_business_day_convention(
+                        row.business_day_convention);
+    };
+    canonical(stored.yield_curves);
+    canonical(stored.equity_curves);
+    canonical(stored.inflation_curves);
+    canonical(stored.default_curves);
+    canonical(stored.commodity_curves);
+    canonical(stored.fx_volatilities);
+    canonical(stored.yield_volatilities);
+    canonical(stored.base_correlations);
+    canonical(stored.correlations);
+    canonical(stored.cds_volatilities);
+    canonical(stored.volatility_configs);
+    canonical(stored.inflation_cap_floor_volatilities);
+    canonical(stored.swaption_volatilities);
+    canonical(stored.cap_floor_volatilities);
+    canonical(stored.equity_volatilities);
+    canonical(stored.commodity_volatilities);
+    canonical(stored.bond_future_volatilities);
+    return stored;
 }
 
 /// Compares two documents as records, naming the first difference.
@@ -303,7 +334,15 @@ TEST_CASE("default, equity and inflation curves and securities round trip throug
 
     const auto exported = curve_configuration_projection::read(
         curve_configuration_projection::write(curve_configuration_projection::reverse(back)));
-    const auto difference = compare_documents(original, exported, equity_example);
+    /*
+     * The store keeps the business day convention, not the spelling the
+     * document used, so the document the store received is the one it gives
+     * back. Every other field round trips as it was written.
+     */
+    const auto expected =
+        curve_configuration_projection::read(curve_configuration_projection::write(
+            curve_configuration_projection::reverse(as_stored(mapped))));
+    const auto difference = compare_documents(expected, exported, equity_example);
     INFO(difference);
     CHECK(difference.empty());
 }
@@ -376,7 +415,10 @@ TEST_CASE("swaption and cap and floor proxies and smiles round trip through the 
 
         const auto exported = curve_configuration_projection::read(
             curve_configuration_projection::write(curve_configuration_projection::reverse(back)));
-        const auto difference = compare_documents(original, exported, path);
+        const auto expected =
+            curve_configuration_projection::read(curve_configuration_projection::write(
+                curve_configuration_projection::reverse(as_stored(mapped))));
+        const auto difference = compare_documents(expected, exported, path);
         INFO(difference);
         CHECK(difference.empty());
     }

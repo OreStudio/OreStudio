@@ -1976,6 +1976,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.core/repository/business_centre_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.core/repository/business_centre_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.core/repository/business_centre_repository.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.core/repository/business_day_convention_code.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.core/repository/business_day_convention_type_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.core/repository/business_day_convention_type_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.core/repository/business_day_convention_type_repository.hpp"

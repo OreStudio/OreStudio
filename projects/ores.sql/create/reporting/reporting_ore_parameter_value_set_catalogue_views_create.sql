@@ -84,41 +84,16 @@ from ores_refdata_day_counters_tbl
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 /**
- * The spellings ORE accepts for a business day convention.
+ * The business day conventions the store holds.
  *
- * ORE's parser maps 27 spellings onto seven conventions, and a document states
- * one of the spellings. The registry holds the conventions, so the spellings
- * are stated here, once, as the crosswalk the catalogue relation exposes: a
- * document that says F and a document that says Following are the same rule.
+ * A document states one of 26 spellings, and the ORE codec converts the
+ * spelling to the convention it means before the row is written, so the store
+ * keeps one representation. The catalogue exposes that representation: the
+ * seven conventions, read from the shared registry rather than from a tenant's
+ * copy, because the value sets are shared rows.
  */
 create or replace view ores_refdata_business_day_convention_catalogue_v as
-with spelling(convention, value) as (
-    values
-        ('Following', 'F'),
-        ('Following', 'Following'),
-        ('Following', 'FOLLOWING'),
-        ('Modified Following', 'MF'),
-        ('Modified Following', 'ModifiedFollowing'),
-        ('Modified Following', 'Modified Following'),
-        ('Modified Following', 'MODIFIEDF'),
-        ('Modified Following', 'MODFOLLOWING'),
-        ('Preceding', 'P'),
-        ('Preceding', 'Preceding'),
-        ('Preceding', 'PRECEDING'),
-        ('Modified Preceding', 'MP'),
-        ('Modified Preceding', 'ModifiedPreceding'),
-        ('Modified Preceding', 'Modified Preceding'),
-        ('Modified Preceding', 'MODIFIEDP'),
-        ('Unadjusted', 'U'),
-        ('Unadjusted', 'Unadjusted'),
-        ('Unadjusted', 'INDIFF'),
-        ('Unadjusted', 'NONE'),
-        ('Unadjusted', 'NotApplicable'),
-        ('Half-Month Modified Following', 'HalfMonthModifiedFollowing'),
-        ('Half-Month Modified Following', 'HMMF'),
-        ('Half-Month Modified Following', 'Half Month Modified Following'),
-        ('Half-Month Modified Following', 'HALFMONTHMF'),
-        ('Half-Month Modified Following', 'HalfMonthMF'),
-        ('Nearest', 'NEAREST')
-)
-select value, convention as label, true as is_active from spelling;
+select code as value, name as label, true as is_active
+from ores_refdata_business_day_convention_types_tbl
+where valid_to = ores_utility_infinity_timestamp_fn()
+  and tenant_id = ores_utility_system_tenant_id_fn();

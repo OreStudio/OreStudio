@@ -43,7 +43,7 @@ This page documents a test scenario verifying [[id:590A219B-1895-439A-9E92-EAC46
 | Parent story  | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]   |
 | Target screen | /reporting/pricing-engines/import        |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | PENDING |
 
 * Steps
 
@@ -54,12 +54,25 @@ This page documents a test scenario verifying [[id:590A219B-1895-439A-9E92-EAC46
 - Choose the party *Acme Corporation Plc* when the session asks.
 - Passes when the landing page shows the account in the header.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open the pricing engines list
 
 - Go to *Reporting -> Product pricing*.
 - The list shows the configurations the party holds, with the product and
   setting counts of each.
 - Passes when *Import* stands on the header between *Refresh* and *Workflows*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | There is not product pricing under reporting. ; [[file:scenario_import-a-pricing-engine-configuration-as-ore-xml_step2_20261030_135346.png]] |
 
 ** Choose the exported file
 
@@ -71,11 +84,23 @@ This page documents a test scenario verifying [[id:590A219B-1895-439A-9E92-EAC46
 - Passes when the second step states 8 products and 19 settings and lists each
   product with its model and engine.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Read what the system does not know
 
 - Press *Next*.
 - Passes when the step says everything in the file is known, because the file
   came from this system.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** Choose where the file goes
 
@@ -84,6 +109,12 @@ This page documents a test scenario verifying [[id:590A219B-1895-439A-9E92-EAC46
   example *From the scenario* and *scenario*.
 - Passes when the step states that the import writes the change directly with
   your reason and commentary, and that nothing is written before the last step.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** Review the difference and import
 
@@ -94,6 +125,12 @@ This page documents a test scenario verifying [[id:590A219B-1895-439A-9E92-EAC46
 - Passes when the list comes back and holds the new configuration with 8
   products.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Read the new configuration's document
 
 - Open the new configuration and press *Export*, saving the file.
@@ -103,6 +140,12 @@ This page documents a test scenario verifying [[id:590A219B-1895-439A-9E92-EAC46
   #+end_example
 - Passes when the two documents are identical.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Import a file that omits rows
 
 - Press *Import* again and choose a file that holds one product.
@@ -111,12 +154,18 @@ This page documents a test scenario verifying [[id:590A219B-1895-439A-9E92-EAC46
 - Passes when the review lists the removed rows first, each with *Keep ours*
   chosen and *Delete it* beside it.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
+| Status        | PENDING |
+| Completed at  |  |
 | Branch        |       |
 | Commit        |       |
 | Worktree      |       |

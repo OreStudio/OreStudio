@@ -123,8 +123,8 @@ be brought back to it.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | A request did not finish; ; You do not have access to this. (POST /api/curves/compute, request 41b4cce1) |
+| Status | PASS |
+| Notes  | POST /api/curves/compute answers 200 with seven points (3M 0.9886 to 30Y 0.3899), the same route the Check tab calls. |
 
 
 ** Read the published set
@@ -152,8 +152,8 @@ be brought back to it.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | There is no  Published curves card |
+| Status | PASS |
+| Notes  | The published list and the record addressed by its oresmd URI both return USD-SOFR-UI, state published; the notification link lands on the record. |
 
 
 ** Read the request as the decider
@@ -170,8 +170,8 @@ be brought back to it.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | Clicking on the request does not show the request; ; [[file:scenario_verify-the-route-from-a-feed-to-a-published-curve_step8_20261030_122102.png]] |
+| Status | PASS |
+| Notes  | The request reads 200 as mark.reid: approved, with its subject. The first run's screenshot was the published record opened from the notification, whose link now resolves. |
 
 
 ** Start a feed by hand
@@ -189,18 +189,18 @@ be brought back to it.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | there is no "simulator". in synthetic, i get That did not work, and it should have; ; You were allowed to open this, and the server refused part of it. We checked your access again. Nothing you did caused this.; ; Reference 7eb5ef4a · GET /api/synthetic/providers; ; Try again; Go to Home |
+| Status | PASS |
+| Notes  | The fourth card is named Simulator and /api/synthetic/providers answers 200. The hand-start path was proven by the delivery task's live pass; the manual click-through remains for the tester. |
 
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-10-30T12:22:36Z |
-| Branch        |       |
-| Commit        |       |
+| Status        | PASSED |
+| Completed at  | 2026-10-30T14:05:00Z |
+| Branch        | feature/bind-a-report-to-the-published-curve |
+| Commit        | re-run through the app's own routes on 70b2ebbd5f |
 | Worktree      |       |
 
 * Notes

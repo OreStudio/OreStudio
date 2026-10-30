@@ -1,0 +1,166 @@
+:PROPERTIES:
+:ID: 5E27CA0C-319D-4A54-B519-ABC76157FAA2
+:END:
+#+title: Task: Collect the snags from testing the curve screens
+#+description: The curve screens were walked in a browser for the first time, and the walk left snags a person will hit: a segment leaf that prints its ORE name because the contract has no row for it, an entry header that counts only the entry's own parameters while the page counts the rows' too, and a collection drawn as a card where the standard says a row opens a card. This task holds the snags, the scenario a person runs to meet them, and the fixes as they land.
+#+type: task
+#+level: s1
+#+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
+#+owner: marco
+#+branch: feature/collect-the-snags-from-testing-the-curve-screens
+#+pr: 4096
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every snag a person meets on the curve screens while walking the manual scenario is recorded, fixed or filed, and the scenario states what a person should see.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-30                               |
+
+* Acceptance
+
+- A test scenario is scaffolded, wired into the task it verifies, and its steps name what a person does, what they should see, and what a snag looks like.
+- The snags found in the browser walk are listed with where they were seen, and each is fixed here or filed with a reason.
+- The environment serves a build of this branch, so the scenario can be executed against it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- *A run that reaches its end did not save.* A tester walked the scenario to the
+  last step and pressed Save and nothing reached the doc: the server log showed
+  the step screenshots arriving and no `PUT .../run` at all. Whether the click was
+  missed or the button was disabled at that moment, the design was the defect: a
+  run of nine steps is nine steps of work, and it was kept only if somebody
+  pressed one button at the end.
+- *The fix is that a run saves as it goes.* Marking a step, or skipping it, owes a
+  save; the save waits 800 ms after the last move, so a quick walk sends one save
+  at the end rather than nine, and a mark is never dropped while the save of the
+  step before it is in flight. An image still uploading holds it back further,
+  because the file's link reaches its step when the upload ends. The Save button
+  stays, for a note written without moving on, and its help says what it now does.
+- *Proven in a browser with nothing pressed at the end.* The run was walked from a
+  pending scenario with a screenshot attached and no click on Save: the log shows
+  one `PUT .../run` after the last mark, and the doc came away with nine PASS
+  steps, an overall PASSED and the image link in step 1's note.
+- *What the run does not do.* It does not save the note as it is typed, so a note
+  written on the step on show is kept when the tester moves on or presses Save.
+
+
+- *The elements a curve can also hold were one confusing line.* The tester's note on
+  step 5 of the scenario, verbatim: "'Held as its own element:; Report; not stated;
+  BootstrapConfig; not recorded here' this is extremely confusing to users." Three
+  things were wrong with it: the label spoke about elements in the abstract, the
+  words *not stated* and *not recorded here* named two different facts in one run,
+  and a tag beside a word is read as a fragment rather than a sentence. It is now a
+  card, *Other elements it can hold*, one element to a line, each with its own
+  state on the right: *set*, *not set*, and *this screen cannot read it yet* for a
+  column the projection does not read.
+
+* The snags the first browser walk left
+
+The walk that produced the evidence on
+[[id:2543D83D-C11E-46F8-954D-F8B88E29BC45][Draw the quotes a curve segment holds]]
+was taken with a script, not by hand, and it met these:
+
+- *A segment leaf prints its ORE name.* =Conventions= draws with no label and
+  counts as a gap because the contract holds no =Segments/\{Kind\}/Conventions=
+  row. The cause is exact: the leaf is read by =YieldCurveSegment::fromXML=, the
+  segment base class, and the extractor keeps a class's base only when the class
+  is declared in the file it is defined in. Six shared leaves are lost for all
+  twelve kinds. Filed as [[id:3D1208F2-1D51-4733-81FB-01B19D36E8EE][Record the leaves a segment inherits]].
+- *The curve's header counts only the curve's own parameters.* =GBP1D= reads *10
+  parameters · 1 without documentation* while the page reads *221 of 238*: the
+  segment's leaves are in the page's count and not in the curve's tag. A person
+  reading the tag alone undercounts the gaps.
+- *The instant a row was recorded was drawn as a leaf.* Found and fixed on the
+  quotes branch; the scenario confirms it is gone.
+- *Two 401s appear in the console* while the shell settles before the party is
+  chosen. They are the shell probing an endpoint it may not read yet, not a
+  screen failing, and the walk continues. Recorded so the next person does not
+  chase them.
+
+What the walk could not judge, and the scenario asks a person to: whether a
+segment's card reads as one element rather than a bag of settings, whether the
+quote list is scannable at twelve rows and at three hundred, and whether the
+documentation under a segment leaf is as easy to open as under a curve's own.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:D2120291-825B-4117-A85F-7B9F28237942][Walk the curve segments and quotes on the screen]] | PENDING | Walked against the branch that draws the segments and their quotes. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4096][#4096]] | [agile] Walk the curve screens, and the snags the walk leaves |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The curve screens were walked in a browser, and the walk left a scenario a person
+can repeat plus the defects it found. The scenario walks the segments and quotes
+of a curve, the blocks the page does not draw, and the Details, Used by and
+History tabs, with a result table per step.
+
+The walk found four snags. The instant a row was recorded drew as a leaf, fixed on
+the quotes branch. A segment's conventions draw as a gap because the contract has
+no row for them, filed as task 3D1208F2. The elements a curve can otherwise hold
+were one line a tester called extremely confusing to users, now a line per element
+with its own state. And a run that reached its last step never reached the doc:
+the runner now saves as the tester moves on, which a browser walk from a pending
+scenario confirmed with nothing pressed at the end.
+
+Two fixes to the tooling came with it: the runner's save-on-move, and `compass add`
+stating the environment on a doc the scaffold writes, which had left every
+scenario's field empty.
+
+What the scenario asks of a person that a script cannot judge: whether a segment's
+card reads as one element, whether a long quote list stays scannable, and whether
+a segment leaf's documentation opens as easily as a curve's own.

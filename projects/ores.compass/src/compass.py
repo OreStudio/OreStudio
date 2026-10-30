@@ -3802,6 +3802,7 @@ def cmd_add(argv):
     except SystemExit as exc:
         rc = exc.code
     if rc in (None, 0):
+        _stamp_environment(getattr(doc_generate, "LAST_OUTPUT", None))
         wired = _add_wire_task(rest) if doc_type == "task" else False
         if not wired:
             hint = _add_wire_hint(doc_type, rest)
@@ -3861,6 +3862,35 @@ def _set_frontmatter_branch(path, branch):
         new = text.rstrip() + f"\n#+branch: {branch}\n"
     if new != text:                      # avoid a redundant write
         Path(path).write_text(new, encoding="utf-8")
+
+
+def _stamp_environment(path):
+    """State this checkout's environment on a new doc that declares the field.
+
+    A scaffold writes =#+environment:= empty, and a doc that never states where it
+    was made is one a reader cannot place: the fleet holds a dozen worktrees, each
+    with its own environment, and a scenario is walked on one of them. Only a doc
+    that already declares the field is stamped, so a capture or a recipe keeps the
+    frontmatter its own template states.
+
+    The value is the checkout's =ORES_ENV_NAME=, which is what the environment's
+    name means everywhere else: =compass pr create= stamps it, and the fleet
+    table lists it.
+    """
+    if path is None:
+        return
+    path = Path(path)
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return
+    if not re.search(r"^#\+environment:[ \t]*$", text, re.MULTILINE | re.IGNORECASE):
+        return
+    env = _read_env_map()
+    label = env.get("ORES_ENV_NAME", "") or env.get("ORES_CHECKOUT_LABEL", "")
+    if not label:
+        return
+    _set_frontmatter_field(path, "environment", label)
 
 
 def _set_frontmatter_field(path, field, value):

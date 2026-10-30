@@ -1570,7 +1570,7 @@ const pt: SourceCatalogue = {
                 'Este cenário foi abandonado e não será executado. Um reteste limpa cada passo e o traz de volta.',
             save: 'Gravar',
             saveHelp:
-                'Gravar escreve o resultado de cada passo e o estado geral no documento do cenário.',
+                'Cada passo é guardado à medida que avança; Guardar mantém o que escreveu desde então.',
             back: 'Voltar aos testes',
             retestTitle: 'Iniciar um reteste?',
             retestBody:
@@ -6921,10 +6921,10 @@ const pt: SourceCatalogue = {
             'collectionRows.one': '{count} linha',
             'collectionRows.other': '{count} linhas',
             collectionRow: 'linha {id}',
-            blocks: 'Mantido como elemento próprio:',
-            blockStated: 'declarado',
-            blockAbsent: 'não declarado',
-            blockNotRecorded: 'não registado aqui',
+            blocks: 'Outros elementos que pode conter',
+            blockStated: 'definido',
+            blockAbsent: 'não definido',
+            blockNotRecorded: 'este ecrã ainda não o consegue ler',
         },
         edit: {
             start: 'Editar',
@@ -6968,10 +6968,10 @@ const pt: SourceCatalogue = {
             noDescription: 'Uma entrada {entry} do documento.',
             parameters: '{count} parâmetros',
             gaps: '{count} sem documentação',
-            blocks: 'Mantido como elemento próprio:',
-            blockStated: 'declarado',
-            blockAbsent: 'não declarado',
-            blockNotRecorded: 'não registado aqui',
+            blocks: 'Outros elementos que pode conter',
+            blockStated: 'definido',
+            blockAbsent: 'não definido',
+            blockNotRecorded: 'este ecrã ainda não o consegue ler',
         },
         usedBy: {
             lead: 'Uma alteração chega à próxima execução de cada relatório abaixo. Uma execução já produzida mantém aquilo com que correu.',

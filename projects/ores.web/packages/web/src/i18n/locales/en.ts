@@ -1561,7 +1561,7 @@ export const en: SourceCatalogue = {
             abandonedHelp:
                 'This scenario is abandoned and will not be run. A retest clears every step and brings it back.',
             save: 'Save',
-            saveHelp: "Save writes each step's result and the overall state into the scenario doc.",
+            saveHelp: 'Each step is saved as you move on; Save keeps what you have written since.',
             back: 'Back to the tests',
             retestTitle: 'Start a retest?',
             retestBody:
@@ -6874,10 +6874,10 @@ export const en: SourceCatalogue = {
             'collectionRows.one': '{count} row',
             'collectionRows.other': '{count} rows',
             collectionRow: 'row {id}',
-            blocks: 'Held as its own element:',
-            blockStated: 'stated',
-            blockAbsent: 'not stated',
-            blockNotRecorded: 'not recorded here',
+            blocks: 'Other elements it can hold',
+            blockStated: 'set',
+            blockAbsent: 'not set',
+            blockNotRecorded: 'this screen cannot read it yet',
         },
         edit: {
             start: 'Edit',
@@ -6921,10 +6921,10 @@ export const en: SourceCatalogue = {
             noDescription: 'One {entry} of the document.',
             parameters: '{count} parameters',
             gaps: '{count} without documentation',
-            blocks: 'Held as its own element:',
-            blockStated: 'stated',
-            blockAbsent: 'not stated',
-            blockNotRecorded: 'not recorded here',
+            blocks: 'Other elements it can hold',
+            blockStated: 'set',
+            blockAbsent: 'not set',
+            blockNotRecorded: 'this screen cannot read it yet',
         },
         usedBy: {
             lead: 'A change reaches the next run of each report below. A run already produced keeps what it ran with.',

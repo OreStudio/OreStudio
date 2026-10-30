@@ -491,6 +491,11 @@ def parse_args(argv=None):
     return parser.parse_args(argv)
 
 
+# The file the last successful run wrote, so a caller that scaffolds in-process
+# (compass add) can reach it without parsing stdout.
+LAST_OUTPUT = None
+
+
 def main(argv=None):
     args = parse_args(argv)
 
@@ -963,8 +968,10 @@ def main(argv=None):
     if out_file.exists() and not args.force:
         sys.exit(f"error: refusing to overwrite {out_file} (pass --force).")
 
+    global LAST_OUTPUT
     out_dir.mkdir(parents=True, exist_ok=True)
     out_file.write_text(rendered, encoding="utf-8")
+    LAST_OUTPUT = out_file
     print(out_file)
     return 0
 

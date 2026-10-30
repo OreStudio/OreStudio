@@ -1580,7 +1580,7 @@ const fr: SourceCatalogue = {
                 'Ce scénario est abandonné et ne sera pas exécuté. Un nouveau test efface chaque étape et le remet en jeu.',
             save: 'Enregistrer',
             saveHelp:
-                "L'enregistrement écrit le résultat de chaque étape et l'état global dans le document du scénario.",
+                'Chaque étape est enregistrée au fur et à mesure ; Enregistrer conserve ce que vous avez écrit depuis.',
             back: 'Retour aux tests',
             retestTitle: 'Lancer un nouveau test ?',
             retestBody:
@@ -6978,10 +6978,10 @@ const fr: SourceCatalogue = {
             'collectionRows.one': '{count} ligne',
             'collectionRows.other': '{count} lignes',
             collectionRow: 'ligne {id}',
-            blocks: 'Détenu comme élément propre :',
-            blockStated: 'déclaré',
-            blockAbsent: 'non déclaré',
-            blockNotRecorded: 'non enregistré ici',
+            blocks: "Autres éléments qu'elle peut contenir",
+            blockStated: 'défini',
+            blockAbsent: 'non défini',
+            blockNotRecorded: 'cet écran ne sait pas encore le lire',
         },
         edit: {
             start: 'Modifier',
@@ -7025,10 +7025,10 @@ const fr: SourceCatalogue = {
             noDescription: 'Une entrée {entry} du document.',
             parameters: '{count} paramètres',
             gaps: '{count} sans documentation',
-            blocks: 'Détenu comme élément propre :',
-            blockStated: 'déclaré',
-            blockAbsent: 'non déclaré',
-            blockNotRecorded: 'non enregistré ici',
+            blocks: "Autres éléments qu'elle peut contenir",
+            blockStated: 'défini',
+            blockAbsent: 'non défini',
+            blockNotRecorded: 'cet écran ne sait pas encore le lire',
         },
         usedBy: {
             lead: 'Une modification atteint la prochaine exécution de chaque rapport ci-dessous. Une exécution déjà produite garde ce avec quoi elle a couru.',

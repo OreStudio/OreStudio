@@ -107,7 +107,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:D2120291-825B-4117-A85F-7B9F28237942][Walk the curve segments and quotes on the screen]] | PENDING | Walked by hand against a provisioned environment. |
 
 * PRs
 

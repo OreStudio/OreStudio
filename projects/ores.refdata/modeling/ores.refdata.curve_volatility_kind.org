@@ -1,0 +1,206 @@
+:PROPERTIES:
+:ID: 2D6A4F18-7C3E-4B95-9A21-5E8D3C07B4F6
+:END:
+#+title: ores.refdata.curve_volatility_kind
+#+description: Codegen entity model for the refdata curve_volatility_kind row: one kind of one volatility entry, with the terms every kind states.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: curve_volatility_kind
+#+entity_plural: curve_volatility_kinds
+#+entity_title: Curve Volatility Kind
+#+brief: One kind of one volatility entry: its code, its priority and the terms every kind states.
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+An ORE volatility entry writes either one bare kind element, or a
+=VolatilityConfig= element holding up to one of each of seven kinds in an
+=xs:all=. Each kind is its own complex type, and every one of the seven repeats
+the same four terms: =QuoteType=, =VolatilityType=, =ExerciseType= and
+=Calendar=. Each also carries a =priority= attribute, because an entry may hold
+several alternatives and ORE builds the first that succeeds.
+
+This row is that kind: which kind it is, where it sits in the order, and the four
+terms. They are columns of this row rather than of each kind's part, because the
+row is what makes them appear once: seven kinds sharing four columns is a group,
+seven kinds each having their own four is a union. The kind's own fields live in
+the kind's part, one table each, as =curve_volatility_strike_surface= does for
+=StrikeSurface=.
+
+The kind is the discriminator, and it is a row rather than a column because an
+entry holds several of them.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this kind row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_volatility_config_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:END:
+
+The volatility entry this kind belongs to. An entry holds several kinds, so the
+key is this column with =kind_code=, and the generated table adds the unique
+index on the pair over the live rows.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** kind_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:natural_key: true
+:END:
+
+The ORE element this kind is: =Constant=, =Curve=, =StrikeSurface=,
+=DeltaSurface=, =MoneynessSurface=, =ApoFutureSurface= or =ProxySurface=.
+
+#+begin_src cpp :name generator
+std::string("StrikeSurface")
+#+end_src
+
+** priority
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Where this kind sits in the entry's order, as ORE's =priority= attribute states
+it. ORE builds the first kind that succeeds, so the order is the meaning.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the entry this kind belongs to. Carried so row level security
+can isolate the kind without a join.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** quote_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+What the kind's quotes mean, as ORE names it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** volatility_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Which volatility the kind states.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** exercise_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the exercise is typed, where the kind states one.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The calendar the kind's observations are read on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_curve_volatility_kinds_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: curve_volatility_kind
+:entity_plural_short:   curve_volatility_kinds
+:entity_singular_words: curve volatility kind
+:entity_plural_words:   curve volatility kinds
+:END:
+
+* Foreign keys
+
+** curve_volatility_config_id
+:PROPERTIES:
+:table:         ores_refdata_curve_volatility_configs_tbl
+:target_column: id
+:parent_entity: curve_volatility_config
+:nullable:      false
+:error_message: Invalid curve_volatility_config_id: %. No active volatility entry found with this id.
+:END:
+
+* See also
+
+- [[id:8C947D0F-E4AB-41C0-BA1A-C5AFE23A48E9][Split the ORE volatility entries by kind]] — the task that introduced it.

@@ -410,6 +410,10 @@
 \ir ./refdata_cds_volatility_configs_notify_trigger_create.sql
 \ir ./refdata_cds_volatility_terms_create.sql
 \ir ./refdata_cds_volatility_terms_notify_trigger_create.sql
+\ir ./refdata_curve_volatility_kinds_create.sql
+\ir ./refdata_curve_volatility_kinds_notify_trigger_create.sql
+\ir ./refdata_curve_volatility_strike_surfaces_create.sql
+\ir ./refdata_curve_volatility_strike_surfaces_notify_trigger_create.sql
 \ir ./refdata_curve_volatility_configs_create.sql
 \ir ./refdata_curve_volatility_configs_notify_trigger_create.sql
 \ir ./refdata_inflation_cap_floor_volatility_configs_create.sql

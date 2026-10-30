@@ -96,6 +96,10 @@
 \ir ./refdata_inflation_cap_floor_volatility_configs_notify_trigger_drop.sql
 \ir ./refdata_inflation_cap_floor_volatility_configs_drop.sql
 \ir ./refdata_curve_volatility_configs_notify_trigger_drop.sql
+\ir ./refdata_curve_volatility_strike_surfaces_notify_trigger_drop.sql
+\ir ./refdata_curve_volatility_strike_surfaces_drop.sql
+\ir ./refdata_curve_volatility_kinds_notify_trigger_drop.sql
+\ir ./refdata_curve_volatility_kinds_drop.sql
 \ir ./refdata_curve_volatility_configs_drop.sql
 \ir ./refdata_cds_volatility_terms_notify_trigger_drop.sql
 \ir ./refdata_cds_volatility_terms_drop.sql

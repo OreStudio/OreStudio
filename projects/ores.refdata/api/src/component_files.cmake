@@ -197,6 +197,7 @@ set(files
     "domain/currency_calendar_json_io.cpp"
     "domain/currency_calendar_table.cpp"
     "domain/currency_calendar_table_io.cpp"
+    "domain/currency_codec.cpp"
     "domain/currency_country_json_io.cpp"
     "domain/currency_country_table.cpp"
     "domain/currency_country_table_io.cpp"
@@ -693,6 +694,7 @@ set(files
     "generators/yield_volatility_config_generator.cpp"
     "generators/zero_convention_generator.cpp"
     "generators/zero_inflation_index_convention_generator.cpp"
+    "messaging/currency_protocol_codec.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -938,6 +940,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/currency_calendar_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/currency_calendar_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/currency_calendar_table_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/currency_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/currency_country.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/currency_country_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/currency_country_table.hpp"

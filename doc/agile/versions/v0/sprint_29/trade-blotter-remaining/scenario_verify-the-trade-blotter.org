@@ -38,7 +38,7 @@ This page documents a test scenario verifying [[id:5057B9A6-66F0-4E4E-967F-DF915
 | Parent story  | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]]   |
 | Target screen | Trade blotter, at =/trading/blotter=.   |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | PASSED |
 
 * Steps
 
@@ -54,8 +54,7 @@ This page documents a test scenario verifying [[id:5057B9A6-66F0-4E4E-967F-DF915
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
-| Notes  |       |
+| Status | PASS |
 
 ** Reach the blotter from the area
 
@@ -71,8 +70,7 @@ This page documents a test scenario verifying [[id:5057B9A6-66F0-4E4E-967F-DF915
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
-| Notes  |       |
+| Status | PASS |
 
 ** Read the portfolio tree's counts
 
@@ -89,8 +87,7 @@ This page documents a test scenario verifying [[id:5057B9A6-66F0-4E4E-967F-DF915
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
-| Notes  |       |
+| Status | PASS |
 
 ** Read the rows and their columns
 
@@ -109,8 +106,7 @@ This page documents a test scenario verifying [[id:5057B9A6-66F0-4E4E-967F-DF915
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
-| Notes  |       |
+| Status | PASS |
 
 ** Narrow to a book and a portfolio
 
@@ -127,8 +123,7 @@ This page documents a test scenario verifying [[id:5057B9A6-66F0-4E4E-967F-DF915
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
-| Notes  |       |
+| Status | PASS |
 
 ** Flatten the list to the legs
 
@@ -142,8 +137,7 @@ This page documents a test scenario verifying [[id:5057B9A6-66F0-4E4E-967F-DF915
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
-| Notes  |       |
+| Status | PASS |
 
 ** Read the rows by counterparty
 
@@ -159,8 +153,7 @@ This page documents a test scenario verifying [[id:5057B9A6-66F0-4E4E-967F-DF915
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
-| Notes  |       |
+| Status | PASS |
 
 ** Open what a row names
 
@@ -175,8 +168,7 @@ This page documents a test scenario verifying [[id:5057B9A6-66F0-4E4E-967F-DF915
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
-| Notes  |       |
+| Status | PASS |
 
 ** Group trades from the blotter
 
@@ -192,15 +184,14 @@ This page documents a test scenario verifying [[id:5057B9A6-66F0-4E4E-967F-DF915
 
 | Field  | Value |
 |--------+-------|
-| Status |       |
-| Notes  |       |
+| Status | PASS |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
+| Status        | PASSED |
+| Completed at  | 2026-10-30T14:32:52Z |
 | Branch        |       |
 | Commit        |       |
 | Worktree      |       |

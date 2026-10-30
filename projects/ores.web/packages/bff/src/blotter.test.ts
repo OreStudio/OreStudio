@@ -66,6 +66,7 @@ const subjects = {
     members: 'trading.v1.structure_members.list',
     identifiers: 'trading.v1.structure_identifiers.list',
     tradeIdentifiers: 'trading.v1.trade_identifiers.list',
+    tradeTypes: 'trading.v1.trade_types.list',
     summaries: 'trading.v1.trade_summaries.list',
 };
 
@@ -228,6 +229,11 @@ function replies(): Readonly<Record<string, unknown>> {
             ],
             total: 2,
         },
+        [subjects.tradeTypes]: {
+            result: ok,
+            types: [{ code: 'Swap', description: 'Interest Rate Swap', product_type: 'swap' }],
+            total: 1,
+        },
         [subjects.summaries]: { result: ok, trade_summaries: rows(), total: rows().length },
     };
 }
@@ -348,6 +354,11 @@ describe('the blotter read', () => {
         expect(body.rows[2]).toMatchObject({
             book_name: 'Equity Derivatives',
             trade_date: '2026-03-08',
+        });
+        // The instrument is the name the catalogue holds, not the code stored.
+        expect(body.rows[1]).toMatchObject({
+            instrument_type: 'Swap',
+            instrument_type_name: 'Interest Rate Swap',
         });
     });
 

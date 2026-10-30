@@ -220,7 +220,7 @@ export function BlotterPage(): ReactNode {
             id: 'what',
             header: t('trading.blotter.what'),
             sort: 'instrument_type',
-            cell: (row) => row.instrument_type || '—',
+            cell: (row) => row.instrument_type_name || row.instrument_type || '—',
         },
         {
             id: 'book',

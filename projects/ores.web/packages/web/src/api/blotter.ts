@@ -51,6 +51,8 @@ export interface BlotterRow {
     readonly structure: string;
     readonly structure_reference: string;
     readonly instrument_type: string;
+    /** The name the type is known by, which is what a person reads. */
+    readonly instrument_type_name: string;
     readonly book_id: string;
     readonly book_name: string;
     readonly counterparty_id: string;
@@ -95,6 +97,7 @@ const rowSchema = z.looseObject({
     structure: z.string().default(''),
     structure_reference: z.string().default(''),
     instrument_type: z.string().default(''),
+    instrument_type_name: z.string().default(''),
     book_id: z.string().default(''),
     book_name: z.string().default(''),
     counterparty_id: z.string().default(''),

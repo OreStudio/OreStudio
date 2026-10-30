@@ -26,6 +26,7 @@ import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/
 import { subjects as portfolioSubjects } from '@ores/wire-protocol/generated/refdata/protocol/portfolio_protocol';
 import { subjects as memberSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_member_protocol';
 import { subjects as tradeIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
+import { subjects as tradeTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_type_protocol';
 import { subjects as structureIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_identifier_protocol';
 import { subjects as structureSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_protocol';
 import { subjects as summarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
@@ -55,6 +56,14 @@ const IDENTIFIER_ORDER = ['Internal', 'UTI', 'USI', 'ORE'] as const;
 function rankOf(idType: string): number {
     const index = IDENTIFIER_ORDER.findIndex((known) => known === idType);
     return index === -1 ? IDENTIFIER_ORDER.length : index;
+}
+
+/** A code made readable: the words the camel case hides, with the spaces put back. */
+function humanise(code: string): string {
+    return code
+        .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+        .replace(/_/g, ' ')
+        .trim();
 }
 
 const MAX_PAGE = 200;
@@ -254,6 +263,7 @@ interface BlotterRow {
     readonly structure: string;
     readonly structure_reference: string;
     readonly instrument_type: string;
+    readonly instrument_type_name: string;
     readonly book_id: string;
     readonly book_name: string;
     readonly counterparty_id: string;
@@ -279,7 +289,7 @@ export function registerBlotterRoutes(
         const query = input(blotterQuerySchema, request.query);
         const order = { field: query.sort, descending: query.descending };
 
-        const [books, portfolios, structures, members, counterparties] = await Promise.all([
+        const [books, portfolios, structures, members, counterparties, types] = await Promise.all([
             readAll(session, bookSubjects.list_books_request, 'books', {
                 filter: {
                     parent_portfolio_id: null,
@@ -304,7 +314,25 @@ export function registerBlotterRoutes(
                 filter: null,
                 as_of: null,
             }),
+            readAll(session, tradeTypeSubjects.list_trade_types_request, 'types', {
+                filter: { code_one_of: null },
+            }),
         ]);
+
+        /*
+         * The name a type is known by, so the list states the instrument a desk
+         * reads rather than the code the store holds. A code with no entry keeps
+         * its words, spaced.
+         */
+        const instrumentNameOf = new Map(
+            types.map(
+                (row) =>
+                    [
+                        text(row['code']),
+                        text(row['description']) || humanise(text(row['code'])),
+                    ] as const,
+            ),
+        );
 
         /* Which structure holds which trade. */
         const holderOf = new Map<string, string>();
@@ -711,6 +739,11 @@ export function registerBlotterRoutes(
                     structure,
                     structure_reference: structure === '' ? '' : (referenceOf.get(structure) ?? ''),
                     instrument_type: text(row['instrument_type']),
+                    instrument_type_name:
+                        kind === 'structure'
+                            ? text(row['instrument_type'])
+                            : (instrumentNameOf.get(text(row['instrument_type'])) ??
+                              humanise(text(row['instrument_type']))),
                     book_id: text(row['book_id']),
                     book_name:
                         kind === 'structure'

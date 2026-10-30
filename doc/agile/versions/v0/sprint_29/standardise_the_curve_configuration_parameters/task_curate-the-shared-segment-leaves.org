@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/curate-the-shared-segment-leaves
-#+pr: 4118
+#+pr: 4120
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -107,6 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4120][#4120]] | [agile] Record the walk that reads 289 of 289 |
 | [[https://github.com/OreStudio/OreStudio/pull/4118][#4118]] | [refdata] Curate the leaves every segment kind shares |
 
 * Review

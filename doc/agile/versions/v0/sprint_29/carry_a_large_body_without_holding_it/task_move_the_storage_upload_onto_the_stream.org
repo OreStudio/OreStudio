@@ -9,8 +9,6 @@
 #+owner: marco
 #+branch: feature/move-the-storage-upload-onto-the-stream
 #+pr: 4157
-#+blocked_on: review
-#+blocked_since: 2026-10-30 23:40
 #+created: 2026-10-30
 #+updated: 2026-10-30
 #+environment: clever_dijkstra
@@ -28,11 +26,11 @@ size in memory. Move them onto the chunk channel and the file on disk.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:8550935B-A0F4-4BAD-95F3-D3E03B45E044][Carry a large body without holding it]] |
-| Now          | The upload writes a part file and publishes it. |
+| Now          | Nothing; #4157 is merged. |
 | Waiting on   | Nothing.                               |
-| Next         | Review, then the resident-cost measure takes over. |
+| Next         | The wrapper run proves it against a real transfer. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -40,6 +38,8 @@ size in memory. Move them onto the chunk channel and the file on disk.
 - The upload writes each chunk to a temporary file beside the object and renames it
   when the body ends, so a reader never sees a partial object.
 - A request that fails, disconnects, or is refused leaves no file behind.
+- The grid wrapper's transfer tests pass against the streamed route, which is
+  [[id:9A1C38AC-48B2-4F25-905E-A3104FE461F2][Prove the transfer through the wrapper]].
 - The upload's stated limit and the ceiling are unchanged, and the answer carries
   the digest and the byte count of what was stored.
 - Tests cover an upload of several chunks, an aborted upload, and a key that cannot
@@ -110,3 +110,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+The upload route streams: the session hands the body to a sink that writes a part
+file the store names, and the handler publishes by renaming it onto the object. A
+request that fails anywhere leaves neither an object nor a part file, and two
+uploads of one key never share bytes. The response carries the digest and the byte
+count of what was stored.
+
+The download is not part of this task any more; it waits on increment B1's response
+streaming.

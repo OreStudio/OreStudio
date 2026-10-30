@@ -200,7 +200,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/4083][#4083]] | [codegen] Generate each dq type's wire codec and prove it against reflect-cpp |
+| [[https://github.com/OreStudio/OreStudio/pull/4083][#4083]] | [codegen] Generate each dq type's wire codec and prove it |
 
 * Review
 

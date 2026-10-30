@@ -96,12 +96,13 @@ neither rate nor index, a total return swap with neither return nor funding leg,
 a callable bond with no call date, a convertible with no target.
 
 The batch the constructors fill is generated from the trade type catalogue's
-`* Batch/Children` list, and the bond rows were missing from it: the issue and
-its legs, amounts, rates and schedules had been added to the generated header by
-hand, and a regeneration by another environment deleted them, leaving main
-referring to arrays it no longer declared. The catalogue now states the bond
-children, so a regeneration keeps them, and this task repairs the break as well
-as adding the nine constructors.
+`* Batch/Children` list, and the bond fact rows were missing from it. A first
+draft of this note said the omission had broken main. It had not: the security's
+issue rows travel on the plan's slot, which is hand-written, and the arrays the
+regeneration deleted from the batch were never read. What was true is narrower
+and still worth fixing — the model now states the bond children, so a
+regeneration keeps the arrays the products need, and the four fact rows the
+constructors fill exist in the batch rather than only in a hand-added header.
 
 Tests: thirteen cases in `domain_bond_instruments_tests.cpp`, asserting each
 product's own row, the refusals above, and that a product crosses the batch in

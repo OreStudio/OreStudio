@@ -36,10 +36,10 @@ The investigation this story commissioned is
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Making the trade population plan family-neutral, with bond and commodity both booking through it. |
+| Now           | Every routed product of six families books. Bonds cover all ten routed codes; inflation and scripted have no planner yet. |
 | Waiting on    | Nothing. |
-| Next          | Then the asset class tasks, in the order Trade Population Weights sets. |
-| Last touched  | 2026-10-24                               |
+| Next          | The inflation and scripted families, then sizing every class to the weights. |
+| Last touched  | 2026-10-30                             |
 
 * Acceptance
 

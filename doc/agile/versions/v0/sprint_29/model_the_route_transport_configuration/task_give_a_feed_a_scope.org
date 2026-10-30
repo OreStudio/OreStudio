@@ -8,7 +8,7 @@
 #+filetags: :marketdata:implementation:model_the_route_transport_configuration:sprint_29:v0:
 #+owner: marco
 #+branch: feature/give-a-feed-a-scope
-#+pr:
+#+pr: 4117
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4117][#4117]] | [marketdata] Give a feed a scope |
 
 * Review
 

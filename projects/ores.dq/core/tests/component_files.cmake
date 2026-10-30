@@ -30,6 +30,7 @@ set(files
     "coding_scheme_authority_type_eventing_integration_tests.cpp"
     "coding_scheme_eventing_integration_tests.cpp"
     "data_domain_eventing_integration_tests.cpp"
+    "domain_codec_tests.cpp"
     "generators_tests.cpp"
     "main.cpp"
     "nature_dimension_eventing_integration_tests.cpp"

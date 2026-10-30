@@ -209,6 +209,32 @@ def parse_function(path, text, chunk, start, node, element, member_parsers=None)
     calls = {m.group(2): m.group(1) for m in CALL.finditer(chunk)}
     types = {var: locals_of.get(member) for var, member in calls.items()}
     children = list(CHILD.finditer(chunk))
+
+    def parser_of(m, var):
+        """The member that parses the node this read takes, and its type.
+
+        A parser reuses one variable name for sibling blocks, as
+        `ParametricSmileConfiguration::fromXML` does with `n`, so keying the call
+        by that name alone attributes every block to the last call that names it.
+        The block belongs to the call that follows its read, bounded by the read
+        of the next block into the same variable.
+        """
+        bound = len(chunk)
+        for other in children:
+            if other.start() > m.start() and other.group(1) == var:
+                bound = other.start()
+                break
+        for call in CALL.finditer(chunk):
+            if call.group(2) == var and m.start() < call.start() < bound:
+                return call.group(1), locals_of.get(call.group(1))
+        # A variable some call names elsewhere, but none inside this block, is a
+        # block this parser hands to another reader: repeated children it walks
+        # itself, or a class it builds on the spot. Calling it by the name of a
+        # sibling's call is the mistake this rule exists to stop.
+        if var in calls:
+            return None, None
+        return calls.get(var), types.get(var)
+
     used = set()
 
     for m in children:
@@ -218,9 +244,11 @@ def parse_function(path, text, chunk, start, node, element, member_parsers=None)
         if var in valued:
             reads.append(leaf(name, "text", False, None, m.start()))
             used.add(m.start())
-        elif var in calls:
-            nested.append({"element": name, "member": calls[var],
-                           "type": types.get(var), "reads": []})
+            continue
+        member, kind = parser_of(m, var)
+        if member is not None:
+            nested.append({"element": name, "member": member,
+                           "type": kind, "reads": []})
             used.add(m.start())
 
     # A child node whose own children are read is a block of leaves. Where the

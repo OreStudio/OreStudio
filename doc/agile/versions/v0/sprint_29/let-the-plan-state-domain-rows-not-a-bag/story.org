@@ -59,6 +59,7 @@ A trade has one description, in the domain. The planner draws a product and cons
 | [[id:A6630FE3-8B74-4DA5-B303-A091F852CE26][Flip rates onto its rows]] | DONE | 2026-10-30 | 2026-10-30 | Ten rate codes construct today, but the planner still fills a bag and the writer translates it. Move that translation into the planner so the plan carries the rows, and the writer only persists them. |
 | [[id:E8B8CFD3-492D-45DB-AF5D-F9EEA698D6E7][Flip fx onto its rows]] | DONE | 2026-10-30 | 2026-10-30 | Sixteen fx codes construct today, but the planner still fills a bag and the writer translates it. Move that translation into the planner so the plan carries the rows, and the writer only persists them. |
 | [[id:3C9A2220-AD86-4ACE-B6E7-6E5F6D173381][Flip equity onto its rows]] | DONE | 2026-10-30 | 2026-10-30 | Seventeen equity codes construct today, but the planner still fills a bag and the writer translates it. Move that translation into the planner so the plan carries the rows, and the writer only persists them. |
+| [[id:80649240-E5CD-46DE-9ECE-55603FD60CC0][Flip credit onto its rows]] | BACKLOG | | | Six credit products construct today, but the planner still fills a bag and the writer translates it. Move that translation into the planner so the plan carries the row, and the writer only persists it. |
 
 * Decisions
 

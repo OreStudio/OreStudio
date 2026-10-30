@@ -61,9 +61,6 @@ const domain::bond_terms& bond_of(const domain::trade_population_slot& slot) {
     return std::get<domain::bond_terms>(slot.terms);
 }
 
-const domain::fx_terms& fx_of(const domain::trade_population_slot& slot) {
-    return std::get<domain::fx_terms>(slot.terms);
-}
 
 const boost::uuids::uuid config_id =
     boost::uuids::string_generator()("0cd68b09-6ebc-4180-a298-0cc386590f31");
@@ -556,13 +553,11 @@ TEST_CASE("a_rate_population_without_an_index_catalogue_is_refused", "[trade_pop
     CHECK_THROWS_AS(plan_of(scope), trade_population_error);
 }
 
-TEST_CASE("an_fx_population_states_the_idiom_its_type_needs", "[trade_population]") {
-    const auto scope = fx_scope();
-    const auto plan = plan_of(scope);
+TEST_CASE("an_fx_population_states_the_row_its_type_routes_to", "[trade_population]") {
+    const auto plan = plan_of(fx_scope());
 
-    const auto bought_and_sold = [](const std::string& type) {
-        return type == "FxForward" || type == "FxSwap" || type == "FxOption" ||
-               type.starts_with("FxBarrier") || type == "FxDoubleBarrierOption" ||
+    const auto barrier = [](const std::string& type) {
+        return type.starts_with("FxBarrier") || type == "FxDoubleBarrierOption" ||
                type == "FxEuropeanBarrierOption" || type == "FxGenericBarrierOption" ||
                type == "FxKIKOBarrierOption";
     };
@@ -573,24 +568,52 @@ TEST_CASE("an_fx_population_states_the_idiom_its_type_needs", "[trade_population
 
     REQUIRE(!plan.slots.empty());
     for (const auto& slot : plan.slots) {
-        const auto& terms = fx_of(slot);
+        /*
+         * The family states its rows and no bag: exactly one routed row per
+         * slot, and it is the row the type belongs to.
+         */
+        REQUIRE(std::holds_alternative<std::monostate>(slot.terms));
         const auto& type = slot.trade_type_code;
-        if (bought_and_sold(type)) {
-            CHECK_FALSE(terms.bought_currency.empty());
-            CHECK_FALSE(terms.sold_currency.empty());
-            CHECK(terms.bought_amount > 0.0);
+        const auto& batch = slot.instruments;
+
+        if (type == "FxForward" || type == "FxSwap") {
+            REQUIRE(batch.fx_forward_instruments.size() == 1u);
+            const auto& row = batch.fx_forward_instruments.front();
+            CHECK_FALSE(row.bought_currency.empty());
+            CHECK_FALSE(row.sold_currency.empty());
+        } else if (type == "FxOption") {
+            REQUIRE(batch.fx_vanilla_option_instruments.size() == 1u);
+            const auto& row = batch.fx_vanilla_option_instruments.front();
+            CHECK_FALSE(row.bought_currency.empty());
+            CHECK_FALSE(row.option_type.empty());
+        } else if (barrier(type)) {
+            REQUIRE(batch.fx_barrier_option_instruments.size() == 1u);
+            const auto& row = batch.fx_barrier_option_instruments.front();
+            CHECK_FALSE(row.bought_currency.empty());
+            CHECK_FALSE(row.barrier_type.empty());
+            CHECK(row.lower_barrier.has_value());
         } else if (digital(type)) {
-            CHECK_FALSE(terms.foreign_currency.empty());
-            CHECK_FALSE(terms.payoff_currency.empty());
-            REQUIRE(terms.payoff_amount.has_value());
+            REQUIRE(batch.fx_digital_option_instruments.size() == 1u);
+            const auto& row = batch.fx_digital_option_instruments.front();
+            CHECK_FALSE(row.foreign_currency.empty());
+            CHECK_FALSE(row.payoff_amount.to_string() == "0");
         } else if (type == "FxAverageForward" || type == "FxTaRF") {
             // The average forward and the target redemption forward are
             // written on an index, not on a named underlying.
-            CHECK_FALSE(terms.fx_index.empty());
-            CHECK(terms.fixing_amount > 0.0);
+            REQUIRE(batch.fx_asian_forward_instruments.size() == 1u);
+            const auto& row = batch.fx_asian_forward_instruments.front();
+            CHECK_FALSE(row.fx_index.empty());
+            CHECK(row.reference_notional.has_value());
+        } else if (type == "FxVarianceSwap") {
+            REQUIRE(batch.fx_variance_swap_instruments.size() == 1u);
+            const auto& row = batch.fx_variance_swap_instruments.front();
+            CHECK_FALSE(row.underlying_code.empty());
+            CHECK_FALSE(row.moment_type.empty());
         } else {
-            CHECK_FALSE(terms.underlying_code.empty());
-            CHECK(terms.fixing_amount > 0.0);
+            REQUIRE(batch.fx_accumulator_instruments.size() == 1u);
+            const auto& row = batch.fx_accumulator_instruments.front();
+            CHECK_FALSE(row.underlying_code.empty());
+            CHECK(row.knock_out_barrier.has_value());
         }
     }
 }
@@ -606,17 +629,25 @@ TEST_CASE("every_routed_fx_type_appears_in_a_population_of_that_length", "[trade
 }
 
 TEST_CASE("an_fx_population_prefers_the_pairs_that_name_the_book_currency", "[trade_population]") {
-    const auto scope = fx_scope();
-    const auto plan = plan_of(scope);
+    const auto plan = plan_of(fx_scope());
 
-    // EUR/USD names the book's currency and GBP/USD does not, so every slot
-    // takes the first.
+    /*
+     * EUR/USD names the book's currency and GBP/USD does not, so every slot
+     * takes the first: a bought-and-sold row states it as the bought currency,
+     * and an index row as the currency it references.
+     */
     for (const auto& slot : plan.slots) {
-        const auto& terms = fx_of(slot);
-        if (!terms.bought_currency.empty()) {
-            CHECK(terms.bought_currency == "EUR");
-        } else if (!terms.reference_currency.empty()) {
-            CHECK(terms.reference_currency == "EUR");
+        const auto& batch = slot.instruments;
+        if (!batch.fx_forward_instruments.empty()) {
+            CHECK(batch.fx_forward_instruments.front().bought_currency == "EUR");
+        } else if (!batch.fx_vanilla_option_instruments.empty()) {
+            CHECK(batch.fx_vanilla_option_instruments.front().bought_currency == "EUR");
+        } else if (!batch.fx_barrier_option_instruments.empty()) {
+            CHECK(batch.fx_barrier_option_instruments.front().bought_currency == "EUR");
+        } else if (!batch.fx_digital_option_instruments.empty()) {
+            CHECK(batch.fx_digital_option_instruments.front().foreign_currency == "EUR");
+        } else if (!batch.fx_asian_forward_instruments.empty()) {
+            CHECK(batch.fx_asian_forward_instruments.front().reference_currency == "EUR");
         }
     }
 }

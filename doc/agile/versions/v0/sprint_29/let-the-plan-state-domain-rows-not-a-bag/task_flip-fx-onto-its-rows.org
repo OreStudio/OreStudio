@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ An fx trade states its rows in the plan, and the writer translates nothing for t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -57,7 +57,16 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Fx forward rows | 8 | =select count(*) from ores_trading_fx_forward_instruments_tbl= | worktree |
+| Fx vanilla option rows | 4 | =...fx_vanilla_option_instruments_tbl= | worktree |
+| Fx barrier option rows | 12 | =...fx_barrier_option_instruments_tbl= | worktree |
+| Fx digital option rows | 4 | =...fx_digital_option_instruments_tbl= | worktree |
+| Fx asian forward rows | 4 | =...fx_asian_forward_instruments_tbl= | worktree |
+| Fx variance swap rows | 0, never drawn | =...fx_variance_swap_instruments_tbl= | worktree |
+| Fx accumulator rows | 0, never drawn | =...fx_accumulator_instruments_tbl= | worktree |
+| Accumulator range bounds | 4 | =select count(*) from ores_trading_range_bounds_tbl= | worktree |
+| Trade rows, latest version | 127 | =select count(distinct id) from ores_trading_trades_tbl where valid_to = ...= | worktree |
+| Planner suite | 1,908 assertions in 79 cases | =publish/bin/ores.synthetic.core.tests= | worktree |
 
 * Notes
 
@@ -85,3 +94,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The fx family states its rows. The planner builds the row each type routes to,
+beside the drawing that feeds it, and the writer persists what the plan carries.
+The writer's fx arm is gone, and with it the per-row stamping: the walk over the
+batch states the audit columns on every row and on the accumulator's range
+bounds.
+
+The population is unchanged: a fresh tenant books 8 forward, 4 vanilla option,
+12 barrier option, 4 digital option and 4 asian forward rows with 4 range
+bounds, and 127 trades in total, which is what it booked before the flip.
+
+Two fx products are absent and the flip did not remove them. The fx planner
+cycles sixteen routed types and each seeded config states eight slots, so the
+last eight types are never drawn: no fx variance swap and no fx accumulator
+exists in any provisioned tenant, though both construct and both route. That is
+the same positional defect the rate family shows with its knock-out swap, and it
+is captured once for both rather than fixed here.
+
+The plan's bag narrowed again. Fx left the variant, so three remain: bond, whose
+security still travels in it, and the two families that have not flipped.

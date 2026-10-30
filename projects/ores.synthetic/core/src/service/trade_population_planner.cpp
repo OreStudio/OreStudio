@@ -20,6 +20,7 @@
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.trading.api/domain/bond_instruments.hpp"
 #include "ores.trading.api/domain/commodity_instruments.hpp"
+#include "ores.trading.api/domain/fx_instruments.hpp"
 #include "ores.trading.api/domain/rate_instruments.hpp"
 #include <boost/uuid/name_generator_sha1.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -1127,6 +1128,162 @@ std::string_view fx_trade_planner::asset_class_code() const {
     return "fx";
 }
 
+/*
+ * The fx family states its own rows. The mapping from what the planner draws to
+ * each product's constructor lives here, beside the drawing, and not in the
+ * writer: the plan carries the rows and the writer persists them.
+ */
+ores::trading::domain::instrument_batch construct_fx_batch(const domain::fx_terms& drawn,
+                                                           const std::string& trade_type_code) {
+    namespace tdom = ores::trading::domain;
+    ores::trading::domain::instrument_batch batch;
+    const auto money = [](double value) {
+        return tdom::decimal::from_double(value).value();
+    };
+    const auto maybe_money = [&money](std::optional<double> value) -> std::optional<tdom::decimal> {
+        if (!value.has_value())
+            return std::nullopt;
+        return money(*value);
+    };
+    const auto& type = trade_type_code;
+
+    tdom::fx_legs_terms legs;
+    legs.bought_currency = drawn.bought_currency;
+    legs.bought_amount = money(drawn.bought_amount);
+    legs.sold_currency = drawn.sold_currency;
+    legs.sold_amount = money(drawn.sold_amount);
+
+    /*
+     * One routed table per shape. An FX row is the whole instrument, so there
+     * is no fact row beside it and nothing to forget: the fields the table
+     * states are the fields the row carries.
+     */
+    /*
+     * One routed table per shape. An FX row is the whole instrument, so
+     * there is no fact row beside it and nothing to forget: the fields the
+     * table states are the fields the row carries.
+     */
+    if (type == "FxForward" || type == "FxSwap") {
+        tdom::fx_forward_terms terms{legs, drawn.value_date, drawn.settlement};
+        auto row = type == "FxForward" ? tdom::construct_fx_forward(terms) :
+                                         tdom::construct_fx_swap(terms);
+        row.description = "Generated FX trade.";
+        batch.fx_forward_instruments.push_back(row);
+    } else if (type == "FxOption") {
+        tdom::fx_vanilla_option_terms terms{
+            legs, drawn.option_type, drawn.expiry_date, drawn.exercise_style, drawn.settlement};
+        auto row = tdom::construct_fx_option(terms);
+        row.description = "Generated FX trade.";
+        batch.fx_vanilla_option_instruments.push_back(row);
+    } else if (type.starts_with("FxBarrier") || type == "FxDoubleBarrierOption" ||
+               type == "FxEuropeanBarrierOption" || type == "FxGenericBarrierOption" ||
+               type == "FxKIKOBarrierOption") {
+        tdom::fx_barrier_option_terms terms{legs,
+                                            drawn.option_type,
+                                            drawn.expiry_date,
+                                            drawn.settlement,
+                                            drawn.barrier_type,
+                                            maybe_money(drawn.lower_barrier),
+                                            maybe_money(drawn.upper_barrier),
+                                            drawn.underlying_code};
+        auto row = [&] {
+            if (type == "FxBarrierOption")
+                return tdom::construct_fx_barrier_option(terms);
+            if (type == "FxDoubleBarrierOption")
+                return tdom::construct_fx_double_barrier_option(terms);
+            if (type == "FxEuropeanBarrierOption")
+                return tdom::construct_fx_european_barrier_option(terms);
+            if (type == "FxGenericBarrierOption")
+                return tdom::construct_fx_generic_barrier_option(terms);
+            return tdom::construct_fx_kiko_barrier_option(terms);
+        }();
+        row.description = "Generated FX trade.";
+        batch.fx_barrier_option_instruments.push_back(row);
+    } else if (type == "FxDigitalOption" || type == "FxTouchOption" ||
+               type == "FxDoubleTouchOption" || type == "FxDigitalBarrierOption") {
+        tdom::fx_digital_option_terms terms{drawn.foreign_currency,
+                                            drawn.domestic_currency,
+                                            drawn.payoff_currency,
+                                            money(drawn.payoff_amount.value_or(0.0)),
+                                            drawn.option_type,
+                                            drawn.expiry_date,
+                                            drawn.long_short,
+                                            maybe_money(drawn.strike),
+                                            drawn.barrier_type,
+                                            maybe_money(drawn.lower_barrier),
+                                            maybe_money(drawn.upper_barrier)};
+        auto row = [&] {
+            if (type == "FxDigitalOption")
+                return tdom::construct_fx_digital_option(terms);
+            if (type == "FxTouchOption")
+                return tdom::construct_fx_touch_option(terms);
+            if (type == "FxDoubleTouchOption")
+                return tdom::construct_fx_double_touch_option(terms);
+            return tdom::construct_fx_digital_barrier_option(terms);
+        }();
+        row.description = "Generated FX trade.";
+        batch.fx_digital_option_instruments.push_back(row);
+    } else if (type == "FxAverageForward") {
+        tdom::fx_asian_forward_terms terms{drawn.fx_index,
+                                           drawn.reference_currency,
+                                           maybe_money(drawn.reference_notional),
+                                           drawn.settlement_currency,
+                                           maybe_money(drawn.settlement_notional),
+                                           drawn.payment_date,
+                                           drawn.long_short,
+                                           drawn.currency,
+                                           maybe_money(drawn.fixing_amount),
+                                           maybe_money(drawn.strike)};
+        auto row = tdom::construct_fx_average_forward(terms);
+        row.description = "Generated FX trade.";
+        batch.fx_asian_forward_instruments.push_back(row);
+    } else if (type == "FxTaRF") {
+        tdom::fx_tarf_terms terms{drawn.fx_index,
+                                  drawn.reference_currency,
+                                  maybe_money(drawn.reference_notional),
+                                  drawn.settlement_currency,
+                                  maybe_money(drawn.settlement_notional),
+                                  drawn.payment_date,
+                                  drawn.long_short,
+                                  drawn.currency,
+                                  maybe_money(drawn.fixing_amount),
+                                  maybe_money(drawn.strike),
+                                  money(drawn.target_amount.value_or(0.0))};
+        auto row = tdom::construct_fx_target_redemption_forward(terms);
+        row.description = "Generated FX trade.";
+        batch.fx_asian_forward_instruments.push_back(row);
+    } else if (type == "FxVarianceSwap") {
+        tdom::fx_variance_swap_terms terms{drawn.start_date,
+                                           drawn.end_date,
+                                           drawn.currency,
+                                           drawn.underlying_code,
+                                           drawn.long_short,
+                                           drawn.strike.value_or(0.0),
+                                           money(drawn.reference_notional),
+                                           drawn.moment_type};
+        auto row = tdom::construct_fx_variance_swap(terms);
+        row.description = "Generated FX trade.";
+        batch.fx_variance_swap_instruments.push_back(row);
+    } else if (type == "FxAccumulator") {
+        tdom::fx_accumulator_terms terms{drawn.currency,
+                                         money(drawn.fixing_amount),
+                                         drawn.underlying_code,
+                                         drawn.long_short,
+                                         drawn.start_date,
+                                         money(drawn.strike.value_or(0.0)),
+                                         maybe_money(drawn.knock_out_barrier)};
+        auto built = tdom::construct_fx_accumulator(terms);
+        built.row.description = "Generated FX trade.";
+        batch.fx_accumulator_instruments.push_back(built.row);
+        for (const auto& bound : built.range_bounds)
+            batch.range_bounds.push_back(bound);
+    } else {
+        throw trade_population_error("The FX trade type " + type +
+                                     " states no product this planner knows.");
+    }
+    return batch;
+}
+
 domain::trade_population_plan
 fx_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     validate_scope(scope);
@@ -1236,7 +1393,11 @@ fx_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         auto entry = common_slot(scope, slot);
         entry.trade_type_code = std::string(type);
         entry.notional = notional;
-        entry.terms = terms;
+        /*
+         * The fx family states its rows here, where it draws them, and the plan
+         * carries no bag for it.
+         */
+        entry.instruments = construct_fx_batch(terms, entry.trade_type_code);
         plan.slots.push_back(std::move(entry));
     }
 

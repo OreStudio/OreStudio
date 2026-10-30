@@ -395,7 +395,10 @@ struct rate_terms final {
  */
 
 /**
- * @brief The facts an FX slot carries and no other family does.
+ * @brief The facts the fx planner draws, before it states its rows.
+ *
+ * The family states rows in the plan, so this is the drawing's own shape and
+ * never a slot's bag.
  *
  * The sixteen routed types reach seven tables, and the tables state three
  * idioms: a bought currency against a sold one, a digital payoff struck against
@@ -551,8 +554,7 @@ struct equity_terms final {
  * bag at all. Without it the variant's default is the first alternative, and
  * a slot that states rows would read as a bond with empty terms.
  */
-using trade_terms =
-    std::variant<std::monostate, bond_terms, credit_terms, fx_terms, equity_terms>;
+using trade_terms = std::variant<std::monostate, bond_terms, credit_terms, equity_terms>;
 
 /**
  * @brief One trade the population states, with every reference already

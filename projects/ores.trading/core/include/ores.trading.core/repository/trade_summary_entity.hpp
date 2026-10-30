@@ -61,7 +61,7 @@ struct trade_summary_entity {
     std::string authorisation_status;
     std::optional<std::chrono::year_month_day> trade_date;
     int trade_count = 0;
-    std::optional<std::string> structure_id;
+    std::optional<boost::uuids::uuid> structure_id;
     bool is_leg = false;
     std::string search_text;
 

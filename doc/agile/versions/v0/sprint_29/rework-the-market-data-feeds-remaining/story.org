@@ -80,6 +80,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:EF0E71E8-940A-4164-BF4C-85B2FB6AE55A][Notify a person that a scenario is ready]] | DONE | 2026-10-30 | 2026-10-30 | A scenario is created but the person who should run it is never told; the Development area already renders the scenario. |
 | [[id:1787BDF4-EF8D-4636-AFD8-A94BB89EEEBB][Bind a report to the published curve]] | DONE | 2026-10-30 | 2026-10-30 | The signed-off target says a report references the published set; today it reads a curve configuration document. |
 | [[id:5B166095-7D72-4D11-BA88-34A278589E98][Port the market data cuts reference]] | DONE | 2026-10-30 | 2026-10-30 | The external cuts reference defines the concept the report binding depends on; our docs have only fragments. |
+| [[id:949A1AD7-D380-45DB-95A8-9F4F7C9E9552][Design the cut's journeys and screens]] | STARTED | 2026-10-30 | | The cut is the report binding's foundation: the fixed body at a timepoint for a reproducible valuation. Design its journeys and screens before the data model. |
 
 * Decisions
 

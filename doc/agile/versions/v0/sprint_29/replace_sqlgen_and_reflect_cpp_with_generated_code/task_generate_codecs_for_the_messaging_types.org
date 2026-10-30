@@ -117,6 +117,8 @@ task and name that file in the Command column.
 | ores.dq.api suite | 45 cases, 283 assertions | =ores.dq.api.tests= | =d579e8a1c2= |
 | ores.utility suite | 179 cases, 818 assertions | =ores.utility.tests= | =d579e8a1c2= |
 | ores.nats suite | 56 cases, 170 assertions | =ores.nats.tests= | =d579e8a1c2= |
+| Estate build | 925 of 925 targets | =compass build= | =4d5d50c6ef= |
+| Full suite | 97 of 98 suites; the red is refdata's curve-configuration round trip, which reads through =ores.ore= and touches nothing this branch changes | =ctest --preset linux-clang-release-ninja= | =4d5d50c6ef= |
 | Codegen suite | 1678 passed | =pytest projects/ores.codegen/tests= | =d579e8a1c2= |
 | dq's generated tree | no drift | =check_component_drift.py --component dq --dry-run= | =d8e2a9bb33= |
 

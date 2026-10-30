@@ -67,17 +67,6 @@ render_swaption_volatility_config_fields(const domain::swaption_volatility_confi
         {.name = "Smile Swap Tenors", .value = v.smile_swap_tenors.value_or(std::string{})});
     fields.push_back({.name = "Smile Spreads", .value = v.smile_spreads.value_or(std::string{})});
     fields.push_back({.name = "Quote Tag", .value = v.quote_tag.value_or(std::string{})});
-    fields.push_back({.name = "Has Proxy Config", .value = v.has_proxy_config ? "true" : "false"});
-    fields.push_back({.name = "Proxy Source Curve ID",
-                      .value = v.proxy_source_curve_id.value_or(std::string{})});
-    fields.push_back({.name = "Proxy Source Short Swap Index Base",
-                      .value = v.proxy_source_short_swap_index_base.value_or(std::string{})});
-    fields.push_back({.name = "Proxy Source Swap Index Base",
-                      .value = v.proxy_source_swap_index_base.value_or(std::string{})});
-    fields.push_back({.name = "Proxy Target Short Swap Index Base",
-                      .value = v.proxy_target_short_swap_index_base.value_or(std::string{})});
-    fields.push_back({.name = "Proxy Target Swap Index Base",
-                      .value = v.proxy_target_swap_index_base.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

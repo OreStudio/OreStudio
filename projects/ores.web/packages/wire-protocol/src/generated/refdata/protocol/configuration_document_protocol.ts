@@ -56,6 +56,7 @@ import type { InflationCapFloorVolatilityConfig } from '../domain/inflation_cap_
 import type { InflationCurveConfig } from '../domain/inflation_curve_config.js';
 import type { InflationSeasonalityFactor } from '../domain/inflation_seasonality_factor.js';
 import type { IntradayPowerCurveConfig } from '../domain/intraday_power_curve_config.js';
+import type { SwaptionProxyConfig } from '../domain/swaption_proxy_config.js';
 import type { SwaptionVolatilityConfig } from '../domain/swaption_volatility_config.js';
 import type { YieldCurveConfig } from '../domain/yield_curve_config.js';
 import type { YieldVolatilityConfig } from '../domain/yield_volatility_config.js';
@@ -97,6 +98,7 @@ export interface CurveConfigurationDocument {
     volatility_configs: CurveVolatilityConfig[];
     inflation_cap_floor_volatilities: InflationCapFloorVolatilityConfig[];
     swaption_volatilities: SwaptionVolatilityConfig[];
+    swaption_proxy_configs: SwaptionProxyConfig[];
     cap_floor_volatilities: CapFloorVolatilityConfig[];
     cap_floor_proxy_configs: CapFloorProxyConfig[];
     parametric_smiles: CurveParametricSmile[];

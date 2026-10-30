@@ -48,7 +48,7 @@ using db_timestamp = ores::database::repository::db_timestamp;
  */
 struct cap_floor_proxy_config_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "";
+    constexpr static const char* tablename = "ores_refdata_cap_floor_proxy_configs_tbl";
 
     boost::uuids::uuid id;
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();

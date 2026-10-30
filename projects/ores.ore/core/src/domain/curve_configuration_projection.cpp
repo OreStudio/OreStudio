@@ -1632,17 +1632,20 @@ void import_swaption_volatility(ores::refdata::messaging::curve_configuration_do
     r.smile_swap_tenors = v.text("SmileSwapTenors");
     r.smile_spreads = v.text("SmileSpreads");
     r.quote_tag = v.text("QuoteTag");
-    r.has_proxy_config = v.has("ProxyConfig");
     if (const auto proxy = v.child("ProxyConfig"); proxy) {
+        refdata::domain::swaption_proxy_config p;
+        p.id = curve_configuration_projection_new_uuid();
+        p.swaption_volatility_config_id = r.id;
         if (const auto source = proxy->child("Source"); source) {
-            r.proxy_source_curve_id = required_text(*source, "CurveId");
-            r.proxy_source_short_swap_index_base = required_text(*source, "ShortSwapIndexBase");
-            r.proxy_source_swap_index_base = required_text(*source, "SwapIndexBase");
+            p.source_curve_id = required_text(*source, "CurveId");
+            p.source_short_swap_index_base = required_text(*source, "ShortSwapIndexBase");
+            p.source_swap_index_base = required_text(*source, "SwapIndexBase");
         }
         if (const auto target = proxy->child("Target"); target) {
-            r.proxy_target_short_swap_index_base = required_text(*target, "ShortSwapIndexBase");
-            r.proxy_target_swap_index_base = required_text(*target, "SwapIndexBase");
+            p.target_short_swap_index_base = required_text(*target, "ShortSwapIndexBase");
+            p.target_swap_index_base = required_text(*target, "SwapIndexBase");
         }
+        out.swaption_proxy_configs.push_back(std::move(p));
     }
     curve_configuration_projection_set_audit(r);
     out.swaption_volatilities.push_back(std::move(r));
@@ -1883,6 +1886,18 @@ const refdata::domain::cap_floor_proxy_config* proxy_of(
                                  parts.end(),
                                  [&](const auto& p) {
                                      return p.cap_floor_volatility_config_id == config_id;
+                                 });
+    return it == parts.end() ? nullptr : &*it;
+}
+
+/// The proxy a swaption entry names, or null when it names none.
+const refdata::domain::swaption_proxy_config* swaption_proxy_of(
+    const std::vector<refdata::domain::swaption_proxy_config>& parts,
+    const boost::uuids::uuid& config_id) {
+    const auto it = std::find_if(parts.begin(),
+                                 parts.end(),
+                                 [&](const auto& p) {
+                                     return p.swaption_volatility_config_id == config_id;
                                  });
     return it == parts.end() ? nullptr : &*it;
 }
@@ -2531,19 +2546,22 @@ void export_inflation_cap_floor_volatility(
 void export_swaption_volatility(record_writer r,
                                 const refdata::domain::curve_definition& d,
                                 const refdata::domain::swaption_volatility_config& v,
+                                const refdata::domain::swaption_proxy_config* proxy_config,
                                 const refdata::domain::curve_report_configuration* report,
                                 const smile_export& smile) {
     r.set_text("CurveId", d.curve_id);
     r.set_text("CurveDescription", d.description.value_or(""));
-    if (v.has_proxy_config) {
+    if (proxy_config) {
         auto proxy = r.child("ProxyConfig");
         auto source = proxy.child("Source");
-        source.set_text("CurveId", v.proxy_source_curve_id.value_or(""));
-        source.set_text("ShortSwapIndexBase", v.proxy_source_short_swap_index_base.value_or(""));
-        source.set_text("SwapIndexBase", v.proxy_source_swap_index_base.value_or(""));
+        source.set_text("CurveId", proxy_config->source_curve_id.value_or(""));
+        source.set_text("ShortSwapIndexBase",
+                        proxy_config->source_short_swap_index_base.value_or(""));
+        source.set_text("SwapIndexBase", proxy_config->source_swap_index_base.value_or(""));
         auto target = proxy.child("Target");
-        target.set_text("ShortSwapIndexBase", v.proxy_target_short_swap_index_base.value_or(""));
-        target.set_text("SwapIndexBase", v.proxy_target_swap_index_base.value_or(""));
+        target.set_text("ShortSwapIndexBase",
+                        proxy_config->target_short_swap_index_base.value_or(""));
+        target.set_text("SwapIndexBase", proxy_config->target_swap_index_base.value_or(""));
     }
     r.set_optional_spelling("Dimension", v.dimension, "dimension");
     r.set_optional_spelling("VolatilityType", v.volatility_type, "volatility type");
@@ -3124,10 +3142,13 @@ curve_configuration_projection::document curve_configuration_projection::reverse
             continue;
         }
         if (d->section_code == swaption_volatilities_section) {
+            const auto& settings = settings_of(swaption_vol_by_definition, *d);
+            const auto proxy = swaption_proxy_of(v.swaption_proxy_configs, settings.id);
             export_swaption_volatility(
                 written.child("SwaptionVolatilities").append("SwaptionVolatility"),
                 *d,
-                settings_of(swaption_vol_by_definition, *d),
+                settings,
+                proxy,
                 report_of(*d),
                 smile_of(*d));
             continue;

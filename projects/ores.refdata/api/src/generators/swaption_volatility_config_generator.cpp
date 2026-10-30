@@ -65,12 +65,6 @@ generate_synthetic_swaption_volatility_config(utility::generation::generation_co
     r.smile_swap_tenors = std::nullopt;
     r.smile_spreads = std::nullopt;
     r.quote_tag = std::nullopt;
-    r.has_proxy_config = false;
-    r.proxy_source_curve_id = std::nullopt;
-    r.proxy_source_short_swap_index_base = std::nullopt;
-    r.proxy_source_swap_index_base = std::nullopt;
-    r.proxy_target_short_swap_index_base = std::nullopt;
-    r.proxy_target_swap_index_base = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

@@ -1,0 +1,205 @@
+:PROPERTIES:
+:ID: 8F1D2C74-5A3B-4E96-B0C8-2D7E4A91C6F3
+:END:
+#+title: ores.refdata.swaption_proxy_config
+#+description: Codegen entity model for the refdata =swaption_proxy_config= part: the ProxyConfig element a swaption volatility entry may state.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: swaption_proxy_config
+#+entity_plural: swaption_proxy_configs
+#+entity_title: Swaption Proxy Config
+#+brief: The proxy surface a swaption volatility entry is built from.
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+A swaption volatility entry may name a proxy surface instead of its own
+quotes, and ORE states it as a =ProxyConfig= element inside the entry's
+=SwaptionVolatility=:
+
+#+begin_example
+<ProxyConfig>
+  <Source>
+    <CurveId>...</CurveId>
+    <ShortSwapIndexBase>...</ShortSwapIndexBase>
+    <SwapIndexBase>...</SwapIndexBase>
+  </Source>
+  <Target>
+    <ShortSwapIndexBase>...</ShortSwapIndexBase>
+    <SwapIndexBase>...</SwapIndexBase>
+  </Target>
+</ProxyConfig>
+#+end_example
+
+That block was six nullable columns of the entry, meaningful only when the entry
+named a proxy. A row of this part holds it, and a row exists only when the entry
+names one, so the presence of the part is the flag and no =has_proxy_config=
+column is needed.
+
+The cap and floor entry's proxy is a different element: its source and target
+carry =Index= and =RateComputationPeriod= where this one carries the two swap
+index bases. That one is =cap_floor_proxy_config=, and this part is its sibling
+rather than its type: the two share a shape, not a type.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this part row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** swaption_volatility_config_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:unique:      true
+:END:
+
+The volatility entry this proxy belongs to. One row per entry, so the generated
+table adds the unique index on the live rows of =(tenant_id, swaption_volatility_config_id)=:
+an entry names a proxy or it does not, and never two. History is unaffected,
+because the index is partial on =valid_to= infinity.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the entry this proxy belongs to. Carried so row level
+security can isolate the part without a join, and stamped from the session that
+writes the document.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** source_curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The cap and floor volatility the proxy surface is built from.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** source_short_swap_index_base
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The short swap index of the proxy's source.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** source_swap_index_base
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The swap index of the proxy's source.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** target_short_swap_index_base
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The short swap index of the proxy's target.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** target_swap_index_base
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The swap index of the proxy's target.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_swaption_proxy_configs_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: swaption_proxy_config
+:entity_plural_short:   swaption_proxy_configs
+:entity_singular_words: swaption proxy config
+:entity_plural_words:   swaption proxy configs
+:END:
+
+* Foreign keys
+
+** swaption_volatility_config_id
+:PROPERTIES:
+:table:         ores_refdata_swaption_volatility_configs_tbl
+:target_column: id
+:parent_entity: swaption_volatility_config
+:nullable:      false
+:error_message: Invalid swaption_volatility_config_id: %. No active swaption volatility entry found with this id.
+:END:
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — why the block is a type and not seven columns.

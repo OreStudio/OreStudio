@@ -59,6 +59,7 @@ message, and no family of conventions has a type here.
 #include "ores.refdata.api/domain/inflation_curve_config.hpp"
 #include "ores.refdata.api/domain/inflation_seasonality_factor.hpp"
 #include "ores.refdata.api/domain/intraday_power_curve_config.hpp"
+#include "ores.refdata.api/domain/swaption_proxy_config.hpp"
 #include "ores.refdata.api/domain/swaption_volatility_config.hpp"
 #include "ores.refdata.api/domain/yield_curve_config.hpp"
 #include "ores.refdata.api/domain/yield_volatility_config.hpp"
@@ -199,6 +200,11 @@ message, and no family of conventions has a type here.
 *** swaption_volatilities
 :PROPERTIES:
 :cpp_type: std::vector<ores::refdata::domain::swaption_volatility_config>
+:END:
+
+*** swaption_proxy_configs
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::swaption_proxy_config>
 :END:
 
 *** cap_floor_volatilities

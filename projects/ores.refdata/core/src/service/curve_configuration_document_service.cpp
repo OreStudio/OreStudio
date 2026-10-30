@@ -50,6 +50,7 @@
 #include "ores.refdata.core/repository/inflation_curve_config_repository.hpp"
 #include "ores.refdata.core/repository/inflation_seasonality_factor_repository.hpp"
 #include "ores.refdata.core/repository/intraday_power_curve_config_repository.hpp"
+#include "ores.refdata.core/repository/swaption_proxy_config_repository.hpp"
 #include "ores.refdata.core/repository/swaption_volatility_config_repository.hpp"
 #include "ores.refdata.core/repository/yield_curve_config_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -159,6 +160,11 @@ void curve_configuration_document_service::save(messaging::curve_configuration_d
                     reason,
                     commentary);
     write_amendment(ctx_,
+                    swaption_proxy_config_repository(),
+                    std::move(v.swaption_proxy_configs),
+                    reason,
+                    commentary);
+    write_amendment(ctx_,
                     cap_floor_volatility_config_repository(),
                     std::move(v.cap_floor_volatilities),
                     reason,
@@ -243,6 +249,14 @@ curve_configuration_document_service::get(const boost::uuids::uuid& config_id) {
         read_where(ctx_, inflation_cap_floor_volatility_config_repository(), of_definition);
     r.swaption_volatilities =
         read_where(ctx_, swaption_volatility_config_repository(), of_definition);
+    std::set<boost::uuids::uuid> swaption_entries;
+    for (const auto& c : r.swaption_volatilities)
+        swaption_entries.insert(c.id);
+    const auto of_swaption_entry = [&](const auto& row) {
+        return swaption_entries.contains(row.swaption_volatility_config_id);
+    };
+    r.swaption_proxy_configs =
+        read_where(ctx_, swaption_proxy_config_repository(), of_swaption_entry);
     r.cap_floor_volatilities =
         read_where(ctx_, cap_floor_volatility_config_repository(), of_definition);
     std::set<boost::uuids::uuid> cap_floor_entries;
@@ -298,6 +312,8 @@ void curve_configuration_document_service::remove(const boost::uuids::uuid& id) 
         cap_floor_proxy_config_repository().remove(ctx_, ids_of(d.cap_floor_proxy_configs));
     if (!d.cap_floor_volatilities.empty())
         cap_floor_volatility_config_repository().remove(ctx_, ids_of(d.cap_floor_volatilities));
+    if (!d.swaption_proxy_configs.empty())
+        swaption_proxy_config_repository().remove(ctx_, ids_of(d.swaption_proxy_configs));
     if (!d.swaption_volatilities.empty())
         swaption_volatility_config_repository().remove(ctx_, ids_of(d.swaption_volatilities));
     if (!d.inflation_cap_floor_volatilities.empty())

@@ -32,8 +32,7 @@
  * curve_parametric_smile.
  *
  * A ProxyConfig builds the surface from another one; it is one per entry, so
- * its fields are the proxy_ columns, and has_proxy_config says whether the
- * entry wrote it.
+ * it is a row of swaption_proxy_config and the entry holds none of its fields.
  */
 
 create table if not exists "ores_refdata_swaption_volatility_configs_tbl" (
@@ -60,12 +59,6 @@ create table if not exists "ores_refdata_swaption_volatility_configs_tbl" (
     "smile_swap_tenors" text null,
     "smile_spreads" text null,
     "quote_tag" text null,
-    "has_proxy_config" boolean not null,
-    "proxy_source_curve_id" text null,
-    "proxy_source_short_swap_index_base" text null,
-    "proxy_source_swap_index_base" text null,
-    "proxy_target_short_swap_index_base" text null,
-    "proxy_target_swap_index_base" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

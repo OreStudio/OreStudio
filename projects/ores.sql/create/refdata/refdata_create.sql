@@ -418,6 +418,8 @@
 \ir ./refdata_curve_parametric_smiles_notify_trigger_create.sql
 \ir ./refdata_curve_parametric_smile_parameters_create.sql
 \ir ./refdata_curve_parametric_smile_parameters_notify_trigger_create.sql
+\ir ./refdata_swaption_proxy_configs_create.sql
+\ir ./refdata_swaption_proxy_configs_notify_trigger_create.sql
 \ir ./refdata_swaption_volatility_configs_create.sql
 \ir ./refdata_swaption_volatility_configs_notify_trigger_create.sql
 \ir ./refdata_cap_floor_proxy_configs_create.sql

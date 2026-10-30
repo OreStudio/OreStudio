@@ -66,12 +66,6 @@ struct swaption_volatility_config_write {
     std::optional<std::string> smile_swap_tenors;
     std::optional<std::string> smile_spreads;
     std::optional<std::string> quote_tag;
-    bool has_proxy_config;
-    std::optional<std::string> proxy_source_curve_id;
-    std::optional<std::string> proxy_source_short_swap_index_base;
-    std::optional<std::string> proxy_source_swap_index_base;
-    std::optional<std::string> proxy_target_short_swap_index_base;
-    std::optional<std::string> proxy_target_swap_index_base;
 };
 
 struct swaption_volatility_config_change {

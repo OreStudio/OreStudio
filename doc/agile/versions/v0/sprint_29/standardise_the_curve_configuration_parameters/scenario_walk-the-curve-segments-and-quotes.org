@@ -17,33 +17,25 @@ This page documents a test scenario verifying [[id:894F3A64-F564-44B2-A6F1-AB00F
 
 * Before you start
 
-This is a readiness section for the person who prepares the environment, not for
-the tester. By the time the tester opens this page, all of it must already be
-true.
+The environment is ready. The database was recreated from this commit, the 24
+services run, and the Acme Corporation tenant is provisioned with no failed step.
+The tenant holds four curve configurations; the UK one carries seventeen yield
+curves across YieldCurves, and eighteen sections hold no curve in that document.
+Every yield curve holds one segment of kind =Simple= with twelve quotes.
 
-- The environment runs a **publish built from the branch under test**. The
-  screens draw what the MESSAGE router reads, so a stale publish shows the old
-  page with no warning: rebuild (=compass build=), then =compass services start=.
-- The database is **freshly provisioned with Acme Corporation Holding Group**:
-  =compass db status= for the state, =compass db recreate -y -k= only if stale,
-  then
-  =compass shell -f projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
-  The script must finish with no failed step; a tenant left in =bootstrapping=
-  means the workflow published a step nothing answered, and the walk cannot
-  start.
-- The tenant =acme_corporation= is =active= and holds four curve configurations,
-  one of them the UK one with seventeen yield curves:
-  =compass sql -- -c "select status from ores_iam_tenants_tbl where code = 'acme_corporation' and valid_to = ores_utility_infinity_timestamp_fn();"=
+Open the shell in the tenant administrator's session:
+
+=./compass.sh open-as tenant_admin=
 
 * Scenario Info
 
-| Field         | Value                                   |
-|---------------+------------------------------------------|
+| Field         | Value                                                             |
+|---------------+-------------------------------------------------------------------|
 | Verifies task | [[id:894F3A64-F564-44B2-A6F1-AB00FF30A6B9][Draw the nested collections of a curve entry]] |
 | Parent story  | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]]   |
-| Target screen | =/reporting/curve-configurations/\{id\}= minus the id: reach it from the list |
-| Clients       |                                          |
-| State         | PENDING                               |
+| Target screen | Reporting, Curve configurations (=/reporting/curve-configurations=) |
+| Clients       |                                                                   |
+| State         | PENDING                                                           |
 
 The numbers this scenario states were measured on a fresh provisioning of the
 branch it was written against. A later dataset changes them; treat a count that
@@ -53,105 +45,159 @@ moved as information, and a count that moved to zero as a failure.
 
 ** Log in as the tenant administrator
 
-- Open =http://localhost:21202/=.
-- Type =tenant_admin@acme_corporation= and =Secure-Password-123=, then *Sign in*.
-- Expect the dashboard: *Welcome, Tenant Admin*, working for *Acme Corporation
-  Plc*, and the areas across the top (Home, Reference data, Organisation, Market
-  data, Trading, Requests, Operations, Reporting, Development).
-- If the shell asks *which party*, that is the next step, not a failure.
+- Run =./compass.sh open-as tenant_admin=.
+- The sign-in page shows =tenant_admin@acme_corporation= and the password
+  =Secure-Password-123=. Press Sign in.
+- If the shell asks which party to work as, choose *Acme Corporation Plc*.
+- Pass: the home page opens with *Welcome, Tenant Admin*, working for *Acme
+  Corporation Plc*, and no error notice.
 
-** Choose the party to work as
+*** Result
 
-- If a list of parties is shown, choose *Acme Corporation Plc*.
-- Expect the dashboard to settle with the same areas across the top.
-- Expect no error notice. A refused party is a failure: the walk cannot continue.
+| Field  | Value |
+|--------+-------|
+| Status |
+
 
 ** Open the UK curve configuration
 
-- Click *Reporting*, then *Curve configurations*.
-- Expect a list of four: Group, HK, UK and US curve configuration.
-- Click *UK curve configuration*.
-- Expect the page title *UK curve configuration*, the tabs *Details*, *Curves*,
-  *Used by*, *History*, and the line under the title reading *Version 1 · 221 of
-  238 parameters carry documentation*.
+- Go to Reporting and choose Curve configurations.
+- Pass: the list holds four configurations: Group, HK, UK and US curve
+  configuration.
+- Click UK curve configuration.
+- Pass: the page title is *UK curve configuration*, the tabs are *Details*,
+  *Curves*, *Used by* and *History*, and the line under the title reads *Version 1
+  · 221 of 238 parameters carry documentation*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |
+
 
 ** Read the segments of a curve
 
 - Click the *Curves* tab.
-- Expect the rail on the left: *YieldCurves* holding 17 curves, and one line
+- Pass: the rail on the left shows *YieldCurves* holding 17 curves, and one line
   *18 sections hold no curve in this document*.
-- Expect *GBP1D* to be selected, and the workbench on the right to show its
-  header, *The curve*, then *Its parameters*.
+- Pass: *GBP1D* is selected, and the workbench shows its header, then *The curve*,
+  then *Its parameters*.
 - Scroll to the card titled *Its Segments*.
-- Expect the card to say *1 row*, and the row to name its kind: *Simple*.
-- Expect the row to list its leaves, each with a value or a default and a
+- Pass: the card says *1 row*, and the row names its kind: *Simple*.
+- Pass: the row lists its leaves, each with a value or a default and a
   *Documentation* link: *Conventions* with =GBP-OIS-CONVENTIONS=, and
   *Projection curve* reading *Default: Not given. ORE applies its own rule.*
-- A snag is a segment leaf that prints an ORE name such as =Conventions= or
+- Note: a snag is a segment leaf that prints an ORE name such as =Conventions= or
   =RecordedAt= where a label belongs, or a leaf that belongs to another kind.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |
+
 
 ** Confirm the segment's quotes
 
 - Still on the *Its Segments* card, below the leaves.
-- Expect the line *12 quotes*.
-- Expect twelve identifiers, in tenor order, all of the form
-  =IR_SWAP/RATE/GBP/0D/1D/…=: 1M, 3M, 6M, 12M, 2Y, 3Y, 5Y, 7Y, 10Y, 15Y, 20Y,
+- Pass: the line reads *12 quotes*.
+- Pass: twelve identifiers follow, in tenor order, all of the form
+  =IR_SWAP/RATE/GBP/0D/1D/…=: 1M, 3M, 6M, 12M, 2Y, 3Y, 5Y, 7Y, 10Y, 15Y, 20Y and
   30Y.
-- A snag is a quote listed under the wrong segment, a quote missing, or the list
-  ordered by anything other than tenor.
+- Note: a snag is a quote listed under the wrong segment, a quote missing, or the
+  list ordered by anything other than tenor.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |
+
 
 ** Confirm what the page does not draw
 
-- At the foot of the workbench, under the parameters and the segments.
-- Expect the line *Held as its own element:* with *Report · not stated* and
+- At the foot of the workbench, below the parameters and the segments.
+- Pass: the line reads *Held as its own element:* with *Report · not stated* and
   *BootstrapConfig · not recorded here*.
-- Expect *Segments* **not** to appear in that line: the page draws the segments as
-  rows, so naming the block again would say it twice.
+- Pass: *Segments* does not appear in that line, because the page draws the
+  segments as rows and naming the block again would say it twice.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |
+
 
 ** Read the Details tab
 
 - Click *Details*.
-- Expect the name, the version, the party that holds the configuration, the count
-  of curves, and the documentation count.
-- Expect a sentence saying what the configuration decides (each curve's
-  definition and bootstrap) and what it does not (the market a run reads, nor the
-  trade data).
+- Pass: the card shows the configuration's name, its version, the party that holds
+  it, the count of curves and the documentation count.
+- Pass: a sentence says what the configuration decides (each curve's definition
+  and bootstrap) and what it does not (the market a run reads, nor the trade
+  data).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |
+
 
 ** Read the reports the configuration serves
 
 - Click *Used by*.
-- Expect a table of the reports bound to this configuration, each with its party
-  (Audit Trail Summary, Bucketed DV01, Cashflows, Credit Curves, CVA/DVA/FV…
-  under *ACME Corporation UK plc*).
-- Expect the sentence that a change reaches the next run of each report, and that
-  a run already produced keeps what it ran with.
+- Pass: a table lists the reports bound to this configuration with the party that
+  runs them, under *ACME Corporation UK plc*: Audit Trail Summary, Bucketed DV01,
+  Cashflows, Credit Curves, CVA/DVA/FV.
+- Pass: the sentence above the table says a change reaches the next run of each
+  report, and that a run already produced keeps what it ran with.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |
+
 
 ** Read the history of the configuration
 
 - Click *History*.
-- Expect the newest version first, dated, with *Created* and its reason code
-  (=system.external_data_import= for a freshly provisioned configuration).
-- Expect a *Hide system activity* control.
-- A snag is an empty history, or a timeline that shows no version at all: the
-  curve configuration's history provider has to be registered for the page to
-  draw it.
+- Pass: the newest version comes first, dated, reading *Created* with the reason
+  code =system.external_data_import= for a freshly provisioned configuration.
+- Pass: a *Hide system activity* control is shown.
+- Note: an empty history, or a timeline with no version, is a failure: the curve
+  configuration's history provider has to be registered for the page to draw it.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |
+
 
 ** Check the known snags
 
 These are the defects already recorded. Meeting one is expected; the step is to
-confirm the *current* behaviour and say whether it is what the note describes.
+confirm the current behaviour and say whether it is what the note describes.
 
-- *A segment leaf prints its ORE name.* =Conventions= draws as the word
-  =Conventions= with no label and counts as a gap, because the contract holds no
-  =Segments/\{Kind\}/Conventions= row: the leaf is read by the segment base class
-  and the extractor loses a class's base when it is declared in a header and
-  defined in a source (task 3D1208F2). Expected today: *1 without documentation*
-  on the =GBP1D= header.
-- *The entry's header counts only its own parameters.* The tag reads *10
-  parameters · 1 without documentation* while the page reads *221 of 238*: the
-  segment's leaves are counted on the page and not in the curve's tag.
-- *The instant a row was recorded.* Fixed on this branch; worth confirming it is
-  gone. A row reading =RecordedAt= with a timestamp is the old behaviour.
+- Pass: =Conventions= draws as the word *Conventions* with no label and counts as
+  a gap, so the =GBP1D= header reads *1 without documentation*. The cause is
+  recorded in [[id:3D1208F2-1D51-4733-81FB-01B19D36E8EE][Record the leaves a segment inherits]].
+- Pass: the =GBP1D= header reads *10 parameters · 1 without documentation* while
+  the page reads *221 of 238*, because the curve's tag counts its own parameters
+  and not its segment's.
+- Pass: no row reads =RecordedAt=. That leaf was fixed on this branch, and a row
+  that shows it means the build predates the fix.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |
+
 
 * Results
 
@@ -160,7 +206,7 @@ confirm the *current* behaviour and say whether it is what the note describes.
 | Status        |       |
 | Completed at  |       |
 | Branch        | feature/collect-the-snags-from-testing-the-curve-screens |
-| Commit        | 1bc6322bf6 |
+| Commit        | 05ecca8a64 |
 | Worktree      | ores_dev_merry_newton |
 
 * Notes

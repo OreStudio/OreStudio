@@ -65,6 +65,7 @@ const subjects = {
     structures: 'trading.v1.structures.list',
     members: 'trading.v1.structure_members.list',
     identifiers: 'trading.v1.structure_identifiers.list',
+    tradeIdentifiers: 'trading.v1.trade_identifiers.list',
     summaries: 'trading.v1.trade_summaries.list',
 };
 
@@ -219,6 +220,14 @@ function replies(): Readonly<Record<string, unknown>> {
             ],
             total: 2,
         },
+        [subjects.tradeIdentifiers]: {
+            result: ok,
+            identifiers: [
+                { trade_id: FREE_EMEA, id_type: 'Internal', id_value: 'IRS-0001' },
+                { trade_id: LEG_RATES, id_type: 'Internal', id_value: 'IRS-0002' },
+            ],
+            total: 2,
+        },
         [subjects.summaries]: { result: ok, trade_summaries: rows(), total: rows().length },
     };
 }
@@ -330,6 +339,16 @@ describe('the blotter read', () => {
             spans_books: true,
         });
         expect(body.rows[2]).toMatchObject({ reference: 'PKG-0002', spans_books: false });
+        // A structure has no book, date or state of its own: they are its legs'.
+        expect(body.rows[0]).toMatchObject({
+            book_name: 'EMEA Rates + Credit Flow',
+            trade_date: '2026-03-06',
+            status: 'Booked',
+        });
+        expect(body.rows[2]).toMatchObject({
+            book_name: 'Equity Derivatives',
+            trade_date: '2026-03-08',
+        });
     });
 
     it('counts each row once, where it is placed', async () => {
@@ -340,9 +359,11 @@ describe('the blotter read', () => {
         );
         // The party holds every top row: two structures and two free trades.
         expect(counts['']).toBe(4);
-        // Rates holds the spanning structure and the EMEA trade; its Credit child holds none.
+        // Rates holds the spanning structure and the EMEA trade. Its Credit child
+        // holds nothing, so the rail does not draw it: a node nobody can open
+        // answers no question.
         expect(counts[`portfolio:${RATES}`]).toBe(2);
-        expect(counts[`portfolio:${CREDIT}`]).toBe(0);
+        expect(counts[`portfolio:${CREDIT}`]).toBeUndefined();
         // A book holds the rows placed on it, and a leg is not one of them.
         expect(counts[`book:${EMEA}`]).toBe(1);
         expect(counts[`book:${EQUITY_BOOK}`]).toBe(2);

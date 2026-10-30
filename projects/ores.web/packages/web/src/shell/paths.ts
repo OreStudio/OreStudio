@@ -33,6 +33,7 @@ export const PATHS = {
     counterparties: '/refdata/counterparties',
     books: '/refdata/books',
     trading: '/trading',
+    blotter: '/trading/blotter',
     trades: '/trading/trades',
     newTrade: '/trading/trades/new',
     structures: '/trading/structures',

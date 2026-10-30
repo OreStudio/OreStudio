@@ -25,10 +25,11 @@ import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/
 import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
 import { subjects as portfolioSubjects } from '@ores/wire-protocol/generated/refdata/protocol/portfolio_protocol';
 import { subjects as memberSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_member_protocol';
+import { subjects as tradeIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
 import { subjects as structureIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_identifier_protocol';
 import { subjects as structureSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_protocol';
 import { subjects as summarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
-import { readAll, refusal, resultSchema, text } from './refdata-calls.js';
+import { input, readAll, refusal, resultSchema, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
 /*
@@ -46,6 +47,15 @@ import type { LiveSession } from './sessions.js';
  * person looks for a structure that spans books. The rail counts what sits where:
  * a book's figure is the rows placed on it, a portfolio's is every row below it.
  */
+
+/** The identifiers a trade is quoted by, best first. */
+const IDENTIFIER_ORDER = ['Internal', 'UTI', 'USI', 'ORE'] as const;
+
+/** Where an identifier type ranks: the order above, then the rest. */
+function rankOf(idType: string): number {
+    const index = IDENTIFIER_ORDER.findIndex((known) => known === idType);
+    return index === -1 ? IDENTIFIER_ORDER.length : index;
+}
 
 const MAX_PAGE = 200;
 
@@ -245,7 +255,9 @@ interface BlotterRow {
     readonly structure_reference: string;
     readonly instrument_type: string;
     readonly book_id: string;
+    readonly book_name: string;
     readonly counterparty_id: string;
+    readonly counterparty_name: string;
     readonly status: string;
     readonly trade_date: string;
     readonly spans_books: boolean;
@@ -264,7 +276,7 @@ export function registerBlotterRoutes(
      */
     server.get('/api/blotter', async (request) => {
         const session = requireSession(request);
-        const query = blotterQuerySchema.parse(request.query);
+        const query = input(blotterQuerySchema, request.query);
         const order = { field: query.sort, descending: query.descending };
 
         const [books, portfolios, structures, members, counterparties] = await Promise.all([
@@ -316,6 +328,34 @@ export function registerBlotterRoutes(
             legIds.length === 0
                 ? []
                 : await allSummaries(session, { id_one_of: legIds, row_kind: 'trade' }, order);
+        /*
+         * A structure row states no date and no state of its own: those are its
+         * legs'. The date is the earliest leg's, and the state is the legs' when
+         * they agree, because a page that showed one leg's state would speak for
+         * the others.
+         */
+        const legDateOf = new Map<string, string>();
+        const legStatesOf = new Map<string, Set<string>>();
+        for (const row of legRows) {
+            const owner = holderOf.get(text(row['id'])) ?? '';
+            if (owner === '') {
+                continue;
+            }
+            const date = text(row['trade_date']);
+            if (
+                date !== '' &&
+                (legDateOf.get(owner) ?? '') !== '' &&
+                date < (legDateOf.get(owner) ?? '')
+            ) {
+                legDateOf.set(owner, date);
+            } else if (date !== '' && !legDateOf.has(owner)) {
+                legDateOf.set(owner, date);
+            }
+            const state = text(row['status']);
+            if (state !== '') {
+                legStatesOf.set(owner, (legStatesOf.get(owner) ?? new Set<string>()).add(state));
+            }
+        }
         const bookOfTrade = new Map(
             legRows.map((row) => [text(row['id']), text(row['book_id'])] as const),
         );
@@ -399,6 +439,9 @@ export function registerBlotterRoutes(
             byNode.set(node, (byNode.get(node) ?? 0) + 1);
         }
 
+        const labelOfBook = new Map(
+            books.map((row) => [text(row['id']), text(row['name']) || text(row['id'])] as const),
+        );
         const labelOfCounterparty = new Map(
             counterparties.map(
                 (row) =>
@@ -517,7 +560,8 @@ export function registerBlotterRoutes(
             ];
         };
 
-        const tree = query.view === 'counterparty' ? counterpartyRail() : portfolioRail();
+        const drawn = query.view === 'counterparty' ? counterpartyRail() : portfolioRail();
+        const tree = drawn.filter((node) => node.id === '' || node.count > 0);
 
         /* The rows the list is read from: every trade when flat, the top rows otherwise. */
         const listed =
@@ -545,6 +589,76 @@ export function registerBlotterRoutes(
             return ancestorsOfPlacement(placement, portfolioOfBook, parentOf).includes(node);
         };
         const rows = listed.filter(within);
+
+        /*
+         * The page is ordered here, not by the service, because a structure has
+         * no date of its own: the view orders structures by a null date, which
+         * puts them first however old their legs are. Sorting on the facts the
+         * rows state — including the date a structure takes from its legs — keeps
+         * the order a person sees and the order they paged in the same one.
+         */
+        const fieldOf = (row: Summary): string => {
+            const kind = text(row['row_kind']);
+            if (query.sort === 'trade_date') {
+                return kind === 'structure'
+                    ? (legDateOf.get(text(row['id'])) ?? '')
+                    : text(row['trade_date']);
+            }
+            if (query.sort === 'status') {
+                return kind === 'structure'
+                    ? (legStatesOf.get(text(row['id']))?.size ?? 0) === 1
+                        ? ([...(legStatesOf.get(text(row['id'])) ?? [])][0] ?? '')
+                        : ''
+                    : text(row['status']);
+            }
+            return text(row[query.sort]);
+        };
+        const ordered = [...rows].sort((left, right) => {
+            const a = fieldOf(left);
+            const b = fieldOf(right);
+            if (a === b) {
+                return text(left['id']).localeCompare(text(right['id']));
+            }
+            return query.descending ? b.localeCompare(a) : a.localeCompare(b);
+        });
+
+        /*
+         * A trade is found by its identifiers, not by the surrogate key the
+         * summary carries. The page's trades are named in one filtered read, and
+         * the internal reference wins, as it does on the trade list.
+         */
+        const pageTrades = rows
+            .filter((row) => text(row['row_kind']) === 'trade')
+            .map((row) => text(row['id']))
+            .filter((id) => id !== '');
+        const tradeReferenceOf = new Map<string, string>();
+        if (pageTrades.length > 0) {
+            const identifiers = await readAll(
+                session,
+                tradeIdentifierSubjects.list_trade_identifiers_request,
+                'identifiers',
+                {
+                    filter: { trade_id: null, trade_id_one_of: pageTrades },
+                    as_of: null,
+                },
+            );
+            const ranked = new Map<string, { type: string; value: string }>();
+            for (const identifier of identifiers) {
+                const trade = text(identifier['trade_id']);
+                const type = text(identifier['id_type']);
+                const value = text(identifier['id_value']);
+                if (trade === '' || value === '') {
+                    continue;
+                }
+                const held = ranked.get(trade);
+                if (held === undefined || rankOf(type) < rankOf(held.type)) {
+                    ranked.set(trade, { type, value });
+                }
+            }
+            for (const [trade, found] of ranked) {
+                tradeReferenceOf.set(trade, found.value);
+            }
+        }
         const page: BlotterRow[] = rows
             .slice(query.offset, query.offset + query.limit)
             .map((row) => {
@@ -554,14 +668,31 @@ export function registerBlotterRoutes(
                 return {
                     row_kind: kind,
                     id,
-                    reference: kind === 'structure' ? (referenceOf.get(id) ?? '') : '',
+                    reference:
+                        kind === 'structure'
+                            ? (referenceOf.get(id) ?? '')
+                            : (tradeReferenceOf.get(id) ?? ''),
                     structure,
                     structure_reference: structure === '' ? '' : (referenceOf.get(structure) ?? ''),
                     instrument_type: text(row['instrument_type']),
                     book_id: text(row['book_id']),
+                    book_name:
+                        kind === 'structure'
+                            ? (booksOfStructure.get(id) ?? [])
+                                  .map((book) => labelOfBook.get(book) ?? '')
+                                  .filter((name) => name !== '')
+                                  .join(' + ')
+                            : (labelOfBook.get(text(row['book_id'])) ?? ''),
                     counterparty_id: text(row['counterparty_id']),
-                    status: text(row['status']),
-                    trade_date: text(row['trade_date']),
+                    counterparty_name: labelOfCounterparty.get(text(row['counterparty_id'])) ?? '',
+                    status:
+                        kind === 'structure'
+                            ? (legStatesOf.get(id)?.size ?? 0) === 1
+                                ? ([...(legStatesOf.get(id) ?? [])][0] ?? '')
+                                : ''
+                            : text(row['status']),
+                    trade_date:
+                        kind === 'structure' ? (legDateOf.get(id) ?? '') : text(row['trade_date']),
                     spans_books: (booksOfStructure.get(id) ?? []).length > 1,
                 };
             });

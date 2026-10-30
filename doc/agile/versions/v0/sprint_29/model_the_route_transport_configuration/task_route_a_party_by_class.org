@@ -8,7 +8,7 @@
 #+filetags: :marketdata:implementation:model_the_route_transport_configuration:sprint_29:v0:
 #+owner: marco
 #+branch: feature/route-a-party-by-class
-#+pr:
+#+pr: 4142
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4142][#4142]] | [marketdata] Route a party by publisher and class |
 
 * Review
 

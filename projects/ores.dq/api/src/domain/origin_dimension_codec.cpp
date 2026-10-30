@@ -24,46 +24,23 @@
  */
 #include "ores.dq.api/domain/origin_dimension_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
 namespace ores::dq::domain {
 
-namespace {
-
-/**
- * @brief The members of origin_dimension, named as the wire names them and
- * in the order the type declares them.
- */
-constexpr auto origin_dimension_codec_fields = std::tuple{
-    utility::codec::field{"version", &origin_dimension::version},
-    utility::codec::field{"tenant_id", &origin_dimension::tenant_id},
-    utility::codec::field{"code", &origin_dimension::code},
-    utility::codec::field{"name", &origin_dimension::name},
-    utility::codec::field{"description", &origin_dimension::description},
-    utility::codec::field{"modified_by", &origin_dimension::modified_by},
-    utility::codec::field{"performed_by", &origin_dimension::performed_by},
-    utility::codec::field{"change_reason_code", &origin_dimension::change_reason_code},
-    utility::codec::field{"change_commentary", &origin_dimension::change_commentary},
-    utility::codec::field{"recorded_at", &origin_dimension::recorded_at},
-};
-
-}
-
 std::string origin_dimension_codec::to_json(const origin_dimension& v) {
-    return utility::codec::object::write_json(v, origin_dimension_codec_fields);
+    return utility::codec::object::write_json(v);
 }
 
 origin_dimension origin_dimension_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<origin_dimension>(text, origin_dimension_codec_fields);
+    return utility::codec::object::read_json<origin_dimension>(text);
 }
 
 std::string origin_dimension_codec::to_msgpack(const origin_dimension& v) {
-    return utility::codec::object::write_msgpack(v, origin_dimension_codec_fields);
+    return utility::codec::object::write_msgpack(v);
 }
 
 origin_dimension origin_dimension_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<origin_dimension>(data,
-                                                                  origin_dimension_codec_fields);
+    return utility::codec::object::read_msgpack<origin_dimension>(data);
 }
 
 }

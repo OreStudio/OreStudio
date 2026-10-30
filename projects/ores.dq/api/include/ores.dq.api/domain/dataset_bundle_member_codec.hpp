@@ -27,11 +27,13 @@
 
 #include "ores.dq.api/domain/dataset_bundle_member.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
@@ -69,6 +71,30 @@ struct ORES_DQ_API_EXPORT dataset_bundle_member_codec final {
      */
     static dataset_bundle_member from_msgpack(std::span<const std::byte> data);
 };
+
+/**
+ * @brief The members of dataset_bundle_member, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
+ */
+[[nodiscard]] constexpr auto wire_fields(const dataset_bundle_member&) {
+    return std::tuple{
+        utility::codec::field{"version", &dataset_bundle_member::version},
+        utility::codec::field{"tenant_id", &dataset_bundle_member::tenant_id},
+        utility::codec::field{"bundle_code", &dataset_bundle_member::bundle_code},
+        utility::codec::field{"dataset_code", &dataset_bundle_member::dataset_code},
+        utility::codec::field{"display_order", &dataset_bundle_member::display_order},
+        utility::codec::field{"optional", &dataset_bundle_member::optional},
+        utility::codec::field{"modified_by", &dataset_bundle_member::modified_by},
+        utility::codec::field{"performed_by", &dataset_bundle_member::performed_by},
+        utility::codec::field{"change_reason_code", &dataset_bundle_member::change_reason_code},
+        utility::codec::field{"change_commentary", &dataset_bundle_member::change_commentary},
+        utility::codec::field{"recorded_at", &dataset_bundle_member::recorded_at},
+    };
+}
 
 }
 

@@ -27,11 +27,13 @@
 
 #include "ores.dq.api/domain/coding_scheme.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
@@ -69,6 +71,33 @@ struct ORES_DQ_API_EXPORT coding_scheme_codec final {
      */
     static coding_scheme from_msgpack(std::span<const std::byte> data);
 };
+
+/**
+ * @brief The members of coding_scheme, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
+ */
+[[nodiscard]] constexpr auto wire_fields(const coding_scheme&) {
+    return std::tuple{
+        utility::codec::field{"version", &coding_scheme::version},
+        utility::codec::field{"tenant_id", &coding_scheme::tenant_id},
+        utility::codec::field{"code", &coding_scheme::code},
+        utility::codec::field{"name", &coding_scheme::name},
+        utility::codec::field{"authority_type", &coding_scheme::authority_type},
+        utility::codec::field{"subject_area_name", &coding_scheme::subject_area_name},
+        utility::codec::field{"domain_name", &coding_scheme::domain_name},
+        utility::codec::field{"uri", &coding_scheme::uri},
+        utility::codec::field{"description", &coding_scheme::description},
+        utility::codec::field{"modified_by", &coding_scheme::modified_by},
+        utility::codec::field{"performed_by", &coding_scheme::performed_by},
+        utility::codec::field{"change_reason_code", &coding_scheme::change_reason_code},
+        utility::codec::field{"change_commentary", &coding_scheme::change_commentary},
+        utility::codec::field{"recorded_at", &coding_scheme::recorded_at},
+    };
+}
 
 }
 

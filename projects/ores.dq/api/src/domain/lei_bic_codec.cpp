@@ -24,38 +24,23 @@
  */
 #include "ores.dq.api/domain/lei_bic_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
 namespace ores::dq::domain {
 
-namespace {
-
-/**
- * @brief The members of lei_bic, named as the wire names them and
- * in the order the type declares them.
- */
-constexpr auto lei_bic_codec_fields = std::tuple{
-    utility::codec::field{"tenant_id", &lei_bic::tenant_id},
-    utility::codec::field{"lei", &lei_bic::lei},
-    utility::codec::field{"bic", &lei_bic::bic},
-};
-
-}
-
 std::string lei_bic_codec::to_json(const lei_bic& v) {
-    return utility::codec::object::write_json(v, lei_bic_codec_fields);
+    return utility::codec::object::write_json(v);
 }
 
 lei_bic lei_bic_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<lei_bic>(text, lei_bic_codec_fields);
+    return utility::codec::object::read_json<lei_bic>(text);
 }
 
 std::string lei_bic_codec::to_msgpack(const lei_bic& v) {
-    return utility::codec::object::write_msgpack(v, lei_bic_codec_fields);
+    return utility::codec::object::write_msgpack(v);
 }
 
 lei_bic lei_bic_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<lei_bic>(data, lei_bic_codec_fields);
+    return utility::codec::object::read_msgpack<lei_bic>(data);
 }
 
 }

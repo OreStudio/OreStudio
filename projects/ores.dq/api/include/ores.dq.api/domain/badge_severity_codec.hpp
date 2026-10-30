@@ -27,11 +27,13 @@
 
 #include "ores.dq.api/domain/badge_severity.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
@@ -69,6 +71,30 @@ struct ORES_DQ_API_EXPORT badge_severity_codec final {
      */
     static badge_severity from_msgpack(std::span<const std::byte> data);
 };
+
+/**
+ * @brief The members of badge_severity, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
+ */
+[[nodiscard]] constexpr auto wire_fields(const badge_severity&) {
+    return std::tuple{
+        utility::codec::field{"version", &badge_severity::version},
+        utility::codec::field{"tenant_id", &badge_severity::tenant_id},
+        utility::codec::field{"code", &badge_severity::code},
+        utility::codec::field{"name", &badge_severity::name},
+        utility::codec::field{"description", &badge_severity::description},
+        utility::codec::field{"display_order", &badge_severity::display_order},
+        utility::codec::field{"modified_by", &badge_severity::modified_by},
+        utility::codec::field{"performed_by", &badge_severity::performed_by},
+        utility::codec::field{"change_reason_code", &badge_severity::change_reason_code},
+        utility::codec::field{"change_commentary", &badge_severity::change_commentary},
+        utility::codec::field{"recorded_at", &badge_severity::recorded_at},
+    };
+}
 
 }
 

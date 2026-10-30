@@ -27,11 +27,13 @@
 
 #include "ores.dq.api/domain/change_reason_category.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
@@ -69,6 +71,28 @@ struct ORES_DQ_API_EXPORT change_reason_category_codec final {
      */
     static change_reason_category from_msgpack(std::span<const std::byte> data);
 };
+
+/**
+ * @brief The members of change_reason_category, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
+ */
+[[nodiscard]] constexpr auto wire_fields(const change_reason_category&) {
+    return std::tuple{
+        utility::codec::field{"version", &change_reason_category::version},
+        utility::codec::field{"tenant_id", &change_reason_category::tenant_id},
+        utility::codec::field{"code", &change_reason_category::code},
+        utility::codec::field{"description", &change_reason_category::description},
+        utility::codec::field{"modified_by", &change_reason_category::modified_by},
+        utility::codec::field{"performed_by", &change_reason_category::performed_by},
+        utility::codec::field{"change_reason_code", &change_reason_category::change_reason_code},
+        utility::codec::field{"change_commentary", &change_reason_category::change_commentary},
+        utility::codec::field{"recorded_at", &change_reason_category::recorded_at},
+    };
+}
 
 }
 

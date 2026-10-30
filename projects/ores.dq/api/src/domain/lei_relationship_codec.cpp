@@ -24,61 +24,23 @@
  */
 #include "ores.dq.api/domain/lei_relationship_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
 namespace ores::dq::domain {
 
-namespace {
-
-/**
- * @brief The members of lei_relationship, named as the wire names them and
- * in the order the type declares them.
- */
-constexpr auto lei_relationship_codec_fields = std::tuple{
-    utility::codec::field{"tenant_id", &lei_relationship::tenant_id},
-    utility::codec::field{"relationship_start_node_node_id",
-                          &lei_relationship::relationship_start_node_node_id},
-    utility::codec::field{"relationship_start_node_node_id_type",
-                          &lei_relationship::relationship_start_node_node_id_type},
-    utility::codec::field{"relationship_end_node_node_id",
-                          &lei_relationship::relationship_end_node_node_id},
-    utility::codec::field{"relationship_end_node_node_id_type",
-                          &lei_relationship::relationship_end_node_node_id_type},
-    utility::codec::field{"relationship_relationship_type",
-                          &lei_relationship::relationship_relationship_type},
-    utility::codec::field{"relationship_relationship_status",
-                          &lei_relationship::relationship_relationship_status},
-    utility::codec::field{"relationship_period_1_start_date",
-                          &lei_relationship::relationship_period_1_start_date},
-    utility::codec::field{"relationship_period_1_end_date",
-                          &lei_relationship::relationship_period_1_end_date},
-    utility::codec::field{"registration_initial_registration_date",
-                          &lei_relationship::registration_initial_registration_date},
-    utility::codec::field{"registration_last_update_date",
-                          &lei_relationship::registration_last_update_date},
-    utility::codec::field{"registration_registration_status",
-                          &lei_relationship::registration_registration_status},
-    utility::codec::field{"registration_validation_sources",
-                          &lei_relationship::registration_validation_sources},
-};
-
-}
-
 std::string lei_relationship_codec::to_json(const lei_relationship& v) {
-    return utility::codec::object::write_json(v, lei_relationship_codec_fields);
+    return utility::codec::object::write_json(v);
 }
 
 lei_relationship lei_relationship_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<lei_relationship>(text, lei_relationship_codec_fields);
+    return utility::codec::object::read_json<lei_relationship>(text);
 }
 
 std::string lei_relationship_codec::to_msgpack(const lei_relationship& v) {
-    return utility::codec::object::write_msgpack(v, lei_relationship_codec_fields);
+    return utility::codec::object::write_msgpack(v);
 }
 
 lei_relationship lei_relationship_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<lei_relationship>(data,
-                                                                  lei_relationship_codec_fields);
+    return utility::codec::object::read_msgpack<lei_relationship>(data);
 }
 
 }

@@ -39,11 +39,13 @@ The full template source. Edit here and re-tangle with
 
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
 #include "ores.{{component_include}}/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::{{component}}::domain {
 
@@ -81,6 +83,41 @@ struct ORES_{{component_include_upper}}_EXPORT {{entity_singular}}_codec final {
      */
     static {{entity_singular}} from_msgpack(std::span<const std::byte> data);
 };
+
+/**
+ * @brief The members of {{entity_singular}}, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
+ */
+[[nodiscard]] constexpr auto wire_fields(const {{entity_singular}}&) {
+    return std::tuple{
+{{#has_audit_columns}}    utility::codec::field{"version", &{{entity_singular}}::version},
+{{/has_audit_columns}}
+{{#has_tenant_id}}    utility::codec::field{"tenant_id", &{{entity_singular}}::tenant_id},
+{{/has_tenant_id}}
+{{#primary_key.columns}}    utility::codec::field{"{{column}}", &{{entity_singular}}::{{column}}},
+{{/primary_key.columns}}
+{{#natural_keys}}    utility::codec::field{"{{column}}", &{{entity_singular}}::{{column}}},
+{{/natural_keys}}
+{{#columns}}
+{{^is_identity_group_column}}
+{{^sql_only}}
+{{^no_wire}}    utility::codec::field{"{{name}}", &{{entity_singular}}::{{name}}},
+{{/no_wire}}
+{{/sql_only}}
+{{/is_identity_group_column}}
+{{/columns}}
+{{#has_audit_columns}}    utility::codec::field{"modified_by", &{{entity_singular}}::modified_by},
+    utility::codec::field{"performed_by", &{{entity_singular}}::performed_by},
+    utility::codec::field{"change_reason_code", &{{entity_singular}}::change_reason_code},
+    utility::codec::field{"change_commentary", &{{entity_singular}}::change_commentary},
+    utility::codec::field{"recorded_at", &{{entity_singular}}::recorded_at},
+{{/has_audit_columns}}
+    };
+}
 
 }
 
@@ -134,11 +171,13 @@ struct wire_traits<ores::{{component}}::domain::{{entity_singular}}> {
 
 #include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
 #include "ores.{{component_include}}/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::{{component}}::domain {
 
@@ -176,6 +215,31 @@ struct ORES_{{component_include_upper}}_EXPORT {{name_singular}}_codec final {
      */
     static {{name_singular}} from_msgpack(std::span<const std::byte> data);
 };
+
+/**
+ * @brief The members of {{name_singular}}, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
+ */
+[[nodiscard]] constexpr auto wire_fields(const {{name_singular}}&) {
+    return std::tuple{
+    utility::codec::field{"version", &{{name_singular}}::version},
+{{#has_tenant_id}}    utility::codec::field{"tenant_id", &{{name_singular}}::tenant_id},
+{{/has_tenant_id}}
+    utility::codec::field{"{{left.column}}", &{{name_singular}}::{{left.column}}},
+    utility::codec::field{"{{right.column}}", &{{name_singular}}::{{right.column}}},
+{{#columns}}    utility::codec::field{"{{name}}", &{{name_singular}}::{{name}}},
+{{/columns}}
+    utility::codec::field{"modified_by", &{{name_singular}}::modified_by},
+    utility::codec::field{"performed_by", &{{name_singular}}::performed_by},
+    utility::codec::field{"change_reason_code", &{{name_singular}}::change_reason_code},
+    utility::codec::field{"change_commentary", &{{name_singular}}::change_commentary},
+    utility::codec::field{"recorded_at", &{{name_singular}}::recorded_at},
+    };
+}
 
 }
 

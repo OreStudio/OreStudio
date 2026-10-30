@@ -27,11 +27,13 @@
 
 #include "ores.dq.api/domain/publication.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
@@ -69,6 +71,31 @@ struct ORES_DQ_API_EXPORT publication_codec final {
      */
     static publication from_msgpack(std::span<const std::byte> data);
 };
+
+/**
+ * @brief The members of publication, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
+ */
+[[nodiscard]] constexpr auto wire_fields(const publication&) {
+    return std::tuple{
+        utility::codec::field{"tenant_id", &publication::tenant_id},
+        utility::codec::field{"id", &publication::id},
+        utility::codec::field{"dataset_id", &publication::dataset_id},
+        utility::codec::field{"dataset_code", &publication::dataset_code},
+        utility::codec::field{"mode", &publication::mode},
+        utility::codec::field{"target_table", &publication::target_table},
+        utility::codec::field{"records_inserted", &publication::records_inserted},
+        utility::codec::field{"records_updated", &publication::records_updated},
+        utility::codec::field{"records_skipped", &publication::records_skipped},
+        utility::codec::field{"records_deleted", &publication::records_deleted},
+        utility::codec::field{"published_by", &publication::published_by},
+        utility::codec::field{"published_at", &publication::published_at},
+    };
+}
 
 }
 

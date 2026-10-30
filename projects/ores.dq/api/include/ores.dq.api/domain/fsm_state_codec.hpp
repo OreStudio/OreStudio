@@ -27,11 +27,13 @@
 
 #include "ores.dq.api/domain/fsm_state.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
@@ -69,6 +71,31 @@ struct ORES_DQ_API_EXPORT fsm_state_codec final {
      */
     static fsm_state from_msgpack(std::span<const std::byte> data);
 };
+
+/**
+ * @brief The members of fsm_state, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fsm_state&) {
+    return std::tuple{
+        utility::codec::field{"version", &fsm_state::version},
+        utility::codec::field{"tenant_id", &fsm_state::tenant_id},
+        utility::codec::field{"id", &fsm_state::id},
+        utility::codec::field{"machine_id", &fsm_state::machine_id},
+        utility::codec::field{"name", &fsm_state::name},
+        utility::codec::field{"is_initial", &fsm_state::is_initial},
+        utility::codec::field{"is_terminal", &fsm_state::is_terminal},
+        utility::codec::field{"modified_by", &fsm_state::modified_by},
+        utility::codec::field{"performed_by", &fsm_state::performed_by},
+        utility::codec::field{"change_reason_code", &fsm_state::change_reason_code},
+        utility::codec::field{"change_commentary", &fsm_state::change_commentary},
+        utility::codec::field{"recorded_at", &fsm_state::recorded_at},
+    };
+}
 
 }
 

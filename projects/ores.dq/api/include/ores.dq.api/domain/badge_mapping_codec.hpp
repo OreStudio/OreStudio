@@ -27,11 +27,13 @@
 
 #include "ores.dq.api/domain/badge_mapping.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
@@ -69,6 +71,29 @@ struct ORES_DQ_API_EXPORT badge_mapping_codec final {
      */
     static badge_mapping from_msgpack(std::span<const std::byte> data);
 };
+
+/**
+ * @brief The members of badge_mapping, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
+ */
+[[nodiscard]] constexpr auto wire_fields(const badge_mapping&) {
+    return std::tuple{
+        utility::codec::field{"version", &badge_mapping::version},
+        utility::codec::field{"tenant_id", &badge_mapping::tenant_id},
+        utility::codec::field{"code_domain_code", &badge_mapping::code_domain_code},
+        utility::codec::field{"entity_code", &badge_mapping::entity_code},
+        utility::codec::field{"badge_code", &badge_mapping::badge_code},
+        utility::codec::field{"modified_by", &badge_mapping::modified_by},
+        utility::codec::field{"performed_by", &badge_mapping::performed_by},
+        utility::codec::field{"change_reason_code", &badge_mapping::change_reason_code},
+        utility::codec::field{"change_commentary", &badge_mapping::change_commentary},
+        utility::codec::field{"recorded_at", &badge_mapping::recorded_at},
+    };
+}
 
 }
 

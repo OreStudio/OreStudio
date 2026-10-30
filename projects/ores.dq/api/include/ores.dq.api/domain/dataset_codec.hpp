@@ -27,11 +27,13 @@
 
 #include "ores.dq.api/domain/dataset.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
@@ -69,6 +71,46 @@ struct ORES_DQ_API_EXPORT dataset_codec final {
      */
     static dataset from_msgpack(std::span<const std::byte> data);
 };
+
+/**
+ * @brief The members of dataset, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
+ */
+[[nodiscard]] constexpr auto wire_fields(const dataset&) {
+    return std::tuple{
+        utility::codec::field{"version", &dataset::version},
+        utility::codec::field{"tenant_id", &dataset::tenant_id},
+        utility::codec::field{"id", &dataset::id},
+        utility::codec::field{"code", &dataset::code},
+        utility::codec::field{"catalog_name", &dataset::catalog_name},
+        utility::codec::field{"subject_area_name", &dataset::subject_area_name},
+        utility::codec::field{"domain_name", &dataset::domain_name},
+        utility::codec::field{"coding_scheme_code", &dataset::coding_scheme_code},
+        utility::codec::field{"origin_code", &dataset::origin_code},
+        utility::codec::field{"nature_code", &dataset::nature_code},
+        utility::codec::field{"treatment_code", &dataset::treatment_code},
+        utility::codec::field{"methodology_id", &dataset::methodology_id},
+        utility::codec::field{"name", &dataset::name},
+        utility::codec::field{"description", &dataset::description},
+        utility::codec::field{"source_system_id", &dataset::source_system_id},
+        utility::codec::field{"business_context", &dataset::business_context},
+        utility::codec::field{"upstream_derivation_id", &dataset::upstream_derivation_id},
+        utility::codec::field{"lineage_depth", &dataset::lineage_depth},
+        utility::codec::field{"as_of_date", &dataset::as_of_date},
+        utility::codec::field{"ingestion_timestamp", &dataset::ingestion_timestamp},
+        utility::codec::field{"license_info", &dataset::license_info},
+        utility::codec::field{"artefact_type", &dataset::artefact_type},
+        utility::codec::field{"modified_by", &dataset::modified_by},
+        utility::codec::field{"performed_by", &dataset::performed_by},
+        utility::codec::field{"change_reason_code", &dataset::change_reason_code},
+        utility::codec::field{"change_commentary", &dataset::change_commentary},
+        utility::codec::field{"recorded_at", &dataset::recorded_at},
+    };
+}
 
 }
 

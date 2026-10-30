@@ -24,48 +24,24 @@
  */
 #include "ores.dq.api/domain/coding_scheme_authority_type_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
 namespace ores::dq::domain {
 
-namespace {
-
-/**
- * @brief The members of coding_scheme_authority_type, named as the wire names them and
- * in the order the type declares them.
- */
-constexpr auto coding_scheme_authority_type_codec_fields = std::tuple{
-    utility::codec::field{"version", &coding_scheme_authority_type::version},
-    utility::codec::field{"tenant_id", &coding_scheme_authority_type::tenant_id},
-    utility::codec::field{"code", &coding_scheme_authority_type::code},
-    utility::codec::field{"name", &coding_scheme_authority_type::name},
-    utility::codec::field{"description", &coding_scheme_authority_type::description},
-    utility::codec::field{"modified_by", &coding_scheme_authority_type::modified_by},
-    utility::codec::field{"performed_by", &coding_scheme_authority_type::performed_by},
-    utility::codec::field{"change_reason_code", &coding_scheme_authority_type::change_reason_code},
-    utility::codec::field{"change_commentary", &coding_scheme_authority_type::change_commentary},
-    utility::codec::field{"recorded_at", &coding_scheme_authority_type::recorded_at},
-};
-
-}
-
 std::string coding_scheme_authority_type_codec::to_json(const coding_scheme_authority_type& v) {
-    return utility::codec::object::write_json(v, coding_scheme_authority_type_codec_fields);
+    return utility::codec::object::write_json(v);
 }
 
 coding_scheme_authority_type coding_scheme_authority_type_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<coding_scheme_authority_type>(
-        text, coding_scheme_authority_type_codec_fields);
+    return utility::codec::object::read_json<coding_scheme_authority_type>(text);
 }
 
 std::string coding_scheme_authority_type_codec::to_msgpack(const coding_scheme_authority_type& v) {
-    return utility::codec::object::write_msgpack(v, coding_scheme_authority_type_codec_fields);
+    return utility::codec::object::write_msgpack(v);
 }
 
 coding_scheme_authority_type
 coding_scheme_authority_type_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<coding_scheme_authority_type>(
-        data, coding_scheme_authority_type_codec_fields);
+    return utility::codec::object::read_msgpack<coding_scheme_authority_type>(data);
 }
 
 }

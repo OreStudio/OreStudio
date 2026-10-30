@@ -27,11 +27,13 @@
 
 #include "ores.dq.api/domain/artefact_type.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
@@ -69,6 +71,33 @@ struct ORES_DQ_API_EXPORT artefact_type_codec final {
      */
     static artefact_type from_msgpack(std::span<const std::byte> data);
 };
+
+/**
+ * @brief The members of artefact_type, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
+ */
+[[nodiscard]] constexpr auto wire_fields(const artefact_type&) {
+    return std::tuple{
+        utility::codec::field{"version", &artefact_type::version},
+        utility::codec::field{"tenant_id", &artefact_type::tenant_id},
+        utility::codec::field{"code", &artefact_type::code},
+        utility::codec::field{"name", &artefact_type::name},
+        utility::codec::field{"description", &artefact_type::description},
+        utility::codec::field{"artefact_table", &artefact_type::artefact_table},
+        utility::codec::field{"target_table", &artefact_type::target_table},
+        utility::codec::field{"target_subject", &artefact_type::target_subject},
+        utility::codec::field{"display_order", &artefact_type::display_order},
+        utility::codec::field{"modified_by", &artefact_type::modified_by},
+        utility::codec::field{"performed_by", &artefact_type::performed_by},
+        utility::codec::field{"change_reason_code", &artefact_type::change_reason_code},
+        utility::codec::field{"change_commentary", &artefact_type::change_commentary},
+        utility::codec::field{"recorded_at", &artefact_type::recorded_at},
+    };
+}
 
 }
 

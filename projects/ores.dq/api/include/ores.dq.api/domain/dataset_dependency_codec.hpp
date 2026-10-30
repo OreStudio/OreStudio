@@ -22,11 +22,13 @@
 
 #include "ores.dq.api/domain/dataset_dependency.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
@@ -62,6 +64,24 @@ struct ORES_DQ_API_EXPORT dataset_dependency_codec final {
      */
     static dataset_dependency from_msgpack(std::span<const std::byte> data);
 };
+
+/**
+ * @brief The members of dataset_dependency, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the type's shape, the same one the generated
+ * types make.
+ */
+[[nodiscard]] constexpr auto wire_fields(const dataset_dependency&) {
+    return std::tuple{
+        utility::codec::field{"tenant_id", &dataset_dependency::tenant_id},
+        utility::codec::field{"dataset_code", &dataset_dependency::dataset_code},
+        utility::codec::field{"dependency_code", &dataset_dependency::dependency_code},
+        utility::codec::field{"role", &dataset_dependency::role},
+        utility::codec::field{"modified_by", &dataset_dependency::modified_by},
+        utility::codec::field{"performed_by", &dataset_dependency::performed_by},
+        utility::codec::field{"recorded_at", &dataset_dependency::recorded_at}};
+}
 
 }
 

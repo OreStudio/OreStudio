@@ -27,11 +27,13 @@
 
 #include "ores.dq.api/domain/treatment_dimension.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
@@ -69,6 +71,29 @@ struct ORES_DQ_API_EXPORT treatment_dimension_codec final {
      */
     static treatment_dimension from_msgpack(std::span<const std::byte> data);
 };
+
+/**
+ * @brief The members of treatment_dimension, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
+ */
+[[nodiscard]] constexpr auto wire_fields(const treatment_dimension&) {
+    return std::tuple{
+        utility::codec::field{"version", &treatment_dimension::version},
+        utility::codec::field{"tenant_id", &treatment_dimension::tenant_id},
+        utility::codec::field{"code", &treatment_dimension::code},
+        utility::codec::field{"name", &treatment_dimension::name},
+        utility::codec::field{"description", &treatment_dimension::description},
+        utility::codec::field{"modified_by", &treatment_dimension::modified_by},
+        utility::codec::field{"performed_by", &treatment_dimension::performed_by},
+        utility::codec::field{"change_reason_code", &treatment_dimension::change_reason_code},
+        utility::codec::field{"change_commentary", &treatment_dimension::change_commentary},
+        utility::codec::field{"recorded_at", &treatment_dimension::recorded_at},
+    };
+}
 
 }
 

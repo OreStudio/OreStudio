@@ -60,11 +60,17 @@ need.
 ** The shape of the type is stated once, by the template that declares it
 
 A codec file that repeats a struct's member list is a second statement of the
-same fact, and the two drift. The template that already iterates a message's
-fields to write its struct writes a =wire_fields= function beside it, and the
-codec iterates neither: it calls the function. The same move
-retires the domain half's field list from its =.cpp= and puts it next to the
-class.
+same fact, and the two drift. So the shape is stated as a =wire_fields= function
+in the type's codec header, and the codec's translation unit iterates nothing:
+it calls the function. That retired the domain half's list from its =.cpp= in
+this task.
+
+The list stays in the codec header rather than moving beside the struct, which
+is where it would read best. A struct's own header is rendered for every
+component, so stating the shape there means gating that template on the codec
+facet's opt-in: machinery for no gain, because the two orders are still one
+statement and the per-type byte comparison still proves the encoding. A message
+states its shape the same way, for the same reason.
 
 =wire_fields= is a free function found by argument-dependent lookup, so the
 carrier layer can ask any type whether it has one: the two carriers,

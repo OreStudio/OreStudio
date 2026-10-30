@@ -27,11 +27,13 @@
 
 #include "ores.dq.api/domain/data_domain.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
@@ -69,6 +71,28 @@ struct ORES_DQ_API_EXPORT data_domain_codec final {
      */
     static data_domain from_msgpack(std::span<const std::byte> data);
 };
+
+/**
+ * @brief The members of data_domain, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
+ */
+[[nodiscard]] constexpr auto wire_fields(const data_domain&) {
+    return std::tuple{
+        utility::codec::field{"version", &data_domain::version},
+        utility::codec::field{"tenant_id", &data_domain::tenant_id},
+        utility::codec::field{"name", &data_domain::name},
+        utility::codec::field{"description", &data_domain::description},
+        utility::codec::field{"modified_by", &data_domain::modified_by},
+        utility::codec::field{"performed_by", &data_domain::performed_by},
+        utility::codec::field{"change_reason_code", &data_domain::change_reason_code},
+        utility::codec::field{"change_commentary", &data_domain::change_commentary},
+        utility::codec::field{"recorded_at", &data_domain::recorded_at},
+    };
+}
 
 }
 

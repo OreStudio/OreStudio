@@ -27,6 +27,7 @@
 #include <limits>
 #include <msgpack.h>
 #include <optional>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -308,6 +309,17 @@ T read(std::string_view text) {
         msgpack_unpacked_destroy(&result);
         throw;
     }
+}
+
+/**
+ * @brief The same, over the bytes a caller holds rather than over text.
+ *
+ * MessagePack is bytes, so this is the form most callers have; the text one
+ * above is the same thing with the characters already.
+ */
+template <typename T>
+T read(std::span<const std::byte> data) {
+    return read<T>(std::string_view(reinterpret_cast<const char*>(data.data()), data.size()));
 }
 
 }

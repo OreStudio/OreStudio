@@ -27,11 +27,13 @@
 
 #include "ores.dq.api/domain/methodology.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
@@ -69,6 +71,31 @@ struct ORES_DQ_API_EXPORT methodology_codec final {
      */
     static methodology from_msgpack(std::span<const std::byte> data);
 };
+
+/**
+ * @brief The members of methodology, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
+ */
+[[nodiscard]] constexpr auto wire_fields(const methodology&) {
+    return std::tuple{
+        utility::codec::field{"version", &methodology::version},
+        utility::codec::field{"tenant_id", &methodology::tenant_id},
+        utility::codec::field{"id", &methodology::id},
+        utility::codec::field{"name", &methodology::name},
+        utility::codec::field{"description", &methodology::description},
+        utility::codec::field{"logic_reference", &methodology::logic_reference},
+        utility::codec::field{"implementation_details", &methodology::implementation_details},
+        utility::codec::field{"modified_by", &methodology::modified_by},
+        utility::codec::field{"performed_by", &methodology::performed_by},
+        utility::codec::field{"change_reason_code", &methodology::change_reason_code},
+        utility::codec::field{"change_commentary", &methodology::change_commentary},
+        utility::codec::field{"recorded_at", &methodology::recorded_at},
+    };
+}
 
 }
 

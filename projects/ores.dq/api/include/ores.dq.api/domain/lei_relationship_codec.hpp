@@ -27,11 +27,13 @@
 
 #include "ores.dq.api/domain/lei_relationship.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
@@ -69,6 +71,44 @@ struct ORES_DQ_API_EXPORT lei_relationship_codec final {
      */
     static lei_relationship from_msgpack(std::span<const std::byte> data);
 };
+
+/**
+ * @brief The members of lei_relationship, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
+ */
+[[nodiscard]] constexpr auto wire_fields(const lei_relationship&) {
+    return std::tuple{
+        utility::codec::field{"tenant_id", &lei_relationship::tenant_id},
+        utility::codec::field{"relationship_start_node_node_id",
+                              &lei_relationship::relationship_start_node_node_id},
+        utility::codec::field{"relationship_start_node_node_id_type",
+                              &lei_relationship::relationship_start_node_node_id_type},
+        utility::codec::field{"relationship_end_node_node_id",
+                              &lei_relationship::relationship_end_node_node_id},
+        utility::codec::field{"relationship_end_node_node_id_type",
+                              &lei_relationship::relationship_end_node_node_id_type},
+        utility::codec::field{"relationship_relationship_type",
+                              &lei_relationship::relationship_relationship_type},
+        utility::codec::field{"relationship_relationship_status",
+                              &lei_relationship::relationship_relationship_status},
+        utility::codec::field{"relationship_period_1_start_date",
+                              &lei_relationship::relationship_period_1_start_date},
+        utility::codec::field{"relationship_period_1_end_date",
+                              &lei_relationship::relationship_period_1_end_date},
+        utility::codec::field{"registration_initial_registration_date",
+                              &lei_relationship::registration_initial_registration_date},
+        utility::codec::field{"registration_last_update_date",
+                              &lei_relationship::registration_last_update_date},
+        utility::codec::field{"registration_registration_status",
+                              &lei_relationship::registration_registration_status},
+        utility::codec::field{"registration_validation_sources",
+                              &lei_relationship::registration_validation_sources},
+    };
+}
 
 }
 

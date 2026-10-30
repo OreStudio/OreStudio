@@ -27,11 +27,13 @@
 
 #include "ores.dq.api/domain/fsm_transition.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
@@ -69,6 +71,32 @@ struct ORES_DQ_API_EXPORT fsm_transition_codec final {
      */
     static fsm_transition from_msgpack(std::span<const std::byte> data);
 };
+
+/**
+ * @brief The members of fsm_transition, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
+ */
+[[nodiscard]] constexpr auto wire_fields(const fsm_transition&) {
+    return std::tuple{
+        utility::codec::field{"version", &fsm_transition::version},
+        utility::codec::field{"tenant_id", &fsm_transition::tenant_id},
+        utility::codec::field{"id", &fsm_transition::id},
+        utility::codec::field{"machine_id", &fsm_transition::machine_id},
+        utility::codec::field{"from_state_id", &fsm_transition::from_state_id},
+        utility::codec::field{"to_state_id", &fsm_transition::to_state_id},
+        utility::codec::field{"name", &fsm_transition::name},
+        utility::codec::field{"guard_function", &fsm_transition::guard_function},
+        utility::codec::field{"modified_by", &fsm_transition::modified_by},
+        utility::codec::field{"performed_by", &fsm_transition::performed_by},
+        utility::codec::field{"change_reason_code", &fsm_transition::change_reason_code},
+        utility::codec::field{"change_commentary", &fsm_transition::change_commentary},
+        utility::codec::field{"recorded_at", &fsm_transition::recorded_at},
+    };
+}
 
 }
 

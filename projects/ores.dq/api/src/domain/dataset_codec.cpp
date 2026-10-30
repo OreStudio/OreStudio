@@ -24,62 +24,23 @@
  */
 #include "ores.dq.api/domain/dataset_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include <tuple>
 
 namespace ores::dq::domain {
 
-namespace {
-
-/**
- * @brief The members of dataset, named as the wire names them and
- * in the order the type declares them.
- */
-constexpr auto dataset_codec_fields = std::tuple{
-    utility::codec::field{"version", &dataset::version},
-    utility::codec::field{"tenant_id", &dataset::tenant_id},
-    utility::codec::field{"id", &dataset::id},
-    utility::codec::field{"code", &dataset::code},
-    utility::codec::field{"catalog_name", &dataset::catalog_name},
-    utility::codec::field{"subject_area_name", &dataset::subject_area_name},
-    utility::codec::field{"domain_name", &dataset::domain_name},
-    utility::codec::field{"coding_scheme_code", &dataset::coding_scheme_code},
-    utility::codec::field{"origin_code", &dataset::origin_code},
-    utility::codec::field{"nature_code", &dataset::nature_code},
-    utility::codec::field{"treatment_code", &dataset::treatment_code},
-    utility::codec::field{"methodology_id", &dataset::methodology_id},
-    utility::codec::field{"name", &dataset::name},
-    utility::codec::field{"description", &dataset::description},
-    utility::codec::field{"source_system_id", &dataset::source_system_id},
-    utility::codec::field{"business_context", &dataset::business_context},
-    utility::codec::field{"upstream_derivation_id", &dataset::upstream_derivation_id},
-    utility::codec::field{"lineage_depth", &dataset::lineage_depth},
-    utility::codec::field{"as_of_date", &dataset::as_of_date},
-    utility::codec::field{"ingestion_timestamp", &dataset::ingestion_timestamp},
-    utility::codec::field{"license_info", &dataset::license_info},
-    utility::codec::field{"artefact_type", &dataset::artefact_type},
-    utility::codec::field{"modified_by", &dataset::modified_by},
-    utility::codec::field{"performed_by", &dataset::performed_by},
-    utility::codec::field{"change_reason_code", &dataset::change_reason_code},
-    utility::codec::field{"change_commentary", &dataset::change_commentary},
-    utility::codec::field{"recorded_at", &dataset::recorded_at},
-};
-
-}
-
 std::string dataset_codec::to_json(const dataset& v) {
-    return utility::codec::object::write_json(v, dataset_codec_fields);
+    return utility::codec::object::write_json(v);
 }
 
 dataset dataset_codec::from_json(std::string_view text) {
-    return utility::codec::object::read_json<dataset>(text, dataset_codec_fields);
+    return utility::codec::object::read_json<dataset>(text);
 }
 
 std::string dataset_codec::to_msgpack(const dataset& v) {
-    return utility::codec::object::write_msgpack(v, dataset_codec_fields);
+    return utility::codec::object::write_msgpack(v);
 }
 
 dataset dataset_codec::from_msgpack(std::span<const std::byte> data) {
-    return utility::codec::object::read_msgpack<dataset>(data, dataset_codec_fields);
+    return utility::codec::object::read_msgpack<dataset>(data);
 }
 
 }

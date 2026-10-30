@@ -27,11 +27,13 @@
 
 #include "ores.dq.api/domain/subject_area.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include <cstddef>
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ores::dq::domain {
 
@@ -69,6 +71,29 @@ struct ORES_DQ_API_EXPORT subject_area_codec final {
      */
     static subject_area from_msgpack(std::span<const std::byte> data);
 };
+
+/**
+ * @brief The members of subject_area, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the type's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message whose
+ * member is this type encodes it as its own object without knowing the type.
+ */
+[[nodiscard]] constexpr auto wire_fields(const subject_area&) {
+    return std::tuple{
+        utility::codec::field{"version", &subject_area::version},
+        utility::codec::field{"tenant_id", &subject_area::tenant_id},
+        utility::codec::field{"name", &subject_area::name},
+        utility::codec::field{"domain_name", &subject_area::domain_name},
+        utility::codec::field{"description", &subject_area::description},
+        utility::codec::field{"modified_by", &subject_area::modified_by},
+        utility::codec::field{"performed_by", &subject_area::performed_by},
+        utility::codec::field{"change_reason_code", &subject_area::change_reason_code},
+        utility::codec::field{"change_commentary", &subject_area::change_commentary},
+        utility::codec::field{"recorded_at", &subject_area::recorded_at},
+    };
+}
 
 }
 

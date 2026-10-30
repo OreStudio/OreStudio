@@ -1262,8 +1262,7 @@ void import_volatility_curve(ores::refdata::messaging::curve_configuration_docum
 
 void import_strike_surface(ores::refdata::messaging::curve_configuration_document& out,
                            const boost::uuids::uuid& entry_id,
-                           const record_reader& v,
-                           int position) {
+                           const record_reader& v) {
     if (v.has("ParametricSmileConfiguration"))
         throw refusal("a strike surface writes a ParametricSmileConfiguration, which is not "
                       "modelled yet");
@@ -1285,8 +1284,7 @@ void import_strike_surface(ores::refdata::messaging::curve_configuration_documen
 
 void import_delta_surface(ores::refdata::messaging::curve_configuration_document& out,
                           const boost::uuids::uuid& entry_id,
-                          const record_reader& v,
-                          int position) {
+                          const record_reader& v) {
     if (v.has("ParametricSmileConfiguration"))
         throw refusal("a delta surface writes a ParametricSmileConfiguration, which is not "
                       "modelled yet");
@@ -1313,8 +1311,7 @@ void import_delta_surface(ores::refdata::messaging::curve_configuration_document
 
 void import_proxy_surface(ores::refdata::messaging::curve_configuration_document& out,
                           const boost::uuids::uuid& entry_id,
-                          const record_reader& v,
-                          int position) {
+                          const record_reader& v) {
     out.volatility_kinds.push_back(new_volatility_kind(entry_id, proxy_surface_kind, v));
     refdata::domain::curve_volatility_proxy_surface p;
     p.id = curve_configuration_projection_new_uuid();

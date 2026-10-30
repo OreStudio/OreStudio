@@ -3279,7 +3279,6 @@ package "refdata" #FFF3E0 {
         * curve_volatility_config_id : uuid <<FK>>
         * kind_code : text
           priority : integer
-        * position : integer
           quote_type : text
           volatility_type : text
           exercise_type : text

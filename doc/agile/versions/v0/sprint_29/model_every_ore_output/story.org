@@ -2,7 +2,7 @@
 :ID: 2D80126D-6ADC-482D-A46A-B098752C29BC
 :END:
 #+title: Story: Model every output ORE writes
-#+description: ORE writes 66 families of output and one of them has a reader today. Name every family, read each one against the samples checked in, and give the data to the component that stores it: run results to ores.reporting and market state to ores.marketdata. ores.ore holds the format, the read model and the readers, and no store.
+#+description: The samples show 66 shapes of output and one of them has a reader today. Name every family, read each one against the samples checked in, and give the data to the component that stores it: run results to ores.reporting and market state to ores.marketdata. ores.ore holds the format, the read model and the readers, and no store.
 #+type: story
 #+level: s2
 #+filetags: :ore:reporting:marketdata:architecture:results:sprint_29:v0:
@@ -78,8 +78,9 @@ Every output family ORE writes is named in one catalogue, read by ores.ore from 
   archive it already uploads is what the post-processor reads, so there is one
   writer of an ORE format and not two. The run's log rows keep their own file.
 - 2026-10-30: The tests read the checked-in expected outputs; the sample suite
-  does not run. At this commit the corpus is 473 files, 192 file names and 66
-  families, and the widest file states 789 columns.
+  does not run. At this commit the corpus is 473 files under 192 file names,
+  which group into 66 family shapes by name, and the widest file states 789
+  columns. The count is a grouping of the corpus, not a list ORE publishes.
 
 * Out of scope
 

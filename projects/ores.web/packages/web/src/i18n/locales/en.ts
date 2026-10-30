@@ -3724,7 +3724,7 @@ export const en: SourceCatalogue = {
         },
         structures: {
             title: 'Structures and packages',
-            lead: 'What the tenant holds together. A structure is a tree: the deal the customer sees at the root, with strategies, packages and trades inside.',
+            lead: 'What the tenant holds together. A structure is a tree: the structure the customer sees at the root, with strategies, packages and trades inside.',
             search: 'Search by identifier, template or counterparty',
             kindFilter: 'Kind',
             allKinds: 'All kinds',
@@ -3813,7 +3813,7 @@ export const en: SourceCatalogue = {
             kindProsePackage:
                 'A container. Nothing economic binds the legs, so it has no template and any role.',
             kindProseOther:
-                'One deal for the customer: the template fixes the roles its legs take.',
+                'One structure for the customer: the template fixes the roles its legs take.',
             inside: 'Inside',
             insideRoot: 'This is the root of its tree.',
             insideChild: 'This sits inside the structure named above.',
@@ -3822,17 +3822,17 @@ export const en: SourceCatalogue = {
             confirmsProseLegs:
                 'The customer holds each trade under its own terms, even though they were executed together.',
             confirmsProseOne:
-                "The customer holds the deal as one: its terms are the structure's, not the legs'.",
+                "The customer holds the structure as one: its terms are the structure's, not the legs'.",
             pricesProseLegs: 'No leg depends on another, so the price is the sum of the parts.',
-            pricesProseOne: 'The legs price together, so the deal is priced as one instrument.',
-            ofTheDeal: 'Of the deal',
+            pricesProseOne: 'The legs price together, so the structure is priced as one instrument.',
+            ofTheDeal: 'Of the structure',
             ofEachTrade: 'Of each trade',
             externalProseLegs: 'Each leg moves on its own: see the Members tab.',
-            externalProseOne: 'The deal moves as one, so a change to a leg changes the deal.',
+            externalProseOne: 'The structure moves as one, so a change to a leg changes the structure.',
             tradesProseLegs:
                 'A package confirms trade by trade. Each leg has its own external version, and the customer quotes the one for the trade they hold.',
             tradesProseOne:
-                'The deal confirms as one document, so the legs are read together with it.',
+                'The structure confirms as one document, so the legs are read together with it.',
             unlink: 'Unlink',
             bookLeg: 'Book a leg',
             withTemplate: 'A structure of the {template} template.',
@@ -3857,8 +3857,8 @@ export const en: SourceCatalogue = {
             counterparty: 'Counterparty',
             counterpartyHint: 'The party on the other side of the trade.',
             legNotice: 'This trade becomes a leg of {reference}, in the role {role}.',
-            legCounterpartyHint: 'Every leg of this deal is booked with this counterparty.',
-            legFailed: 'The trade was booked but did not join the deal.',
+            legCounterpartyHint: 'Every leg of this structure is booked with this counterparty.',
+            legFailed: 'The trade was booked but did not join the structure.',
             legFailedOpen: 'Open the trade',
             tradeDate: 'Trade date',
             security: 'Security',

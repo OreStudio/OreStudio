@@ -41,10 +41,10 @@ follows the decision, and the screen follows the prototype.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-29                               |
+| Now          | The read, the screen and the removal are in: one screen answers Trading, and both old addresses redirect to it. |
+| Waiting on   | Marco's review of the screen, which the merge rule holds until he has looked. |
+| Next         | Review, then merge. Then the two named read gaps: a structure column the page can filter on and one grouped read for the figures. |
+| Last touched | 2026-10-30                               |
 
 * Acceptance
 
@@ -212,6 +212,23 @@ rows under it. What remains, in order:
 4. *The removal.* The trades list and the structures list become redirects to the
    blotter, and the Trading area offers one card, *Trade blotter*, whose permission
    is the trades read and the structures read together.
+
+** State of the build
+
+- [X] The read: one page of top rows, the rail beside it, placement at the lowest
+  common ancestor, the flat list, and the counterparty grouping.
+- [X] The two schema facts the read asked for: the summary states the structure a
+  trade is a leg of, and whether the row is a leg.
+- [X] The screen: a rail of portfolios and books or counterparties, the list, the
+  flat option and the grouping control.
+- [X] The routes: a trade row opens the trade view, a structure row the structure
+  view.
+- [X] The removal: the two lists are gone, their addresses redirect to the
+  blotter, and the area offers one card.
+- [ ] The instrument grouping: the summary carries no asset class, so the third
+  perspective waits on a column.
+- [ ] One grouped read for the rail's figures: the read still reads the party's
+  rows to count them.
 
 ** What this task does not do
 

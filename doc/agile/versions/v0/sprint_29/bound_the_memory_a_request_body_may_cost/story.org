@@ -36,12 +36,12 @@ scope here.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                 |
+| State         | STARTED                                |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | The route decides the limit and an over-limit body gets 413. A follow-up fixes a body past the ceiling, which closed instead of refusing. |
 | Waiting on    | Nothing.                               |
-| Next          | Merged. The next increment takes over. |
-| Last touched  | 2026-10-29                               |
+| Next          | Merge #4110, then increment A3 streams the accepted body. |
+| Last touched  | 2026-10-30                               |
 
 * Acceptance
 

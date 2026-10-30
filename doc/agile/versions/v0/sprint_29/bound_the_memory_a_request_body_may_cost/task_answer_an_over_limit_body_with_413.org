@@ -74,6 +74,9 @@ task and name that file in the Command column.
 
 * Notes
 
+- The ceiling clause was accepted without a test and did not hold: the parser's
+  own body limit stood at the ceiling while the headers were read, so a body past
+  the ceiling closed the session. The follow-up task fixes it.
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -105,12 +108,4 @@ closed with no response. =Expect: 100-continue= is honoured, so a client that
 asks first is told to proceed and a refusal costs no upload. The storage upload
 route states the server ceiling as its own limit, so engine packages still
 transfer as before.
-
-The ceiling was not covered by a test when this task first closed, and it did not
-hold: the parser's own body limit stood at the ceiling while the headers were
-read, and Beast applies that limit to the declared length as the headers finish.
-A body declaring more than the ceiling therefore closed the session with no
-response, which is the failure this task exists to remove, on the one path it did
-not test. The parser now reads headers under no body limit, the route's limit is
-set on the body alone, and the ceiling caps a stated route limit in a test.
 

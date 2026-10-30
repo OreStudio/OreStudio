@@ -21,10 +21,10 @@
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/beast/http/read.hpp>
 #include <boost/beast/http/write.hpp>
+#include <boost/none.hpp>
 #include <boost/url/parse.hpp>
 #include <boost/url/url_view.hpp>
 #include <algorithm>
-#include <limits>
 
 namespace ores::http::net {
 
@@ -66,19 +66,15 @@ asio::awaitable<void> http_session::run() {
              * is held. Reading the message whole would force one limit on every
              * route: small enough for a JSON call is too small for an engine
              * package, and large enough for a package is a body bomb everywhere
-             * else.
+             * else. So the parser carries no body limit while the headers are
+             * read: Beast compares the declared length against that limit as the
+             * headers finish, and a limit here would end the session over a body
+             * it has not read. The route's limit is set below, once the route is
+             * known, and it is the one that governs the body.
              */
             http::request_parser<http::string_body> parser;
             parser.header_limit(options_.max_header_size);
-            /*
-             * The parser reaches no body limit of its own while the headers are
-             * read. Beast compares the declared length against that limit as the
-             * headers finish, so any limit here ends the session over a body it
-             * has not read, and the caller learns nothing. The route's limit is
-             * set below, once the route is known, and it is the one that governs
-             * the body.
-             */
-            parser.body_limit((std::numeric_limits<std::uint64_t>::max)());
+            parser.body_limit(boost::none);
             co_await http::async_read_header(stream_, buffer_, parser, asio::use_awaitable);
 
             const auto version = parser.get().version();

@@ -68,6 +68,8 @@
 #include "ores.marketdata.core/messaging/series_identity_handler.hpp"
 #include "ores.marketdata.core/messaging/series_slice_handler.hpp"
 #include "ores.marketdata.core/messaging/series_ticks_handler.hpp"
+#include "ores.marketdata.core/messaging/session_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/session_registrar.hpp"
 #include "ores.marketdata.core/messaging/subscription_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/subscription_interval_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/subscription_interval_registrar.hpp"
@@ -115,6 +117,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_market_observation_handlers(nats, ctx, verifier));
     fold(register_provider_handlers(nats, ctx, verifier));
     fold(register_market_data_source_handlers(nats, ctx, verifier));
+    fold(register_session_handlers(nats, ctx, verifier));
     fold(register_market_data_vendor_instrument_handlers(nats, ctx, verifier));
     fold(register_market_data_mapping_handlers(nats, ctx, verifier));
     fold(register_subscription_handlers(nats, ctx, verifier));
@@ -308,6 +311,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_curve_publish_history_provider(hist_registry);
         register_provider_history_provider(hist_registry);
         register_market_data_source_history_provider(hist_registry);
+        register_session_history_provider(hist_registry);
         register_market_data_vendor_instrument_history_provider(hist_registry);
         register_market_data_mapping_history_provider(hist_registry);
         register_subscription_history_provider(hist_registry);

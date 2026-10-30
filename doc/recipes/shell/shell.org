@@ -1867,3 +1867,7 @@ tangled into the runnable script library
 * Feeds
 
 - [[id:18B72F94-FD3D-59F8-8984-8883D47B57B8][How do I run the feeds commands from the shell?]]
+
+* Feed Scopes
+
+- [[id:F7764398-7B72-55D2-8581-A72AA190A940][How do I run the feed_scopes commands from the shell?]]

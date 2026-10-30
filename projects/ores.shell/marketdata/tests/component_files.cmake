@@ -28,6 +28,7 @@ set(files
     "delivery_count_commands_tests.cpp"
     "demand_interval_commands_tests.cpp"
     "feed_commands_tests.cpp"
+    "feed_scope_commands_tests.cpp"
     "main.cpp"
     "market_data_mapping_commands_tests.cpp"
     "market_data_vendor_instrument_commands_tests.cpp"

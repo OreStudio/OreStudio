@@ -503,8 +503,7 @@ export const en: SourceCatalogue = {
     'notification.marketdata.curve_withdrawn':
         'The curve {curve} of {party} was withdrawn on {withdrawn_at} by {withdrawn_by}: {reason}. Its last published set was as of {as_of}.',
 
-    'notification.scenario.to_run':
-        'A test scenario is ready for you: "{scenario}". {reason}',
+    'notification.scenario.to_run': 'A test scenario is ready for you: "{scenario}". {reason}',
 
     signIns: {
         title: 'Sign-ins',
@@ -5129,7 +5128,7 @@ export const en: SourceCatalogue = {
                 subscriptions: 'Subscriptions',
                 subscriptionsBody:
                     'The providers a party takes, with the rights it holds, and the source that serves each one.',
-                synthetic: 'Simulator',
+                synthetic: 'Synthetic',
                 syntheticBody:
                     'The feeds the platform generates: what runs by provider, and every feed to start and stop.',
                 evolutionBody:

@@ -1350,6 +1350,27 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'marketdata.v1.feed_scopes.list': {
+        asOf: true,
+        filter: [
+            'feed_id',
+            'asset_class',
+            'item',
+            'vendor_instrument_id',
+            'id_one_of',
+            'feed_id_one_of',
+            'asset_class_one_of',
+            'item_one_of',
+            'vendor_instrument_id_one_of',
+            'search',
+        ],
+        rows: ['scopes'],
+    },
+    'marketdata.v1.feed_scopes_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'marketdata.v1.feeds.list': {
         asOf: true,
         filter: [

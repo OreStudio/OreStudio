@@ -47,6 +47,7 @@
 #include "ores.marketdata.service/messaging/delivery_count_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/demand_interval_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/feed_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/feed_scope_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_data_mapping_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_data_vendor_instrument_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_fixing_event_registrar.hpp"
@@ -172,6 +173,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto supplier_sub = mdsm::register_supplier_event_mapping(event_source, event_bus, nats);
     auto provider_sub = mdsm::register_provider_event_mapping(event_source, event_bus, nats);
     auto feed_sub = mdsm::register_feed_event_mapping(event_source, event_bus, nats);
+    auto feed_scope_sub = mdsm::register_feed_scope_event_mapping(event_source, event_bus, nats);
     auto session_sub = mdsm::register_session_event_mapping(event_source, event_bus, nats);
     auto market_data_vendor_instrument_sub =
         mdsm::register_market_data_vendor_instrument_event_mapping(event_source, event_bus, nats);

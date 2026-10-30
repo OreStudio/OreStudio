@@ -152,7 +152,7 @@ where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
 
 insert into ores_marketdata_routes_tbl (
-    id, tenant_id, version, party_id, provider_code, source_id,
+    id, tenant_id, version, party_id, provider_code, feed_id,
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values (

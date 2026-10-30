@@ -5161,7 +5161,7 @@ const pt: SourceCatalogue = {
                 subscriptions: 'Subscrições',
                 subscriptionsBody:
                     'Os fornecedores que uma parte recebe, com os direitos que detém, e a fonte que serve cada um.',
-                synthetic: 'Simulador',
+                synthetic: 'Sintético',
                 syntheticBody:
                     'Os feeds que a plataforma gera: o que corre por fornecedor, e cada feed para iniciar e parar.',
                 evolutionBody:

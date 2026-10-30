@@ -501,8 +501,7 @@ const fr: SourceCatalogue = {
     'notification.marketdata.curve_withdrawn':
         'La courbe {curve} de {party} a été retirée le {withdrawn_at} par {withdrawn_by} : {reason}. Son dernier ensemble publié était arrêté au {as_of}.',
 
-    'notification.scenario.to_run':
-        "Un scénario de test vous attend : « {scenario} ». {reason}",
+    'notification.scenario.to_run': 'Un scénario de test vous attend : « {scenario} ». {reason}',
 
     signIns: {
         title: 'Connexions',
@@ -5200,7 +5199,7 @@ const fr: SourceCatalogue = {
                 subscriptions: 'Souscriptions',
                 subscriptionsBody:
                     'Les fournisseurs qu’une partie prend, avec les droits qu’elle détient, et la source qui sert chacun.',
-                synthetic: 'Simulateur',
+                synthetic: 'Synthétique',
                 syntheticBody:
                     'Les flux que la plateforme génère : ce qui tourne par fournisseur, et chaque flux à démarrer et à arrêter.',
                 evolutionBody:

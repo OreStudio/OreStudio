@@ -56,6 +56,7 @@ A trade has one description, in the domain. The planner draws a product and cons
 | [[id:67CB95D1-7D9C-42A6-8CAE-3D80ABC308A7][Flip bond onto its rows]] | DONE | | 2026-10-29 | The first family to stop carrying a bag. The slot gains an instrument batch, the bond planner constructs its instrument, and the writer persists it. The security stays in the bag until the next slice, because the run writes the issue before it books the trade. |
 | [[id:05D059A4-1B08-42FB-A90F-D75B63075B43][Flip the bond security]] | BACKLOG | | | The bond instrument states its own row now, but the security still travels in the bag: ensure_issue builds a bond_issue composite, its legs, amounts and rates from bond_terms before the trade is booked. Move that construction to the planner so the bag carries nothing for bonds and the family can be deleted from it. |
 | [[id:CFA53C73-DC4B-45DC-AC3F-CCC25931F8D2][Flip commodity onto its rows]] | DONE | 2026-10-30 | 2026-10-30 | Twenty-five commodity codes construct today, but the planner still fills a bag and the writer translates it. Move that translation into the planner so the plan carries the rows, and the writer only persists them. |
+| [[id:A6630FE3-8B74-4DA5-B303-A091F852CE26][Flip rates onto its rows]] | DONE | 2026-10-30 | 2026-10-30 | Ten rate codes construct today, but the planner still fills a bag and the writer translates it. Move that translation into the planner so the plan carries the rows, and the writer only persists them. |
 
 * Decisions
 

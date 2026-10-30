@@ -76,6 +76,70 @@ Recorded because the next four entries pay the same price:
   hand-wired: the two =component_files.cmake= lists, and the create and drop
   aggregators.
 
+* What the ORE schema says
+
+Read from =external/ore/xsd/curveconfig.xsd= before moving another column, and it
+changes the plan: only one of the three remaining entries is a union.
+
+** =curve_volatility_config= is one, and it is the hardest.
+
+A volatility entry writes either one bare kind element, or a =VolatilityConfig=
+element that holds **up to one of each of seven kinds** in an =xs:all=. Each kind
+is its own complex type with its own fields and a =priority= attribute:
+
+| Kind | Its own fields, beyond the shared four |
+|------+----------------------------------------|
+| =Constant= | =Quote= |
+| =Curve= | =Quotes=, =Interpolation=, =Extrapolation=, =EnforceMontoneVariance= |
+| =StrikeSurface= | =Strikes=, =Expiries=, =TimeInterpolation=, =StrikeInterpolation=, =Extrapolation=, =TimeExtrapolation=, =TimeExtrapolationVariance=, =StrikeExtrapolation=, =ParametricSmileConfiguration= |
+| =DeltaSurface= | =DeltaType=, =AtmType=, =AtmDeltaType=, =PutDeltas=, =CallDeltas=, =Expiries=, the interpolation block, =FuturePriceCorrection= |
+| =MoneynessSurface= | =MoneynessType=, =MoneynessLevels=, otherwise the delta surface's shape |
+| =ApoFutureSurface= | not modelled yet |
+| =ProxySurface= | =ProxyVolatilityCurve=, =FXVolatilityCurve=, =CorrelationCurve=, =CDSVolatilityCurve= |
+
+So a row is not one kind: it is an entry with zero to seven kinds, one per kind,
+and each kind carries its own priority. The shape the model has today -- one row
+with =kind= and every kind's columns -- is the union written flat.
+
+The model that matches the schema:
+
+- the entry keeps the identity: =id=, =party_id=, =curve_definition_id=,
+  =position= and =is_wrapped= (whether the document wrote a =VolatilityConfig=
+  element or a bare kind);
+- each kind is a part, one row per entry and kind, carrying =priority= and the
+  kind's own fields;
+- =quote_type=, =volatility_type=, =exercise_type= and =calendar= appear in every
+  kind's type, so they are one =field_group= nested in each part, not four
+  columns repeated seven times.
+
+** =fx_volatility_config= is not a union, and the inventory's verdict was wrong.
+
+=fxVolatility= is one =xs:all= with a mandatory =Dimension= and optional smile
+fields: =SmileType=, =SmileInterpolation=, =Deltas=, =SmileDelta=,
+=SmileExtrapolation=, =ButterflyErrorTolerance=, =TimeInterpolation=,
+=TimeWeighting=. The schema never states a different element per dimension, so
+dimension is a value of one component and not a discriminator between
+components. Its 18 nullable columns are the schema's optional children, which is
+what the schema looks like, not a union.
+
+** =inflation_cap_floor_volatility_config= is not a union either.
+
+=inflationCapFloorVolatility= is also one =xs:all= with a mandatory =Type=,
+=QuoteType=, =Tenors=, =CapStrikes=/=FloorStrikes=/=Strikes= as optional lists,
+and the rest optional. Again one component with optional fields.
+
+** What that means for the task
+
+- =curve_volatility_config= is split, as above: five parts plus two kinds not
+  modelled yet, and one shared field group.
+- =fx_volatility_config= and =inflation_cap_floor_volatility_config= are
+  =keep= or at most =group=. They are not split, and the inventory's verdict for
+  both is corrected here: the nullable ratio that ranked them measured the
+  schema's optionality, not a union.
+- The =dimension= and =quote_type= splits this task planned are dropped. Making
+  them would have turned one component into a table per value of a column, which
+  is not a component boundary.
+
 * Plan
 
 ** The rules a split obeys

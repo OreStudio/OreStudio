@@ -1,0 +1,106 @@
+The synthetic feeds and the ingest: what the live system did before the fix
+==========================================================================
+
+Environment: eager_maxwell, database recreated 2026-10-29 20:34 from
+e0b42ec674-dirty (schema fingerprint 8d7947c687844a3e, in sync), every
+service started from the same build, the Acme Corporation tenant
+provisioned by
+projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores.
+
+1. What the feeds published, and where
+--------------------------------------
+The synthetic service's log names the feed's own source name on every batch:
+
+  $ journalctl --user -u ores.synthetic.service-eager_maxwell.service -o cat \
+      | grep 'SYNTHETIC CURVE PUBLISH'
+  SYNTHETIC CURVE PUBLISH: subject='synthetic.v1.ops.tick.synthetic.bloomberg.sgdsora' \
+      source='synthetic.bloomberg.sgdsora' batch=1 points=12
+  SYNTHETIC CURVE PUBLISH: subject='synthetic.v1.ops.tick.synthetic.demo.cnyshibor' \
+      source='synthetic.demo.cnyshibor' batch=1 points=3
+
+The same service's FX feeds logged the ingress subject they really used:
+
+  SYNTHETIC PUBLISH: subject='marketdata.v1.ingress.bloomberg-a.USDJPY%20Curncy' ...
+
+The curve line was the same batch whether the pillar served an adapter or not:
+the feed logged its producer subject on every batch, and used it only for a
+pillar with no adapter target. The log did not say which subject the tick went
+out on, so a reader could not tell a stored tick from a dropped one.
+
+2. What reached the store, and for whom
+---------------------------------------
+The ingest stored ticks, and the ledger showed no drop for a producer's
+subject because the demand-driven feeds publish on the ingress:
+
+  $ compass sql -- -c "select s.provider_code, count(point) ..."
+  provider_code | series | ticks
+  --------------+--------+-------
+  bloomberg     |    162 | 27135
+  demo          |     51 |  5818
+  lseg          |     14 |  3387
+
+The ticks are stored for each party a route names, keyed by
+(identity, provider, party). The seeded USD SOFR ladder series belongs to the
+system tenant and the system party:
+
+  $ compass sql -- -c "select id, tenant_id, party_id from
+      ores_marketdata_market_series_tbl
+      where oresmd_uri =
+      'oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D'"
+  f7a1b2c3-8d4e-4f60-9a2b-3c4d5e6f7081 | ffffffff-...-ffffffffffff | bfaa8165-...
+  fd08a587-d904-4c0f-89da-c0f36b00d33c | 7f116128-...-ee26a9dc8a15 | f9acad59-...  (Acme Plc)
+  0f2ebd80-a088-4cfe-9a23-8ea75295ac76 | 7f116128-...-ee26a9dc8a15 | 4de64ef9-...  (Acme System Party)
+  3cc8a44d-c66b-4b0d-bc69-9bac70658c6b | 7f116128-...-ee26a9dc8a15 | b7648094-...  (Acme HK)
+  ba31b637-6101-452c-a30d-0bcfe00bf015 | 7f116128-...-ee26a9dc8a15 | 85a609e6-...  (Acme UK, demo)
+
+The seeded series held no point at all:
+
+  $ compass sql -- -c "select count(*) from ores_marketdata_ticks_tbl
+      where series_id = 'f7a1b2c3-8d4e-4f60-9a2b-3c4d5e6f7081'"
+  0
+
+No route names an adapter for the system tenant's system party, so the ingest
+had no consumer to store the tick for it:
+
+  $ compass sql -- -c "select r.tenant_id, r.party_id, s.name
+      from ores_marketdata_routes_tbl r join ... where r.provider_code='bloomberg'"
+  8751c7cc-... | 4c2b531b-... | bloomberg-a        (an earlier tenant)
+  8751c7cc-... | 78e58f63-... | bloomberg-a
+  8751c7cc-... | c42eaaa4-... | bloomberg-a
+
+3. The check, on the fresh database
+-----------------------------------
+Logged in as the system administrator, which is the tenant the seeded blueprint
+belongs to:
+
+  $ curl -b session -X POST /api/curves/compute \
+      -d '{"bootstrap_config_id":"d0b1e2f3-4a5b-4c6d-8e7f-9a0b1c2d3e4f",
+           "as_of":"2026-10-29 20:45:00Z"}'
+  HTTP 422
+  {"code":"invalid-request","message":
+   "curve_republish_resolver: no observed rate for pillar '3M' in the raw grid"}
+
+The same call after the system party was given its subscription and its route
+to bloomberg-a, and the ladder series had ticked for 24 points:
+
+  HTTP 200
+  {"points":[
+    {"point_id":"3M","date":"2027-01-29","discount_factor":0.9898348021211505},
+    {"point_id":"6M","date":"2027-04-29","discount_factor":0.979991426980756},
+    {"point_id":"12M","date":"2027-10-29","discount_factor":0.9603704128063035},
+    {"point_id":"2Y","date":"2028-10-29","discount_factor":0.9226685841928348},
+    {"point_id":"5Y","date":"2031-10-29","discount_factor":0.8221528839631812},
+    {"point_id":"10Y","date":"2036-10-29","discount_factor":0.6828527684831293},
+    {"point_id":"30Y","date":"2056-10-29","discount_factor":0.37609102781563253}]}
+
+4. What follows
+---------------
+Two defects, both through the adapter contract:
+
+- The system party had no route to the synthetic source, so the ladder series
+  the seeded blueprint reads held no point. The seed now writes the subscription
+  and the route, in marketdata_market_series_ir_curve_populate.sql.
+- A feed a person starts by hand was built with no adapter target, so it
+  published a market tick on its producer subject, which no source or route
+  names: the ingest drops it as an unbound source. The build input now names the
+  provider's default simulated source, so the feed publishes as that adapter.

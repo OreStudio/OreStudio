@@ -1,0 +1,135 @@
+The synthetic feeds into the ingest: the live pass after the fix
+===============================================================
+
+Environment: eager_maxwell, database recreated 2026-10-30 00:40 from
+e0b42ec674-dirty (schema fingerprint 8d7947c687844a3e, in sync), every service
+started from the same build, the Acme Corporation tenant provisioned by
+projects/ores.shell/scripts/library/provisioning/
+how_do_i_provision_the_system_with_acme_corporation_holding_group.ores.
+
+1. The feeds publish, and the demand is served
+----------------------------------------------
+The synthetic service's curve feeds log the subject their ticks really went
+out on: the adapter ingress of each pillar's vendor id.
+
+  $ journalctl --user -u ores.synthetic.service-eager_maxwell.service | \
+      grep 'SYNTHETIC CURVE PUBLISH'
+  SYNTHETIC CURVE PUBLISH: source='synthetic.bloomberg.usdsofr' batch=1 points=12 \
+      subject='marketdata.v1.ingress.bloomberg-a.USD%20SOFR%20DEPO%20SPOT%203M%20Curncy'
+
+The market data service accepted every demanded id:
+
+  Demand of 362 id(s): 362 accepted, 0 rejected, 0 started, 0 stopped;
+      54 generator(s) running
+  Demand of 71 id(s): 71 accepted, 0 rejected, 0 started, 0 stopped;
+      31 generator(s) running
+  Demand of 14 id(s): 14 accepted, 0 rejected, 0 started, 0 stopped;
+      14 generator(s) running
+
+  Feed ingest loop: 7 bound source(s), 10 route(s), 10 catalogue source(s)
+
+2. The seeded ladder series stores the ticks, with oresmd series and datum URIs
+-----------------------------------------------------------------------------
+The series is the one the seeded blueprint's pillars name, owned by the system
+party, provider bloomberg:
+
+  $ compass sql -- -c "select count(*) from ores_marketdata_ticks_tbl
+      where series_id = 'f7a1b2c3-8d4e-4f60-9a2b-3c4d5e6f7081'"
+  60
+
+  $ compass sql -- -c "select c.oresmd_uri as datum_uri, count(*) as ticks, max(t.ts)
+      from ores_marketdata_ticks_tbl t
+      join ores_marketdata_tick_coords_tbl c
+        on c.series_id = t.series_id and c.coord = t.coord
+      where t.series_id = 'f7a1b2c3-8d4e-4f60-9a2b-3c4d5e6f7081'
+      group by 1 order by 1"
+  datum_uri                                                                    | ticks | last
+  -----------------------------------------------------------------------------+-------+-----------------
+  oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=10Y | 6 | 2026-10-30 00:54:43
+  oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=12M | 6 | 2026-10-30 00:54:43
+  oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=15Y | 6 | 2026-10-30 00:54:43
+  oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=1M  | 6 | 2026-10-30 00:54:43
+  oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=20Y | 6 | 2026-10-30 00:54:43
+  oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=2Y  | 6 | 2026-10-30 00:54:43
+  oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=30Y | 6 | 2026-10-30 00:54:43
+  oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=3M  | 6 | 2026-10-30 00:54:43
+  oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=3Y  | 6 | 2026-10-30 00:54:43
+  oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=5Y  | 6 | 2026-10-30 00:54:43
+  oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=6M  | 6 | 2026-10-30 00:54:43
+  oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=7Y  | 6 | 2026-10-30 00:54:43
+
+The series row itself:
+
+  $ compass sql -- -c "select id, tenant_id, party_id, provider_code
+      from ores_marketdata_market_series_tbl
+      where oresmd_uri =
+      'oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D'"
+  f7a1b2c3-8d4e-4f60-9a2b-3c4d5e6f7081 | ffffffff-...-ffffffffffff |
+      226717da-2682-4613-bd4f-6af3739944c7 (System Party)
+
+3. The seeded blueprint's check reads them
+------------------------------------------
+Logged in as the system administrator, which is the tenant the seeded blueprint
+belongs to. POST /api/curves/compute, bootstrap_config_id
+d0b1e2f3-4a5b-4c6d-8e7f-9a0b1c2d3e4f (USD-SOFR-FOMC, the spot-starting USD SOFR
+ladder whose seven pillars name the ladder series above), as_of
+2026-10-30T00:55:00Z:
+
+  HTTP 200
+  {"points":[
+    {"point_id":"3M","date":"2027-01-30","discount_factor":0.9898347634384108},
+    {"point_id":"6M","date":"2027-04-30","discount_factor":0.9799913560287419},
+    {"point_id":"12M","date":"2027-10-30","discount_factor":0.96037029071083},
+    {"point_id":"2Y","date":"2028-10-30","discount_factor":0.9226684009754333},
+    {"point_id":"5Y","date":"2031-10-30","discount_factor":0.8221526627893537},
+    {"point_id":"10Y","date":"2036-10-30","discount_factor":0.6828525780046687},
+    {"point_id":"30Y","date":"2056-10-30","discount_factor":0.37609093309394126}]}
+
+Before the seed's route existed the same call answered 422,
+"curve_republish_resolver: no observed rate for pillar '3M' in the raw grid".
+
+4. A raise, a decision and a publish, on the same stored quotes
+---------------------------------------------------------------
+The publish flow needs two accounts of one party, so the live pass adds an
+Acme-owned blueprint beside the seeded one (evidence/live_pass_curve.sql): its
+seven pillars name the ladder series the ACME Corporation Plc party holds,
+provider bloomberg, which the same synthetic feed ticks.
+
+The check on that blueprint, as the group party, as_of 2026-10-30T01:00:00Z:
+
+  HTTP 200, points 3M .. 30Y, discount factors 0.9898483560722232 ..
+       0.3761242181752901
+
+The raise, by the group's Treasurer (Trading holds marketdata::curve_bootstrap:publish):
+
+  $ curve_publish_operations publish-curve b9b9b9b9-...-0002 2026-10-30T01:00:00Z \
+      --reason "Today's USD SOFR curve, bootstrapped from the synthetic ladder the feed stores"
+  {"success":true,"message":"Raised. The publish waits on the decision.",
+   "approval_request_id":"01a18a4e-5ed8-721b-85ac-8d6695c9ac0f","state_code":"waiting"}
+
+The decision, by the group's Chief Executive (Operations holds
+inbox::approvals:decide_market_risk), four eyes holding:
+
+  $ approval_operations decide-approval 01a18a4e-... approve \
+      "The ladder quotes match the day's market" none --version 1
+  {"request":{"version":2,"state_code":"approved","modified_by":"adrian.vance",
+   "change_commentary":"Decision: approve"}}
+
+The publish, by the same Treasurer, naming the approved request:
+
+  $ curve_publish_operations publish-curve b9b9b9b9-...-0002 2026-10-30T01:00:00Z \
+      --approval_request_id 01a18a4e-5ed8-721b-85ac-8d6695c9ac0f
+  {"success":true,"approval_request_id":"01a18a4e-...","state_code":"approved",
+   "published_at":"2026-10-30 00:56:04.000000Z","published_by":"nadia.fischer"}
+
+The published set, read back through the screen's own call,
+POST /api/curves/published:
+
+  {"sets":[{"publish_id":"169f9556-0053-42f5-99ff-8aac069cf916",
+    "request_id":"01a18a4e-5ed8-721b-85ac-8d6695c9ac0f",
+    "curve":"USD-SOFR-SYNTH2",
+    "series_uri":"oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-SYNTH2",
+    "bootstrap_config_id":"b9b9b9b9-0000-4000-8000-000000000002",
+    "party":"ACMCOR","as_of":"2026-10-30 01:00:00.000000Z",
+    "published_by":"nadia.fischer","published_at":"2026-10-30 00:56:04.000000Z",
+    "state_code":"published","point_count":7}],"total":1}

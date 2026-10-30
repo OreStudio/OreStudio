@@ -76,69 +76,91 @@ Recorded because the next four entries pay the same price:
   hand-wired: the two =component_files.cmake= lists, and the create and drop
   aggregators.
 
-* What the ORE schema says
+* What the ORE schema says, and where we improve on it
 
-Read from =external/ore/xsd/curveconfig.xsd= before moving another column, and it
-changes the plan: only one of the three remaining entries is a union.
+Read from =external/ore/xsd/curveconfig.xsd= before moving another column. It is
+the first evidence for what a document holds, and it decides one of the three
+remaining entries outright and improves the model for the other two. Where its
+answer is a limit of the XSD rather than a statement about the data, the task
+says so and models the condition instead.
 
-** =curve_volatility_config= is one, and it is the hardest.
+** =curve_volatility_config=: one entry, several kinds, each with a priority
 
 A volatility entry writes either one bare kind element, or a =VolatilityConfig=
-element that holds **up to one of each of seven kinds** in an =xs:all=. Each kind
-is its own complex type with its own fields and a =priority= attribute:
+element holding up to one of each of seven kinds in an =xs:all=. Each kind is its
+own complex type with its own fields and a =priority= attribute:
 
-| Kind | Its own fields, beyond the shared four |
-|------+----------------------------------------|
+| Kind | Its own fields |
+|------+----------------|
 | =Constant= | =Quote= |
 | =Curve= | =Quotes=, =Interpolation=, =Extrapolation=, =EnforceMontoneVariance= |
-| =StrikeSurface= | =Strikes=, =Expiries=, =TimeInterpolation=, =StrikeInterpolation=, =Extrapolation=, =TimeExtrapolation=, =TimeExtrapolationVariance=, =StrikeExtrapolation=, =ParametricSmileConfiguration= |
+| =StrikeSurface= | =Strikes=, =Expiries=, the interpolation block, =Extrapolation=, =TimeExtrapolation=, =TimeExtrapolationVariance=, =StrikeExtrapolation=, =ParametricSmileConfiguration= |
 | =DeltaSurface= | =DeltaType=, =AtmType=, =AtmDeltaType=, =PutDeltas=, =CallDeltas=, =Expiries=, the interpolation block, =FuturePriceCorrection= |
 | =MoneynessSurface= | =MoneynessType=, =MoneynessLevels=, otherwise the delta surface's shape |
 | =ApoFutureSurface= | not modelled yet |
 | =ProxySurface= | =ProxyVolatilityCurve=, =FXVolatilityCurve=, =CorrelationCurve=, =CDSVolatilityCurve= |
 
-So a row is not one kind: it is an entry with zero to seven kinds, one per kind,
-and each kind carries its own priority. The shape the model has today -- one row
-with =kind= and every kind's columns -- is the union written flat.
+Every one of the seven repeats the same four fields -- =QuoteType=,
+=VolatilityType=, =ExerciseType= and =Calendar= -- because the XSD has no way to
+factor them out. That repetition is a limit of the schema, not a fact about the
+data, so the model factors it:
 
-The model that matches the schema:
+- =curve_volatility_config= is the entry: =id=, =party_id=,
+  =curve_definition_id=, =position=, =is_wrapped=;
+- =curve_volatility_kind= is the kind: the entry's key, =kind_code=, =priority=
+  and one =volatility_quote_terms= field group carrying the four fields every
+  kind shares. This is the central row of the atomised shape, and it is where
+  "the same entry holds several alternatives in priority order" becomes explicit
+  instead of implied by an =xs:all=;
+- one part per kind -- =curve_volatility_strike_surface=,
+  =curve_volatility_delta_surface=, =curve_volatility_curve=,
+  =curve_volatility_constant=, =curve_volatility_proxy_surface=,
+  =curve_volatility_moneyness_surface= -- each keyed by the kind, carrying the
+  kind's own fields and nothing else.
 
-- the entry keeps the identity: =id=, =party_id=, =curve_definition_id=,
-  =position= and =is_wrapped= (whether the document wrote a =VolatilityConfig=
-  element or a bare kind);
-- each kind is a part, one row per entry and kind, carrying =priority= and the
-  kind's own fields;
-- =quote_type=, =volatility_type=, =exercise_type= and =calendar= appear in every
-  kind's type, so they are one =field_group= nested in each part, not four
-  columns repeated seven times.
+That is one level more than the schema states, and it is justified by what the
+schema cannot say: an =xs:all= of seven optional kinds is a list of alternatives
+with an order, which is a row and its parts, not a row with 30 nullable columns.
+The two kinds not modelled yet -- =ApoFutureSurface= and =MoneynessSurface= for
+the surfaces the projection refuses -- arrive as parts when they are modelled,
+without touching the entry.
 
-** =fx_volatility_config= is not a union, and the inventory's verdict was wrong.
+** =fx_volatility_config=: the schema cannot state the smile's condition, so we do
 
-=fxVolatility= is one =xs:all= with a mandatory =Dimension= and optional smile
-fields: =SmileType=, =SmileInterpolation=, =Deltas=, =SmileDelta=,
-=SmileExtrapolation=, =ButterflyErrorTolerance=, =TimeInterpolation=,
-=TimeWeighting=. The schema never states a different element per dimension, so
-dimension is a value of one component and not a discriminator between
-components. Its 18 nullable columns are the schema's optional children, which is
-what the schema looks like, not a union.
+=fxVolatility= is one =xs:all=: a mandatory =Dimension=, then optional
+=SmileType=, =SmileInterpolation=, =Deltas=, =SmileDelta=, =SmileExtrapolation=,
+=ButterflyErrorTolerance=, =TimeInterpolation= and =TimeWeighting=. There is no
+element per dimension, so the schema says "these fields are optional", and only a
+reader knows that the smile ones are meaningless in one dimension.
 
-** =inflation_cap_floor_volatility_config= is not a union either.
+That is the deficiency worth improving on: the smile block exists for a two
+dimensional surface and not for a one dimensional one. The model states it:
 
-=inflationCapFloorVolatility= is also one =xs:all= with a mandatory =Type=,
-=QuoteType=, =Tenors=, =CapStrikes=/=FloorStrikes=/=Strikes= as optional lists,
-and the rest optional. Again one component with optional fields.
+- =fx_volatility_config= keeps the entry: the curves, the spot, =dimension=,
+  =deltas=, =expiries=, the conventions and the calendar;
+- =fx_volatility_smile= is a part holding =smile_type=, =smile_interpolation=,
+  =smile_delta=, =smile_extrapolation=, =butterfly_error_tolerance=,
+  =time_interpolation= and =time_weighting=, and a row exists only for a two
+  dimensional entry.
 
-** What that means for the task
+=dimension= stays on the entry because it does not only gate the smile: it
+decides how =deltas= is read. That is a value of the component, and the smile's
+presence is the conditional.
 
-- =curve_volatility_config= is split, as above: five parts plus two kinds not
-  modelled yet, and one shared field group.
-- =fx_volatility_config= and =inflation_cap_floor_volatility_config= are
-  =keep= or at most =group=. They are not split, and the inventory's verdict for
-  both is corrected here: the nullable ratio that ranked them measured the
-  schema's optionality, not a union.
-- The =dimension= and =quote_type= splits this task planned are dropped. Making
-  them would have turned one component into a table per value of a column, which
-  is not a component boundary.
+** =inflation_cap_floor_volatility_config=: the strike axis is a group, and =Type= needs reading
+
+=inflationCapFloorVolatility= is one =xs:all= with a mandatory =Type=,
+=QuoteType=, =Tenors=, =Calendar=, =DayCounter=, =BusinessDayConvention=,
+=Index=, =IndexCurve=, =ObservationLag= and =YieldTermStructure=, and with
+=CapStrikes=, =FloorStrikes= and =Strikes= as three optional lists. The three are
+alternatives -- a cap quote is struck on caps, a floor quote on floors, and a
+surface on both -- so they are one =strike_axis= field group carrying the mode and
+the lists, not three columns of a union.
+
+Whether =Type= is a discriminator is not settled here: the schema makes it
+mandatory and the ORE conventions behind each inflation type differ, so the
+reading of =Type='s conventions is what decides between =keep= and a split into
+parts. That reading is the next step, not a guess.
 
 * Plan
 

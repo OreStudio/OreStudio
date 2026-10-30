@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: F2C6652A-AE31-44EF-BB48-9F969433E005
+:END:
+#+title: ORE's schema is evidence, not the model
+#+description: The ORE XSD is the first evidence for what a document holds and the last word on nothing: model the condition it cannot state, and say why.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+Read the ORE XSD first, then model the condition it cannot state.
+
+*Why:* The XSD has done the analysis of what an ORE document can hold, so it is the first place to look. But it is an XSD: an xs:all and a minOccurs=0 are the only ways it has to say 'one of these' and 'only when that'. Copying it inherits those limits -- a union written as nullable columns, one kind's four common fields repeated in every kind's type, and a condition stated as optionality that only the reader knows.
+
+*How to apply:* Read the schema type, then ask what it is trying to say. If it repeats a block in every kind, factor it into a field group or a central row. If it encodes a conditional as optional children, model the condition as its own part. Record on the task what you took from the schema, what you changed and why, and never let the improvement change the wire shape without saying so.

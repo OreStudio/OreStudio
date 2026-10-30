@@ -110,11 +110,11 @@ was taken with a script, not by hand, and it met these:
   page's count and not in the curve's tag. A person reading the tag alone sees a
   smaller curve than the page holds. Still open.
 - *Three segment leaves have no contract row.* =PillarChoice=, =Priority= and
-  =MinDistance= draw a dash and the entry reads *3 without documentation*, because
-  every kind reads them through =common_settings= and the extractor follows no
-  helper call. The same root cause as the inherited base class, one level in.
-  Filed as [[id:EB796F14-ECCB-4634-BAD9-6958D0F3C10A][The curve term extractor
-  misses leaves a helper reads]].
+  =MinDistance= draw a dash and the entry reads *3 without documentation*. The
+  extractor reads them from the ORE source; the guide explains them in prose and
+  never lists them as items, so no term carries a text and the contract writes no
+  row. Curating them is [[id:27C8B919-C762-4382-9043-1DE7E2D4A6D5][Curate the
+  shared segment leaves]].
 - *The instant a row was recorded was drawn as a leaf.* Found and fixed on the
   quotes branch; the scenario confirms it is gone.
 - *Two 401s appear in the console* while the shell settles before the party is

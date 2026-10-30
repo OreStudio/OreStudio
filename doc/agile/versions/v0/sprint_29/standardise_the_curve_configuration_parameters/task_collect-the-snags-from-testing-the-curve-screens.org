@@ -143,3 +143,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The curve screens were walked in a browser, and the walk left a scenario a person
+can repeat plus the defects it found. The scenario walks the segments and quotes
+of a curve, the blocks the page does not draw, and the Details, Used by and
+History tabs, with a result table per step.
+
+The walk found four snags. The instant a row was recorded drew as a leaf, fixed on
+the quotes branch. A segment's conventions draw as a gap because the contract has
+no row for them, filed as task 3D1208F2. The elements a curve can otherwise hold
+were one line a tester called extremely confusing to users, now a line per element
+with its own state. And a run that reached its last step never reached the doc:
+the runner now saves as the tester moves on, which a browser walk from a pending
+scenario confirmed with nothing pressed at the end.
+
+Two fixes to the tooling came with it: the runner's save-on-move, and `compass add`
+stating the environment on a doc the scaffold writes, which had left every
+scenario's field empty.
+
+What the scenario asks of a person that a script cannot judge: whether a segment's
+card reads as one element, whether a long quote list stays scannable, and whether
+a segment leaf's documentation opens as easily as a curve's own.

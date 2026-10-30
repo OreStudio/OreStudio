@@ -26,3 +26,28 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 * See also
 
 -
+
+* What the logs said
+
+The step was published and nobody was listening, and the engine said so at the
+time:
+
+    [ERROR] [ores.workflow.service.workflow_engine] Step command could not be
+    published to a stream, so no service was asked to act:
+    workflow=f4e325d7-3c10-4ae0-ba43-cc3a55274d0c step=gleif.lei_entities.large
+    subject=refdata.v1.ops.publish_legal_entities_from_dq
+    error=JetStream publish failed: No responders available for request
+
+The subject is new: it arrived with the legal entity work (75e227d3cf, merged as
+PR #4074), and the running refdata service was a binary built before it, so it
+had no handler and did not answer. Nothing was wrong with the workflow's routing.
+
+Two defects follow, and neither is the stale binary:
+
+1. The engine *knows* the step reached no one. It logs an error and yet leaves
+   the step `in_progress`, so the parent waits its full 20 minute timeout and the
+   tenant stays in `bootstrapping`. A step that could not be published should
+   fail at once, with the reason, and the parent should fail with it.
+2. The tenant is left in a state nothing can finish. `bootstrap setup` refuses
+   because the system is no longer in bootstrap mode, and the workflow's own retry
+   publishes to the same subject and waits again.

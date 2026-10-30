@@ -110,13 +110,17 @@ def duplicate_indexes(text):
     return [(*key, count) for key, count in seen.items() if count > 1]
 
 
-def _after_string(text, i):
-    """The offset just past the string literal that starts at ``i``."""
+def _after_quoted(text, i, quote):
+    """The offset just past the quoted run that starts at ``i``.
+
+    A doubled quote stands for the quote itself, in a string and in an
+    identifier alike, so the run ends only on a lone one.
+    """
     n = len(text)
     j = i + 1
     while j < n:
-        if text[j] == "'":
-            if text.startswith("''", j):
+        if text[j] == quote:
+            if text.startswith(quote * 2, j):
                 j += 2
                 continue
             return j + 1
@@ -173,14 +177,13 @@ def split_concatenation(text):
             i = n if end < 0 else end + len(tag.group(0))
             continue
         if text[i] == '"':
-            end = text.find('"', i + 1)
-            i = n if end < 0 else end + 1
+            i = _after_quoted(text, i, '"')
             continue
         if text[i] != "'":
             i += 1
             continue
 
-        i = _after_string(text, i)
+        i = _after_quoted(text, i, "'")
         j, comment_at = i, -1
         while j < n:
             if text[j] in " \t\r\n":

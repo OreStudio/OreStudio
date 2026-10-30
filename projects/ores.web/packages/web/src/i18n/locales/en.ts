@@ -503,8 +503,7 @@ export const en: SourceCatalogue = {
     'notification.marketdata.curve_withdrawn':
         'The curve {curve} of {party} was withdrawn on {withdrawn_at} by {withdrawn_by}: {reason}. Its last published set was as of {as_of}.',
 
-    'notification.scenario.to_run':
-        'A test scenario is ready for you: "{scenario}". {reason}',
+    'notification.scenario.to_run': 'A test scenario is ready for you: "{scenario}". {reason}',
 
     signIns: {
         title: 'Sign-ins',

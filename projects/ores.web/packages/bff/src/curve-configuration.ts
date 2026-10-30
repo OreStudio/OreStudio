@@ -395,33 +395,33 @@ function collectionsOf(
     kindOf: KindOf,
 ): readonly CurveCollectionView[] {
     const declared = new Set(wiring.blocks.map((block) => block.element));
-    return wiring.collections.filter(
-        (rule) => declared.has(rule.element) || vectorOf(document, rule.vector).length > 0,
-    ).map((rule) => {
-        const rows = vectorOf(document, rule.vector)
-            .filter((candidate) => text(candidate[rule.parentKey]) === entryId)
-            .map((candidate) => {
-                const kind = kindOf(text(candidate[rule.kindColumn]));
-                return {
-                    id: text(candidate['id']),
-                    kind,
-                    leaves: collectionLeaves(
-                        candidate,
-                        wiring.section,
-                        wiring.entryElement,
-                        rule,
+    return wiring.collections
+        .filter((rule) => declared.has(rule.element) || vectorOf(document, rule.vector).length > 0)
+        .map((rule) => {
+            const rows = vectorOf(document, rule.vector)
+                .filter((candidate) => text(candidate[rule.parentKey]) === entryId)
+                .map((candidate) => {
+                    const kind = kindOf(text(candidate[rule.kindColumn]));
+                    return {
+                        id: text(candidate['id']),
                         kind,
-                        contract,
-                        valueSetOf,
-                    ),
-                    quotes:
-                        rule.quoteParent === ''
-                            ? []
-                            : quotesOf(document, text(candidate['id']), rule.quoteParent),
-                };
-            });
-        return { element: rule.element, rows };
-    });
+                        leaves: collectionLeaves(
+                            candidate,
+                            wiring.section,
+                            wiring.entryElement,
+                            rule,
+                            kind,
+                            contract,
+                            valueSetOf,
+                        ),
+                        quotes:
+                            rule.quoteParent === ''
+                                ? []
+                                : quotesOf(document, text(candidate['id']), rule.quoteParent),
+                    };
+                });
+            return { element: rule.element, rows };
+        });
 }
 
 /**

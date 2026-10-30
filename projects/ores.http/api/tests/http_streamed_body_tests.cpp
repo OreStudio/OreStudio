@@ -658,20 +658,22 @@ TEST_CASE("a_256_mib_upload_does_not_grow_the_process", "[http_streamed_body][me
     auto received = std::make_shared<std::uint64_t>(0);
     streaming_fixture fixture(options);
     auto router = fixture.server().get_router();
-    router->add_route(
-        router->post("/stream")
-            .summary("Take a large streamed body")
-            .auth_optional()
-            .max_body(256ull * 1024 * 1024)
-            .sink([received] { return std::make_unique<streamed_counting_sink>(received); })
-            .handler([](const http_request& req) -> asio::awaitable<http_response> {
-                if (req.sink == nullptr || !req.sink->publish())
-                    co_return http_response::error(http_status::internal_server_error,
-                                                   "The bytes could not be published.");
-                co_return http_response::json(R"({"bytes":)" + std::to_string(req.body_bytes) +
-                                              "}");
-            })
-            .build());
+    router->add_route(router->post("/stream")
+                          .summary("Take a large streamed body")
+                          .auth_optional()
+                          .max_body(256ull * 1024 * 1024)
+                          .sink([received](const http_request&) {
+                              return std::make_unique<streamed_counting_sink>(received);
+                          })
+                          .handler([](const http_request& req) -> asio::awaitable<http_response> {
+                              if (req.sink == nullptr || !req.sink->publish())
+                                  co_return http_response::error(
+                                      http_status::internal_server_error,
+                                      "The bytes could not be published.");
+                              co_return http_response::json(R"({"bytes":)" +
+                                                            std::to_string(req.body_bytes) + "}");
+                          })
+                          .build());
 
     constexpr std::uint64_t total = 256ull * 1024 * 1024;
 

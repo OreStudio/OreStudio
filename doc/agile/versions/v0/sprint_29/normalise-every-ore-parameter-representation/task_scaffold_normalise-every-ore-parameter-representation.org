@@ -8,7 +8,7 @@
 #+filetags: :normalise-every-ore-parameter-representation:sprint_29:v0:
 #+owner: marco
 #+branch: feature/normalise-every-ore-parameter-representation
-#+pr:
+#+pr: 4119
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4119][#4119]] | [agile] Scaffold the story for one rendering per fact |
 
 * Review
 

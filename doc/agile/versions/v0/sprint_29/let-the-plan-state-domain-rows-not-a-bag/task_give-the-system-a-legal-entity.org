@@ -8,7 +8,7 @@
 #+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
 #+owner: marco
 #+branch: feature/give-the-system-a-legal-entity
-#+pr: 4080
+#+pr: 4099
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -76,6 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4099][#4099]] | [agile] Reconcile the legal entity task with its story row |
 | [[https://github.com/OreStudio/OreStudio/pull/4080][#4080]] | [refdata] Regenerate the legal entity so main compiles |
 | [[https://github.com/OreStudio/OreStudio/pull/4075][#4075]] | [agile] Write the plan for the flip |
 | [[https://github.com/OreStudio/OreStudio/pull/4074][#4074]] | [refdata,dq] Publish the LEI so credit can reference a legal entity |

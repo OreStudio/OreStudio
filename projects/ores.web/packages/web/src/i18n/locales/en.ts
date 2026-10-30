@@ -503,7 +503,7 @@ export const en: SourceCatalogue = {
         'The curve {curve} of {party} was withdrawn on {withdrawn_at} by {withdrawn_by}: {reason}. Its last published set was as of {as_of}.',
 
     'notification.scenario.to_run':
-        '{raiser} asks you to run the scenario "{scenario}". Reason given: {reason}',
+        'A test scenario is ready for you: "{scenario}". {reason}',
 
     signIns: {
         title: 'Sign-ins',

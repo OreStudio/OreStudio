@@ -500,7 +500,7 @@ const pt: SourceCatalogue = {
         'A curva {curve} de {party} foi retirada em {withdrawn_at} por {withdrawn_by}: {reason}. O seu ultimo conjunto publicado tinha a data de {as_of}.',
 
     'notification.scenario.to_run':
-        '{raiser} pede-lhe para executar o cenário « {scenario} ». Motivo indicado: {reason}',
+        'Um cenário de teste está pronto para si: « {scenario} ». {reason}',
 
     signIns: {
         title: 'Inícios de sessão',

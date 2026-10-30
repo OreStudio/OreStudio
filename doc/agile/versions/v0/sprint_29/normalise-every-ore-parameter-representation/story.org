@@ -40,7 +40,7 @@ Every ORE parameter whose reader accepts more than one rendering of a value is s
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:ABCEDE72-7A51-4D82-8232-DC9BA9CC9291][Scaffold story: Normalise every ORE parameter representation]] | STARTED | 2026-10-30 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:ABCEDE72-7A51-4D82-8232-DC9BA9CC9291][Scaffold story: Normalise every ORE parameter representation]] | DONE | 2026-10-30 | 2026-10-30 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:300CD9D6-19F9-4826-B771-49B04A9DD2E7][Take the census of the representations ORE accepts]] | BACKLOG | | | Initial task for: Normalise every ORE parameter representation |
 
 

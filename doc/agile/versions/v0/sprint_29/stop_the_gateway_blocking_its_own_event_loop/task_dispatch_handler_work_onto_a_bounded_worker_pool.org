@@ -8,7 +8,7 @@
 #+filetags: :stop_the_gateway_blocking_its_own_event_loop:sprint_29:v0:
 #+owner: marco
 #+branch: feature/stop-the-gateway-blocking-its-own-event-loop
-#+pr:
+#+pr: 4089
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -118,7 +118,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4089][#4089]] | [http] Stop the gateway blocking and bound the request body |
 
 * Review
 

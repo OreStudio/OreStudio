@@ -2,7 +2,7 @@
 :ID: FB8F701C-E56A-49A9-AA90-1B6BD0B02092
 :END:
 #+title: A report binds to a published curve, not to a name
-#+description: The target for a report's market binding: it names the publish record and the as-of, the export enforces the published state, and the ORE XML is built from the published set.
+#+description: The target for a report's market binding: it names the publish record and the as-of, the export enforces the published state, the ORE XML is built from the published set, and the screen that makes the binding is settled.
 #+type: knowledge
 #+level: cross
 #+filetags: :reporting:marketdata:publish:binding:
@@ -70,24 +70,90 @@ priced from.
 
 * Consequences and the work
 
-The entity changes: =configuration_market_binding= gains =publish_id= and loses
-the free name as an input. The binding screen picks a published curve with the
-standard record picker, drawn by the curve and its as-of, and shows the state.
-The ORE export reads the set instead of a name. The report run records the
-publish record it used.
+The entity changes: =configuration_market_binding= gains =publish_id= and
+=priced_as_of=, and loses the free name as an input. The binding screen picks a
+published curve with a picker over the published read, drawn by the curve, its party
+and its as-of, and shows the state; today's shared =RecordPicker= cannot carry it,
+because its choices are its whole kind read once and it draws no state. The screen
+itself is settled in [[*What the screen settles][What the screen settles]]. The ORE
+export reads the set instead of a name. The report run records the publish record it
+used.
 
 The demonstration needs the binding of its report configuration to the published
 USD-SOFR curve, so a run can be shown end to end.
 
+* What the screen settles
+
+The [[id:3E207A59-C1F8-429C-BA23-99DBAEB6EA5E][Market bindings prototype]] draws the screen this
+decision implies, and it settles five things the decision left to it. The person's
+side of them is [[id:3FCDF005-AE5B-42AF-A053-BFEBAEDAD6AD][Bind a report to a published curve]].
+
+** The bindings are a collection of the run settings, and a tab of its page
+
+The rows belong to the run settings configuration, so they are a collection of that
+kind: one row per market role, changed in a dialog, saved once for the document, and
+versioned with the configuration. They are a tab of its record page named *Market
+bindings* and they follow the
+[[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]] rather than a
+screen of their own. The report page's market tab is the second door, so a person who
+starts from the report reaches the binding in one step.
+
+** The state is the row's first fact, and it is the binding's verdict
+
+The row draws the verdict — Published, Historical, Refused, Ended, No binding — with the
+set's stored state under it. The two are different facts: a set that was superseded is
+not the set this run would use, and the screen must say the second.
+
+** A candidate is refused where it is picked
+
+The picker draws the published sets with the curve, the party, the as-of, the state and
+the publisher, and it refuses a candidate at the row. *Bind* is not drawn for one, so
+the screen will not stage a write the run would refuse. Nothing on the screen writes a
+candidate, and the refusal says what would make the set usable: an approval.
+
+** The ended set is refused, and the pin is on the binding
+
+An ended set is refused in the same place, and the one route past the refusal is the
+person stating the set's as-of as a historical as-of. That statement is a field of the
+binding — =priced_as_of= — and not a choice made at the run. It is visible on the screen
+a person reads before pressing *Run now*, it is a version in the configuration's
+history, and it holds for every run of that configuration until somebody changes it. A
+run dialog that asked for an as-of would keep the same answer in a place nobody can
+read before the press.
+
+** The run names the set, and the refusal reaches it
+
+The ORE name is drawn and never typed: the row carries a *Writes* column showing the
+market configuration name the export will derive from the set's curve and party. The
+run's own page carries a card naming the publish record it priced from — the curve, the
+party, the as-of, the publisher, the published instant and the points read — read from
+the run and not from the binding, because the binding may move afterwards. A run whose
+binding names a candidate, names an ended set with no pinned as-of, or names nothing at
+all is refused before the engine is reached, in the same words the screen uses.
+
 * What this does not settle
 
 - Whether a binding may name more than one set, for a report that needs several
-  curves. The first slice binds one set per role.
+  curves. The first slice binds one set per role, and the prototype draws one row
+  per role and refuses nothing: a role that needs a list is not drawn.
 - Whether other market data, such as FX spots, binds the same way. The first
   slice binds the curve; the same shape would carry any published series.
 - Whether the curve configuration document remains an input alongside the
   binding, or retires once the binding names the set. That is the next decision
   after the first slice runs.
+- The spelling of the derived name. The decision says the name is derived and no
+  rule states how the curve, the party and the as-of fold into a name that
+  =todaysmarket.xml= accepts. The prototype draws an illustration in the *Writes*
+  column and the export owns the rule.
+- Whether the pinned as-of is the set's or the run's. The prototype pins the set's
+  own as-of, which is what a rerun of a published result needs. A rerun at an
+  instant the set did not hold is not drawn and not refused.
+- The vocabulary of the market roles. =role= is a free string in ORE's schema, and
+  no table holds the names a run may use, so the screen draws the codes the run
+  document carries and says the list is not a vocabulary.
+- Whether a report may price from another party's set. The prototype offers the
+  configuration's party alone, on the rule that the same curve code in two parties
+  is two curves.
 
 * See also
 
@@ -95,4 +161,6 @@ USD-SOFR curve, so a run can be shown end to end.
 - [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]]
 - [[id:90B90247-376D-4EDA-958D-5ABE66A8B14D][ores.reporting.configuration_market_binding]]
 - [[id:D1A25B9E-B1A0-4E7C-AB5C-1C7C3EF07F90][ORE import and export]]
+- [[id:3FCDF005-AE5B-42AF-A053-BFEBAEDAD6AD][Bind a report to a published curve]] — the journey that draws this decision from the person's side
+- [[id:3E207A59-C1F8-429C-BA23-99DBAEB6EA5E][Market bindings prototype]] — the screen the decision implies, with what it settles and what it leaves open
 - [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]]

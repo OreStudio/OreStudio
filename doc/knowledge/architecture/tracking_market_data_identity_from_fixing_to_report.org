@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:path:oresmd:publish:report:structure_note:
 #+created: 2026-10-28
-#+updated: 2026-10-28
+#+updated: 2026-10-30
 
 * Summary
 
@@ -224,7 +224,10 @@ The first is the report's market binding, designed in
 [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]]. A report will name the
 published set, and the published read will refuse a set that is not in the published state. The
 binding carries the output series, the as-of and the publish record, and the ORE
-export builds the XML from those. This closes the chain described above.
+export builds the XML from those. This closes the chain described above. The screen is
+[[id:3E207A59-C1F8-429C-BA23-99DBAEB6EA5E][Market bindings prototype]] and the
+person's side of it is
+[[id:3FCDF005-AE5B-42AF-A053-BFEBAEDAD6AD][Bind a report to a published curve]].
 
 The second is the runtime's ORE spelling. No reader, feed or classifier in the
 runtime will compose an ORE key. The pillar names its series, as

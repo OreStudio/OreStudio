@@ -1,0 +1,386 @@
+:PROPERTIES:
+:ID: 3FCDF005-AE5B-42AF-A053-BFEBAEDAD6AD
+:END:
+#+title: User Journey: Bind a report to a published curve
+#+description: A market-risk owner binds one of a report's market roles to a published curve, picks the set by curve, party and as-of with its state, is refused a candidate, pins an ended set at its historical as-of, and runs the report, whose record names the publish record it priced from.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:reporting:marketdata:publish:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A market-risk owner binds one of a report's market roles to a published curve, picks the set by curve, party and as-of with its state, is refused a candidate, pins an ended set at its historical as-of, and runs the report, whose record names the publish record it priced from.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+The decision behind it is
+[[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]]:
+the binding names the publish record and the as-of, the export enforces the
+published state, the ORE XML is built from the set, and the name the market
+document carries is derived. This journey is the person's side of that decision.
+
+* Goal
+
+"This report priced off a curve, and the only thing I can read about it is the
+word =default=. I want to say which published curve this report prices from, see
+the set's as-of and its state before I commit, be told plainly when the set I
+picked cannot be used, and be able to reproduce last week's number on purpose.
+When the run finishes I want its record to name the set it priced from, so the
+number in the report and the curve on the published screen are one object and not
+two."
+
+The journey is done when the report's market role names a published set, the next
+run prices from that set's points at that set's as-of, and the run's own record
+says which publish record it used, with the publisher and the instant that made
+the set authoritative.
+
+* Actor and trigger
+
+A market-risk owner runs this journey, or a tenant administrator acting for the
+party. The owner knows which curve the desk prices off and owns the report's
+market choices; the administrator holds the configurations and the party's rows.
+The person acts inside their own tenant, on a run settings configuration their
+party owns, and binds a set their party published.
+
+Three permissions decide what the person sees. The bindings are rows of a
+configuration, so they are read with =reporting::configuration_market_bindings:read=
+and written with =reporting::configuration_market_bindings:write=. The picker
+reads the published sets through the read the curve reader already holds,
+=marketdata::market_series:read=. Running the report is
+=reporting::report_instances:write=, through
+=reporting.v1.ops.trigger_report_instance=. An action the person may not take is
+not drawn, as the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] requires.
+
+The trigger is a run whose market cannot be read back. A report produced a
+number, somebody asks which curve it came from, and the answer is a free string
+that names no party, no as-of and no act. Or the curve the desk uses was
+re-published overnight and nobody can say whether the report priced from the set
+in use or from the one it replaced. The person opens the report, then the run
+settings configuration it binds, and the journey ends when the run's record names
+the set.
+
+This journey binds the report's market role and runs the report. It does not
+publish, approve or withdraw a curve: those are
+[[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]],
+[[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] and
+[[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]].
+It does not write the analytics, the pricing engines, the conventions or the
+curve configuration, and it does not choose the valuation date: the date a run
+reads is a setting of the run settings, and the as-of this journey names is the
+set's own.
+
+* Steps
+
+** Step 1: reach the market bindings of the configuration the report binds
+
+1. *Open the report and read what it binds.* The report's page carries the
+   *Market and pricing* tab. It names the market the run reads and the three
+   configurations behind it, and it names the run settings configuration of the
+   party — for the fixture, *Acme official EOD run settings* — with a link to that
+   configuration's page.
+2. *Open the run settings configuration.* The configuration's page is the
+   [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]]'s:
+   Details, the sections the kind declares, Used by and History. The market
+   bindings are a collection of that kind, one row per market role, so they are a
+   tab of their own: *Market bindings*. The trail reads Home, Reporting, Run
+   settings, then the configuration's name, then the tab.
+
+   The rows hang off the run settings configuration and not off the definition, so
+   every report bound to that configuration shares them. The tab says so before
+   the person changes anything, and names the reports the change reaches.
+
+** Step 2: read the roles and what each binds
+
+3. *Read the roles.* The tab lists one row for each market role the run declares,
+   in the order the run document writes them. A role is ORE's own market name —
+   =pricing= and =simulation= among them — and the tab draws it as the code,
+   monospace, because no label catalogue paints it yet.
+
+   | Column | What it holds |
+   |--------+---------------|
+   | Role | The ORE market name, monospace, and the first column |
+   | Published curve | The curve's code and the party that published it. The same code in two parties is two curves |
+   | As-of | The instant the set was built at, exact, because it is what the run prices at |
+   | State | Published, Historical or Ended, as its badge |
+   | Publisher | The account that applied the approval |
+   | Published | The published instant, relative, with the exact value on hover |
+   | Points | How many pillars the set holds, right-aligned |
+   | Writes | The market configuration name the ORE document will carry, derived from the set |
+
+4. *Read an unbound role.* A role with no published curve bound says *No
+   published curve bound* in the row and, below the table, what that means for a
+   run: the run names nothing for that role, so it is refused before it starts
+   rather than pricing off whatever the export happens to find.
+
+5. *Read what the binding decides, and what it does not.* One sentence stands
+   above the table, in the standard's words for a configuration: it decides which
+   published curve each market role prices from; it does not decide the valuation
+   date, the curve configuration or the pricing engines, and each of those links
+   to the configuration that owns it.
+
+** Step 3: pick a published set
+
+6. *Change one role's binding.* *Change* on the row opens the picker over the
+   published sets, which is the record standard's =RecordPicker= applied to a set:
+   a search, a party select, two toggles, a table and a pager. It reads
+   =marketdata.v1.ops.list_published_curves=, and the party is the configuration's
+   party, so a set another party published is not offered.
+
+   | Column | What it holds |
+   |--------+---------------|
+   | Curve | The curve configuration's code, monospace, and the first column. An ended set says under it when it left use |
+   | Party | The party the set belongs to |
+   | Published as-of | The instant the set was built at, exact |
+   | State | Published, Withdrawn, Superseded or Candidate |
+   | Publisher | The account that applied the approval, and a dash for a candidate |
+   | Points | How many pillars the set holds, right-aligned |
+
+   Two toggles sit beside the search, in the published-curve list's own words.
+   *Show candidates* draws the sets nobody approved under the sets in use, muted,
+   with no publisher and no published instant. *Show ended sets* draws the
+   withdrawn and superseded sets, muted. Neither is drawn by default, so the sets
+   a desk prices from are the whole table until the person asks otherwise.
+
+7. *Pick the set in use.* The person picks the row whose state is *Published*, and
+   the dialog states what the binding will name: the curve, the party, the as-of,
+   the publisher, the published instant, the point count and the publish record's
+   id. The row is written with =publish_id= and with no typed name, because the
+   name is derived.
+
+** Step 4: the refusal, when the set cannot be used
+
+8. *A candidate is refused.* A set nobody has approved is not consumable. The
+   picker refuses it at the row and in the dialog's footer: *That set is a
+   candidate. Nobody has approved it, so a run cannot price from it. Ask for the
+   publish to be approved, or pick the published set.* The refusal names the
+   curve, the party and the as-of, so a person reading it knows which set to
+   chase. *Save* is not drawn while a refused row is selected: an action the
+   person may not take is not drawn, and the server would refuse the write anyway.
+
+9. *An ended set is refused too, until the person pins its as-of.* A withdrawn or
+   superseded set is refused in the same words, naming the state, the instant it
+   ended and, when it was superseded, the as-of of the set that replaced it. The
+   dialog then offers the one route past the refusal: *Price from this set at its
+   as-of*. The offer states what it does — the binding then names a historical
+   as-of, and every run of this configuration prices from that set at that instant
+   until somebody changes it — and it is the only way a rerun reproduces an old
+   result. Ticking it writes =priced_as_of= with the set's own as-of, the row
+   draws *Historical*, and the tab states that the set ended and the run prices
+   from it on purpose.
+
+10. *Read the refused run.* A run asked for while a binding names a candidate, or
+    names an ended set with no pinned as-of, does not start. It is refused before
+    the engine is reached, in words that name the role, the set and its state, and
+    the refusal is the same sentence the tab uses. A run that priced from a set
+    the person did not intend is worse than a run that did not start.
+
+** Step 5: see what the change writes and what it reaches
+
+11. *Save the set.* The market bindings are a collection of the configuration, so
+    the rows are written the way the standard writes a collection: each row
+    changed in its dialog, then one *Save* for the document, in one transaction,
+    with a change reason and a commentary, claiming the version the page read. A
+    stale save is a conflict and the page offers to read again.
+12. *Read the reach.* The tab states what a change reaches before it is made: the
+    next run of every definition bound to this configuration, and no run already
+    produced, because a run keeps what it priced from. The published set is not
+    changed by a binding: the binding names it, and only a withdrawal or a new
+    publish changes the set.
+
+** Step 6: run the report, and read what the run priced from
+
+13. *Run the report.* *Run now* on the report's page is
+    [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it
+    finish]]'s press, and the run's own page is that journey's. This journey adds
+    the market the press resolves: the dialog names the set before the press — the
+    curve, the party, the as-of, the publisher and the publish record — and the
+    run's page names the set it priced from, so the person is not asked to trust a
+    binding they cannot see.
+14. *Let the run read the set.* The gathering step no longer exports a date's
+    worth of every series. It resolves each role's =publish_id= through the
+    published read, takes the set's points at the set's as-of, and refuses a set
+    that is not in the published state, or an ended set the binding did not pin. A
+    refusal at this step is the same sentence as the screen's, in the run's output
+    message, so a scheduled run that nobody watched still says why it did not
+    price.
+15. *Read the run's record.* The run's page gains one card: *The market it priced
+    from*. It names the role, the curve, the party, the as-of, the publisher, the
+    published instant and the publish record, with a link to the published set's
+    page. It is read from the run and not from the binding, because the binding
+    can move after the run: a run names the set it used, not the set the
+    configuration names today.
+
+** The audit
+
+16. *Read the binding's history where the configuration keeps it.* The market
+    bindings are rows of the configuration, so their versions merge into the
+    configuration's *History* tab as the standard states it: each entry names the
+    role, the set's curve and as-of, and the field-level difference — the
+    =publish_id= that was there and the one written — with the account, the
+    instant and the reason.
+17. *Read the set's side of the same fact.* The published set's record gains its
+    consumers: the reports whose configuration binds it, and the runs that priced
+    from it, each with its instant and its result. That is the question a person
+    asks from the market side — *who is still using the set I am about to
+    withdraw?* — and it is the same fact the binding states from the report side.
+    No read answers it today; *What is missing* records it.
+
+* Screens and wireframes
+
+Two screens and one dialog's worth of surfaces. The *Market bindings* tab of the
+run settings configuration is where the binding is read and changed: the roles,
+the published curve each names, the state, the derived name the ORE document will
+carry, the pinned as-of where there is one, and the sentences about the reach and
+about a role that binds nothing. The picker is the standard's searchable picker
+over published sets, with the state column and the two toggles the published-curve
+list already draws, and with the two refusals and the pin's offer in its footer.
+The run surface is the run's own page with the card that names the set it priced
+from, and the refusal in the run's words when it cannot start.
+
+The three read as one answer: which curve this report prices from, why it may or
+may not, and which set the last number came from.
+
+#+caption: The market bindings of a report's run settings: the roles and the published set each binds, the picker with the state drawn, the candidate refused, the ended set pinned at its as-of, and the run that names the publish record it priced from.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/reporting/wireframe_bind_a_report_to_a_published_curve.png]]
+
+* Prototype
+
+The [[file:../../prototypes/reporting/market-bindings/][market bindings
+prototype]] draws this journey, and
+[[file:../../prototypes/reporting/market-bindings.org][its design note]] says what
+it argues, which states it draws and what is fake. It belongs at
+=doc/prototypes/reporting/market-bindings/=.
+
+It is one plain page with four surfaces behind the query string: the *Market
+bindings* tab, the picker over the published sets, the report page that is the
+way in, and the run with its refusal and its market card. It must draw a role
+with no binding, a role bound to the set in use, a candidate refused, an ended set
+pinned at a historical as-of, an ended set left unpinned with the run refused, and
+a run whose record names the publish record it priced from. Every value on it is a
+fixture, and the page says so.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =configuration_market_binding= | One market role of the run settings, and the published set it names: =configuration_id=, =role=, =publish_id=, =priced_as_of= and =position=. It gains =publish_id= and loses the free name as an input | [[id:90B90247-376D-4EDA-958D-5ABE66A8B14D][ores.reporting.configuration_market_binding]] |
+| =configuration= | The run settings configuration the rows belong to, and its version, which the rows move when one changes | [[id:6B3D9E27-5C41-4A86-8F19-2E7B0D4C6A53][ores.reporting.configuration]] |
+| =report_configuration= | The slot that ties the configuration to the definitions bound to it, which is what the reach is read through | [[id:7F2C8A41-6E93-4B57-A0D4-3C9E1B5D7826][ores.reporting.report_configuration]] |
+| =report_definition= | The report whose run prices from the set, and whose page is the way in | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] |
+| =report_instance= | The run, which records the set it priced from beside =priced_at= and =price_note= | [[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]] |
+| =curve_publish= | The publish record the binding names: the curve, the party, the as-of, the publisher, the published instant and the state the read derives | [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] |
+| =party= | The owner of the configuration and of the published set, which must be the same party for the set to be offered | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+
+The row this journey writes is =configuration_market_binding=, and it belongs to
+the run settings configuration and not to the definition. The definition reaches
+it through =report_configuration=, one row per configuration type, and the
+configuration in the =risk_report_config= slot is the one that carries the market
+roles.
+
+The row is versioned and bitemporal: it carries =version=, =modified_by=,
+=performed_by=, =change_reason_code=, =change_commentary= and the validity window,
+so a binding that moved is a version a person can read. The run does not carry the
+binding's version. It carries the publish record, which is the identity of the
+data and a better answer than a version of the row that named it.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Step 1, the report's market | Read the configurations a definition binds | =reporting.v1.report_configurations.list_by_definition_id= | exists |
+| Step 1, the configuration | Read the run settings configuration | =reporting.v1.configurations.get= | exists |
+| Step 2, the roles | Read the market roles of a configuration | =reporting.v1.configuration_market_bindings.list_by_configuration_id= | exists |
+| Step 3, the picker | List the published sets, with the state and the filters | =marketdata.v1.ops.list_published_curves= | exists |
+| Step 3, the set's points | Read one curve's published sets with their points | =marketdata.v1.ops.get_published_curve_sets= | exists |
+| Steps 9 and 11, the write | Write the market role rows | =reporting.v1.configuration_market_bindings.put_many= | exists, shape changes |
+| Step 13, the run | Trigger a run of one definition | =reporting.v1.ops.trigger_report_instance= | exists |
+| Step 14, the market the run reads | Resolve each role's =publish_id= to a published set at its as-of, and refuse a set that is not published | (the gathering step reads every series at a date) | missing |
+| Step 15, the run's record | Record the publish record the run priced from | =reporting.v1.report_instances.put= gains the field | missing |
+| The audit, the bindings | List the versions of one binding | =reporting.v1.configuration_market_bindings_versions.list= | exists |
+| The audit, the set's side | Name the reports bound to a set, and the runs that priced from it | (no operation reads a set's consumers) | missing |
+| The screen itself | Read and change bindings from the browser | (no BFF route serves reporting) | missing |
+
+The write is one call carrying the rows of the document, as a collection is
+written, so a role changed, a role pinned and a role cleared land together and a
+half-written set of markets is not left behind. The write's payload changes: it
+carries =publish_id= and =priced_as_of= in place of the free
+=market_configuration_name=, which the export derives.
+
+=reporting.v1.configuration_market_bindings.put= already exists and already writes
+the free name. The change is to the row and to the contract, and it is the first
+work this journey needs.
+
+* What is missing
+
+1. *No operation resolves a binding to a set.* A run gathers market data by
+   valuation date and by series, so no step in the pipeline reads a binding at
+   all. The run needs one operation that takes the roles of a configuration and
+   answers the set each resolves to at its as-of, refusing a candidate and an
+   ended set that is not pinned. Until it exists the binding is a name the export
+   writes and the compute never honours, which is the gap the decision names.
+2. *The run does not record what it priced from.* =report_instance= carries
+   =priced_at= and =price_note=, and nothing that names a publish record. A run
+   cannot answer the question this journey exists to make answerable until the row
+   carries the publish record per role, the set's as-of and the as-of a pinned
+   binding used.
+3. *A set has no consumers read.* The published-curve journeys read sets; nothing
+   reads the reports or the runs that use one. The set's page cannot warn a person
+   about to withdraw it, and this journey's audit ends at the report side.
+4. *The picker is not a standard part.* =RecordPicker='s choices are its whole
+   kind, read once and searched in the picker, and a published set is filtered on
+   the server and carries a state the picker does not draw. The screen needs a
+   picker over the published read, with the state column and the two toggles, or
+   the shared picker needs the filtered form and a cell for a derived state.
+   Neither exists.
+5. *No role vocabulary.* =role= is a free string that ORE's schema leaves open, so
+   the screen offers a select over the roles the run document already names plus
+   the codes the seed uses, and states that the list is not a vocabulary. A role
+   typed by hand is a role no screen can group or refuse.
+6. *No route and no screen for reporting.* No BFF route serves reporting and no
+   reporting screen exists in the web application, so the *Market bindings* tab,
+   the picker and the run's market card are all new. The run settings configuration
+   has no screen either, so the tab's home does not exist yet.
+7. *The derived name's spelling is unsettled.* The decision says the ORE document
+   carries a name derived from the set's curve, and no rule states how the curve,
+   the party and the as-of fold into a name that =todaysmarket.xml= accepts. The
+   screen draws the derivation as a line rather than asking for it; the design
+   note records the question as open.
+8. *A candidate's refusal cannot be enforced by the screen alone.* The screen
+   refuses the selection, and the run's resolution refuses it again. Until the
+   resolution exists, the binding row will accept a candidate's =publish_id= if a
+   caller writes one directly, because nothing validates the state on the write.
+
+* Related journeys
+
+- [[id:7FBF8F6F-AF26-4E73-85DE-8AF72C7ED0D6][See a report and everything it runs]] — the report page whose *Market and pricing* tab is the way in, and which names the configurations a change reaches.
+- [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]] — the run this journey binds the market for, and the page the market card stands on.
+- [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] — the numbers whose provenance this journey makes answerable.
+- [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]] — where a person goes when a run was refused because the curve it names is a candidate or has ended.
+- [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]] — the other collection of the same configuration, which changes what the run produces rather than what it prices from.
+- [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] — the act that makes a set consumable, and the screen a person follows to read the set this binding names.
+- [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]] — the act that ends a set, which is why a binding can become ended without anybody editing it.
+
+* Related knowledge
+
+- [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]] — the decision this journey draws.
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]] — the chain this journey closes at its last link.
+- [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]] — where the set the binding names comes from, and why a candidate is not consumable.
+- [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]] — the list, the tabs, the collection, the reach, the history and the lifecycle the tab follows.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the picker, the cells, the states, the writes and the refusals.
+- [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] — where the run settings and its bindings sit.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the producers, the authority and the consumers a published set stands between.
+
+* See also
+
+- [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the group this journey belongs to.
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against.
+- [[id:1787BDF4-EF8D-4636-AFD8-A94BB89EEEBB][Task: Bind a report to the published curve]] — the work that owns it.
+- [[id:3E207A59-C1F8-429C-BA23-99DBAEB6EA5E][Market bindings prototype]] — the screen this journey argues for.

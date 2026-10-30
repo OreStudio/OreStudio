@@ -496,13 +496,15 @@ CATALOGUE: tuple[Check, ...] = (
     ),
     Check(
         id="component-drift",
-        title="The components this branch changed match their models",
+        title="The components this branch changed match their models, rendered without writing",
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_component_drift.py",
               "--changed", "--base", "{base}"),
         classes=("modeling", "codegen"),
         phase=PREPARE,
         timeout=1800,
-        fix="Run compass codegen regenerate for the component the report names.",
+        fix="Run compass codegen regenerate for the component the report names."
+            " The check renders into a temporary root and writes nothing; if a"
+            " regeneration is needed, --write does it, and refuses on a dirty tree.",
     ),
     Check(
         id="drift-sweep",

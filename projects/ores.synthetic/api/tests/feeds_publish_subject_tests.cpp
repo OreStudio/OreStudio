@@ -22,6 +22,7 @@
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
+#include <vector>
 
 /*
  * The market data ingest listens on two subject families, and a feed that publishes outside them
@@ -51,13 +52,20 @@ TEST_CASE("a_feed_that_serves_an_adapter_publishes_where_the_ingest_listens",
     }
 }
 
-TEST_CASE("a_source_name_keeps_its_dots_and_stays_inside_the_producer_family",
+TEST_CASE("the_ingest_consumes_the_two_families_a_synthetic_feed_uses",
           "[feeds][subjects][ingest]") {
     using namespace ores::marketdata::domain;
+    // The list the ingest loop subscribes to, read as the loop reads it. A family added to the
+    // loop without a test here failing is a family no feed is pinned to.
+    const auto ingested = ingest_subject_wildcards();
+    CHECK(ingested.all() ==
+          std::vector<std::string>{"synthetic.v1.ops.tick.>", "marketdata.v1.ingress.>"});
+    CHECK(ingested.producers == "synthetic.v1.ops.tick.>");
+
     // The builder keeps the dots of a source name, so the producer subject is one level deeper
-    // under the ingest's wildcard and not a family of its own.
+    // under the producer family and not a family of its own.
     const auto producer = ores::synthetic::feed::producer_subject("synthetic.bloomberg.usdsofr");
     CHECK(producer == "synthetic.v1.ops.tick.synthetic.bloomberg.usdsofr");
-    CHECK(subject_matches(ingest_producer_subject_all(), producer));
-    CHECK(ingest_subject_wildcards().size() == 2);
+    CHECK(subject_matches(ingested.producers, producer));
+    CHECK_FALSE(subject_matches(ingested.adapters, producer));
 }

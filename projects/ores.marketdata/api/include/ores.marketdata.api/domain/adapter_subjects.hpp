@@ -146,31 +146,30 @@ adapter_ingress_subject_parts(std::string_view subject) {
 }
 
 /**
- * @brief The wildcard under which the ingest loop receives the synthetic producers' ticks.
- *
- * A producer that names no adapter publishes here, so the loop subscribes to it as well as to
- * the ingress. A publisher that wants its ticks stored publishes on one of the two families
- * @c ingest_subject_wildcards() names.
- */
-inline std::string ingest_producer_subject_all() {
-    return std::string(synthetic_tick_subject).append(".>");
-}
-
-/// The wildcard under which the ingest loop receives every adapter's ticks.
-inline std::string ingest_adapter_subject_all() {
-    return adapter_ingress_subject_all();
-}
-
-/**
- * @brief Every subject family the ingest loop consumes, as the relative wildcards a
+ * @brief The two subject families the ingest loop consumes, as the relative wildcards a
  * subscription takes.
  *
- * The loop subscribes to exactly this list, so a publisher's subject being in one of these
- * families and the loop subscribing to it are one fact. A test that pins a feed's publish
- * subject to the ingest reads this list rather than spelling a wildcard of its own.
+ * The loop subscribes to exactly these two values and to nothing else, so a publisher's subject
+ * being in one of these families and the loop subscribing to it are one fact rather than two
+ * that can drift. A test that pins a feed's publish subject to the ingest reads this value
+ * rather than spelling a wildcard of its own.
  */
-inline std::vector<std::string> ingest_subject_wildcards() {
-    return {ingest_producer_subject_all(), ingest_adapter_subject_all()};
+struct ingest_subjects final {
+    /// The synthetic producers that name no adapter, under "synthetic.v1.ops.tick.>".
+    std::string producers;
+    /// Every adapter's ingress, under "marketdata.v1.ingress.>".
+    std::string adapters;
+
+    /// Both families, in the order a caller may walk them.
+    [[nodiscard]] std::vector<std::string> all() const {
+        return {producers, adapters};
+    }
+};
+
+/// The subject families the ingest loop consumes. It subscribes to each of them once.
+inline ingest_subjects ingest_subject_wildcards() {
+    return {.producers = std::string(synthetic_tick_subject).append(".>"),
+            .adapters = adapter_ingress_subject_all()};
 }
 
 /// The subject split into its tokens, as NATS counts them.
@@ -216,8 +215,8 @@ inline bool subject_matches(std::string_view wildcard, std::string_view subject)
 
 /// True when one of the ingest loop's subscriptions covers @p subject.
 inline bool ingest_consumes(std::string_view subject) {
-    return std::ranges::any_of(
-        ingest_subject_wildcards(), [subject](const auto& w) { return subject_matches(w, subject); });
+    return std::ranges::any_of(ingest_subject_wildcards().all(),
+                               [subject](const auto& w) { return subject_matches(w, subject); });
 }
 
 }

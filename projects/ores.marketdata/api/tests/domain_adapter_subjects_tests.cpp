@@ -137,10 +137,11 @@ TEST_CASE("the_ingest_consumes_an_adapters_tick_and_a_producers_tick",
 TEST_CASE("the_ingest_subscribes_to_exactly_its_two_subject_families",
           "[domain][adapter_subjects][ingest]") {
     using namespace ores::marketdata::domain;
-    CHECK(ingest_subject_wildcards() ==
+    const auto ingested = ingest_subject_wildcards();
+    CHECK(ingested.producers == "synthetic.v1.ops.tick.>");
+    CHECK(ingested.adapters == adapter_ingress_subject_all());
+    CHECK(ingested.all() ==
           std::vector<std::string>{"synthetic.v1.ops.tick.>", "marketdata.v1.ingress.>"});
-    CHECK(ingest_producer_subject_all() == "synthetic.v1.ops.tick.>");
-    CHECK(ingest_adapter_subject_all() == adapter_ingress_subject_all());
 }
 
 TEST_CASE("a_wildcard_covers_one_token_or_more_and_a_star_covers_exactly_one",

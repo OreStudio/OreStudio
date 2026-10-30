@@ -130,7 +130,8 @@ void feed_ingest_loop::start() {
     // filter needs, and passed to subscribe() it is prefixed twice and matches
     // no tick. The families come from the domain so that a test can prove a
     // publisher's subject is one of them.
-    const auto wildcard = domain::ingest_producer_subject_all();
+    const auto ingested = domain::ingest_subject_wildcards();
+    const auto& wildcard = ingested.producers;
     BOOST_LOG_SEV(lg(), info) << "Starting feed ingest loop: subscribing to '" << wildcard << "'";
     refresh();
     if (pipelined_) {
@@ -139,7 +140,7 @@ void feed_ingest_loop::start() {
     }
     worker_ = std::thread(&feed_ingest_loop::worker_loop, this);
     tick_sub_ = nats_.subscribe(wildcard, [this](ores::nats::message msg) { on_tick(msg); });
-    const auto adapter_wildcard = domain::ingest_adapter_subject_all();
+    const auto& adapter_wildcard = ingested.adapters;
     BOOST_LOG_SEV(lg(), info) << "Subscribing to the ticks of adapters on '" << adapter_wildcard
                               << "'";
     adapter_sub_ = nats_.subscribe(adapter_wildcard,

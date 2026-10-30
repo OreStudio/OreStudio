@@ -27,6 +27,7 @@ message, and no family of conventions has a type here.
 #+begin_src cpp :name includes
 #include "ores.refdata.api/domain/base_correlation_config.hpp"
 #include "ores.refdata.api/domain/bond_future_volatility_config.hpp"
+#include "ores.refdata.api/domain/cap_floor_proxy_config.hpp"
 #include "ores.refdata.api/domain/cap_floor_volatility_config.hpp"
 #include "ores.refdata.api/domain/cds_volatility_config.hpp"
 #include "ores.refdata.api/domain/cds_volatility_term.hpp"
@@ -203,6 +204,11 @@ message, and no family of conventions has a type here.
 *** cap_floor_volatilities
 :PROPERTIES:
 :cpp_type: std::vector<ores::refdata::domain::cap_floor_volatility_config>
+:END:
+
+*** cap_floor_proxy_configs
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::cap_floor_proxy_config>
 :END:
 
 *** parametric_smiles

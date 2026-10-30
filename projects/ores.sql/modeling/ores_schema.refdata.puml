@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: refdata
-Tables: 170
+Tables: 171
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -983,6 +983,62 @@ package "refdata" #FFF3E0 {
     than a nullable country reference, since no single country owns them.
     end note
 
+    entity ores_refdata_cap_floor_proxy_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        * party_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * cap_floor_volatility_config_id : uuid <<FK>>
+          source_curve_id : text <<FK>>
+          source_index : text
+          source_rate_computation_period : text
+          target_index : text
+          target_rate_computation_period : text
+          target_on_cap_settlement_days : integer
+          scaling_factor : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cap_floor_proxy_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cap Floor Proxy Config Table
+    +#+updated: 2026-10-30
+    A cap and floor volatility entry may name a proxy surface instead of its own
+    quotes, and ORE states it as a ProxyConfig element inside the entry's
+    CapFloorVolatility:
+    #+begin_example
+    <ProxyConfig>
+    <Source>
+    <CurveId>...</CurveId>
+    <Index>...</Index>
+    <RateComputationPeriod>...</RateComputationPeriod>
+    </Source>
+    <Target>
+    <Index>...</Index>
+    <RateComputationPeriod>...</RateComputationPeriod>
+    <ONCapSettlementDays>...</ONCapSettlementDays>
+    </Target>
+    <ScalingFactor>...</ScalingFactor>
+    </ProxyConfig>
+    #+end_example
+    That block was seven nullable columns of the entry, meaningful only when the
+    entry named a proxy. A row of this part holds it, and a row exists only when the
+    entry names one, so the presence of the part is the flag and no has_proxy_config
+    column is needed.
+    The swaption entry's proxy block is a different element: its source and target
+    carry ShortSwapIndexBase and SwapIndexBase where this one carries an index
+    and a rate computation period. It is its own part, swaption_proxy_config, for
+    that reason: the two share a shape, not a type.
+    end note
+
     entity ores_refdata_cap_floor_volatility_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -1018,14 +1074,6 @@ package "refdata" #FFF3E0 {
           flat_first_period : text
           use_effecive_volatility : text
           use_effective_volatility : text
-        * has_proxy_config : boolean
-          proxy_source_curve_id : text <<FK>>
-          proxy_source_index : text
-          proxy_source_rate_computation_period : text
-          proxy_target_index : text
-          proxy_target_rate_computation_period : text
-          proxy_target_on_cap_settlement_days : integer
-          proxy_scaling_factor : double
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1046,10 +1094,10 @@ package "refdata" #FFF3E0 {
     its BootstrapConfig a row of curve_bootstrap_config and its
     ParametricSmileConfiguration a row of curve_parametric_smile.
     A ProxyConfig builds the surface from another one; it is one per entry, so
-    its fields are the proxy_ columns, and has_proxy_config says whether the
-    entry wrote it. The schema allows both UseEffeciveVolatility, a misspelling
-    kept for old documents, and UseEffectiveVolatility; each has its own column so
-    either round trips.
+    it is a row of cap_floor_proxy_config and the entry holds none of its fields.
+    The schema allows both UseEffeciveVolatility, a misspelling kept for old
+    documents, and UseEffectiveVolatility; each has its own column so either round
+    trips.
     end note
 
     entity ores_refdata_cashflow_types_tbl <<temporal>> #C6F0D8 {
@@ -6094,6 +6142,7 @@ ores_refdata_calendars_tbl ||--o{ ores_refdata_calendar_events_tbl : "has"
 ores_refdata_diary_entry_types_tbl ||--o{ ores_refdata_calendar_events_tbl : "has"
 ores_refdata_calendars_tbl ||--o{ ores_refdata_calendar_exceptions_tbl : "has"
 ores_refdata_calendars_tbl ||--o{ ores_refdata_calendar_rules_tbl : "has"
+ores_refdata_cap_floor_volatility_configs_tbl ||--o{ ores_refdata_cap_floor_proxy_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_cap_floor_volatility_configs_tbl : "has"
 ores_refdata_day_counters_tbl ||--o{ ores_refdata_cap_floor_volatility_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_cds_volatility_configs_tbl : "has"

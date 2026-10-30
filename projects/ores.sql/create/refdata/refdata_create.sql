@@ -420,6 +420,8 @@
 \ir ./refdata_curve_parametric_smile_parameters_notify_trigger_create.sql
 \ir ./refdata_swaption_volatility_configs_create.sql
 \ir ./refdata_swaption_volatility_configs_notify_trigger_create.sql
+\ir ./refdata_cap_floor_proxy_configs_create.sql
+\ir ./refdata_cap_floor_proxy_configs_notify_trigger_create.sql
 \ir ./refdata_cap_floor_volatility_configs_create.sql
 \ir ./refdata_cap_floor_volatility_configs_notify_trigger_create.sql
 \ir ./refdata_equity_volatility_configs_create.sql

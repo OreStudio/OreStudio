@@ -22,6 +22,7 @@
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.core/repository/base_correlation_config_repository.hpp"
 #include "ores.refdata.core/repository/bond_future_volatility_config_repository.hpp"
+#include "ores.refdata.core/repository/cap_floor_proxy_config_repository.hpp"
 #include "ores.refdata.core/repository/cap_floor_volatility_config_repository.hpp"
 #include "ores.refdata.core/repository/cds_volatility_config_repository.hpp"
 #include "ores.refdata.core/repository/cds_volatility_term_repository.hpp"
@@ -163,8 +164,8 @@ void curve_configuration_document_service::save(messaging::curve_configuration_d
                     reason,
                     commentary);
     write_amendment(ctx_,
-                    inflation_cap_floor_volatility_config_repository(),
-                    std::move(v.inflation_cap_floor_volatilities),
+                    cap_floor_proxy_config_repository(),
+                    std::move(v.cap_floor_proxy_configs),
                     reason,
                     commentary);
     write_amendment(ctx_,
@@ -244,6 +245,14 @@ curve_configuration_document_service::get(const boost::uuids::uuid& config_id) {
         read_where(ctx_, swaption_volatility_config_repository(), of_definition);
     r.cap_floor_volatilities =
         read_where(ctx_, cap_floor_volatility_config_repository(), of_definition);
+    std::set<boost::uuids::uuid> cap_floor_entries;
+    for (const auto& c : r.cap_floor_volatilities)
+        cap_floor_entries.insert(c.id);
+    const auto of_cap_floor_entry = [&](const auto& row) {
+        return cap_floor_entries.contains(row.cap_floor_volatility_config_id);
+    };
+    r.cap_floor_proxy_configs =
+        read_where(ctx_, cap_floor_proxy_config_repository(), of_cap_floor_entry);
     r.parametric_smiles = read_where(ctx_, curve_parametric_smile_repository(), of_definition);
     r.parametric_smile_parameters =
         read_where(ctx_, curve_parametric_smile_parameter_repository(), of_definition);
@@ -285,6 +294,8 @@ void curve_configuration_document_service::remove(const boost::uuids::uuid& id) 
                                                              ids_of(d.parametric_smile_parameters));
     if (!d.parametric_smiles.empty())
         curve_parametric_smile_repository().remove(ctx_, ids_of(d.parametric_smiles));
+    if (!d.cap_floor_proxy_configs.empty())
+        cap_floor_proxy_config_repository().remove(ctx_, ids_of(d.cap_floor_proxy_configs));
     if (!d.cap_floor_volatilities.empty())
         cap_floor_volatility_config_repository().remove(ctx_, ids_of(d.cap_floor_volatilities));
     if (!d.swaption_volatilities.empty())

@@ -1692,19 +1692,22 @@ void import_cap_floor_volatility(ores::refdata::messaging::curve_configuration_d
     r.flat_first_period = v.spelling("FlatFirstPeriod");
     r.use_effecive_volatility = v.spelling("UseEffeciveVolatility");
     r.use_effective_volatility = v.spelling("UseEffectiveVolatility");
-    r.has_proxy_config = v.has("ProxyConfig");
     if (const auto proxy = v.child("ProxyConfig"); proxy) {
+        refdata::domain::cap_floor_proxy_config p;
+        p.id = curve_configuration_projection_new_uuid();
+        p.cap_floor_volatility_config_id = r.id;
         if (const auto source = proxy->child("Source"); source) {
-            r.proxy_source_curve_id = required_text(*source, "CurveId");
-            r.proxy_source_index = required_text(*source, "Index");
-            r.proxy_source_rate_computation_period = source->text("RateComputationPeriod");
+            p.source_curve_id = required_text(*source, "CurveId");
+            p.source_index = required_text(*source, "Index");
+            p.source_rate_computation_period = source->text("RateComputationPeriod");
         }
         if (const auto target = proxy->child("Target"); target) {
-            r.proxy_target_index = required_text(*target, "Index");
-            r.proxy_target_rate_computation_period = target->text("RateComputationPeriod");
-            r.proxy_target_on_cap_settlement_days = optional_int(*target, "ONCapSettlementDays");
+            p.target_index = required_text(*target, "Index");
+            p.target_rate_computation_period = target->text("RateComputationPeriod");
+            p.target_on_cap_settlement_days = optional_int(*target, "ONCapSettlementDays");
         }
-        r.proxy_scaling_factor = proxy->real("ScalingFactor");
+        p.scaling_factor = proxy->real("ScalingFactor");
+        out.cap_floor_proxy_configs.push_back(std::move(p));
     }
     curve_configuration_projection_set_audit(r);
     out.cap_floor_volatilities.push_back(std::move(r));
@@ -1869,6 +1872,19 @@ std::map<boost::uuids::uuid, const Row*> by_definition(const std::vector<Row>& r
     for (const auto& r : rows)
         out.emplace(r.curve_definition_id, &r);
     return out;
+}
+
+/// The proxy an entry names, or null when it names none: one row per entry, so
+/// the part's presence is the flag the flat shape spelled with a column.
+const refdata::domain::cap_floor_proxy_config* proxy_of(
+    const std::vector<refdata::domain::cap_floor_proxy_config>& parts,
+    const boost::uuids::uuid& config_id) {
+    const auto it = std::find_if(parts.begin(),
+                                 parts.end(),
+                                 [&](const auto& p) {
+                                     return p.cap_floor_volatility_config_id == config_id;
+                                 });
+    return it == parts.end() ? nullptr : &*it;
 }
 
 template <typename Row>
@@ -2558,22 +2574,25 @@ void export_swaption_volatility(record_writer r,
 void export_cap_floor_volatility(record_writer r,
                                  const refdata::domain::curve_definition& d,
                                  const refdata::domain::cap_floor_volatility_config& v,
+                                 const refdata::domain::cap_floor_proxy_config* proxy_config,
                                  const refdata::domain::curve_report_configuration* report,
                                  const refdata::domain::curve_bootstrap_config* bootstrap,
                                  const smile_export& smile) {
     r.set_text("CurveId", d.curve_id);
     r.set_text("CurveDescription", d.description.value_or(""));
-    if (v.has_proxy_config) {
+    if (proxy_config) {
         auto proxy = r.child("ProxyConfig");
         auto source = proxy.child("Source");
-        source.set_text("CurveId", v.proxy_source_curve_id.value_or(""));
-        source.set_text("Index", v.proxy_source_index.value_or(""));
-        source.set_optional_text("RateComputationPeriod", v.proxy_source_rate_computation_period);
+        source.set_text("CurveId", proxy_config->source_curve_id.value_or(""));
+        source.set_text("Index", proxy_config->source_index.value_or(""));
+        source.set_optional_text("RateComputationPeriod", proxy_config->source_rate_computation_period);
         auto target = proxy.child("Target");
-        target.set_text("Index", v.proxy_target_index.value_or(""));
-        target.set_optional_text("RateComputationPeriod", v.proxy_target_rate_computation_period);
-        target.set_optional_integer("ONCapSettlementDays", v.proxy_target_on_cap_settlement_days);
-        proxy.set_optional_real("ScalingFactor", v.proxy_scaling_factor);
+        target.set_text("Index", proxy_config->target_index.value_or(""));
+        target.set_optional_text("RateComputationPeriod",
+                                 proxy_config->target_rate_computation_period);
+        target.set_optional_integer("ONCapSettlementDays",
+                                    proxy_config->target_on_cap_settlement_days);
+        proxy.set_optional_real("ScalingFactor", proxy_config->scaling_factor);
     }
     r.set_optional_spelling("VolatilityType", v.volatility_type, "volatility type");
     r.set_optional_spelling("OutputVolatilityType", v.output_volatility_type, "volatility type");
@@ -3115,10 +3134,13 @@ curve_configuration_projection::document curve_configuration_projection::reverse
         }
         if (d->section_code == cap_floor_volatilities_section) {
             const auto b = ctx.entry_bootstraps.find(d->id);
+            const auto& settings = settings_of(cap_floor_vol_by_definition, *d);
+            const auto proxy = proxy_of(v.cap_floor_proxy_configs, settings.id);
             export_cap_floor_volatility(
                 written.child("CapFloorVolatilities").append("CapFloorVolatility"),
                 *d,
-                settings_of(cap_floor_vol_by_definition, *d),
+                settings,
+                proxy,
                 report_of(*d),
                 b == ctx.entry_bootstraps.end() ? nullptr : b->second,
                 smile_of(*d));

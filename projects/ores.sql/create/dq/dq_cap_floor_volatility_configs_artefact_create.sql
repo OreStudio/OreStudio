@@ -24,7 +24,7 @@
  */
 
 -- =============================================================================
--- The settings of one CapFloorVolatility entry of a curveconfig.xml, one row per curve_definition in the CapFloorVolatilities section: the cap and floor surface's tenors and strikes, the index and discount curve it is stripped with, and how it interpolates. Its Report is a row of curve_report_configuration, its BootstrapConfig a row of curve_bootstrap_config and its ParametricSmileConfiguration a row of curve_parametric_smile. A ProxyConfig builds the surface from another one; it is one per entry, so its fields are the proxy_ columns, and has_proxy_config says whether the entry wrote it. The schema allows both UseEffeciveVolatility, a misspelling kept for old documents, and UseEffectiveVolatility; each has its own column so either round trips. - Artefact Table
+-- The settings of one CapFloorVolatility entry of a curveconfig.xml, one row per curve_definition in the CapFloorVolatilities section: the cap and floor surface's tenors and strikes, the index and discount curve it is stripped with, and how it interpolates. Its Report is a row of curve_report_configuration, its BootstrapConfig a row of curve_bootstrap_config and its ParametricSmileConfiguration a row of curve_parametric_smile. A ProxyConfig builds the surface from another one; it is one per entry, so it is a row of cap_floor_proxy_config and the entry holds none of its fields. The schema allows both UseEffeciveVolatility, a misspelling kept for old documents, and UseEffectiveVolatility; each has its own column so either round trips. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_cap_floor_volatility_configs_artefact_tbl" (
@@ -61,15 +61,7 @@ create table if not exists "ores_dq_cap_floor_volatility_configs_artefact_tbl" (
     "quote_includes_index_name" text null,
     "flat_first_period" text null,
     "use_effecive_volatility" text null,
-    "use_effective_volatility" text null,
-    "has_proxy_config" boolean not null,
-    "proxy_source_curve_id" text null,
-    "proxy_source_index" text null,
-    "proxy_source_rate_computation_period" text null,
-    "proxy_target_index" text null,
-    "proxy_target_rate_computation_period" text null,
-    "proxy_target_on_cap_settlement_days" integer null,
-    "proxy_scaling_factor" double precision null
+    "use_effective_volatility" text null
 );
 
 create index if not exists dq_cap_floor_volatility_configs_artefact_dataset_idx

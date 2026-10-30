@@ -24,6 +24,7 @@
  */
 import type { BaseCorrelationConfig } from '../domain/base_correlation_config.js';
 import type { BondFutureVolatilityConfig } from '../domain/bond_future_volatility_config.js';
+import type { CapFloorProxyConfig } from '../domain/cap_floor_proxy_config.js';
 import type { CapFloorVolatilityConfig } from '../domain/cap_floor_volatility_config.js';
 import type { CdsVolatilityConfig } from '../domain/cds_volatility_config.js';
 import type { CdsVolatilityTerm } from '../domain/cds_volatility_term.js';
@@ -97,6 +98,7 @@ export interface CurveConfigurationDocument {
     inflation_cap_floor_volatilities: InflationCapFloorVolatilityConfig[];
     swaption_volatilities: SwaptionVolatilityConfig[];
     cap_floor_volatilities: CapFloorVolatilityConfig[];
+    cap_floor_proxy_configs: CapFloorProxyConfig[];
     parametric_smiles: CurveParametricSmile[];
     parametric_smile_parameters: CurveParametricSmileParameter[];
     equity_volatilities: EquityVolatilityConfig[];

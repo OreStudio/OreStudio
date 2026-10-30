@@ -404,8 +404,8 @@ TEST_CASE("swaption and cap and floor proxies and smiles round trip through the 
         original.cap_floor_volatilities = full.cap_floor_volatilities;
         keep(original, "CapFloorVolatilities");
         const auto mapped = curve_configuration_projection::map(original);
-        const bool proxies = std::ranges::any_of(mapped.cap_floor_volatilities,
-                                                 [](const auto& c) { return c.has_proxy_config; });
+        // A proxy is a part row now, so its presence is the part's, not a flag.
+        const bool proxies = !mapped.cap_floor_proxy_configs.empty();
         CHECK((proxies || !mapped.parametric_smiles.empty()));
 
         write(h.context(), mapped);

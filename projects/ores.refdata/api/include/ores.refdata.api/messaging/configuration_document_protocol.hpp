@@ -27,6 +27,7 @@
 
 #include "ores.refdata.api/domain/base_correlation_config.hpp"
 #include "ores.refdata.api/domain/bond_future_volatility_config.hpp"
+#include "ores.refdata.api/domain/cap_floor_proxy_config.hpp"
 #include "ores.refdata.api/domain/cap_floor_volatility_config.hpp"
 #include "ores.refdata.api/domain/cds_volatility_config.hpp"
 #include "ores.refdata.api/domain/cds_volatility_term.hpp"
@@ -106,6 +107,7 @@ struct curve_configuration_document {
         inflation_cap_floor_volatilities;
     std::vector<ores::refdata::domain::swaption_volatility_config> swaption_volatilities;
     std::vector<ores::refdata::domain::cap_floor_volatility_config> cap_floor_volatilities;
+    std::vector<ores::refdata::domain::cap_floor_proxy_config> cap_floor_proxy_configs;
     std::vector<ores::refdata::domain::curve_parametric_smile> parametric_smiles;
     std::vector<ores::refdata::domain::curve_parametric_smile_parameter>
         parametric_smile_parameters;

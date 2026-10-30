@@ -82,6 +82,8 @@
 \ir ./refdata_equity_volatility_configs_notify_trigger_drop.sql
 \ir ./refdata_equity_volatility_configs_drop.sql
 \ir ./refdata_cap_floor_volatility_configs_notify_trigger_drop.sql
+\ir ./refdata_cap_floor_proxy_configs_notify_trigger_drop.sql
+\ir ./refdata_cap_floor_proxy_configs_drop.sql
 \ir ./refdata_cap_floor_volatility_configs_drop.sql
 \ir ./refdata_swaption_volatility_configs_notify_trigger_drop.sql
 \ir ./refdata_swaption_volatility_configs_drop.sql

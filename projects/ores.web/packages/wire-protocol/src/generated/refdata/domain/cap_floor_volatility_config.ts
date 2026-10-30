@@ -64,14 +64,6 @@ export interface CapFloorVolatilityConfig {
     flat_first_period: string | null;
     use_effecive_volatility: string | null;
     use_effective_volatility: string | null;
-    has_proxy_config: boolean;
-    proxy_source_curve_id: string | null;
-    proxy_source_index: string | null;
-    proxy_source_rate_computation_period: string | null;
-    proxy_target_index: string | null;
-    proxy_target_rate_computation_period: string | null;
-    proxy_target_on_cap_settlement_days: number | null;
-    proxy_scaling_factor: number | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

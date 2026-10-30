@@ -30,6 +30,8 @@
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <fstream>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <sstream>
@@ -273,6 +275,143 @@ stall_after_headers(std::uint16_t port, std::uint64_t declared, std::chrono::mil
 }
 
 /**
+ * @brief A sink that only counts, so a test can stream a large body without keeping it.
+ */
+class streamed_counting_sink final : public body_sink {
+public:
+    explicit streamed_counting_sink(std::shared_ptr<std::uint64_t> total)
+        : total_(std::move(total)) {}
+
+protected:
+    bool consume_chunk(std::string_view chunk) override {
+        *total_ += chunk.size();
+        return true;
+    }
+
+    bool finish_body() override {
+        return true;
+    }
+
+    bool publish_chunk() override {
+        return true;
+    }
+
+    void discard() noexcept override {}
+
+private:
+    std::shared_ptr<std::uint64_t> total_;
+};
+
+/**
+ * @brief This process's resident memory, in kilobytes.
+ *
+ * Nothing when the process cannot read it, which is a failure of the measurement
+ * and not a memory of zero: an unreadable value must not read as a pass.
+ */
+std::optional<std::size_t> resident_kb() {
+    std::ifstream status("/proc/self/status");
+    std::string key;
+    while (status >> key) {
+        if (key == "VmRSS:") {
+            std::size_t kb = 0;
+            if (status >> kb)
+                return kb;
+            return std::nullopt;
+        }
+        status.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+    return std::nullopt;
+}
+
+/**
+ * @brief Watches this process's resident memory while something runs.
+ */
+class resident_watch final {
+public:
+    explicit resident_watch(std::chrono::milliseconds interval) {
+        thread_ = std::thread([this, interval] {
+            while (!stopped_.load()) {
+                if (const auto now = resident_kb(); now.has_value()) {
+                    auto peak = peak_kb_.load();
+                    while (*now > peak && !peak_kb_.compare_exchange_weak(peak, *now)) {
+                    }
+                }
+                std::this_thread::sleep_for(interval);
+            }
+        });
+    }
+
+    ~resident_watch() {
+        stopped_.store(true);
+        if (thread_.joinable())
+            thread_.join();
+    }
+
+    resident_watch(const resident_watch&) = delete;
+    resident_watch& operator=(const resident_watch&) = delete;
+
+    [[nodiscard]] std::size_t peak_kb() const {
+        return peak_kb_.load();
+    }
+
+private:
+    std::atomic<bool> stopped_{false};
+    std::atomic<std::size_t> peak_kb_{0};
+    std::thread thread_;
+};
+
+/**
+ * @brief Sends a body in many chunked frames without ever holding it.
+ */
+std::optional<http::response<http::string_body>>
+post_many_chunks(std::uint16_t port,
+                 const std::string& target,
+                 std::uint64_t total,
+                 std::size_t piece,
+                 std::chrono::milliseconds budget) {
+    asio::io_context io;
+    beast::tcp_stream stream(io);
+    beast::error_code ec;
+    stream.expires_after(budget);
+
+    const auto address = asio::ip::make_address("127.0.0.1", ec);
+    if (ec)
+        return std::nullopt;
+    stream.connect(asio::ip::tcp::endpoint(address, port), ec);
+    if (ec)
+        return std::nullopt;
+
+    const auto head =
+        "POST " + target + " HTTP/1.1\r\nHost: 127.0.0.1\r\nTransfer-Encoding: chunked\r\n\r\n";
+    asio::write(stream, asio::buffer(head), ec);
+    if (ec)
+        return std::nullopt;
+
+    std::ostringstream size;
+    size << std::hex << piece;
+    auto frame = size.str() + "\r\n" + std::string(piece, 'x') + "\r\n";
+    for (std::uint64_t sent = 0; sent < total; sent += piece) {
+        asio::write(stream, asio::buffer(frame), ec);
+        if (ec)
+            return std::nullopt;
+    }
+
+    const auto last = std::string("0\r\n\r\n");
+    asio::write(stream, asio::buffer(last), ec);
+    if (ec)
+        return std::nullopt;
+
+    beast::flat_buffer buffer;
+    http::response<http::string_body> res;
+    http::read(stream, buffer, res, ec);
+    if (ec)
+        return std::nullopt;
+
+    stream.socket().shutdown(asio::ip::tcp::socket::shutdown_both, ec);
+    return res;
+}
+
+/**
  * @brief Waits for a flag the session sets after it has answered.
  */
 bool wait_until(const std::atomic<bool>& flag, std::chrono::milliseconds budget) {
@@ -501,6 +640,76 @@ TEST_CASE("bytes_that_cannot_be_completed_are_answered_500", "[http_streamed_bod
     REQUIRE(failed->result_int() == 500);
     REQUIRE(wait_until(record->discarded, std::chrono::seconds(2)));
     REQUIRE(!record->published.load());
+}
+
+TEST_CASE("a_256_mib_upload_does_not_grow_the_process", "[http_streamed_body][memory]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a large upload costs a chunk and not itself";
+
+#if !defined(__linux__)
+    SKIP("resident memory is read from /proc, which this platform does not have");
+#endif
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+
+    auto received = std::make_shared<std::uint64_t>(0);
+    streaming_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(router->post("/stream")
+                          .summary("Take a large streamed body")
+                          .auth_optional()
+                          .max_body(256ull * 1024 * 1024)
+                          .sink([received](const http_request&) {
+                              return std::make_unique<streamed_counting_sink>(received);
+                          })
+                          .handler([](const http_request& req) -> asio::awaitable<http_response> {
+                              if (req.sink == nullptr || !req.sink->publish())
+                                  co_return http_response::error(
+                                      http_status::internal_server_error,
+                                      "The bytes could not be published.");
+                              co_return http_response::json(R"({"bytes":)" +
+                                                            std::to_string(req.body_bytes) + "}");
+                          })
+                          .build());
+
+    constexpr std::uint64_t total = 256ull * 1024 * 1024;
+
+    /*
+     * A first, small upload allocates the client's frame, the session's chunk and
+     * the allocator's arenas. Measuring them would credit a one-off cost to the
+     * large body, so the baseline is taken after one has already run.
+     */
+    const auto warm_up = post_many_chunks(
+        fixture.port(), "/stream", 1024 * 1024, 64 * 1024, std::chrono::seconds(30));
+    REQUIRE(warm_up.has_value());
+    REQUIRE(warm_up->result_int() == 200);
+    *received = 0;
+
+    const auto baseline_kb = resident_kb();
+    REQUIRE(baseline_kb.has_value());
+
+    std::optional<http::response<http::string_body>> answered;
+    std::size_t peak_kb = 0;
+    {
+        resident_watch watch(std::chrono::milliseconds(5));
+        answered =
+            post_many_chunks(fixture.port(), "/stream", total, 64 * 1024, std::chrono::seconds(60));
+        peak_kb = watch.peak_kb();
+    }
+
+    REQUIRE(answered.has_value());
+    REQUIRE(answered->result_int() == 200);
+    REQUIRE(*received == total);
+
+    /*
+     * The body is 256 MiB. If any of it were held, the resident set would move by
+     * it; the bound is the chunk the session reads and the socket buffers.
+     */
+    INFO("resident memory: before " << *baseline_kb << " kB, peak " << peak_kb << " kB");
+    REQUIRE(peak_kb < *baseline_kb + 1024);
 }
 
 TEST_CASE("a_route_without_a_sink_still_receives_its_whole_body", "[http_streamed_body]") {

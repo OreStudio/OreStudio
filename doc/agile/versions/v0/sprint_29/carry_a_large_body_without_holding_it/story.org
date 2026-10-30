@@ -64,8 +64,8 @@ The design states the approach in its *File transfer* section.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:123A7AA3-82BF-4401-B9DC-EC6E046A8CD3][Take the body in chunks]] | STARTED | 2026-10-30 | | Give a route a way to say it wants its body in chunks, and give the session a read loop that hands them on through a bounded channel, under the same limit and a stall deadline. |
-| [[id:4DE53635-7236-40D7-A86F-26508A186245][Move the storage upload onto the stream]] | STARTED | 2026-10-30 | | Write the upload through the chunk channel to a temporary file and rename it when the body ends, and serve the download from the file with a fixed buffer. |
-| [[id:266C40A0-CD75-4974-B54C-468BA5E4AE24][Prove the resident cost of an upload]] | BACKLOG | | | Measure the gateway's own resident memory across a 256 MiB upload, and run the grid wrapper's transfer tests against the streamed routes. |
+| [[id:4DE53635-7236-40D7-A86F-26508A186245][Move the storage upload onto the stream]] | DONE | 2026-10-30 | 2026-10-30 | Write the upload through the body's sink to a part file the store names, and publish it by renaming it onto the object. |
+| [[id:266C40A0-CD75-4974-B54C-468BA5E4AE24][Prove the resident cost of an upload]] | STARTED | 2026-10-30 | | Measure the gateway's own resident memory across a 256 MiB upload, and run the grid wrapper's transfer tests against the streamed routes. |
 | [[id:9A622B67-34FA-4426-9526-508CFB7A690C][Serve the download from the file]] | BLOCKED | | | The download still builds the whole object in a response string. Serve it from the file with a fixed buffer, which needs the response streaming that increment B1 owns. |
 
 * Decisions

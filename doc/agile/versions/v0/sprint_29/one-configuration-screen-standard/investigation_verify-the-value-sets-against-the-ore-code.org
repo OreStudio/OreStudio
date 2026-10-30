@@ -30,6 +30,19 @@ user guide.
 
 * Findings
 
+** A catalogue set can refuse a valid document when its registry holds a word
+
+The curve leaves =BusinessDayConvention= and =DayCounter= are declared as
+catalogue sets over =ores_refdata_business_day_convention_catalogue_v= and
+=ores_refdata_day_counter_catalogue_v=. Those views expose the registries'
+=code=, and the registries hold words: =Following=, =1/1=. An ORE document
+states its own spelling, =F= and =ACT/365=, so the guard refuses a document that
+ORE accepts. The two sets are text until the registries carry the spelling the
+document writes; the finding is the reason, and it is not one of the thirty-one
+below, which compare sets with the code that reads a parameter and not with the
+rows a catalogue holds.
+
+
 ** F-01 CalibrationStrategy refuses two values ORE accepts, too narrow
 :PROPERTIES:
 :SEVERITY: High

@@ -54,7 +54,9 @@ export type ValueSetKind = SourceKind | typeof NO_SOURCE_KIND;
  */
 export const valueSetFields = {
     valueSet: z.string().default(''),
-    sourceKind: z.enum([...SOURCE_KINDS, NO_SOURCE_KIND] as [ValueSetKind, ...ValueSetKind[]]).default(NO_SOURCE_KIND),
+    sourceKind: z
+        .enum([...SOURCE_KINDS, NO_SOURCE_KIND] as [ValueSetKind, ...ValueSetKind[]])
+        .default(NO_SOURCE_KIND),
     catalogue: z.string().default(''),
     choices: z.array(z.object({ value: z.string(), label: z.string() })).default([]),
     minimum: z.number().nullable().default(null),

@@ -75,7 +75,6 @@
 #include <string_view>
 #include <thread>
 #include <vector>
-#include "test_helpers.hpp"
 
 // Proves the "write an entity, observe its NATS entity-changed
 // notification" pattern end to end for yield_curve_config -- the
@@ -116,10 +115,6 @@ TEST_CASE("write_yield_curve_config_publishes_an_event", "[eventing][integration
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-
-    // The curve states a currency, and its guard reads the currency catalogue.
-
-    publish_currencies(h.context());
     auto ctx = ores::testing::make_generation_context(h);
     auto party_ctx = yield_curve_config_write_test_party_and_scope_context(h, ctx);
 

@@ -300,9 +300,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                     return feed::feed_adapter{.id = source.name,
                                               .provider_code = std::string(provider_code)};
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "The adapter of provider '" << provider_code << "' could not be read: "
-                << e.what();
+            BOOST_LOG_SEV(lg(), warn) << "The adapter of provider '" << provider_code
+                                      << "' could not be read: " << e.what();
         }
         return std::nullopt;
     };

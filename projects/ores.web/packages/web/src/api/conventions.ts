@@ -20,6 +20,7 @@
  */
 
 import { z } from 'zod';
+import { NO_SOURCE_KIND, SOURCE_KINDS, type ValueSetKind } from './valueSets.js';
 import type { BusinessCentre } from '@ores/wire-protocol/generated/refdata/domain/business_centre';
 import type { BusinessDayConventionType } from '@ores/wire-protocol/generated/refdata/domain/business_day_convention_type';
 import type { CalendarName } from '@ores/wire-protocol/generated/refdata/domain/calendar_name';
@@ -142,7 +143,7 @@ export interface ConventionTerm {
     readonly introducedIn: string;
     readonly removedIn: string;
     /** How the term's value set states its values: enumerated, catalogue, boolean, a type or none. */
-    readonly sourceKind: string;
+    readonly sourceKind: ValueSetKind;
     /** The catalogue the term's list draws on, such as =refdata.currency=, or empty. */
     readonly catalogue: string;
     readonly choices: readonly { readonly value: string; readonly label: string }[];
@@ -190,7 +191,7 @@ const termSchema = z.object({
     format: z.string(),
     introducedIn: z.string(),
     removedIn: z.string(),
-    sourceKind: z.string(),
+    sourceKind: z.enum([...SOURCE_KINDS, NO_SOURCE_KIND] as [ValueSetKind, ...ValueSetKind[]]),
     catalogue: z.string().default(''),
     choices: z.array(z.object({ value: z.string(), label: z.string() })),
     minimum: z.number().nullable(),

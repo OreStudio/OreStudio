@@ -21,6 +21,31 @@
 import { z } from 'zod';
 
 /**
+ * The kinds a value set states, as the server serves them.
+ *
+ * This is the client side of the wire contract, so the list is stated once here
+ * and every screen switches on it. A kind outside it is a set this build does
+ * not describe, and the parse refuses it.
+ */
+export const SOURCE_KINDS = [
+    'text',
+    'integer',
+    'number',
+    'range',
+    'enumerated',
+    'catalogue',
+    'regex',
+    'boolean',
+] as const;
+
+export type SourceKind = (typeof SOURCE_KINDS)[number];
+
+/** The kind a parameter carries when its setting names no value set. */
+export const NO_SOURCE_KIND = '';
+
+export type ValueSetKind = SourceKind | typeof NO_SOURCE_KIND;
+
+/**
  * The fields of a value set, as every configuration screen reads them.
  *
  * One shape serves the pricing engine screen and the engine run settings
@@ -29,7 +54,7 @@ import { z } from 'zod';
  */
 export const valueSetFields = {
     valueSet: z.string().default(''),
-    sourceKind: z.string().default(''),
+    sourceKind: z.enum([...SOURCE_KINDS, NO_SOURCE_KIND] as [ValueSetKind, ...ValueSetKind[]]).default(NO_SOURCE_KIND),
     catalogue: z.string().default(''),
     choices: z.array(z.object({ value: z.string(), label: z.string() })).default([]),
     minimum: z.number().nullable().default(null),

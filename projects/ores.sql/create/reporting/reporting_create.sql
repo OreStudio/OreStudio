@@ -94,6 +94,7 @@
 \ir ./reporting_engine_settings_building_notify_trigger_create.sql
 \ir ./reporting_engine_settings_execution_create.sql
 \ir ./reporting_engine_settings_execution_notify_trigger_create.sql
+\ir ./reporting_engine_settings_part_value_guard_create.sql
 
 -- The lines a proposal holds while its request waits
 \ir ./reporting_engine_settings_changes_create.sql

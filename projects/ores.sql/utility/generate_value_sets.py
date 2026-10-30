@@ -216,19 +216,10 @@ def resolve(data):
     for scope, name in sorted(contract_pairs()):
         if (scope, name) in linked:
             continue
-        candidates = by_name.get(name, set())
-        if not candidates:
-            folded = name.lower()
-            candidates = {set_code for other, set_code in by_name.items()
-                          if other.lower() == folded}
-            if len(candidates) == 1:
-                candidates = set(candidates)
-        if len(candidates) == 1:
-            data["links"][f"{scope}|{name}"] = next(iter(candidates))
-        elif len(candidates) > 1:
-            problems.append(f"{scope}|{name} could be {sorted(candidates)}")
-        else:
-            problems.append(f"{scope}|{name} has no value set")
+        # A link is curated, never inferred. The same setting name in
+        # another scope may want another set, and a guess would state a rule
+        # nobody chose.
+        problems.append(f"{scope}|{name} has no value set, and a link is curated, not inferred")
     contract = contract_pairs()
     for key in [key for key in data["links"]
                 if (key.partition("|")[0], key.partition("|")[2]) not in contract]:

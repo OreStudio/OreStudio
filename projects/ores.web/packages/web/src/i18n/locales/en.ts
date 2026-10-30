@@ -6180,6 +6180,8 @@ export const en: SourceCatalogue = {
             whole: '{setting} must be a whole number.',
             number: '{setting} must be a number.',
             choice: '{setting} must be one of the values on the list.',
+            flag: '{setting} must be true or false.',
+            text: '{setting} must be a value this setting accepts.',
             min: '{setting} must be at least {min}.',
             max: '{setting} must be at most {max}.',
         },

@@ -55,9 +55,7 @@ create table if not exists "ores_reporting_engine_settings_fixings_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("ignore_fixing_lag" is null or "ignore_fixing_lag" >= 0),
-    check ("ignore_fixing_lead" is null or "ignore_fixing_lead" >= 0)
+    check ("id" <> ores_utility_nil_uuid_fn())
 );
 
 -- Version uniqueness for optimistic concurrency

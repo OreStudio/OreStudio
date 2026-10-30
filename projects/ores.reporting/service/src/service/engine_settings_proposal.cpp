@@ -178,8 +178,11 @@ void validate(const ores::database::context& ctx,
         lg,
         "validate an engine setting against its value set");
 
-    if (rows.empty() || rows.front().size() < 4 || !rows.front()[0].has_value() ||
-        rows.front()[0].value() != "true")
+    if (rows.empty() || rows.front().size() < 4 || !rows.front()[3].has_value())
+        throw std::runtime_error("The store did not answer a value set check for " +
+                                 setting.column_name + ".");
+
+    if (rows.front()[0].value_or(std::string{}) != "true")
         throw std::invalid_argument(setting.column_name +
                                     " has no value set, so the value it holds cannot be checked.");
 
@@ -192,8 +195,9 @@ void validate(const ores::database::context& ctx,
      * one the apply makes, so a value refused here is the value refused there,
      * and the refusal is permanent rather than retried.
      */
-    if (kind == "integer")
-        as_whole(text);
+    if (kind == "integer") {
+        static_cast<void>(as_whole(value));
+    }
 
     if (rows.front()[3].value_or(std::string{}) == "true")
         return;
@@ -725,7 +729,13 @@ engine_settings_proposal_service::raise(
             }
             try {
                 validate(ctx, *setting, v.text_value, lg());
-            } catch (const std::exception& e) {
+            } catch (const std::invalid_argument& e) {
+                /*
+                 * The setting refuses the content, which is permanent. Any other
+                 * exception is the store failing to answer, and a caller that
+                 * read it as a bad value would never retry a failure that a
+                 * retry fixes.
+                 */
                 response.result = refusal_of(outcome::invalid, e.what());
                 return response;
             }

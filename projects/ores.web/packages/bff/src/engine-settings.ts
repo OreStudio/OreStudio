@@ -48,7 +48,7 @@ import {
     text,
     write,
 } from './refdata-calls.js';
-import { readValueSets, type ValueFields } from './ore-value-sets.js';
+import { NO_SOURCE_KIND, readValueSets, type ValueFields } from './ore-value-sets.js';
 import type { LiveSession } from './sessions.js';
 
 /*
@@ -265,41 +265,59 @@ function transportOf(group: EngineGroup): GroupTransport {
 
 /**
  * One setting's value: null for the engine default, else a value its value set
- * accepts. The set states the kind, the bounds and the words, so a set that is
- * missing or states no choices accepts the text the contract stores.
+ * accepts.
+ *
+ * Every kind a set states answers for itself, so a kind this build does not
+ * know, and a setting the model holds no set for, are refusals a person reads
+ * rather than a control that checks nothing.
  */
-function valueSchema(fields: ValueFields): z.ZodType<boolean | number | string | null> {
+function valueSchema(
+    fields: ValueFields,
+    column: string,
+): z.ZodType<boolean | number | string | null> {
+    const bounded = <T extends z.ZodNumber>(number: T): T => {
+        let out = number;
+        if (fields.minimum !== null) {
+            out = out.min(fields.minimum) as T;
+        }
+        if (fields.maximum !== null) {
+            out = out.max(fields.maximum) as T;
+        }
+        return out;
+    };
     switch (fields.sourceKind) {
         case 'boolean':
             return z.boolean().nullable();
-        case 'integer': {
-            let whole = z.int();
-            if (fields.minimum !== null) {
-                whole = whole.min(fields.minimum);
-            }
-            if (fields.maximum !== null) {
-                whole = whole.max(fields.maximum);
-            }
-            return whole.nullable();
-        }
+        case 'integer':
+            return bounded(z.int()).nullable();
         case 'number':
-        case 'range': {
-            let real = z.number();
-            if (fields.minimum !== null) {
-                real = real.min(fields.minimum);
-            }
-            if (fields.maximum !== null) {
-                real = real.max(fields.maximum);
-            }
-            return real.nullable();
-        }
-        default: {
+        case 'range':
+            return bounded(z.number()).nullable();
+        case 'enumerated':
+        case 'catalogue': {
             const choices = fields.choices.map((choice) => choice.value);
             if (choices.length === 0) {
-                return z.string().nullable();
+                throw new Error(
+                    `The setting "${column}" draws a list, and its value set states none.`,
+                );
             }
             return z.enum(choices as [string, ...string[]]).nullable();
         }
+        case 'regex': {
+            const pattern = fields.pattern === '' ? null : new RegExp(fields.pattern);
+            return z
+                .string()
+                .refine((value) => pattern === null || pattern.test(value), {
+                    message: `The value must match ${fields.pattern}.`,
+                })
+                .nullable();
+        }
+        case 'text':
+            return z.string().nullable();
+        case NO_SOURCE_KIND:
+            throw new Error(
+                `The setting "${column}" names no value set, so the value it holds cannot be checked.`,
+            );
     }
 }
 
@@ -309,7 +327,10 @@ function valuesSchema(
 ): z.ZodType<Readonly<Record<string, unknown>>> {
     return z.strictObject(
         Object.fromEntries(
-            group.settings.map((setting) => [setting.column, valueSchema(fieldsOf(setting.ore))]),
+            group.settings.map((setting) => [
+                setting.column,
+                valueSchema(fieldsOf(setting.ore), setting.column),
+            ]),
         ),
     );
 }

@@ -41,10 +41,35 @@ export interface Choice {
     readonly label: string;
 }
 
+/**
+ * The kinds a value set states, in the words the table uses.
+ *
+ * A set states one of them, so a kind outside this list is a set the model
+ * does not describe and a refusal rather than a guess.
+ */
+export const SOURCE_KINDS = [
+    'text',
+    'integer',
+    'number',
+    'range',
+    'enumerated',
+    'catalogue',
+    'regex',
+    'boolean',
+] as const;
+
+export type SourceKind = (typeof SOURCE_KINDS)[number];
+
+/** The kind a parameter carries when its setting names no value set. */
+export const NO_SOURCE_KIND = '';
+
+/** What a parameter's set states: one kind, or none when the model holds no set. */
+export type ValueSetKind = SourceKind | typeof NO_SOURCE_KIND;
+
 /** The allowed values of one parameter, as the value set tables state them. */
 export interface ValueFields {
     readonly valueSet: string;
-    readonly sourceKind: string;
+    readonly sourceKind: ValueSetKind;
     /**
      * The catalogue a set draws on, by the code the catalogue table gives it,
      * such as =refdata.currency=, or empty when the set names none. A screen
@@ -60,7 +85,7 @@ export interface ValueFields {
 /** The fields a parameter carries when its setting names no value set. */
 export const NO_VALUE_SET: ValueFields = {
     valueSet: '',
-    sourceKind: '',
+    sourceKind: NO_SOURCE_KIND,
     catalogue: '',
     choices: [],
     minimum: null,
@@ -188,6 +213,22 @@ export interface ValueSetTables {
 }
 
 /**
+ * The kind one set states, or a refusal when the table holds a word this build
+ * does not know. A kind read as free text would draw the wrong control and
+ * check nothing, which is the failure this function exists to stop.
+ */
+function sourceKindOf(row: Record<string, unknown>, setCode: string): SourceKind {
+    const kind = text(row['source_kind']);
+    const known = SOURCE_KINDS.find((candidate) => candidate === kind);
+    if (known === undefined) {
+        throw new Error(
+            `The value set "${setCode}" states the source kind "${kind}", which this build does not know.`,
+        );
+    }
+    return known;
+}
+
+/**
  * Reads the value set tables and answers the allowed values of a setting by
  * (scope, name). Every catalogue set is resolved once here, before the reply is
  * built, and each relation is read once however many sets draw on it.
@@ -262,11 +303,23 @@ export async function readValueSets(
         ),
     );
 
-    function choicesFor(code: string, kind: string): readonly Choice[] {
-        if (kind === 'boolean') return BOOLEAN_CHOICES;
-        if (kind === 'catalogue') return resolved.get(code) ?? [];
-        if (kind === 'enumerated') return enumerated.get(code) ?? [];
-        return [];
+    /** The values a kind offers as a list, which is none for the kinds that take a value. */
+    function choicesFor(code: string, kind: ValueSetKind): readonly Choice[] {
+        switch (kind) {
+            case 'boolean':
+                return BOOLEAN_CHOICES;
+            case 'catalogue':
+                return resolved.get(code) ?? [];
+            case 'enumerated':
+                return enumerated.get(code) ?? [];
+            case 'text':
+            case 'integer':
+            case 'number':
+            case 'range':
+            case 'regex':
+            case NO_SOURCE_KIND:
+                return [];
+        }
     }
 
     const fields = new Map<string, ValueFields>();
@@ -276,14 +329,15 @@ export async function readValueSets(
         if (known !== undefined) return known;
         const code = setForSetting.get(key) ?? '';
         const row = setOf.get(code);
+        const kind = row === undefined ? NO_SOURCE_KIND : sourceKindOf(row, code);
         const found: ValueFields =
             row === undefined
                 ? NO_VALUE_SET
                 : {
                       valueSet: code,
-                      sourceKind: text(row['source_kind']),
+                      sourceKind: kind,
                       catalogue: text(row['catalogue_code']),
-                      choices: choicesFor(code, text(row['source_kind'])),
+                      choices: choicesFor(code, kind),
                       minimum: optionalNumber(row['minimum']),
                       maximum: optionalNumber(row['maximum']),
                       pattern: text(row['pattern']),

@@ -106,6 +106,16 @@ bool is_parameter_scope(const std::string& scope) {
     return scope == "ModelParameters" || scope == "EngineParameters" || scope == "GlobalParameters";
 }
 
+/**
+ * The scopes a configuration screen draws from a set.
+ *
+ * A curve or a convention leaf is drawn by its own screen and its own gate, so
+ * it is not a setting of a parameter screen and does not stand outside one.
+ */
+bool is_drawn_scope(const std::string& scope) {
+    return is_parameter_scope(scope) || scope == "Setup";
+}
+
 std::string scope_of(const std::string& raw) {
     if (raw == "model")
         return "ModelParameters";
@@ -140,8 +150,13 @@ bool compatible(const std::string& kind, const std::string& domain) {
     if (domain == "double")
         return kind == "number" || kind == "range";
     if (domain == "string")
+        /*
+         * A flag is a flag to a person and a word in the document ORE reads, so
+         * a boolean set and a string domain are the same value twice, not a
+         * disagreement.
+         */
         return kind == "text" || kind == "enumerated" || kind == "catalogue" || kind == "regex" ||
-               kind == "range";
+               kind == "range" || kind == "boolean";
     return true;
 }
 
@@ -203,6 +218,30 @@ std::vector<row> rows_of(const model& data) {
             if (list != values.end())
                 entry.values = list->second;
         }
+        rows.push_back(std::move(entry));
+    }
+
+    /*
+     * The engine run settings are not parameters of the ORE contract: they are
+     * columns of the settings parts, linked by the Setup scope. A screen draws
+     * them, so the report states them and a link without a set shows here too.
+     */
+    for (const auto& [key, link] : links) {
+        if (link->scope != "Setup")
+            continue;
+        row entry{.scope = link->scope, .name = link->name};
+        entry.set_code = link->value_set_code;
+        const auto set = sets.find(entry.set_code);
+        if (set != sets.end()) {
+            entry.kind = set->second->source_kind;
+            entry.catalogue = set->second->catalogue_code;
+            entry.pattern = set->second->pattern;
+            entry.minimum = set->second->minimum;
+            entry.maximum = set->second->maximum;
+        }
+        const auto list = values.find(entry.set_code);
+        if (list != values.end())
+            entry.values = list->second;
         rows.push_back(std::move(entry));
     }
     return rows;
@@ -324,6 +363,13 @@ void ore_parameter_settings_commands::register_commands(cli::Menu& root_menu,
                 fail(out) << "Could not read the parameter model." << '\n';
                 return;
             }
+            if (data->parameters.empty()) {
+                out << "The ORE parameter contract is not published, so no parameter states a "
+                       "domain.\n"
+                    << "Publish the ore.parameters dataset and run this again.\n"
+                    << "FAIL" << '\n';
+                return;
+            }
             auto rows = rows_of(*data);
             std::size_t without_set = 0;
             std::size_t empty_enum = 0;
@@ -347,6 +393,8 @@ void ore_parameter_settings_commands::register_commands(cli::Menu& root_menu,
                 contract.insert(entry.scope + "|" + entry.name);
             std::size_t outside = 0;
             for (const auto& link : data->links) {
+                if (!is_drawn_scope(link.scope))
+                    continue;
                 if (!contract.contains(link.scope + "|" + link.name)) {
                     ++outside;
                     out << "outside      " << link.scope << " " << link.name << " ("

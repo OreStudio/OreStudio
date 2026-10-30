@@ -26,6 +26,7 @@ import type {
     GroupId,
     SettingValue,
 } from '../api/engineSettings.js';
+import { NO_SOURCE_KIND, type ValueSetKind } from '../api/valueSets.js';
 
 /**
  * What the engine settings screens decide, apart from how they draw it: the
@@ -112,12 +113,37 @@ export interface Problem {
     readonly params: Readonly<Record<string, string>>;
 }
 
+/**
+ * The words for a text its set does not hold, by the kind the set states.
+ *
+ * Every kind answers for itself, so a kind this build does not know is a
+ * compile error rather than a sentence about a list of choices.
+ */
+function problemKeyOf(kind: ValueSetKind): string {
+    switch (kind) {
+        case 'integer':
+            return 'engineSettings.problem.whole';
+        case 'number':
+        case 'range':
+            return 'engineSettings.problem.number';
+        case 'boolean':
+            return 'engineSettings.problem.flag';
+        case 'enumerated':
+        case 'catalogue':
+            return 'engineSettings.problem.choice';
+        case 'regex':
+        case 'text':
+        case NO_SOURCE_KIND:
+            return 'engineSettings.problem.text';
+    }
+}
+
 /** What is wrong with the text a person typed for a setting, or null when it is a value the setting takes. */
 export function problemOf(setting: EngineSetting, text: string, label: string): Problem | null {
     const value = valueOfText(setting, text);
     if (value === 'invalid') {
         return {
-            key: PROBLEM_OF[setting.sourceKind] ?? 'engineSettings.problem.choice',
+            key: problemKeyOf(setting.sourceKind),
             params: { setting: label },
         };
     }
@@ -137,13 +163,6 @@ export function problemOf(setting: EngineSetting, text: string, label: string): 
     }
     return null;
 }
-
-/** The words for a text a set of this kind does not hold. */
-const PROBLEM_OF: Readonly<Record<string, string>> = {
-    integer: 'engineSettings.problem.whole',
-    number: 'engineSettings.problem.number',
-    range: 'engineSettings.problem.number',
-};
 
 /** The columns whose value a draft changes from the saved one. */
 export function changedColumns(group: EngineGroup, saved: Draft, draft: Draft): readonly string[] {

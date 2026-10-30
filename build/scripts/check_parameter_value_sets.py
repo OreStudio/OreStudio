@@ -2,38 +2,34 @@
 """Fail when a parameter is drawn without a value set, or a per-pair one returns.
 
 The value set tables are the one source of a parameter's control and rule. This
-check reads the curation the seed is written from and the seeded script itself,
-and it fails when:
+check reads the curation the seed is written from and fails when:
 
 - a parameter a screen draws has no value set;
-- a link names a set the curation does not state, or a set states a rule its
-  source kind cannot hold;
-- the seeded script does not carry a set or a link the curation states, which is
-  what a stale artefact looks like;
-- a per-pair override column comes back to the pair setting table, the engine
-  settings group settings table, or the server that serves them.
+- a link names a set the curation does not state;
+- a set states a rule its own kind cannot hold, such as a floor above its
+  ceiling, an enumerated set with no values, a catalogue that is not registered,
+  or a regular expression with no pattern;
+- a rule comes back to the tables that hold the value: a per-pair kind or
+  options, or a bound or list written as a column check on an engine settings
+  part.
 
-A parameter is free text only when its set says so, with the source kind text.
-That is data and it passes; an absent set is a gap and it fails.
+A set of source kind text makes a parameter free text, which is data and passes.
+A parameter with no set is a gap and fails.
+
+The script the seed is written to is checked exactly by
+=generate_value_sets.py --check=, which renders it and compares, so this check
+does not repeat that weaker test.
 """
 
 from __future__ import annotations
 
-import os
+import re
 import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 UTILITY = REPO_ROOT / "projects" / "ores.sql" / "utility"
-SEED = (
-    REPO_ROOT
-    / "projects"
-    / "ores.sql"
-    / "populate"
-    / "reporting"
-    / "reporting_ore_parameter_value_sets_populate.sql"
-)
 
 # The columns a per-pair row carried before the value set stated the same facts.
 # A table that declares one is a rule stated twice, which is what this check is
@@ -64,11 +60,35 @@ GUARDED = (
 )
 
 # The server and the screen serve a setting from its set. A read of the retired
-# per-pair column here is the fallback this check exists to keep out.
+# per-pair column here is the fallback this check exists to keep out, stated as
+# the shape the read takes in that file, so the guard can actually fire.
 NO_OVERRIDE_READS = (
-    REPO_ROOT / "projects/ores.web/packages/bff/src/pricing-engines.ts",
-    REPO_ROOT / "projects/ores.web/packages/web/src/api/pricingEngines.ts",
+    (
+        REPO_ROOT / "projects/ores.web/packages/bff/src/pricing-engines.ts",
+        r"row\['(kind|options)'\]|kindSchema",
+    ),
+    (
+        REPO_ROOT / "projects/ores.web/packages/web/src/api/pricingEngines.ts",
+        r"z\.enum\(\s*\[\s*'flag'",
+    ),
 )
+
+# A bound or a list written as a column check states the rule a second time,
+# beside the set the guard reads. The engine settings parts carry a guard
+# instead, so a check on a value column here is a regression.
+NO_VALUE_CHECKS = tuple(
+    REPO_ROOT / path
+    for path in (
+        "projects/ores.sql/create/reporting/reporting_engine_settings_fixings_create.sql",
+        "projects/ores.sql/create/reporting/reporting_engine_settings_building_create.sql",
+        "projects/ores.sql/create/reporting/reporting_engine_settings_execution_create.sql",
+        "projects/ores.reporting/modeling/ores.reporting.engine_settings_fixings.org",
+        "projects/ores.reporting/modeling/ores.reporting.engine_settings_building.org",
+        "projects/ores.reporting/modeling/ores.reporting.engine_settings_execution.org",
+    )
+)
+
+VALUE_CHECK = re.compile(r"check\s*\([^)]*(>=|<=|\bin\s*\(|\bbetween\b)", re.IGNORECASE)
 
 SOURCE_KINDS = ("enumerated", "catalogue", "range", "regex", "boolean", "integer", "number", "text")
 
@@ -76,8 +96,8 @@ SOURCE_KINDS = ("enumerated", "catalogue", "range", "regex", "boolean", "integer
 def curation():
     """The value sets the seed is written from, resolved as the generator does."""
     sys.path.insert(0, str(UTILITY))
-    import generate_value_sets  # noqa: E402
-    import setup_value_sets  # noqa: E402
+    import generate_value_sets
+    import setup_value_sets
 
     data = generate_value_sets.load()
     problems = generate_value_sets.resolve(data)
@@ -104,25 +124,33 @@ def set_problems(data):
         kind = entry.get("source_kind", "")
         if kind not in SOURCE_KINDS:
             problems.append(f"{code}: unknown source kind {kind!r}")
-        elif kind == "enumerated" and not entry.get("values"):
-            problems.append(f"{code}: enumerated with no values")
-        elif kind == "catalogue" and entry.get("catalogue_code") not in catalogues:
-            problems.append(f"{code}: names a catalogue that is not registered")
+            continue
+        minimum = entry.get("minimum")
+        maximum = entry.get("maximum")
+        if minimum is not None and not isinstance(minimum, (int, float)):
+            problems.append(f"{code}: a floor that is not a number")
+        if maximum is not None and not isinstance(maximum, (int, float)):
+            problems.append(f"{code}: a ceiling that is not a number")
+        if isinstance(minimum, (int, float)) and isinstance(maximum, (int, float)):
+            if minimum > maximum:
+                problems.append(f"{code}: a floor above its ceiling")
+        if kind == "enumerated":
+            values = [value.get("value", "") for value in entry.get("values", [])]
+            if not values:
+                problems.append(f"{code}: enumerated with no values")
+            if len(set(values)) != len(values):
+                problems.append(f"{code}: enumerated with a value stated twice")
+            if "" in values:
+                problems.append(f"{code}: enumerated with an empty value")
+        elif kind == "catalogue":
+            if entry.get("catalogue_code") not in catalogues:
+                problems.append(f"{code}: names a catalogue that is not registered")
+            if entry.get("values"):
+                problems.append(f"{code}: a catalogue set that also lists values")
         elif kind == "regex" and not entry.get("pattern"):
             problems.append(f"{code}: a regular expression with no pattern")
-    return problems
-
-
-def seed_problems(data, seed_text):
-    """Whether the seeded script carries every set and link the curation states."""
-    problems = []
-    for code in sorted(data["sets"]):
-        if f"('{code}'" not in seed_text:
-            problems.append(f"{code}: the seed does not carry the set")
-    for key in sorted(data["links"]):
-        scope, _, name = key.partition("|")
-        if f"('{scope}:{name}'" not in seed_text:
-            problems.append(f"{key}: the seed does not carry the link")
+        elif kind in ("integer", "number", "range") and entry.get("values"):
+            problems.append(f"{code}: a numeric set that also lists values")
     return problems
 
 
@@ -139,16 +167,27 @@ def override_problems():
                 problems.append(
                     f"{path.relative_to(REPO_ROOT)}: states the override column {column}"
                 )
-    for path in NO_OVERRIDE_READS:
+    for path in NO_VALUE_CHECKS:
         if not path.exists():
             problems.append(f"{path.relative_to(REPO_ROOT)}: does not exist")
             continue
         text = path.read_text(encoding="utf-8")
-        for column in ("kind", "options"):
-            if f"row['{column}']" in text:
+        for number, line in enumerate(text.splitlines(), start=1):
+            if VALUE_CHECK.search(line):
                 problems.append(
-                    f"{path.relative_to(REPO_ROOT)}: reads the retired pair setting {column}"
+                    f"{path.relative_to(REPO_ROOT)}:{number}: states a value as a column check;"
+                    " the set states it"
                 )
+    for path, pattern in NO_OVERRIDE_READS:
+        if not path.exists():
+            problems.append(f"{path.relative_to(REPO_ROOT)}: does not exist")
+            continue
+        text = path.read_text(encoding="utf-8")
+        for found in sorted(set(re.findall(pattern, text))):
+            column = found if isinstance(found, str) else found[0]
+            problems.append(
+                f"{path.relative_to(REPO_ROOT)}: reads the retired pair setting {column}"
+            )
     return problems
 
 
@@ -171,10 +210,6 @@ def main() -> int:
             problems.append(f"{code}: no parameter names it")
     problems += set_problems(data)
 
-    if not SEED.exists():
-        problems.append(f"{SEED.relative_to(REPO_ROOT)}: does not exist")
-    else:
-        problems += seed_problems(data, SEED.read_text(encoding="utf-8"))
     problems += override_problems()
 
     if problems:

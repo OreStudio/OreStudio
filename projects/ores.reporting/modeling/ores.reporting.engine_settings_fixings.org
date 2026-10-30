@@ -166,8 +166,6 @@ Domain constraints beyond the standard temporal and nil-uuid checks.
 
 | expression |
 |------------|
-| "ignore_fixing_lag" is null or "ignore_fixing_lag" >= 0 |
-| "ignore_fixing_lead" is null or "ignore_fixing_lead" >= 0 |
 
 
 ** Indexes

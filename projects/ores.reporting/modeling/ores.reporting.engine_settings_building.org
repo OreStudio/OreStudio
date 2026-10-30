@@ -166,7 +166,6 @@ Domain constraints beyond the standard temporal and nil-uuid checks.
 
 | expression |
 |------------|
-| "observation_model" is null or "observation_model" in ('None', 'Disable', 'Defer', 'Unregister') |
 
 
 ** Indexes

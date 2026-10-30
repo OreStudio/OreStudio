@@ -19,6 +19,7 @@
  */
 
 import type { PricingVocabulary } from '../api/pricingEngines.js';
+import { NO_SOURCE_KIND, type ValueSetKind } from '../api/valueSets.js';
 
 /**
  * The control a parameter's value needs, apart from the screen that draws it.
@@ -54,7 +55,7 @@ export type ValueSetFields = PricingVocabulary['valueSets'][string];
 
 /** The fields of a value set that decide its control, as any leaf carries them. */
 export interface ValueSetShape {
-    readonly sourceKind: string;
+    readonly sourceKind: ValueSetKind;
     readonly catalogue?: string;
     readonly choices: readonly ControlChoice[];
     readonly minimum: number | null;
@@ -112,7 +113,9 @@ export function controlOfValueSet(fields: ValueSetShape | undefined): ControlMod
                 maximum: fields.maximum,
                 whole: false,
             };
-        default:
+        case 'regex':
+        case 'text':
+        case NO_SOURCE_KIND:
             return { kind: 'text', pattern: fields.pattern };
     }
 }

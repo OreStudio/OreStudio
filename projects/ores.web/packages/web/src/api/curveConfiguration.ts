@@ -19,6 +19,7 @@
  */
 
 import { z } from 'zod';
+import { NO_SOURCE_KIND, SOURCE_KINDS, type ValueSetKind } from './valueSets.js';
 import { request } from './transport.js';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
@@ -52,7 +53,7 @@ const parameterSchema = z.object({
     introducedIn: z.string(),
     removedIn: z.string(),
     valueSet: z.string(),
-    sourceKind: z.string(),
+    sourceKind: z.enum([...SOURCE_KINDS, NO_SOURCE_KIND] as [ValueSetKind, ...ValueSetKind[]]),
     catalogue: z.string().default(''),
     choices: z.array(choiceSchema),
     minimum: z.number().nullable(),

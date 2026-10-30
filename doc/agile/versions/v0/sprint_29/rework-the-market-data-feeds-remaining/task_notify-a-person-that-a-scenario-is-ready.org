@@ -26,11 +26,11 @@ Compass can tell a person their scenario is ready, and the bell opens the scenar
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Built and proven live: the shell raises the notice, the bell renders it, and the command and its suggestion are in. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review, then close.                    |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -140,6 +140,35 @@ the BFF read.
 |   |                 |      |          |       |
 
 * Result
+
+A scenario can be handed to the person who should run it.
+
+- The shell raises a notification through the inbox operation:
+  =notification_operations raise-notification <kind_code> <link_route>
+  <account_ids> [--link_id] [--argument name=value]
+  [--audience_permission_code]=. It is hand-written because the operation's
+  arguments are a list of name-value records and the generator's only
+  container form is a list of strings; the unit mirrors the generated shape and
+  states the one deviation, an empty =--link_id= being the normal case.
+- The kind =scenario.to_run= (=notification.scenario.to_run=) is seeded with the
+  inbox's kinds and the message in en, fr and pt.
+- =compass notify scenario <doc> --to <username@tenant> [--from ...]
+  [--reason ...]= resolves the doc by path or :ID:, reads the recipient from
+  the database, and raises the notice with the link
+  =/development/tests/<:ID:>=. The default raiser is the tenant administrator.
+- =compass add test_scenario= prints the ready-to-run notify command after
+  scaffolding, naming the persona from the first step where it can.
+- The bell needed no change: a route with an empty link id is used as it
+  stands, and a test renders the notice from its arguments.
+
+Evidence: notification 2c081ea7-464d-46dd-89b4-ce46e9f52a17 for henry.jones
+with link /development/tests/BE0384AF-AFAA-49B9-B313-19EE86C02733; the BFF
+returns it with the kind, the arguments and the route; the app's scenario route
+answers 200; raising as a Member is refused and as the tenant administrator
+accepted, so the raiser is the signed-in account. shell inbox, inbox core and
+inbox service suites pass; compass pytest 473 pass; the web inbox and
+development routes tests pass; validate_docs clean. The shell binary and web
+bundle were rebuilt and the web service restarted.
 
 A scenario is written, and the person who should run it is told.
 

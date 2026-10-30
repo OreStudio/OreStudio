@@ -26,11 +26,11 @@ A durable knowledge page defines a market data cut, its kinds and its lifecycle,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance
@@ -84,3 +84,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A durable knowledge page defines a market data cut: doc/knowledge/domain/market_data_cuts.org.
+
+- The page carries both senses of the word, what a cut is, the deal cut and the
+  market data cut, the four kinds, the end of day process and its rate overrides,
+  multiple centres, what a cut holds, profiles, one cut per book, option-expiry
+  cut codes, audit and rerun, our position, a glossary and references. No
+  notebook is referenced and no vendor or bank system appears.
+- Every non-repository claim rests on a public source fetched and read while
+  writing: EBA RTS (EU) 2016/101 Art. 3 for independent price verification and
+  its accepted sources; the ECB euro reference rates for an official daily rate;
+  Fedwire operating hours for a centre's stated business day.
+- Claims with no verifiable public source are marked as our working convention
+  and listed under What the sources establish: the deal-cut then market-data-cut
+  order, the flash and start-of-day runs, the six-step end of day sequence, one
+  cut per book, the after-hours rule and the specific option cut times. The
+  advisory sentence about inferring a cut from the volatility surface was
+  dropped.
+- Our own position is verified against the notes and the schema and linked: the
+  as-of read and its lack of an as-of parameter; the resolution-side snapshot as
+  a definition with no implementation; the cut time as a designed lookup with no
+  table; the population as unmodelled; the report binding as unable to name the
+  population.
+- Registered in the knowledge index and linked from the snapshot notes, the
+  pricing configuration, the backlog story and the report-binding design, where
+  the cut is now the first open item.
+
+Checks: compass lint valid; the org link check 0 unresolved; compass site page
+published the seven touched pages with no failures. Open on the page: the option
+cut times, whether a book may hold more than one cut, and whether the story's cut
+time and a population cut are one entity.
+
+The consequence for the report binding: binding a population needs a cut that
+does not exist yet, so the cut model is the binding's foundation.

@@ -54,7 +54,6 @@ struct feed_scope_entity {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     boost::uuids::uuid feed_id;
-
     std::string asset_class;
     std::string item;
     std::optional<boost::uuids::uuid> vendor_instrument_id;

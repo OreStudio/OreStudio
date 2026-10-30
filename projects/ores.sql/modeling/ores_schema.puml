@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-646 tables in 21 groups.
+647 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -716,6 +716,7 @@ entity "marketdata" as marketdata {
   ores_marketdata_curve_publishes_tbl
   ores_marketdata_delivery_counts_tbl
   ores_marketdata_demand_intervals_tbl
+  ores_marketdata_feed_scopes_tbl
   ores_marketdata_feeds_tbl
   ores_marketdata_market_data_mappings_tbl
   ores_marketdata_market_data_vendor_instruments_tbl
@@ -740,7 +741,7 @@ entity "marketdata" as marketdata {
 }
 note bottom of marketdata
 Market Data (Quotes, Fixings, Series)
-27 tables — ores_schema.marketdata.puml
+28 tables — ores_schema.marketdata.puml
 end note
 
 entity "analytics" as analytics {

@@ -730,6 +730,16 @@ CATALOGUE: tuple[Check, ...] = (
             " and commit the module.",
     ),
     Check(
+        id="shell-command-units",
+        title="The shell composes each command unit once, under one name",
+        argv=("python3", "build/scripts/check_shell_command_units.py", "projects/ores.shell"),
+        classes=("cpp", "tooling"),
+        paths=("projects/ores.shell/*",),
+        fix="Drop the repeated registration. Two branches that both wire the same"
+            " unit merge cleanly, and the shell then stops at start-up, which is"
+            " also where a person provisions a tenant.",
+    ),
+    Check(
         id="curve-column-guards",
         title="The curve column map and its guard are the projection's",
         argv=(

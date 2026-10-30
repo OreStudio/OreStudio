@@ -58,6 +58,7 @@ A curve configuration is drawn like every other configuration that comes off an 
 | [[id:930B3B5E-50DF-441F-BA20-4F74EF49FF39][Generate the curve collection wiring]] | BACKLOG | | | The page's section wiring is generated from the projection, but the child collections are a hand-written table in the BFF, because a segment leaf's path depends on the kind the row states and the wiring has no shape for that. Teach the generator to read import_segments and the quotes that follow each kind, and emit the rules the BFF now holds, so the store, the generator and the page are one source again. |
 | [[id:5E27CA0C-319D-4A54-B519-ABC76157FAA2][Collect the snags from testing the curve screens]] | DONE | 2026-10-30 | 2026-10-30 | The curve screens were walked in a browser, and the walk left a QA scenario a person can repeat plus the defects it found. |
 | [[id:3D1208F2-1D51-4733-81FB-01B19D36E8EE][Record the leaves a segment inherits]] | DONE | 2026-10-30 | 2026-10-30 | A segment reads six leaves from its base class before its own, and the extractor took a class's base from the same file it read. Read the base map across every file, so the contract carries the six and a segment stops showing its conventions as a gap. |
+| [[id:7B1D4017-457C-4A6B-B5BD-45578ECF396C][Guard the shell's command units]] | STARTED | 2026-10-30 | | Two branches wired the legal entity unit, the merge kept both registrations, and ores.shell stopped at start-up. State the guard's two rules over the source, so the next merge fails a check instead of a person. |
 
 * Decisions
 

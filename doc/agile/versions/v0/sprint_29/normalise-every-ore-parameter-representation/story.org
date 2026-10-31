@@ -40,7 +40,7 @@ Every ORE parameter whose reader accepts more than one rendering of a value is s
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:17032DC3-55F4-42FD-B3C1-C33D8DCED488][Consolidate the ORE element maps]] | BACKLOG | | | Runs first. Three tables answer which ORE element a leaf column is and which value set states its values: the curve configuration columns, the convention kind terms and the vocabularies. One leaf states a fact three times, so the story makes one map keyed by the ORE element before anything else reads a set. |
+| [[id:17032DC3-55F4-42FD-B3C1-C33D8DCED488][Consolidate the ORE element maps]] | STARTED | 2026-10-31 | | Runs first. Three tables name a leaf column and the set that governs it; measured, the two column maps are disjoint by schema, the third duplicates four rows of the contract, and 54 leaves the guards check have no rule. The story makes one map keyed by the ORE element, which every later task reads a set through. |
 | [[id:ABCEDE72-7A51-4D82-8232-DC9BA9CC9291][Scaffold story: Normalise every ORE parameter representation]] | DONE | 2026-10-30 | 2026-10-30 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:300CD9D6-19F9-4826-B771-49B04A9DD2E7][Take the census of the representations ORE accepts]] | DONE | 2026-10-30 | 2026-10-30 | Initial task for: Normalise every ORE parameter representation |
 
@@ -223,10 +223,18 @@ populated database.
 
 Three tables answer "which ORE element is this column, and which value set
 states its values": the curve columns table, the convention kind terms table and
-the vocabularies table. They were built at different times, so a leaf can be
-named in one and missing from another, and a value set can be linked from two
-places with no statement of which wins. That is the same defect the story is
-about, one level up: one fact, several statements.
+the vocabularies table. Measured, they are not three statements of one leaf. The
+curve columns name only =curveconfig.xsd= leaves and the convention terms only
+=conventions.xsd= ones, so the two are disjoint; the vocabularies table names
+four =curveconfig.xsd= leaves, and the contract path resolves the same four sets
+to the same codes. What the tree holds is two column maps, one per schema, and a
+four-row duplicate of what the contract already states.
+
+The defect is coverage rather than duplication. Of the 299 distinct leaves the
+two guards check, 245 resolve to a value set and 54 resolve to none, because the
+parameter contract holds no row for them. A leaf the map names and the contract
+does not is silently unguarded. The evidence is
+=evidence/leaf_maps_overlap.py=, with its output beside it.
 
 The overlap is worse than duplication in one direction. Both guards resolve a
 value set through the parameter contract — curve column or convention term to

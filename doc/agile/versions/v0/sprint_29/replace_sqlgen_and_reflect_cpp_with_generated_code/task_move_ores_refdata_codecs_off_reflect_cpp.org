@@ -28,9 +28,9 @@ Step 6 of 7, one component. ores.refdata encodes and decodes without reflect-cpp
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Every generated refdata model states its shape and every generated entity has its codec pair; seven hand-written domain headers have no generated shape, and the component's hand-written JSON still uses reflect-cpp. |
+| Now          | The generated JSON paths read and print through the codec: 0 of 167 changed-event headers and 0 of 168 json_io units name reflect-cpp. 211 production files still do, all in the storage entities, the convention families, two service files and seven hand-written headers. |
 | Waiting on   | Nothing.                               |
-| Next         | Move the component's hand-written JSON off reflect-cpp, starting with the per-entity json_io units. |
+| Next         | The storage entities' operator<< has no call site; deleting it (and its unit) is the next slice. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -201,7 +201,7 @@ Two of the three generated families that named the reflector now go through the
 generated codec, each behind the model's own opt-in so a component that has not
 opted in is untouched.
 
-- **The changed-event headers**, 168 of them. A notification carries the row's key
+- **The changed-event headers**, 167 of them. A notification carries the row's key
   as JSON, and the key is a generated message, so the codec reads it. The header
   no longer includes =rfl/json.hpp= or the reflectors at all. The read still
   tolerates a key this build cannot parse, which is what the reflector-backed read
@@ -215,11 +215,11 @@ What is left in the component, measured after these two:
 
 | Family | Files | What it needs |
 |--------+-------+---------------|
-| =*_entity.cpp= in =repository/= | 168 | The storage entity has no generated shape. Either it states one, or the =operator<<= goes. |
-| =convention_family_*=.cpp | 26 | Hand-written; they hold a convention's payload as a document. |
+| =*_entity.cpp= in =repository/= | 168 (zero call sites stream a storage entity) | The storage entity has no generated shape. Either it states one, or the =operator<<= goes. |
+| =convention_family_*=.cpp | 27 | Hand-written; they hold a convention's payload as a document. |
 | =options.cpp=, =application.cpp= | 2 | Hand-written configuration printing. |
 | the seven hand-written domain headers | 7 | No generated shape at all; they need the =dataset_dependency= treatment. |
-| core tests | ~170 | They compare against reflect-cpp on purpose, so they stay. |
+| core tests | 181 | They compare against reflect-cpp on purpose, so they stay. |
 
 * Test Scenarios
 
@@ -260,7 +260,12 @@ via its "Verifies task" field.
 
 * Result
 
-PR #4182 delivers the generation half of this task, and not the whole of it.
+PR #4182 delivered the generation half of this task, and not the whole of it.
+PR #4204 delivers the first slice of what remains: the generated JSON paths.
+
+A result of #4204, written after the review found the earlier text stale: the
+changed-event headers and the json_io units no longer name reflect-cpp, measured
+as 0 of 167 and 0 of 168. The component still has 211 production files that do.
 
 Delivered: every generated refdata model states its wire shape beside its struct,
 every generated entity has its codec pair, and the component's messaging path
@@ -272,10 +277,9 @@ formats.
 
 Not delivered, and why this task stays STARTED:
 
-- **The component's hand-written JSON.** Every =*_json_io.cpp= still calls
-  =rfl::json::write=, and the eventing headers still read with =rfl::json::read=.
-  That is the "hand-written JSON uses the generated codecs or yyjson" line, and
-  it is the next slice.
+- **The storage entities' =operator<<=.** 168 units exist only to print a row and
+  no call site streams one. Deleting the unit, its declaration and its file-list
+  entry removes the last generated family that names the reflector.
 - **Seven hand-written domain headers** have no generated shape:
   =tenor_resolution=, =tenor_basis_swap_long_short_legs=,
   =tenor_basis_swap_pay_receive_legs= and four smaller ones.

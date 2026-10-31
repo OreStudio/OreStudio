@@ -2,50 +2,27 @@
 {{{cpp_license}}}
 {{#domain_entity}}
 #include "ores.{{component_include}}/domain/{{entity_singular}}_json_io.hpp"
-{{#domain_entity}}
 {{#has_generated_wire_codec}}
 #include "ores.{{component_include}}/domain/{{entity_singular}}_codec.hpp"
-#include "ores.utility/codec/struct_codec.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 {{/has_generated_wire_codec}}
 {{^has_generated_wire_codec}}
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 {{/has_generated_wire_codec}}
-{{/domain_entity}}
-{{#junction}}
-{{#has_generated_wire_codec}}
-#include "ores.{{component_include}}/domain/{{entity_singular}}_codec.hpp"
-#include "ores.utility/codec/struct_codec.hpp"
-{{/has_generated_wire_codec}}
-{{^has_generated_wire_codec}}
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-{{/has_generated_wire_codec}}
-{{/junction}}
 
 #include <ostream>
 
 namespace ores::{{component}}::domain {
 
 std::ostream& operator<<(std::ostream& s, const {{entity_singular}}& v) {
-{{#domain_entity}}
 {{#has_generated_wire_codec}}
     s << ores::utility::codec::json::write(v);
 {{/has_generated_wire_codec}}
 {{^has_generated_wire_codec}}
     rfl::json::write(v, s);
 {{/has_generated_wire_codec}}
-{{/domain_entity}}
-{{#junction}}
-{{#has_generated_wire_codec}}
-    s << ores::utility::codec::json::write(v);
-{{/has_generated_wire_codec}}
-{{^has_generated_wire_codec}}
-    rfl::json::write(v, s);
-{{/has_generated_wire_codec}}
-{{/junction}}
     return s;
 }
 
@@ -53,50 +30,27 @@ std::ostream& operator<<(std::ostream& s, const {{entity_singular}}& v) {
 {{/domain_entity}}
 {{#junction}}
 #include "ores.{{component_include}}/domain/{{name_singular}}_json_io.hpp"
-{{#domain_entity}}
 {{#has_generated_wire_codec}}
 #include "ores.{{component_include}}/domain/{{name_singular}}_codec.hpp"
-#include "ores.utility/codec/struct_codec.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 {{/has_generated_wire_codec}}
 {{^has_generated_wire_codec}}
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 {{/has_generated_wire_codec}}
-{{/domain_entity}}
-{{#junction}}
-{{#has_generated_wire_codec}}
-#include "ores.{{component_include}}/domain/{{name_singular}}_codec.hpp"
-#include "ores.utility/codec/struct_codec.hpp"
-{{/has_generated_wire_codec}}
-{{^has_generated_wire_codec}}
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-{{/has_generated_wire_codec}}
-{{/junction}}
 
 #include <ostream>
 
 namespace ores::{{component}}::domain {
 
 std::ostream& operator<<(std::ostream& s, const {{name_singular}}& v) {
-{{#domain_entity}}
 {{#has_generated_wire_codec}}
     s << ores::utility::codec::json::write(v);
 {{/has_generated_wire_codec}}
 {{^has_generated_wire_codec}}
     rfl::json::write(v, s);
 {{/has_generated_wire_codec}}
-{{/domain_entity}}
-{{#junction}}
-{{#has_generated_wire_codec}}
-    s << ores::utility::codec::json::write(v);
-{{/has_generated_wire_codec}}
-{{^has_generated_wire_codec}}
-    rfl::json::write(v, s);
-{{/has_generated_wire_codec}}
-{{/junction}}
     return s;
 }
 

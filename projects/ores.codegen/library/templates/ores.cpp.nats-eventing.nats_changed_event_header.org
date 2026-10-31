@@ -34,13 +34,12 @@ The full template source. Edit here and re-tangle with
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
-#include <exception>
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
 {{#domain_entity}}
 {{#has_generated_wire_codec}}
-#include "ores.utility/codec/struct_codec.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 {{/has_generated_wire_codec}}
 {{^has_generated_wire_codec}}
 #include <rfl/json.hpp>
@@ -49,7 +48,7 @@ The full template source. Edit here and re-tangle with
 {{/domain_entity}}
 {{#junction}}
 {{#has_generated_wire_codec}}
-#include "ores.utility/codec/struct_codec.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 {{/has_generated_wire_codec}}
 {{^has_generated_wire_codec}}
 #include <rfl/json.hpp>
@@ -76,14 +75,11 @@ struct entity_event_traits<ores::{{component}}::messaging::{{entity_singular}}_e
         ores::{{component}}::messaging::{{entity_singular}}_event event;
         event.event_id = boost::lexical_cast<boost::uuids::uuid>(notification.event_id);
 {{#has_generated_wire_codec}}
-        // A key this build cannot read leaves the event's own key default, which
-        // is what the reflector-backed read did before the codec replaced it.
-        try {
-            event.key =
-                ores::utility::codec::json::read<ores::{{component}}::messaging::{{entity_singular}}_key>(
-                    notification.key);
-        } catch (const std::exception&) {
-        }
+        // A key this build cannot read leaves the event's own key default.
+        if (const auto key =
+                ores::utility::codec::json::try_read<
+                    ores::{{component}}::messaging::{{entity_singular}}_key>(notification.key))
+            event.key = *key;
 {{/has_generated_wire_codec}}
 {{^has_generated_wire_codec}}
         if (const auto key =
@@ -112,13 +108,12 @@ struct entity_event_traits<ores::{{component}}::messaging::{{entity_singular}}_e
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
-#include <exception>
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.{{component_include}}/messaging/{{name_singular}}_protocol.hpp"
 {{#domain_entity}}
 {{#has_generated_wire_codec}}
-#include "ores.utility/codec/struct_codec.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 {{/has_generated_wire_codec}}
 {{^has_generated_wire_codec}}
 #include <rfl/json.hpp>
@@ -127,7 +122,7 @@ struct entity_event_traits<ores::{{component}}::messaging::{{entity_singular}}_e
 {{/domain_entity}}
 {{#junction}}
 {{#has_generated_wire_codec}}
-#include "ores.utility/codec/struct_codec.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 {{/has_generated_wire_codec}}
 {{^has_generated_wire_codec}}
 #include <rfl/json.hpp>
@@ -154,14 +149,11 @@ struct entity_event_traits<ores::{{component}}::messaging::{{name_singular}}_eve
         ores::{{component}}::messaging::{{name_singular}}_event event;
         event.event_id = boost::lexical_cast<boost::uuids::uuid>(notification.event_id);
 {{#has_generated_wire_codec}}
-        // A key this build cannot read leaves the event's own key default, which
-        // is what the reflector-backed read did before the codec replaced it.
-        try {
-            event.key =
-                ores::utility::codec::json::read<ores::{{component}}::messaging::{{name_singular}}_key>(
-                    notification.key);
-        } catch (const std::exception&) {
-        }
+        // A key this build cannot read leaves the event's own key default.
+        if (const auto key =
+                ores::utility::codec::json::try_read<
+                    ores::{{component}}::messaging::{{name_singular}}_key>(notification.key))
+            event.key = *key;
 {{/has_generated_wire_codec}}
 {{^has_generated_wire_codec}}
         if (const auto key =

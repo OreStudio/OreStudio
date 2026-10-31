@@ -24,7 +24,7 @@
  */
 #include "ores.dq.api/domain/lei_bic_json_io.hpp"
 #include "ores.dq.api/domain/lei_bic_codec.hpp"
-#include "ores.utility/codec/struct_codec.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <ostream>
 
 namespace ores::dq::domain {

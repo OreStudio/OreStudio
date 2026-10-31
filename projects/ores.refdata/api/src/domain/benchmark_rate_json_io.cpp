@@ -24,7 +24,7 @@
  */
 #include "ores.refdata.api/domain/benchmark_rate_json_io.hpp"
 #include "ores.refdata.api/domain/benchmark_rate_codec.hpp"
-#include "ores.utility/codec/struct_codec.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <ostream>
 
 namespace ores::refdata::domain {

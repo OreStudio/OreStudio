@@ -324,6 +324,29 @@ T read(std::string_view text) {
     }
 }
 
+/**
+ * @brief The value the text states, or nothing when it states none this build
+ * can read.
+ *
+ * A document written by a peer that is a field ahead, or one this build cannot
+ * parse at all, is an answer a caller can act on rather than an exception it has
+ * to swallow.
+ */
+template <typename T>
+std::optional<T> try_read(std::string_view text) noexcept {
+    yyjson_doc* doc = yyjson_read(text.data(), text.size(), 0);
+    if (doc == nullptr)
+        return std::nullopt;
+    try {
+        auto v = json_codec<T>::read(yyjson_doc_get_root(doc));
+        yyjson_doc_free(doc);
+        return v;
+    } catch (...) {
+        yyjson_doc_free(doc);
+        return std::nullopt;
+    }
+}
+
 }
 
 }

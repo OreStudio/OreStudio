@@ -40,9 +40,9 @@ The signed-off Connectivity prototype becomes the screen: the delivery tree, the
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:04C544E6-DFAA-4612-B521-EF1D412EC1B5][Serve the Connectivity writes]] | BACKLOG | | | Write endpoints and permissions for sessions, feeds, scopes, schedules and routes. |
-| [[id:6BC08965-2C4E-4B28-A819-588BBAA7DD19][Draw the supplier tree and dashboard]] | BACKLOG | | | The delivery tree and the supplier dashboard with attention, coverage and recent feeds. |
-| [[id:90A588AE-3A7D-4980-A2DB-31E044F0EC29][Draw the session and feed records]] | BACKLOG | | | Session transport, runtime and feeds; feed overview, scope, schedule and routes. |
-| [[id:A2A85020-A346-4DA4-971A-2B69F4E8799B][Draw the adapter catalogue and publisher]] | STARTED | 2026-10-30 | | The read-only adapter catalogue and the publisher record with its feeds. |
+| [[id:6BC08965-2C4E-4B28-A819-588BBAA7DD19][Draw the supplier tree and dashboard]] | DONE | | 2026-10-31 | The delivery tree and the supplier dashboard with attention, coverage and recent feeds. |
+| [[id:90A588AE-3A7D-4980-A2DB-31E044F0EC29][Draw the session and feed records]] | DONE | | 2026-10-31 | Session transport, runtime and feeds; feed overview, scope, schedule and routes. |
+| [[id:A2A85020-A346-4DA4-971A-2B69F4E8799B][Draw the adapter catalogue and publisher]] | DONE | 2026-10-30 | 2026-10-31 | The read-only adapter catalogue and the publisher record with its feeds. |
 | [[id:1994DF76-4830-4510-96BD-3B524E782ED2][Prove the Connectivity screens]] | BACKLOG | | | The new session and new feed flows create rows the adapter reads. |
 
 * Decisions

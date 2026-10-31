@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4D2D0EF9-986A-49F3-91CD-29DF44548590][Build the Connectivity screens]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The session and feed records are drawn.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:4D2D0EF9-986A-49F3-91CD-29DF44548590][Build the Connectivity screens]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -56,7 +56,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Web suite | 2336 pass | =npm run test -w @ores/web= | 71f401d756 |
+| BFF suite | 1153 pass | =npx vitest run packages/bff= | 71f401d756 |
+| Web check | pass | =./compass.sh check --only web= | 71f401d756 |
+| Build | green | =./compass.sh build= | 71f401d756 |
+| Live read | 200, 11 publishers, 2 suppliers, 2 adapters, 2 sessions, 10 feeds | =curl .../api/marketdata/connectivity= | 71f401d756 |
 
 * Notes
 
@@ -84,3 +90,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** Outcome
+
+A session record shows its supplier, adapter, environment, endpoint,
+credential reference, enabled state, settings as fields, and its feeds. A feed
+record shows its publisher, session, service, provider key, default flag, the
+scope rows and the party routes, and says that the session owns the endpoint
+while the feed owns the publisher and scope.

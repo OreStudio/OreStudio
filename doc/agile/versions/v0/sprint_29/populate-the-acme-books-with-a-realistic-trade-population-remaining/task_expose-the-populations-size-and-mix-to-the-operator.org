@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/expose-the-populations-size-and-mix-to-the-operator
-#+pr:
+#+pr: 4265
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -42,32 +42,34 @@ Let an operator size the trade population and set its asset-class mix from the p
 
 * Plan
 
-The surface states a total and a mix; the configs it creates carry them.
+The knob is part of starting a run, so it starts where a run starts.
 
-A generation config already states =trades_per_book=, which is the count per
-book, so the arithmetic between a percentage and a config is the surface's: a
-class's trades are spread over the books its configs name, and every config must
-still state at least one trade per routed code or the family loses codes it
-routes. So the surface computes a count per class from the total and the
-percentage, checks it against the class's code count, and states what it did.
+The web surface already starts a tenant from a seed profile:
+=POST /api/provision-tenant= takes a profile code and the tenant and administrator
+fields, and the profile's =generate_trades= step carries the populations as
+argument rows. So the knob is an optional part of that request — a total and a
+percentage per class — that the server turns into the step's arguments, and the
+seeded rows stay the default when the request states none.
 
-Three rules the surface must state rather than discover:
+Three seams, and the arithmetic lives in one of them:
 
-- A mix that does not sum to one hundred is refused before the run starts.
-- A class whose count falls under its routed-code floor is reported with the
-  smallest total that would fit it, because the alternative is a population that
-  silently loses a code — which is the defect the family tasks fixed.
-- The tolerance is the weights page's own: a class carries every product it
-  routes, so a small class at a small total cannot hit its percentage. The
-  surface says so in the numbers it shows rather than refusing the run.
+- The request. The provision-tenant body gains the total and the mix, optional,
+  with the seeded values as the defaults the screen shows.
+- The validation, in the same place: a mix that does not sum to a hundred is
+  refused with the sum it came to, and a class whose count falls under its
+  routed-code floor is refused with the smallest total that would fit it. Both
+  are refusals of the request and not of the run, so an operator learns before a
+  tenant is half built.
+- The step. The provisioning handler's =generate_trades= step states the configs
+  it records, so that is where a computed count per class becomes
+  =trades_per_book= per config. The arithmetic must not appear twice: the screen
+  shows what the server will do rather than computing its own answer.
 
-Where it lands is the part this task has to decide by looking: the provisioning
-surface is a shell flow today, and the demo's screens read a tenant's books after
-the fact. The knob belongs wherever a run is started, so the task starts at the
-shell's provisioning commands and the profile's step arguments, and takes the
-shortest path that keeps one source for the arithmetic rather than duplicating it
-in a screen.
-
+What the retune settled and this task inherits: a class cannot state fewer trades
+than it routes codes, and its share of the total cannot fall below that floor, so
+the total has the smallest value where every class fits. At a thousand every
+class is its weight exactly; the surface should say so when the numbers asked for
+cannot hold, and name the smallest total that can.
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -99,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4265][#4265]] | [agile] Point the population knobs at the surface that starts a run |
 
 * Review
 
@@ -108,3 +110,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The task is not delivered. Its plan was corrected before work started, so that the
+knob is placed where a run starts rather than where a run's data happens to live.

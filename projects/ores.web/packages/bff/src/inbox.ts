@@ -42,8 +42,12 @@ import type { RequestViewer } from '@ores/wire-protocol';
 import { subjects as authorisationSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_authorisation_request_protocol';
 import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
 import { subjects as publishedCurveSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/published_curves_operations_protocol';
+import { subjects as tradeSummarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
+import { subjects as tradeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_protocol';
+import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
+import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
 import { invalidRequest, notFound } from './errors.js';
-import { readAll } from './refdata-calls.js';
+import { readAll, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
 /**
@@ -300,6 +304,218 @@ async function withPublishedSubjects<
     });
 }
 
+
+/** The kind of request the Operations queue works. */
+const AUTHORISATION_KIND = 'trading.operational_authorisation';
+
+/**
+ * The instruments Operations authorises without a second look.
+ *
+ * The knowledge page divides the queue by complexity, not by asset class: spot,
+ * forward, cash and vanilla trades and a plain interest rate swap are flow, and
+ * everything else is not. The division is stated here rather than read from a
+ * catalogue because it is a judgement about how much work a deal is, and no
+ * catalogue holds that. A type this list does not name is non-flow, which is the
+ * safe direction: a deal is drawn where it gets the closer look.
+ */
+const FLOW_TRADE_TYPES: ReadonlySet<string> = new Set([
+    'Deposit',
+    'FRA',
+    'Future',
+    'FxForward',
+    'FxSpot',
+    'FxSwap',
+    'Swap',
+    'VanillaSwap',
+    'FxOption',
+    'FxVanillaOption',
+    'Swaption',
+    'CapFloor',
+]);
+
+const classOf = (tradeType: string): 'flow' | 'non-flow' =>
+    FLOW_TRADE_TYPES.has(tradeType) ? 'flow' : 'non-flow';
+
+/**
+ * What the queue states about the deals a page of authorisation requests names.
+ *
+ * An authorisation request names its trade and the version it was raised against,
+ * and nothing about the deal itself: the trading component keeps that. So the
+ * book, the counterparty, the trade date, the trade's status and its current
+ * version are read here, in three page-sized calls rather than one per row.
+ *
+ * The version is what makes an amendment visible. A request raised at version
+ * three and read against a trade now at version four is out of date: the deal
+ * moved while it waited. The row states that and the queue leaves it open, so a
+ * new version is news rather than a lock.
+ */
+async function dealtWithByRequests(
+    session: LiveSession,
+    tradeIds: readonly string[],
+): Promise<ReadonlyMap<string, Record<string, unknown>>> {
+    const facts = new Map<string, Record<string, unknown>>();
+    if (tradeIds.length === 0) return facts;
+
+    const [trades, summaries, books, counterparties] = await Promise.all([
+        readAll(session, tradeSubjects.list_trades_request, 'trades', {
+            filter: { id_one_of: [...tradeIds], counterparty_id_one_of: null },
+            as_of: null,
+        }),
+        readAll(session, tradeSummarySubjects.list_trade_summaries_request, 'trade_summaries', {
+            filter: { id_one_of: [...tradeIds] },
+            as_of: null,
+        }),
+        readAll(session, bookSubjects.list_books_request, 'books', {
+            filter: {
+                parent_portfolio_id: null,
+                id_one_of: null,
+                parent_portfolio_id_one_of: null,
+            },
+            as_of: null,
+        }),
+        readAll(session, counterpartySubjects.list_counterparties_request, 'counterparties', {
+            filter: null,
+            as_of: null,
+        }),
+    ]);
+
+    const bookNameOf = new Map(books.map((row) => [text(row['id']), text(row['name'])]));
+    const counterpartyNameOf = new Map(
+        counterparties.map((row) => [text(row['id']), text(row['full_name'])]),
+    );
+    const summaryOf = new Map(summaries.map((row) => [text(row['id']), row]));
+
+    for (const trade of trades) {
+        const id = text(trade['id']);
+        if (id === '') continue;
+        const summary = summaryOf.get(id);
+        const bookId = text(summary?.['book_id']);
+        const counterpartyId = text(summary?.['counterparty_id']);
+        const tradeType = text(trade['trade_type']);
+        facts.set(id, {
+            tradeType,
+            classCode: classOf(tradeType),
+            tradeVersion: Number(trade['version'] ?? 0),
+            book: bookNameOf.get(bookId) ?? '',
+            counterparty: counterpartyNameOf.get(counterpartyId) ?? '',
+            tradeDate: text(summary?.['trade_date']),
+            status: text(summary?.['status']),
+        });
+    }
+    return facts;
+}
+
+/**
+ * One row of the Operations queue: the request, the deal it is about, and the
+ * deal's state now.
+ *
+ * The queue read states requests, not their subjects, so the trades are joined
+ * here from the component that keeps the pair, in one call for the page. A
+ * reader who may not read the trades keeps the queue and loses the deal: the row
+ * then says what it can rather than disappearing.
+ */
+async function queueRows(
+    session: LiveSession,
+    requests: readonly {
+        readonly id: string;
+        readonly stateCode: string;
+        readonly kindCode: string;
+        readonly requestedBy: string;
+        readonly requestedAt: string;
+        readonly reason: string;
+    }[],
+): Promise<readonly Record<string, unknown>[]> {
+    const authored = requests.filter((request) => request.kindCode === AUTHORISATION_KIND);
+    if (authored.length === 0) return [];
+
+    let joined: readonly Record<string, unknown>[];
+    try {
+        joined = await readAll(
+            session,
+            authorisationSubjects.list_trade_authorisation_requests_request,
+            'trade_authorisation_requests',
+            {
+                filter: {
+                    trade_id: null,
+                    request_id_one_of: authored.map((request) => request.id),
+                    trade_id_one_of: null,
+                },
+                as_of: null,
+            },
+        );
+    } catch {
+        joined = [];
+    }
+
+    const tradesOf = new Map<string, { tradeId: string; tradeVersion: number }[]>();
+    for (const row of joined) {
+        const requestId = text(row['request_id']);
+        const tradeId = text(row['trade_id']);
+        if (requestId === '' || tradeId === '') continue;
+        const list = tradesOf.get(requestId) ?? [];
+        list.push({ tradeId, tradeVersion: Number(row['trade_version'] ?? 0) });
+        tradesOf.set(requestId, list);
+    }
+
+    const tradeIds = [...new Set([...tradesOf.values()].flat().map((one) => one.tradeId))];
+
+    /*
+     * The identifier is what a person recognises, and it is read for the page at
+     * once. A refusal costs the label and not the row: the uuid is still a link.
+     */
+    const labelOf = new Map<string, string>();
+    if (tradeIds.length > 0) {
+        try {
+            const identifiers = await readAll(
+                session,
+                identifierSubjects.list_trade_identifiers_request,
+                'identifiers',
+                { filter: { trade_id_one_of: tradeIds }, as_of: null },
+            );
+            for (const identifier of identifiers) {
+                const tradeId = text(identifier['trade_id']);
+                const value = text(identifier['id_value']);
+                if (tradeId !== '' && value !== '' && !labelOf.has(tradeId)) {
+                    labelOf.set(tradeId, value);
+                }
+            }
+        } catch {
+            // The uuid stands in for the name.
+        }
+    }
+
+    const facts = await dealtWithByRequests(session, tradeIds);
+
+    const rows: Record<string, unknown>[] = [];
+    for (const request of authored) {
+        for (const subject of tradesOf.get(request.id) ?? []) {
+            const fact = facts.get(subject.tradeId);
+            const tradeVersion = Number(fact?.['tradeVersion'] ?? 0);
+            rows.push({
+                requestId: request.id,
+                stateCode: request.stateCode,
+                requestedBy: request.requestedBy,
+                requestedAt: request.requestedAt,
+                reason: request.reason,
+                tradeId: subject.tradeId,
+                reference: labelOf.get(subject.tradeId) ?? subject.tradeId,
+                requestTradeVersion: subject.tradeVersion,
+                tradeVersion,
+                // A deal that moved after its request was raised: the queue says
+                // so and leaves the row open rather than taking a lease on it.
+                changed: tradeVersion > subject.tradeVersion,
+                classCode: String(fact?.['classCode'] ?? 'non-flow'),
+                tradeType: String(fact?.['tradeType'] ?? ''),
+                book: String(fact?.['book'] ?? ''),
+                counterparty: String(fact?.['counterparty'] ?? ''),
+                tradeDate: String(fact?.['tradeDate'] ?? ''),
+                status: String(fact?.['status'] ?? ''),
+            });
+        }
+    }
+    return rows;
+}
+
 export function registerInboxRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
@@ -357,6 +573,26 @@ export function registerInboxRoutes(
             ...queue,
             items: await withPublishedSubjects(session, queue.items),
             answered: await withPublishedSubjects(session, queue.answered),
+        };
+    });
+
+    /**
+     * The Operations queue: the authorisation requests this person may decide,
+     * the deal each one names, and what the deal looks like now.
+     *
+     * The server picks which requests the person may decide, so a member with
+     * nothing to answer gets an empty queue rather than a refusal. The answered
+     * tail travels beside the open one, because the queue groups a deal by the
+     * state its authorisation is in and a decision is one of those states.
+     */
+    server.get('/api/queue/authorisations', async (request) => {
+        const session = requireSession(request);
+        const page = pageOf(request.query);
+        const queue = await readRequestQueue(session.client, page, viewerOf(session));
+        return {
+            items: await queueRows(session, queue.items),
+            answered: await queueRows(session, queue.answered),
+            total: queue.total,
         };
     });
 

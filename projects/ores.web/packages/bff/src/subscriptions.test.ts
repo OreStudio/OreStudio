@@ -177,8 +177,8 @@ const route = {
     tenant_id: TENANT_ID,
     id: '66666666-6666-4666-8666-666666666666',
     party_id: PARTY_ID,
-    provider_code: 'bloomberg',
-    source_id: '0a42775e-3da7-4c61-a732-6b62cb9f948f',
+    publisher_code: 'bloomberg',
+    feed_id: '0a42775e-3da7-4c61-a732-6b62cb9f948f',
     modified_by: 'tenant_admin',
     performed_by: 'tenant_admin',
     change_reason_code: 'system.new_record',
@@ -271,7 +271,7 @@ describe('the routes read', () => {
 });
 
 describe('the catalogue read', () => {
-    it('names the providers and the sources a route chooses from', async () => {
+    it('names the providers and the feeds a route chooses from', async () => {
         const provider = {
             code: 'bloomberg',
             name: 'Bloomberg',
@@ -283,18 +283,21 @@ describe('the catalogue read', () => {
             id: '0a42775e-3da7-4c61-a732-6b62cb9f948f',
             name: 'bloomberg-a',
             publisher_code: 'bloomberg',
-            service: 'simulated',
+            session_code: 'bloomberg-gb',
+            service: 'real_time',
+            provider_key: 'BBG',
             is_default: true,
             description: '',
         };
-        const { server, sessionId } = buildTestServer({
+        const { server, sessionId, calls } = buildTestServer({
             [LIST_PROVIDERS]: { ...ok, providers: [provider], total: 1 },
-            [LIST_FEEDS]: { ...ok, running_feeds: [feed], total: 1 },
+            [LIST_FEEDS]: { ...ok, feeds: [feed], total: 1 },
         });
         const response = await send(server, sessionId, 'GET', '/api/marketdata/catalogue');
         expect(response.statusCode).toBe(200);
         expect(response.json().providers[0].code).toBe('bloomberg');
-        expect(response.json().sources[0].name).toBe('bloomberg-a');
+        expect(response.json().feeds).toEqual([feed]);
+        expect(calls.map((call) => call.subject)).toEqual([LIST_PROVIDERS, LIST_FEEDS]);
     });
 });
 
@@ -395,23 +398,24 @@ describe('removing a subscription', () => {
 });
 
 describe('adding a route', () => {
-    it('writes the source the person chose for the session party', async () => {
+    it('writes the feed the person chose for the session party', async () => {
         const { server, sessionId, calls } = buildTestServer({ [PUT_ROUTE]: { ...ok, route } });
         const response = await send(server, sessionId, 'POST', '/api/marketdata/routes', {
-            provider_code: 'bloomberg',
-            source_id: '0a42775e-3da7-4c61-a732-6b62cb9f948f',
+            publisher_code: 'bloomberg',
+            feed_id: '0a42775e-3da7-4c61-a732-6b62cb9f948f',
         });
         expect(response.statusCode).toBe(200);
         const body = calls[0]?.body as { change: { write: Record<string, unknown> } };
         expect(body.change.write.party_id).toBe(PARTY_ID);
-        expect(body.change.write.source_id).toBe('0a42775e-3da7-4c61-a732-6b62cb9f948f');
+        expect(body.change.write.publisher_code).toBe('bloomberg');
+        expect(body.change.write.feed_id).toBe('0a42775e-3da7-4c61-a732-6b62cb9f948f');
     });
 
-    it('refuses a source that is not an id', async () => {
+    it('refuses a feed that is not an id', async () => {
         const { server, sessionId, calls } = buildTestServer({});
         const response = await send(server, sessionId, 'POST', '/api/marketdata/routes', {
-            provider_code: 'bloomberg',
-            source_id: 'bloomberg-a',
+            publisher_code: 'bloomberg',
+            feed_id: 'bloomberg-a',
         });
         expect(response.statusCode).toBe(400);
         expect(calls).toHaveLength(0);

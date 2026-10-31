@@ -2,7 +2,7 @@
 :ID: 413A5590-0D39-46F7-8C3F-DB11E1149287
 :END:
 #+title: ores.cpp.domain.json_io_impl
-#+description: reflect-cpp JSON round-trip implementation. =domain= profile.
+#+description: JSON round-trip implementation. =domain= profile.
 #+type: archetype
 #+output: projects/{component_dir}/src/domain/{entity}_json_io.cpp
 #+facet: ores.cpp.domain
@@ -11,7 +11,7 @@
 #+created: 2026-06-08
 #+updated: 2026-06-08
 
-reflect-cpp JSON round-trip implementation. =domain= profile.  Implements the `operator<<` overload using [[https://github.com/getml/reflect-cpp][reflect-cpp]]: `rfl::json::write(v, s)` serialises the struct to JSON via compile-time reflection — no field enumeration required.
+JSON round-trip implementation. =domain= profile. Implements the `operator<<` overload. A model that states its own wire shape writes the row with the generated codec; one that does not writes it with reflect-cpp, which serialises the struct via compile-time reflection.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -27,16 +27,27 @@ The full template source. Edit here and re-tangle with
 {{{cpp_license}}}
 {{#domain_entity}}
 #include "ores.{{component_include}}/domain/{{entity_singular}}_json_io.hpp"
-
-#include <ostream>
+{{#has_generated_wire_codec}}
+#include "ores.{{component_include}}/domain/{{entity_singular}}_codec.hpp"
+#include "ores.utility/codec/json_codec.hpp"
+{{/has_generated_wire_codec}}
+{{^has_generated_wire_codec}}
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+{{/has_generated_wire_codec}}
+
+#include <ostream>
 
 namespace ores::{{component}}::domain {
 
 std::ostream& operator<<(std::ostream& s, const {{entity_singular}}& v) {
+{{#has_generated_wire_codec}}
+    s << ores::utility::codec::json::write(v);
+{{/has_generated_wire_codec}}
+{{^has_generated_wire_codec}}
     rfl::json::write(v, s);
+{{/has_generated_wire_codec}}
     return s;
 }
 
@@ -44,16 +55,27 @@ std::ostream& operator<<(std::ostream& s, const {{entity_singular}}& v) {
 {{/domain_entity}}
 {{#junction}}
 #include "ores.{{component_include}}/domain/{{name_singular}}_json_io.hpp"
-
-#include <ostream>
+{{#has_generated_wire_codec}}
+#include "ores.{{component_include}}/domain/{{name_singular}}_codec.hpp"
+#include "ores.utility/codec/json_codec.hpp"
+{{/has_generated_wire_codec}}
+{{^has_generated_wire_codec}}
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+{{/has_generated_wire_codec}}
+
+#include <ostream>
 
 namespace ores::{{component}}::domain {
 
 std::ostream& operator<<(std::ostream& s, const {{name_singular}}& v) {
+{{#has_generated_wire_codec}}
+    s << ores::utility::codec::json::write(v);
+{{/has_generated_wire_codec}}
+{{^has_generated_wire_codec}}
     rfl::json::write(v, s);
+{{/has_generated_wire_codec}}
     return s;
 }
 

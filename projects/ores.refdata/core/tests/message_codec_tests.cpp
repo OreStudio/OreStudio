@@ -17,10 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.eventing.api/domain/entity_event.hpp"
+#include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.refdata.api/domain/convention_identity.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/domain/currency_codec.hpp"
+#include "ores.refdata.api/domain/currency_json_io.hpp"
+#include "ores.refdata.api/eventing/currency_event.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
@@ -32,6 +36,7 @@
 #include <optional>
 #include <rfl/json.hpp>
 #include <rfl/msgpack.hpp>
+#include <sstream>
 #include <string>
 
 namespace {
@@ -211,4 +216,39 @@ TEST_CASE("the wire codec sends a refdata message through its generated codec",
         REQUIRE(read);
         CHECK(codec::write_json(*read) == codec::write_json(v));
     }
+}
+
+TEST_CASE("a generated event header converts a notification without the reflector",
+          "[codec][refdata][eventing]") {
+    using traits = ores::eventing::domain::entity_event_traits<
+        ores::refdata::messaging::currency_event>;
+
+    auto notification = ores::eventing::domain::entity_event_notification{};
+    notification.event_id = "3f2504e0-4f89-11d3-9a0c-0305e82c3301";
+    notification.key = R"({"iso_code":"GBP"})";
+    notification.action = "written";
+    notification.version = 7;
+    notification.occurred_at =
+        std::chrono::system_clock::time_point(std::chrono::microseconds(1'761'652'800'123'456));
+
+    const auto event = traits::from_notification(notification);
+    CHECK(event.key.iso_code == "GBP");
+    CHECK(event.action == "written");
+    CHECK(event.version == 7);
+
+    // A key this build cannot read leaves the event's own default rather than
+    // dropping the notification, which is what the reflector-backed read did.
+    notification.key = "not json at all";
+    const auto unreadable = traits::from_notification(notification);
+    CHECK(unreadable.key.iso_code.empty());
+    CHECK(unreadable.action == "written");
+}
+
+TEST_CASE("a printed row is the JSON the reflector prints", "[codec][refdata]") {
+    // The json_io unit prints a row for a log; the codec writes it, so the two
+    // must agree or the log changes shape.
+    const auto c = a_currency();
+    std::ostringstream printed;
+    printed << c;
+    CHECK(printed.str() == rfl::json::write(c));
 }

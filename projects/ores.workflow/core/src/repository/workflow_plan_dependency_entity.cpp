@@ -23,14 +23,13 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.workflow.core/repository/workflow_plan_dependency_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.database/query_builder/json.hpp"
 #include <ostream>
-#include <rfl/json/write.hpp>
 
 namespace ores::workflow::repository {
 
 std::ostream& operator<<(std::ostream& s, const workflow_plan_dependency_entity& v) {
-    rfl::json::write(v, s);
+    s << ores::database::query_builder::write_json(v);
     return s;
 }
 

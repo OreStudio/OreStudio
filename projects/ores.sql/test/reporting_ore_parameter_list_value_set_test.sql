@@ -31,13 +31,15 @@
  * - A list of periods is in a set of periods of cardinality many
  * - A list that holds a value which is not a period is outside the set
  * - A set of cardinality one does not admit a comma, so a list is not a value
+ * - A tenor list states what one item is, and how many
+ * - A detachment point list states what one item is, and how many
  *
  * Run with: pg_prove -d <database> test/reporting_ore_parameter_list_value_set_test.sql
  */
 
 begin;
 
-select plan(6);
+select plan(8);
 
 select is(
     ores_reporting_value_in_set_fn('curve.number_list', '0.01, 0.05, 0.99'),
@@ -68,6 +70,24 @@ select is(
     ores_reporting_value_in_set_fn('curve.period', '1Y,2Y'),
     false,
     'a set of cardinality one does not admit a comma, so a list is not a value');
+
+-- The map states the item rule as well as the cardinality, so a screen draws a
+-- list of periods rather than a box of text.
+select is(
+    (select value_set_code
+       from ores_reporting_ore_parameter_vocabularies_tbl
+      where xpath = '/CurveConfiguration/CapFloorVolatilities/CapFloorVolatility/Tenors'
+        and valid_to = ores_utility_infinity_timestamp_fn()),
+    'curve.period_list',
+    'a tenor list states what one item is, and how many');
+
+select is(
+    (select value_set_code
+       from ores_reporting_ore_parameter_vocabularies_tbl
+      where xpath = '/CurveConfiguration/BaseCorrelations/BaseCorrelation/DetachmentPoints'
+        and valid_to = ores_utility_infinity_timestamp_fn()),
+    'curve.number_list',
+    'a detachment point list states what one item is, and how many');
 
 select * from finish();
 

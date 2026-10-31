@@ -11,15 +11,16 @@ a rule, by set
   curve.flag                                    24
   convention.period                             19
   curve.day_counter                             16
-  curve.list                                    16
   convention.day_counter                        14
   convention.frequency                          13
   curve.currency                                 9
+  curve.number_list                              9
   curve.number                                   8
+  curve.period_list                              8
   curve.integer                                  7
   curve.business_day_convention                  6
-  curve.number_list                              5
   convention.currency                            4
+  curve.list                                     4
   number                                         4
   convention.atm_type                            2
   convention.compounding                         2

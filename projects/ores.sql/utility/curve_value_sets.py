@@ -132,10 +132,99 @@ VALUE_SET_OF = vocabularies()
 # extractor sees the read and not what parses an item, so a person states it here
 # and names the place the ORE code proves it.
 LIST_ITEM = {
-    "Strikes": ("number_list",
-                "The report grid beside the curve parses its strike list as a real "
-                "(OREData/ored/configuration/reportconfig.cpp:68), and both leaves "
-                "name the same set of strikes, so one item is a number."),
+    "Strikes": {
+        "kind": "number_list",
+        "source": "ore_code",
+        "source_ref": "OREData/ored/configuration/reportconfig.cpp:68",
+        "reason": "The report grid beside the curve parses its strike list as a "
+                  "real, and both leaves name the same set of strikes, so one item "
+                  "is a number.",
+    },
+    "CapStrikes": {
+        "kind": "number_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:50",
+        "reason": "The guide states the strikes for which cap prices are quoted, so "
+                  "one item is a number.",
+    },
+    "FloorStrikes": {
+        "kind": "number_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:52",
+        "reason": "The guide states the strikes for which floor prices are quoted, "
+                  "so one item is a number.",
+    },
+    "DetachmentPoints": {
+        "kind": "number_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:38",
+        "reason": "The guide states any positive number less than one, so one item "
+                  "is a number.",
+    },
+    "SmileSpreads": {
+        "kind": "number_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:111",
+        "reason": "The guide states strikes expressed as strike spreads relative to "
+                  "the ATM strike, so one item is a number.",
+    },
+    "Tenors": {
+        "kind": "period_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/capfloorvolatility.tex:94",
+        "reason": "The guide states a comma separated list of valid tenor strings, "
+                  "and a tenor is a period.",
+    },
+    "AtmTenors": {
+        "kind": "period_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/curve_configurations/capfloorvolatility.tex:106",
+        "reason": "The guide states a comma separated list of valid tenor strings, "
+                  "and a tenor is a period.",
+    },
+    "Terms": {
+        "kind": "period_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:37",
+        "reason": "The guide states a comma separated list of tenors, and a tenor "
+                  "is a period.",
+    },
+    "SmileOptionTenors": {
+        "kind": "period_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:109",
+        "reason": "The guide states option expiries in period form, so one item is "
+                  "a period.",
+    },
+    "OptionTenors": {
+        "kind": "period_list",
+        "source": "ore_code",
+        "source_ref": "OREData/ored/configuration/correlationcurveconfig.cpp:148",
+        "reason": "The option tenors are the expiries of the volatility surface, "
+                  "and every family reads an option tenor as a period, so one item "
+                  "is a period.",
+    },
+    "Deltas": {
+        "kind": None,
+        "source": "ore_code",
+        "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:167",
+        "reason": "ORE writes a delta as 25D, which is neither a number nor a "
+                  "period, and this tree states no rule for one yet.",
+    },
+    "Expiries": {
+        "kind": None,
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:128",
+        "reason": "The guide states expiry tenors and or expiry dates, and a single "
+                  "wildcard *, so no one rule holds of an item yet.",
+    },
+    "PillarDates": {
+        "kind": None,
+        "source": "ore_code",
+        "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
+        "reason": "A pillar date is a date, and this tree states no rule for one "
+                  "yet.",
+    },
 }
 
 TYPE_SETS = {
@@ -334,7 +423,7 @@ def item_set_of(term):
     values and the unproven read is the extractor's gap rather than a second rule.
     """
     stated = LIST_ITEM.get(term["name"])
-    return TYPE_SETS[stated[0]] if stated else None
+    return TYPE_SETS[stated["kind"]] if stated and stated["kind"] else None
 
 
 def data():

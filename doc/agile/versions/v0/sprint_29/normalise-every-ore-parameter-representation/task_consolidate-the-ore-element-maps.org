@@ -28,9 +28,9 @@ One table states which ORE element a leaf column is and which value set states i
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
-| Now          | The map states the rule the ORE parser or the ORE schema gives each leaf, a set says what one value is and how many, and both guards read the map. |
+| Now          | Every leaf the map carries states a rule or the reason it has none, and both guards read the map. |
 | Waiting on   | Nothing.                               |
-| Next         | The 4 leaves no authority types, and the setting link that cannot hold two leaves of one name. |
+| Next         | The setting link that cannot hold two leaves of one name, and the date kind the list items need. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -539,6 +539,46 @@ unset case stays an empty field.
 The scheme also closed one of the five untyped leaves: =DefaultCurve/Type= is
 declared =defaultCurveType= in the schema, which enumerates eight values, so the
 map states them without any ORE source reading the leaf.
+
+* No leaf is left unread
+
+Four leaves were still unread, and all four were the same shape: ORE names the
+element from a label the class passes to its base constructor, so no read spells
+the name. The swaption class passes =("Swap", "SwaptionVolatility", "SWAPTION",
+"")= and the yield class =("Bond", "YieldVolatility", "BOND_OPTION",
+"Qualifier")=, and =GenericYieldVolatilityCurveConfig::fromXML= reads
+=underlyingLabel_ + "Tenors"= and =qualifierLabel_=.
+
+=extract_curve_terms.py= now reads those two forms and expands them once the
+class's labels are known: one term per label, named as the document spells it.
+Swaptions gain =SwapTenors= and =SmileSwapTenors=, yield curves gain =BondTenors=,
+=SmileBondTenors= and =Qualifier=, and the empty qualifier label states no leaf,
+because the swaption class never reads one.
+
+The three tenor leaves take =curve.period_list=, citing the guide where it states
+the leaf in period form and the class constructor where it does not. =Qualifier=
+states =text= with the reason the parser gives: the engine reads it and never
+parses it.
+
+| | Before | After |
+|---+--------+-------|
+| leaves that state a rule | 306 | 309 |
+| text, and the authority says why | 174 | 171 |
+| leaves that name no authority at all | 4 | 0 |
+| leaves the ORE schema types alone | 2 | 3 |
+| leaves the ORE source reads as terms | 508 | 513 |
+
+=UNREAD_ALLOWED= is now zero, so the check fails the moment a projection column
+carries a leaf no authority can state a rule for. Coverage is complete in the
+sense the task set out to prove: every leaf the map carries names the authority
+that decided it.
+
+Three leaves take their rule from the ORE schema because no ORE source read names
+them at all: =UseEffeciveVolatility=, which ORE spells that way and reads
+elsewhere, =DefaultCurve/Type=, whose projection path the schema types but no read
+matches, and =IndexInterpolated=. Their rows say the schema is the only authority
+that speaks, so the difference between "the parser read it" and "the schema typed
+it" is read rather than assumed.
 
 * Plan
 

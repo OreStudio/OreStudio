@@ -1,8 +1,8 @@
 the element map, by what each leaf's row states
   leaves                                     480
-  a rule governs the value                   273
-  text, and the ORE source says why          202
-  text, because no ORE source read names it     5
+  a rule governs the value                   309
+  text, and the ORE source says why          171
+  text, because no ORE source read names it     0
 
 a rule, by set
   convention.integer                            40
@@ -13,13 +13,17 @@ a rule, by set
   curve.day_counter                             16
   convention.day_counter                        14
   convention.frequency                          13
+  curve.period_list                             11
   curve.currency                                 9
   curve.number_list                              9
   curve.number                                   8
-  curve.period_list                              8
   curve.integer                                  7
   curve.business_day_convention                  6
+  curve.dimension_type                           5
+  curve.extrapolation_type                       5
+  curve.volatility_type                          5
   convention.currency                            4
+  convention.weekday_type                        4
   curve.list                                     4
   number                                         4
   convention.atm_type                            2
@@ -28,14 +32,27 @@ a rule, by set
   convention.delta_type                          2
   convention.sub_periods_coupon_type             2
   convention.weekday                             2
+  curve.inflation_type                           2
   curve.period                                   2
   convention.averaging_data_period               1
   convention.bond_price_type                     1
+  convention.future_date_generation_rule         1
   convention.inflation_swap_publication_roll     1
   convention.month                               1
   convention.option_type                         1
+  convention.overnight_index_future_netting_type   1
+  curve.comm_vol_quote_suffix                    1
+  curve.commodity_interpolation_type             1
+  curve.correlation_quote_type                   1
+  curve.correlation_type                         1
+  curve.date_rule                                1
+  curve.default_curve_type                       1
+  curve.equity_type                              1
+  curve.exercise_style                           1
   curve.frequency                                1
+  curve.fx_vol_interpolation                     1
   curve.fx_volatility_time_interpolation         1
+  curve.smile_type                               1
   curve.yield_curve_extrapolation_method         1
   curve.yield_curve_interpolation_method         1
   curve.yield_curve_interpolation_variable       1
@@ -59,17 +76,13 @@ text the ORE source justifies, by element
   Convention                                     1
   Conventions                                    7
   ConversionFactor                               1
-  CorrelationType                                1
   DailyAveragePriceCurve                         1
-  DateGenerationRule                             1
   DayOfMonth                                     1
   DeliveryLocation                               2
-  Dimension                                      5
   DiscountCurve                                  3
   EquityId                                       1
-  ExerciseStyle                                  1
   ExpiryCalendar                                 1
-  Extrapolation                                  3
+  Extrapolation                                  1
   FXConventionID                                 1
   FXDomesticCurveID                              1
   FXForeignCurveID                               1
@@ -95,20 +108,16 @@ text the ORE source justifies, by element
   InstrumentType                                 1
   InterpolateOn                                  1
   Interpolation                                  1
-  InterpolationMethod                            3
+  InterpolationMethod                            2
   InterpolationVariable                          1
   Lag                                            1
-  LastWeekday                                    1
   LongIndex                                      2
   NominalTermStructure                           1
   Nth                                            2
   OffPeakIndex                                   1
   OptionExpiryDay                                1
-  OptionExpiryLastWeekdayOfMonth                 1
-  OptionExpiryWeeklyDayOfTheWeek                 1
   OptionUnderlyingFutureConvention               1
-  OutputVolatilityType                           2
-  OvernightIndexFutureNettingType                1
+  OutputVolatilityType                           1
   PayIndex                                       1
   PaymentCalendar                                1
   PeakCalendar                                   1
@@ -116,53 +125,39 @@ text the ORE source justifies, by element
   PriceCurveId                                   1
   PriceQuote                                     1
   PricingCalendar                                1
+  Qualifier                                      1
   QuoteIndex                                     1
   QuoteName                                      2
-  QuoteSuffix                                    1
   QuoteTag                                       1
-  QuoteType                                      2
+  QuoteType                                      1
   RateCutoff                                     1
   ReceiveIndex                                   1
   RecoveryRateQuote                              1
   RegionCode                                     1
   RegionName                                     1
-  Rule                                           1
   SavingsTime                                    1
   SettlementCalendar                             2
   ShapeQuoteName                                 1
   ShortIndex                                     2
   ShortSwapIndexBase                             1
   SmileDelta                                     1
-  SmileExtrapolation                             1
-  SmileInterpolation                             1
-  SmileType                                      1
   SpotCalendar                                   1
   SpotQuote                                      2
   SpreadIndex                                    1
   SpreadQuote                                    1
   StartDate                                      1
-  StrikeExtrapolation                            1
   StrikeInterpolation                            1
   StrikeType                                     1
   SwapIndexBase                                  1
   SwaptionVolatility                             1
   TenorCalendar                                  1
-  TimeExtrapolation                              1
   TimeInterpolation                              1
   TimeWeighting                                  1
-  Type                                           3
   UseOnlyPutCall                                 1
-  VolatilityType                                 4
-  WeeklyDayOfTheWeek                             1
   YieldCurve                                     1
   YieldCurveId                                   2
   YieldTermStructure                             1
 
 text nothing was decided for, with the rule a sibling takes
-  curveconfig.xsd|/CurveConfiguration/YieldVolatilities/YieldVolatility/BondTenors -
-  curveconfig.xsd|/CurveConfiguration/YieldVolatilities/YieldVolatility/Qualifier -
-  curveconfig.xsd|/CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/SmileSwapTenors -
-  curveconfig.xsd|/CurveConfiguration/SwaptionVolatilities/SwaptionVolatility/SwapTenors -
-  curveconfig.xsd|/CurveConfiguration/DefaultCurves/DefaultCurve/Type        -
 
-0 of the 5 have a sibling with a rule; the rest need a decision from the schema and the ORE parser.
+0 of the 0 have a sibling with a rule; the rest need a decision from the schema and the ORE parser.

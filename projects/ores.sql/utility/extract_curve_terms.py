@@ -73,6 +73,24 @@ READ = re.compile(
     r"|AsDoublesCompact|AsPeriodsCompact)?)"
     r"\(\s*(\w+)\s*,\s*\"([\w.]+)\"\s*"
     r"(?:,\s*(true|false))?(?:\s*,\s*([^;]*?))?\s*\)")
+# A read whose element name the class builds from a label it passes to its base
+# constructor, as `underlyingLabel_ + "Tenors"` builds SwapTenors and BondTenors.
+# One read states one leaf per label, so the term is expanded once the class's
+# labels are known.
+LABELLED = re.compile(
+    r'XMLUtils::(getChildValue|getChildrenValuesAsStrings)\('
+    r'\s*\w+\s*,\s*(?:"([\w.]*)"\s*\+\s*)?(\w+Label_)'
+    r'(?:\s*\+\s*"([\w.]+)")?\s*[,)]')
+# The constructor arguments that are labels, by the base class whose signature
+# states them. A label is a name the document uses, so a class that passes one is
+# the only place the document's spelling is written down.
+LABEL_ARGS = {
+    "GenericYieldVolatilityCurveConfig": {
+        "underlyingLabel_": 0, "rootNodeLabel_": 1,
+        "marketDatumInstrumentLabel_": 2, "qualifierLabel_": 3,
+    },
+}
+LITERAL = re.compile(r'"([^"]*)"')
 CHILD = re.compile(
     r"(?:auto|XMLNode\*)\s+(\w+)\s*=\s*XMLUtils::getChildNode\(\s*(\w+)\s*,\s*\"([\w.]+)\"\s*\)")
 NODEVALUE = re.compile(r"XMLUtils::getNodeValue\(\s*(\w+)\s*\)")
@@ -240,6 +258,17 @@ def parse_function(path, text, chunk, start, node, element, member_parsers=None)
                           m.start(), member, parser))
 
     node_reads = [(m.start(), m.group(1)) for m in NODEVALUE.finditer(chunk)]
+    for m in LABELLED.finditer(chunk):
+        if m.group(2) and m.group(2).strip() == "":
+            continue
+        reads.append({"name": None, "type": TYPED.get(m.group(1), "text"),
+                      "mandatory": False, "default": None, "member": None,
+                      "parser": None,
+                      "source_ref": ref(path, text, start + m.start()),
+                      "labelled": {"prefix": m.group(2) or "",
+                                   "var": m.group(3),
+                                   "suffix": m.group(4) or ""}})
+
     valued = {var for _, var in node_reads}
     # A parser may build the class it needs on the spot (`Parameter p;`) rather
     # than hold it as a member, so the declaration says what parses the node.
@@ -432,6 +461,64 @@ def inline_classes(paths, found):
     return found
 
 
+def class_labels(entry_class, paths):
+    """The labels a class passes to its base constructor, by argument name.
+
+    A curve family that names an element after its underlying instrument states
+    the spelling once, in the class that chooses it: the swaption class passes
+    "Swap" and the yield class passes "Bond". Reading it there is what lets a
+    read like `underlyingLabel_ + "Tenors"` state the leaf the document spells.
+    """
+    for path in paths:
+        if not path.endswith(".hpp"):
+            continue
+        text = read(path)
+        mark = re.search(r"^class\s+" + re.escape(entry_class) + r"\b[^;]*\{",
+                         text, re.M)
+        if not mark:
+            continue
+        end = text.find("\n};", mark.start())
+        chunk = text[mark.start():end if end > 0 else len(text)]
+        base = re.search(r"class\s+" + re.escape(entry_class) +
+                         r"\s*:\s*public\s+([\w:]+)", text)
+        if not base:
+            return None
+        wanted = LABEL_ARGS.get(base.group(1).split("::")[-1])
+        if not wanted:
+            return None
+        call = re.search(re.escape(base.group(1).split("::")[-1]) + r"\(([^)]*)\)", chunk)
+        if not call:
+            return None
+        args = LITERAL.findall(call.group(1))
+        return {name: args[index] for name, index in wanted.items() if index < len(args)}
+    return None
+
+
+def expand_labelled(terms, labels):
+    """One term per label value for a read the class names after a label."""
+    out = []
+    for term in terms:
+        spelled = term.get("labelled")
+        if not spelled:
+            out.append(term)
+            continue
+        if not labels or spelled["var"] not in labels:
+            continue
+        value = labels[spelled["var"]]
+        if not value:
+            # The class states no name here, so the document has no such leaf:
+            # the swaption class passes an empty qualifier label and never reads
+            # a Qualifier.
+            continue
+        spelled = dict(term)
+        spelled.pop("labelled")
+        spelled["name"] = spelled_name = (term["labelled"]["prefix"] + value
+                                          + term["labelled"]["suffix"])
+        spelled["path"] = term["path"] + [spelled_name]
+        out.append(spelled)
+    return out
+
+
 def members(paths):
     """The member names and types of every class, read from the headers."""
     out = {}
@@ -476,7 +563,10 @@ def walk(node_class, found, members_of, by_element, path, depth, seen):
         # guard would reject it before it read a single leaf.
         terms.extend(walk(base, found, members_of, by_element, path, depth, seen))
     for r in entry["reads"]:
-        terms.append(dict(r, path=path + [r["name"]], element=entry["element"]))
+        # A read the class names after a label has no name yet; the expansion adds
+        # the leaf it spells once the class's labels are known.
+        terms.append(dict(r, path=path + ([r["name"]] if r.get("name") else []),
+                          element=entry["element"]))
     # A block that holds the parser's alternatives owns them: walking them here
     # as well records every alternative twice, once under the block that holds it
     # in the document and once beside it, where the document has no such element.
@@ -797,7 +887,8 @@ def main():
             continue
         terms = walk(entry_class, found, members_of, by_element,
                      [section["section"], entry], 0, frozenset())
-        leaves = dedupe([t for t in terms if t.get("name")])
+        labels = class_labels(entry_class, paths)
+        leaves = dedupe([t for t in expand_labelled(terms, labels) if t.get("name")])
         for term in leaves:
             prose = (guide.get((section["section"], term["name"]))
                      or guide.get((None, term["name"])))

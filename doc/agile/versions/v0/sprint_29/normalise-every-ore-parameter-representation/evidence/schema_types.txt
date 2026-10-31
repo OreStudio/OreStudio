@@ -4,7 +4,7 @@ the ORE schema's type for each mapped leaf
   the schema does not                      13
 
 what the two authorities say, by schema type and set
-   147  xs:string                          text
+   144  xs:string                          text
     40  bool (boolean)                     flag
     28  xs:integer (integer)               convention.integer
     24  businessDayConvention              convention.business_day_convention
@@ -14,9 +14,9 @@ what the two authorities say, by schema type and set
     14  xs:string                          convention.period
     13  frequencyType                      convention.frequency
     13  calendar                           text
+    11  xs:string                          curve.period_list
      9  xs:nonNegativeInteger (integer)    convention.integer
      9  xs:string                          curve.number_list
-     8  xs:string                          curve.period_list
      6  businessDayConvention              curve.business_day_convention
      6  currencyCode                       curve.currency
      5  period (period)                    convention.period

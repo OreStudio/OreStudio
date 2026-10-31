@@ -51,13 +51,12 @@ TENANT = "ores_utility_system_tenant_id_fn()"
 ACTOR = "'ores_reporting_service', 'system.initial_load'"
 ELEMENT = re.compile(r"/([^/\[]+)(?:\[[^\]]*\])?$")
 
-# The leaves no ORE source read names, so no parser states a rule for them. A
-# projection column carries each of them, so the count is a coverage gap and not
-# a choice: the map states text for a value ORE may well constrain. The number
-# may only fall. It falls when extract_curve_terms.py learns a form of read it
-# does not know yet; it rises when a projection column adds a leaf the extractor
-# cannot read, which is a rule stated as nothing.
-UNREAD_ALLOWED = 5
+# The leaves that name no authority at all: no ORE source reads them and the ORE
+# schema types none, so the map states text for a value ORE may well constrain. A
+# projection column carries each of them, so the count is a coverage gap and not a
+# choice. It may only fall, and it is zero: a leaf the schema types is not a gap,
+# because the schema is an authority.
+UNREAD_ALLOWED = 0
 
 LICENCE = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -222,7 +221,7 @@ def describe(code, entry, term, address, overridden=None):
     elif spelling == "text" and schema:
         reason = (f"The ORE parser reads {element} as a string and the ORE schema "
                   f"declares it {schema[1]}, so the value is {SCHEMA_WORDS[schema[0]]}.")
-        source, source_ref = "ore_schema", f"external/ore/xsd/{address[0]}"
+        source, source_ref = "ore_xsd", f"external/ore/xsd/{address[0]}"
     elif cardinality == "many":
         item = ITEM_WORDS.get(kind)
         reason = (f"ORE reads {element} into one vector, so the leaf holds a comma "
@@ -251,7 +250,7 @@ def describe(code, entry, term, address, overridden=None):
         reason = (f"ORE reads {element} as {spelling or kind}, and the set states the "
                   f"values that kind admits.")
     return {"set": code, "name": entry["name"], "source": source,
-            "source_ref": source_ref, "reason": reason}
+            "source_ref": source_ref, "reason": reason, "read": True}
 
 
 def schema_only_rule(row, sets):
@@ -280,16 +279,18 @@ def schema_only_rule(row, sets):
             "reason": (f"No ORE source read names {row['element']} in a form the "
                        f"extractor knows, and the ORE schema enumerates {len(values)} "
                        f"values for {found[1]}, so the set lists them."),
+            "read": False,
         }
     code = curve_sets.TYPE_SETS[curve_sets.SCHEMA_TYPE_SETS[found[0]]]
     return {
         "set": code,
         "name": SCHEMA_NAMES[found[0]],
-        "source": "ore_schema",
+        "source": "ore_xsd",
         "source_ref": f"external/ore/xsd/{row['schema']}",
         "reason": (f"No ORE source read names {row['element']} in a form the "
                    f"extractor knows, and the ORE schema declares it {found[1]}, "
                    f"so the value is {SCHEMA_WORDS[found[0]]}."),
+        "read": False,
     }
 
 
@@ -315,10 +316,17 @@ def terms_extracted():
 
 
 def coverage(rows):
-    """The leaves the map states a rule for, and the ones it does not."""
-    unread = [row for row in rows if not row["ruled"]]
+    """The leaves the map states a rule for, and the ones it does not.
+
+    A leaf whose row names no authority is the gap: it states text because
+    nothing decided, which is the shape the task set out to remove. A leaf the
+    schema types and no ORE source reads is not that gap: the schema is an
+    authority, and the row says so.
+    """
+    gap = [row for row in rows if row["source"] == "ore_schema"]
+    typed = [row for row in rows if not row["read"]]
     text = [row for row in rows if row["set"] == "text"]
-    return unread, text
+    return gap, typed, text
 
 def column_rows():
     """Every column that carries a leaf, from both projection families."""
@@ -386,6 +394,7 @@ def map_rows(columns):
                 "source_ref": declared_row["source_ref"],
                 "reason": declared_row["reason"],
                 "ruled": True,
+                "read": True,
             }
             continue
         rule = sets.get((row["schema"], row["xpath"])) or schema_only_rule(row, sets)
@@ -401,6 +410,7 @@ def map_rows(columns):
                           else f"external/ore/xsd/{row['schema']}",
             "reason": rule["reason"] if rule else unread_reason(row),
             "ruled": rule is not None,
+            "read": bool(rule and rule.get("read")),
         }
     return [out[code] for code in sorted(out)]
 
@@ -500,16 +510,20 @@ def main():
             with open(path, "w", encoding="utf-8") as handle:
                 handle.write(content)
 
-    unread, text = coverage(rows)
+    gap, typed, text = coverage(rows)
     print(f"{len(rows)} leaves: {len(rows) - len(text)} state a rule, "
           f"{len(text)} state text.", file=sys.stderr)
-    print(f"{len(unread)} of the leaves name no term any ORE source reads:", file=sys.stderr)
-    for row in sorted(unread, key=lambda r: (r["schema"], r["xpath"])):
+    print(f"{len(gap)} of the leaves name no authority at all:", file=sys.stderr)
+    for row in sorted(gap, key=lambda r: (r["schema"], r["xpath"])):
         print(f"  {row['schema']}|{row['xpath']}", file=sys.stderr)
-    if len(unread) > UNREAD_ALLOWED:
-        print(f"{len(unread)} leaves name no term, which is above the {UNREAD_ALLOWED} "
-              "the map allows: teach the extractor the form the leaf is read in, or "
-              "state the rule another way.", file=sys.stderr)
+    print(f"{len(typed)} of the leaves take their rule from the ORE schema, because "
+          "no ORE source read names them:", file=sys.stderr)
+    for row in sorted(typed, key=lambda r: (r["schema"], r["xpath"])):
+        print(f"  {row['schema']}|{row['xpath']}", file=sys.stderr)
+    if len(gap) > UNREAD_ALLOWED:
+        print(f"{len(gap)} leaves name no authority, which is above the "
+              f"{UNREAD_ALLOWED} the map allows: teach the extractor the form the "
+              "leaf is read in, or state the rule another way.", file=sys.stderr)
         return 1
     if args.check:
         print(f"{len(rows)} leaves over {len(columns)} columns.")

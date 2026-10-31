@@ -204,6 +204,36 @@ LIST_ITEM = {
                   "and every family reads an option tenor as a period, so one item "
                   "is a period.",
     },
+    "SwapTenors": {
+        "kind": "period_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:135",
+        "reason": "The guide states the underlying Swap term in period form, so one "
+                  "item is a period.",
+    },
+    "SmileSwapTenors": {
+        "kind": "period_list",
+        "source": "ore_guide",
+        "source_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:142",
+        "reason": "The guide states the underlying Swap term in period form for the "
+                  "smile section, so one item is a period.",
+    },
+    "BondTenors": {
+        "kind": "period_list",
+        "source": "ore_code",
+        "source_ref": "OREData/ored/configuration/yieldvolcurveconfig.hpp:42",
+        "reason": "The yield volatility class builds this leaf from the same read "
+                  "the swaption class builds SwapTenors from, with Bond as the "
+                  "underlying label, and a bond tenor is a period.",
+    },
+    "SmileBondTenors": {
+        "kind": "period_list",
+        "source": "ore_code",
+        "source_ref": "OREData/ored/configuration/yieldvolcurveconfig.hpp:42",
+        "reason": "The yield volatility class builds this leaf from the same read "
+                  "the swaption class builds SmileSwapTenors from, and a bond tenor "
+                  "is a period.",
+    },
     "Deltas": {
         "kind": None,
         "source": "ore_code",

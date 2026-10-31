@@ -566,6 +566,42 @@ describe('GET /api/reporting/cuts/:id', () => {
         });
     });
 
+    it('draws a cut whose kind the store no longer holds, and says the kind is missing', async () => {
+        const { server, sessionId } = buildTestServer({
+            ...BASIS,
+            'reporting.v1.cut_kinds.list': { result: ok, kinds: [], total: 0 },
+            [CUT_RECORD]: {
+                result: ok,
+                cut: THE_CUT,
+                // A kind the store does not hold arrives empty, and the cut's own
+                // copied facts are what the page draws.
+                kind: {},
+                label: '',
+                state: 'authorised',
+                superseded_by_id: '',
+                gaps: [],
+                run_count: 4,
+            },
+        });
+        const answer = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/cuts/11111111-1111-4111-8111-111111111111',
+        );
+        expect(answer.statusCode).toBe(200);
+        expect(answer.json()).toMatchObject({
+            label: '',
+            kind: {
+                code: 'EOD',
+                name: '',
+                signed: true,
+                retentionMonths: 25,
+                retentionDestinationCode: 'cold',
+            },
+        });
+    });
+
     it('answers a missing record as a missing record', async () => {
         const { server, sessionId } = buildTestServer({
             ...BASIS,

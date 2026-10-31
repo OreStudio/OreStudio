@@ -409,10 +409,7 @@ async function cutRecord(session: LiveSession, id: string): Promise<Record<strin
                   .catch(() => null),
     ]);
 
-    const kind = kinds.rows.find((entry) => entry.code === cutKindCode);
-    if (kind === undefined) {
-        throw notFound(`The store holds no kind of cut ${cutKindCode}.`);
-    }
+    const kind = kinds.rows.find((entry) => entry.code === cutKindCode) ?? kindOfItself(body);
     const approval = kind.approvalKindCode === null ? null : approvals.get(kind.approvalKindCode);
 
     return {
@@ -462,6 +459,40 @@ async function cutRecord(session: LiveSession, id: string): Promise<Record<strin
             reason: text(gap['reason']),
         })),
         runCount: reply.run_count,
+    };
+}
+
+/**
+ * The kind of a cut whose kind the store no longer holds.
+ *
+ * A retired kind leaves its cuts behind, and a cut records what it copied from
+ * its kind when it was taken: whether a signature was required, whether its
+ * values are indicative, and the retention it promises. The record therefore
+ * draws those facts and states that the kind is missing, rather than refusing
+ * to show a body that exists.
+ */
+function kindOfItself(cut: Read): KindRow {
+    const code = text(cut['kind_code']);
+    return {
+        code,
+        name: '',
+        description: '',
+        familyCode: '',
+        familyName: '',
+        signed: flag(cut['requires_authorisation']),
+        approvalKindCode: null,
+        approvalKindName: null,
+        approvalsRequired: null,
+        decidePermissionCode: null,
+        outputIsIndicative: flag(cut['output_is_indicative']),
+        resolutionRuleCode: '',
+        resolutionRuleName: '',
+        retentionMonths: count(cut['retention_months']),
+        retentionDestinationCode: text(cut['retention_destination_code']),
+        legalHoldDefault: false,
+        displayOrder: 0,
+        cutsCount: 0,
+        version: 0,
     };
 }
 

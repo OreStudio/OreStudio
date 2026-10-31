@@ -25,6 +25,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import type {
     AccountAccess,
+    CutKindChoices,
     CutKindRecord,
     CutKindRow,
     CutRecord,
@@ -32,21 +33,23 @@ import type {
 } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../../i18n/Provider.js';
 import { FIRST_PAGE, pageKey } from '../../refdata/RecordList.js';
+import { valuesOf, writeOf } from '../../refdata/records.js';
 import { textOf } from '../../textOf.js';
 import { CutPage } from './CutPage.js';
-import { CutTypePage } from './CutTypePage.js';
+import { CutTypePage, formRowOf, specsOf } from './CutTypePage.js';
 import { CutTypesPage } from './CutTypesPage.js';
-import { CutsPage, recentMonths } from './CutsPage.js';
+import { CutsPage, PageSummary } from './CutsPage.js';
+import { frequencyOf, groupsOf, useGroupHeading } from './shared.js';
 
 /**
  * The cut screens, rendered from a seeded query cache.
  *
  * What is checked is what the screens promise: the types list derives the
  * signed-or-not from the approval kind and counts the cuts of each type, a
- * type's page draws its rules and its cuts under the month they were taken in,
- * the cuts list draws the label, the derived state with its basis and the run
- * tally, and a cut's page draws the four inputs of the body, the gaps it could
- * not fill and the acts that made it.
+ * type's page draws its rules and its cuts under the period one step above its
+ * frequency, the cuts list draws the label, the derived state with its basis and
+ * the run tally, and a cut's page draws the four inputs of the body, the gaps it
+ * could not fill, the acts that made it and the runs that priced from it.
  */
 
 const KIND: CutKindRow = {
@@ -91,6 +94,21 @@ const FLASH: CutKindRow = {
     version: 1,
 };
 
+const CHOICES: CutKindChoices = {
+    families: [
+        { code: 'end_of_day', name: 'End of day' },
+        { code: 'intraday', name: 'Intraday' },
+    ],
+    resolutionRules: [
+        { code: 'same_day_close', name: 'The close of the day the report covers' },
+        { code: 'the_cut_named', name: 'The cut the selection names' },
+    ],
+    approvalKinds: [
+        { code: 'reporting.eod_cut_authorisation', name: 'End of day cut authorisation' },
+    ],
+    retentionDestinations: ['cold'],
+};
+
 function cut(over: Partial<CutRow> & Pick<CutRow, 'id' | 'label'>): CutRow {
     return {
         state: 'authorised',
@@ -114,7 +132,10 @@ function cut(over: Partial<CutRow> & Pick<CutRow, 'id' | 'label'>): CutRow {
     };
 }
 
-const AUTHORISED = cut({ id: '11111111-1111-1111-1111-111111111111', label: 'EOD.ACME-LONDON.2026-10-06' });
+const AUTHORISED = cut({
+    id: '11111111-1111-1111-1111-111111111111',
+    label: 'EOD.ACME-LONDON.2026-10-06',
+});
 
 const FLASH_CUT = cut({
     id: '22222222-2222-2222-2222-222222222222',
@@ -139,6 +160,25 @@ const TAKEN = cut({
     approvedBy: '',
     approvedAt: null,
     runCount: 0,
+});
+
+const SUPERSEDED = cut({
+    id: '44444444-4444-4444-4444-444444444444',
+    label: 'EOD.ACME-LONDON.2026-10-05',
+    timepoint: '2026-10-05 16:00:00.000000Z',
+    state: 'superseded',
+    supersededById: '11111111-1111-1111-1111-111111111111',
+    runCount: 2,
+});
+
+const UNSIGNED_SUPERSEDED = cut({
+    ...SUPERSEDED,
+    id: '55555555-5555-5555-5555-555555555555',
+    label: 'FLASH.ACME-LONDON.2026-10-04 09:00:00.000000Z',
+    timepoint: '2026-10-04 09:00:00.000000Z',
+    approvedBy: '',
+    approvedAt: null,
+    requiresAuthorisation: false,
 });
 
 function access(codes: string[]): AccountAccess {
@@ -231,14 +271,14 @@ function render(path: string, seed: (client: QueryClient) => void): string {
 /** Seeds the first page of the type list, as the shared list reads it. */
 function seedTypes(client: QueryClient, rows: readonly CutKindRow[]): void {
     client.setQueryData(['cuts', 'types'], { rows, total: rows.length, partial: false });
-    client.setQueryData(pageKey({ key: 'cut-types' }, FIRST_PAGE), {
+    client.setQueryData(pageKey({ key: 'cut-kinds' }, FIRST_PAGE), {
         rows,
         total: rows.length,
     });
 }
 
 describe('the cut types list', () => {
-    it('names the columns and derives the signed-or-not from the approval kind', () => {
+    it('names the columns and draws the signed-or-not the server derived', () => {
         const html = render('/refdata/cut-types', (client) => {
             seedTypes(client, [KIND, FLASH]);
             client.setQueryData(['my-access'], access(['reporting::cut_kinds:read']));
@@ -267,8 +307,10 @@ describe('the cut types list', () => {
         expect(textOf(html)).toContain('Creating a new one is not offered yet');
     });
 
-    it('pages the types in the browser, because a firm holds a handful', () => {
+    it('pages the types on the server, with the server’s total under the table', () => {
         const html = render('/refdata/cut-types', (client) => {
+            // The page is what the server answered: rows and the server's total,
+            // which the list draws in the shared pager.
             seedTypes(client, [KIND, FLASH]);
             client.setQueryData(['my-access'], access(['reporting::cut_kinds:read']));
         });
@@ -284,16 +326,21 @@ describe('one cut type', () => {
         });
         const page = textOf(html);
         expect(page).toContain('End of day');
+        // The lead line is the key and the version the record holds.
         expect(page).toContain('EOD · version 3');
         expect(page).toContain('The close of the day the report covers');
-        expect(page).toContain('26 months'.replace('26', '25'));
+        expect(page).toContain('25 months');
         expect(page).toContain('Not held');
         expect(page).toContain('A cut copies its type’s authorisation and retention');
+        // The frequency is derived from the resolution rule.
+        expect(page).toContain('Daily');
+        // Approvals are the inbox kind's fact and not a column of the type.
+        expect(page).not.toContain('Approvals required');
     });
 
-    it('groups its cuts under the month they were taken in', () => {
+    it('groups its cuts under the period one step above its frequency', () => {
         const second = cut({
-            id: '55555555-5555-5555-5555-555555555555',
+            id: '99999999-9999-4999-8999-999999999999',
             label: 'EOD.ACME-LONDON.2026-10-05',
             timepoint: '2026-10-05 16:00:00.000000Z',
         });
@@ -302,10 +349,21 @@ describe('one cut type', () => {
             client.setQueryData(['my-access'], access(['reporting::cut_kinds:read']));
         });
         const page = textOf(html);
-        expect(page).toContain('2026-10');
+        // A daily kind reads by month, and the heading names the month.
+        expect(page).toContain('October 2026');
         expect(page).toContain('2 cuts');
         expect(page).toContain('EOD.ACME-LONDON.2026-10-06');
         expect(page).toContain('EOD.ACME-LONDON.2026-10-05');
+    });
+
+    it('marks a cut whose kind fixes indicative values', () => {
+        const html = render('/refdata/cut-types/FLASH?tab=cuts', (client) => {
+            client.setQueryData(['cuts', 'type', 'FLASH'], typeRecord(FLASH, [FLASH_CUT]));
+            client.setQueryData(['my-access'], access(['reporting::cut_kinds:read']));
+        });
+        const page = textOf(html);
+        expect(page).toContain('Indicative');
+        expect(page).toContain('Its kind requires no authorisation');
     });
 
     it('says a type has no cuts rather than drawing an empty table', () => {
@@ -317,12 +375,92 @@ describe('one cut type', () => {
     });
 });
 
+describe('the type’s form', () => {
+    it('offers the row’s own values, and keeps the retention destination out of it', () => {
+        const specs = specsOf(CHOICES);
+        const written = writeOf(specs, valuesOf(specs, formRowOf(KIND)));
+        // The form states what the record holds, so a save that changes nothing
+        // writes nothing new.
+        expect(written).toMatchObject({
+            code: 'EOD',
+            name: 'End of day',
+            family_code: 'end_of_day',
+            approval_kind_code: 'reporting.eod_cut_authorisation',
+            output_is_indicative: false,
+            resolution_rule_code: 'same_day_close',
+            retention_months: 25,
+            legal_hold_default: false,
+            display_order: 10,
+        });
+        // No lookup states the tiers, so the form does not ask for one: the BFF
+        // keeps the destination the kind holds.
+        expect(specs.map((spec) => spec.field)).not.toContain('retention_destination_code');
+    });
+
+    it('asks for a kind’s signature as a choice, and writes null for none', () => {
+        const specs = specsOf(CHOICES);
+        const approval = specs.find((spec) => spec.field === 'approval_kind_code');
+        expect(approval?.optional).toBe(true);
+        expect(approval?.kind.kind).toBe('pick');
+        const written = writeOf(specs, {
+            ...valuesOf(specs, formRowOf(FLASH)),
+            approval_kind_code: '',
+        });
+        // A kind that names no approval kind writes null, which is the whole of
+        // the rule that it needs no authorisation.
+        expect(written['approval_kind_code']).toBeNull();
+    });
+});
+
+describe('the period a type’s cuts are grouped by', () => {
+    it('reads the frequency a kind is taken at from the rule it resolves by', () => {
+        expect(frequencyOf('same_day_close')).toBe('daily');
+        expect(frequencyOf('same_day_open')).toBe('daily');
+        expect(frequencyOf('last_business_day_of_month_close')).toBe('monthly');
+        expect(frequencyOf('last_business_day_of_year_close')).toBe('yearly');
+        expect(frequencyOf('run_instant')).toBe('onDemand');
+        expect(frequencyOf('the_cut_named')).toBe('onDemand');
+    });
+
+    it('groups a daily kind by month, a monthly one by year, a yearly one as one group, an on-demand one by day', () => {
+        const rows = [AUTHORISED, SUPERSEDED];
+        expect(groupsOf(rows, 'daily').map((group) => group.key)).toEqual(['2026-10']);
+        expect(groupsOf(rows, 'monthly').map((group) => group.key)).toEqual(['2026']);
+        expect(groupsOf(rows, 'yearly').map((group) => group.key)).toEqual(['all']);
+        expect(groupsOf(rows, 'onDemand').map((group) => group.key)).toEqual([
+            '2026-10-06',
+            '2026-10-05',
+        ]);
+    });
+
+    it('names a group’s period in the language the person reads', () => {
+        // The probe asserts the four headings the hook states; rendering it is
+        // what lets the hook read the language.
+        renderToStaticMarkup(
+            <TranslationProvider>
+                <HeadingProbe />
+            </TranslationProvider>,
+        );
+    });
+});
+
+/** The headings a group reads, drawn through the hook the type's page uses. */
+function HeadingProbe(): null {
+    const heading = useGroupHeading();
+    expect(heading('2026-10', 'daily')).toBe('October 2026');
+    expect(heading('2026', 'monthly')).toBe('Year 2026');
+    expect(heading('all', 'yearly')).toBe('Every year');
+    expect(heading('2026-10-06', 'onDemand')).toBe('6 October 2026');
+    return null;
+}
+
 describe('the cuts list', () => {
     function seedCuts(client: QueryClient, rows: readonly CutRow[]): void {
         client.setQueryData(['cuts', 'types'], { rows: [KIND, FLASH], total: 2, partial: false });
         client.setQueryData(pageKey({ key: 'cuts' }, FIRST_PAGE), {
             rows,
             total: rows.length,
+            summary: <PageSummary cuts={rows} />,
         });
         client.setQueryData(['my-access'], access(['reporting::cuts:read']));
     }
@@ -348,22 +486,54 @@ describe('the cuts list', () => {
         expect(page).toContain('Indicative');
     });
 
-    it('offers the kind, the state and the month as the list’s filters', () => {
+    it('says a superseded cut was authorised, or in use, before a later cut replaced it', () => {
+        const html = render('/reporting/cuts', (client) => {
+            seedCuts(client, [SUPERSEDED, UNSIGNED_SUPERSEDED]);
+        });
+        const page = textOf(html);
+        expect(page).toContain('Authorised before a later cut replaced it');
+        expect(page).toContain('In use until a later cut replaced it');
+    });
+
+    it('counts the bodies a run may not price from, and not a draft', () => {
+        const draft = cut({
+            id: '66666666-6666-6666-6666-666666666666',
+            label: 'EOD.ACME-LONDON.2026-10-08',
+            state: 'draft',
+            takenBy: '',
+            takenAt: null,
+            approvedBy: '',
+            approvedAt: null,
+        });
+        const html = render('/reporting/cuts', (client) => {
+            seedCuts(client, [TAKEN, draft]);
+        });
+        const page = textOf(html);
+        // One body is not consumable: the taken one. A draft is not a cut yet, so
+        // it is not counted among the bodies a run refuses.
+        expect(page).toContain('1 cuts of this scope may not be priced from');
+        expect(page).toContain('and their states are: Taken');
+    });
+
+    it('offers the kind and the state as the list’s filters', () => {
         const html = render('/reporting/cuts', (client) => {
             seedCuts(client, [AUTHORISED]);
         });
         const page = textOf(html);
         expect(page).toContain('Every kind');
         expect(page).toContain('Every state');
-        expect(page).toContain('Every month');
         expect(html).toContain('placeholder="Search…"');
     });
 
-    it('says that a cut is read here and that the take is not offered yet', () => {
+    it('names the four things it does not offer', () => {
         const html = render('/reporting/cuts', (client) => {
             seedCuts(client, [AUTHORISED]);
         });
-        expect(textOf(html)).toContain('Taking one by hand is not offered on this screen yet');
+        const page = textOf(html);
+        expect(page).toContain('the take flow');
+        expect(page).toContain('the authorisation the take raises');
+        expect(page).toContain('the report’s selection of this cut');
+        expect(page).toContain('the LIVE mint');
     });
 });
 
@@ -375,6 +545,8 @@ describe('one cut', () => {
         });
         const page = textOf(html);
         expect(page).toContain('EOD.ACME-LONDON.2026-10-06');
+        // The lead line is the record's key and version.
+        expect(page).toContain('· version 2');
         expect(page).toContain('The identity');
         expect(page).toContain('The deals');
         expect(page).toContain('The market data');
@@ -412,6 +584,30 @@ describe('one cut', () => {
         expect(page).toContain('No value at or before the instant.');
     });
 
+    it('states that the label is missing because the kind is, and not the body', () => {
+        const html = render(`/reporting/cuts/${AUTHORISED.id}`, (client) => {
+            client.setQueryData(
+                ['cuts', 'cut', AUTHORISED.id],
+                cutRecord({ label: '', kind: { ...KIND, name: '' } }),
+            );
+            client.setQueryData(['my-access'], access(['reporting::cuts:read']));
+        });
+        expect(textOf(html)).toContain(
+            'does not hold the kind EOD this cut was taken under, so it has no label',
+        );
+    });
+
+    it('links the request that authorised the body rather than printing its id', () => {
+        const html = render(`/reporting/cuts/${AUTHORISED.id}?tab=authorisation`, (client) => {
+            client.setQueryData(['cuts', 'cut', AUTHORISED.id], cutRecord());
+            client.setQueryData(['my-access'], access(['reporting::cuts:read']));
+        });
+        const page = textOf(html);
+        expect(page).toContain('Open the request');
+        expect(html).toContain('/requests/8f2a4c19-0000-4000-8000-000000000003');
+        expect(page).not.toContain('8f2a4c19-0000-4000-8000-000000000003');
+    });
+
     it('says on the authorisation tab who signs a cut of the kind and who decided it', () => {
         const html = render(`/reporting/cuts/${AUTHORISED.id}?tab=authorisation`, (client) => {
             client.setQueryData(['cuts', 'cut', AUTHORISED.id], cutRecord());
@@ -422,7 +618,9 @@ describe('one cut', () => {
         expect(page).toContain('End of day cut authorisation');
         expect(page).toContain('inbox::approvals:decide_finance');
         expect(page).toContain('Four eyes is the inbox’s rule');
-        expect(page).toContain('Raising and deciding an authorisation from this screen is not offered yet');
+        expect(page).toContain(
+            'Raising and deciding an authorisation from this screen is not offered yet',
+        );
     });
 
     it('says a cut whose kind requires no authorisation was usable when taken', () => {
@@ -431,7 +629,12 @@ describe('one cut', () => {
                 ['cuts', 'cut', AUTHORISED.id],
                 cutRecord({
                     state: 'in_use',
-                    kind: { ...KIND, signed: false, approvalKindCode: null, outputIsIndicative: true },
+                    kind: {
+                        ...KIND,
+                        signed: false,
+                        approvalKindCode: null,
+                        outputIsIndicative: true,
+                    },
                     cut: {
                         ...cutRecord().cut,
                         requiresAuthorisation: false,
@@ -447,13 +650,39 @@ describe('one cut', () => {
         expect(page).toContain('requires no authorisation: the basis is a fact of the kind');
         expect(page).toContain('No signature');
     });
-});
 
-describe('the month the list offers', () => {
-    it('names this month and the eleven before it, newest first', () => {
-        const months = recentMonths(new Date(Date.UTC(2026, 9, 7)));
-        expect(months[0]).toBe('2026-10');
-        expect(months[11]).toBe('2025-11');
-        expect(months).toHaveLength(12);
+    it('lists the runs that priced from it, with the state each reached', () => {
+        const html = render(`/reporting/cuts/${AUTHORISED.id}?tab=runs`, (client) => {
+            client.setQueryData(['cuts', 'cut', AUTHORISED.id], cutRecord());
+            client.setQueryData(['cuts', 'cut', AUTHORISED.id, 'runs'], {
+                runs: [
+                    {
+                        id: '77777777-7777-4777-8777-777777777777',
+                        name: 'NPV',
+                        stateName: 'completed',
+                        health: 'completed clean',
+                        startedAt: '2026-10-06 18:05:00.000000Z',
+                        completedAt: '2026-10-06 18:09:00.000000Z',
+                        pricedAt: '2026-10-06 18:08:00.000000Z',
+                    },
+                ],
+            });
+            client.setQueryData(['my-access'], access(['reporting::cuts:read']));
+        });
+        const page = textOf(html);
+        expect(page).toContain('The runs that priced from this cut');
+        expect(page).toContain('NPV');
+        expect(page).toContain('Completed clean');
+        // The comparison belongs to the audit journey, and the tab says so.
+        expect(page).toContain('is the audit journey’s work');
+    });
+
+    it('says a body no run may price from has no runs', () => {
+        const html = render(`/reporting/cuts/${AUTHORISED.id}?tab=runs`, (client) => {
+            client.setQueryData(['cuts', 'cut', AUTHORISED.id], cutRecord({ state: 'taken' }));
+            client.setQueryData(['cuts', 'cut', AUTHORISED.id, 'runs'], { runs: [] });
+            client.setQueryData(['my-access'], access(['reporting::cuts:read']));
+        });
+        expect(textOf(html)).toContain('No run may price from a body that is not fixed');
     });
 });

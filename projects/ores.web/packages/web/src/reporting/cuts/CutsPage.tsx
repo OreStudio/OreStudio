@@ -39,11 +39,7 @@
 import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
-import {
-    CUT_STATE_WORDS,
-    type CutRow,
-    type CutStateWord,
-} from '@ores/wire-protocol/browser';
+import { CUT_STATE_WORDS, type CutRow } from '@ores/wire-protocol/browser';
 import { api } from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { Crumbs } from '../../refdata/shared.js';
@@ -59,29 +55,36 @@ import { useAreaRoot } from '../../shell/AreaTrail.js';
 import { PATHS, cutPath } from '../../shell/paths.js';
 import { Notice } from '../../ui/Primitives.js';
 import { RelativeTime } from '../../ui/Time.js';
-import { Absent, StateCell } from './shared.js';
+import { Absent, StateCell, useStateName } from './shared.js';
 
-/** The months the month filter offers: this month and the eleven before it. */
-export function recentMonths(now: Date): readonly string[] {
-    const months: string[] = [];
-    for (let back = 0; back < 12; back += 1) {
-        const at = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - back, 1));
-        months.push(at.toISOString().slice(0, 7));
-    }
-    return months;
-}
-
-/** The kinds the type filter offers, read once for the filter beside the search. */
+/**
+ * The kinds the kind filter offers, read once from the first page of the kinds.
+ *
+ * A filter's choices are the classification a person narrows by, and the kinds
+ * are a closed set a firm seeds, so one page of them names every kind a cut can
+ * be of.
+ */
 function useKindChoices(): readonly { readonly value: string; readonly label: string }[] {
-    const kinds = useQuery({ queryKey: ['cuts', 'types'], queryFn: () => api.cutKinds() });
+    const kinds = useQuery({
+        queryKey: ['cuts', 'types'],
+        queryFn: () => api.cutKinds(KIND_CHOICES_PAGE),
+    });
     return (kinds.data?.rows ?? []).map((row) => ({ value: row.code, label: row.name }));
 }
+
+/** How many kinds the filter's choices read, which is one page of the list's own sizes. */
+const KIND_CHOICES_PAGE = {
+    offset: 0,
+    limit: 200,
+    search: '',
+    sort: '',
+    descending: false,
+};
 
 /** The two filters the list offers: the kind of cut, and the state it is in. */
 function useFilters(): readonly ListFilter[] {
     const { t } = useTranslation();
     const kinds = useKindChoices();
-    const months = recentMonths(new Date());
     return [
         {
             kind: 'choice',
@@ -100,22 +103,16 @@ function useFilters(): readonly ListFilter[] {
                 label: t(`cuts.states.${word}`),
             })),
         },
-        {
-            kind: 'choice',
-            id: 'month',
-            label: t('cuts.columns.month'),
-            all: t('cuts.filter.allMonths'),
-            choices: months.map((month) => ({ value: month, label: month })),
-        },
     ];
 }
 
 /**
- * The cuts the filters name, read whole for the query and paged in the browser.
+ * The cuts the filters name, one page at a time from the server.
  *
- * The server narrows by the kind, the month, the state and the text, because the
- * label and the state are derived there; what is left is the page, which is a
- * slice of what came back.
+ * The server narrows by the kind, the state and the text, because the label and
+ * the state are derived there, and it answers one page with the count of every
+ * row the query matched. The list therefore never reads a large fixed slice and
+ * never pages to the end to show everything.
  */
 function useCutSource(filters: readonly ListFilter[]): ListSource<CutRow> {
     const { t } = useTranslation();
@@ -123,14 +120,14 @@ function useCutSource(filters: readonly ListFilter[]): ListSource<CutRow> {
         key: 'cuts',
         read: async (request): Promise<ListPage<CutRow>> => {
             const answer = await api.cuts({
+                offset: request.offset,
+                limit: request.limit,
                 kindCode: request.filters['kind'] ?? '',
-                month: request.filters['month'] ?? '',
                 state: request.filters['state'] ?? '',
                 search: request.search,
             });
-            const rows = answer.rows.slice(request.offset, request.offset + request.limit);
             return {
-                rows,
+                rows: answer.rows,
                 total: answer.total,
                 summary: <PageSummary cuts={answer.rows} />,
                 ...(answer.partial
@@ -217,10 +214,13 @@ function useColumns(): readonly ListColumn<CutRow>[] {
  * price from, and why a body nobody signed is admitted. Both are read from the
  * rows the server answered and never from a stored state.
  */
-function PageSummary({ cuts }: { readonly cuts: readonly CutRow[] }): ReactNode {
+export function PageSummary({ cuts }: { readonly cuts: readonly CutRow[] }): ReactNode {
     const { t } = useTranslation();
+    const stateName = useStateName();
+    // A draft is not a cut yet, so it is not one of the bodies a run refuses: the
+    // set is a body that is taken, one that is incomplete and one that is refused.
     const blocked = cuts.filter(
-        (row) => row.state === 'draft' || row.state === 'incomplete' || row.state === 'taken' || row.state === 'refused',
+        (row) => row.state === 'incomplete' || row.state === 'taken' || row.state === 'refused',
     );
     const unsigned = cuts.filter((row) => row.state === 'in_use' && !row.requiresAuthorisation);
     if (blocked.length === 0 && unsigned.length === 0) {
@@ -232,7 +232,7 @@ function PageSummary({ cuts }: { readonly cuts: readonly CutRow[] }): ReactNode 
                 <Notice tone="warn">
                     {t('cuts.notice.blocked', {
                         count: String(blocked.length),
-                        states: [...new Set(blocked.map((row) => stateWord(row.state, t)))]
+                        states: [...new Set(blocked.map((row) => stateName(row.state)))]
                             .sort()
                             .join(', '),
                     })}
@@ -247,18 +247,16 @@ function PageSummary({ cuts }: { readonly cuts: readonly CutRow[] }): ReactNode 
     );
 }
 
-/** The word a state is drawn by, for a sentence that names several. */
-function stateWord(state: CutStateWord, t: (key: string) => string): string {
-    return t(`cuts.states.${state}`);
-}
-
 /** The filters the list offers, drawn once and read by both the source and the table. */
 export function CutsPage(): ReactNode {
     const { t } = useTranslation();
     const trail = [...useAreaRoot('reporting'), { label: t('cuts.title') }];
     const filters = useFilters();
     const source = useCutSource(filters);
-    const kinds = useQuery({ queryKey: ['cuts', 'types'], queryFn: () => api.cutKinds() });
+    const kinds = useQuery({
+        queryKey: ['cuts', 'types'],
+        queryFn: () => api.cutKinds(KIND_CHOICES_PAGE),
+    });
 
     if (kinds.isError) {
         return (

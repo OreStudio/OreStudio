@@ -28,32 +28,45 @@
  * authorisation is a foreign key, so the words under it are the approval kind's
  * own and never a phrase stored on the type.
  *
- * The cuts are grouped by the month of the instant, which is the period one step
- * above a kind taken every day. Every kind a firm seeds today is taken daily or
- * intraday, so one group is one month's bodies. A kind taken every month would
- * read by year, and the screen does not ask the kind's frequency yet.
- * The grouping is this screen's: the read answers the cuts.
+ * The cuts are grouped by the period one step above the kind's own frequency,
+ * which the resolution rule states: a daily kind reads by month, a monthly kind
+ * by year, a yearly kind as one group, and an on-demand kind by day. The
+ * grouping is this screen's: the read answers the cuts and states no period.
  */
 
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useParams } from 'react-router';
 import type { CutKindChoices, CutKindRecord, CutKindRow, CutRow } from '@ores/wire-protocol/browser';
-import { api } from '../../api/client.js';
+import { api, type RecordRow } from '../../api/client.js';
 import { useHeld } from '../../access/holds.js';
+import { PERMISSION } from '../../access/permissions.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { RecordTimeline } from '../../refdata/RecordTimeline.js';
-import { Crumbs, ReasonFields, useReason } from '../../refdata/shared.js';
+import { Crumbs } from '../../refdata/shared.js';
 import {
     DeleteDialog,
+    RecordDialog,
     RecordHeader,
     useRecordTabs,
+    type FieldSpec,
 } from '../../refdata/records.js';
+import { RecordStoreProvider } from '../../refdata/store.js';
 import { useAreaRoot } from '../../shell/AreaTrail.js';
 import { PATHS, cutPath } from '../../shell/paths.js';
-import { Button, Dialog, Field, Input, Notice, Select, Textarea } from '../../ui/Primitives.js';
+import { Button, Dialog, Notice } from '../../ui/Primitives.js';
 import { RelativeTime } from '../../ui/Time.js';
-import { Absent, CutStateTag, IndicativeTag, StateBasis, byMonth } from './shared.js';
+import {
+    Absent,
+    CutStateTag,
+    IndicativeTag,
+    StateBasis,
+    frequencyOf,
+    groupsOf,
+    useGroupHeading,
+    type CutFrequency,
+} from './shared.js';
+import { CUT_KIND_RESOURCE, cutKindStore } from './cutKindStore.js';
 
 /** The entity type the type's versions are read under. */
 export const CUT_KIND_ENTITY_TYPE = 'ores.reporting.cut_kind';
@@ -76,23 +89,34 @@ export function CutTypePage(): ReactNode {
     if (kind.isError) {
         return <Notice tone="error">{kind.error.message}</Notice>;
     }
-    return <CutTypeBody kind={kind.data} />;
+    return (
+        <RecordStoreProvider store={cutKindStore}>
+            <CutTypeBody kind={kind.data} loadedAt={kind.dataUpdatedAt} />
+        </RecordStoreProvider>
+    );
 }
 
-function CutTypeBody({ kind }: { readonly kind: CutKindRecord }): ReactNode {
+function CutTypeBody({
+    kind,
+    loadedAt,
+}: {
+    readonly kind: CutKindRecord;
+    readonly loadedAt: number;
+}): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const queries = useQueryClient();
     const root = useAreaRoot('refdata');
     const holds = useHeld();
-    const mayWrite = holds('reporting::cut_kinds:write');
-    const mayDelete = holds('reporting::cut_kinds:delete');
+    const mayWrite = holds(PERMISSION.cutKindsWrite);
+    const mayDelete = holds(PERMISSION.cutKindsDelete);
     const [editing, setEditing] = useState(false);
     const [removing, setRemoving] = useState(false);
     const { tab, bar } = useRecordTabs({
         label: kind.kind.code,
-        tabs: ['rules', 'cuts', 'history'],
+        tabs: ['details', 'cuts', 'history'],
     });
+    const frequency = frequencyOf(kind.kind.resolutionRuleCode);
 
     const reload = async (): Promise<void> => {
         await queries.invalidateQueries({ queryKey: ['cuts', 'type', kind.kind.code] });
@@ -113,26 +137,25 @@ function CutTypeBody({ kind }: { readonly kind: CutKindRecord }): ReactNode {
                 title={kind.kind.name}
                 recordKey={kind.kind.code}
                 version={kind.kind.version}
+                detail={kind.kind.familyName}
                 access={mayWrite}
                 {...(mayWrite ? { onEdit: () => setEditing(true) } : {})}
                 {...(mayDelete ? { onDelete: () => setRemoving(true) } : {})}
             />
             {bar}
-            {tab === 'rules' && (
-                <RulesTab kind={kind.kind} mayWrite={mayWrite} onEdit={() => setEditing(true)} />
+            {tab === 'details' && (
+                <DetailsTab kind={kind.kind} frequency={frequency} mayWrite={mayWrite} onEdit={() => setEditing(true)} />
             )}
-            {tab === 'cuts' && <CutsTab cuts={kind.cuts} partial={kind.partial} />}
+            {tab === 'cuts' && <CutsTab cuts={kind.cuts} partial={kind.partial} frequency={frequency} />}
             {tab === 'history' && (
                 <RecordTimeline entityType={CUT_KIND_ENTITY_TYPE} entityId={kind.kind.code} />
             )}
             {editing && (
                 <EditKindDialog
                     kind={kind.kind}
+                    loadedAt={loadedAt}
                     onClose={() => setEditing(false)}
-                    onSaved={async () => {
-                        setEditing(false);
-                        await reload();
-                    }}
+                    onSaved={() => void reload()}
                 />
             )}
             {removing && (
@@ -175,12 +198,14 @@ function Rule({
 }
 
 /** The rules a cut of this kind is taken under, and the copy the take makes of them. */
-function RulesTab({
+function DetailsTab({
     kind,
+    frequency,
     mayWrite,
     onEdit,
 }: {
     readonly kind: CutKindRow;
+    readonly frequency: CutFrequency;
     readonly mayWrite: boolean;
     readonly onEdit: () => void;
 }): ReactNode {
@@ -201,6 +226,7 @@ function RulesTab({
                 </div>
                 <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     <Rule label={t('cuts.columns.family')} value={kind.familyName} />
+                    <Rule label={t('cuts.types.repeats')} value={t(`cuts.frequency.${frequency}`)} />
                     <Rule
                         label={t('cuts.columns.signed')}
                         value={
@@ -216,16 +242,6 @@ function RulesTab({
                                 </span>
                             ) : (
                                 t('cuts.types.unsigned')
-                            )
-                        }
-                    />
-                    <Rule
-                        label={t('cuts.types.approvalsRequired')}
-                        value={
-                            kind.approvalsRequired === null ? (
-                                <Absent />
-                            ) : (
-                                String(kind.approvalsRequired)
                             )
                         }
                     />
@@ -271,8 +287,13 @@ function CutLine({ row }: { readonly row: CutRow }): ReactNode {
             </td>
             <td className="py-2 pr-3">
                 <span className="flex flex-col gap-1">
-                    <CutStateTag state={row.state} />
-                    <StateBasis row={row} />
+                    <span className="flex items-center gap-1.5">
+                        <CutStateTag state={row.state} />
+                        {row.outputIsIndicative && <IndicativeTag />}
+                    </span>
+                    <StateBasis
+                        facts={{ state: row.state, approvedBy: row.approvedBy, supersededByLabel: null }}
+                    />
                 </span>
             </td>
             <td className="py-2 pr-3 font-mono text-xs">
@@ -288,30 +309,36 @@ function CutLine({ row }: { readonly row: CutRow }): ReactNode {
 }
 
 /**
- * The cuts of one kind, under the month every one of them was taken in.
+ * The cuts of one kind, under the period one step above the kind's frequency.
  *
- * The group is the month of the instant: a daily kind's own reading, and the
- * period the fixture's six kinds share.
+ * The group names the period in the language the person reads, so a daily kind
+ * reads "October 2026" and a monthly one "Year 2026".
  */
 function CutsTab({
     cuts,
     partial,
+    frequency,
 }: {
     readonly cuts: readonly CutRow[];
     readonly partial: boolean;
+    readonly frequency: CutFrequency;
 }): ReactNode {
     const { t } = useTranslation();
+    const heading = useGroupHeading();
     if (cuts.length === 0) {
         return <Notice tone="info">{t('cuts.types.noCuts')}</Notice>;
     }
-    const groups = byMonth(cuts);
+    const groups = groupsOf(cuts, frequency);
     return (
         <div className="space-y-6">
+            <p className="text-sm text-ink-muted">
+                {t('cuts.types.grouping', { frequency: t(`cuts.frequency.${frequency}`) })}
+            </p>
             {partial && <Notice tone="warn">{t('cuts.partialPage')}</Notice>}
             {groups.map((group) => (
-                <section key={group.month} className="rounded-md border border-line">
+                <section key={group.key} className="rounded-md border border-line">
                     <h2 className="border-b border-line px-4 py-2 text-sm font-semibold">
-                        {t('cuts.monthHeading', { month: group.month })}
+                        {heading(group.key, frequency)}
                         <span className="ml-2 text-xs font-normal text-ink-faint">
                             {t('cuts.cutCount', { count: String(group.rows.length) })}
                         </span>
@@ -345,212 +372,165 @@ function CutsTab({
     );
 }
 
-/** The fields the form offers, held as text so a half-typed number is still a form. */
-interface KindForm {
-    readonly name: string;
-    readonly description: string;
-    readonly familyCode: string;
-    readonly approvalKindCode: string;
-    readonly outputIsIndicative: boolean;
-    readonly resolutionRuleCode: string;
-    readonly retentionMonths: string;
-    readonly legalHoldDefault: boolean;
-    readonly displayOrder: string;
+/**
+ * The fields the type's form offers.
+ *
+ * The retention destination is not one of them. It is a tier the store keeps and
+ * no lookup states the tiers, so the form states the value the kind holds and
+ * offers no other; the write keeps it whatever a caller sends.
+ */
+export function specsOf(choices: CutKindChoices): readonly FieldSpec[] {
+    return [
+        {
+            field: 'code',
+            history: 'code',
+            kind: { kind: 'text', max: 100 },
+            fixed: true,
+            labelKey: 'cuts.columns.type',
+        },
+        {
+            field: 'name',
+            history: 'name',
+            kind: { kind: 'text', max: 200 },
+            labelKey: 'cuts.columns.name',
+        },
+        {
+            field: 'description',
+            history: 'description',
+            kind: { kind: 'text', max: 2000 },
+            blank: true,
+            labelKey: 'cuts.types.description',
+        },
+        {
+            field: 'family_code',
+            history: 'family_code',
+            kind: { kind: 'pick', choices: asChoices(choices.families) },
+            labelKey: 'cuts.columns.family',
+        },
+        {
+            field: 'approval_kind_code',
+            history: 'approval_kind_code',
+            kind: { kind: 'pick', choices: asChoices(choices.approvalKinds) },
+            optional: true,
+            labelKey: 'cuts.columns.signed',
+            help: 'cuts.types.unsignedHelp',
+        },
+        {
+            field: 'output_is_indicative',
+            history: 'output_is_indicative',
+            kind: { kind: 'bool' },
+            labelKey: 'cuts.types.indicativeValues',
+        },
+        {
+            field: 'resolution_rule_code',
+            history: 'resolution_rule_code',
+            kind: { kind: 'pick', choices: asChoices(choices.resolutionRules) },
+            labelKey: 'cuts.types.resolutionRule',
+        },
+        {
+            field: 'retention_months',
+            history: 'retention_months',
+            kind: { kind: 'int', min: 0, max: 1200 },
+            labelKey: 'cuts.types.retentionMonths',
+        },
+        {
+            field: 'legal_hold_default',
+            history: 'legal_hold_default',
+            kind: { kind: 'bool' },
+            labelKey: 'cuts.types.legalHoldOnTake',
+        },
+        {
+            field: 'display_order',
+            history: 'display_order',
+            kind: { kind: 'int', min: 0, max: 1000000 },
+            labelKey: 'cuts.types.order',
+        },
+    ];
 }
 
-function formOf(kind: CutKindRow): KindForm {
+/** One lookup of the kind's choices, as a picker reads it. */
+function asChoices(
+    entries: readonly { readonly code: string; readonly name: string }[],
+): readonly { readonly value: string; readonly label: string }[] {
+    return entries.map((entry) => ({ value: entry.code, label: entry.name }));
+}
+
+/**
+ * The kind's own values, under the names the field table reads.
+ *
+ * The shared dialog reads a row's fields by their server names, so a kind of cut
+ * is handed to it in the shape the write uses and in no other.
+ */
+export function formRowOf(kind: CutKindRow): RecordRow {
     return {
+        code: kind.code,
         name: kind.name,
         description: kind.description,
-        familyCode: kind.familyCode,
-        approvalKindCode: kind.approvalKindCode ?? '',
-        outputIsIndicative: kind.outputIsIndicative,
-        resolutionRuleCode: kind.resolutionRuleCode,
-        retentionMonths: String(kind.retentionMonths),
-        legalHoldDefault: kind.legalHoldDefault,
-        displayOrder: String(kind.displayOrder),
+        family_code: kind.familyCode,
+        approval_kind_code: kind.approvalKindCode,
+        output_is_indicative: kind.outputIsIndicative,
+        resolution_rule_code: kind.resolutionRuleCode,
+        retention_months: kind.retentionMonths,
+        legal_hold_default: kind.legalHoldDefault,
+        display_order: kind.displayOrder,
+        version: kind.version,
     };
 }
 
 /**
- * The naming and the rules of a kind, as one form.
+ * The naming and the rules of a kind, in the shared record dialog.
  *
- * The retention destination is not offered. It is a tier the store knows by a
- * check and no lookup states the tiers yet, so a form that sent one would be
- * inventing the store's vocabulary; the write keeps the value the kind holds.
+ * The dialog is the standard's, not this screen's: the form, the change reason,
+ * the version the write claims and the closing guard all come with it, and the
+ * store it reads is the one the page named.
  */
 function EditKindDialog({
     kind,
+    loadedAt,
     onClose,
     onSaved,
 }: {
     readonly kind: CutKindRow;
+    readonly loadedAt: number;
     readonly onClose: () => void;
-    readonly onSaved: () => Promise<void>;
+    readonly onSaved: () => void;
 }): ReactNode {
     const { t } = useTranslation();
-    const [form, setForm] = useState<KindForm>(formOf(kind));
-    const [commentary, setCommentary] = useState('');
     const choices = useQuery({ queryKey: ['cuts', 'choices'], queryFn: () => api.cutKindChoices() });
-    const reason = useReason('amend', true);
-    const needsCommentary = reason.needsCommentary && commentary.trim() === '';
-    const months = Number.parseInt(form.retentionMonths, 10);
-    const order = Number.parseInt(form.displayOrder, 10);
-    const invalid =
-        form.name.trim() === '' ||
-        form.familyCode === '' ||
-        form.resolutionRuleCode === '' ||
-        Number.isNaN(months) ||
-        months < 0 ||
-        Number.isNaN(order) ||
-        order < 0;
-
-    const save = useMutation({
-        mutationFn: () =>
-            api.saveCutKind(kind.code, {
-                version: kind.version,
-                change: {
-                    name: form.name.trim(),
-                    description: form.description,
-                    familyCode: form.familyCode,
-                    approvalKindCode: form.approvalKindCode === '' ? null : form.approvalKindCode,
-                    outputIsIndicative: form.outputIsIndicative,
-                    resolutionRuleCode: form.resolutionRuleCode,
-                    retentionMonths: months,
-                    legalHoldDefault: form.legalHoldDefault,
-                    displayOrder: order,
-                },
-                reasonCode: reason.code,
-                commentary: commentary.trim(),
-            }),
-        onSuccess: onSaved,
-    });
-
-    return (
-        <Dialog
-            title={t('cuts.types.editTitle', { code: kind.code })}
-            onClose={onClose}
-            footer={
-                <>
-                    <Button variant="ghost" onClick={onClose}>
-                        {t('common.cancel')}
-                    </Button>
-                    <Button
-                        onClick={() => save.mutate()}
-                        disabled={invalid || needsCommentary || save.isPending}
-                    >
-                        {t('common.save')}
-                    </Button>
-                </>
-            }
-        >
-            <div className="space-y-3">
-                {save.isError && <Notice tone="error">{save.error.message}</Notice>}
-                <Field label={t('cuts.columns.name')}>
-                    <Input
-                        value={form.name}
-                        onChange={(event) => setForm({ ...form, name: event.target.value })}
-                    />
-                </Field>
-                <Field label={t('cuts.types.description')}>
-                    <Textarea
-                        value={form.description}
-                        onChange={(event) => setForm({ ...form, description: event.target.value })}
-                    />
-                </Field>
-                <Field label={t('cuts.columns.family')}>
-                    <Select
-                        value={form.familyCode}
-                        onChange={(event) => setForm({ ...form, familyCode: event.target.value })}
-                    >
-                        <ChoiceList choices={choices.data} of="families" />
-                    </Select>
-                </Field>
-                <Field label={t('cuts.columns.signed')}>
-                    <Select
-                        value={form.approvalKindCode}
-                        onChange={(event) =>
-                            setForm({ ...form, approvalKindCode: event.target.value })
-                        }
-                    >
-                        <option value="">{t('cuts.types.unsigned')}</option>
-                        <ChoiceList choices={choices.data} of="approvalKinds" />
-                    </Select>
-                </Field>
-                <label className="flex items-center gap-2 text-sm">
-                    <input
-                        type="checkbox"
-                        checked={form.outputIsIndicative}
-                        onChange={(event) =>
-                            setForm({ ...form, outputIsIndicative: event.target.checked })
-                        }
-                    />
-                    {t('cuts.types.indicativeValues')}
-                </label>
-                <Field label={t('cuts.types.resolutionRule')}>
-                    <Select
-                        value={form.resolutionRuleCode}
-                        onChange={(event) =>
-                            setForm({ ...form, resolutionRuleCode: event.target.value })
-                        }
-                    >
-                        <ChoiceList choices={choices.data} of="resolutionRules" />
-                    </Select>
-                </Field>
-                <Field label={t('cuts.types.retentionMonths')}>
-                    <Input
-                        inputMode="numeric"
-                        value={form.retentionMonths}
-                        onChange={(event) =>
-                            setForm({ ...form, retentionMonths: event.target.value })
-                        }
-                    />
-                </Field>
-                <label className="flex items-center gap-2 text-sm">
-                    <input
-                        type="checkbox"
-                        checked={form.legalHoldDefault}
-                        onChange={(event) =>
-                            setForm({ ...form, legalHoldDefault: event.target.checked })
-                        }
-                    />
-                    {t('cuts.types.legalHoldOnTake')}
-                </label>
-                <Field label={t('cuts.types.order')}>
-                    <Input
-                        inputMode="numeric"
-                        value={form.displayOrder}
-                        onChange={(event) => setForm({ ...form, displayOrder: event.target.value })}
-                    />
-                </Field>
-                <p className="text-xs text-ink-muted">{t('cuts.types.destinationNote')}</p>
-                <ReasonFields
-                    reason={reason}
-                    commentary={commentary}
-                    onCommentary={setCommentary}
-                    missing={needsCommentary}
-                />
-            </div>
-        </Dialog>
+    const specs = useMemo(
+        () => (choices.data === undefined ? [] : specsOf(choices.data)),
+        [choices.data],
     );
-}
-
-/** The options one lookup offers, or nothing while it is still being read. */
-function ChoiceList({
-    choices,
-    of,
-}: {
-    readonly choices: CutKindChoices | undefined;
-    readonly of: 'families' | 'resolutionRules' | 'approvalKinds';
-}): ReactNode {
-    const list = choices?.[of] ?? [];
+    if (choices.isPending) {
+        return (
+            <Dialog title={t('cuts.types.editTitle', { code: kind.code })} onClose={onClose}>
+                <p className="text-sm text-ink-muted" role="status">
+                    {t('common.loading')}
+                </p>
+            </Dialog>
+        );
+    }
+    if (choices.isError) {
+        return (
+            <Dialog title={t('cuts.types.editTitle', { code: kind.code })} onClose={onClose}>
+                <Notice tone="error">{choices.error.message}</Notice>
+            </Dialog>
+        );
+    }
     return (
-        <>
-            {list.map((choice) => (
-                <option key={choice.code} value={choice.code}>
-                    {choice.name}
-                </option>
-            ))}
-        </>
+        <RecordDialog
+            title={t('cuts.types.editTitle', { code: kind.code })}
+            resource={CUT_KIND_RESOURCE}
+            specs={specs}
+            row={formRowOf(kind)}
+            loadedAt={loadedAt}
+            onClose={onClose}
+            onSaved={onSaved}
+            note={() => (
+                <p className="text-xs text-ink-muted">
+                    {t('cuts.types.destinationNote', { destination: kind.retentionDestinationCode })}
+                </p>
+            )}
+        />
     );
 }

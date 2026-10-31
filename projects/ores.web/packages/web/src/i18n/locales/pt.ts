@@ -4324,6 +4324,7 @@ const pt: SourceCatalogue = {
                 sets: 'Conjuntos publicados',
                 body: 'O corpo',
                 authorisation: 'Autorização',
+                runs: 'Execuções',
                 cuts: 'Cortes',
             },
         },
@@ -6497,10 +6498,22 @@ const pt: SourceCatalogue = {
             'Um corte lê-se aqui. Tomar um corte à mão ainda não é oferecido neste ecrã: o percurso de tomada, a autorização que levanta e o corte LIVE são trabalho posterior.',
         partialPage:
             'Esta é a página mais recente dos cortes que os filtros retêm. Restrinja por mês ou por tipo para ler o resto.',
+        labelKindGone:
+            'O armazém não detém o tipo {code} sob o qual este corte foi tomado, por isso não tem rótulo. Os factos que o corte copiou do seu tipo são os de baixo.',
         labelMissing: 'O tipo deste corte não está no armazém',
         indicative: 'Indicativo',
-        monthHeading: '{month}',
         cutCount: '{count} cortes',
+        group: {
+            year: 'Ano {year}',
+            day: '{day} de {month} de {year}',
+            everyYear: 'Todos os anos',
+        },
+        frequency: {
+            daily: 'Diário',
+            monthly: 'Mensal',
+            yearly: 'Anual',
+            onDemand: 'A pedido',
+        },
         columns: {
             cut: 'Corte',
             type: 'Tipo',
@@ -6510,7 +6523,6 @@ const pt: SourceCatalogue = {
             indicative: 'Valores',
             retention: 'Retenção',
             cutsHeld: 'Cortes',
-            month: 'Mês',
             kind: 'Tipo',
             timepoint: 'Instante',
             state: 'Estado',
@@ -6523,7 +6535,6 @@ const pt: SourceCatalogue = {
         filter: {
             allKinds: 'Todos os tipos',
             allStates: 'Todos os estados',
-            allMonths: 'Todos os meses',
         },
         states: {
             draft: 'Rascunho',
@@ -6543,7 +6554,11 @@ const pt: SourceCatalogue = {
             authorised: 'A autorização está registada.',
             authorisedBy: 'Autorizado por {who}.',
             refused: 'A autorização foi recusada, o que é terminal para este corpo.',
-            superseded: 'Um corte posterior do mesmo tipo e âmbito ocupa o seu lugar.',
+            supersededAuthorised:
+                'Autorizado antes de um corte posterior o substituir.',
+            supersededInUse:
+                'Em uso até um corte posterior o substituir.',
+            replacedBy: 'Substituído por {label}.',
         },
         notice: {
             blocked:
@@ -6563,7 +6578,7 @@ const pt: SourceCatalogue = {
             months: '{count} meses',
             destination: 'para {destination}',
             rules: 'As suas regras',
-            approvalsRequired: 'Aprovações necessárias',
+            repeats: 'Frequência',
             resolutionRule: 'Regra de resolução',
             legalHold: 'Bloqueio legal',
             held: 'Bloqueado na tomada',
@@ -6577,6 +6592,10 @@ const pt: SourceCatalogue = {
                 'O destino de retenção mantém o nível que o tipo já detém: nenhuma lista nomeia os níveis, pelo que este formulário não oferece nenhum.',
             copyNote:
                 'Um corte copia a autorização e a retenção do seu tipo na tomada, pelo que uma alteração posterior do tipo não move o corpo já fixado.',
+            unsignedHelp:
+                'Um tipo que não nomeia nenhum tipo de aprovação não levanta pedido, pelo que uma execução pode avaliar com os seus cortes logo que são tomados.',
+            grouping:
+                'Os cortes são agrupados pelo período um passo acima de um tipo {frequency} : um tipo diário por mês, um tipo mensal por ano, um tipo anual num só grupo e um tipo a pedido por dia.',
             editTitle: 'Alterar o tipo de corte {code}',
             removeTitle: 'Remover o tipo de corte {code}',
             removeWarning:
@@ -6641,6 +6660,7 @@ const pt: SourceCatalogue = {
             decision: 'Decisão',
             refusedAt: 'Recusado em {when}',
             pending: 'A aguardar uma pessoa',
+            openRequest: 'Abrir o pedido',
             request: 'Pedido de aprovação',
             decider: 'Quem decide',
             refusal:
@@ -6649,6 +6669,23 @@ const pt: SourceCatalogue = {
                 'Os quatro olhos são a regra da caixa de entrada: uma decisão de quem pediu é recusada, e uma pessoa conta uma só vez.',
             inboxGap:
                 'Levantar e decidir uma autorização a partir deste ecrã ainda não é oferecido. O pedido vive na caixa de entrada, e é na sua própria página que um decisor lhe responde.',
+        },
+        runs: {
+            title: 'As execuções que avaliaram com este corte',
+            lead: 'Cada execução que resolveu a seleção do seu relatório neste corpo, com o início mais recente primeiro. Uma execução recusada antes do motor não está aqui, porque uma recusa não é um resultado.',
+            run: 'Execução',
+            report: 'Relatório',
+            state: 'Estado',
+            started: 'Início',
+            priced: 'Avaliado em',
+            none: 'Nenhuma execução avaliou ainda com este corte.',
+            notConsumable:
+                'Nenhuma execução pode avaliar com um corpo que não está fixado, ou que aguarda uma assinatura, ou que foi recusado, pelo que este corte não tem nenhuma.',
+            superseded:
+                '{count} execuções assentam neste corpo. Um corte posterior substituiu-o, e todas elas ainda se reproduzem a partir deste corte : nenhuma nomeia o corpo posterior.',
+            aLaterCut: 'um corte posterior do mesmo tipo e âmbito',
+            comparisonGap:
+                'Comparar uma execução deste corte com outra é o trabalho do percurso de auditoria, que lê os resultados das duas execuções. Este separador nomeia as execuções e abre aquela que uma pessoa escolhe.',
         },
     },
     reporting: {

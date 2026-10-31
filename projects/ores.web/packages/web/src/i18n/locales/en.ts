@@ -4297,6 +4297,7 @@ export const en: SourceCatalogue = {
                 sets: 'Published sets',
                 body: 'The body',
                 authorisation: 'Authorisation',
+                runs: 'Runs',
                 cuts: 'Cuts',
             },
         },
@@ -6448,13 +6449,25 @@ export const en: SourceCatalogue = {
         title: 'Cuts',
         lead: 'The bodies a run prices from: the deal population, the market data, the reference data and the engine, fixed at one instant.',
         readerNote:
-            'A cut is read here. Taking one by hand is not offered on this screen yet: the take flow, the authorisation it raises and the LIVE mint are later work.',
+            'A cut is read here, and four things it names are not offered on this screen yet: the take flow, the authorisation the take raises, the report’s selection of this cut, and the LIVE mint whose timepoint the run supplies.',
         partialPage:
-            'This is the newest page of the cuts the filters match. Narrow by month or by type to read the rest.',
+            'This is the newest page of the cuts the filters match. Narrow by kind or by state to read the rest.',
+        labelKindGone:
+            'The store does not hold the kind {code} this cut was taken under, so it has no label. The facts the cut copied from its kind are the ones below.',
         labelMissing: 'The kind of this cut is not in the store',
         indicative: 'Indicative',
-        monthHeading: '{month}',
         cutCount: '{count} cuts',
+        group: {
+            year: 'Year {year}',
+            day: '{day} {month} {year}',
+            everyYear: 'Every year',
+        },
+        frequency: {
+            daily: 'Daily',
+            monthly: 'Monthly',
+            yearly: 'Yearly',
+            onDemand: 'On demand',
+        },
         columns: {
             cut: 'Cut',
             type: 'Type',
@@ -6464,7 +6477,6 @@ export const en: SourceCatalogue = {
             indicative: 'Values',
             retention: 'Retention',
             cutsHeld: 'Cuts',
-            month: 'Month',
             kind: 'Kind',
             timepoint: 'Timepoint',
             state: 'State',
@@ -6477,7 +6489,6 @@ export const en: SourceCatalogue = {
         filter: {
             allKinds: 'Every kind',
             allStates: 'Every state',
-            allMonths: 'Every month',
         },
         states: {
             draft: 'Draft',
@@ -6496,7 +6507,9 @@ export const en: SourceCatalogue = {
             authorised: 'The authorisation is recorded.',
             authorisedBy: 'Authorised by {who}.',
             refused: 'The authorisation was refused, which is terminal for this body.',
-            superseded: 'A later cut of the same kind and scope holds its place.',
+            supersededAuthorised: 'Authorised before a later cut replaced it.',
+            supersededInUse: 'In use until a later cut replaced it.',
+            replacedBy: 'Replaced by {label}.',
         },
         notice: {
             blocked:
@@ -6516,7 +6529,7 @@ export const en: SourceCatalogue = {
             months: '{count} months',
             destination: 'to {destination}',
             rules: 'Its rules',
-            approvalsRequired: 'Approvals required',
+            repeats: 'Repeats',
             resolutionRule: 'Resolution rule',
             legalHold: 'Legal hold',
             held: 'Held when taken',
@@ -6527,9 +6540,13 @@ export const en: SourceCatalogue = {
             retentionMonths: 'Retention in months',
             legalHoldOnTake: 'A cut of this type starts under legal hold',
             destinationNote:
-                'The retention destination keeps the tier the type already holds: no lookup states the tiers, so this form offers none.',
+                'The retention destination stays {destination}. No lookup states the tiers, so this form states the value the kind holds and offers no other.',
             copyNote:
                 'A cut copies its type’s authorisation and retention when it is taken, so a later change to the type does not move the body already fixed.',
+            unsignedHelp:
+                'A kind that names no approval kind raises no request, so a run may price from its cuts as soon as they are taken.',
+            grouping:
+                'The cuts are grouped by the period one step above a {frequency} kind: a daily kind by month, a monthly kind by year, a yearly kind as one group and an on-demand kind by day.',
             editTitle: 'Change the cut type {code}',
             removeTitle: 'Remove the cut type {code}',
             removeWarning:
@@ -6593,6 +6610,7 @@ export const en: SourceCatalogue = {
             decision: 'Decision',
             refusedAt: 'Refused on {when}',
             pending: 'Waiting on a person',
+            openRequest: 'Open the request',
             request: 'Approval request',
             decider: 'Who decides',
             refusal: 'The refusal says: {reason}. A refusal is terminal for this body, so the remedy is a new take.',
@@ -6600,6 +6618,23 @@ export const en: SourceCatalogue = {
                 'Four eyes is the inbox’s rule: a decision by the person who asked is refused, and one person counts once.',
             inboxGap:
                 'Raising and deciding an authorisation from this screen is not offered yet. The request lives in the inbox, and its own page is where a decider answers it.',
+        },
+        runs: {
+            title: 'The runs that priced from this cut',
+            lead: 'Every run that resolved its report’s selection to this body, newest start first. A run refused before the engine is not here, because a refusal is not a result.',
+            run: 'Run',
+            report: 'Report',
+            state: 'State',
+            started: 'Started',
+            priced: 'Priced',
+            none: 'No run has priced from this cut yet.',
+            notConsumable:
+                'No run may price from a body that is not fixed, or that is waiting on a signature, or that was refused, so this cut has none.',
+            superseded:
+                '{count} runs rest on this body. A later cut replaced it, and every one of them still reproduces from this cut: none of them names the later body.',
+            aLaterCut: 'a later cut of the same kind and scope',
+            comparisonGap:
+                'Comparing one run of this cut with another is the audit journey’s work, which reads the two runs’ results. This tab names the runs and opens the one a person picks.',
         },
     },
     reporting: {

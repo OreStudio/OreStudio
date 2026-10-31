@@ -191,15 +191,30 @@ import {
     cutKindRowSchema,
     cutsPageSchema,
     cutRecordSchema,
+    cutRunsSchema,
     type CutKindRow,
     type CutKindRecord,
     type CutKindChoices,
     type CutKindWrite,
     type CutKindsPage,
     type CutRecord,
+    type CutRuns,
     type CutsPage,
 } from '@ores/wire-protocol/browser';
 import { ApiFailure, request } from './transport.js';
+
+/**
+ * One page of a read that pages on the server: which rows, and how they are
+ * ordered. A record store hands its own page request straight through, so the
+ * two shapes are one.
+ */
+export interface ServerPage {
+    readonly offset: number;
+    readonly limit: number;
+    readonly search: string;
+    readonly sort: string;
+    readonly descending: boolean;
+}
 
 /**
  * The session and account calls.
@@ -3959,8 +3974,21 @@ export const api = {
      * The server derives the signed-or-not from the approval kind the type
      * points at, so this side draws the word and derives nothing.
      */
-    async cutKinds(): Promise<CutKindsPage> {
-        return cutKindsPageSchema.parse(await request('/api/reporting/cut-kinds', { method: 'GET' }));
+    async cutKinds(page: ServerPage): Promise<CutKindsPage> {
+        const query = new URLSearchParams({
+            offset: String(page.offset),
+            limit: String(page.limit),
+            descending: page.descending ? 'true' : 'false',
+        });
+        if (page.search !== '') {
+            query.set('search', page.search);
+        }
+        if (page.sort !== '') {
+            query.set('sort', page.sort);
+        }
+        return cutKindsPageSchema.parse(
+            await request(`/api/reporting/cut-kinds?${query.toString()}`, { method: 'GET' }),
+        );
     },
 
     /** One kind of cut and the cuts the party holds of it. */
@@ -4033,18 +4061,18 @@ export const api = {
      * rule a second time.
      */
     async cuts(narrow: {
+        readonly offset: number;
+        readonly limit: number;
         readonly kindCode: string;
-        /** The month to read, as `YYYY-MM`, or empty for every month. */
-        readonly month: string;
         readonly search: string;
         readonly state: string;
     }): Promise<CutsPage> {
-        const query = new URLSearchParams();
+        const query = new URLSearchParams({
+            offset: String(narrow.offset),
+            limit: String(narrow.limit),
+        });
         if (narrow.kindCode !== '') {
             query.set('kind_code', narrow.kindCode);
-        }
-        if (narrow.month !== '') {
-            query.set('month', narrow.month);
         }
         if (narrow.search !== '') {
             query.set('search', narrow.search);
@@ -4054,6 +4082,20 @@ export const api = {
         }
         return cutsPageSchema.parse(
             await request(`/api/reporting/cuts?${query.toString()}`, { method: 'GET' }),
+        );
+    },
+
+    /**
+     * The runs that priced from one cut, newest start first.
+     *
+     * The run records the cut its report's selection resolved to, so this is one
+     * read of the runs and one of their states, whatever the cut holds.
+     */
+    async cutRuns(id: string): Promise<CutRuns> {
+        return cutRunsSchema.parse(
+            await request(`/api/reporting/cuts/${encodeURIComponent(id)}/runs`, {
+                method: 'GET',
+            }),
         );
     },
 

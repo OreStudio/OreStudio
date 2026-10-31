@@ -4358,6 +4358,7 @@ const fr: SourceCatalogue = {
                 sets: 'Ensembles publiés',
                 body: 'Le corps',
                 authorisation: 'Autorisation',
+                runs: 'Runs',
                 cuts: 'Coupures',
             },
         },
@@ -6549,10 +6550,22 @@ const fr: SourceCatalogue = {
             'Une coupure se lit ici. Prendre une coupure à la main n’est pas encore offert sur cet écran : le parcours de prise, l’autorisation qu’il lève et la coupure LIVE sont un travail ultérieur.',
         partialPage:
             'Ceci est la page la plus récente des coupures que les filtres retiennent. Affinez par mois ou par type pour lire le reste.',
+        labelKindGone:
+            'Le magasin ne détient pas le type {code} sous lequel cette coupure a été prise, elle n’a donc pas de libellé. Les faits que la coupure a copiés de son type sont ceux ci-dessous.',
         labelMissing: 'Le type de cette coupure n’est pas dans le magasin',
         indicative: 'Indicatif',
-        monthHeading: '{month}',
         cutCount: '{count} coupures',
+        group: {
+            year: 'Année {year}',
+            day: '{day} {month} {year}',
+            everyYear: 'Toutes les années',
+        },
+        frequency: {
+            daily: 'Quotidien',
+            monthly: 'Mensuel',
+            yearly: 'Annuel',
+            onDemand: 'À la demande',
+        },
         columns: {
             cut: 'Coupure',
             type: 'Type',
@@ -6562,7 +6575,6 @@ const fr: SourceCatalogue = {
             indicative: 'Valeurs',
             retention: 'Conservation',
             cutsHeld: 'Coupures',
-            month: 'Mois',
             kind: 'Type',
             timepoint: 'Instant',
             state: 'État',
@@ -6575,7 +6587,6 @@ const fr: SourceCatalogue = {
         filter: {
             allKinds: 'Tous les types',
             allStates: 'Tous les états',
-            allMonths: 'Tous les mois',
         },
         states: {
             draft: 'Brouillon',
@@ -6596,7 +6607,11 @@ const fr: SourceCatalogue = {
             authorisedBy: 'Autorisée par {who}.',
             refused:
                 'L’autorisation a été refusée, ce qui est définitif pour ce corps.',
-            superseded: 'Une coupure ultérieure du même type et du même périmètre tient sa place.',
+            supersededAuthorised:
+                'Autorisée avant qu’une coupure ultérieure ne la remplace.',
+            supersededInUse:
+                'En usage jusqu’à ce qu’une coupure ultérieure la remplace.',
+            replacedBy: 'Remplacée par {label}.',
         },
         notice: {
             blocked:
@@ -6616,7 +6631,7 @@ const fr: SourceCatalogue = {
             months: '{count} mois',
             destination: 'vers {destination}',
             rules: 'Ses règles',
-            approvalsRequired: 'Approbations requises',
+            repeats: 'Fréquence',
             resolutionRule: 'Règle de résolution',
             legalHold: 'Blocage juridique',
             held: 'Bloquée dès la prise',
@@ -6631,6 +6646,10 @@ const fr: SourceCatalogue = {
                 'La destination de conservation garde le palier que le type détient déjà : aucune liste ne nomme les paliers, ce formulaire n’en propose donc aucun.',
             copyNote:
                 'Une coupure copie l’autorisation et la conservation de son type au moment de la prise, un changement ultérieur du type ne déplace donc pas le corps déjà figé.',
+            unsignedHelp:
+                'Un type qui ne nomme aucun type d’approbation ne lève aucune demande : un run peut pricer sur ses coupures dès qu’elles sont prises.',
+            grouping:
+                'Les coupures sont groupées par la période d’un cran au-dessus d’un type {frequency} : un type quotidien par mois, un type mensuel par année, un type annuel en un seul groupe et un type à la demande par jour.',
             editTitle: 'Modifier le type de coupure {code}',
             removeTitle: 'Supprimer le type de coupure {code}',
             removeWarning:
@@ -6695,6 +6714,7 @@ const fr: SourceCatalogue = {
             decision: 'Décision',
             refusedAt: 'Refusée le {when}',
             pending: 'En attente d’une personne',
+            openRequest: 'Ouvrir la demande',
             request: 'Demande d’approbation',
             decider: 'Qui décide',
             refusal:
@@ -6703,6 +6723,23 @@ const fr: SourceCatalogue = {
                 'Les quatre yeux sont la règle de la boîte de réception : une décision de la personne qui a demandé est refusée, et une personne ne compte qu’une fois.',
             inboxGap:
                 'Lever et décider une autorisation depuis cet écran n’est pas encore offert. La demande vit dans la boîte de réception, et sa propre page est là où un décideur y répond.',
+        },
+        runs: {
+            title: 'Les runs qui ont pricé sur cette coupure',
+            lead: 'Chaque run qui a résolu la sélection de son rapport sur ce corps, le départ le plus récent d’abord. Un run refusé avant le moteur n’y est pas, une refus n’étant pas un résultat.',
+            run: 'Run',
+            report: 'Rapport',
+            state: 'État',
+            started: 'Départ',
+            priced: 'Pricé le',
+            none: 'Aucun run n’a encore pricé sur cette coupure.',
+            notConsumable:
+                'Aucun run ne peut pricer sur un corps qui n’est pas figé, ou qui attend une signature, ou qui a été refusé : cette coupure n’en a donc aucun.',
+            superseded:
+                '{count} runs reposent sur ce corps. Une coupure ultérieure l’a remplacé, et chacun d’eux se reproduit encore depuis cette coupure : aucun ne nomme le corps ultérieur.',
+            aLaterCut: 'une coupure ultérieure du même type et périmètre',
+            comparisonGap:
+                'Comparer un run de cette coupure avec un autre est le travail du parcours d’audit, qui lit les résultats des deux runs. Cet onglet nomme les runs et ouvre celui qu’une personne choisit.',
         },
     },
     reporting: {

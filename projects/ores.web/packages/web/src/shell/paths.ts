@@ -216,6 +216,17 @@ export function cutPath(id: string): string {
     return `${PATHS.cuts}/${encodeURIComponent(id)}`;
 }
 
+/**
+ * The address of one approval request: the inbox's record of the ask, the wait
+ * and the decision.
+ *
+ * A cut's page names the request its take raised, and the request's own page is
+ * where a decider answers it, so the cut links there and copies nothing.
+ */
+export function requestPath(id: string): string {
+    return `/requests/${encodeURIComponent(id)}`;
+}
+
 /** The address of one kind of cut's page, by its code. */
 export function cutTypePath(code: string): string {
     return `${PATHS.cutTypes}/${encodeURIComponent(code)}`;

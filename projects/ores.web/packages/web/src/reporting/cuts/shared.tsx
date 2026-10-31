@@ -19,8 +19,8 @@
  *
  */
 
-import type { ReactNode } from 'react';
-import type { CutRow, CutStateWord } from '@ores/wire-protocol/browser';
+import { useMemo, type ReactNode } from 'react';
+import type { CutRecord, CutRow, CutStateWord } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../../i18n/Provider.js';
 import { useBadge } from '../../ui/AccountLockBadge.js';
 import { Label } from '../../ui/Label.js';
@@ -73,36 +73,74 @@ export function CutStateTag({ state }: { readonly state: CutStateWord }): ReactN
 }
 
 /**
+ * The facts a state's basis sentence is written from.
+ *
+ * It is what the sentence needs and no more: a list row and a record state the
+ * same three facts, and neither is rebuilt into the other's shape to say them.
+ */
+export interface StateFacts {
+    readonly state: CutStateWord;
+    /** The person whose authorisation released the body, or empty where none did. */
+    readonly approvedBy: string;
+    /** The body that holds a superseded cut's place, or null where none is known. */
+    readonly supersededByLabel: string | null;
+}
+
+/** The facts a list row states about its state. */
+export function factsOfRow(row: CutRow): StateFacts {
+    return { state: row.state, approvedBy: row.approvedBy, supersededByLabel: null };
+}
+
+/** The facts one cut's record states about its state, where the body that replaced it is known. */
+export function factsOfRecord(record: CutRecord): StateFacts {
+    return {
+        state: record.state,
+        approvedBy: record.cut.approvedBy,
+        supersededByLabel: record.supersededByLabel,
+    };
+}
+
+/**
  * The fact that qualifies the state, drawn under its badge.
  *
- * A superseded cut says which body replaced it, a taken cut says that it waits
- * on a person, and a cut in use says that its kind required no authorisation.
- * The basis is a sentence about the facts, so it is derived here and never
- * stored; a state with nothing to add says nothing.
+ * A superseded cut says whether it was authorised before a later cut replaced
+ * it, and names the body that replaced it where the screen knows the label; a
+ * taken cut says that it waits on a person, and a cut in use says that its kind
+ * required no authorisation. The basis is a sentence about the facts, so it is
+ * derived here and never stored; a state with nothing to add says nothing.
  */
-export function StateBasis({ row }: { readonly row: CutRow }): ReactNode {
+export function StateBasis({ facts }: { readonly facts: StateFacts }): ReactNode {
     const { t } = useTranslation();
     const basis = ((): string => {
-        switch (row.state) {
+        switch (facts.state) {
             case 'taken':
                 return t('cuts.basis.taken');
             case 'in_use':
                 return t('cuts.basis.inUse');
             case 'authorised':
-                return row.approvedBy === ''
+                return facts.approvedBy === ''
                     ? t('cuts.basis.authorised')
-                    : t('cuts.basis.authorisedBy', { who: row.approvedBy });
+                    : t('cuts.basis.authorisedBy', { who: facts.approvedBy });
             case 'incomplete':
                 return t('cuts.basis.incomplete');
             case 'refused':
                 return t('cuts.basis.refused');
             case 'superseded':
-                return t('cuts.basis.superseded');
+                return facts.approvedBy === ''
+                    ? t('cuts.basis.supersededInUse')
+                    : t('cuts.basis.supersededAuthorised');
             case 'draft':
                 return t('cuts.basis.draft');
         }
     })();
-    return <span className="text-xs text-ink-faint">{basis}</span>;
+    return (
+        <span className="flex flex-col gap-0.5 text-xs text-ink-faint">
+            <span>{basis}</span>
+            {facts.state === 'superseded' && facts.supersededByLabel !== null && (
+                <span>{t('cuts.basis.replacedBy', { label: facts.supersededByLabel })}</span>
+            )}
+        </span>
+    );
 }
 
 /**
@@ -127,7 +165,7 @@ export function StateCell({ row }: { readonly row: CutRow }): ReactNode {
                 <CutStateTag state={row.state} />
                 {row.outputIsIndicative && <IndicativeTag />}
             </span>
-            <StateBasis row={row} />
+            <StateBasis facts={factsOfRow(row)} />
         </span>
     );
 }
@@ -171,41 +209,128 @@ export function Reference({ label, value }: { readonly label: string; readonly v
 }
 
 /**
- * The month a cut's instant falls in, as `YYYY-MM`.
+ * How often a kind of cut is taken, read from the rule a report resolves its
+ * selection by.
  *
- * The instant arrives as an ISO 8601 string and the month is its own first
- * seven characters, so a group's key needs no parsing of the clock.
+ * The rule is the kind's own declaration, so the frequency is derived and never
+ * a column: a kind that resolves to the close of the day the report covers is
+ * taken every day, the month end and the year end once a month and once a year,
+ * and a kind whose instant the run or a process names answers to no schedule.
  */
-export function monthOf(row: CutRow): string {
-    return row.timepoint.slice(0, 7);
+export type CutFrequency = 'daily' | 'monthly' | 'yearly' | 'onDemand';
+
+/** The frequency each resolution rule states. */
+const FREQUENCY_OF_RULE: Readonly<Record<string, CutFrequency>> = {
+    same_day_close: 'daily',
+    same_day_open: 'daily',
+    // A verification cut is built on the close of a day's end of day cut, so it
+    // is taken at the same rate as the body it verifies.
+    cut_it_is_built_on: 'daily',
+    last_business_day_of_month_close: 'monthly',
+    last_business_day_of_year_close: 'yearly',
+    run_instant: 'onDemand',
+    the_cut_named: 'onDemand',
+};
+
+/**
+ * The frequency a kind is taken at, or the daily rate where the rule is one this
+ * screen does not know: a rule it cannot read states no period, and a daily body
+ * is the occasion the fixtures seed most of.
+ */
+export function frequencyOf(resolutionRuleCode: string): CutFrequency {
+    return FREQUENCY_OF_RULE[resolutionRuleCode] ?? 'daily';
+}
+
+/** One group of a type's cuts: the period, the words it reads by and its rows. */
+export interface CutGroup {
+    readonly key: string;
+    readonly rows: readonly CutRow[];
+}
+
+/** The period one instant falls in, as the frequency counts it. */
+function groupKeyOf(instant: string, frequency: CutFrequency): string {
+    switch (frequency) {
+        case 'daily':
+            return instant.slice(0, 7);
+        case 'monthly':
+            return instant.slice(0, 4);
+        case 'onDemand':
+            return instant.slice(0, 10);
+        case 'yearly':
+            return 'all';
+    }
 }
 
 /**
- * The rows grouped by the month of their instants, newest month first and newest
- * instant first inside it.
+ * The rows grouped by the period one step above the kind's own frequency.
  *
- * The month is the period above a kind taken every day, which is what every kind
- * a firm seeds today is. A kind taken every month would read by year, and no read
- * states a kind's frequency yet, so the screen groups by the month.
+ * A daily kind reads by month, a monthly kind by year, a yearly kind as one
+ * group, and an on-demand kind by day. Newest period first and newest instant
+ * first inside it, so the cut in use leads. The grouping is the screen's: the
+ * read answers the cuts and states no period of its own.
  */
-export function byMonth(rows: readonly CutRow[]): readonly {
-    readonly month: string;
-    readonly rows: readonly CutRow[];
-}[] {
-    const months = new Map<string, CutRow[]>();
+export function groupsOf(
+    rows: readonly CutRow[],
+    frequency: CutFrequency,
+): readonly CutGroup[] {
+    const groups = new Map<string, CutRow[]>();
     for (const row of rows) {
-        const month = monthOf(row);
-        const group = months.get(month);
+        const key = groupKeyOf(row.timepoint, frequency);
+        const group = groups.get(key);
         if (group === undefined) {
-            months.set(month, [row]);
+            groups.set(key, [row]);
         } else {
             group.push(row);
         }
     }
-    return [...months.entries()]
+    return [...groups.entries()]
         .sort(([left], [right]) => right.localeCompare(left))
-        .map(([month, group]) => ({
-            month,
+        .map(([key, group]) => ({
+            key,
             rows: [...group].sort((left, right) => right.timepoint.localeCompare(left.timepoint)),
         }));
+}
+
+/**
+ * The heading a group reads, in the language the person reads and in the period
+ * the frequency counts.
+ *
+ * The date parts come from the instant's own text, so a group's heading never
+ * moves with the browser's clock, and the words come from the language the
+ * screen is in, so no month name is stored in three catalogues.
+ */
+export function useGroupHeading(): (key: string, frequency: CutFrequency) => string {
+    const { t, language } = useTranslation();
+    const formatters = useMemo(
+        () => ({
+            month: new Intl.DateTimeFormat(language, {
+                month: 'long',
+                year: 'numeric',
+                timeZone: 'UTC',
+            }),
+            monthName: new Intl.DateTimeFormat(language, { month: 'long', timeZone: 'UTC' }),
+        }),
+        [language],
+    );
+    return (key, frequency) => {
+        if (frequency === 'yearly' || key === 'all') {
+            return t('cuts.group.everyYear');
+        }
+        const [year, month, day] = key.split('-');
+        if (frequency === 'monthly' || month === undefined) {
+            return t('cuts.group.year', { year: year ?? key });
+        }
+        const at = new Date(Date.UTC(Number(year), Number(month) - 1, 1));
+        if (frequency === 'onDemand' && day !== undefined) {
+            // The day's own order is the language's, so the words come from the
+            // catalogue and the month's name from the language's own formatter.
+            return t('cuts.group.day', {
+                // The day is the language's own number, so a leading zero goes.
+                day: String(Number(day)),
+                month: formatters.monthName.format(at),
+                year: year ?? '',
+            });
+        }
+        return formatters.month.format(at);
+    };
 }

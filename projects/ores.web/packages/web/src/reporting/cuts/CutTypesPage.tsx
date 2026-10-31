@@ -38,69 +38,35 @@
  */
 
 import type { ReactNode } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import type { CutKindRow } from '@ores/wire-protocol/browser';
 import { api } from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
-import { Crumbs } from '../../refdata/shared.js';
-import {
-    RecordList,
-    type ListColumn,
-    type ListPage,
-    type ListSource,
-} from '../../refdata/RecordList.js';
-import { ScreenFrame } from '../../shell/ScreenFrame.js';
+import { RecordList, type ListColumn, type ListPage, type ListSource } from '../../refdata/RecordList.js';
+import { RecordStoreProvider } from '../../refdata/store.js';
 import { useAreaRoot } from '../../shell/AreaTrail.js';
 import { cutTypePath } from '../../shell/paths.js';
-import { Notice } from '../../ui/Primitives.js';
 import { IndicativeTag } from './shared.js';
+import { CUT_KIND_RESOURCE, cutKindStore } from './cutKindStore.js';
 
-/** The key the types are cached under. */
+/** The key the types are cached under, which a save and the filters read again. */
 export const CUT_TYPES_QUERY_KEY = ['cuts', 'types'] as const;
 
 /**
- * The types, read whole and searched and ordered on what the server answered.
+ * The kinds, one page at a time, searched and ordered on the server.
  *
- * A firm holds a handful of kinds, so the list reads them in one call and pages
- * them in the browser. The count of each kind's cuts is the server's, because
- * the reads that answer it are the cut reads.
+ * A count is a read of the cuts, so the list says when a kind holds more than
+ * the read could count rather than stating a number that is quietly short.
  */
-function useCutTypeSource(partial: boolean): ListSource<CutKindRow> {
+function useCutTypeSource(): ListSource<CutKindRow> {
     const { t } = useTranslation();
     return {
-        key: 'cut-types',
+        key: CUT_KIND_RESOURCE,
         read: async (request): Promise<ListPage<CutKindRow>> => {
-            const answer = await api.cutKinds();
-            const needle = request.search.toLowerCase();
-            const matched =
-                needle === ''
-                    ? answer.rows
-                    : answer.rows.filter(
-                          (row) =>
-                              row.code.toLowerCase().includes(needle) ||
-                              row.name.toLowerCase().includes(needle) ||
-                              row.familyName.toLowerCase().includes(needle),
-                      );
-            const ordered = [...matched].sort((left, right) => {
-                switch (request.sort) {
-                    case 'code':
-                        return left.code.localeCompare(right.code);
-                    case 'name':
-                        return left.name.localeCompare(right.name);
-                    case 'family':
-                        return left.familyName.localeCompare(right.familyName);
-                    default:
-                        return (
-                            left.displayOrder - right.displayOrder ||
-                            left.code.localeCompare(right.code)
-                        );
-                }
-            });
-            const directed = request.descending ? ordered.reverse() : ordered;
+            const answer = await api.cutKinds(request);
             return {
-                rows: directed.slice(request.offset, request.offset + request.limit),
-                total: directed.length,
-                ...(partial
+                rows: answer.rows,
+                total: answer.total,
+                ...(answer.partial
                     ? { notes: [{ tone: 'warn' as const, text: t('cuts.types.partialCounts') }] }
                     : {}),
             };
@@ -199,47 +165,25 @@ function useColumns(): readonly ListColumn<CutKindRow>[] {
 
 /** The kinds of cut a person maintains, each with the party's cut count. */
 export function CutTypesPage(): ReactNode {
-    const { t } = useTranslation();
-    const trail = [...useAreaRoot('refdata'), { label: t('cuts.types.title') }];
-    const kinds = useQuery({ queryKey: CUT_TYPES_QUERY_KEY, queryFn: () => api.cutKinds() });
-
-    if (kinds.isPending) {
-        return (
-            <ScreenFrame
-                trail={<Crumbs parts={trail} />}
-                title={t('cuts.types.title')}
-                description={t('cuts.types.lead')}
-            >
-                <p className="text-sm text-ink-muted" role="status">
-                    {t('common.loading')}
-                </p>
-            </ScreenFrame>
-        );
-    }
-    if (kinds.isError) {
-        return (
-            <ScreenFrame
-                trail={<Crumbs parts={trail} />}
-                title={t('cuts.types.title')}
-                description={t('cuts.types.lead')}
-            >
-                <Notice tone="error">{kinds.error.message}</Notice>
-            </ScreenFrame>
-        );
-    }
-    return <CutTypesList trail={trail} partial={kinds.data.partial} />;
+    return (
+        <RecordStoreProvider store={cutKindStore}>
+            <CutTypesList />
+        </RecordStoreProvider>
+    );
 }
 
-/** The list itself, drawn once the types are read. */
-function CutTypesList({
-    trail,
-    partial,
-}: {
-    readonly trail: readonly { readonly label: string; readonly to?: string }[];
-    readonly partial: boolean;
-}): ReactNode {
+/**
+ * The list itself.
+ *
+ * The kinds are read one page at a time from the server, which is the page the
+ * shared list asks for: the count under the table is the server's total, so a
+ * firm that seeds more kinds than fit on a page reads them by paging rather
+ * than by scrolling a list that was read whole.
+ */
+function CutTypesList(): ReactNode {
     const { t } = useTranslation();
-    const source = useCutTypeSource(partial);
+    const trail = [...useAreaRoot('refdata'), { label: t('cuts.types.title') }];
+    const source = useCutTypeSource();
     return (
         <RecordList
             source={source}

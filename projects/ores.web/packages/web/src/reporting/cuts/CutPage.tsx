@@ -39,16 +39,24 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router';
 import type { ReactNode } from 'react';
-import type { CutBody, CutKindRow, CutRecord } from '@ores/wire-protocol/browser';
+import type { CutBody, CutKindRow, CutRecord, CutRun } from '@ores/wire-protocol/browser';
 import { api } from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { RecordTimeline } from '../../refdata/RecordTimeline.js';
 import { RecordHeader, useRecordTabs } from '../../refdata/records.js';
 import { useAreaRoot } from '../../shell/AreaTrail.js';
-import { PATHS, cutTypePath } from '../../shell/paths.js';
+import { PATHS, cutTypePath, reportRunPath, requestPath } from '../../shell/paths.js';
 import { Notice, Tag } from '../../ui/Primitives.js';
 import { RelativeTime } from '../../ui/Time.js';
-import { Absent, CutStateTag, Identity, IndicativeTag, Reference, StateBasis } from './shared.js';
+import { HealthTag } from '../shared.js';
+import {
+    Absent,
+    CutStateTag,
+    IndicativeTag,
+    Reference,
+    StateBasis,
+    factsOfRecord,
+} from './shared.js';
 
 /** The entity type the cut's versions are read under. */
 export const CUT_ENTITY_TYPE = 'ores.reporting.cut';
@@ -79,7 +87,7 @@ function CutBodyPage({ record }: { readonly record: CutRecord }): ReactNode {
     const root = useAreaRoot('reporting');
     const { tab, bar } = useRecordTabs({
         label: record.label === '' ? record.cut.id : record.label,
-        tabs: ['body', 'authorisation', 'history'],
+        tabs: ['body', 'authorisation', 'runs', 'history'],
     });
     return (
         <div className="space-y-4">
@@ -89,11 +97,11 @@ function CutBodyPage({ record }: { readonly record: CutRecord }): ReactNode {
                     { label: t('cuts.title'), to: PATHS.cuts },
                     { label: record.label === '' ? record.cut.id : record.label },
                 ]}
-                title={record.label === '' ? t('cuts.labelMissing') : record.label}
+                title={record.label === '' ? record.cut.id : record.label}
                 recordKey={record.cut.id}
-                version={null}
+                version={record.cut.version}
                 access={null}
-                subdued
+                detail={`${record.kind.name || record.cut.kindCode} · ${record.cut.timepoint} ${record.cut.timepointTimezone} · ${record.cut.scopeCode}`}
                 own={
                     <span className="flex items-center gap-2">
                         <CutStateTag state={record.state} />
@@ -104,6 +112,7 @@ function CutBodyPage({ record }: { readonly record: CutRecord }): ReactNode {
             {bar}
             {tab === 'body' && <BodyTab record={record} />}
             {tab === 'authorisation' && <AuthorisationTab record={record} />}
+            {tab === 'runs' && <RunsTab record={record} />}
             {tab === 'history' && (
                 <RecordTimeline entityType={CUT_ENTITY_TYPE} entityId={record.cut.id} />
             )}
@@ -136,10 +145,15 @@ function BodyTab({ record }: { readonly record: CutRecord }): ReactNode {
     const body: CutBody = record.cut;
     return (
         <div className="space-y-4">
+            {record.label === '' && (
+                <Notice tone="warn">
+                    {t('cuts.labelKindGone', { code: record.cut.kindCode })}
+                </Notice>
+            )}
             <div className="flex flex-wrap items-center gap-3 text-sm text-ink-muted">
                 <span className="flex items-center gap-2">
                     <CutStateTag state={record.state} />
-                    <StateBasis row={rowOf(record)} />
+                    <StateBasis facts={factsOfRecord(record)} />
                 </span>
                 {body.outputIsIndicative && <IndicativeTag />}
                 <Link to={cutTypePath(record.kind.code)} className="text-accent">
@@ -257,31 +271,6 @@ function Gaps({ record }: { readonly record: CutRecord }): ReactNode {
     );
 }
 
-/** The facts a state's basis sentence is written from, as a list row states them. */
-function rowOf(record: CutRecord) {
-    return {
-        id: record.cut.id,
-        label: record.label,
-        state: record.state,
-        kindCode: record.cut.kindCode,
-        kindName: record.kind.name,
-        timepoint: record.cut.timepoint,
-        timepointTimezone: record.cut.timepointTimezone,
-        scopeCode: record.cut.scopeCode,
-        businessCentreCode: record.cut.businessCentreCode,
-        takenBy: record.cut.takenBy,
-        takenAt: record.cut.takenAt,
-        approvedBy: record.cut.approvedBy,
-        approvedAt: record.cut.approvedAt,
-        refusedAt: record.cut.refusedAt,
-        requiresAuthorisation: record.cut.requiresAuthorisation,
-        outputIsIndicative: record.cut.outputIsIndicative,
-        takeOrdinal: record.cut.takeOrdinal,
-        runCount: record.runCount,
-        supersededById: record.supersededById,
-    };
-}
-
 /** Whether the kind required a signature, and the record of the one it got. */
 function AuthorisationTab({ record }: { readonly record: CutRecord }): ReactNode {
     const { t } = useTranslation();
@@ -338,7 +327,17 @@ function AuthorisationTab({ record }: { readonly record: CutRecord }): ReactNode
                     <div className="min-w-0">
                         <dt className="text-xs text-ink-faint">{t('cuts.auth.request')}</dt>
                         <dd className="mt-0.5 text-sm">
-                            <Identity value={record.cut.approvalRequestId} />
+                            {record.cut.approvalRequestId === null ||
+                            record.cut.approvalRequestId === '' ? (
+                                <Absent />
+                            ) : (
+                                <Link
+                                    to={requestPath(record.cut.approvalRequestId)}
+                                    className="text-accent"
+                                >
+                                    {t('cuts.auth.openRequest')}
+                                </Link>
+                            )}
                         </dd>
                     </div>
                     <div className="min-w-0">
@@ -365,5 +364,106 @@ function AuthorisationTab({ record }: { readonly record: CutRecord }): ReactNode
             <Notice tone="info">{t('cuts.auth.fourEyes')}</Notice>
             <Notice tone="info">{t('cuts.auth.inboxGap')}</Notice>
         </div>
+    );
+}
+
+/**
+ * The runs that priced from this cut.
+ *
+ * A run records the cut its report's selection resolved to, so the tab reads the
+ * runs by that column: the run, the state it reached, the instant it started and
+ * where it priced. Whether one run reproduces another is the audit journey's
+ * comparison, which reads the two runs' results; this tab names the runs and
+ * points at them.
+ *
+ * A body no run may price from has none, and the tab says why rather than
+ * drawing an empty table.
+ */
+function RunsTab({ record }: { readonly record: CutRecord }): ReactNode {
+    const { t } = useTranslation();
+    const runs = useQuery({
+        queryKey: ['cuts', 'cut', record.cut.id, 'runs'],
+        queryFn: () => api.cutRuns(record.cut.id),
+    });
+    const notConsumable =
+        record.state === 'draft' ||
+        record.state === 'incomplete' ||
+        record.state === 'taken' ||
+        record.state === 'refused';
+
+    if (runs.isPending) {
+        return (
+            <p className="text-sm text-ink-muted" role="status">
+                {t('common.loading')}
+            </p>
+        );
+    }
+    if (runs.isError) {
+        return <Notice tone="error">{runs.error.message}</Notice>;
+    }
+    const rows = runs.data.runs;
+    if (rows.length === 0) {
+        return (
+            <Notice tone="info">
+                {notConsumable ? t('cuts.runs.notConsumable') : t('cuts.runs.none')}
+            </Notice>
+        );
+    }
+    return (
+        <div className="space-y-4">
+            {record.state === 'superseded' && (
+                <Notice tone="warn">
+                    {t('cuts.runs.superseded', {
+                        count: String(rows.length),
+                        label: record.supersededByLabel ?? t('cuts.runs.aLaterCut'),
+                    })}
+                </Notice>
+            )}
+            <section className="rounded-md border border-line bg-surface-raised p-4">
+                <h2 className="text-sm font-semibold">{t('cuts.runs.title')}</h2>
+                <p className="mt-1 text-xs text-ink-muted">{t('cuts.runs.lead')}</p>
+                <table className="mt-3 w-full text-left text-sm">
+                    <thead>
+                        <tr className="text-xs uppercase tracking-wide text-ink-faint">
+                            <th className="py-1 pr-3 font-medium">{t('cuts.runs.run')}</th>
+                            <th className="py-1 pr-3 font-medium">{t('cuts.runs.report')}</th>
+                            <th className="py-1 pr-3 font-medium">{t('cuts.runs.state')}</th>
+                            <th className="py-1 pr-3 font-medium">{t('cuts.runs.started')}</th>
+                            <th className="py-1 font-medium">{t('cuts.runs.priced')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows.map((run) => (
+                            <RunLine key={run.id} run={run} />
+                        ))}
+                    </tbody>
+                </table>
+            </section>
+            <Notice tone="info">{t('cuts.runs.comparisonGap')}</Notice>
+        </div>
+    );
+}
+
+/** One run of a cut: the run, its report, the state it reached and when. */
+function RunLine({ run }: { readonly run: CutRun }): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <tr className="border-t border-line">
+            <td className="py-1 pr-3">
+                <Link to={reportRunPath(run.id)} className="font-mono text-xs text-accent break-all">
+                    {run.id}
+                </Link>
+            </td>
+            <td className="py-1 pr-3 text-sm">{run.name === '' ? <Absent /> : run.name}</td>
+            <td className="py-1 pr-3 text-sm">
+                <HealthTag health={run.health} stateName={run.stateName} hasRun />
+            </td>
+            <td className="py-1 pr-3 text-sm">
+                {run.startedAt === null ? <Absent /> : <RelativeTime at={run.startedAt} />}
+            </td>
+            <td className="py-1 text-sm">
+                {run.pricedAt === null ? <Absent /> : <RelativeTime at={run.pricedAt} />}
+            </td>
+        </tr>
     );
 }

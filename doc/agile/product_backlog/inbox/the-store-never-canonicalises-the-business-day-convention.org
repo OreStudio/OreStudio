@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: A14E5F7B-0054-4545-8395-31D8F630B7A8
+:END:
+#+title: The store never canonicalises the business day convention
+#+description: ores.refdata.core's curve-configuration round trip asserts that the store keeps one code per business day convention, and nothing does it: stored_business_day_convention has one caller in the tree, the test. Also as_stored turns an absent convention into an empty string, which the round trip then reports as a lost value.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+
+* What was observed
+
+=ores.refdata.core='s curve-configuration round trip fails on two assertions, on
+=origin/main= and on a branch with no codec changes:
+
+- =Example_63 ... CapFloorVolatilities.CapFloorVolatility[1]:
+  BusinessDayConvention was lost=
+- =Input/curveconfig.xml ... InflationCapFloorVolatilities
+  .InflationCapFloorVolatility[0]: BusinessDayConvention: 'ModifiedFollowing'
+  became 'MF'=
+
+* Why
+
+Both come from the test's own expectation, =as_stored= in
+=curve_configuration_database_roundtrip_tests.cpp=.
+
+1. It assigns the helper's =std::string= into an =std::optional<std::string>=
+   member. For a row that states no convention the helper answers ="",= so the
+   expectation gains an empty convention where the document states none. The
+   store gives none back, and the comparison reads that as a lost value. Keeping
+   the empty optional instead makes the case pass.
+2. It canonicalises a spelling the store never canonicalises. The document says
+   =MF=, =as_stored= maps it to =ModifiedFollowing=, the database holds =MF=.
+   =stored_business_day_convention= has exactly one caller in the tree and it is
+   the test, so the invariant its own comment states -- the mapping layer
+   converts the stated spelling to the code before a row is written -- is not
+   implemented. The SQL value guard
+   (=refdata_curve_configuration_columns_validate_create.sql=) only refuses a
+   value outside the set; it never rewrites one.
+
+* What to decide
+
+Either the mapping layer canonicalises, which is what =bc083d5498='s message says
+it does, or the round trip stops expecting it and states that the table may hold
+every spelling a document uses. The first keeps the invariant the SQL guard and
+the query story rely on; the second is honest about today's behaviour.

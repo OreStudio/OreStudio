@@ -23,6 +23,10 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.database/domain/context.hpp"
+// A seeded parent is system-tenant reference data (its soft FK carries
+// :use_system_tenant:), so its row is forced to the system tenant and
+// written under a system-scoped context, and the tenant_id helpers are
+// needed.
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
@@ -34,18 +38,22 @@
 #include "ores.marketdata.api/eventing/feed_scope_event.hpp"
 #include "ores.marketdata.api/generators/feed_scope_generator.hpp"
 #include "ores.marketdata.api/messaging/feed_scope_protocol.hpp"
-#include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.core/repository/feed_scope_repository.hpp"
 #include "ores.marketdata.core/service/feed_scope_service.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
+// Soft-FK parent seeding (ores_marketdata_feeds_tbl): the parent may live in another
+// component, so its own component names the headers. A system-tenant parent
+// is read rather than generated, so it needs no generator.
+#include "ores.marketdata.core/repository/feed_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -114,11 +122,20 @@ TEST_CASE("write_feed_scope_publishes_an_event", "[eventing][integration]") {
 
     // 3. Write -- triggers the entity's notify trigger -> pg_notify ->
     // the chain wired above -> NATS.
-    // The scope guard resolves the feed in the system tenant's catalogue, and a
-    // test tenant's own feed is not there, so the scope names a seeded one.
     auto v = generate_synthetic_feed_scope(ctx);
-    v.feed_id = ores::marketdata::domain::catalogue_ids::ore_import_feed_id();
     v.change_reason_code = "system.test";
+    // feed is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, so the shared system
+    // catalogue keeps exactly the rows the populate scripts put there. The
+    // referencing row's insert trigger resolves the parent under the system
+    // tenant.
+    {
+        ores::marketdata::repository::feed_repository feed_id_catalogue_repo;
+        const auto feed_id_catalogue = feed_id_catalogue_repo.read_latest(
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE(feed_id_catalogue.empty());
+        v.feed_id = feed_id_catalogue.front().id;
+    }
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Feed Scope: " << v;
 

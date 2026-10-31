@@ -115,6 +115,8 @@ std::string("ANCHOR_OFFSET")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:store_transform:         stored_business_day_convention
+:store_transform_include: ores.refdata.core/repository/business_day_convention_code.hpp
 :END:
 
 The roll rule applied when a resolved date falls on a day the calendar does

@@ -70,7 +70,12 @@ SQL (table DDL, triggers, constraints) and TypeScript (protocol and domain inter
 * Columns
   ** <column_name>         — PROPERTIES: type, cpp_type, nullable, default (opt),
                              primary_key (opt), natural_key (opt),
-                             server_owned (opt)
+                             server_owned (opt), store_transform (opt),
+                             store_transform_include (opt)
+                             store_transform names the function the generated
+                             mapper calls on the value on the way into the row,
+                             and store_transform_include the header that
+                             declares it. Both or neither.
 * SQL
   ** Flags                 — PROPERTIES: tablename
 * C++

@@ -27,6 +27,7 @@
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/commodity_forward_convention.hpp"
 #include "ores.refdata.api/domain/commodity_forward_convention_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.core/repository/business_day_convention_code.hpp"
 #include "ores.refdata.core/repository/commodity_forward_convention_entity.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
@@ -80,7 +81,10 @@ commodity_forward_convention_mapper::map(const domain::commodity_forward_convent
     r.advance_calendar = v.advance_calendar;
     r.spot_relative = v.spot_relative;
     r.delivery_location = v.delivery_location;
-    r.business_day_convention = v.business_day_convention;
+    r.business_day_convention =
+        v.business_day_convention.has_value() ?
+            std::optional(stored_business_day_convention(*v.business_day_convention)) :
+            std::nullopt;
     r.outright = v.outright;
     r.oresmd_uri = v.oresmd_uri;
     r.modified_by = v.modified_by;

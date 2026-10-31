@@ -133,6 +133,7 @@ of the application join as their own stories under this heading.
 | [[id:E8118D19-B54C-49EF-9B5C-1801BBA932D9][Check every record screen against the UX language]] | DONE | 2026-10-25 | 2026-10-25 | Build a Playwright harness that checks every record screen by rule identifier, and write the sign off recipe. |
 | [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] | DONE | 2026-10-25 | 2026-10-25 | Run the calendars topic through journeys, prototype, build, test scenario and sign off; the pipeline is the deliverable. |
 | [[id:F211A600-B482-4C76-B4EF-2FFE1FDEB8EB][Take the currencies topic through the screen pipeline]] | STARTED | 2026-10-25 | | Run the currencies and pairs topic through the screen pipeline runbook: journeys, prototype, build, scenario, sheet and the owner's sign off. |
+| [[id:0B2C266E-6A32-4495-950E-44DE8054A6D7][Let the model state how the store keeps a column]] | STARTED | 2026-10-31 | | A generated mapper copies a domain value into the row unchanged. The refdata conventions must store the seven codes, not the spelling a document states, and that conversion was applied by hand to ten generated mappers, so a regeneration erased it once. Let the model state the conversion and have the mapper emit it. |
 
 ** Hotfixes
 

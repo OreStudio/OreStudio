@@ -27,6 +27,7 @@
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/inflation_cap_floor_volatility_config.hpp"
 #include "ores.refdata.api/domain/inflation_cap_floor_volatility_config_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.core/repository/business_day_convention_code.hpp"
 #include "ores.refdata.core/repository/inflation_cap_floor_volatility_config_entity.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
@@ -99,7 +100,7 @@ inflation_cap_floor_volatility_config_entity inflation_cap_floor_volatility_conf
     r.strikes = v.strikes;
     r.calendar = v.calendar;
     r.day_counter = v.day_counter;
-    r.business_day_convention = v.business_day_convention;
+    r.business_day_convention = stored_business_day_convention(v.business_day_convention);
     r.index = v.index;
     r.index_curve = v.index_curve;
     r.index_interpolated = v.index_interpolated;

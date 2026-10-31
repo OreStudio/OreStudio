@@ -32,6 +32,9 @@
 {{#mapper_enum_includes}}
 #include "{{path}}"
 {{/mapper_enum_includes}}
+{{#mapper_store_transform_includes}}
+#include "{{path}}"
+{{/mapper_store_transform_includes}}
 {{#has_inet_columns}}
 #include <boost/asio/ip/address.hpp>
 {{/has_inet_columns}}
@@ -275,6 +278,10 @@ domain::{{entity_singular}}
 {{/is_base64}}
 {{^render_is_enum}}
 {{#is_nullable_string}}
+{{#store_transform}}
+    r.{{name}} = {{{store_transform}}}(v.{{{group_prefix}}}{{name}}.value_or(std::string{}));
+{{/store_transform}}
+{{^store_transform}}
 {{#render_is_optional_string}}
     r.{{name}} = v.{{{group_prefix}}}{{name}};
 {{/render_is_optional_string}}
@@ -289,13 +296,22 @@ domain::{{entity_singular}}
     r.{{name}} = v.{{{group_prefix}}}{{name}}.empty() ? std::nullopt : std::optional(v.{{{group_prefix}}}{{name}});
 {{/no_wire}}
 {{/render_is_optional_string}}
+{{/store_transform}}
 {{/is_nullable_string}}
 {{/render_is_enum}}
 {{#is_nullable_numeric}}
     r.{{name}} = v.{{{group_prefix}}}{{name}} == 0 ? std::nullopt : std::optional(v.{{{group_prefix}}}{{name}});
 {{/is_nullable_numeric}}
 {{#is_already_optional}}
+{{#store_transform}}
+    {{! The domain member and the entity member are optional already, so the store transform maps the value the optional holds and absence stays absent. }}
+    r.{{name}} = v.{{{group_prefix}}}{{name}}.has_value()
+                     ? std::optional({{{store_transform}}}(*v.{{{group_prefix}}}{{name}}))
+                     : std::nullopt;
+{{/store_transform}}
+{{^store_transform}}
     r.{{name}} = v.{{{group_prefix}}}{{name}};
+{{/store_transform}}
 {{/is_already_optional}}
 {{#is_enum}}
     r.{{name}} = rfl::enum_to_string(v.{{{group_prefix}}}{{name}});
@@ -311,12 +327,17 @@ domain::{{entity_singular}}
 {{/is_enum}}
 {{/render_is_enum}}
 {{#is_simple}}
+{{#store_transform}}
+    r.{{name}} = {{{store_transform}}}(v.{{{group_prefix}}}{{name}});
+{{/store_transform}}
+{{^store_transform}}
 {{#no_wire}}
     r.{{name}} = v.{{{group_prefix}}}{{name}}.value();
 {{/no_wire}}
 {{^no_wire}}
     r.{{name}} = v.{{{group_prefix}}}{{name}};
 {{/no_wire}}
+{{/store_transform}}
 {{/is_simple}}
 {{/sql_only}}
 {{/columns}}

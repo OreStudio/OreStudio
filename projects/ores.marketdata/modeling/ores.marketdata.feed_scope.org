@@ -117,6 +117,25 @@ a derived item.
 | item  | tenant_id, item                  | false  | true         |             |
 | scope | tenant_id, feed_id, asset_class, item | true | true       |             |
 
+* Foreign keys
+
+** feed_id
+:PROPERTIES:
+:table:             ores_marketdata_feeds_tbl
+:target_column:     id
+:use_system_tenant: true
+:nullable:          false
+:skip_check:        true
+:error_message:     Invalid feed: %. No active feed found in the system tenant's catalogue with this id.
+:END:
+
+The scope reads a feed from the catalogue the system tenant holds, so the
+parent resolves there whatever tenant owns the scope. The invariants trigger
+already refuses a scope whose feed is not in that catalogue, and it states a
+better sentence than a plain existence check, so the check is not repeated
+here (=:skip_check:=); the declaration is what tells the generator that a test
+seeds this parent by reading the catalogue.
+
 * Insert trigger
 ** Validations
 

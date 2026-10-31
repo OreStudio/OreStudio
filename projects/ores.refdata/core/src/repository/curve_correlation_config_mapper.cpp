@@ -27,6 +27,7 @@
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/curve_correlation_config.hpp"
 #include "ores.refdata.api/domain/curve_correlation_config_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.core/repository/business_day_convention_code.hpp"
 #include "ores.refdata.core/repository/curve_correlation_config_entity.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
@@ -95,7 +96,10 @@ curve_correlation_config_mapper::map(const domain::curve_correlation_config& v) 
     r.extrapolation = v.extrapolation;
     r.day_counter = v.day_counter;
     r.calendar = v.calendar;
-    r.business_day_convention = v.business_day_convention;
+    r.business_day_convention =
+        v.business_day_convention.has_value() ?
+            std::optional(stored_business_day_convention(*v.business_day_convention)) :
+            std::nullopt;
     r.option_tenors = v.option_tenors;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

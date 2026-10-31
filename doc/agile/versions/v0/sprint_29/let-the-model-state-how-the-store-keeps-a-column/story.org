@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 0B2C266E-6A32-4495-950E-44DE8054A6D7
+:END:
+#+title: Story: Let the model state how the store keeps a column
+#+description: A generated mapper copies a domain value into the row unchanged. The refdata conventions need the spelling a document states turned into the seven codes the store keeps. That conversion lives in a hand-written header and was applied by hand to ten generated mappers, so a regeneration erased it once. The model can state the conversion instead, and the mapper emits it.
+#+type: story
+#+level: s2
+#+filetags: :refdata:codegen:sprint_29:v0:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-31                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B19CA7C9-019D-440E-8C1F-7B73826FF132][Add a store transform to the mapper and state it on the convention columns]] | STARTED | 2026-10-31 | | A generated mapper copies a domain value into the row unchanged unless the model says otherwise. The seven convention columns need the stated spelling turned into the code the store keeps. State a store transform and its header on a column, have the mapper emit the call, and move the ten hand edits onto the model. |
+| [[id:2021D52A-3A77-4176-AC3E-AE571DDA9AAE][Repair the generated files main left drifted]] | DONE | | 2026-10-31 | A codegen change renders the whole estate, so the drift gate now reads two files main carries drifted: a generated eventing test hand-edited to name a catalogue feed, and a generated TypeScript view missing two columns its model declares. Both are the same defect the story names: the model is not the whole truth. |
+
+* Decisions
+
+* Out of scope
+
+-

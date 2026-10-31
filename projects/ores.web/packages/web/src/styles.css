@@ -107,6 +107,68 @@
 }
 
 /*
+ * The light palette.
+ *
+ * The same roles the dark palette states, restated for a screen in a bright
+ * room, so a screen reads the role and never the colour: nothing outside this
+ * block names a palette. The hues are darker than their dark-mode twins because
+ * they are read as ink on white rather than as light on black, and the surfsaces
+ * are lifted off the page rather than sunk into it.
+ *
+ * The attribute belongs to the document, which is the element the stylesheet
+ * can select before the first paint; the script that sets it runs before the
+ * application mounts, so a person who chose light does not see a dark flash.
+ */
+:root[data-theme='light'] {
+  --color-bg-primary: #f6f7f9;
+  --color-bg-secondary: #ffffff;
+  --color-surface-base: #f6f7f9;
+  --color-surface-raised: #ffffff;
+  --color-surface-overlay: #ffffff;
+  --color-surface-hover: #eef0f3;
+
+  --color-line-subtle: #e6e8eb;
+  --color-line: #d3d7dc;
+  --color-line-strong: #9aa3ad;
+
+  --color-ink: #17191c;
+  --color-ink-muted: #4d545c;
+  --color-ink-faint: #6c757e;
+  --color-ink-inverse: #f6f7f9;
+
+  --color-accent: #0b62c4;
+  --color-accent-bright: #0a4f9e;
+  --color-accent-dim: #e4eefb;
+  --color-accent-line: #b9d3f2;
+
+  --color-roadmap: #6b3fb5;
+  --color-roadmap-dim: #f0e9fb;
+  --color-roadmap-line: #ddcff4;
+
+  --color-flow: #0f766e;
+  --color-flow-dim: #ddf3f0;
+  --color-flow-line: #b7e4de;
+
+  --color-up: #1a7f37;
+  --color-down: #c0392b;
+  --color-warn: #8a6100;
+
+  --color-class-fx: #0b62c4;
+  --color-class-interest-rates: #8a6100;
+  --color-class-equity: #6b3fb5;
+  --color-class-credit: #a02669;
+  --color-class-commodity: #a04a00;
+  --color-class-bond: #0f766e;
+  --color-class-inflation: #1a7f37;
+
+  --color-stale: #8a6100;
+
+  /* The glow a card takes on hover is a tint of the accent, so it stays a tint
+     of the light palette's accent rather than of the dark one's. */
+  --shadow-glow: 0 10px 15px -3px color-mix(in oklab, var(--color-accent) 12%, transparent);
+}
+
+/*
  * A preflight extension rather than a reset of my own. Tailwind already handles
  * the reset; this only sets what the application owns.
  */

@@ -5,6 +5,29 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="color-scheme" content="dark" />
         <title>ORE Studio</title>
+        <!--
+            The palette the person chose, before the first paint.
+
+            The application owns the choice and applies it on mount, but a mount
+            is a frame later, so a person who reads light would see the dark
+            palette flash on every navigation. This reads the same key the theme
+            module writes and states the palette on the document, which is what
+            the stylesheet selects on. It states nothing when there is no
+            stored choice: the default palette is the one the stylesheet
+            already paints.
+        -->
+        <script>
+            (() => {
+                try {
+                    const stored = globalThis.localStorage?.getItem('ores.web.theme');
+                    if (stored !== 'light' && stored !== 'dark') return;
+                    document.documentElement.setAttribute('data-theme', stored);
+                    document.documentElement.style.colorScheme = stored;
+                } catch {
+                    // Unavailable storage leaves the default palette in place.
+                }
+            })();
+        </script>
     </head>
     <body>
         <div id="root"></div>

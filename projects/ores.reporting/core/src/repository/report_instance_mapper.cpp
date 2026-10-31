@@ -64,6 +64,10 @@ domain::report_instance report_instance_mapper::map(const report_instance_entity
     r.price_note = v.price_note.value_or("");
     r.engine_settings_id = v.engine_settings_id;
     r.engine_settings_version = v.engine_settings_version;
+    r.cut_id = v.cut_id;
+    r.cut_label = v.cut_label;
+    r.cut_kind_code = v.cut_kind_code;
+    r.cut_timepoint = v.cut_timepoint;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -98,6 +102,10 @@ report_instance_entity report_instance_mapper::map(const domain::report_instance
     r.price_note = v.price_note.empty() ? std::nullopt : std::optional(v.price_note);
     r.engine_settings_id = v.engine_settings_id;
     r.engine_settings_version = v.engine_settings_version;
+    r.cut_id = v.cut_id;
+    r.cut_label = v.cut_label;
+    r.cut_kind_code = v.cut_kind_code;
+    r.cut_timepoint = v.cut_timepoint;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

@@ -1079,6 +1079,24 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_instances:read',     'View report run history');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_instances:write',    'Trigger report runs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_instances:delete',   'Delete report run records');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cuts:read', 'View the cuts a party has taken and the cut a run priced from');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cuts:take', 'Assemble and take a cut by hand, raising its authorisation where the kind requires one');
+    -- The four cut lookups: the kinds, the families, the rules a kind resolves
+    -- by, and the gaps a body could not fill. A cut itself has no client write
+    -- verb, because the take is the write, so no cuts write or delete code is
+    -- seeded.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_families:read', 'View the families a cut kind belongs to');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_families:write', 'Create and modify cut families');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_families:delete', 'Delete cut families');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_kinds:read', 'View the kinds of cut a report may select');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_kinds:write', 'Create and modify cut kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_kinds:delete', 'Delete cut kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_resolution_rules:read', 'View the rules by which a report resolves a cut selection');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_resolution_rules:write', 'Create and modify cut resolution rules');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_resolution_rules:delete', 'Delete cut resolution rules');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_gaps:read', 'View the parts of a cut body the assembly could not fill');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_gaps:write', 'Record the parts of a cut body the assembly could not fill');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::cut_gaps:delete', 'Delete the recorded gaps of a cut body');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_result_rows:read', 'View the result rows a run produced');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_result_rows:write', 'Write result rows');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_result_rows:delete', 'Delete result rows');

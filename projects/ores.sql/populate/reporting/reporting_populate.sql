@@ -45,6 +45,12 @@
 \ir ./reporting_report_trigger_types_populate.sql
 
 \echo ''
+\echo '--- Cut Lookups ---'
+\ir ./reporting_cut_families_populate.sql
+\ir ./reporting_cut_resolution_rules_populate.sql
+\ir ./reporting_cut_kinds_populate.sql
+
+\echo ''
 \echo '--- FSM Machines ---'
 \ir ./dq_fsm_report_definition_lifecycle_populate.sql
 \ir ./dq_fsm_report_instance_lifecycle_populate.sql

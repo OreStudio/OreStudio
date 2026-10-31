@@ -118,6 +118,22 @@ public:
          * caller knows whether the instance will run at all.
          */
         std::optional<std::chrono::system_clock::time_point> started_at;
+        /**
+         * @brief The cut the run resolved its report's selection to, and its
+         * label, kind and instant.
+         *
+         * The run records what it resolved because the selection may have moved
+         * since: the report's page shows the definition's selection beside this
+         * run's resolved cut, and they are two different facts. A definition
+         * that selected no cut names none, and the run prices from no body.
+         *
+         * The label is the cut's own, derived from its kind, scope and instant,
+         * and copied here so a run's card names the body without a second read.
+         */
+        std::optional<boost::uuids::uuid> cut_id;
+        std::optional<std::string> cut_label;
+        std::optional<std::string> cut_kind_code;
+        std::optional<std::chrono::system_clock::time_point> cut_timepoint;
     };
 
     /**

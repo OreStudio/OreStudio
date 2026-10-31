@@ -105,6 +105,16 @@ export function TranslationProvider({ children }: { readonly children: ReactNode
         };
     }, [language]);
 
+    /*
+     * The document states the language it is written in, so a screen reader
+     * pronounces it and a browser offers the right dictionary. The header's
+     * language menu is the control, so the attribute follows it here rather
+     * than being written by that control.
+     */
+    useEffect(() => {
+        globalThis.document?.documentElement.setAttribute('lang', language);
+    }, [language]);
+
     const translator: Translator = useMemo(
         () => createTranslator(language, source, catalogue),
         [language, catalogue],

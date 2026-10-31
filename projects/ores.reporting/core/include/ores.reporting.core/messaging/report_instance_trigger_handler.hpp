@@ -35,6 +35,7 @@
 #include "ores.reporting.core/repository/engine_settings_repository.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
 #include "ores.reporting.core/repository/report_type_configuration_type_repository.hpp"
+#include "ores.reporting.core/service/cut_resolution_service.hpp"
 #include "ores.reporting.core/service/report_configuration_service.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.reporting.core/service/report_run_admission_service.hpp"
@@ -345,6 +346,32 @@ private:
             return;
         }
 
+        // The run resolves its definition's cut selection before it admits
+        // anything, and records the body it resolved: the selection may have
+        // moved since the last run, so the two are different facts. A selection
+        // that resolves to nothing refuses the run here, before an instance
+        // exists to be looked at.
+        std::optional<service::cut_resolution> resolved_cut;
+        if (def->cut_kind_code && !def->cut_kind_code->empty()) {
+            if (!states_cut_inputs(req)) {
+                BOOST_LOG_SEV(report_instance_trigger_handler_lg(), info)
+                    << "Report definition " << definition_id << " selects the cut kind "
+                    << *def->cut_kind_code << ", and this trigger states no covered date, "
+                    << "scope or rates centre, so the run records no resolved cut.";
+            } else {
+                const auto resolution = resolve_cut(tenant_ctx, *def, req, req_ctx);
+                if (!resolution.ok()) {
+                    response.result.outcome = ores::utility::domain::outcome::invalid;
+                    response.result.code = "cut_not_resolved";
+                    response.result.message = resolution.refusal;
+                    BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn)
+                        << response.result.message;
+                    return;
+                }
+                resolved_cut = resolution;
+            }
+        }
+
         // The run's authority is the report's consent to run, and a definition
         // that no schedule ever ran holds none. A person asking for a run
         // consents here, on their own token; a definition that already holds a
@@ -390,6 +417,15 @@ private:
         const auto engine_settings = engine_settings_of(tenant_ctx, *def);
         plan.engine_settings_id = engine_settings.first;
         plan.engine_settings_version = engine_settings.second;
+        // The run records the cut it resolved, with the label, kind and instant
+        // the resolution answered, so the run's own card names the body it
+        // priced from without a second read.
+        if (resolved_cut && resolved_cut->cut) {
+            plan.cut_id = resolved_cut->cut->id;
+            plan.cut_label = resolved_cut->label;
+            plan.cut_kind_code = resolved_cut->cut->kind_code;
+            plan.cut_timepoint = resolved_cut->cut->timepoint;
+        }
         // Only an instance that will run states when it started. One that is
         // queued, skipped or failed never began.
         if (dispatch) {
@@ -414,6 +450,48 @@ private:
 
         response.result.code = dispatch ? "triggered" : "not_dispatched";
         response.result.message = std::format("Report instance {} created.", inst_id_str);
+    }
+
+    /**
+     * @brief Whether the trigger states the three facts a resolution reads.
+     *
+     * A resolution needs the covered date, the scope and the rates centre, and
+     * none of them is the definition's: they belong to the run. A trigger that
+     * states none of them records no cut, and the run's own resolution records
+     * it when the run settings state them.
+     */
+    static bool states_cut_inputs(const trigger_report_instance_request& req) {
+        return !req.covered_date.empty() && !req.scope_code.empty() &&
+               !req.business_centre_code.empty();
+    }
+
+    /**
+     * @brief The cut the definition's selection resolves to, or the sentence
+     * that refuses the run.
+     *
+     * The selection is read from the definition and never from the caller, and a
+     * selection that resolves to nothing refuses the run before anything is
+     * admitted.
+     */
+    service::cut_resolution resolve_cut(const ores::database::context& tenant_ctx,
+                                        const ores::reporting::domain::report_definition& def,
+                                        const trigger_report_instance_request& req,
+                                        const ores::database::context& req_ctx) {
+        service::cut_selection selection;
+        selection.kind_code = *def.cut_kind_code;
+        selection.cut_id = def.cut_id;
+
+        service::cut_resolution_context cut_ctx;
+        cut_ctx.covered_date =
+            ores::platform::time::datetime::from_iso8601_utc(req.covered_date + "T00:00:00Z");
+        cut_ctx.scope_code = req.scope_code;
+        cut_ctx.business_centre_code = req.business_centre_code;
+        cut_ctx.party_id = def.party_id;
+        cut_ctx.run_instant = std::chrono::system_clock::now();
+        cut_ctx.taken_by = req_ctx.service_account();
+
+        service::cut_resolution_service cuts(tenant_ctx);
+        return cuts.resolve(selection, cut_ctx);
     }
 
     /**

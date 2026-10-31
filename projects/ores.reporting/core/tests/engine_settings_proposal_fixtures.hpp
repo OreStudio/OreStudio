@@ -32,6 +32,7 @@
 #include "ores.reporting.api/generators/report_configuration_generator.hpp"
 #include "ores.reporting.api/generators/report_definition_generator.hpp"
 #include "ores.reporting.core/repository/configuration_repository.hpp"
+#include "ores.reporting.core/repository/engine_settings_change_repository.hpp"
 #include "ores.reporting.core/repository/engine_settings_fixings_repository.hpp"
 #include "ores.reporting.core/repository/engine_settings_repository.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"

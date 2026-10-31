@@ -112,6 +112,10 @@ report_run_admission_service::receipt report_run_admission_service::admit(const 
     inst.run_grant_id = p.run_grant_id;
     inst.engine_settings_id = p.engine_settings_id;
     inst.engine_settings_version = p.engine_settings_version;
+    inst.cut_id = p.cut_id;
+    inst.cut_label = p.cut_label;
+    inst.cut_kind_code = p.cut_kind_code;
+    inst.cut_timepoint = p.cut_timepoint;
     inst.name = p.name;
     inst.kind = p.kind;
     inst.description = p.description;

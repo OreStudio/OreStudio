@@ -61,6 +61,8 @@ domain::report_definition report_definition_mapper::map(const report_definition_
     r.post_processing = v.post_processing;
     r.is_official = v.is_official;
     r.regulatory_book_type = v.regulatory_book_type;
+    r.cut_kind_code = v.cut_kind_code;
+    r.cut_id = v.cut_id;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -93,6 +95,8 @@ report_definition_entity report_definition_mapper::map(const domain::report_defi
     r.post_processing = v.post_processing;
     r.is_official = v.is_official;
     r.regulatory_book_type = v.regulatory_book_type;
+    r.cut_kind_code = v.cut_kind_code;
+    r.cut_id = v.cut_id;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

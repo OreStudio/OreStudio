@@ -173,6 +173,40 @@ struct report_instance final {
     std::optional<int> engine_settings_version;
 
     /**
+     * @brief The cut the run resolved its report's selection to, or null where the report selected
+     * no cut.
+     *
+     * The run records what it resolved because the selection may have moved since: the report's
+     * page shows the definition's selection beside this run's resolved cut, and they are two
+     * different facts. The body a run prices from is reachable here, and a rerun against this cut
+     * is how a LIVE result is reproduced.
+     */
+    std::optional<boost::uuids::uuid> cut_id;
+
+    /**
+     * @brief The label the resolved cut carries, such as EOD.ACME-LONDON.2026-10-06, copied at
+     * admission.
+     *
+     * The label is derived from the cut's kind, scope and timepoint, and copied here so a run's
+     * card names the body without a second read.
+     */
+    std::optional<std::string> cut_label;
+
+    /**
+     * @brief The kind of the cut the run resolved, copied at admission, so a run is filtered and
+     * read by the occasion it priced at without joining the cut.
+     */
+    std::optional<std::string> cut_kind_code;
+
+    /**
+     * @brief The instant of the cut the run resolved, copied at admission.
+     *
+     * A run's timepoint and its cut's are one fact stated twice for the cheaper read: the cut's own
+     * column is the authority, and this one is written from it.
+     */
+    std::optional<std::chrono::system_clock::time_point> cut_timepoint;
+
+    /**
      * @brief Username of the person who last modified this report instance.
      */
     std::string modified_by;

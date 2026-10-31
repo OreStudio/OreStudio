@@ -255,13 +255,33 @@ describe('the application shell', () => {
         expect(html).not.toContain('admin · Acme Corporation');
     });
 
-    it('lets the person choose the language, each named in itself', () => {
+    /*
+     * The language and the palette are settings about reading, and they sit in
+     * the header with the bell: a person who cannot read the page will not look
+     * for a language behind their own picture.
+     */
+    it('offers the language in the header, each named in itself', () => {
         const html = renderAppShell('Acme Operations');
 
-        expect(html).toContain('Language');
-        expect(html).toContain('>English<');
-        expect(html).toContain('>Português<');
-        expect(html).toContain('>Français<');
+        const header = html.slice(html.indexOf('<header'), html.indexOf('</header>'));
+        expect(header).toContain('aria-label="Language"');
+        expect(header).toContain('>English<');
+        expect(header).toContain('>Português<');
+        expect(header).toContain('>Français<');
+
+        // The menu behind the picture is where a person's own pages live, and
+        // the language is not one of them: nothing in it offers a language.
+        const menu = header.slice(header.indexOf('aria-label="Your account"'));
+        expect(menu).not.toContain('<select');
+        expect(menu).not.toContain('Language');
+    });
+
+    it('offers the palette it will switch to, in the header', () => {
+        const html = renderAppShell('Acme Operations');
+
+        // The shell renders in the default palette, which is the dark one, so
+        // the control offers the light one.
+        expect(html).toContain('aria-label="Switch to the light palette"');
     });
 
     /*

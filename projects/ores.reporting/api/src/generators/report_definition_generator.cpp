@@ -61,6 +61,8 @@ generate_synthetic_report_definition(utility::generation::generation_context& ct
     r.post_processing = std::string("execute");
     r.is_official = true;
     r.regulatory_book_type = std::nullopt;
+    r.cut_kind_code = std::nullopt;
+    r.cut_id = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

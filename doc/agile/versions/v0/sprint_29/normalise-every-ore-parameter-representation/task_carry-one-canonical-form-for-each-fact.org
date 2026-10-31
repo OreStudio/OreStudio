@@ -1,0 +1,205 @@
+:PROPERTIES:
+:ID: 4D524D0D-BEDC-460E-8846-C9982A999577
+:END:
+#+title: Task: Carry one canonical form for each fact
+#+description: ORE accepts several spellings for one value, and a compiled table in the codec converts them. This task moves the spellings into the value set, converts at the write boundary so the store holds one rendering, offers only canonical forms to a screen, and fails a check when a table holds two renderings of one fact.
+#+type: task
+#+level: s1
+#+filetags: :sprint_29:v0:normalise-every-ore-parameter-representation:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One fact is held once. A value set states the canonical form of each of its
+values and every other spelling ORE accepts for it, so a screen offers the
+canonical forms, a writer may send any spelling the set knows, and the store ends
+up holding the canonical one. The compiled tables in
+=projects/ores.ore/core/src/domain/conventions_fields.cpp= stop being the place
+that knowledge lives.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
+| Now          | The census is taken and the design is recorded; no code has moved yet. |
+| Waiting on   | Nothing.                               |
+| Next         | Seed the aliases the compiled tables hold into the value sets, then move the conversion to the guard. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- Every parameter whose ORE reader accepts more than one rendering is named, with
+  the reader that accepts it and the canonical form chosen for it.
+- The map from an accepted rendering to the canonical form is data: the value set
+  states it, and no compiled table holds ORE's spellings.
+- A write converts an accepted rendering to the canonical form at one boundary for
+  every parameter, and a rendering the map does not know is refused naming the set.
+- The screens offer the canonical forms and not the accepted ones, and the guard
+  accepts every accepted rendering.
+- A check fails when a table holds more than one rendering of one fact.
+
+* Discovery
+
+The spellings live in one file, in six tables, and the numbers are read from it by
+=evidence/alias_census.py=, whose output is =alias_census.txt= beside it:
+
+| Table | Spellings | Canonical forms |
+|-------+-----------+-----------------|
+| =business_day_conventions= | 26 | 7 |
+| =day_counters= | 71 | 23 |
+| =frequencies= | 18 | 9 |
+| =compoundings= | 4 | 4 |
+| =date_rules= | 15 | 15 |
+| =day_counter_spellings= | 11 | 11 |
+| **total** | **145** | **69** |
+
+Two tables name fewer canonical forms than spellings, which is the whole problem:
+=Unadjusted= answers to five spellings, =ACT/ACT.ISDA= to eight, and a store that
+holds the spelling it was handed holds the same fact six ways.
+
+Four of the six tables convert in one direction only. =business_day_conventions=,
+=day_counters=, =frequencies= and =date_rules= map a spelling onto the canonical
+form the store holds; =day_counter_spellings= maps the other way, from the stored
+form onto the spelling an export writes. A set that states both directions states
+the fact once.
+
+=compoundings= and =date_rules= have one spelling per canonical form, so they are
+not aliases at all: they are the set's own values, and the table adds nothing.
+
+* What is not an alias
+
+A boolean is the case the guard already settles. ORE's XML writes =Y= or =N= and
+the screens write =true= or =false=, and the guard accepts all four and stores
+what arrived. That is one fact written two ways, and the story counts it: the set
+that governs a flag states =true= and =false= and the guard maps =Y= to =true=.
+
+The aliasing is therefore about the tables above and the flag's two pairs, and
+nothing else in the tree.
+
+* Plan
+
+** The canonical form is a column on the value
+
+=ores_reporting_ore_parameter_value_set_values_tbl= gains =canonical_value=,
+null when the row *is* the canonical form and the canonical value when it is
+another spelling of one. The set's values therefore state both directions, and a
+screen asks for the rows whose =canonical_value= is null.
+
+The alternative, a second table of aliases, states the same fact twice: the alias
+row would carry a value and a pointer to a value row, and the set's own value
+would be the only thing that decides what is canonical. One column keeps the row
+count and the ordering the set already states.
+
+** Conversion happens in the guard, not in the mapper
+
+The mappers convert today, before the store sees a value, so the store's guards
+never meet a spelling. That is why the knowledge had to live in code: a value that
+never reaches the database cannot be converted there.
+
+A helper, =ores_reporting_canonical_value_fn(set_code, value)=, returns the
+canonical form of a value the set knows, and the four leaf guards call it as they
+walk the column they are about to write: =NEW.column = ores_reporting_canonical_value_fn(...)=.
+The guard is the one boundary every writer passes through, so the shell, a screen,
+an import job and a publish function all convert once, in one place.
+
+The columns are guarded but not rewritten today, and a BEFORE trigger may rewrite
+=NEW=, so no schema change is needed to carry this.
+
+** The order the slices go in
+
+The change has a state that is worse than either end: mappers stopped converting
+and the guard not converting yet would let a spelling reach a row unwatched. So:
+
+1. Seed the aliases into the sets from the compiled tables, with a generator that
+   reads =conventions_fields.cpp=, so the set states what the table states and a
+   check compares them. Nothing changes at runtime.
+2. Teach the guards to convert, and keep the mappers converting: the guard's
+   conversion is then exercised by a test that writes a spelling straight to a
+   table, and the import path still converts first, so no row changes.
+3. Stop the mappers converting, in one commit, so the spelling reaches the guard
+   for the first time. The round-trip suites prove nothing was lost, and a check
+   that no table holds a non-canonical value proves the guard converted.
+4. Delete the compiled tables and the census script's reason to exist, which is the
+   story's "no compiled table holds ORE's spellings".
+
+Slice 1 is data and a generator; 2 and 3 are the runtime change; 4 is the
+deletion that makes the claim true.
+
+** The check
+
+A query over the map and the guarded tables: for every child row, the value a row
+holds must equal the canonical form of its set, so a spelling that reached a row
+by any path is named with its table, its column and its set. The check reads the
+map, so a column that gains a guard gains the check with it.
+
+* Where the tables are read
+
+=conventions_fields.hpp= is included by 27 files under =projects/ores.ore/core=,
+and the four conversion helpers it exports are called 21 times:
+
+#+begin_src text
+$ grep -rln "conventions_fields.hpp" projects/ores.ore | wc -l
+27
+$ grep -rn "business_day_code\|day_counter_code\|frequency_code\|compoundings\|date_rule_code" \
+      projects/ores.ore/core | wc -l
+21
+#+end_src
+
+So moving the knowledge is a change to 21 call sites in one component, and none
+outside it. The mappers that write a convention row are the callers, and each one
+converts the spelling it read before the row exists.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| spellings the compiled tables hold | 145 over 69 canonical forms | =evidence/alias_census.py= | =9cb1b48072= plus this branch |
+| files that include the table header | 27 | =grep -rln "conventions_fields.hpp" projects/ores.ore= | =9cb1b48072= plus this branch |
+| conversion call sites | 21 | =grep -rn "business_day_code\|..." projects/ores.ore/core= | =9cb1b48072= plus this branch |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

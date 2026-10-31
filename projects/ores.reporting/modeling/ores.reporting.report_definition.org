@@ -263,6 +263,51 @@ fails the run. See the story Scope a report by regulatory book type.
 std::nullopt
 #+end_src
 
+** cut_kind_code
+:PROPERTIES:
+:type:       text
+:cpp_type:   std::optional<std::string>
+:nullable:   true
+:filterable: true
+:END:
+
+The kind of cut the report prices from, or null where the report was created
+without a selection.
+
+The selection is one of two things: a kind of cut, or a kind of cut and one
+specific body. A report that selects a kind says *value this scope against the
+close of its day*; a report that names a cut says *price from this body*. The
+pair is one fact, which is why =cut_id= is set only where this column is.
+
+The selection sits on the definition and not on the run settings configuration:
+two reports bound to one configuration may serve different cycles, a board pack
+of the close and an intraday monitor, and a selection on the shared
+configuration would give both the same body.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** cut_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The specific cut the report prices from, or null where the selection names a
+kind and the run resolves it.
+
+A pinned cut is how a report reaches a body no rule resolves, such as a flash cut
+or an instant a process named. The cut belongs to the reporting component, so
+this column is not a checked foreign key: a definition may name a cut that has
+since left the warm tier, and the run's refusal says so rather than the store
+refusing the write.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * Foreign keys
 
 ** report_type
@@ -288,6 +333,18 @@ the check reads that tenant whatever tenant owns the definition.
 
 The regulatory book types are a system-wide lookup, seeded for the system
 tenant only, as the report types are. The column may be empty.
+
+** cut_kind_code
+:PROPERTIES:
+:table:                 ores_reporting_cut_kinds_tbl
+:target_column:         code
+:system_tenant_visible: true
+:nullable:              true
+:error_message:         Invalid cut_kind_code: %. No active cut kind found with this code.
+:END:
+
+The cut kinds are reference data a tenant reads beside the system tenant's own,
+so the check admits both and the column may be empty.
 
 * Artefact columns
 
@@ -370,6 +427,15 @@ The import is a catalogue of report templates. It has no party, lifecycle state,
 :PROPERTIES:
 :tablename:        ores_reporting_report_definitions_tbl
 :END:
+
+** Checks
+
+| expression                                         |
+|----------------------------------------------------|
+| "cut_id" is null or "cut_kind_code" is not null    |
+
+A specific cut is a kind of cut plus the identity of the one body meant, so a row
+that pins a cut and names no kind states half a selection.
 
 * Insert trigger
 

@@ -60,6 +60,9 @@ render_report_definition_fields(const domain::report_definition& v) {
     fields.push_back({.name = "Is Official", .value = v.is_official ? "true" : "false"});
     fields.push_back(
         {.name = "Regulatory Book Type", .value = v.regulatory_book_type.value_or(std::string{})});
+    fields.push_back({.name = "Cut Kind Code", .value = v.cut_kind_code.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Cut ID", .value = v.cut_id ? boost::uuids::to_string(*v.cut_id) : std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

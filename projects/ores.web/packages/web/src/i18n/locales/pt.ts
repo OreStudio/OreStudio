@@ -67,6 +67,10 @@ const pt: SourceCatalogue = {
     },
 
     shell: {
+        theme: {
+            toLight: 'Mudar para a paleta clara',
+            toDark: 'Mudar para a paleta escura',
+        },
         mode: {
             'system-administration': 'Administração do sistema',
             'tenant-administration': 'Administração do inquilino',
@@ -91,7 +95,6 @@ const pt: SourceCatalogue = {
             refdata: 'Dados de referência',
             access: 'O meu acesso',
             whereIWork: 'Onde trabalho',
-            language: 'Idioma',
             changeParty: 'Mudar de parte',
             changePartyFailed: 'Não foi possível mudar de parte.',
             changePartyHint: 'Escolha a parte em nome da qual atua.',

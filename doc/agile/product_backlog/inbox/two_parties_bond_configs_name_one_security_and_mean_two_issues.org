@@ -11,6 +11,12 @@
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
+* Fixed
+
+Fixed by =security_id_for= taking the issuer and covering it in the digest --
+PR #4233, environment =jolly_knuth=. A fresh provision on main completes every
+step and writes both bond configs.
+
 * What
 
 The population stops in its second bond config:

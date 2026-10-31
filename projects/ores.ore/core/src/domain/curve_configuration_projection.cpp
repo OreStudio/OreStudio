@@ -1481,11 +1481,14 @@ void export_moneyness_surface(record_writer v, const volatility_kind_export& k) 
     v.set_text("StrikeInterpolation", c.strike_interpolation);
     v.set_spelling("Extrapolation", c.extrapolation ? "true" : "false", "ORE boolean");
     v.set_spelling("TimeExtrapolation", c.time_extrapolation, "extrapolation");
-    v.set_optional_spelling(
-        "TimeExtrapolationVariance", spelling_of(c.time_extrapolation_variance), "ORE boolean");
+    if (c.time_extrapolation_variance)
+        v.set_spelling("TimeExtrapolationVariance",
+                       *c.time_extrapolation_variance ? "true" : "false",
+                       "ORE boolean");
     v.set_spelling("StrikeExtrapolation", c.strike_extrapolation, "extrapolation");
-    v.set_optional_spelling(
-        "FuturePriceCorrection", spelling_of(c.future_price_correction), "ORE boolean");
+    if (c.future_price_correction)
+        v.set_spelling(
+            "FuturePriceCorrection", *c.future_price_correction ? "true" : "false", "ORE boolean");
     v.set_optional_text("Calendar", k.kind->calendar);
 }
 

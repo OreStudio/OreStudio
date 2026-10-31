@@ -25,6 +25,7 @@
 #include <chrono>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -568,14 +569,74 @@ TEST_CASE("a mix states each class's share of the total, remainder first", "[pop
     CHECK(fx[3] == 62);
 }
 
-TEST_CASE("a mix that does not sum to a hundred is refused", "[population_knobs]") {
+TEST_CASE("a mix that does not sum to a hundred is scaled, not refused", "[population_knobs]") {
+    /*
+     * The shares are shares: a mix of ninety-nine is scaled to the total the
+     * run states rather than refused, so the operator is not asked to do the
+     * arithmetic the server can do. The classes still state the whole total.
+     */
+    const auto class_total = [](const auto& assignments, const std::string& asset_class) {
+        std::uint32_t total = 0;
+        for (const auto& entry : assignments)
+            if (entry.asset_class_code == asset_class)
+                total += *entry.trades_per_book;
+        return total;
+    };
+    const auto everyone = [](const auto& assignments) {
+        std::uint32_t total = 0;
+        for (const auto& entry : assignments)
+            total += *entry.trades_per_book;
+        return total;
+    };
+
+    auto exact = all_configs();
+    apply_population_knobs(exact,
+                           read_population_knobs(page_mix(1000, "population_fx_percent", 25)),
+                           codes_of);
+
+    auto scaled = all_configs();
+    apply_population_knobs(scaled,
+                           read_population_knobs(page_mix(1000, "population_fx_percent", 24)),
+                           codes_of);
+
+    CHECK(everyone(exact) == 1000);
+    CHECK(everyone(scaled) == 1000);
+
+    /*
+     * A mix of ninety-nine is not the mix of a hundred: the class whose share
+     * dropped now takes 24 of 99 rather than 25 of 100. So the claim is not
+     * that the two books are equal, it is that each class takes its share of
+     * the total, within the one-trade rounding each config is counted in.
+     */
+    for (const auto& [asset_class, share, configs] :
+         std::vector<std::tuple<std::string, std::uint32_t, std::uint32_t>>{
+             {"bond", 4, 4},
+             {"commodity", 5, 1},
+             {"credit", 6, 1},
+             {"equity", 12, 1},
+             {"fx", 24, 4},
+             {"inflation", 3, 1},
+             {"interest_rates", 42, 3},
+             {"scripted", 3, 1}}) {
+        const auto expected = 1000.0 * static_cast<double>(share) / 99.0;
+        const auto actual = static_cast<double>(class_total(scaled, asset_class));
+        CHECK(actual >= expected - static_cast<double>(configs));
+        CHECK(actual <= expected + static_cast<double>(configs));
+    }
+}
+
+TEST_CASE("a mix whose shares state nothing at all is refused", "[population_knobs]") {
     auto assignments = all_configs();
+    std::vector<provision_tenant_parameter> parameters{{"population_size", "1000"}};
+    for (const auto* name : {"population_bond_percent",
+                             "population_fx_percent",
+                             "population_equity_percent"})
+        parameters.push_back({name, "0"});
 
     CHECK_THROWS_WITH(apply_population_knobs(assignments,
-                                             read_population_knobs(
-                                                 page_mix(1000, "population_fx_percent", 24)),
+                                             read_population_knobs(parameters),
                                              codes_of),
-                      Catch::Matchers::ContainsSubstring("sums to 99 per cent"));
+                      Catch::Matchers::ContainsSubstring("no share at all"));
 }
 
 TEST_CASE("a class whose share cannot hold its codes is refused with the total that would",

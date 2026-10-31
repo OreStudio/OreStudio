@@ -132,37 +132,84 @@ inline void apply_population_knobs(std::vector<trade_generation_assignment>& ass
     for (auto& assignment : assignments)
         by_class[assignment.asset_class_code].push_back(&assignment);
 
-    if (!knobs.percent.empty()) {
-        std::uint32_t stated = 0;
-        for (const auto& [asset_class, percent] : knobs.percent)
-            stated += percent;
-        if (stated != 100)
-            throw std::runtime_error("The population mix sums to " + std::to_string(stated) +
-                                     " per cent; it must sum to a hundred.");
+    std::uint32_t stated = 0;
+    for (const auto& [asset_class, percent] : knobs.percent)
+        stated += percent;
+
+    if (knobs.percent.empty() && knobs.total > 0) {
+        /*
+         * A size with no share states no mix: the counts the recipe states are
+         * the book the operator asked to make bigger, and scaling them by a
+         * guess would be a different book than the one they run.
+         */
+    } else {
+        if (stated == 0)
+            throw std::runtime_error(
+                "The population mix states no share at all, so no class would take any of it.");
         for (const auto& [asset_class, percent] : knobs.percent)
             if (!by_class.contains(asset_class))
                 throw std::runtime_error("The population mix states '" + asset_class +
                                          "', and the run books no trade of that class.");
     }
 
+    /*
+     * The shares are shares and not percentages: they are scaled to the total
+     * the run states, so a mix that sums to ninety-seven or to a thousand is the
+     * same mix. The largest-remainder rule gives the class whose remainder is
+     * greatest the trade a rounded-down allocation leaves over, so the classes
+     * together state exactly the total.
+     */
+    const auto total_shares = [&knobs] {
+        std::uint32_t sum = 0;
+        for (const auto& [asset_class, share] : knobs.percent)
+            sum += share;
+        return sum;
+    }();
+
+    std::map<std::string, std::uint32_t> shares;
+    std::map<std::string, std::uint64_t> remainders;
+    std::uint32_t allocated = 0;
     for (const auto& [asset_class, configs] : by_class) {
-        const auto stated = knobs.percent.find(asset_class);
+        const auto held = knobs.percent.find(asset_class);
+        if (held == knobs.percent.end())
+            continue;
+        const auto numerator = static_cast<std::uint64_t>(knobs.total) * held->second;
+        shares.emplace(asset_class, static_cast<std::uint32_t>(numerator / total_shares));
+        remainders.emplace(asset_class, numerator % total_shares);
+        allocated += shares.at(asset_class);
+    }
+    auto spare = knobs.total > allocated ? knobs.total - allocated : 0;
+    while (spare > 0) {
+        auto largest = shares.end();
+        for (auto candidate = shares.begin(); candidate != shares.end(); ++candidate)
+            if (candidate->second > 0 && (largest == shares.end() ||
+                                          remainders.at(candidate->first) >
+                                              remainders.at(largest->first)))
+                largest = candidate;
+        if (largest == shares.end())
+            break;
+        ++largest->second;
+        remainders[largest->first] = 0;
+        --spare;
+    }
+
+    for (const auto& [asset_class, configs] : by_class) {
+        const auto held = knobs.percent.find(asset_class);
         /*
          * A run that states a total and no mix keeps the counts its recipe
          * states, so the class is left alone.
          */
-        if (stated == knobs.percent.end())
+        if (held == knobs.percent.end())
             continue;
 
-        const auto percent = stated->second;
+        const auto percent = held->second;
         if (percent == 0) {
             for (auto* config : configs)
                 config->trades_per_book = 0;
             continue;
         }
 
-        const auto target = static_cast<std::uint32_t>(
-            (static_cast<std::uint64_t>(knobs.total) * percent + 50) / 100);
+        const auto target = shares.at(asset_class);
         const auto codes = static_cast<std::uint32_t>(code_count(asset_class));
         const auto floor = codes * static_cast<std::uint32_t>(configs.size());
         if (target < floor) {
@@ -171,7 +218,7 @@ inline void apply_population_knobs(std::vector<trade_generation_assignment>& ass
              * refusal that names it is one the operator can act on.
              */
             const auto smallest = static_cast<std::uint64_t>(
-                (static_cast<std::uint64_t>(floor) * 100 + percent - 1) / percent);
+                (static_cast<std::uint64_t>(floor) * total_shares + percent - 1) / percent);
             throw std::runtime_error(
                 std::format("The population of {} trades gives '{}' {} trades, and its {} configs "
                             "state at least one trade per code it cycles, which is {}. A total of "

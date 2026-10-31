@@ -16,7 +16,8 @@ scenarios, and a broad set of financial instruments. ORE Studio is a
 graphical wrapper around ORE — it does not modify ORE itself, has /no
 affiliation/ with the ORE project, and inherits ORE's models,
 conventions, and limitations as-is. The slice we map into our domain
-model is described in [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]]. Return to [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External
+model is described in [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]], and
+what it writes back is described in [[id:8BF75172-CD91-461A-A3BA-2B4E913D63A8][ORE output processing]]. Return to [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External
 knowledge]] / [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Detail

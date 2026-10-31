@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:external:index:
 #+created: 2026-05-21
-#+updated: 2026-05-26
+#+updated: 2026-10-31
 
 Reference material about systems and concepts ORE Studio /uses but
 does not own/. The rule of thumb: if the doc would exist (in roughly
@@ -32,6 +32,8 @@ though it references [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]].
 
 - [[id:FCC3BBA5-DFA3-17F4-69B3-B7958C05B1F8][Financial Products Markup Language (FpML)]] — industry XML
   standard for representing financial products.
+- [[id:8BF75172-CD91-461A-A3BA-2B4E913D63A8][ORE output processing]] — the CSV files ORE writes, why their
+  shape follows the configuration, and how we read them.
 - [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding schemes]] — FpML mechanism for restricting fields to a
   known set of values.
 

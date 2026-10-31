@@ -296,6 +296,14 @@ TEMPORAL_005 ores_reporting_report_result_rows_tbl
 TEMPORAL_006 ores_reporting_report_result_rows_tbl
 TENANT_002 ores_reporting_report_result_rows_tbl
 
+# Report metrics -- the same shape, for the same reason: a TimescaleDB hypertable
+# on as_of, written once by the run that produced the figure.
+TEMPORAL_003 ores_reporting_report_metrics_tbl
+TEMPORAL_004 ores_reporting_report_metrics_tbl
+TEMPORAL_005 ores_reporting_report_metrics_tbl
+TEMPORAL_006 ores_reporting_report_metrics_tbl
+TENANT_002 ores_reporting_report_metrics_tbl
+
 # =============================================================================
 # Workflow instances table - tenant_id present but not in PK by design.
 # Uses a UUID primary key for global uniqueness. tenant_id is carried for RLS

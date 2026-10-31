@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: reporting
-Tables: 44
+Tables: 45
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1343,6 +1343,43 @@ package "reporting" #E0F7FA {
     fsm_state_id points to the current state in ores_dq_fsm_states_tbl.
     started_at is NULL when the instance is cancelled or skipped before execution
     begins. completed_at is NULL while running or in a terminal-before-start state.
+    end note
+
+    entity ores_reporting_report_metrics_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        * as_of : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * report_instance_id : uuid <<FK>>
+        * family : text
+        * subject_type : text
+        * subject_id : text <<FK>>
+        * measure : text
+        * report_definition_id : uuid <<FK>>
+        * currency : text
+          scenario : text
+          factor : text
+          shift : text
+          qualifiers : text
+        * value : double
+        * source : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_metrics_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Metric Table
+    One figure a run produced, at one subject and one observation date, with the
+    qualifiers that say what the figure is about. Every family whose row is keys,
+    qualifiers and figures lands here, and family says which family it came from.
+    The row is written once, with the run, and never edited; a correction is a new
+    run. A figure the engine stated as its null string is not here at all, because
+    there is nothing to store. The subject_id is the engine's own identifier, such
+    as a trade id or a netting set id, so it is text and not a uuid.
     end note
 
     entity ores_reporting_report_result_rows_tbl <<temporal>> #C6F0D8 {

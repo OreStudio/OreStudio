@@ -25,6 +25,8 @@
 \ir ./reporting_report_input_bundles_drop.sql
 \ir ./reporting_report_result_rows_notify_trigger_drop.sql
 \ir ./reporting_report_result_rows_drop.sql
+\ir ./reporting_report_metrics_notify_trigger_drop.sql
+\ir ./reporting_report_metrics_drop.sql
 \ir ./reporting_report_instances_notify_trigger_drop.sql
 \ir ./reporting_report_instances_fsm_guard_drop.sql
 \ir ./reporting_report_instances_drop.sql
@@ -114,8 +116,8 @@
 \ir ./reporting_ore_parameter_vocabularies_notify_trigger_drop.sql
 \ir ./reporting_ore_parameter_vocabularies_drop.sql
 
-\ir ./reporting_report_result_rows_notify_trigger_drop.sql
-\ir ./reporting_report_result_rows_drop.sql
+\ir ./reporting_report_metrics_notify_trigger_drop.sql
+\ir ./reporting_report_metrics_drop.sql
 
 \ir ./reporting_engine_settings_group_settings_notify_trigger_drop.sql
 \ir ./reporting_engine_settings_group_settings_drop.sql

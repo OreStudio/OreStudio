@@ -53,6 +53,10 @@
 \ir ./reporting_cut_resolution_rules_notify_trigger_create.sql
 \ir ./reporting_cut_kinds_create.sql
 \ir ./reporting_cut_kinds_notify_trigger_create.sql
+\ir ./reporting_cuts_create.sql
+\ir ./reporting_cuts_notify_trigger_create.sql
+\ir ./reporting_cut_gaps_create.sql
+\ir ./reporting_cut_gaps_notify_trigger_create.sql
 
 \ir ./reporting_ore_parameter_value_domains_create.sql
 \ir ./reporting_ore_parameter_value_domains_notify_trigger_create.sql

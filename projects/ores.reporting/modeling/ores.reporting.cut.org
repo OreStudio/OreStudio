@@ -1,0 +1,770 @@
+:PROPERTIES:
+:ID: 4A81F2C6-9D37-42E0-B5A8-0C61D94E7B23
+:END:
+#+title: ores.reporting.cut
+#+description: Codegen entity model for the reporting =cut= table. The body a run prices from: the occasion, the timepoint with its clock, the scope, the four input references, the gaps, the acts, the retention copy.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: A body of data fixed at one timepoint, with the acts that made it.
+#+entity_singular: cut
+#+entity_plural: cuts
+#+entity_title: Cut
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+The record of one cut: a body of data fixed at one timepoint, the four inputs
+the valuation reads, the gaps the assembly could not fill, and the acts that
+made it. A report's run resolves its selection to a cut and prices from the
+body the cut names, so a result is reproduced by naming its cut rather than by
+re-reading a rule.
+
+The state a reader sees is a function of these facts and is stored nowhere, as
+the published set's state is. Draft when no taking instant holds and no gap
+stands; incomplete when no taking instant holds and a gap stands; taken when the
+body is fixed, the kind requires an authorisation and none is recorded; in use
+when the body is fixed and the kind requires none; authorised when an approval
+is recorded; refused when a refusal is recorded; superseded when a later cut of
+the same kind and scope holds its place.
+
+The label a person quotes is derived from the kind, the scope and the timepoint,
+and the take ordinal where a body is taken more than once for one occasion:
+=EOD.ACME-LONDON.2026-10-06= and =EOD.ACME-LONDON.2026-10-06.2=. A live cut
+carries its instant to the second instead of an ordinal. No column holds the
+label.
+
+The retention is a copy and not a read: a cut takes the kind's =retention_months=,
+=retention_destination_code= and =legal_hold_default= when it is taken, so a
+later change to the kind does not move the retention of a body already fixed.
+Nothing removes a cut today; the archive is a later task.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate UUID identifying this cut.
+
+** kind_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:natural_key: true
+:filterable:  true
+:END:
+
+The occasion this cut was taken for, from the cut kind lookup.
+
+The kind fixes the instant's meaning, the recurrence and the centre, and it
+declares whether a cut of the occasion needs an authorisation.
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:filterable:  true
+:END:
+
+The party whose books and market data the cut fixes.
+
+Set from the session that takes the cut, and enforced by row level security, so
+a party sees only its own cuts.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** scope_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:natural_key: true
+:sortable:    true
+:END:
+
+The scope the cut fixes: the book population valued against one centre's market
+data, named by the code a person quotes in the label.
+
+The books themselves are rows of =ores.reporting.cut_book=.
+
+#+begin_src cpp :name generator
+std::string("ACME-LONDON")
+#+end_src
+
+** business_centre_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:filterable:  true
+:END:
+
+The rates centre whose market data the scope's books revalue against.
+
+A body that names no centre denotes whichever centre answered first, so the
+centre is part of the scope and not a detail of the assembly.
+
+** timepoint
+:PROPERTIES:
+:type:        timestamp with time zone
+:cpp_type:    std::chrono::system_clock::time_point
+:nullable:    false
+:natural_key: true
+:sortable:    true
+:END:
+
+The instant the body was fixed at.
+
+A body fixed at an instant is not fixed until the instant is stated with its
+clock, so =timepoint_timezone= travels with it.
+
+#+begin_src cpp :name generator
+ctx.past_timepoint()
+#+end_src
+
+** timepoint_timezone
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The timezone the timepoint was stated in, as an IANA name such as
+=Europe/London=.
+
+Two cuts of the same instant in two centres are two bodies; the clock is what
+tells a reader which close the instant is.
+
+#+begin_src cpp :name generator
+std::string("Europe/London")
+#+end_src
+
+** cut_time_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The named cut time the timepoint came from, where a cut time supplied it, or
+null where the kind's own rule fixed the instant.
+
+A soft reference to the cut time reference data, which is a later task; a cut
+whose instant came from a named time keeps the code so a reader can quote it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** take_ordinal
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:nullable:    false
+:natural_key: true
+:END:
+
+Which take of this occasion the row is: 1 for the first body fixed for the
+kind, scope and timepoint, 2 for a retake.
+
+A retake of the same day, kind and scope is the second cut of that day, and the
+label states the ordinal so a person reads which body is meant.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** market_data_snapshot_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The market data snapshot that resolved every market role at the timepoint, or
+null where the assembly could not fix one and recorded a gap instead.
+
+The snapshot names the published set each role resolved to, so a rerun replays
+the curves the body priced from rather than the rule that chose them.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** deal_population_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The copy of the deal population the store held at the timepoint, or null where
+the assembly could not copy it.
+
+A copy and not a query: the interval a versioned row states is rewritten when a
+correction arrives, so two executions of one query at different moments can
+return different bodies.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** reference_data_version
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The version of the reference data in force at the timepoint: the conventions,
+the calendars, the settings and the curve configurations the run reads.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** engine_version
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The version of the risk engine the body was assembled for.
+
+A cut that fixed the data and omitted the engine version would hold a body from
+which its own result does not follow.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** code_version
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The revision of the code that computed the result.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** taken_by
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The account that fixed the body. For a live cut the run writes itself acting
+for the run's account.
+
+** taken_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:sortable: true
+:END:
+
+When the body was fixed, or null when the row is a draft or an incomplete
+attempt that no take completed.
+
+The instant is the take and not the timepoint: a body saved before it is taken
+carries no taking instant and no cut exists yet.
+
+#+begin_src cpp :name generator
+ctx.past_timepoint()
+#+end_src
+
+** requires_authorisation
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default:       false
+:default_value: false
+:END:
+
+Whether the kind that took this cut required an authorisation, recorded at the
+take from the kind's approval kind.
+
+The column is what tells a cut that waits on a person from a cut that never
+needed one: a cut of a kind whose approval kind is null records that none was
+required rather than looking unsigned.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** approval_request_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The approval request the take raised, or null where the kind requires none.
+
+A soft reference to =ores_inbox_approval_requests_tbl=: the request is the
+inbox's record of the wait and the cut links it, so neither copies the other's
+facts. The take raises the request in the same act that freezes the body.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** approved_by
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: ""
+:END:
+
+The account whose decision authorised the cut, or empty while it waits.
+
+The decider is not the taker: the inbox refuses a decision by the person who
+raised the request, so the two are two people by construction.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+** approved_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:sortable: true
+:END:
+
+When the authorisation was recorded, or null while it waits or where none was
+required.
+
+The reporting service stamps it when the request reaches approved, by
+reconciliation over the request's state, so a missed, repeated or late event
+converges on one outcome.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** refused_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+When the authorisation was refused, or null while it waits or where none was
+required.
+
+A refusal is terminal for that body: the inbox allows no second decision on a
+refused request, and the remedy is a new take, which is a new cut and a new
+request.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** refusal_comment
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: ""
+:END:
+
+Why the authorisation was refused, in the decider's words, or empty.
+
+Copied from the request so the cut's own page reads the reason without a second
+read, and never the reverse.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+** retention_months
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+How long this cut is kept, copied from its kind at the take.
+
+Retention is a floor: a person may extend it, and never shorten it below the
+kind's period.
+
+#+begin_src cpp :name generator
+25
+#+end_src
+
+** retention_destination_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Where this cut goes when it leaves the warm tier, copied from its kind at the
+take.
+
+#+begin_src cpp :name generator
+std::string("cold")
+#+end_src
+
+** legal_hold
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default:       false
+:default_value: false
+:END:
+
+Whether the cut stands under legal hold.
+
+A held cut is never removed, whatever its retention says. The kind's
+=legal_hold_default= seeds the value at the take, and a person sets it on one
+cut as its own act with its own reason.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:             ores_reporting_cuts_tbl
+:rls_tenant_isolation:  true
+:rls_party_isolation:   true
+:END:
+
+A cut belongs to the party whose books and market data it fixes, so a session
+sees the cuts of the parties it may work in and no others. A decider reads the
+subject through the approval request, which is tenant-scoped.
+
+** Checks
+
+| expression                                                       |
+|------------------------------------------------------------------|
+| "take_ordinal" > 0                                               |
+| "retention_months" > 0                                           |
+| "retention_destination_code" in ('cold', 'archive')              |
+| "timepoint_timezone" <> ''                                       |
+| ("approved_at" is null) = ("approved_by" = '')                   |
+| ("refused_at" is null) = ("refusal_comment" = '')                |
+| "approved_at" is null or "refused_at" is null                    |
+| "requires_authorisation" or "approval_request_id" is null        |
+
+A cut either waits, is authorised or is refused, and never two of them. The last
+check states the rule the take enforces: a kind that requires no authorisation
+raises no request.
+
+** Indexes
+
+| name                     | columns                                     | unique | current_only |
+|--------------------------+---------------------------------------------+--------+--------------|
+| kind_timepoint           | tenant_id, kind_code, timepoint desc        | false  | true         |
+| scope_timepoint          | tenant_id, scope_code, timepoint desc       | false  | true         |
+| approval_request         | tenant_id, approval_request_id              | true   | true         |
+
+The first is the list by type and month. The third is the inbox's one open
+request per subject: a decision authorises one body, so two cuts cannot name one
+request. A cut whose kind requires none holds null there, and the store treats
+nulls as distinct.
+
+* Foreign keys
+
+** kind_code
+:PROPERTIES:
+:table:                 ores_reporting_cut_kinds_tbl
+:target_column:         code
+:system_tenant_visible: true
+:nullable:              false
+:list_by:               true
+:error_message:         Invalid kind_code: %. No active cut kind found with this code.
+:END:
+
+** party_id
+:PROPERTIES:
+:table:          ores_refdata_parties_tbl
+:parent_entity:  party
+:reuse_existing: true
+:nullable:       false
+:error_message:  Invalid party_id: %. No active party found with this id.
+:END:
+
+** business_centre_code
+:PROPERTIES:
+:table:         ores_refdata_business_centres_tbl
+:target_column: code
+:nullable:      false
+:error_message: Invalid business_centre_code: %. No active business centre found with this code.
+:END:
+
+The rates centre the scope's books revalue against.
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: cut
+:entity_plural_short:   cuts
+:entity_singular_words: cut
+:entity_plural_words:   cuts
+:END:
+
+*** read_by_kind_and_month
+:PROPERTIES:
+:ID: 8E52C410-7B93-4A6D-8F1C-25D9E7B04A63
+:END:
+
+Reads the cuts of one kind whose timepoint falls in an instant window, newest
+first. The window is the month a person picked on the cuts list, and the read
+takes it as a range so the caller's clock decides what a month is rather than
+the store's.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::cut>
+read_by_kind_and_month(context ctx, const std::string& kind_code,
+                       std::chrono::system_clock::time_point from,
+                       std::chrono::system_clock::time_point to);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <chrono>
+#include <string>
+#include <vector>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::cut>
+cut_repository::read_by_kind_and_month(context ctx, const std::string& kind_code,
+                                       std::chrono::system_clock::time_point from,
+                                       std::chrono::system_clock::time_point to) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading cuts of kind: " << kind_code;
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<cut_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "kind_code"_c == kind_code &&
+                             "timepoint"_c >= from && "timepoint"_c < to &&
+                             "valid_to"_c == max) |
+                       query_builder::order_by("timepoint"_c.desc());
+
+    return query_builder::execute_read_query<cut_entity, domain::cut>(
+        ctx,
+        query,
+        [](const auto& entities) { return cut_mapper::map(entities); },
+        lg(),
+        "Reading the cuts of a kind and month.");
+}
+#+end_src
+
+*** read_for_scope_in_window
+:PROPERTIES:
+:ID: 3C7A9E15-4D28-4B60-A1F7-9E83C5D2B074
+:END:
+
+Reads every cut of one scope and centre whose timepoint falls in an instant
+window, newest first. The picker offers the cuts already taken and the
+resolution reads the candidate bodies of the date the report covers, so one read
+serves both.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::cut>
+read_for_scope_in_window(context ctx, const std::string& scope_code,
+                         const std::string& business_centre_code,
+                         std::chrono::system_clock::time_point from,
+                         std::chrono::system_clock::time_point to);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <chrono>
+#include <string>
+#include <vector>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::cut>
+cut_repository::read_for_scope_in_window(context ctx, const std::string& scope_code,
+                                         const std::string& business_centre_code,
+                                         std::chrono::system_clock::time_point from,
+                                         std::chrono::system_clock::time_point to) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading cuts of scope: " << scope_code;
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<cut_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                             "scope_code"_c == scope_code &&
+                             "business_centre_code"_c == business_centre_code &&
+                             "timepoint"_c >= from && "timepoint"_c < to &&
+                             "valid_to"_c == max) |
+                       query_builder::order_by("timepoint"_c.desc());
+
+    return query_builder::execute_read_query<cut_entity, domain::cut>(
+        ctx,
+        query,
+        [](const auto& entities) { return cut_mapper::map(entities); },
+        lg(),
+        "Reading the cuts of a scope in a window.");
+}
+#+end_src
+
+*** read_latest_by_request
+:PROPERTIES:
+:ID: 6F04B8D2-1E57-4C39-BA70-83D6E2A5C918
+:END:
+
+Reads the cut one approval request authorises, if the store holds one. The apply
+asks here: the body a request authorises and whether it is applied are one row.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::optional<domain::cut>
+read_latest_by_request(context ctx, const std::string& request_id);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <optional>
+#include <string>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::optional<domain::cut>
+cut_repository::read_latest_by_request(context ctx, const std::string& request_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading the cut of request: " << request_id;
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<cut_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                             "approval_request_id"_c == request_id && "valid_to"_c == max);
+
+    auto rows = query_builder::execute_read_query<cut_entity, domain::cut>(
+        ctx,
+        query,
+        [](const auto& entities) { return cut_mapper::map(entities); },
+        lg(),
+        "Reading the cut of an approval request.");
+    if (rows.empty())
+        return std::nullopt;
+    return rows.front();
+}
+#+end_src
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: c
+:END:
+
+** Table display
+
+| column            | header      |
+|-------------------+-------------|
+| kind_code         | Kind        |
+| scope_code        | Scope       |
+| timepoint         | Timepoint   |
+| take_ordinal      | Take        |
+| taken_by          | Taken By    |
+| modified_by       | Modified By |
+| version           | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.reporting/domain/cut.hpp
+:domain_class:           reporting::domain::cut
+:protocol_include:       ores.reporting/messaging/cut_protocol.hpp
+:collection_name:        cuts
+:key_field:              id
+:get_request_class:      reporting::messaging::get_cut_request
+:get_response_class:     reporting::messaging::get_cut_response
+:get_message_type:       get_cut_request
+:save_request_class:     reporting::messaging::save_cut_request
+:save_response_class:    reporting::messaging::save_cut_response
+:save_message_type:      save_cut_request
+:delete_request_class:   reporting::messaging::delete_cut_request
+:delete_response_class:  reporting::messaging::delete_cut_response
+:delete_message_type:    delete_cut_request
+:END:
+
+*** Detail fields
+
+| field                     | label               | type      | is_key | is_required | placeholder                   |
+|---------------------------+---------------------+-----------+--------+-------------+-------------------------------|
+| kind_code                 | Kind                | line_edit |        | true        | e.g. EOD                      |
+| scope_code                | Scope               | line_edit |        | true        | e.g. ACME-LONDON              |
+| business_centre_code      | Rates Centre        | line_edit |        | true        | e.g. LDN                      |
+| timepoint                 | Timepoint           | line_edit |        | true        | e.g. 2026-10-06T17:00:00Z     |
+| timepoint_timezone        | Timezone            | line_edit |        | true        | e.g. Europe/London            |
+| take_ordinal              | Take                | spin_edit |        | true        | Enter take ordinal            |
+| market_data_snapshot_id   | Market Data Snapshot| line_edit |        |             | Enter the snapshot id         |
+| deal_population_id        | Deal Population     | line_edit |        |             | Enter the population id       |
+| reference_data_version    | Reference Data      | line_edit |        |             | Enter the version             |
+| engine_version            | Engine Version      | line_edit |        |             | Enter the engine version      |
+| code_version              | Code Version        | line_edit |        |             | Enter the code revision       |
+| taken_by                  | Taken By            | line_edit |        | true        | Enter the account             |
+| retention_months          | Retention (months)  | spin_edit |        | true        | Enter months                  |
+
+*** Columns
+
+| enum_name           | field                  | header      | type      | width |
+|---------------------+------------------------+-------------+-----------+-------|
+| KindCode            | kind_code              | Kind        | string    | 100   |
+| ScopeCode           | scope_code             | Scope       | string    | 180   |
+| Timepoint           | timepoint              | Timepoint   | timestamp | 180   |
+| TakeOrdinal         | take_ordinal           | Take        | int       | 60    |
+| TakenBy             | taken_by               | Taken By    | string    | 160   |
+| Version             | version                | Version     | int       | 60    |
+| ModifiedBy          | modified_by            | Modified By | string    | 120   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] — the facts, the derived states and the retention.
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the definition and the body the cut holds.
+- [[id:1B2C3D4E-5F60-4718-9A2B-3C4D5E6F7A80][ores.reporting.cut_kind]] — the kind the cut was taken under.
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

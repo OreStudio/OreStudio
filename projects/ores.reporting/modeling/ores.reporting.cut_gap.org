@@ -1,0 +1,231 @@
+:PROPERTIES:
+:ID: 9B65E3F1-2C04-4D87-A6B9-5E13F0A8C742
+:END:
+#+title: ores.reporting.cut_gap
+#+description: Codegen entity model for the reporting =cut_gap= table. One part of a cut's body that the assembly could not fill, with the item, the part and the reason.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: A part of a cut's body the assembly could not fill.
+#+entity_singular: cut_gap
+#+entity_plural: cut_gaps
+#+entity_title: Cut Gap
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+One part of a cut's body that the assembly could not fill: the part, the item
+inside it and the reason it could not be filled.
+
+A cut that fixed the data and omitted a part it could not read would look
+smaller than it is. The gap list is the answer to that: the body that could not
+be assembled is a fact a person acts on, and the cut's own page is where the
+list is read. A take that could not close a gap saves the attempt as an
+incomplete cut and raises no approval request, because a decider would be asked
+to sign a body that does not meet the definition.
+
+The parts are the four inputs the body holds: the market data, the deal
+population, the reference data, and the engine and the code.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate UUID identifying this gap.
+
+** party_id
+:PROPERTIES:
+:type:       uuid
+:cpp_type:   boost::uuids::uuid
+:nullable:   false
+:filterable: true
+:END:
+
+The party the cut belongs to, set by the take from the cut it records.
+
+Row level security reads it, so a session sees the gaps of the parties it works
+in.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** cut_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:filterable:  true
+:END:
+
+The cut whose body could not be filled.
+
+** part_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:natural_key: true
+:END:
+
+The part of the body the gap belongs to: =market_data=, =deal_population=,
+=reference_data= or =engine_code=.
+
+#+begin_src cpp :name generator
+std::string("market_data")
+#+end_src
+
+** item
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:natural_key: true
+:END:
+
+The item inside the part that could not be filled: a series with no value at or
+before the instant, a deal at no version, a curve nobody has approved.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** reason
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Why the part could not be filled, in the words the person who closes it reads.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:            ores_reporting_cut_gaps_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation:  true
+:END:
+
+** Checks
+
+| expression                                              |
+|---------------------------------------------------------|
+| "part_code" in ('market_data', 'deal_population', 'reference_data', 'engine_code') |
+
+** Indexes
+
+| name              | columns           | unique | current_only |
+|-------------------+-------------------+--------+--------------|
+| cut_gaps_cut_item | tenant_id, cut_id, part_code, item | true | true   |
+
+One gap states one item once: a reread of the same failure rewrites the row
+rather than adding a second line a person reads twice.
+
+* Foreign keys
+
+** cut_id
+:PROPERTIES:
+:table:         ores_reporting_cuts_tbl
+:target_column: id
+:parent_entity: cut
+:nullable:      false
+:list_by:       true
+:error_message: Invalid cut_id: %. No active cut found with this id.
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: gap
+:entity_plural_short:   gaps
+:entity_singular_words: cut gap
+:entity_plural_words:   cut gaps
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cg
+:END:
+
+** Table display
+
+| column     | header       |
+|------------+--------------|
+| part_code  | Part         |
+| item       | Item         |
+| reason     | Reason       |
+| modified_by| Modified By  |
+| version    | Version      |
+
+** Presentation
+:PROPERTIES:
+:collection_name:        cut_gaps
+:key_field:              id
+:delete_request_id_field: ids
+:save_request_item_field: cut_gap
+:END:
+
+*** Detail fields
+
+| field     | label    | type      | is_key | is_required | placeholder        |
+|-----------+----------+-----------+--------+-------------+--------------------|
+| part_code | Part     | line_edit |        | true        | e.g. market_data   |
+| item      | Item     | line_edit |        | true        | Enter the item     |
+| reason    | Reason   | text_edit |        | true        | Enter the reason   |
+
+*** Columns
+
+| enum_name | field     | header   | type   | width |
+|-----------+-----------+----------+--------+-------|
+| PartCode  | part_code | Part     | string | 160   |
+| Item      | item      | Item     | string | 300   |
+| Reason    | reason    | Reason   | string | 400   |
+| Version   | version   | Version  | int    | 80    |
+| ModifiedBy| modified_by | Modified By | string | 120 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:4A81F2C6-9D37-42E0-B5A8-0C61D94E7B23][ores.reporting.cut]] — the body these gaps belong to.
+- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] — why an incomplete body is refused before it is signed.
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

@@ -43,6 +43,10 @@
 \ir ./reporting_engine_settings_fixings_drop.sql
 \ir ./reporting_engine_settings_notify_trigger_drop.sql
 \ir ./reporting_engine_settings_drop.sql
+\ir ./reporting_cut_gaps_notify_trigger_drop.sql
+\ir ./reporting_cut_gaps_drop.sql
+\ir ./reporting_cuts_notify_trigger_drop.sql
+\ir ./reporting_cuts_drop.sql
 \ir ./reporting_cut_kinds_notify_trigger_drop.sql
 \ir ./reporting_cut_kinds_drop.sql
 \ir ./reporting_cut_resolution_rules_notify_trigger_drop.sql

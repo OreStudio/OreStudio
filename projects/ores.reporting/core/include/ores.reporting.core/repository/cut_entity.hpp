@@ -1,0 +1,140 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_REPORTING_CORE_REPOSITORY_CUT_ENTITY_HPP
+#define ORES_REPORTING_CORE_REPOSITORY_CUT_ENTITY_HPP
+
+#include "ores.database/query_builder/columns.hpp"
+#include "ores.database/repository/db_types.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <ostream>
+#include <string>
+
+namespace ores::reporting::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
+
+/**
+ * @brief Represents a cut in the database.
+ *
+ * Each member holds the type its column has, so the layer binds and reads it
+ * in the binary format and the mapper copies it to the domain member. A column
+ * whose type the layer has no codec for keeps its text, and the mapper converts
+ * it.
+ */
+struct cut_entity {
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_reporting_cuts_tbl";
+
+    boost::uuids::uuid id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+    int version = 0;
+
+    std::string kind_code;
+
+
+    std::string scope_code;
+
+    db_timestamp timepoint;
+
+
+    int take_ordinal = 0;
+
+    boost::uuids::uuid party_id;
+    std::string business_centre_code;
+    std::string timepoint_timezone;
+    std::optional<std::string> cut_time_code;
+    std::optional<boost::uuids::uuid> market_data_snapshot_id;
+    std::optional<boost::uuids::uuid> deal_population_id;
+    std::optional<std::string> reference_data_version;
+    std::optional<std::string> engine_version;
+    std::optional<std::string> code_version;
+    std::string taken_by;
+    std::optional<db_timestamp> taken_at;
+    bool requires_authorisation = false;
+    std::optional<boost::uuids::uuid> approval_request_id;
+    std::string approved_by = "";
+    std::optional<db_timestamp> approved_at;
+    std::optional<db_timestamp> refused_at;
+    std::string refusal_comment = "";
+    int retention_months = 0;
+    std::string retention_destination_code;
+    bool legal_hold = false;
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    db_timestamp valid_from = db_timestamp::max();
+    db_timestamp valid_to = db_timestamp::max();
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = cut_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("kind_code", &e::kind_code) |
+               query_builder::bind("scope_code", &e::scope_code) |
+               query_builder::bind("timepoint", &e::timepoint) |
+               query_builder::bind("take_ordinal", &e::take_ordinal) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("business_centre_code", &e::business_centre_code) |
+               query_builder::bind("timepoint_timezone", &e::timepoint_timezone) |
+               query_builder::bind("cut_time_code", &e::cut_time_code) |
+               query_builder::bind("market_data_snapshot_id", &e::market_data_snapshot_id) |
+               query_builder::bind("deal_population_id", &e::deal_population_id) |
+               query_builder::bind("reference_data_version", &e::reference_data_version) |
+               query_builder::bind("engine_version", &e::engine_version) |
+               query_builder::bind("code_version", &e::code_version) |
+               query_builder::bind("taken_by", &e::taken_by) |
+               query_builder::bind("taken_at", &e::taken_at) |
+               query_builder::bind("requires_authorisation", &e::requires_authorisation) |
+               query_builder::bind("approval_request_id", &e::approval_request_id) |
+               query_builder::bind("approved_by", &e::approved_by) |
+               query_builder::bind("approved_at", &e::approved_at) |
+               query_builder::bind("refused_at", &e::refused_at) |
+               query_builder::bind("refusal_comment", &e::refusal_comment) |
+               query_builder::bind("retention_months", &e::retention_months) |
+               query_builder::bind("retention_destination_code", &e::retention_destination_code) |
+               query_builder::bind("legal_hold", &e::legal_hold) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
+};
+
+std::ostream& operator<<(std::ostream& s, const cut_entity& v);
+
+}
+
+#endif

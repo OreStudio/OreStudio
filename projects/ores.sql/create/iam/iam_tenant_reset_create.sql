@@ -100,6 +100,12 @@ declare
         'ores_refdata_portfolios_tbl',
         'ores_refdata_books_tbl',
 
+        -- The cuts a person took for this tenant's parties: the gaps hang off
+        -- the cut, so they are wiped first. The kinds and their lookups are
+        -- the system tenant's reference data and are left alone.
+        'ores_reporting_cut_gaps_tbl',
+        'ores_reporting_cuts_tbl',
+
         -- Report and scheduler definitions, created by the wizard's report
         -- setup step and by admin activity.
         'ores_reporting_report_definitions_tbl',

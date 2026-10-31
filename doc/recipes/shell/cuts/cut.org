@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 2858EF0B-6DDE-5D4A-A93F-A8AE186B4438
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the cuts commands from the shell?
+#+description: Every command the cuts submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:cuts:
+
+This file documents the cuts resource at the shell, one section per command. Every command is a subcommand of =cuts=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 4A409D84-090D-5D3B-A870-59356259CA9D
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+cuts list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.cuts.list=.
+
+#+name: cuts-list
+#+begin_src ores-shell :tangle cuts-list.ores :exports none
+cuts list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 6E930DCE-8D2A-5B10-9221-A15386DDE349
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cuts get <id>
+#+end_example
+
+It is addressed at =reporting.v1.cuts.get=.
+
+#+name: cuts-get
+#+begin_src ores-shell :tangle cuts-get.ores :exports none
+cuts get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: A758DB81-A478-5F54-93A8-9FEE3C586209
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cuts get-many <id>
+#+end_example
+
+It is addressed at =reporting.v1.cuts.get_many=.
+
+#+name: cuts-get-many
+#+begin_src ores-shell :tangle cuts-get-many.ores :exports none
+cuts get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 1648F3ED-AC59-572B-BB89-6D8C21326E23
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cuts add <kind_code> <scope_code> <timepoint> <take_ordinal> <business_centre_code> <timepoint_timezone> <cut_time_code> <market_data_snapshot_id> <deal_population_id> <reference_data_version> <engine_version> <code_version> <taken_by> <taken_at> <requires_authorisation> <approval_request_id> <approved_by> <approved_at> <refused_at> <refusal_comment> <retention_months> <retention_destination_code> <legal_hold> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.cuts.put=.
+
+#+name: cuts-add
+#+begin_src ores-shell :tangle cuts-add.ores :exports none
+cuts add __none__ __none__ 1970-01-01T00:00:00Z 0 __none__ __none__ - - - - - - __none__ - false - __none__ - - __none__ 0 __none__ false system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 56E0D423-A362-5A8D-B0D7-D87CA747F0A4
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cuts set <id> <kind_code> <scope_code> <timepoint> <take_ordinal> <business_centre_code> <timepoint_timezone> <cut_time_code> <market_data_snapshot_id> <deal_population_id> <reference_data_version> <engine_version> <code_version> <taken_by> <taken_at> <requires_authorisation> <approval_request_id> <approved_by> <approved_at> <refused_at> <refusal_comment> <retention_months> <retention_destination_code> <legal_hold> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.cuts.put=.
+
+#+name: cuts-set
+#+begin_src ores-shell :tangle cuts-set.ores :exports none
+cuts set 00000000-0000-0000-0000-000000000000 __none__ __none__ 1970-01-01T00:00:00Z 0 __none__ __none__ - - - - - - __none__ - false - __none__ - - __none__ 0 __none__ false system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: DF0F6857-F9E3-5C3C-9E56-9FA2CFCE1E70
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cuts put-many --count <n> <id> <kind_code> <scope_code> <timepoint> <take_ordinal> <business_centre_code> <timepoint_timezone> <cut_time_code> <market_data_snapshot_id> <deal_population_id> <reference_data_version> <engine_version> <code_version> <taken_by> <taken_at> <requires_authorisation> <approval_request_id> <approved_by> <approved_at> <refused_at> <refusal_comment> <retention_months> <retention_destination_code> <legal_hold> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.cuts.put_many=.
+
+#+name: cuts-put-many
+#+begin_src ores-shell :tangle cuts-put-many.ores :exports none
+cuts put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ 1970-01-01T00:00:00Z 0 __none__ __none__ - - - - - - __none__ - false - __none__ - - __none__ 0 __none__ false system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 2A3C826A-9997-5FC0-B340-E6192705A857
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cuts delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.cuts.delete=.
+
+#+name: cuts-delete
+#+begin_src ores-shell :tangle cuts-delete.ores :exports none
+cuts delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: ECCCCF86-6BCA-5A94-A6B5-91906FD6235D
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cuts delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.cuts.delete_many=.
+
+#+name: cuts-delete-many
+#+begin_src ores-shell :tangle cuts-delete-many.ores :exports none
+cuts delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-kind-code=
+:PROPERTIES:
+:ID: 2B8D8FBB-0E92-5EFC-91F6-D58EC3FF4C7A
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cuts by-kind-code <kind_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.cuts.list_by_kind_code=.
+
+#+name: cuts-by-kind-code
+#+begin_src ores-shell :tangle cuts-by-kind-code.ores :exports none
+cuts by-kind-code __none__ --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: E8D1D242-1CBD-55C1-9C23-AE161AC338E9
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+cuts versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.cuts_versions.list=.
+
+#+name: cuts-versions
+#+begin_src ores-shell :tangle cuts-versions.ores :exports none
+cuts versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 115B5CE0-DCE9-5978-B46A-53B7D084D631
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cuts version <id> --version <n>
+#+end_example
+
+It is addressed at =reporting.v1.cuts_versions.get=.
+
+#+name: cuts-version
+#+begin_src ores-shell :tangle cuts-version.ores :exports none
+cuts version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

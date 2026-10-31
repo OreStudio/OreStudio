@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: B8532BCE-F3D8-52A4-A90C-9188BA3F584E
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the cut_gaps commands from the shell?
+#+description: Every command the cut_gaps submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:cut_gaps:
+
+This file documents the cut_gaps resource at the shell, one section per command. Every command is a subcommand of =cut_gaps=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 3FADA31A-6295-5312-BABA-35FF319E9D21
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_gaps list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.cut_gaps.list=.
+
+#+name: cut_gaps-list
+#+begin_src ores-shell :tangle cut_gaps-list.ores :exports none
+cut_gaps list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 11015AD8-C954-5C32-B626-1DB6F31BB017
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_gaps get <id>
+#+end_example
+
+It is addressed at =reporting.v1.cut_gaps.get=.
+
+#+name: cut_gaps-get
+#+begin_src ores-shell :tangle cut_gaps-get.ores :exports none
+cut_gaps get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 14039CCA-372D-53B2-9956-5BF955BD66B0
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_gaps get-many <id>
+#+end_example
+
+It is addressed at =reporting.v1.cut_gaps.get_many=.
+
+#+name: cut_gaps-get-many
+#+begin_src ores-shell :tangle cut_gaps-get-many.ores :exports none
+cut_gaps get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 04707640-4205-5A0C-A70A-8B4B9C544A49
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_gaps add <cut_id> <part_code> <item> <reason> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.cut_gaps.put=.
+
+#+name: cut_gaps-add
+#+begin_src ores-shell :tangle cut_gaps-add.ores :exports none
+cut_gaps add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: CA6AEF51-BCE0-5603-8B95-F6037FDEC105
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_gaps set <id> <cut_id> <part_code> <item> <reason> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.cut_gaps.put=.
+
+#+name: cut_gaps-set
+#+begin_src ores-shell :tangle cut_gaps-set.ores :exports none
+cut_gaps set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 988760E2-CF06-5F12-9883-99F52DD12322
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_gaps put-many --count <n> <id> <cut_id> <part_code> <item> <reason> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.cut_gaps.put_many=.
+
+#+name: cut_gaps-put-many
+#+begin_src ores-shell :tangle cut_gaps-put-many.ores :exports none
+cut_gaps put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: C6EE2C78-5A91-593A-A0E6-F7DF74A0E52F
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_gaps delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.cut_gaps.delete=.
+
+#+name: cut_gaps-delete
+#+begin_src ores-shell :tangle cut_gaps-delete.ores :exports none
+cut_gaps delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: DBE0BE4B-4815-54F3-A46C-EF115E246F55
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_gaps delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.cut_gaps.delete_many=.
+
+#+name: cut_gaps-delete-many
+#+begin_src ores-shell :tangle cut_gaps-delete-many.ores :exports none
+cut_gaps delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-cut-id=
+:PROPERTIES:
+:ID: D6385540-885E-50FE-AE02-3CF14927B525
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_gaps by-cut-id <cut_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.cut_gaps.list_by_cut_id=.
+
+#+name: cut_gaps-by-cut-id
+#+begin_src ores-shell :tangle cut_gaps-by-cut-id.ores :exports none
+cut_gaps by-cut-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 76FC6241-C19D-5F4F-ACE5-882D9F68C538
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_gaps versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.cut_gaps_versions.list=.
+
+#+name: cut_gaps-versions
+#+begin_src ores-shell :tangle cut_gaps-versions.ores :exports none
+cut_gaps versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 35939DC2-A655-50B7-9A0C-365DA5D42452
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_gaps version <id> --version <n>
+#+end_example
+
+It is addressed at =reporting.v1.cut_gaps_versions.get=.
+
+#+name: cut_gaps-version
+#+begin_src ores-shell :tangle cut_gaps-version.ores :exports none
+cut_gaps version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

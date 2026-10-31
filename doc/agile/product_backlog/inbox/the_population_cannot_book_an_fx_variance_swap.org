@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 55A74CAE-10BE-4F84-9A90-15817F0B4A31
+:END:
+#+title: The population cannot book an FX variance swap
+#+description: The acme_demo trade population aborts partway: the FX variance swap it plans states an end date on or before its start date, and ores_trading_fx_variance_swap_instruments_tbl_check1 refuses it. Every profile that generates trades stops there, so a provisioned tenant gets a partial population.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The population stops partway with:
+
+#+begin_example
+Booking trade 9f756808-1bc9-56e1-9644-9f29e145a3d5 failed: Repository error:
+ores_q_39: ERROR: new row for relation
+"ores_trading_fx_variance_swap_instruments_tbl" violates check constraint
+"ores_trading_fx_variance_swap_instruments_tbl_check1"
+#+end_example
+
+The constraint is =check (end_date > start_date)=. The generator plans a
+variance swap whose end falls on or before its start, so the row is refused and
+the run ends. Decide where the dates come from -- the planner's tenor arithmetic
+or the instrument's own stated dates -- and make a planned swap state an end
+after its start.
+
+* Why
+
+Found on 2026-10-31 proving that a seeded trade raises no authorisation request.
+The population wrote 156 trades and then hit this, so an Acme tenant arrives
+with a partial population: the trades of the configs that ran, and none of the
+rest. Nothing reports the shortfall to the person who provisioned it.
+
+* References
+
+- =projects/ores.sql/create/trading/trading_fx_variance_swap_instruments_create.sql=
+  -- the constraint
+- =projects/ores.synthetic/core/src/trading/trading_trade_population_writer.cpp=
+  -- the writer that books the planned row
+- The booking that failed: trade =9f756808-1bc9-56e1-9644-9f29e145a3d5=, on
+  =main= at =aae241ac55=
+
+* See also
+
+- The sprint 29 story *Populate the ACME books with a realistic trade population*

@@ -8,8 +8,8 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/book-a-generated-trade-without-asking-for-authorisation
-#+pr: 4192
-#+blocked_on: 792166AA-5E00-443C-B236-C42B06FF440A
+#+pr: 4202
+#+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
@@ -26,11 +26,11 @@ A booking that is not a real deal asks nobody for authorisation, and the one pla
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Built and tested; the live proof waits on provisioning. |
-| Waiting on   | The subscribe_market_data step, which asks for a market data source nobody serves. |
-| Next         | Re-provision and count the queue once the step is fixed. |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -75,6 +75,7 @@ task and name that file in the Command column.
 | Writer cases pinning the booking terms | 3 passed, 10 assertions | =ores.synthetic.core.tests "[writer]"= with =.env= loaded | 467bb16f81 |
 | Trading service authorisation rules | 3 passed, 8 assertions | =ores.trading.core.tests= filtered to the three authorisation cases | 467bb16f81 |
 | The queue a provisioned tenant used to arrive with | 127 waiting requests, written 18:30:05 to 18:31:15 on 2026-10-30, one per seeded trade and leg | =compass sql= over =ores_inbox_approval_requests_tbl= grouped by kind and state | before this change |
+| The queue a provisioned tenant arrives with now | 0 requests, against 156 generated trades, all nature test, origin synthetic | =compass sql= over =ores_trading_trades_tbl= and =ores_inbox_approval_requests_tbl= after =compass db recreate= and the ACME provisioning script | aae241ac55 |
 
 * Notes
 
@@ -93,6 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4202][#4202]] | [agile] Correct the provisioning record and prove the queue empty |
 | [[https://github.com/OreStudio/OreStudio/pull/4192][#4192]] | [synthetic] Book a generated trade so it asks nobody for authorisation |
 
 * Review
@@ -113,16 +115,35 @@ from the send and from the session, and three cases pin it: the nature, the
 origin with the config it names and the person it is entered by, and the rows
 the slot carries.
 
-* What could not be proved
+* The proof
 
-The acceptance asks for a freshly provisioned tenant with an empty queue, and
-that proof stopped at provisioning: the =subscribe_market_data= step asks for a
-market data source nobody serves, so the run aborts at step 7 and the trade
-population never runs. That is recorded as
-[[proj:doc/agile/product_backlog/inbox/provisioning_asks_for_a_market_data_source_nobody_serves.org][Provisioning asks for a market data source nobody serves]];
-the local workaround was refused because the profile belongs to the system
-tenant.
+Recreated the database, built =main= at =aae241ac55=, and provisioned ACME. The
+population wrote 156 trades, every one of them =test= with origin =synthetic=,
+and the authorisation queue held nothing:
 
-What is proved instead: the writer states the nature, and the service raises a
-request for actual and none for test, both on this tree. The remaining step is
-to provision once the environment can, and count the queue at zero.
+#+begin_example
+booking_nature |  origin   | count
+---------------+-----------+-------
+test           | synthetic |   156
+
+kind_code | state_code | count
+----------+------------+-------
+(0 rows)
+#+end_example
+
+The same run aborts before it finishes the population: the FX variance swap it
+plans states an end date on or before its start date and a check constraint
+refuses it, so the tenant gets those 156 trades and no more. That is a defect in
+the generator, recorded as
+[[proj:doc/agile/product_backlog/inbox/the_population_cannot_book_an_fx_variance_swap.org][The population cannot book an FX variance swap]],
+and it does not change what this task proves: every trade the population managed
+to write asks nobody for authorisation.
+
+* Correction
+
+An earlier attempt on this worktree reported the =subscribe_market_data= step
+failing with a market data source nobody serves, and that was written up as a
+capture. It was a stale-library symptom, not a defect: the worktree had built
+only one component, so the services were running the previous release's
+libraries while the source had moved on. On a full build of =main= the step
+passes. The capture is withdrawn.

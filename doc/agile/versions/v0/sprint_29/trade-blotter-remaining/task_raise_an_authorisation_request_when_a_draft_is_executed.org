@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/raise-an-authorisation-request-when-a-draft-is-executed
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
 #+updated: 2026-10-24
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A trade can go live without passing through book_trade: Execute takes a draft to
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

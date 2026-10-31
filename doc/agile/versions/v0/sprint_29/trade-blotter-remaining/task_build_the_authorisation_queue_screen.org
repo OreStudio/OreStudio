@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/build-the-authorisation-queue-screen
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-24
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Build the queue screen that the Operational authorisation queue page specifies: 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Prototype drawn, awaiting sign-off.    |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Settle the variant, then build it.     |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -41,9 +41,17 @@ Build the queue screen that the Operational authorisation queue page specifies: 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The task asks for a prototype first, so this unit is the prototype:
+[[proj:doc/prototypes/operations/operational-authorisation-queue.org][Work the authorisation queue]].
+It draws the queue two ways — class and state as a rail, or as tabs over a
+full-width table with the deal in a drawer — and it settles nothing about the
+build until one variant is chosen.
+
+The screen itself comes after that: an Operations screen over the approval
+request of kind =trading.operational_authorisation=, the trade it names, and the
+states the knowledge page sets. It reuses the inbox's request parts rather than
+a second authorisation model, because a second one would be a second answer to
+the same question.
 
 * Measurements
 

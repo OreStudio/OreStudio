@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 7A3B1C3D-5E6F-4A70-8B91-2C3D4E5F6A70
+:END:
+#+title: Work the authorisation queue prototype
+#+description: A deal waits in one queue with two divisions over it — flow against non-flow, and the state its authorisation is in — and the deal opens beside the list, where a decision cannot be taken without a comment.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:operations:trading:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+| Item          | Where                                        |
+|---------------+----------------------------------------------|
+| Prototype     | [[file:operational-authorisation-queue/][the prototype]] |
+| Gemini review | none                                         |
+| Group         | [[file:index.org][Operations prototypes]]        |
+
+* Summary
+
+The design is
+[[id:785C68A0-DD94-404A-BF16-57814554DA12][Operational Authorisation Queue]], and this prototype
+is the first drawing of it as a screen. The thing to settle is not the
+content — the page states that — but *where the two divisions live*: a deal
+belongs to a class (flow or non-flow) and it sits in a state (awaiting, held
+over, amendment, authorised, denied), and a person works those two at once.
+
+Two answers are drawn side by side:
+
+- *Rail*: class and state as one tree in the rail, the list beside it, and the
+  open deal in a fixed pane on the right.
+- *Tabs*: state as tabs over a full-width table, class as a segmented control
+  above them, and the open deal in a drawer that covers the list while it is
+  read.
+
+It is one page of mock HTML, CSS and JavaScript. It calls no service, needs no
+build and no session, and both variants open from the same file with
+=variant=rail= or =variant=tabs=.
+
+* What both variants have to do
+
+** The queue is a queue, not a list
+
+Ordering is by recency, with one override: a deal not exercised and close to
+expiry is pinned at the top in red, with a banner naming it. An option that
+expires while it waits in a queue is a loss the queue caused, so urgency
+outranks arrival.
+
+** A decision always carries a comment
+
+Authorise, hold over and deny are disabled until the comment has text,
+authorisation included. A hold also needs a reason from the fixed list — and
+that list is mostly handover markers between regional teams, so the field is
+drawn as a select with the handover entries last, not as a free-text box.
+
+** A denial cannot become an authorisation
+
+The denied deal opens with its reason, the Authorise button is not drawn, and
+the notice says why: un-authorise it with a reason, then authorise the new
+version. Attempting it from a keyboard raises the exception rather than
+quietly succeeding.
+
+** An amendment says what changed
+
+The fields that changed are marked in the fact list, with the previous values
+underneath, and an amendment adds its reason code, its department, and the
+operational error flag — the flag that separates a deal booked wrongly from one
+that moved for a business reason.
+
+** A new version does not lock the row
+
+The row carries "updated 2 min ago by …" and the pane says the row is not
+locked: the operator may read it now or come back. Nothing in the prototype
+takes a lease on a deal.
+
+** A structure authorises as a whole
+
+The package's legs are listed inside the open deal, and the actions are the
+package's own.
+
+* What the two variants disagree about
+
+| Question | Rail | Tabs |
+|----------+------+------|
+| How many things am I filtering at once? | Two, visible together | One at a time, the class set first |
+| Where does the deal go when I open it? | Beside the list, always | Over the list, while it is read |
+| What does the list read as when nothing is chosen? | The class's whole state group | The state tab's rows across classes |
+| Cost at 1200px | The list loses a third of its width | The table keeps its width, the deal covers it |
+
+The rail answers "what is in this class, in each state" without a click. The
+tabs answer "what is awaiting authorisation" faster, but hiding the class
+behind a control means a person can read the queue they did not mean.
+
+* What this does not decide
+
+- Whether the queue is its own area screen or a tab of the Operations area.
+  The crumb reads =Operations › Operational authorisation queue= in both.
+- How the amend diff is drawn when many fields changed; one row is marked here.
+- The reports the design names — time held, and what stayed overnight — are
+  absent.
+
+* See also
+
+- [[id:785C68A0-DD94-404A-BF16-57814554DA12][Operational Authorisation Queue]]
+- [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational Authorisation]]
+- [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]]

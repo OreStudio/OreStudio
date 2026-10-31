@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operations: operational authorisation queue prototype</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  The operational authorisation queue, from
+  doc/knowledge/domain/operational_authorisation_queue.org: the deals that
+  await Operations, divided by flow and non-flow, grouped by the state their
+  authorisation is in, with a deal opened beside the list.
+
+  Two variants, switchable with ?variant=rail|tabs: the class and state tree
+  in the rail, or the same two divisions as tabs over a full-width table with
+  the deal in a drawer. The variant bar at the foot of the page prints the
+  screen's whole state.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

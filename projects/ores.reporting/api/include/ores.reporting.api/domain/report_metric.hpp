@@ -118,11 +118,6 @@ struct report_metric final {
     std::string factor;
 
     /**
-     * @brief The size of the shift the figure was produced at, when the row states one.
-     */
-    std::string shift;
-
-    /**
      * @brief Every other qualifier the file stated, as a JSON object of name and value, so a family
      * gains no column in the table.
      */

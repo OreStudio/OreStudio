@@ -110,7 +110,6 @@ domain::report_metric report_metric_to_domain(const messaging::report_metric_wri
     v.currency = write.currency;
     v.scenario = write.scenario;
     v.factor = write.factor;
-    v.shift = write.shift;
     v.qualifiers = write.qualifiers;
     v.value = write.value;
     v.source = write.source;

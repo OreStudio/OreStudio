@@ -74,7 +74,6 @@ struct report_metric_entity {
     std::string currency;
     std::optional<std::string> scenario;
     std::optional<std::string> factor;
-    std::optional<std::string> shift;
     std::optional<std::string> qualifiers;
     double value;
     std::string source;
@@ -99,7 +98,7 @@ struct report_metric_entity {
                query_builder::bind("report_definition_id", &e::report_definition_id) |
                query_builder::bind("currency", &e::currency) |
                query_builder::bind("scenario", &e::scenario) |
-               query_builder::bind("factor", &e::factor) | query_builder::bind("shift", &e::shift) |
+               query_builder::bind("factor", &e::factor) |
                query_builder::bind("qualifiers", &e::qualifiers) |
                query_builder::bind("value", &e::value) | query_builder::bind("source", &e::source) |
                query_builder::bind("valid_from", &e::valid_from) |

@@ -52,7 +52,6 @@ render_report_metric_fields(const domain::report_metric& v) {
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Scenario", .value = v.scenario});
     fields.push_back({.name = "Factor", .value = v.factor});
-    fields.push_back({.name = "Shift", .value = v.shift});
     fields.push_back({.name = "Qualifiers", .value = v.qualifiers});
     fields.push_back({.name = "Value", .value = std::to_string(v.value)});
     fields.push_back({.name = "Source", .value = v.source});

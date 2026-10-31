@@ -52,7 +52,6 @@ struct report_metric_write {
     std::string currency;
     std::string scenario;
     std::string factor;
-    std::string shift;
     std::string qualifiers;
     double value;
     std::string source;

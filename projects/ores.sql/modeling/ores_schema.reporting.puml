@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: reporting
-Tables: 45
+Tables: 46
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1057,6 +1057,49 @@ package "reporting" #E0F7FA {
     is not reproducible in order is not reproducible.
     165 of the 218 parameter names observed in the shipped corpus belong to
     exactly one analytic kind, which is why the name alone is not the key.
+    end note
+
+    entity ores_reporting_report_cashflows_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        * as_of : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * report_instance_id : uuid <<FK>>
+        * family : text
+        * subject_type : text
+        * subject_id : text <<FK>>
+        * scenario : text
+        * cashflow_no : text
+        * leg_no : text
+        * measure : text
+        * part : text
+        * report_definition_id : uuid <<FK>>
+          pay_date : timestamptz
+          flow_type : text
+          currency : text
+        * value : double
+        * source : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_cashflows_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Cashflow Table
+    A cashflow is not a metric. A metric states one figure about a subject; a
+    cashflow states a row per payment, keyed by the leg and the payment number, and
+    the stressed families state each of its figures three times, as a base, a
+    scenario and the difference between them.
+    The row here is therefore narrow, and keeps the cashflow's own keys: one figure,
+    named by its heading, with the part of the stressed comparison it states. A
+    family of cashflows adds no column to this table, and no figure of a cashflow is
+    flattened into report_metric, because the keys that make a cashflow a cashflow
+    have no place in a metric.
+    The row is written once, with the run, and never edited; a correction is a new
+    run.
     end note
 
     entity ores_reporting_report_configurations_tbl <<temporal>> #C6F0D8 {

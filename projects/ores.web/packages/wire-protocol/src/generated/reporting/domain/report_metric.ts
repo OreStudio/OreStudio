@@ -44,7 +44,6 @@ export interface ReportMetric {
     currency: string;
     scenario: string;
     factor: string;
-    shift: string;
     qualifiers: string;
     value: number;
     source: string;

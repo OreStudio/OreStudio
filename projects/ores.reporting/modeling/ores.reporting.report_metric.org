@@ -151,15 +151,6 @@ it.
 
 The risk factor the figure is a sensitivity to, when the row states one.
 
-** shift
-:PROPERTIES:
-:type:         text
-:cpp_type:     std::string
-:nullable:     true
-:END:
-
-The size of the shift the figure was produced at, when the row states one.
-
 ** qualifiers
 :PROPERTIES:
 :type:         text

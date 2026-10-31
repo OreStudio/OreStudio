@@ -48,7 +48,6 @@ create table if not exists "ores_reporting_report_metrics_tbl" (
     "currency" text not null,
     "scenario" text null,
     "factor" text null,
-    "shift" text null,
     "qualifiers" text null,
     "value" double precision not null,
     "source" text not null,

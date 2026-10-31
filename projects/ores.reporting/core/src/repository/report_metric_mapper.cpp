@@ -60,7 +60,6 @@ domain::report_metric report_metric_mapper::map(const report_metric_entity& v) {
     r.currency = v.currency;
     r.scenario = v.scenario.value_or("");
     r.factor = v.factor.value_or("");
-    r.shift = v.shift.value_or("");
     r.qualifiers = v.qualifiers.value_or("");
     r.value = v.value;
     r.source = v.source;
@@ -86,7 +85,6 @@ report_metric_entity report_metric_mapper::map(const domain::report_metric& v) {
     r.currency = v.currency;
     r.scenario = v.scenario.empty() ? std::nullopt : std::optional(v.scenario);
     r.factor = v.factor.empty() ? std::nullopt : std::optional(v.factor);
-    r.shift = v.shift.empty() ? std::nullopt : std::optional(v.shift);
     r.qualifiers = v.qualifiers.empty() ? std::nullopt : std::optional(v.qualifiers);
     r.value = v.value;
     r.source = v.source;

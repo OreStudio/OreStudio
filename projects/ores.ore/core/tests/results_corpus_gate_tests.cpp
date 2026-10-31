@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/results/child_row_reader.hpp"
+#include "ores.ore.core/results/cashflow_reader.hpp"
 #include "ores.ore.core/results/metric_reader.hpp"
 #include "ores.ore.core/results/output_catalogue.hpp"
 #include "ores.testing/test_files.hpp"
@@ -34,12 +34,11 @@ const std::string gate_tags("[ore][results][corpus_gate]");
 using ores::ore::results::family_of_file;
 using ores::ore::results::output_families;
 using ores::ore::results::output_family;
-using ores::ore::results::read_calibration_flows;
-using ores::ore::results::read_flows;
+using ores::ore::results::is_cashflow_family;
+using ores::ore::results::read_cashflows;
 using ores::ore::results::read_metrics;
-using ores::ore::results::read_stressed_flows;
 
-enum class shape { metric, flows, stressed_flows, calibration_flows, payload };
+enum class shape { metric, cashflow, payload };
 
 // The families whose shape is a market state rather than a result. They are
 // stored as a payload by the marketdata task, so no reader in this component
@@ -53,25 +52,19 @@ const std::vector<std::string> payload_families = {"rawcube",
                                                    "scenario_fullSurface"};
 
 shape shape_of(const output_family& family) {
-    if (family.code == "flows")
-        return shape::flows;
-    if (family.code == "stresstest_flows")
-        return shape::stressed_flows;
-    if (family.code == "todaysmarketcalibration_cashflows")
-        return shape::calibration_flows;
     if (std::ranges::find(payload_families, family.code) != payload_families.end())
         return shape::payload;
+    // A family whose key names a payment states a cashflow, and every other
+    // family states figures about a subject.
+    if (is_cashflow_family(family))
+        return shape::cashflow;
     return shape::metric;
 }
 
 bool reads_whole(const output_family& family, const std::string& csv) {
     switch (shape_of(family)) {
-        case shape::flows:
-            return read_flows(csv, family.code).refusals.empty();
-        case shape::stressed_flows:
-            return read_stressed_flows(csv, family.code).refusals.empty();
-        case shape::calibration_flows:
-            return read_calibration_flows(csv, family.code).refusals.empty();
+        case shape::cashflow:
+            return read_cashflows(csv, family).refusals.empty();
         case shape::metric:
             return read_metrics(csv, family).refusals.empty();
         case shape::payload:
@@ -85,7 +78,7 @@ bool reads_whole(const output_family& family, const std::string& csv) {
 
 TEST_CASE("every family states the shape that reads it", gate_tags) {
     std::size_t metrics = 0;
-    std::size_t children = 0;
+    std::size_t cashflows = 0;
     std::size_t payloads = 0;
 
     for (const auto& family : output_families()) {
@@ -104,14 +97,18 @@ TEST_CASE("every family states the shape that reads it", gate_tags) {
                 ++payloads;
                 break;
             }
-            default:
-                ++children;
+            case shape::cashflow:
+                // A cashflow family states the numbering of a payment, or its
+                // reader could not tell one payment from another.
+                CHECK(std::ranges::find(family.key_columns, "CashflowNo") !=
+                      family.key_columns.end());
+                ++cashflows;
                 break;
         }
     }
 
     CHECK(metrics == 50);
-    CHECK(children == 3);
+    CHECK(cashflows == 3);
     CHECK(payloads == payload_families.size());
 }
 

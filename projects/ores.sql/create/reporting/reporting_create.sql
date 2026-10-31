@@ -129,6 +129,8 @@
 \ir ./reporting_report_result_rows_notify_trigger_create.sql
 \ir ./reporting_report_metrics_create.sql
 \ir ./reporting_report_metrics_notify_trigger_create.sql
+\ir ./reporting_report_cashflows_create.sql
+\ir ./reporting_report_cashflows_notify_trigger_create.sql
 
 \ir ./reporting_resolve_book_ids_fn_create.sql
 \ir ./reporting_configuration_analytics_fn_create.sql

@@ -45,7 +45,6 @@ export interface ReportMetricWrite {
     currency: string;
     scenario: string;
     factor: string;
-    shift: string;
     qualifiers: string;
     value: number;
     source: string;

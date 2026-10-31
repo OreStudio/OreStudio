@@ -169,6 +169,9 @@ select ores_utility_allow_version_replace_fn();
 \ir acme/acme_us_books_artefact_populate.sql
 \ir acme/acme_us_accounts_artefact_populate.sql
 \ir acme/acme_us_account_contact_informations_artefact_populate.sql
+-- The account that takes the end of day cut holds the Finance role as well as
+-- its own, so the take journey has a person who may press it.
+\ir acme/acme_cut_take_roles_populate.sql
 \ir acme/acme_hk_business_units_artefact_populate.sql
 \ir acme/acme_hk_portfolios_artefact_populate.sql
 \ir acme/acme_hk_books_artefact_populate.sql

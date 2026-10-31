@@ -32,6 +32,7 @@ import csv
 import io
 import os
 import re
+import subprocess
 import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
@@ -328,6 +329,20 @@ def render(catalogue):
     return "\n".join(lines)
 
 
+def formatted(text, name):
+    """The text as the project's formatter states it.
+
+    The data files are formatted like the rest of the tree, so the check that
+    they match the generator cannot fail on whitespace alone.
+    """
+    try:
+        p = subprocess.run(["clang-format", f"--assume-filename={name}"],
+                           input=text, capture_output=True, text=True)
+    except FileNotFoundError:
+        return text
+    return p.stdout if p.returncode == 0 and p.stdout else text
+
+
 def main(argv):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--check", action="store_true",
@@ -338,8 +353,11 @@ def main(argv):
     catalogue = rows(families, seed_outputs())
     text = render(catalogue)
 
+    text = formatted(text, DATA)
+    data_header = formatted(header(), DATA_HPP)
+
     if args.check:
-        for path, want in ((DATA, text), (DATA_HPP, header())):
+        for path, want in ((DATA, text), (DATA_HPP, data_header)):
             try:
                 current = open(path, encoding="utf-8").read()
             except OSError:
@@ -356,7 +374,7 @@ def main(argv):
     with open(DATA, "w", encoding="utf-8") as f:
         f.write(text)
     with open(DATA_HPP, "w", encoding="utf-8") as f:
-        f.write(header())
+        f.write(data_header)
     named = sum(1 for r in catalogue if r["parameter"])
     print(f"wrote {len(catalogue)} families, {named} named by a parameter, "
           f"{len(catalogue) - named} by an engine convention")

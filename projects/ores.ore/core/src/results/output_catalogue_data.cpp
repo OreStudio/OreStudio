@@ -28,7 +28,7 @@
 namespace ores::ore::results {
 
 const std::string_view output_catalogue_text{
-R"CAT(
+    R"CAT(
 bacva	bacva.csv		bacva	NettingSet	1	external/ore/examples/XvaRisk/ExpectedOutput/bacva/bacva.csv	Counterparty:text,NettingSet:text,Analytic:text,Value:decimal
 colva-nettingset	colva_nettingset_*.csv		xva	NettingSet,Date,Time	1	external/ore/examples/MinimalSetup/ExpectedOutput/colva_nettingset_CPTY_A.csv	NettingSet:text,Date:date,Time:text,CollateralBalance:decimal,COLVA Increment:decimal,COLVA:decimal,CollateralFloor Increment:decimal,CollateralFloor:decimal
 correlation	correlation.csv	correlation.outputFile	correlation	RiskFactor1,RiskFactor2	1	external/ore/examples/MarketRisk/ExpectedOutput/Correlation/correlation.csv	RiskFactor1:text,RiskFactor2:text,Correlation:decimal
@@ -89,7 +89,6 @@ xva_par_sensitivity	xva_par_sensitivity_*.csv		xvaSensitivity	TradeId,NettingSet
 xva_zero_sensitivity	xva_zero_sensitivity_*.csv		xvaSensitivity	TradeId,NettingSetId	1	external/ore/examples/XvaRisk/ExpectedOutput/sacva/xva_zero_sensitivity_cva.csv	NettingSetId:text,TradeId:text,IsPar:text,Factor_1:text,ShiftSize_1:decimal,Factor_2:text,ShiftSize_2:decimal,Currency:text,Base XVA:decimal,Delta:decimal,Gamma:text
 xvacg-cva-sensi-scenario	xvacg-cva-sensi-scenario.csv		xva	TradeId,Factor	1	external/ore/examples/Performance/ExpectedOutput/cvasensi/ad/xvacg-cva-sensi-scenario.csv	TradeId:text,Factor:text,Up/Down:text,Base NPV:decimal,ShiftSize_1:decimal,ShiftSize_2:text,Scenario NPV:decimal,Difference:decimal,Base Currency:text
 xvacg-exposure	xvacg-exposure.csv		xva	Date	1	external/ore/examples/Performance/ExpectedOutput/cvasensi/ad/xvacg-exposure.csv	Date:date,EPE:decimal,ENE:decimal
-)CAT"
-};
+)CAT"};
 
 }

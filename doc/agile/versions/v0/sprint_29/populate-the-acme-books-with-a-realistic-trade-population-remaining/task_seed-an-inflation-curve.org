@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: chore/seed-an-inflation-curve
-#+pr:
+#+pr: 4210
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4210][#4210]] | [refdata] Seed the inflation curve the family names |
 
 * Review
 

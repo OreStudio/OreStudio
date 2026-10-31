@@ -317,7 +317,7 @@ void currency_routes::register_routes(
     BOOST_LOG_SEV(lg(), info) << "Registering currencies routes";
 
     auto list_route =
-        router->get("/api/v1/refdata/currencies")
+        router->get("/api/v1/reference-data/currencies")
             .summary("List currencies")
             .description("Forwards to the refdata.v1.currencies.list operation.")
             .tags({"refdata"})
@@ -333,7 +333,7 @@ void currency_routes::register_routes(
     registry->register_route(list_built);
 
     auto get_route =
-        router->get("/api/v1/refdata/currencies/{iso_code}")
+        router->get("/api/v1/reference-data/currencies/{iso_code}")
             .summary("Get one currency")
             .description("Forwards to the refdata.v1.currencies.get operation.")
             .tags({"refdata"})
@@ -345,7 +345,7 @@ void currency_routes::register_routes(
     registry->register_route(get_built);
 
     auto get_many_route =
-        router->post("/api/v1/refdata/currencies/get-many")
+        router->post("/api/v1/reference-data/currencies/get-many")
             .summary("Get many currencies")
             .description("Forwards to the refdata.v1.currencies.get_many operation.")
             .tags({"refdata"})
@@ -358,7 +358,7 @@ void currency_routes::register_routes(
     registry->register_route(get_many_built);
 
     auto add_route =
-        router->post("/api/v1/refdata/currencies")
+        router->post("/api/v1/reference-data/currencies")
             .summary("Create one currency")
             .description("Forwards to the refdata.v1.currencies.put operation.")
             .tags({"refdata"})
@@ -371,7 +371,7 @@ void currency_routes::register_routes(
     registry->register_route(add_built);
 
     auto set_route =
-        router->put("/api/v1/refdata/currencies")
+        router->put("/api/v1/reference-data/currencies")
             .summary("Replace one currency")
             .description("Forwards to the refdata.v1.currencies.put operation.")
             .tags({"refdata"})
@@ -385,7 +385,7 @@ void currency_routes::register_routes(
     registry->register_route(set_built);
 
     auto put_many_route =
-        router->post("/api/v1/refdata/currencies/put-many")
+        router->post("/api/v1/reference-data/currencies/put-many")
             .summary("Write many currencies")
             .description("Forwards to the refdata.v1.currencies.put_many operation.")
             .tags({"refdata"})
@@ -398,7 +398,7 @@ void currency_routes::register_routes(
     registry->register_route(put_many_built);
 
     auto delete_route =
-        router->delete_("/api/v1/refdata/currencies/{iso_code}")
+        router->delete_("/api/v1/reference-data/currencies/{iso_code}")
             .summary("Delete one currency")
             .description("Forwards to the refdata.v1.currencies.delete operation.")
             .tags({"refdata"})
@@ -413,7 +413,7 @@ void currency_routes::register_routes(
     registry->register_route(delete_built);
 
     auto delete_many_route =
-        router->post("/api/v1/refdata/currencies/delete-many")
+        router->post("/api/v1/reference-data/currencies/delete-many")
             .summary("Delete many currencies")
             .description("Forwards to the refdata.v1.currencies.delete_many operation.")
             .tags({"refdata"})
@@ -427,7 +427,7 @@ void currency_routes::register_routes(
     registry->register_route(delete_many_built);
 
     auto versions_route =
-        router->get("/api/v1/refdata/currencies/{iso_code}/versions")
+        router->get("/api/v1/reference-data/currencies/{iso_code}/versions")
             .summary("List the recorded versions of one currency")
             .description("Forwards to the refdata.v1.currencies_versions.list operation.")
             .tags({"refdata"})
@@ -443,7 +443,7 @@ void currency_routes::register_routes(
     registry->register_route(versions_built);
 
     auto version_route =
-        router->get("/api/v1/refdata/currencies/{iso_code}/versions/{version}")
+        router->get("/api/v1/reference-data/currencies/{iso_code}/versions/{version}")
             .summary("Get one recorded version of one currency")
             .description("Forwards to the refdata.v1.currencies_versions.get operation.")
             .tags({"refdata"})

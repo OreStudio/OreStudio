@@ -76,27 +76,33 @@ TEST_CASE("currency_routes_registers_every_derived_route", "[routes]") {
     // so a route that is missing from it was never registered.
     for (const auto& expected : {
              currency_expected_route{
-                 http_method::get, std::string{"/api/v1/refdata/currencies"}, true},
-             currency_expected_route{
-                 http_method::get, std::string{"/api/v1/refdata/currencies/{iso_code}"}, true},
-             currency_expected_route{
-                 http_method::post, std::string{"/api/v1/refdata/currencies/get-many"}, true},
-             currency_expected_route{
-                 http_method::post, std::string{"/api/v1/refdata/currencies"}, true},
-             currency_expected_route{
-                 http_method::put, std::string{"/api/v1/refdata/currencies"}, true},
-             currency_expected_route{
-                 http_method::post, std::string{"/api/v1/refdata/currencies/put-many"}, true},
-             currency_expected_route{
-                 http_method::delete_, std::string{"/api/v1/refdata/currencies/{iso_code}"}, true},
-             currency_expected_route{
-                 http_method::post, std::string{"/api/v1/refdata/currencies/delete-many"}, true},
+                 http_method::get, std::string{"/api/v1/reference-data/currencies"}, true},
              currency_expected_route{http_method::get,
-                                     std::string{"/api/v1/refdata/currencies/{iso_code}/versions"},
+                                     std::string{"/api/v1/reference-data/currencies/{iso_code}"},
+                                     true},
+             currency_expected_route{http_method::post,
+                                     std::string{"/api/v1/reference-data/currencies/get-many"},
+                                     true},
+             currency_expected_route{
+                 http_method::post, std::string{"/api/v1/reference-data/currencies"}, true},
+             currency_expected_route{
+                 http_method::put, std::string{"/api/v1/reference-data/currencies"}, true},
+             currency_expected_route{http_method::post,
+                                     std::string{"/api/v1/reference-data/currencies/put-many"},
+                                     true},
+             currency_expected_route{http_method::delete_,
+                                     std::string{"/api/v1/reference-data/currencies/{iso_code}"},
+                                     true},
+             currency_expected_route{http_method::post,
+                                     std::string{"/api/v1/reference-data/currencies/delete-many"},
                                      true},
              currency_expected_route{
                  http_method::get,
-                 std::string{"/api/v1/refdata/currencies/{iso_code}/versions/{version}"},
+                 std::string{"/api/v1/reference-data/currencies/{iso_code}/versions"},
+                 true},
+             currency_expected_route{
+                 http_method::get,
+                 std::string{"/api/v1/reference-data/currencies/{iso_code}/versions/{version}"},
                  true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
@@ -120,27 +126,33 @@ TEST_CASE("currency_routes_requires_a_session_where_the_operation_does", "[route
     // not made unreachable by a flag the model never asked for.
     for (const auto& expected : {
              currency_expected_route{
-                 http_method::get, std::string{"/api/v1/refdata/currencies"}, true},
-             currency_expected_route{
-                 http_method::get, std::string{"/api/v1/refdata/currencies/{iso_code}"}, true},
-             currency_expected_route{
-                 http_method::post, std::string{"/api/v1/refdata/currencies/get-many"}, true},
-             currency_expected_route{
-                 http_method::post, std::string{"/api/v1/refdata/currencies"}, true},
-             currency_expected_route{
-                 http_method::put, std::string{"/api/v1/refdata/currencies"}, true},
-             currency_expected_route{
-                 http_method::post, std::string{"/api/v1/refdata/currencies/put-many"}, true},
-             currency_expected_route{
-                 http_method::delete_, std::string{"/api/v1/refdata/currencies/{iso_code}"}, true},
-             currency_expected_route{
-                 http_method::post, std::string{"/api/v1/refdata/currencies/delete-many"}, true},
+                 http_method::get, std::string{"/api/v1/reference-data/currencies"}, true},
              currency_expected_route{http_method::get,
-                                     std::string{"/api/v1/refdata/currencies/{iso_code}/versions"},
+                                     std::string{"/api/v1/reference-data/currencies/{iso_code}"},
+                                     true},
+             currency_expected_route{http_method::post,
+                                     std::string{"/api/v1/reference-data/currencies/get-many"},
+                                     true},
+             currency_expected_route{
+                 http_method::post, std::string{"/api/v1/reference-data/currencies"}, true},
+             currency_expected_route{
+                 http_method::put, std::string{"/api/v1/reference-data/currencies"}, true},
+             currency_expected_route{http_method::post,
+                                     std::string{"/api/v1/reference-data/currencies/put-many"},
+                                     true},
+             currency_expected_route{http_method::delete_,
+                                     std::string{"/api/v1/reference-data/currencies/{iso_code}"},
+                                     true},
+             currency_expected_route{http_method::post,
+                                     std::string{"/api/v1/reference-data/currencies/delete-many"},
                                      true},
              currency_expected_route{
                  http_method::get,
-                 std::string{"/api/v1/refdata/currencies/{iso_code}/versions/{version}"},
+                 std::string{"/api/v1/reference-data/currencies/{iso_code}/versions"},
+                 true},
+             currency_expected_route{
+                 http_method::get,
+                 std::string{"/api/v1/reference-data/currencies/{iso_code}/versions/{version}"},
                  true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {

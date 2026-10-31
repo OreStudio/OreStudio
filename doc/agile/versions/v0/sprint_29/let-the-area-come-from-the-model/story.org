@@ -21,7 +21,7 @@ An entity's HTTP area is a declaration on its model, resolved in one place, so a
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | A model declares its area and the routes render under it; no URL has moved. |
 | Waiting on    | Nothing.                               |
@@ -41,6 +41,7 @@ An entity's HTTP area is a declaration on its model, resolved in one place, so a
 |------+-------+-------+-----+-------------|
 | [[id:F33D9250-B3C6-4799-8C44-54FFD517C8B9][Scaffold story: Let the area come from the model]] | DONE | 2026-10-31 | 2026-10-31 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:8C19A708-C930-4DC5-8DB6-3FCCF03A5BCB][Declare an entity's HTTP area]] | DONE | 2026-10-31 | 2026-10-31 | Initial task for: Let the area come from the model |
+| [[id:3664F26F-8F35-4A9F-98FC-2696360DAAF6][Move the currency routes onto reference-data]] | STARTED | 2026-10-31 | | The first URL the project moves. Declare the area on the currency model, regenerate the route unit, its tests, its recipe and its hurl scripts, update the classification rules and the inventory, and prove nothing else in the tree still names the old path. |
 
 * Decisions
 

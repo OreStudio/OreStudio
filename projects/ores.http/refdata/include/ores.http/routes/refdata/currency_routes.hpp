@@ -73,71 +73,71 @@ public:
                                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/refdata/currencies — List currencies.
+     * @brief GET /api/v1/reference-data/currencies — List currencies.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_list(const ores::http::domain::http_request& req,
                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/refdata/currencies/{iso_code} — Get one currency.
+     * @brief GET /api/v1/reference-data/currencies/{iso_code} — Get one currency.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_get(const ores::http::domain::http_request& req,
                ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/refdata/currencies/get-many — Get many currencies.
+     * @brief POST /api/v1/reference-data/currencies/get-many — Get many currencies.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_get_many(const ores::http::domain::http_request& req,
                     ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/refdata/currencies — Create one currency.
+     * @brief POST /api/v1/reference-data/currencies — Create one currency.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_add(const ores::http::domain::http_request& req,
                ores::nats::service::nats_client& session);
 
     /**
-     * @brief PUT /api/v1/refdata/currencies — Replace one currency.
+     * @brief PUT /api/v1/reference-data/currencies — Replace one currency.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_set(const ores::http::domain::http_request& req,
                ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/refdata/currencies/put-many — Write many currencies.
+     * @brief POST /api/v1/reference-data/currencies/put-many — Write many currencies.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_put_many(const ores::http::domain::http_request& req,
                     ores::nats::service::nats_client& session);
 
     /**
-     * @brief DELETE /api/v1/refdata/currencies/{iso_code} — Delete one currency.
+     * @brief DELETE /api/v1/reference-data/currencies/{iso_code} — Delete one currency.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_delete(const ores::http::domain::http_request& req,
                   ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/refdata/currencies/delete-many — Delete many currencies.
+     * @brief POST /api/v1/reference-data/currencies/delete-many — Delete many currencies.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_delete_many(const ores::http::domain::http_request& req,
                        ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/refdata/currencies/{iso_code}/versions — List the recorded versions of one
-     * currency.
+     * @brief GET /api/v1/reference-data/currencies/{iso_code}/versions — List the recorded versions
+     * of one currency.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_versions(const ores::http::domain::http_request& req,
                     ores::nats::service::nats_client& session);
 
     /**
-     * @brief GET /api/v1/refdata/currencies/{iso_code}/versions/{version} — Get one recorded
+     * @brief GET /api/v1/reference-data/currencies/{iso_code}/versions/{version} — Get one recorded
      * version of one currency.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>

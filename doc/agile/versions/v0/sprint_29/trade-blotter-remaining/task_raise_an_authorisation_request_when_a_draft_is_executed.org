@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/raise-an-authorisation-request-when-a-draft-is-executed
-#+pr: 4284
+#+pr: 4285
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
@@ -26,11 +26,11 @@ A trade can go live without passing through book_trade: Execute takes a draft to
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Built: the execution operation and the one-request rule. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The local suite is blocked by a break on main; CI is the proof. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -102,6 +102,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4285][#4285]] | [agile] Close the execute draft task |
 | [[https://github.com/OreStudio/OreStudio/pull/4284][#4284]] | [trading] Raise an authorisation request when a draft is executed |
 
 * Review

@@ -295,6 +295,16 @@ ENTITY_CURRENCIES = {
     "acme_hk": [c for c in parties.CURRENCIES["acme_hk"] if c in OVERNIGHT],
 }
 
+# The inflation index each currency's curve is written on, named as the refdata
+# zero inflation index conventions name it. A currency the catalogue carries no
+# index for states no inflation curve, because a curve whose index nothing
+# publishes could not be priced.
+INFLATION_INDEX = {
+    "GBP": "UKRPIX",
+    "USD": "USCPIA",
+    "EUR": "BECPIHL",
+}
+
 # The overnight swap tenors the curve is built from, and the days between the trade
 # and the start of the swap. The synthetic feeds publish exactly this pillar ladder
 # and start every pillar on the trade date: see the template entries of
@@ -507,6 +517,40 @@ def curve_configuration():
     return headers, definitions, yields, segments, quotes
 
 
+def inflation_curve_configuration():
+    """A zero coupon inflation curve for each currency of the entity that the
+    refdata catalogue carries an index for. The index is the curve's name, so a
+    trade that names it resolves to this curve."""
+    definitions, configs = [], []
+    for company, currencies in ENTITY_CURRENCIES.items():
+        for position, currency in enumerate(currencies):
+            index = INFLATION_INDEX.get(currency)
+            if index is None:
+                continue
+            definition_id = new_uuid(f"inflation_curve_configuration:{company}:{index}")
+            definitions.append(row(
+                company, id=definition_id,
+                curve_configuration_id=new_uuid(f"curve_configuration:{company}"),
+                section_code="InflationCurves", curve_id=index,
+                description=f"{currency} zero coupon inflation curve on {index}",
+                position=position))
+            configs.append(row(
+                company, id=new_uuid(f"inflation_curve_configuration:{company}:{index}:config"),
+                curve_definition_id=definition_id, nominal_term_structure=f"{currency}1D",
+                # The convention the curve's swaps are priced with, by the id the
+                # inflation swap conventions state for this index.
+                inflation_type="ZeroInflation",
+                conventions=f"{index}_INFLATIONSWAP",
+                # No extrapolation: the guard refuses every value because the
+                # curve.flag value set arrives empty, and a curve that states none
+                # takes the engine's own default rather than a guessed word.
+                has_quotes=False, calendar="TARGET",
+                day_counter="A365", lag="3M", frequency="Monthly", base_rate=0.02,
+                tolerance=1e-12, has_seasonality=False, use_last_fixing_date=False,
+                interpolation_variable="ZeroRate", interpolation_method="Linear"))
+    return definitions, configs
+
+
 def main():
     headers, products, parameters = pricing_engines()
     write("pricing_model_configs", headers)
@@ -518,10 +562,16 @@ def main():
     for name, records in zip(names, todays_market()):
         write(name, records)
 
+    # The inflation curves join the same curve configuration document, so they
+    # publish through the artefact the tenant already reads.
     names = ("curve_configurations", "curve_definitions", "yield_curve_configs", "curve_segments",
              "curve_quotes")
-    for name, records in zip(names, curve_configuration()):
-        write(name, records)
+    records = list(curve_configuration())
+    inflation_definitions, inflation_configs = inflation_curve_configuration()
+    records[1] = records[1] + inflation_definitions
+    for name, rows in zip(names, records):
+        write(name, rows)
+    write("inflation_curve_configs", inflation_configs)
 
 
 if __name__ == "__main__":

@@ -383,5 +383,115 @@
     "curve_id": "INR1D",
     "description": "INR discount curve bootstrapped from INR-MIBOROIS swap rates",
     "position": 6
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "450078ec-5800-5b1f-8010-3a9bc6d8e1a4",
+    "curve_configuration_id": "8b56a295-a1a9-52aa-8064-26fad58bfa65",
+    "section_code": "InflationCurves",
+    "curve_id": "UKRPIX",
+    "description": "GBP zero coupon inflation curve on UKRPIX",
+    "position": 0
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "03dee3b8-0cb5-583c-94df-ba7c122cafea",
+    "curve_configuration_id": "8b56a295-a1a9-52aa-8064-26fad58bfa65",
+    "section_code": "InflationCurves",
+    "curve_id": "USCPIA",
+    "description": "USD zero coupon inflation curve on USCPIA",
+    "position": 1
+  },
+  {
+    "company_code": "acme_group",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "aaffefef-8906-558e-825b-6e464b45d3da",
+    "curve_configuration_id": "8b56a295-a1a9-52aa-8064-26fad58bfa65",
+    "section_code": "InflationCurves",
+    "curve_id": "BECPIHL",
+    "description": "EUR zero coupon inflation curve on BECPIHL",
+    "position": 3
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "9519b9b5-4803-55cf-81e5-2afb2db9248b",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "InflationCurves",
+    "curve_id": "UKRPIX",
+    "description": "GBP zero coupon inflation curve on UKRPIX",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d3a2cef3-d406-5135-9238-6c66c7b681e7",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "InflationCurves",
+    "curve_id": "BECPIHL",
+    "description": "EUR zero coupon inflation curve on BECPIHL",
+    "position": 1
+  },
+  {
+    "company_code": "acme_uk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "d8344edc-dc11-5729-9a1d-148a3b7ffe15",
+    "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
+    "section_code": "InflationCurves",
+    "curve_id": "USCPIA",
+    "description": "USD zero coupon inflation curve on USCPIA",
+    "position": 2
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "50afec51-f3e8-5a85-b7f0-8b472fc0087b",
+    "curve_configuration_id": "58ced6e2-665a-539f-b0af-fb2fcf83d9e7",
+    "section_code": "InflationCurves",
+    "curve_id": "USCPIA",
+    "description": "USD zero coupon inflation curve on USCPIA",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "61cc36cf-ae12-574b-829a-cb4f3a21eb26",
+    "curve_configuration_id": "58ced6e2-665a-539f-b0af-fb2fcf83d9e7",
+    "section_code": "InflationCurves",
+    "curve_id": "BECPIHL",
+    "description": "EUR zero coupon inflation curve on BECPIHL",
+    "position": 2
+  },
+  {
+    "company_code": "acme_us",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "30ab5a74-d9ad-5f61-9db7-2a3293fc4759",
+    "curve_configuration_id": "58ced6e2-665a-539f-b0af-fb2fcf83d9e7",
+    "section_code": "InflationCurves",
+    "curve_id": "UKRPIX",
+    "description": "GBP zero coupon inflation curve on UKRPIX",
+    "position": 3
+  },
+  {
+    "company_code": "acme_hk",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "id": "bf9ccda0-ddc7-51d5-9908-f05bb9d61a8f",
+    "curve_configuration_id": "86155cef-0292-5a80-bb2e-5bfd125c2550",
+    "section_code": "InflationCurves",
+    "curve_id": "USCPIA",
+    "description": "USD zero coupon inflation curve on USCPIA",
+    "position": 1
   }
 ]

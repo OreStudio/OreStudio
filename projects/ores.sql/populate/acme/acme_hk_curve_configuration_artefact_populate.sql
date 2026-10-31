@@ -68,7 +68,8 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '859ec9d1-58e1-595b-9d26-0b701e2a1556', '86155cef-0292-5a80-bb2e-5bfd125c2550', 'YieldCurves', 'AUD1D', 'AUD discount curve bootstrapped from AUD-AONIA swap rates', 3),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'cfeb5f91-5577-5abc-972a-471dcec8738b', '86155cef-0292-5a80-bb2e-5bfd125c2550', 'YieldCurves', 'NZD1D', 'NZD discount curve bootstrapped from NZD-OCR swap rates', 4),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '38382408-64ba-5dc5-a7aa-4a1870d4caeb', '86155cef-0292-5a80-bb2e-5bfd125c2550', 'YieldCurves', 'SGD1D', 'SGD discount curve bootstrapped from SGD-SORA swap rates', 5),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '5b4636ac-ca81-5234-b5be-75c0890c968f', '86155cef-0292-5a80-bb2e-5bfd125c2550', 'YieldCurves', 'INR1D', 'INR discount curve bootstrapped from INR-MIBOROIS swap rates', 6);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '5b4636ac-ca81-5234-b5be-75c0890c968f', '86155cef-0292-5a80-bb2e-5bfd125c2550', 'YieldCurves', 'INR1D', 'INR discount curve bootstrapped from INR-MIBOROIS swap rates', 6),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'bf9ccda0-ddc7-51d5-9908-f05bb9d61a8f', '86155cef-0292-5a80-bb2e-5bfd125c2550', 'InflationCurves', 'USCPIA', 'USD zero coupon inflation curve on USCPIA', 1);
 
     delete from ores_dq_yield_curve_configs_artefact_tbl
     where dataset_id = v_dataset_id;
@@ -191,4 +192,13 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '6f5d7e02-16d3-5d78-b804-5455b512d533', '5b4636ac-ca81-5234-b5be-75c0890c968f', '6006c831-598a-5108-ae18-3a9520a2dc55', 'IR_SWAP/RATE/INR/0D/1D/15Y', 9),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '2296ec6e-8e37-5086-a684-4e5487efc970', '5b4636ac-ca81-5234-b5be-75c0890c968f', '6006c831-598a-5108-ae18-3a9520a2dc55', 'IR_SWAP/RATE/INR/0D/1D/20Y', 10),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '2067af46-2eb4-521e-9b73-85a129e055b1', '5b4636ac-ca81-5234-b5be-75c0890c968f', '6006c831-598a-5108-ae18-3a9520a2dc55', 'IR_SWAP/RATE/INR/0D/1D/30Y', 11);
+
+    delete from ores_dq_inflation_curve_configs_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    insert into ores_dq_inflation_curve_configs_artefact_tbl (
+        dataset_id, tenant_id, version, party_id, id, curve_definition_id, nominal_term_structure, inflation_type, conventions, has_quotes, calendar, day_counter, lag, frequency, base_rate, tolerance, has_seasonality, use_last_fixing_date, interpolation_variable, interpolation_method
+    )
+    values
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '42e5a9df-433c-5051-9b78-edf6c9402216', 'bf9ccda0-ddc7-51d5-9908-f05bb9d61a8f', 'USD1D', 'ZeroInflation', 'USCPIA_INFLATIONSWAP', false, 'TARGET', 'A365', '3M', 'Monthly', 0.02, 1e-12, false, false, 'ZeroRate', 'Linear');
 end $$;

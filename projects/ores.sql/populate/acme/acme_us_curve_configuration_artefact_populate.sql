@@ -68,7 +68,10 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '8b6396cf-809a-5f5b-91ce-fb539bc0841b', '58ced6e2-665a-539f-b0af-fb2fcf83d9e7', 'YieldCurves', 'GBP1D', 'GBP discount curve bootstrapped from GBP-SONIA swap rates', 3),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '36d36abe-a413-5ed1-90e0-099a64ca728d', '58ced6e2-665a-539f-b0af-fb2fcf83d9e7', 'YieldCurves', 'JPY1D', 'JPY discount curve bootstrapped from JPY-TONAR swap rates', 4),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '039b2380-6fc0-5a4c-8ee2-6dd851b9bce9', '58ced6e2-665a-539f-b0af-fb2fcf83d9e7', 'YieldCurves', 'MXN1D', 'MXN discount curve bootstrapped from MXN-FTIIE swap rates', 5),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '18f1ae2a-5b15-58da-a5db-96af653645db', '58ced6e2-665a-539f-b0af-fb2fcf83d9e7', 'YieldCurves', 'BRL1D', 'BRL discount curve bootstrapped from BRL-CDI swap rates', 6);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '18f1ae2a-5b15-58da-a5db-96af653645db', '58ced6e2-665a-539f-b0af-fb2fcf83d9e7', 'YieldCurves', 'BRL1D', 'BRL discount curve bootstrapped from BRL-CDI swap rates', 6),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '50afec51-f3e8-5a85-b7f0-8b472fc0087b', '58ced6e2-665a-539f-b0af-fb2fcf83d9e7', 'InflationCurves', 'USCPIA', 'USD zero coupon inflation curve on USCPIA', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '61cc36cf-ae12-574b-829a-cb4f3a21eb26', '58ced6e2-665a-539f-b0af-fb2fcf83d9e7', 'InflationCurves', 'BECPIHL', 'EUR zero coupon inflation curve on BECPIHL', 2),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '30ab5a74-d9ad-5f61-9db7-2a3293fc4759', '58ced6e2-665a-539f-b0af-fb2fcf83d9e7', 'InflationCurves', 'UKRPIX', 'GBP zero coupon inflation curve on UKRPIX', 3);
 
     delete from ores_dq_yield_curve_configs_artefact_tbl
     where dataset_id = v_dataset_id;
@@ -191,4 +194,15 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'cacb7379-7e86-528e-bed7-26511a222016', '18f1ae2a-5b15-58da-a5db-96af653645db', '7742f5ce-02c7-5dbd-a0fa-75a777605857', 'IR_SWAP/RATE/BRL/0D/1D/15Y', 9),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '78488a61-f746-5829-9768-0e42e3c0a8a3', '18f1ae2a-5b15-58da-a5db-96af653645db', '7742f5ce-02c7-5dbd-a0fa-75a777605857', 'IR_SWAP/RATE/BRL/0D/1D/20Y', 10),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'e05bacd9-2297-5ad6-978a-9e399cd57f3b', '18f1ae2a-5b15-58da-a5db-96af653645db', '7742f5ce-02c7-5dbd-a0fa-75a777605857', 'IR_SWAP/RATE/BRL/0D/1D/30Y', 11);
+
+    delete from ores_dq_inflation_curve_configs_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    insert into ores_dq_inflation_curve_configs_artefact_tbl (
+        dataset_id, tenant_id, version, party_id, id, curve_definition_id, nominal_term_structure, inflation_type, conventions, has_quotes, calendar, day_counter, lag, frequency, base_rate, tolerance, has_seasonality, use_last_fixing_date, interpolation_variable, interpolation_method
+    )
+    values
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '13f15146-e91f-5fdd-be21-aa06cbe5aed7', '50afec51-f3e8-5a85-b7f0-8b472fc0087b', 'USD1D', 'ZeroInflation', 'USCPIA_INFLATIONSWAP', false, 'TARGET', 'A365', '3M', 'Monthly', 0.02, 1e-12, false, false, 'ZeroRate', 'Linear'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'b0b8cc3b-07c0-5c76-ba03-183273e83d64', '61cc36cf-ae12-574b-829a-cb4f3a21eb26', 'EUR1D', 'ZeroInflation', 'BECPIHL_INFLATIONSWAP', false, 'TARGET', 'A365', '3M', 'Monthly', 0.02, 1e-12, false, false, 'ZeroRate', 'Linear'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'dddd45d7-ea2b-5df1-b6d7-27c4ecdad54a', '30ab5a74-d9ad-5f61-9db7-2a3293fc4759', 'GBP1D', 'ZeroInflation', 'UKRPIX_INFLATIONSWAP', false, 'TARGET', 'A365', '3M', 'Monthly', 0.02, 1e-12, false, false, 'ZeroRate', 'Linear');
 end $$;

@@ -105,7 +105,7 @@ CONFIGURATION_DOCUMENTS = [
       "todays_market_configurations", "todays_market_configuration_bindings"]),
     ("curve_configuration", "Curve Configuration",
      ["curve_configurations", "curve_definitions", "yield_curve_configs", "curve_segments",
-      "curve_quotes"]),
+      "curve_quotes", "inflation_curve_configs"]),
     ("risk_report_configs", "Risk Report Configurations",
      ["risk_report_configs", "configuration_analytics", "configuration_analytic_parameters",
       "configuration_market_bindings"]),

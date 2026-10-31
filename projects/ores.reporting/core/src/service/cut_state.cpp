@@ -77,12 +77,16 @@ cut_state derive_state(const domain::cut& cut,
     return state;
 }
 
+bool stands_in_the_place_of(const domain::cut& later, const domain::cut& cut) {
+    return later.id != cut.id && later.kind_code == cut.kind_code &&
+           later.party_id == cut.party_id && later.scope_code == cut.scope_code &&
+           later.business_centre_code == cut.business_centre_code &&
+           later.timepoint > cut.timepoint && is_usable(derive_state(later, 0));
+}
+
 bool later_cut_holds_its_place(const domain::cut& cut, const std::vector<domain::cut>& candidates) {
     return std::any_of(candidates.begin(), candidates.end(), [&cut](const auto& other) {
-        return other.id != cut.id && other.kind_code == cut.kind_code &&
-               other.party_id == cut.party_id && other.scope_code == cut.scope_code &&
-               other.business_centre_code == cut.business_centre_code &&
-               other.timepoint > cut.timepoint && is_usable(derive_state(other, 0));
+        return stands_in_the_place_of(other, cut);
     });
 }
 

@@ -141,7 +141,9 @@ public:
             const auto page = cuts.list(service::cut_list_query{.kind_code = req->kind_code,
                                                                 .month = req->month,
                                                                 .search = req->search,
-                                                                .state = req->state});
+                                                                .state = req->state,
+                                                                .offset = req->offset,
+                                                                .limit = req->limit});
             if (!page) {
                 // A month a caller stated wrongly is the caller's fault, so the
                 // read answers it as a refusal with its own sentence and the

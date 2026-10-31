@@ -43,13 +43,22 @@ using namespace ores::logging;
 namespace {
 
 /**
- * @brief How many rows a list answers.
+ * @brief How many rows a read answers, whatever the caller asks for.
  *
- * A list reads the newest page of a scope that grows at the rate of its
- * occasion: the count states how many the query matched, so a person reads that
- * the page is not the whole of it.
+ * A cut accumulates at the rate of its occasion and a LIVE cut at the rate of
+ * the runs, so a read is bounded and the count states how many the query
+ * matched. The bound is the read's own and not the caller's: a caller narrows
+ * the page it reads and never widens the read.
  */
-constexpr int max_rows = 1000;
+constexpr std::uint32_t paging_cap = 1000;
+
+/** @brief The page a query asks for, bounded by the read's own cap. */
+std::pair<std::size_t, std::size_t> page_bounds(const cut_list_query& query,
+                                                std::size_t matched) {
+    const auto offset = std::min<std::size_t>(query.offset, matched);
+    const auto asked = query.limit == 0 ? paging_cap : std::min(query.limit, paging_cap);
+    return {offset, std::min<std::size_t>(asked, matched - offset)};
+}
 
 }
 
@@ -111,9 +120,12 @@ std::string lowered(std::string value) {
 cut_read_service::cut_read_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::cut_kind> cut_read_service::kinds() {
+std::optional<domain::cut_kind> cut_read_service::kind_of(const std::string& code) {
     repository::cut_kind_repository kinds_repo;
-    return kinds_repo.read_latest(ctx_);
+    const auto found = kinds_repo.read_latest(ctx_, code);
+    if (found.empty())
+        return std::nullopt;
+    return found.front();
 }
 
 int cut_read_service::run_count(const boost::uuids::uuid& cut_id) {
@@ -121,6 +133,25 @@ int cut_read_service::run_count(const boost::uuids::uuid& cut_id) {
     messaging::report_instances_filter filter;
     filter.cut_id = cut_id;
     return static_cast<int>(runs_repo.get_total_instance_count(ctx_, filter));
+}
+
+std::map<boost::uuids::uuid, int>
+cut_read_service::run_counts(const std::vector<boost::uuids::uuid>& cut_ids) {
+    std::map<boost::uuids::uuid, int> counts;
+    if (cut_ids.empty())
+        return counts;
+
+    // The runs of the whole page are one read: a run names the cut it priced
+    // from, so the page's tally is a count of the rows the read answered.
+    repository::report_instance_repository runs_repo;
+    messaging::report_instances_filter filter;
+    filter.cut_id_one_of = cut_ids;
+    const auto runs = runs_repo.read_latest(ctx_, 0, paging_cap, {}, filter);
+    for (const auto& run : runs) {
+        if (run.cut_id)
+            ++counts[*run.cut_id];
+    }
+    return counts;
 }
 
 void cut_read_service::derive_rows(std::vector<cut_row_view>& rows,
@@ -145,10 +176,7 @@ replacement_of(const domain::cut& cut, const std::vector<domain::cut>& candidate
     std::optional<boost::uuids::uuid> replacement;
     auto replacement_timepoint = std::chrono::system_clock::time_point::max();
     for (const auto& other : candidates) {
-        if (other.id == cut.id || other.kind_code != cut.kind_code ||
-            other.party_id != cut.party_id || other.scope_code != cut.scope_code ||
-            other.business_centre_code != cut.business_centre_code ||
-            other.timepoint <= cut.timepoint || !is_usable(derive_state(other, 0)))
+        if (!stands_in_the_place_of(other, cut))
             continue;
         if (replacement && other.timepoint >= replacement_timepoint)
             continue;
@@ -198,20 +226,21 @@ std::expected<cut_page, std::string> cut_read_service::list(const cut_list_query
     repository::cut_gap_repository gaps_repo;
     derive_rows(rows, candidates, gaps_repo.read_latest(ctx_));
 
-    // A label is derived from the kind as well as from the cut, so the kinds are
-    // read once for the page rather than once for each row.
-    const auto all_kinds = kinds();
+    // A label is derived from the kind as well as from the cut, so each kind a
+    // row names is read once for the page and no kind the page does not name is
+    // read at all.
     std::map<std::string, domain::cut_kind> kinds_by_code;
-    for (const auto& kind : all_kinds)
-        kinds_by_code[kind.code] = kind;
-
     for (auto& row : rows) {
-        const auto found = kinds_by_code.find(row.cut.kind_code);
+        auto found = kinds_by_code.find(row.cut.kind_code);
         if (found == kinds_by_code.end()) {
-            BOOST_LOG_SEV(lg(), warn) << "Cut " << boost::uuids::to_string(row.cut.id)
-                                      << " names the kind " << row.cut.kind_code
-                                      << ", which the store does not hold.";
-            continue;
+            const auto kind = kind_of(row.cut.kind_code);
+            if (!kind) {
+                BOOST_LOG_SEV(lg(), warn) << "Cut " << boost::uuids::to_string(row.cut.id)
+                                          << " names the kind " << row.cut.kind_code
+                                          << ", which the store does not hold.";
+                continue;
+            }
+            found = kinds_by_code.emplace(kind->code, *kind).first;
         }
         row.kind = found->second;
         row.label = cut_label_of(row.cut, found->second);
@@ -224,15 +253,28 @@ std::expected<cut_page, std::string> cut_read_service::list(const cut_list_query
             continue;
         if (!search.empty() && lowered(row.label).find(search) == std::string::npos)
             continue;
-        row.run_count = run_count(row.cut.id);
         matching.push_back(std::move(row));
     }
 
+    const auto [offset, answered] = page_bounds(query, matching.size());
     cut_page page;
     page.total = static_cast<int>(matching.size());
-    if (matching.size() > max_rows)
-        matching.resize(max_rows);
-    page.rows = std::move(matching);
+
+    // The page's tally is one read of the runs of every body on it, so the list
+    // costs one read rather than one for each row.
+    std::vector<boost::uuids::uuid> page_ids;
+    page_ids.reserve(answered);
+    for (auto at = offset; at < offset + answered; ++at)
+        page_ids.push_back(matching[at].cut.id);
+    const auto counts = run_counts(page_ids);
+
+    page.rows.reserve(answered);
+    for (auto at = offset; at < offset + answered; ++at) {
+        auto row = std::move(matching[at]);
+        const auto tally = counts.find(row.cut.id);
+        row.run_count = tally == counts.end() ? 0 : tally->second;
+        page.rows.push_back(std::move(row));
+    }
     return page;
 }
 
@@ -245,9 +287,9 @@ std::optional<cut_record_view> cut_read_service::record(const boost::uuids::uuid
     const auto& cut = found.front();
 
     // The candidates that could hold this body's place are the later ones of the
-    // same kind, scope and centre, so the read covers a year past the body: a
-    // superseded cut stays in the list it was read from, and a body fixed years
-    // ago is still replaced by the one fixed since.
+    // same kind, scope and centre. The read starts a day before the body, so the
+    // body itself is in it, and ends a day past now, so a body fixed years ago is
+    // still replaced by the one fixed since.
     auto candidates = cuts_repo.read_for_party_in_window(
         ctx_,
         cut.party_id,
@@ -259,21 +301,18 @@ std::optional<cut_record_view> cut_read_service::record(const boost::uuids::uuid
     record.cut = cut;
 
     repository::cut_gap_repository gaps_repo;
-    record.gaps = gaps_repo.read_latest_by_cut_id(ctx_, boost::uuids::to_string(cut_id), 0, 1000);
+    record.gaps =
+        gaps_repo.read_latest_by_cut_id(ctx_, boost::uuids::to_string(cut_id), 0, paging_cap);
 
     std::vector<cut_row_view> rows{cut_row_view{.cut = cut}};
     derive_rows(rows, candidates, record.gaps);
     record.state = rows.front().state;
     record.superseded_by = rows.front().superseded_by;
 
-    for (const auto& kind : kinds()) {
-        if (kind.code != cut.kind_code)
-            continue;
-        record.kind = kind;
-        record.label = cut_label_of(cut, kind);
-        break;
-    }
-    if (!record.kind)
+    record.kind = kind_of(cut.kind_code);
+    if (record.kind)
+        record.label = cut_label_of(cut, *record.kind);
+    else
         BOOST_LOG_SEV(lg(), warn) << "Cut " << boost::uuids::to_string(cut.id)
                                   << " names the kind " << cut.kind_code
                                   << ", which the store does not hold.";

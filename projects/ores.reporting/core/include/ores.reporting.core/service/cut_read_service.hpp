@@ -29,7 +29,9 @@
 #include "ores.reporting.core/service/cut_state.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <cstdint>
 #include <expected>
+#include <map>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -69,10 +71,13 @@ struct cut_row_view {
 };
 
 /**
- * @brief The cuts a person is reading: a kind, a month, a text in the label and a state.
+ * @brief The cuts a person is reading: a kind, a month, a text in the label, a
+ * state and the page of them.
  *
- * Every member is a narrowing the person chose and every one may be empty, in
- * which case it narrows nothing.
+ * Every narrowing is one the person chose and every one may be empty, in which
+ * case it narrows nothing. The page states which rows the read answers and the
+ * count states how many it matched, so a person reads that the page is not the
+ * whole of it.
  */
 struct cut_list_query {
     /** @brief The kind to read, or empty for every kind. */
@@ -86,6 +91,12 @@ struct cut_list_query {
 
     /** @brief A derived state to keep, or empty for every state. */
     std::string state;
+
+    /** @brief How many of the rows the query matched to pass over. */
+    std::uint32_t offset = 0;
+
+    /** @brief How many rows to answer, up to the read's own paging cap. */
+    std::uint32_t limit = 0;
 };
 
 /** @brief The rows a query read, and how many it matched. */
@@ -188,11 +199,19 @@ private:
                      const std::vector<domain::cut>& candidates,
                      const std::vector<domain::cut_gap>& gaps);
 
-    /** @brief The kinds the store holds, by code, for the labels and the names. */
-    std::vector<domain::cut_kind> kinds();
+    /** @brief The kind of one body, read by the code the body names. */
+    std::optional<domain::cut_kind> kind_of(const std::string& code);
 
     /** @brief How many report runs priced from one body. */
     int run_count(const boost::uuids::uuid& cut_id);
+
+    /**
+     * @brief How many report runs priced from each body on the page.
+     *
+     * One read answers the runs of the whole page, so a list of a hundred cuts
+     * costs one read and not a hundred.
+     */
+    std::map<boost::uuids::uuid, int> run_counts(const std::vector<boost::uuids::uuid>& cut_ids);
 
     context ctx_;
 };

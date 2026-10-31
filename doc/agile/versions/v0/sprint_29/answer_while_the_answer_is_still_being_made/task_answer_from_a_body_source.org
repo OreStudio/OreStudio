@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: B5375542-0026-47CE-A6AD-EA01FF6D838D
+:END:
+#+title: Task: Answer from a body source
+#+description: Give a response a body it reads from in chunks, so a file or a stream costs a buffer and not an object, and use it for the storage download.
+#+type: task
+#+level: s1
+#+filetags: :answer_while_the_answer_is_still_being_made:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:66DDFAB2-D915-431C-AFEC-9E454373968D][Answer while the answer is still being made]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A response body is one string, so it exists in full before it is written and nothing
+can be sent until it does. A response needs a body it can read from in pieces.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:66DDFAB2-D915-431C-AFEC-9E454373968D][Answer while the answer is still being made]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- =http_response= may name a =body_source=, and the session writes it in chunks.
+- A source that states its length is answered with =Content-Length=; one that does
+  not is answered with chunked framing.
+- A body larger than one write buffer arrives whole.
+- A source that fails mid-body closes the connection instead of leaving the client
+  waiting.
+- A =HEAD= request answers the headers and no body.
+- The storage download uses it, and a download larger than a buffer is byte for
+  byte what was uploaded.
+
+* Plan
+
+1. Add =domain::body_source=: an optional length and a read into a buffer that says
+   how much it filled, with zero meaning the end.
+2. Add =http_response::body_source= as a shared pointer, because a response outlives
+   the handler that made it.
+3. Serialise through =http::response_serializer<http::buffer_body>=: the header once,
+   then a write per chunk, with =more= telling Beast when the body ends.
+4. Give the storage download a source over =asio::stream_file=, and delete the
+   whole-object read from the route.
+5. Test the length-known, length-unknown, large and failing cases through a real
+   server, and the download end to end.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

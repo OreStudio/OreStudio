@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 66DDFAB2-D915-431C-AFEC-9E454373968D
+:END:
+#+title: Story: Answer while the answer is still being made
+#+description: Every response is built complete in a string before a byte leaves the server, so a file, an event stream and a five megabyte asset all cost their own size. Give a response a body it reads from, serve the built bundle from disk, and report the server's own health and metrics.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every response is assembled whole in one string before the first byte leaves the
+server. A 256 MiB download costs 256 MiB, a five megabyte asset costs five, and
+there is no way to answer at all until the whole answer exists: an event stream
+cannot be written, and a client cannot see progress on a large file.
+
+After this story a response may name a source it reads its body from, and the
+session writes that body in chunks as the source produces them — with a length when
+the source knows one and chunked framing when it does not. The storage download
+serves from the file. The built SPA bundle is served the same way, from a table of
+the files that were built, with the cache headers, the history fallback and the
+compression the client offers. The server reports its own health and metrics rather
+than a placeholder.
+
+This is increment B1 of
+[[id:2E504EF1-F812-4D83-BD21-AE97162A1ABC][One HTTP Server: designing ores.http to replace the web BFF]],
+and the design states the approach in its *Streaming responses* and *Static assets*
+sections.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Start the first task: a response reads its body from a source. |
+| Last touched  | 2026-10-31                               |
+
+* Acceptance
+
+- A response may name a source for its body, and the session writes it in chunks
+  without holding it.
+- A source that knows its length is answered with =Content-Length=; one that does
+  not is answered with chunked framing, and both arrive whole.
+- A source that fails mid-body closes the connection rather than leaving a client
+  waiting for a length that will never arrive.
+- The storage download serves the file through that path, so a large object costs a
+  buffer and not an object.
+- The built bundle is served from the manifest with an immutable cache for hashed
+  names, =no-cache= for =index.html=, and the history fallback for a screen route.
+- =/health= and =/metrics= answer from what the server knows about itself.
+- =curl -N= receives an event stream from a route that holds the connection, and the
+  idle keep-alive keeps it open.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B5375542-0026-47CE-A6AD-EA01FF6D838D][Answer from a body source]] | BACKLOG | | | Give a response a body it reads from in chunks, so a file or a stream costs a buffer and not an object, and use it for the storage download. |
+| [[id:883B6C71-71D8-4F07-AA81-5877BB5DE359][Serve the built bundle]] | BACKLOG | | | Serve the SPA bundle from the built manifest with the cache headers, the history fallback and the compression it offers. |
+| [[id:8837CE16-1FE6-4A85-8695-B33BBBC9E79C][Report health and metrics]] | BACKLOG | | | Answer /health and /metrics from what the server knows about itself, not from a placeholder. |
+
+* Decisions
+
+- A response carries an optional source, not a callback and not a second handler
+  type: the handler still returns one =http_response=, and whether it has a body of
+  bytes or a body of chunks is a property of that value.
+- The source is pulled by the session on its own executor, so a file is read on the
+  connection's thread and nothing is handed to a worker to stream.
+- The length is optional on purpose. A file knows it, and a length lets a client show
+  progress and lets the connection be reused without chunked framing; a stream does
+  not know it.
+* Out of scope
+
+- Server-sent events as a feature. This story makes the mechanism; increment B3
+  builds the change stream on it.
+- Ranged and resumable downloads.
+- Compression at request time. The design asks for it at build time.

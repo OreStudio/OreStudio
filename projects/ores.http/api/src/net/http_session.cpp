@@ -41,6 +41,30 @@ std::string route_path(std::string_view target) {
     return std::string(query == std::string_view::npos ? target : target.substr(0, query));
 }
 
+/// Lowercase, because a header's case is not its meaning.
+std::string lowercase(std::string text) {
+    std::transform(text.begin(), text.end(), text.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
+    return text;
+}
+
+/// Methods that change something, and so need proof of intent.
+bool changes_something(domain::http_method method) {
+    switch (method) {
+        case domain::http_method::post:
+        case domain::http_method::put:
+        case domain::http_method::patch:
+        case domain::http_method::delete_:
+            return true;
+        case domain::http_method::get:
+        case domain::http_method::head:
+        case domain::http_method::options:
+            return false;
+    }
+    return true;
+}
+
 }
 
 namespace beast = boost::beast;
@@ -382,6 +406,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
     if (matched->requires_auth) {
         std::optional<ores::security::jwt::jwt_claims> claims;
         auto clear_the_cookie = false;
+        auto session_proof = false;
 
         if (const auto token = domain_req.get_bearer_token(); token.has_value()) {
             /*
@@ -418,6 +443,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
             if (identifier.has_value()) {
                 if (auto record = sessions_->touch(*identifier); record.has_value()) {
                     claims = std::move(record->claims);
+                    session_proof = true;
                 } else {
                     /*
                      * The browser holds a session this server no longer has, so the
@@ -443,6 +469,21 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
         domain_req.authenticated_user = std::move(*claims);
         BOOST_LOG_SEV(lg(), debug)
             << "Authenticated user: " << domain_req.authenticated_user->subject;
+
+        /*
+         * A bearer token is proof enough of intent: a browser did not attach it by
+         * accident, and a cross-site form cannot set the header that carries it. A
+         * cookie is different, and only a session request is guarded here.
+         */
+        if (session_proof && changes_something(domain_req.method)) {
+            if (const auto refusal = csrf_refusal(domain_req); refusal.has_value()) {
+                BOOST_LOG_SEV(lg(), warn) << "Refusing " << matched->pattern << " from "
+                                          << remote_address_ << ": " << *refusal;
+                auto forbidden = domain::http_response::forbidden(*refusal);
+                co_await write_response(forbidden, version, keep_alive, true);
+                co_return;
+            }
+        }
 
         if (!matched->required_roles.empty()) {
             auto has_required_role = false;
@@ -569,6 +610,27 @@ http::response<http::string_body> http_session::convert_response(const domain::h
     }
 
     return result;
+}
+
+std::optional<std::string> http_session::csrf_refusal(const domain::http_request& req) const {
+    /*
+     * A form can post cross-site with a cookie attached, so the cookie is not evidence
+     * of intent. Two things a form cannot do are required instead: name an origin it
+     * does not have, and set a header that is not on the form's allowed list.
+     */
+    if (req.get_header("x-ores-request").empty())
+        return "A session request must carry the X-Ores-Request header";
+
+    const auto origin = req.get_header("origin");
+    if (origin.empty())
+        return "A session request must carry an Origin";
+
+    const auto expected =
+        std::string(cookie_.secure ? "https://" : "http://") + lowercase(req.get_header("host"));
+    if (lowercase(origin) != expected)
+        return "The Origin does not match this deployment";
+
+    return std::nullopt;
 }
 
 asio::awaitable<void> http_session::write_response(const domain::http_response& resp,

@@ -33,6 +33,8 @@
 #include <optional>
 #include <string>
 #include <thread>
+#include <utility>
+#include <vector>
 
 using namespace ores::http::net;
 using namespace ores::http::domain;
@@ -152,6 +154,43 @@ std::optional<http::response<http::string_body>> metrics_send_with(std::uint16_t
     return res;
 }
 
+/// Sends a request with a cookie and any other headers the case needs.
+std::optional<http::response<http::string_body>>
+metrics_send_with_headers(std::uint16_t port,
+                          http::verb verb,
+                          const std::string& target,
+                          const std::vector<std::pair<std::string, std::string>>& headers) {
+    asio::io_context io;
+    beast::tcp_stream stream(io);
+    beast::error_code ec;
+    stream.expires_after(std::chrono::seconds(5));
+
+    const auto address = asio::ip::make_address("127.0.0.1", ec);
+    if (ec)
+        return std::nullopt;
+    stream.connect(asio::ip::tcp::endpoint(address, port), ec);
+    if (ec)
+        return std::nullopt;
+
+    http::request<http::string_body> req{verb, target, 11};
+    req.set(http::field::host, "127.0.0.1");
+    for (const auto& [name, value] : headers)
+        req.set(name, value);
+    req.prepare_payload();
+    http::write(stream, req, ec);
+    if (ec)
+        return std::nullopt;
+
+    beast::flat_buffer buffer;
+    http::response<http::string_body> res;
+    http::read(stream, buffer, res, ec);
+    if (ec)
+        return std::nullopt;
+
+    stream.socket().shutdown(asio::ip::tcp::socket::shutdown_both, ec);
+    return res;
+}
+
 /// The value of one exposition line, or zero when it is not there.
 std::uint64_t metric_value(const std::string& text, const std::string& name) {
     const auto at = text.find("\n" + name + " ");
@@ -255,6 +294,67 @@ TEST_CASE("a_session_the_server_does_not_know_is_refused_and_the_cookie_cleared"
     REQUIRE(answered->result_int() == 401);
     // The browser is told to drop what it holds.
     REQUIRE((*answered)[http::field::set_cookie].find("Max-Age=0") != std::string::npos);
+}
+
+TEST_CASE("a_session_request_that_changes_something_must_prove_intent", "[session_cookie][csrf]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a cookie alone cannot change anything";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+
+    metrics_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(router->post("/change")
+                          .summary("Something a signed-in caller may change")
+                          .auth_required()
+                          .handler([](const http_request&) -> asio::awaitable<http_response> {
+                              co_return http_response::json(R"({"changed":true})");
+                          })
+                          .build());
+
+    cookie_settings settings;
+    settings.name = "ores_web_session_test";
+    fixture.server().set_cookie_settings(settings);
+
+    session_record record;
+    record.token = "the-token";
+    record.claims.subject = "the-account";
+    const auto identifier = fixture.server().sessions()->open(record);
+    const auto cookie = settings.name + "=" + identifier;
+
+    // The cookie alone is what a cross-site form would send.
+    const auto bare = metrics_send_with_headers(
+        fixture.port(), http::verb::post, "/change", {{"Cookie", cookie}});
+    REQUIRE(bare.has_value());
+    REQUIRE(bare->result_int() == 403);
+    REQUIRE(bare->body().find("X-Ores-Request") != std::string::npos);
+
+    // The header without an Origin is still not proof.
+    const auto no_origin = metrics_send_with_headers(
+        fixture.port(), http::verb::post, "/change", {{"Cookie", cookie}, {"X-Ores-Request", "1"}});
+    REQUIRE(no_origin.has_value());
+    REQUIRE(no_origin->result_int() == 403);
+
+    // An Origin belonging to somebody else is refused.
+    const auto foreign = metrics_send_with_headers(
+        fixture.port(),
+        http::verb::post,
+        "/change",
+        {{"Cookie", cookie}, {"X-Ores-Request", "1"}, {"Origin", "https://elsewhere.example"}});
+    REQUIRE(foreign.has_value());
+    REQUIRE(foreign->result_int() == 403);
+
+    // This deployment's own origin and the header are enough.
+    const auto intended = metrics_send_with_headers(
+        fixture.port(),
+        http::verb::post,
+        "/change",
+        {{"Cookie", cookie}, {"X-Ores-Request", "1"}, {"Origin", "http://127.0.0.1"}});
+    REQUIRE(intended.has_value());
+    REQUIRE(intended->result_int() == 200);
 }
 
 TEST_CASE("metrics_count_what_the_server_answered", "[http_metrics]") {

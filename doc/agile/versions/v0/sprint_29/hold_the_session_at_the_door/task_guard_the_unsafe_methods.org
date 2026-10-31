@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :hold_the_session_at_the_door:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/guard-the-unsafe-methods
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:67465051-811E-411C-9F93-AFC61A7E5C4B][Hold the session at the door]] |
-| Now          | Not yet started.                       |
+| Now          | A session request that changes something must prove intent. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Review, then sign in and out become resources. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -55,9 +55,20 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| CSRF cases | 2 cases, 10 assertions, all passing | =./ores.http.api.tests "[csrf]"= | branch head |
+| =ores.http.api= test cases | 122 cases, 420 assertions, all passing | =./ores.http.api.tests= | branch head |
 
 * Notes
+
+- The rule is checked in the session, after the identity is known and before the
+  handler runs, so a route cannot forget to ask. Only a request proven by a cookie is
+  guarded: a cross-site form can neither set an Authorization header nor read a
+  token, so a bearer client is not asked for the session's headers.
+- The deployment's own origin is taken from the request's =Host= and the deployment's
+  TLS flag rather than from configuration, so there is nothing to keep in step and a
+  deployment behind a proxy that rewrites =Host= is the case that will need a setting.
+- The bearer path needs no case of its own: the storage upload end-to-end test sends a
+  PUT with a capability token and none of these headers, and it answers 200.
 
 * Test Scenarios
 

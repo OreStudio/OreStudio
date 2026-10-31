@@ -127,6 +127,18 @@ private:
     convert_response(const domain::http_response& resp, unsigned version, bool keep_alive);
 
     /**
+     * @brief Why a session request may not change anything, when it may not.
+     *
+     * A cookie is proof of holding a session and not of intending anything: a
+     * cross-site form carries it without asking. So an unsafe method on a session
+     * request must carry an =Origin= naming this deployment and a header that a form
+     * cannot set, and this answers why when it does not.
+     *
+     * @returns nothing when the request may proceed
+     */
+    [[nodiscard]] std::optional<std::string> csrf_refusal(const domain::http_request& req) const;
+
+    /**
      * @brief Writes a response, from its bytes or in chunks from its source.
      *
      * @param send_body false for a HEAD request, which answers the headers that

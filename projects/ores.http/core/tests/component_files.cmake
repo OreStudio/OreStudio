@@ -20,12 +20,12 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
-    "main.cpp"
-    "storage_upload_end_to_end_tests.cpp"
     "change_coalescer_tests.cpp"
     "change_pump_tests.cpp"
-    "change_ticker_tests.cpp"
     "change_stream_tests.cpp"
+    "change_ticker_tests.cpp"
+    "main.cpp"
+    "storage_upload_end_to_end_tests.cpp"
     "storage_upload_sink_tests.cpp"
     "web_bundle_routes_tests.cpp"
 )

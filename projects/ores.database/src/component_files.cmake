@@ -62,6 +62,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/pq/where.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/query_builder/columns.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/query_builder/execute.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/query_builder/json.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/query_builder/query.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/bitemporal_operations.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/db_types.hpp"

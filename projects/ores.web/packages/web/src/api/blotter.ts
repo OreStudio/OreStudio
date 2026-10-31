@@ -29,13 +29,13 @@ import { request } from './transport.js';
  * chooses which one they are reading by, and the rows are the same trades and
  * structures either way.
  */
-export type BlotterView = 'portfolio' | 'counterparty';
+export type BlotterView = 'portfolio' | 'counterparty' | 'instrument';
 
 /** One node of the rail. Its id names its kind, and the party is the empty id. */
 export interface BlotterNode {
     readonly id: string;
     readonly label: string;
-    readonly kind: 'party' | 'portfolio' | 'book' | 'counterparty';
+    readonly kind: 'party' | 'portfolio' | 'book' | 'counterparty' | 'instrument';
     readonly parent: string;
     /** The rows placed under it: a structure counts once, where it is placed. */
     readonly count: number;
@@ -89,7 +89,7 @@ export interface BlotterQuery {
 const nodeSchema = z.looseObject({
     id: z.string(),
     label: z.string(),
-    kind: z.enum(['party', 'portfolio', 'book', 'counterparty']),
+    kind: z.enum(['party', 'portfolio', 'book', 'counterparty', 'instrument']),
     parent: z.string().default(''),
     count: z.coerce.number().int().default(0),
 });

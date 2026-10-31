@@ -26,6 +26,7 @@ import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/
 import { subjects as portfolioSubjects } from '@ores/wire-protocol/generated/refdata/protocol/portfolio_protocol';
 import { subjects as memberSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_member_protocol';
 import { subjects as tradeIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
+import { subjects as assetClassSubjects } from '@ores/wire-protocol/generated/refdata/protocol/asset_class_code_protocol';
 import { subjects as instrumentCodeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/instrument_code_protocol';
 import { subjects as tradeTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_type_protocol';
 import { subjects as structureIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_identifier_protocol';
@@ -75,10 +76,10 @@ const READ_CAP = 20_000;
 
 const blotterQuerySchema = z.object({
     /** The grouping the rail is drawn by. */
-    view: z.enum(['portfolio', 'counterparty']).default('portfolio'),
+    view: z.enum(['portfolio', 'counterparty', 'instrument']).default('portfolio'),
     /**
      * The node the list is narrowed to: `book:<id>`, `portfolio:<id>`,
-     * `counterparty:<id>`, or empty for the party itself.
+     * `counterparty:<id>`, `instrument:<class>`, or empty for the party itself.
      */
     node: z.string().trim().max(100).default(''),
     flat: z
@@ -177,7 +178,7 @@ async function allSummaries(
 interface TreeNode {
     readonly id: string;
     readonly label: string;
-    readonly kind: 'party' | 'portfolio' | 'book' | 'counterparty';
+    readonly kind: 'party' | 'portfolio' | 'book' | 'counterparty' | 'instrument';
     readonly parent: string;
     readonly count: number;
 }
@@ -185,6 +186,7 @@ interface TreeNode {
 const bookNodeId = (id: string): string => `book:${id}`;
 const portfolioNodeId = (id: string): string => `portfolio:${id}`;
 const counterpartyNodeId = (id: string): string => `counterparty:${id}`;
+const instrumentNodeId = (code: string): string => `instrument:${code}`;
 
 /** Where a portfolio sits: its parent, or the empty string when it is a root. */
 type PortfolioParent = ReadonlyMap<string, string>;
@@ -295,49 +297,53 @@ export function registerBlotterRoutes(
         const query = input(blotterQuerySchema, request.query);
         const order = { field: query.sort, descending: query.descending };
 
-        const [books, portfolios, structures, members, counterparties, types, instruments] =
-            await Promise.all([
-                readAll(session, bookSubjects.list_books_request, 'books', {
-                    filter: {
-                        parent_portfolio_id: null,
-                        id_one_of: null,
-                        parent_portfolio_id_one_of: null,
-                    },
-                    as_of: null,
-                }),
-                readAll(session, portfolioSubjects.list_portfolios_request, 'portfolios', {
-                    filter: { sandbox_id: null, id_one_of: null, sandbox_id_one_of: null },
-                    as_of: null,
-                }),
-                readAll(session, structureSubjects.list_structures_request, 'structures', {
-                    filter: { id_one_of: null },
-                    as_of: null,
-                }),
-                readAll(session, memberSubjects.list_structure_members_request, 'members', {
-                    filter: { trade_id_one_of: null },
-                    as_of: null,
-                }),
-                readAll(
-                    session,
-                    counterpartySubjects.list_counterparties_request,
-                    'counterparties',
-                    {
-                        filter: null,
-                        as_of: null,
-                    },
-                ),
-                readAll(session, tradeTypeSubjects.list_trade_types_request, 'types', {
-                    filter: { code_one_of: null },
-                }),
-                readAll(
-                    session,
-                    instrumentCodeSubjects.list_instrument_codes_request,
-                    'instruments',
-                    {
-                        filter: { code_one_of: null },
-                    },
-                ),
-            ]);
+        const [
+            books,
+            portfolios,
+            structures,
+            members,
+            counterparties,
+            types,
+            instruments,
+            assetClasses,
+        ] = await Promise.all([
+            readAll(session, bookSubjects.list_books_request, 'books', {
+                filter: {
+                    parent_portfolio_id: null,
+                    id_one_of: null,
+                    parent_portfolio_id_one_of: null,
+                },
+                as_of: null,
+            }),
+            readAll(session, portfolioSubjects.list_portfolios_request, 'portfolios', {
+                filter: { sandbox_id: null, id_one_of: null, sandbox_id_one_of: null },
+                as_of: null,
+            }),
+            readAll(session, structureSubjects.list_structures_request, 'structures', {
+                filter: { id_one_of: null },
+                as_of: null,
+            }),
+            readAll(session, memberSubjects.list_structure_members_request, 'members', {
+                filter: { trade_id_one_of: null },
+                as_of: null,
+            }),
+            readAll(session, counterpartySubjects.list_counterparties_request, 'counterparties', {
+                filter: null,
+                as_of: null,
+            }),
+            readAll(session, tradeTypeSubjects.list_trade_types_request, 'types', {
+                filter: { code_one_of: null },
+            }),
+            readAll(session, instrumentCodeSubjects.list_instrument_codes_request, 'instruments', {
+                filter: { code_one_of: null },
+            }),
+            readAll(
+                session,
+                assetClassSubjects.list_asset_class_codes_request,
+                'asset_classes',
+                { filter: { code_one_of: null } },
+            ),
+        ]);
 
         /*
          * The name a type is known by, so the list states the instrument a desk
@@ -360,6 +366,13 @@ export function registerBlotterRoutes(
          */
         const productCodeOf = new Map<string, string>();
         const productNameOf = new Map<string, string>();
+        const assetClassOf = new Map<string, string>();
+        const classNameOf = new Map(
+            assetClasses.map(
+                (row) =>
+                    [text(row['code']), text(row['name']) || humanise(text(row['code']))] as const,
+            ),
+        );
         for (const row of instruments) {
             const tradeType = text(row['ore_trade_type']);
             if (tradeType === '') {
@@ -367,6 +380,7 @@ export function registerBlotterRoutes(
             }
             productCodeOf.set(tradeType, text(row['code']));
             productNameOf.set(tradeType, text(row['name']));
+            assetClassOf.set(tradeType, text(row['asset_class']));
         }
 
         /* Which structure holds which trade. */
@@ -659,7 +673,47 @@ export function registerBlotterRoutes(
             ];
         };
 
-        const drawn = query.view === 'counterparty' ? counterpartyRail() : portfolioRail();
+        const instrumentRail = (): readonly TreeNode[] => {
+            const counts = new Map<string, number>();
+            for (const row of topRows) {
+                const code = assetClassOf.get(text(row['instrument_type'])) ?? '';
+                if (code !== '') {
+                    counts.set(code, (counts.get(code) ?? 0) + 1);
+                }
+            }
+            return [
+                {
+                    id: '',
+                    label: session.party?.name ?? '',
+                    kind: 'party',
+                    parent: '',
+                    // A structure is a package, not an instrument class, so this
+                    // rail counts the rows that have one and says so by its own
+                    // total rather than the party's.
+                    count: [...counts.values()].reduce((sum, count) => sum + count, 0),
+                },
+                ...[...counts.entries()]
+                    .sort(([left], [right]) =>
+                        (classNameOf.get(left) ?? left).localeCompare(
+                            classNameOf.get(right) ?? right,
+                        ),
+                    )
+                    .map(([code, count]) => ({
+                        id: instrumentNodeId(code),
+                        label: classNameOf.get(code) ?? humanise(code),
+                        kind: 'instrument' as const,
+                        parent: '',
+                        count,
+                    })),
+            ];
+        };
+
+        const drawn =
+            query.view === 'counterparty'
+                ? counterpartyRail()
+                : query.view === 'instrument'
+                  ? instrumentRail()
+                  : portfolioRail();
         const tree = drawn.filter((node) => node.id === '' || node.count > 0);
 
         /* The rows the list is read from: every trade when flat, the top rows otherwise. */
@@ -683,6 +737,12 @@ export function registerBlotterRoutes(
             }
             if (node.startsWith('counterparty:')) {
                 return text(row['counterparty_id']) === node.slice('counterparty:'.length);
+            }
+            if (node.startsWith('instrument:')) {
+                return (
+                    assetClassOf.get(text(row['instrument_type'])) ===
+                    node.slice('instrument:'.length)
+                );
             }
             const placement = placementOf(row);
             return ancestorsOfPlacement(placement, portfolioOfBook, parentOf).includes(node);

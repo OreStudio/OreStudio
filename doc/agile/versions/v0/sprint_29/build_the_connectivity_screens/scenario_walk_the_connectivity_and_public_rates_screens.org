@@ -212,3 +212,13 @@ child as PASS, FAIL or PENDING with one line of evidence.
   fixings downloaded) in the Results section of the task.
 
 *** Result
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |

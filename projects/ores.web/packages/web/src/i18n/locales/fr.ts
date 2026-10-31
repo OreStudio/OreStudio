@@ -3740,6 +3740,7 @@ const fr: SourceCatalogue = {
             viewPortfolio: 'Arbre de portefeuilles',
             railLoading: 'Lecture de l’arbre...',
             viewCounterparty: 'Contrepartie',
+            viewInstrument: 'Classe d’actif',
             flat: 'À plat',
             identifier: 'Identifiant',
             structureColumn: 'Structure',

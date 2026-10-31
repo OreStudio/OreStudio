@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 5B7C1E42-9D3A-4F86-B1E5-7C29A4D6F013
+:END:
+#+title: ores.reporting.ore_element_map_column
+#+description: Codegen entity model for the reporting =ore_element_map_column= table. The projection column that carries an ORE leaf, named beside the element map row that states which value set governs the leaf.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: One projection column that carries an ORE leaf.
+#+entity_singular: ore_element_map_column
+#+entity_plural: ore_element_map_columns
+#+entity_title: Ore Element Map Column
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+A value set governs a leaf, and a leaf is carried by a column of a table the
+projection writes. The map names the leaf; this table names the columns that
+carry it, so a guard can start from the row it is about to write and reach the
+rule without knowing either the document's path or the parameter contract.
+
+The row exists because the same leaf is carried by many columns: =DayCounter= is
+a column of every curve family table. One map row, many columns, one rule.
+
+The =xpath= stays here because it is the leaf's address in the document, which is
+what the import and the convention screens show. The entity, the table and the
+column are what the guard needs, because a trigger sees a row of one table.
+
+* Flags
+:PROPERTIES:
+:schema:                    public
+:product:                   ores
+:component:                 reporting
+:profile:                   simple-lookup
+:sql_only:                  true
+:system_tenant_validation:  true
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:rls_tenant_isolation:      true
+:tablename: ores_reporting_ore_element_map_columns_tbl
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:primary_key:  true
+:END:
+
+The column's code, which names the map row and the column it carries, for
+example =curveconfig.xsd|DayCounter|base_correlation_config|day_counter=.
+
+** element_map_code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The map row this column carries. Soft foreign key to
+=ores_reporting_ore_parameter_vocabularies_tbl=, whose key is
+=(schema_name, element_name)= spelled as one code.
+
+** entity_name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The projection family the column belongs to, which is what the guard's trigger
+names, for example =base_correlation_config=.
+
+** table_name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The table the column is on, for example
+=ores_refdata_base_correlation_configs_tbl=.
+
+** column_name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The column that holds the leaf's value, for example =day_counter=.
+
+** xpath
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The leaf's address in the document, for example
+=/CurveConfiguration/BaseCorrelations/BaseCorrelation/DayCounter=.
+
+** position
+:PROPERTIES:
+:type:         integer
+:cpp_type:     int
+:nullable:     false
+:END:
+
+Where the column sits among the columns of its map row, counting from zero, so
+the seed and a reader see the same order every time.

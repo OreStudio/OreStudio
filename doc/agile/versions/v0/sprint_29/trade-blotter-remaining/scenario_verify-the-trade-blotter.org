@@ -155,6 +155,25 @@ This page documents a test scenario verifying [[id:5057B9A6-66F0-4E4E-967F-DF915
 |--------+-------|
 | Status | PASS |
 
+** Read the rows by asset class
+
+- Choose *Asset class* in *Read by*. Passes when the rail becomes the classes the
+  party's rows fall into, each with its name from the refdata catalogue, a
+  coloured dot, and its own number: *Bond*, *Commodity*, *Credit*, *Equity*,
+  *FX*, *Interest Rate*.
+- Choose *Interest Rate*. Passes when every row's *What* badge reads a rates
+  instrument and the pager's total equals the node's number.
+- Passes when the nodes add up to the party's total: a structure has no class, so
+  the figure counts the classed trades only and a flat row with no class is not
+  counted twice.
+- Choose *Portfolio tree* again. Passes when the tree is drawn at once.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open what a row names
 
 - From the top rows, click a structure's identifier. Passes when the structure's
@@ -197,3 +216,9 @@ This page documents a test scenario verifying [[id:5057B9A6-66F0-4E4E-967F-DF915
 | Worktree      |       |
 
 * Notes
+
+The steps above were run by hand at 2026-10-30T14:32:52Z, when the screen offered
+two ways to read the rows. *Read the rows by asset class* was added afterwards,
+on 2026-10-31, and passed under the browser case
+=tools/ui-tests/specs/blotter.spec.ts= at commit =89ec35d5b6= rather than by
+hand.

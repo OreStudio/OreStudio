@@ -1,0 +1,297 @@
+:PROPERTIES:
+:ID: 8BD41683-EFA1-467A-B170-BE7041A745D7
+:END:
+#+title: User Journey: Rerun and audit a cut
+#+description: An auditor reads the history of a cut, who took and authorised it, the runs that priced from it, and reproduces a result from the same body and the same engine, or reads why it cannot.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:cut:valuation:reporting:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: An auditor reads the history of a cut, who took and authorised it, the runs that priced from it, and reproduces a result from the same body and the same engine, or reads why it cannot.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+The decision behind it is
+[[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices
+from]]. This journey is the one the whole cluster exists for: the
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] note states that the purpose of
+a cut is a valuation that is fully reproducible, and a purpose is not met until
+somebody reproduces one.
+
+* Goal
+
+"A number in a report was signed off months ago and I am asked to stand behind it.
+I want to read which body it came from, who fixed it and who signed it, every run
+that rested on it, and then produce the same number again from the same body and
+the same engine — or be told, in words I can put in a file, why the same number
+cannot be produced."
+
+The journey is done when the person has either reproduced a figure from the cut, or
+holds a statement of the reason reproduction is not possible and what would be
+needed.
+
+* Actor and trigger
+
+An auditor runs this journey, and so does a market-risk owner answering a challenge
+to a number, and an engineer chasing a difference two runs of one body show. All
+three read the same surfaces; only the engineer takes the fourth step, which
+compares the figures rather than restating the verdict.
+
+Reading needs =reporting::cuts:read= and =reporting::report_instances:read=.
+Re-running a report needs =reporting::report_instances:write=, which is the
+permission a person already needs to press *Run now*. Reading the engine version is
+part of the run's own record. A person who may not re-run a report reads the cut and
+its runs and is drawn no *Run it again*.
+
+The trigger is a request from outside the party: a regulator's question, an internal
+audit's sample, or a challenge from the desk. The person starts from the report the
+number appears in, or from a cut whose label they were given, and the journey ends
+with a comparison on the screen.
+
+This journey reads and re-runs. It does not authorise a cut, which is
+[[id:E840111E-AA2F-4746-8D49-A1D73742925E][Take a cut]], and it does not choose
+which cut a report prices from, which is
+[[id:9123193E-352D-4F46-8174-7763FA0A44CD][Give a report its cut]].
+
+* Steps
+
+** Step 1: open the cut, and read what it is
+
+1. *Reach the cut.* The person reaches it from the run's card, from the *Runs* of a
+   report, or by opening Cuts and searching the label. The record page's heading is
+   the derived label, and the lead line reads the kind, the timepoint, the scope and
+   the state.
+2. *Read the body.* The *The body* tab draws the parts, each with the counts and the
+   state it held when the body was fixed.
+
+   | Part | What the tab draws |
+   |------+--------------------|
+   | The deals | The population by count and by state, the books, the corrections inside it, and the read that produced it |
+   | The market data | The publish record of every set the body fixed, its curve, party, as-of and publisher, the fixings in force, and the value count |
+   | The reference data | The version in force of every configuration the run reads, each a link to that version |
+   | The engine and the code | The engine version, the wrapper version and the service build |
+   | The taking identity | The account, the party and the instant |
+
+3. *Read the gap list, where there is one.* An incomplete body draws its gaps and
+   says that no run ever priced from it. That is the answer to a challenge about a
+   number the cut does not hold, and it is stated rather than implied.
+
+** Step 2: read who took and who authorised it
+
+4. *Read the authorisation.* The *Authorisation* tab draws the acts and the
+   sign-off: the taker and the instant, the request, the account the request waited
+   on, the decider, the instant and the comment, or the refusal and its reason.
+   Each names its account and links the request in Approvals, which is the record
+   the inbox keeps for every kind.
+5. *Read the four-eyes fact.* The tab states, in one line, that the taker and the
+   decider are two people, and it says what the schema enforces: a decision by the
+   person who asked is refused, and one person approves a request once. The rule is
+   the inbox's for every kind, and
+   [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] states it. A
+   signature a reader can check is worth more than one a reader must trust.
+6. *Read the basis where the kind requires no signature.* A cut of a kind that
+   requires no authorisation draws one act and the sentence that names the basis:
+   that the kind requires none, and, where the kind says so, that every result
+   priced from it is marked indicative. The tab draws it in the place the decision
+   would stand, so an auditor reading the page does not take a signed body and an
+   unsigned one for the same thing.
+7. *Read what the label does not say.* The tab states that the label names the kind,
+   the scope and the date, and that it says nothing about who signed it, so the
+   state and the basis are read as facts and not inferred from the label.
+
+** Step 3: read the runs that priced from it
+
+8. *Read the runs.* The *Runs* tab lists every run that priced from this cut, newest
+   first: the report, the definition, the run's instant, its state, its engine
+   version and its result's location. The count of those runs is the column the cuts
+   list draws, so the two screens agree.
+9. *Open one run.* A row opens the run's page, and the run's card names the cut it
+   priced from, as
+   [[id:9123193E-352D-4F46-8174-7763FA0A44CD][Give a report its cut]] draws
+   it. The two pages are the same fact read from each side.
+10. *Read a run that did not price.* A run refused before the engine appears in the
+   list with its refusal and does not count as a run that priced from the cut. The
+   distinction matters to an auditor: a refusal is not a result.
+
+** Step 4: reproduce a result
+
+11. *Press Run it again.* The press is offered on a run that completed, and on the
+    cut itself for the report that consumed it. It re-runs the same report against
+    the same cut, and the dialog states what it will do: the same body, the same
+    engine version if the version is still served, and a result to compare with the
+    original.
+12. *Read the verdict.* The comparison is one of three, in the words the card uses.
+
+    | Verdict | What the screen draws |
+    |---------+-----------------------|
+    | Reproduced | The two runs side by side, the figures equal, and the sentence that they are one result computed twice. The cut and the engine version are stated once and shared |
+    | Differs | The first figures that differ, each with both values and the difference, and the statement that the body and the engine are the same. The screen says this is a defect in the engine or in the code and not a movement of the market |
+    | Cannot be compared | The reason, in one of three forms, and what would be needed to compare |
+
+13. *Read why reproduction is not possible.* The third verdict is the one an
+    auditor writes down, so it is stated precisely.
+
+    | Reason | What the screen says |
+    |--------+----------------------|
+    | The engine version differs | The original run used one version and today serves another. The body is the same and the software is not, which is the condition the cluster's quoted definition of reproduction excludes |
+    | A part of the body is no longer served | The body records the part and the store no longer serves it: today, a fixed market data snapshot that was never stored, or a configuration version that was withdrawn. The screen names the part and the series |
+    | The body was retaken | The run priced from an earlier cut of the same day, and the comparison names both labels. A retaken body is a different body, and its results are comparable only as a movement |
+    | A LIVE report was run twice | The two runs each minted a cut at their own instant, so they share no body at all. The card names both cuts and says the two are comparable only as a movement, and that the first is reproduced by naming its cut |
+
+14. *Read what the rerun keeps.* The new run records the cut it priced from, its own
+    instant and its engine version, so a third person can repeat the exercise without
+    asking the person who ran it. The screen states that no figure is overwritten: the
+    two runs are two records.
+15. *Reproduce a LIVE result by naming its cut.* A run of a LIVE selection minted the
+    body it priced from, and running the report again months later would mint another.
+    The card therefore offers the one route the promise allows: a rerun against the cut
+    the first run recorded, which is a selection of that specific cut, or the rerun the
+    run's own page starts. The screen says plainly that a second LIVE run is a view of
+    a later instant and not a repeated result.
+
+** The audit across the day**
+
+16. *Read the day's sequence.* From the cuts list, a person reads one day's cuts in
+    order: the cut taken at the close, the retake that superseded it, and the runs
+    that rested on each. The sequence is the audit trail a challenge asks for, and it
+    is why a superseded cut is kept and drawn rather than hidden.
+17. *Read who rests on a superseded cut.* The *Runs* tab of a superseded cut names
+    the runs that priced from it and the cut that replaced it. That is the question a
+    person asks before a retake is authorised — *what already rests on the body I am
+    about to replace?* — and the answer is a list rather than a guess.
+
+* Screens and wireframes
+
+Two surfaces carry this journey: the cut's record page, read through its four tabs,
+and the run's page with its card and its comparison. The cuts list is the third,
+because the day's sequence is read there.
+
+The judgement, per step, against the standards.
+
+#+ATTR_HTML: :class hug-leading
+| Step | Shape on the screen | Judgement |
+|------+---------------------+-----------|
+| 1 to 3, the cut | The standard record page with its tabs | RS-PAGE-01 to RS-PAGE-10 |
+| 2, the body's parts | A panel per part, with counts and links | No rule draws a body yet; the prototype defines the shape |
+| 4 to 6, the authorisation | A panel of the two acts, and a link to the request | The entity screen specification's timeline shape, and the inbox's own page for the request |
+| 8 to 10, the runs | The standard's parts panel with its rows | RS-RELATED-04 to RS-RELATED-06 |
+| 11 to 15, the reproduction | A comparison of two runs, with a verdict | No rule draws a comparison of two results yet; the prototype defines it and [[*What is missing][What is missing]] records the gap |
+| 16 to 17, the day | The list ordered by timepoint, and the *Runs* tab | RS-LIST-12 and RS-RELATED-04 |
+
+#+caption: The audit of a cut: the body's parts, the two acts, the runs that rested on it, and the comparison of a rerun with its original.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/cuts/wireframe_rerun_and_audit_a_cut.png]]
+
+* Prototype
+
+The [[file:../../prototypes/cuts/the-cut/][the cut prototype]] draws this
+journey on two of its surfaces: the cut's record with its *Runs* tab, and the run
+that names the cut with its three verdicts. Its
+[[file:../../prototypes/cuts/the-cut.org][design note]] records the states
+and what is fake.
+
+It must draw a cut whose runs all reproduced, a rerun that reproduced, a rerun that
+differs, a rerun that cannot be compared for each of the three reasons, and a
+superseded cut with the runs that still rest on it. Every value is a fixture.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| the cut | The label, the parts, the gaps and the two acts | [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] |
+| =report_instance= | The run, its instant, its state, its result's location and the cut it priced from | [[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]] |
+| =report_definition= | The definition whose report the runs price | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] |
+| =report_error_event= | The errors a run reported, which is why a run that completed carrying errors is not a clean reproduction | [[id:080B3871-8BAA-4AAA-A98F-3E79F4B83BAA][ores.reporting.report_error_event]] |
+| =app_version= | The engine and wrapper versions the reproduction turns on | [[id:1E563104-6F89-4858-9395-D869A7E817A6][ores.compute.app_version]] |
+| =approval_request= | The authorisation the cut holds, and the decision behind it | [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] |
+| =curve_publish= | The state each set in the body holds today, which a reader must not confuse with the state it held when the body was fixed | [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] |
+
+This journey writes one row: the run it re-runs. Nothing about the cut is written:
+a cut that has been taken is immutable, and an audit that could change the object it
+audits would be worth nothing.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Steps 1 to 3, the cut | Read one cut with its parts | =reporting.v1.cuts.get= | missing |
+| Step 4, the authorisation | Read the request, its part, its decision and its state | =inbox.v1.approval_requests.get= | exists |
+| Steps 7 to 8, the runs | List the runs that priced from a cut | =reporting.v1.report_instances.list_by_cut= | missing |
+| Step 8, one run | Read the run and the cut it records | =reporting.v1.report_instances.get= | exists; the cut is missing from the row |
+| Step 9, the refusals | Read the runs of a definition, and the state of each | =reporting.v1.report_instances.list=, filtered by definition | exists |
+| Step 10, the rerun | Trigger a run of the same definition against the same cut | =reporting.v1.ops.trigger_report_instance= | exists; the cut is not an input |
+| Steps 11 to 12, the comparison | Read the figures of two runs and compare them | (nothing reads a run's figures as rows: =report_instance= gives the archive's location) | missing |
+| Step 12, the engine version | Read the engine version each run used | (the run records the date and not the version) | missing |
+| Steps 14 to 15, the day | List the cuts of a scope over a range of dates | =reporting.v1.cuts.list= | missing |
+| The screen itself | Read a cut and its runs from the browser | (no BFF route serves cuts) | missing |
+
+The comparison reads the two runs' results as rows. The output of a run is an
+archive, and the last journey of the reporting group states the same gap from its
+own side: nothing parses a run's archive into figures. Until something does, the
+verdict this journey draws can be stated only from the facts a run records, which
+are its cut, its engine version and its state.
+
+* What is missing
+
+3. *Nothing compares two runs.* The reproduction promise is the purpose of the whole
+   cluster and no operation answers it. A comparison needs the two runs' figures as
+   rows, which needs the archive parsed, which is a gap the reporting journeys already
+   record.
+4. *The run does not record its engine version.* A run records the date it priced at
+   and the note that explains a moved date, and nothing names the version of the
+   engine that computed its result. A reproduction verdict that cannot state the
+   software is not a verdict.
+5. *The cut records the service build, and nothing provides it.* The body's engine and
+   code part needs a revision for the services that assembled it, and the platform
+   records no build for a service. The
+   [[id:E840111E-AA2F-4746-8D49-A1D73742925E][Take a cut]] journey records the
+   same gap from the side of the take.
+6. *A fixed snapshot is recorded and not served.* A cut whose market data half is a
+   snapshot nothing materialises can be read today only if the store still holds the
+   values. That is the second reason a comparison fails, and it is a property of the
+   gap rather than of the audit.
+7. *No list of runs by cut.* Runs are read by definition, by health and by instance.
+   Nothing reads them by cut, so the *Runs* tab and the cuts list's count have no
+   source.
+8. *No route and no screen for reporting.* The cut's record, the run's card and the
+   comparison are all new, as the two journeys beside this one record.
+9. *The day's sequence is not a read.* The list ordered by timepoint answers it for
+   one scope, and no read groups the cuts of a day by kind and ordinal. The first
+   slice reads the list and states the order it uses.
+
+* Related journeys
+
+- [[id:E840111E-AA2F-4746-8D49-A1D73742925E][Take a cut]] — the acts this journey reads, and the retake that supersedes.
+- [[id:9123193E-352D-4F46-8174-7763FA0A44CD][Give a report its cut]] — the run whose card this journey compares, and the other side of the same facts.
+- [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] — the numbers a comparison needs, and the archive that holds them.
+- [[id:465CA244-C488-4C69-ACA3-C694D104A42A][Look back over a report's history]] — the runs of one report, which this journey reads by cut instead.
+- [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]] — the press this journey re-uses for a rerun.
+- [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]] — where a reader goes when a comparison differs.
+- [[id:41C7A1F2-8E5B-4D36-9A0C-7B2E5D1F6A93][Sign off a pricing engine change]] — the decision that can make a rerun incomparable by changing the engine.
+- [[id:3FCDF005-AE5B-42AF-A053-BFEBAEDAD6AD][Bind a report to a published curve]] — the binding whose pin exists so that a rerun can reproduce, and the cut does the same for the whole body.
+
+* Related knowledge
+
+- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] — the decision this journey draws.
+- [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the purpose of reproduction, and the quoted definition this journey tests against.
+- [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — why a flash cut's result is indicative, and so is compared with care.
+- [[id:19630B5D-A163-42B5-B9C4-61A87BAE8F5F][Trade cut]] — the population a rerun replays rather than re-queries.
+- [[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut] — the fixed snapshot a rerun replays.
+- [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]] — why a store read cannot stand in for the body.
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record the authorisation tab reads, and the rule it states as a fact.
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — History against Audit, which decides what this page's tabs are called.
+
+* See also
+
+- [[id:E9A7D292-593C-4E72-8C1B-109F3DE38241][Cuts journeys]] — the group this journey belongs to.
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the record page, the parts panel and the timeline.
+- [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] — the timeline a record of several acts reads through.

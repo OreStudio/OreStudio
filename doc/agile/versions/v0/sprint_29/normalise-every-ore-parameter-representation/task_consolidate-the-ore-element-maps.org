@@ -28,9 +28,9 @@ One table states which ORE element a leaf column is and which value set states i
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
-| Now          | Measured and designed. The three maps are read, the numbers are in Discovery, and the target shape is in Design. |
-| Waiting on   | Nothing.                               |
-| Next         | Slice 1: the child table, the seed, and both guards reading the map. |
+| Now          | Slice 1a landed: the map and its child table are seeded from the tree. The guards still read the contract, because the map's inherited rules are not yet right for every leaf. |
+| Waiting on   | Nothing. The blocker is inside this task's own slice 3. |
+| Next         | Slice 3: curate the map's rules, starting with `SpotDays`, then switch the guards. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -163,6 +163,51 @@ migration.
 The canonical rendering of a value (next task), the screen that shows a leaf, and
 any change to what a value set states. This task moves where a leaf's set is
 found, not what the set says.
+
+* What slice 1a found
+
+The map and its child are seeded, and the switches are built, but two things had
+to be settled before the guards could read them.
+
+** The curve column map on the trunk was stale
+
+Regenerating it added six =business_day_convention= columns that the projection
+had gained and the committed seed had not. They were unguarded on the trunk, and
+=generate_curve_column_guards.py --check= failed there before this task touched
+it. The regeneration is in this slice, so the trunk's check goes green.
+
+** An element-keyed map guards leaves that were silent, and two of them fail
+
+The old guards matched a column's =xpath= against the contract, so a column whose
+path the contract did not hold was never checked. The map is keyed by the element,
+so it guards every column that carries a leaf, including those. That is the point
+of the change, and it exposed two refusals on paths that today pass.
+
+The first was the currency catalogue, and it was a fixture, not a defect. The
+catalogue read is fine: =ores_reporting_value_in_set_fn= reads
+=ores_refdata_currency_catalogue_v= for the caller's tenant, which is the tenant
+the publish writes as. The catalogue was empty because nothing had published
+=iso.currencies= for that tenant. The curve column suite already publishes them
+for the same reason; the publish test now does too, and its seven assertions pass
+with the switch in place.
+
+The second is a wrong rule the map inherited. With the currencies present, the
+conventions publish refuses =2= for =commodity_forward_convention.spot_days=:
+=SpotDays= resolves to =convention.period=, whose pattern requires a unit, so a
+count of days is refused. The old guard never applied that rule to this leaf
+because the contract held no row at that path. The element map applies it to every
+=SpotDays= column, which is what an element key means.
+
+So the blocker for slice 1b is not the catalogue. It is that the rules the map
+inherits are stated per parameter and were never exercised on the leaves the map
+now applies them to. That is slice 3, the curation of the map's rules, and it has
+to come before the guards read the map: =SpotDays= is a whole number of days
+(=convention.integer=), and the link that says otherwise is the thing to fix.
+
+The switch itself is written and was exercised. Under it the curve column suite
+passed unchanged and the convention suite failed only on its expected error text,
+which the map's key changes from =Swap.FixedFrequency= to
+=swap_convention.fixed_frequency=. Both are recorded here rather than lost.
 
 * Plan
 

@@ -9,6 +9,22 @@
 #+created: 2026-10-30
 #+updated: 2026-10-30
 
+* Status: superseded in part, 2026-10-30
+
+The decision below is kept because its argument stands: a name is not provenance,
+and a run must name the set it priced from rather than a string that matches one.
+Its *carrier* has changed. A cut now names the body a run prices from, and the
+market data half of that body holds the publish records this decision put on a row
+of the run settings. So the binding row, its pinned as-of and its tab on the
+configuration retire, and the three findings carry into the cut: a candidate cannot
+be part of a body, the ORE name is still derived from the curve and the party, and
+the export still builds the XML from the published set's points. The run records the
+cut rather than the binding, and the market card is read through the cut. The
+decision that settles the cut's side of this is
+[[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices
+from]], and the journey that replaces this one's is
+[[id:9123193E-352D-4F46-8174-7763FA0A44CD][Give a report its cut]].
+
 * Summary
 
 A report's market binding names a market configuration set by name, and the

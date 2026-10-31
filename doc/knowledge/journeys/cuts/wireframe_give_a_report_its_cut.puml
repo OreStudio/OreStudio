@@ -1,0 +1,81 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 2 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - REPORTING: GIVE A REPORT ITS CUT</b>
+  Home > Reporting > Reports
+  --
+  <b>THE REPORTS, WITH THE CUT EACH SELECTS</b>
+  {#
+    Report | Cut | Cycle | Latest run | Health
+    Group Consolidated Exposure | EOD, the close of the date it covers | eod | #4823 | COMPLETED CLEAN
+    Board Risk Dashboard | EOD | eod | #4819 | COMPLETED CLEAN
+    Intraday Risk Monitor | LIVE, indicative, no body until a run | intraday | #4820 | COMPLETED CLEAN
+    Headline Position | SOD, the open of the date it covers | eod | #4818 | COMPLETED WITH ERRORS
+    NPV | NO CUT, no cut selected | eod | #4790 | COMPLETED CLEAN
+    CVA/DVA/FVA | EOD, pinned to one cut | eod | #4771 | COMPLETED CLEAN
+    Large Exposures | IPV, the signed verification cut of that date | eod | #4760 | COMPLETED CLEAN
+  }
+  The badge classifies the report and does not report its health: no green, amber or red.
+  --
+  <b>THE REPORT: THE SELECTION, AND ITS PREVIEW</b>
+  Group Consolidated Exposure | Editable | [ Run now ]
+  Definition | Scope | Analytics | MARKET | History
+  Cut selection: EOD | Kind: End of day | Resolves against: the close of the date it covers
+  Date the report covers: 06 Oct 2026
+  <b>It decides</b> which fixed body this report values. <b>It does not decide</b> the valuation
+  date, which the run settings hold, nor which published set a market role resolves to.
+  --
+  <b>WHAT THE SELECTION RESOLVES TO NOW</b>
+  Cut: EOD.ACME-LONDON.2026-10-06 | Timepoint: 06 Oct 16:00Z | State: AUTHORISED
+  Basis: a.reyes authorised it | Holdings: 1,284 deals, 3,912 values | Runs resting on it: 3
+  The preview is the resolution the run will make, computed by the same operation.
+  --
+  <b>THE SELECTION DIALOG: THE KINDS, AND THE RESOLUTION EACH ONE MEANS</b>
+  {#
+    Selection kind | Resolves to | Authorisation
+    EOD | the close of the date the report covers | SIGNED
+    SOD | the open of the date the report covers | NOT SIGNED
+    IPV | the signed verification cut of that date | SIGNED
+    LIVE | the instant the run starts, and the run mints the cut | NOT SIGNED, INDICATIVE
+  }
+  Or one specific cut: EOD.ACME-LONDON.2026-10-06 (AUTHORISED), 2026-10-05 (SUPERSEDED)
+  A pinned report prices from that body whatever the date.
+  --
+  <b>THE REFUSALS THE PREVIEW SPEAKS</b>
+  <color:#ef4444>NO CUT OF THAT KIND AND DATE EXISTS.</color> No end of day cut of 08 Oct exists
+  for these books. Somebody must take one. The run is refused before the engine is reached.
+  A cut taken and unsigned is refused with the request and the account it waits on; a cut
+  whose body has gaps names where they are read; a cut that was refused names its reason.
+  --
+  <b>THE RUN THAT RESOLVED THE SELECTION</b>
+  Resolved from the report's selection: the report selected EOD, and the run resolved it to
+  EOD.ACME-LONDON.2026-10-06. The run records the cut, so the result names its body even
+  after the selection moves. The card names the cut, its timepoint, its basis and its parts.
+  --
+  <b>THE LIVE REPORT</b>
+  Intraday Risk Monitor | LIVE, indicative, no body until a run
+  Run #4820 resolved LIVE to LIVE.ACME-LONDON.2026-10-07T08:31:00Z, which this run minted.
+  Taken by: system, run #4820 | No authorisation is required by its kind
+  <color:#eab308>CANNOT BE COMPARED: THE REPORT WAS RUN TWICE ON LIVE.</color> Each run minted a cut
+  at its own instant, so the two share no body. The first is reproduced by naming its cut.
+}
+
+@enduml

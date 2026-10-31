@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: F9DD0A35-2DF2-4403-833F-AECCA32704FB
+:END:
+#+title: One spelling for an asset class code
+#+description: The conventions screen groups by interest-rates; both the refdata and the badge catalogues store interest_rates. A hyphen and an underscore are two codes where there should be one. Find every place that derives a class code from a display name or a slug and make it read the catalogue.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+One asset class has three codes. The catalogues store =interest_rates=, the convention kinds store =interest-rates=, and the screens show *Interest Rate*. The same holds for the other classes. A reader that joins or filters on the wrong spelling finds nothing and reports no error, only an empty group.
+
+Pick the canonical code, store it, and make every screen read the code from the catalogue rather than deriving one from a display name, a label or a route slug.
+
+* Why
+
+Found on 2026-10-31 while giving the trade blotter its class rail. The rail keys its groups on catalogue codes; the conventions screens key theirs on the hyphenated value in =refdata_convention_kinds_populate.sql=. No screen joins the two today, so nothing breaks. It breaks on the first filter that crosses them, and it breaks quietly.
+
+* References
+
+- =projects/ores.sql/populate/refdata/refdata_asset_class_codes_populate.sql= — the canonical codes
+- =projects/ores.sql/populate/refdata/refdata_convention_kinds_populate.sql= — the hyphenated =asset_class= column
+- =projects/ores.web/packages/web/src/marketdata/assetClassColour.ts= — keys on the underscore form
+- =projects/ores.web/packages/web/src/refdata/conventions.tsx= — =ASSET_CLASSES=, the hyphenated form
+
+* See also
+
+- [[proj:doc/agile/product_backlog/inbox/an_asset_class_is_not_a_data_quality_severity.org][An asset class is not a data-quality severity]]

@@ -141,7 +141,7 @@ function get(
 }
 
 describe('the official rates routes', () => {
-    it('lists only the providers that state terms, with their sources and fixing series', async () => {
+    it('lists only the providers that state terms, with their feeds and fixing series', async () => {
         const { server, sessionId } = buildTestServer({
             'marketdata.v1.providers.list': {
                 result: ok,
@@ -152,8 +152,27 @@ describe('the official rates routes', () => {
             },
             'marketdata.v1.feeds.list': {
                 result: ok,
-                running_feeds: [
-                    { id: 's', name: 'ecb-frankfurter', publisher_code: 'ecb', service: 'ecb' },
+                feeds: [
+                    {
+                        id: '1cf1232c-7ce2-54f3-b55f-c57793caf5af',
+                        name: 'ecb-frankfurter',
+                        publisher_code: 'ecb',
+                        session_code: 'frankfurter-eu',
+                        service: 'end_of_day',
+                        provider_key: 'ECB',
+                        is_default: true,
+                        description: 'The rates of the ECB read through Frankfurter.',
+                    },
+                    {
+                        id: 'da7d3d48-48af-5359-938e-9a6f0d7168e2',
+                        name: 'imf-frankfurter',
+                        publisher_code: 'imf',
+                        session_code: 'frankfurter-eu',
+                        service: 'end_of_day',
+                        provider_key: 'IMF',
+                        is_default: true,
+                        description: '',
+                    },
                 ],
             },
             'marketdata.v1.market_series.list': {
@@ -169,10 +188,36 @@ describe('the official rates routes', () => {
         expect(response.statusCode).toBe(200);
         const providers = response.json().providers;
         expect(providers.map((p: { code: string }) => p.code)).toEqual(['ecb']);
-        expect(providers[0].sources.map((s: { name: string }) => s.name)).toEqual([
-            'ecb-frankfurter',
+        expect(providers[0].feeds).toEqual([
+            {
+                id: '1cf1232c-7ce2-54f3-b55f-c57793caf5af',
+                name: 'ecb-frankfurter',
+                publisher_code: 'ecb',
+                session_code: 'frankfurter-eu',
+                service: 'end_of_day',
+                provider_key: 'ECB',
+                is_default: true,
+                description: 'The rates of the ECB read through Frankfurter.',
+            },
         ]);
         expect(providers[0].series.map((s: { quote: string }) => s.quote)).toEqual(['GBP', 'USD']);
+    });
+
+    it('asks for every feed at once, from the feed catalogue', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.providers.list': {
+                result: ok,
+                providers: [provider('ecb', 'https://ecb.example/terms')],
+            },
+            'marketdata.v1.feeds.list': { result: ok, feeds: [], total: 0 },
+            'marketdata.v1.market_series.list': { result: ok, market_series: [], total: 0 },
+        });
+        await get(server, sessionId, '/api/marketdata/official');
+        expect(calls.map((call) => call.subject)).toEqual([
+            'marketdata.v1.providers.list',
+            'marketdata.v1.feeds.list',
+            'marketdata.v1.market_series.list',
+        ]);
     });
 
     it('refuses a read of more than twelve series before it asks the service', async () => {

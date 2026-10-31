@@ -33,11 +33,10 @@ import type { LiveSession } from './sessions.js';
  * fixings the official rates adapter stores. A publisher is official when it states a terms
  * page, since only such a publisher is read through the adapter.
  *
- * The catalogue renamed its source rows to feeds: a feed is one configured adapter at a
- * publisher, with the session, the service and the publisher key the old row did not carry.
- * The screen still says source, and this route still answers a =sources= array, because the
- * row a person reads there is the feed. Its kind column shows the feed's service, which is
- * the only fact of that shape the renamed row carries.
+ * A feed is one publisher's data, on one service, through one session, with the publisher's
+ * own key. Each official provider is grouped from its feeds, and each fixing series is
+ * matched to the feed whose =provider_key= its URI names: the URI carries
+ * =source=<KEY>=, and the key is the publisher's own name for the data it serves.
  */
 
 const officialProviderSchema = z.looseObject({
@@ -54,11 +53,16 @@ const officialProviderSchema = z.looseObject({
     terms_accepted_at: z.string().nullable().default(null),
 });
 
+/** One feed of the catalogue: the publisher's data, its session, its service and its own key. */
 const feedSchema = z.looseObject({
     id: z.string(),
     name: z.string(),
     publisher_code: z.string(),
+    session_code: z.string().default(''),
     service: z.string().default(''),
+    provider_key: z.string().default(''),
+    is_default: z.boolean().default(false),
+    description: z.string().default(''),
 });
 
 const seriesSchema = z.looseObject({
@@ -97,7 +101,7 @@ export function registerOfficialRatesRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
 ): void {
-    /** Every official provider with its terms, its sources and the fixing series it fills. */
+    /** Every official provider with its terms, its feeds and the fixing series it fills. */
     server.get('/api/marketdata/official', async (request) => {
         const session = requireSession(request);
         const providers = (
@@ -113,7 +117,7 @@ export function registerOfficialRatesRoutes(
             return { providers: [] };
         }
         const [feeds, series] = await Promise.all([
-            readAll(session, feedSubjects.list_feeds_request, 'running_feeds', {
+            readAll(session, feedSubjects.list_feeds_request, 'feeds', {
                 filter: null,
                 as_of: null,
             }),
@@ -142,6 +146,19 @@ export function registerOfficialRatesRoutes(
                 );
             }
         }
+        // A series is read by the feed whose own key its URI names, so a series no feed of its
+        // publisher names cannot arrive; the catalogue that holds one is said here.
+        for (const row of parsedSeries) {
+            const read = parsedFeeds.some(
+                (feed) => feed.publisher_code === row.provider_code && feed.provider_key === row.source,
+            );
+            if (!read) {
+                request.log.warn(
+                    { provider: row.provider_code, provider_key: row.source },
+                    'no feed of the official provider names the key its fixing URI states',
+                );
+            }
+        }
         return {
             providers: providers
                 .map((provider) => ({
@@ -155,9 +172,23 @@ export function registerOfficialRatesRoutes(
                     terms_accepted: provider.terms_accepted_digest !== '',
                     terms_accepted_by: provider.terms_accepted_by,
                     terms_accepted_at: provider.terms_accepted_at,
-                    sources: parsedFeeds
+                    feeds: parsedFeeds
                         .filter((feed) => feed.publisher_code === provider.code)
-                        .map((feed) => ({ id: feed.id, name: feed.name, kind: feed.service })),
+                        .map((feed) => ({
+                            id: feed.id,
+                            name: feed.name,
+                            publisher_code: feed.publisher_code,
+                            session_code: feed.session_code,
+                            service: feed.service,
+                            provider_key: feed.provider_key,
+                            is_default: feed.is_default,
+                            description: feed.description,
+                        }))
+                        .sort(
+                            (left, right) =>
+                                Number(right.is_default) - Number(left.is_default) ||
+                                left.name.localeCompare(right.name),
+                        ),
                     series: parsedSeries
                         .filter((row) => row.provider_code === provider.code)
                         .map((row) => ({

@@ -53,7 +53,7 @@ values
     (ores_utility_system_tenant_id_fn(), 'HalfMonthModifiedFollowing', 0, 'Half-Month Modified Following',
      'Modified Following, additionally rolled back within the same half-month period',
      6, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
-    (ores_utility_system_tenant_id_fn(), 'Nearest', 0, 'Nearest',
+    (ores_utility_system_tenant_id_fn(), 'NEAREST', 0, 'Nearest',
      'Adjust to the nearest good business day, forward or backward',
      7, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types')
 on conflict (tenant_id, code)

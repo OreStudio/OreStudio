@@ -422,10 +422,16 @@
 \ir ./refdata_curve_volatility_curves_notify_trigger_create.sql
 \ir ./refdata_curve_volatility_delta_surfaces_create.sql
 \ir ./refdata_curve_volatility_delta_surfaces_notify_trigger_create.sql
+\ir ./refdata_curve_volatility_moneyness_surfaces_create.sql
+\ir ./refdata_curve_volatility_moneyness_surfaces_notify_trigger_create.sql
 \ir ./refdata_curve_volatility_proxy_surfaces_create.sql
 \ir ./refdata_curve_volatility_proxy_surfaces_notify_trigger_create.sql
 \ir ./refdata_curve_volatility_strike_surfaces_create.sql
 \ir ./refdata_curve_volatility_strike_surfaces_notify_trigger_create.sql
+\ir ./refdata_curve_volatility_smiles_create.sql
+\ir ./refdata_curve_volatility_smiles_notify_trigger_create.sql
+\ir ./refdata_curve_volatility_smile_parameters_create.sql
+\ir ./refdata_curve_volatility_smile_parameters_notify_trigger_create.sql
 \ir ./refdata_inflation_cap_floor_volatility_configs_create.sql
 \ir ./refdata_inflation_cap_floor_volatility_configs_notify_trigger_create.sql
 \ir ./refdata_inflation_cap_floor_volatility_strikes_create.sql

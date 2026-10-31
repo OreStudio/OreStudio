@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: 3164D230-33A6-4877-B948-0AFDD7CA3C90
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.refdata.curve_volatility_constant
 #+description: Codegen entity model for the refdata =curve_volatility_constant= part: the fields ORE's Constant states.

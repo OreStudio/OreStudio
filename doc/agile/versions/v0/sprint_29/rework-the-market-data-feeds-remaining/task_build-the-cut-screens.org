@@ -108,3 +108,36 @@ via its "Verifies task" field.
 | S5 | The magic 1000 | cut_read_service.cpp | Fixed | paging_cap, with page_bounds stating the page |
 
 * Result
+
+The cut screens' first unit is built, reviewed and repaired.
+
+- The reads: list_cut_rows (the derived state and label per row, the replacing
+  body, the page's run tally) and get_cut_record (the body, the acts, the gaps,
+  the state), with the cut read service, the paged read and the refusal of a
+  malformed month as a value.
+- Seven BFF routes: the cut types (list, record, choices, write, remove) and the
+  cuts (list, record, runs). The signed-or-not is derived from the approval
+  kind; the choices answer the retention destinations the store holds.
+- The screens: Reference data > Cut types (the rules, the retention, the type's
+  cuts grouped by the type's frequency, the edit through the standard dialog,
+  the delete through the shared remove dialog) and Reporting > Cuts (the filters,
+  the state badges with their basis and the indicative mark, the body cards, the
+  gaps, the authorisation tab with the request link, the Runs tab, the history).
+- The i18n in three locales, the server paging, the menu and paths, the route
+  inventory and the menu design.
+- The two-axis review was run and its findings closed: the choices contract, the
+  server paging, the standard dialogs, the tabs and the version line, the
+  permission constants, the test logger, the std::expected refusal, the Runs
+  tab, the reader-note gap, the indicative mark, the request link, the grouping
+  by frequency, the superseded basis, the draft notice, the retired-kind
+  sentence, and the smells named in the review. One finding is deliberately
+  left: the trigger's three resolution flags are generated from the contract
+  main already holds; removing them is the selection work's change.
+- Checks: the web build, BFF 85 files/1179 tests, web 188 files/2369 tests, the
+  codegen drift check, the route inventory (417 routes) and lint. The reporting
+  core suite's cut-read cases pass; two unrelated tests fail against the shared
+  database, which is behind main (missing canonical_value and the report
+  metrics tables) and is recreated at the deploy.
+
+Left for the following units: the take flow, the authorisation raise and decide,
+the report's cut selection and the LIVE mint UI; the screens state those gaps.

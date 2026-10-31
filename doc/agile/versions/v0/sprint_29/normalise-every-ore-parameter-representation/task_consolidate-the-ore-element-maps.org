@@ -30,21 +30,24 @@ One table states which ORE element a leaf column is and which value set states i
 | Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
 | Now          | Every leaf the map carries states a rule or the reason it has none, and both guards read the map. |
 | Waiting on   | Nothing.                               |
-| Next         | The setting link that cannot hold two leaves of one name. |
+| Next         | The task's acceptance is met. The setting link that cannot hold two leaves of one name is the next task's work, and it is recorded below. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
 
-- One table keys a leaf by =(schema_name, element_name)=, and it is the only
+- One table keys a leaf by its address, =(schema_name, xpath)=, and it is the only
   statement of which value set governs a leaf.
 - Every projection column that carries a leaf is attached to that map, so both
   guards read the map and the parameter contract is no longer a prerequisite of
-  enforcement.
+  enforcement. Done: both guards join the child and the map.
 - Every row of the three tables is represented in the new map, and a test counts
-  the leaves and the columns before and after.
+  the leaves and the columns before and after. Done:
+  =reporting_ore_element_map_test.sql= states the 480 leaves, the 482 columns, and
+  that neither side holds a row the other does not.
 - Both guards' pgTAP suites pass unchanged.
 - The leaves the maps name and the contract does not describe are listed by the
-  map, each with a decision: a value set, or =text=.
+  map, each with a decision: a value set, or =text=. Done: every one of the 480
+  names the authority that decided it, and none is left unaccounted.
 
 * Discovery
 

@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 379BF273-79A4-43FA-B63E-2C125548F0EA
+:END:
+#+title: Two parties' bond configs name one security and mean two issues
+#+description: The population aborts writing a bond issue that a second config already stored, because a security's name states currency, term and product but not the party whose issuer it names. Two legal entities of one tenant therefore share a security id and disagree about its issuer, and the store refuses the second write.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The population stops in its second bond config:
+
+#+begin_example
+Writing bond issue POPI90PPVMII4 failed: Bond issue ee8974f7-e2da-530a-b5e8-248562b8980f
+is stored with other terms.
+#+end_example
+
+The stored row is the first config's: security =POPI90PPVMII4=, issue
+=ee8974f7-e2da-530a-b5e8-248562b8980f=, issuer =00c042c7-dc5f-4c28-a961-f24fdf8106b4=,
+issue date 2026-04-30, calendar =TARGET=, sub type =Fixed=. The second config
+names the same security and states a different issuer, so the issue its terms
+belong to is a different issue under the same id.
+
+The security's name now states the currency, the term and the product --
+=7fda9888a3= added the product -- but the issuer is drawn from the party's own
+catalogue, so two legal entities of one tenant cannot share a security id while
+naming two issuers. Decide which of the two the identity belongs to: put the
+issuer in the security, or hold the securities apart by party.
+
+* Why
+
+Found on 2026-10-31 verifying the date fix on =main= at =2e3f9975ee=. The run
+wrote 234 trades before it stopped, so the tenant gets a partial population
+whose last bond config is missing.
+
+=7fda9888a3= fixed the same failure for a different dimension: a callable bond
+and a plain bond of one term were sharing a security because the product was not
+in the name. That fix is real and this is the next dimension of the same
+question, not a regression of it.
+
+* References
+
+- Failing security =POPI90PPVMII4=, stored issue =ee8974f7-e2da-530a-b5e8-248562b8980f=
+- =projects/ores.synthetic/core/src/service/trade_population_planner.cpp= --
+  =security_id_for= and the issuer the scope carries
+- =7fda9888a3= -- the product in the name, environment =festive_dijkstra=
+- The two bond configs of the profile: *ACME ACMCOR bonds* and *ACME ACCOUK bonds*
+
+* See also
+
+- The sprint 29 story *Populate the ACME books with a realistic trade population*

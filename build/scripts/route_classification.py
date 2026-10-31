@@ -102,6 +102,11 @@ RULES = (
          BFF, TRANSPORT, "changes",
          "The change stream a client subscribes to, and the watch set that says which"
          " subjects it wants; delivery of events, not a domain object."),
+    Rule("the change stream route",
+         ("exact", "GET /api/v1/changes"),
+         CPP, TRANSPORT, "changes",
+         "The change stream itself: a response whose body is written from the hub as"
+         " changes happen, with a comment line keeping a quiet stream alive."),
     Rule("the liveness endpoint",
          ("exact", "GET /api/health"),
          BFF, TRANSPORT, NO_AREA,

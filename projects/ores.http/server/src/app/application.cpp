@@ -24,6 +24,7 @@
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.http.api/net/http_server.hpp"
+#include "ores.http.core/routes/change_routes.hpp"
 #include "ores.http.core/routes/storage_routes.hpp"
 #include "ores.http.core/routes/variability_routes.hpp"
 #include "ores.http.core/routes/web_bundle_routes.hpp"
@@ -45,6 +46,7 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/uuid/string_generator.hpp>
+#include <chrono>
 #include <filesystem>
 
 namespace ores::http::server::app {
@@ -181,6 +183,15 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     routes::storage_routes storage(cfg.storage_dir, auth_service, cfg.server.max_body_size);
     storage.register_routes(router, registry);
+
+    /*
+     * The change stream. One hub per process, so a publisher reaches every stream
+     * and a stream reads only what it was given. The keep-alive is what a proxy
+     * needs to see on a quiet market.
+     */
+    auto changes = std::make_shared<http::stream::change_hub>();
+    routes::change_routes change_stream(changes, std::chrono::milliseconds(15000));
+    change_stream.register_routes(router, registry);
 
     /*
      * Last, because the bundle answers what no other route claimed: a screen path

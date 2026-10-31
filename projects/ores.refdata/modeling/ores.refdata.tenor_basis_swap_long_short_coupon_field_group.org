@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: bc23b13d-64c5-42f1-beb0-e30318112053
 :END:
 #+title: ores.refdata.tenor_basis_swap_long_short_coupon

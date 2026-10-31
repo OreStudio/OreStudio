@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: fd4b969c-53f7-4210-83d1-03fd5a0cd76f
 :END:
 #+title: ores.refdata.convention_identity

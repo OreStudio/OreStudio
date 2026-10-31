@@ -25,8 +25,6 @@
 #include "ores.dq.api/domain/catalog_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::dq::domain {}
-
 namespace ores::utility::codec {
 
 std::string wire_traits<ores::dq::domain::catalog>::write_json(const ores::dq::domain::catalog& v) {

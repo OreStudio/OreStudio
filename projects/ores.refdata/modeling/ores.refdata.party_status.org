@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 5B635069-1662-4E77-9FBE-5D0D01737AB7
 :END:
 #+title: ores.refdata.party_status

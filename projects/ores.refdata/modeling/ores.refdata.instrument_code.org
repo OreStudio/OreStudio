@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 4A02B9BB-B4B5-45DE-9036-C81EAEE3E921
 :END:
 #+title: ores.refdata.instrument_code

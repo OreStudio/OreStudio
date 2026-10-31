@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 73A5FAA1-377C-45A6-999E-4AD4DE406F78
 :END:
 #+title: ores.refdata.ir_curve_bootstrap_config

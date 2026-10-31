@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: FC23D85D-2830-4D33-9239-7D268900A4DD
+:END:
+#+title: Read the outputs the samples do not ship
+#+description: The file_type seed declares 55 output parameters. The checked-in samples ship the file of 17 of them, so the catalogue names 17 families with a parameter and 43 more by the engine's convention. The 38 parameters whose file no sample ships are: jacobi, jacobi_inverse and crossgamma (sensitivity and xvaSensitivity), productclass_mapping, calibration and its pca and meanReversion outputs, creditcurves, crif, marketObjects and riskFactors (portfolioDetails), the scenarioGeneration and simulation scenario dumps and cubes (scenariodata, cube, cptyCube, nettingSetCube, amcBuffer), timeaveragedexposure, dim_evolution and dim_regression, additionalResults, and sacva's net sensitivity file. Their columns live only in the writers, so reading them means deriving the shape from the C++ that writes it rather than from a sample. Extend the catalogue and the readers over these, and give the gate a way to say a family has no sample rather than skipping it silently.
+#+type: capture
+#+level: cross
+#+filetags: :ore:results:catalogue:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

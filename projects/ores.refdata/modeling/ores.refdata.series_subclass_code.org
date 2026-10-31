@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 465F0207-EAFD-46EC-851B-6912F86DC2D0
 :END:
 #+title: ores.refdata.series_subclass_code

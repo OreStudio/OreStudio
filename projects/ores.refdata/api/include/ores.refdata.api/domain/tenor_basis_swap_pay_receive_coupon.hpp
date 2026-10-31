@@ -25,8 +25,10 @@
 #ifndef ORES_REFDATA_API_DOMAIN_TENOR_BASIS_SWAP_PAY_RECEIVE_COUPON_HPP
 #define ORES_REFDATA_API_DOMAIN_TENOR_BASIS_SWAP_PAY_RECEIVE_COUPON_HPP
 
+#include "ores.utility/codec/wire_fields.hpp"
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace ores::refdata::domain {
 
@@ -70,6 +72,23 @@ struct tenor_basis_swap_pay_receive_coupon {
     friend bool operator==(const tenor_basis_swap_pay_receive_coupon&,
                            const tenor_basis_swap_pay_receive_coupon&) = default;
 };
+/**
+ * @brief The members of tenor_basis_swap_pay_receive_coupon, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * A group is a member of the entity that holds it, so the carriers reach this
+ * shape through it: the parent's field names the member, and this one names the
+ * members inside it.
+ */
+[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receive_coupon&) {
+    return std::tuple{
+        utility::codec::field{"spread_on_rec", &tenor_basis_swap_pay_receive_coupon::spread_on_rec},
+        utility::codec::field{"include_spread",
+                              &tenor_basis_swap_pay_receive_coupon::include_spread},
+        utility::codec::field{"sub_periods_coupon_type",
+                              &tenor_basis_swap_pay_receive_coupon::sub_periods_coupon_type},
+    };
+}
 
 }
 

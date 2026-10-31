@@ -22,6 +22,7 @@
 set(files
     "endpoint_registry_tests.cpp"
     "http_body_limit_tests.cpp"
+    "http_metrics_tests.cpp"
     "http_request_tests.cpp"
     "http_response_tests.cpp"
     "http_server_blocking_tests.cpp"
@@ -31,5 +32,7 @@ set(files
     "route_tests.cpp"
     "router_tests.cpp"
     "session_bytes_accumulator_tests.cpp"
+    "session_cookie_tests.cpp"
+    "session_store_tests.cpp"
     "worker_pool_tests.cpp"
 )

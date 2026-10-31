@@ -282,11 +282,10 @@ TRIGGER_FUNCTION = """
  *
  * One enforcement point, in the database, as for a pricing parameter: the shell,
  * the screens and a data quality publish all write through it. The trigger names
- * the entity it guards; each of that entity's terms names its leaf in the ORE
- * parameter contract, the leaf names its value set, and every non-empty value is
- * checked by ores_reporting_value_in_set_fn, the rule a pricing parameter's
- * value meets too. A term with no entry, or an entry with no set, admits every
- * value.
+ * the entity it guards; the map's child names each of that entity's terms, and the
+ * map row for that term's address names its value set. Every non-empty value is
+ * checked by ores_reporting_value_in_set_fn, the rule a pricing parameter's value
+ * meets too. A term the map does not name is not checked.
  */
 create or replace function ores_refdata_validate_convention_terms_fn()
 returns trigger
@@ -299,16 +298,12 @@ declare
     v_value text;
 begin
     for v_term in
-        select k.column_name, p.scope, p.name, l.value_set_code
-          from ores_refdata_convention_kind_terms_tbl k
-          join ores_reporting_ore_parameters_tbl p
-            on p.schema_name = k.schema_name
-           and p.xpath = k.xpath
-           and p.tenant_id = ores_utility_system_tenant_id_fn()
-           and p.valid_to = ores_utility_infinity_timestamp_fn()
-          join ores_reporting_ore_parameter_setting_value_sets_tbl l
-            on l.code = p.scope || ':' || p.name
-           and l.valid_to = ores_utility_infinity_timestamp_fn()
+        select k.column_name, m.value_set_code
+          from ores_reporting_ore_element_map_columns_tbl k
+          join ores_reporting_ore_parameter_vocabularies_tbl m
+            on m.code = k.element_map_code
+           and m.tenant_id = ores_utility_system_tenant_id_fn()
+           and m.valid_to = ores_utility_infinity_timestamp_fn()
          where k.entity_name = TG_ARGV[0]
            and k.tenant_id = ores_utility_system_tenant_id_fn()
            and k.valid_to = ores_utility_infinity_timestamp_fn()
@@ -319,7 +314,7 @@ begin
         end if;
         if not ores_reporting_value_in_set_fn(v_term.value_set_code, v_value) then
             raise exception 'Invalid value % for %.%: the value is not in set %.',
-                v_value, v_term.scope, v_term.name, v_term.value_set_code;
+                v_value, TG_ARGV[0], v_term.column_name, v_term.value_set_code;
         end if;
     end loop;
     return NEW;

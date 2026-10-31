@@ -17,10 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.dq.api/domain/catalog_codec.hpp"
 #include "ores.dq.api/generators/catalog_generator.hpp"
 #include "ores.dq.api/messaging/catalog_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.utility/codec/struct_codec.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -163,6 +165,27 @@ TEST_CASE("the wire codec sends a dq message through its generated codec",
         REQUIRE(read);
         CHECK(codec::write_json(*read) == codec::write_json(v));
     }
+}
+
+TEST_CASE("a field group states its shape, so the type that holds it recurses",
+          "[codec][message]") {
+    // A field group is a nested member rather than a row of its own, and a
+    // refdata convention holds two of them. It states wire_fields where its
+    // struct is declared, so the carriers reach it like any other object.
+    auto group = ores::dq::domain::audit_record{};
+    group.modified_by = "admin";
+    group.performed_by = "admin";
+    group.change_reason_code = "system.test";
+    group.change_commentary = "Synthetic test data";
+    group.recorded_at =
+        std::chrono::system_clock::time_point(std::chrono::microseconds(1'761'652'800'123'456));
+
+    CHECK(ores::utility::codec::json::write(group) == rfl::json::write(group));
+    CHECK(ores::utility::codec::msgpack::write(group) == their_message_msgpack(group));
+    CHECK(ores::utility::codec::json::write(
+              ores::utility::codec::json::read<ores::dq::domain::audit_record>(
+                  ores::utility::codec::json::write(group))) ==
+          ores::utility::codec::json::write(group));
 }
 
 TEST_CASE("a message and the domain type it holds agree about the domain type",

@@ -39,5 +39,6 @@ set(files
     "trade_generation_config_eventing_integration_tests.cpp"
     "trade_generation_counterparty_eventing_integration_tests.cpp"
     "trade_population_tests.cpp"
+    "trading_trade_population_writer_tests.cpp"
     "yield_curve_process_type_eventing_integration_tests.cpp"
 )

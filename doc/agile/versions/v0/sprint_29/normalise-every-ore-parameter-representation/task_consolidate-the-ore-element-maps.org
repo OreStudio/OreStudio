@@ -28,9 +28,9 @@ One table states which ORE element a leaf column is and which value set states i
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
-| Now          | Slice 1a landed: the map and its child table are seeded from the tree. The guards still read the contract, because the map's inherited rules are not yet right for every leaf. |
-| Waiting on   | Nothing. The blocker is inside this task's own slice 3. |
-| Next         | Slice 3: curate the map's rules, starting with `SpotDays`, then switch the guards. |
+| Now          | The map is keyed by the leaf's address, seeded, and both guards read it. |
+| Waiting on   | Nothing.                               |
+| Next         | Curate the 105 addresses that need an answer: the 26 contradictions, the 12 proposals, then the 67 that need a decision. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -97,6 +97,24 @@ map keyed by the ORE element that absorbs the two column maps, absorbs or remove
 the four-row duplicate, and shows the 54 leaves that no set governs. Enforcement
 then reads the map, so a tenant that has not published the parameter contract
 still meets the guard; today it meets nothing.
+
+* The map is keyed by the leaf's address
+
+The first cut keyed the map by =(schema_name, element_name)=. That key is wrong,
+and a test found it: =SpotDays= is =xs:integer= in two conventions and =xs:string=
+that ORE reads as a period in a third, so a rule keyed by the name gave the
+commodity forward's integer leaf the CMS spread option's period rule, and a count
+of days was refused.
+
+The key is the leaf's address in its schema. =element_name= stays beside it, so a
+person can read and search the map, and a vocabulary that holds for every leaf of
+a name (=Currency=, =DayCounter=, =BusinessDayConvention=) is stated once in
+=ore_parameter_vocabularies.json= and applied to every address that declares it.
+That is a rule, not a fallback: the declaration says the name is a vocabulary, and
+the map says which addresses declare it.
+
+Measured with that key: 480 addresses over 482 columns and 288 element names, of
+which 181 addresses take =text=, and 31 carry a curated vocabulary.
 
 * Design
 
@@ -208,6 +226,62 @@ The switch itself is written and was exercised. Under it the curve column suite
 passed unchanged and the convention suite failed only on its expected error text,
 which the map's key changes from =Swap.FixedFrequency= to
 =swap_convention.fixed_frequency=. Both are recorded here rather than lost.
+
+* The addresses the map leaves unconstrained
+
+181 of the 480 addresses take the shared text set, which admits every value.
+They are not one problem. =evidence/text_addresses.py= splits them, and its
+output is beside it:
+
+| Group | Addresses | What it needs |
+|-------+-----------+----------------|
+| the contract states =text=, and no other address of that element has a rule | 76 | nothing: a person decided the leaf is free text |
+| the contract states =text=, but the same element has a rule elsewhere | 26 | a review: the statement is probably wrong |
+| the contract holds no row, and a sibling address has a rule | 12 | a proposal to accept or reject |
+| the contract holds no row, and no sibling has a rule | 67 | a decision from the schema type and the ORE parser |
+
+The 26 and the 12 are the cheap end, because a rule already exists for the same
+element somewhere. The 67 are the real curation: mostly lists of tenors,
+strikes, dates and indices, where the honest answer is often a stated decision
+that the leaf is a list rather than a single value.
+
+Two examples of the 26, and why they matter: =SettlementDays=, =FixingDays= and
+=SpotDays= state =text= at some addresses while another address of the same name
+takes a rule, and =DayCounter= and =BusinessDayConvention= state =text= at two
+addresses while the map elsewhere states a catalogue. Each is either a wrong
+statement or a name that is two leaves, which is the =SpotDays= problem again.
+
+Five of the 26 are now corrected. The extractor states no parser for those
+members, so it typed them text; the ORE schema states =xs:integer= for every
+declaration of =SettlementDays= and =FixingDays= and for the commodity forward's
+=SpotDays=, and =convention_value_sets.py= now states that type with the reason.
+The unconstrained count falls from 181 to 176.
+
+Twenty-one are left, and they are not one job either. The =Index=, =Conventions=
+and =Calendar= addresses state =text= where a sibling states =curve.text=, which
+is the same rule under another code, so the question there is whether two text
+sets should exist, not whether the leaf is text. The =DayCounter= and
+=BusinessDayConvention= addresses at =IborIndex= and =OvernightIndex= state =text=
+where a catalogue exists.
+
+Those three are now stated as the catalogue, and the ORE source is why. The
+extractor typed them text and it was faithful: =IborIndexConvention::fromXML=
+reads =DayCounter= and =BusinessDayConvention= with =getChildValue= into
+=std::string= and never parses them
+(=OREData/ored/configuration/conventions.cpp:428= and =:430=), and
+=OvernightIndexConvention= reads its day counter the same way at =:470=. So the
+engine accepts any string there and a typo in one changes nothing, silently.
+
+The field means the same vocabulary the other twenty conventions state, so the
+rule is the catalogue and the engine's permissiveness is not a licence. A value
+the catalogue does not hold is refused with a sentence that names the set, which
+is a better answer than a typo the engine ignores. The unconstrained count falls
+to 173.
+
+What is left of the 26 is now eight addresses of =Index=, =Conventions= and
+=Calendar= that state =text= where a sibling states =curve.text=. That is one
+rule under two codes, and it is a question about the sets rather than about the
+leaves.
 
 * Plan
 

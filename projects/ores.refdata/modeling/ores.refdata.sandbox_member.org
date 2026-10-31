@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 6B3A0A06-EE24-411F-BF99-BBEF04A43E06
 :END:
 #+title: ores.refdata.sandbox_member

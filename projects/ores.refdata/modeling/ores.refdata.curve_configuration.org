@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 21C84908-9A7A-4804-AD3D-26FCBD65CCE6
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:

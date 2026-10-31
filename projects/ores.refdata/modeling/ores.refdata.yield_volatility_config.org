@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 99C4733C-DD77-46BB-A2FF-C2B25E59D0EF
 :END:
 #+title: ores.refdata.yield_volatility_config

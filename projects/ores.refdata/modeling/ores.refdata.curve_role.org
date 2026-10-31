@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: D9A9B2C5-2C22-456A-851F-B458E0568CD3
 :END:
 #+title: ores.refdata.curve_role

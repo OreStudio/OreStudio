@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 284D8D40-D243-4E75-885F-FDA5591FB22F
 :END:
 #+title: ores.refdata.currency_market_tier

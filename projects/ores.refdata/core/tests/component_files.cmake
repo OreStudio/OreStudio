@@ -131,6 +131,7 @@ set(files
     "legal_entity_eventing_integration_tests.cpp"
     "local_jurisdiction_eventing_integration_tests.cpp"
     "main.cpp"
+    "message_codec_tests.cpp"
     "messaging_book_proposal_mapping_tests.cpp"
     "messaging_counterparty_proposal_mapping_tests.cpp"
     "monetary_nature_eventing_integration_tests.cpp"

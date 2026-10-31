@@ -26,8 +26,10 @@
 #include "ores.http.api/net/http_server.hpp"
 #include "ores.http.core/routes/storage_routes.hpp"
 #include "ores.http.core/routes/variability_routes.hpp"
+#include "ores.http.core/routes/web_bundle_routes.hpp"
 #include "ores.http.server/messaging/registrar.hpp"
 #include "ores.http/routes/assets/assets_routes.hpp"
+#include "ores.http/routes/iam/auth_session_routes.hpp"
 #include "ores.http/routes/iam/iam_routes.hpp"
 #include "ores.http/routes/refdata/refdata_routes.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
@@ -43,6 +45,7 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/uuid/string_generator.hpp>
+#include <filesystem>
 
 namespace ores::http::server::app {
 
@@ -162,8 +165,36 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     ores::http::routes::refdata::refdata_routes::register_routes(router, registry, service_nats);
 
+    /*
+     * The browser's door: a sign-in keeps the token here and gives the browser a
+     * cookie. The session's cookie name is the deployment's, so two deployments on
+     * one host do not share one.
+     */
+    http::domain::cookie_settings session_cookie;
+    session_cookie.name = cfg.web_session_name;
+    session_cookie.secure = cfg.server.enable_ssl;
+    server.set_cookie_settings(session_cookie);
+
+    http::routes::iam::auth_session_routes auth_sessions(
+        service_nats, server.sessions(), server.verifier(), session_cookie);
+    auth_sessions.register_routes(router, registry);
+
     routes::storage_routes storage(cfg.storage_dir, auth_service, cfg.server.max_body_size);
     storage.register_routes(router, registry);
+
+    /*
+     * Last, because the bundle answers what no other route claimed: a screen path
+     * deep in the application reaches the shell, and the browser's router decides.
+     */
+    if (!cfg.web_dir.empty()) {
+        if (std::filesystem::is_directory(cfg.web_dir)) {
+            routes::web_bundle_routes bundle(cfg.web_dir);
+            bundle.register_routes(router, registry);
+        } else {
+            BOOST_LOG_SEV(lg(), warn)
+                << "No browser bundle at " << cfg.web_dir << "; the server serves no application";
+        }
+    }
 
     BOOST_LOG_SEV(lg(), info) << "API routes registered.";
     BOOST_LOG_SEV(lg(), info) << "Total endpoints: " << router->routes().size();

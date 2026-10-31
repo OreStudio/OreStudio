@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 897125F5-8B0C-45FB-943F-438E62B2E6E4
+:END:
+#+title: Task: Carry the session in a cookie
+#+description: Set the cookie on sign in and resolve a request from it, with HttpOnly, SameSite, Secure over TLS and the per-environment name.
+#+type: task
+#+level: s1
+#+filetags: :hold_the_session_at_the_door:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr: 4184
+#+blocked_on: review
+#+blocked_since: 2026-10-31 03:10
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:67465051-811E-411C-9F93-AFC61A7E5C4B][Hold the session at the door]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:67465051-811E-411C-9F93-AFC61A7E5C4B][Hold the session at the door]] |
+| Now          | The cookie is issued, read and refused, and the session resolves from it. |
+| Waiting on   | Nothing.                               |
+| Next         | Review, then sign in and out become resources. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Cookie cases | 7 cases, 35 assertions, all passing | =./ores.http.api.tests "[session_cookie]"= | =#4184= |
+| =ores.http.api= test cases | 121 cases, 411 assertions, all passing | =./ores.http.api.tests= | =#4184= |
+
+* Notes
+
+- The session record holds the token's claims rather than four loose fields, so a
+  handler reads the same =jwt_claims= whichever proof reached it and cannot tell a
+  cookie from a bearer token.
+- The session path does not verify the token again. Its claims were taken when it
+  signed in, and the store is the authority for it: the design calls this a different
+  proof, not a cache, and re-verifying would make it the second.
+- A cookie the server does not know is answered 401 with =Max-Age=0= on the same
+  cookie, so a browser drops it and shows a sign-in instead of retrying forever.
+- The =__Host-= prefix is chosen by the deployment's TLS flag and not by the request,
+  because a browser rejects the prefix over a plain connection.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [#4184](https://github.com/OreStudio/OreStudio/pull/4184) | [http] Carry the session in a cookie |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

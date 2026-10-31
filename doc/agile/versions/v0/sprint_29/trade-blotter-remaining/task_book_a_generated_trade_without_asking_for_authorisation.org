@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: B1D9104D-0C45-45B3-900B-12759FAF4227
+:END:
+#+title: Task: Book a generated trade without asking for authorisation
+#+description: Seeding must never fill the Operations queue. The trading service already raises a request only for a trade whose booking nature is actual, and the trade summary already reads not_required for the others, so the pathway exists; the population writer declares actual and therefore raises one request per seeded trade. State the booking's nature honestly and pin it with a test.
+#+type: task
+#+level: s1
+#+filetags: :trade-blotter-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/book-a-generated-trade-without-asking-for-authorisation
+#+pr: 4192
+#+blocked_on: 792166AA-5E00-443C-B236-C42B06FF440A
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A booking that is not a real deal asks nobody for authorisation, and the one place that decides is the booking nature the trade states.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
+| Now          | Built and tested; the live proof waits on provisioning. |
+| Waiting on   | The subscribe_market_data step, which asks for a market data source nobody serves. |
+| Next         | Re-provision and count the queue once the step is fixed. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- The generated population books its trades with a nature that raises no authorisation request, and the blotter still shows them.
+- A freshly provisioned Acme tenant shows an empty authorisation queue.
+- The choice of booking nature over a sandbox book is recorded with its reason, and a test pins the population's nature so seeding cannot regress.
+
+* Plan
+
+The trading service already decides this in one place:
+=operational_authorisation_service::raise_if_awaiting= returns nothing unless
+the booking nature is actual, and the summary view reads =not_required= for
+every other nature. Both behaviours are covered by the trading core suite, and
+the ORE import already books a sandbox import as a test.
+
+So the work was to stop lying about the nature and to make the lie impossible
+to reintroduce:
+
+- The population writer states =booking_nature::test=.
+- Its request is built by =book_request_for=, a function separate from the send,
+  so a test reads the terms the population books under without a session.
+- Three cases pin them: the nature, the origin and the person, and the rows the
+  slot carries.
+
+A sandbox book was the alternative and was rejected: the nature is the one place
+that decides, the readers already agree with it, and a book flag would be a
+second, overlapping notion that every reader would have to honour.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Writer cases pinning the booking terms | 3 passed, 10 assertions | =ores.synthetic.core.tests "[writer]"= with =.env= loaded | 467bb16f81 |
+| Trading service authorisation rules | 3 passed, 8 assertions | =ores.trading.core.tests= filtered to the three authorisation cases | 467bb16f81 |
+| The queue a provisioned tenant used to arrive with | 127 waiting requests, written 18:30:05 to 18:31:15 on 2026-10-30, one per seeded trade and leg | =compass sql= over =ores_inbox_approval_requests_tbl= grouped by kind and state | before this change |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4192][#4192]] | [synthetic] Book a generated trade so it asks nobody for authorisation |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A generated trade states the test booking nature, so the trading service raises
+no authorisation request for it, and the trade summary reads =not_required=. The
+one place that decides is the nature, and the population no longer claims an
+actual deal.
+
+The request the population sends is now built by =book_request_for=, separate
+from the send and from the session, and three cases pin it: the nature, the
+origin with the config it names and the person it is entered by, and the rows
+the slot carries.
+
+* What could not be proved
+
+The acceptance asks for a freshly provisioned tenant with an empty queue, and
+that proof stopped at provisioning: the =subscribe_market_data= step asks for a
+market data source nobody serves, so the run aborts at step 7 and the trade
+population never runs. That is recorded as
+[[proj:doc/agile/product_backlog/inbox/provisioning_asks_for_a_market_data_source_nobody_serves.org][Provisioning asks for a market data source nobody serves]];
+the local workaround was refused because the profile belongs to the system
+tenant.
+
+What is proved instead: the writer states the nature, and the service raises a
+request for actual and none for test, both on this tree. The remaining step is
+to provision once the environment can, and count the queue at zero.

@@ -172,3 +172,12 @@ TEST_CASE("a number packed in a frame too wide for its type is refused", "[codec
     CHECK_THROWS_AS(wire_msgpack::read<std::uint32_t>(rfl_msgpack(-1)), std::invalid_argument);
     CHECK_THROWS_AS(wire_msgpack::read<int>(rfl_msgpack(std::string("7"))), std::invalid_argument);
 }
+
+TEST_CASE("a floating-point number is the frame reflect-cpp writes", "[codec][msgpack]") {
+    const auto plain = 0.1;
+    const auto negative = -2.5;
+
+    CHECK(wire_msgpack::write(plain) == rfl_msgpack(plain));
+    CHECK(wire_msgpack::write(negative) == rfl_msgpack(negative));
+    CHECK(wire_msgpack::read<double>(rfl_msgpack(plain)) == plain);
+}

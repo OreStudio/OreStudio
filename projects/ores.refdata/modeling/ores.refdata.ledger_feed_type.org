@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 3C284FE3-1DFC-46BA-A242-33F9A9A634C1
 :END:
 #+title: ores.refdata.ledger_feed_type

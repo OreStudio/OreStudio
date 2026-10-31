@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 27B11BD2-032A-48E5-B6FE-D466F8D85C3A
 :END:
 #+title: ores.refdata.sub_periods_coupon_type

@@ -26,7 +26,7 @@ std::ostream& operator<<(std::ostream& s, const options& v) {
     s << "options {" << " logging: " << (v.logging.has_value() ? "configured" : "none")
       << " server: " << v.server << " nats.url: " << v.nats.url
       << " http_base_url: " << (v.http_base_url.empty() ? "(derived)" : v.http_base_url)
-      << " storage_dir: " << v.storage_dir << " }";
+      << " storage_dir: " << v.storage_dir << " web_dir: " << v.web_dir << " }";
     return s;
 }
 

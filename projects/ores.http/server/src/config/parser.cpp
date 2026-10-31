@@ -46,6 +46,8 @@ const std::string server_disable_cors_arg("disable-cors");
 const std::string server_cors_origins_arg("cors-origins");
 const std::string server_identifier_arg("identifier");
 const std::string storage_dir_arg("storage-dir");
+const std::string web_dir_arg("web-dir");
+const std::string web_session_name_arg("web-session-name");
 const std::string http_base_url_arg("http-base-url");
 
 using boost::program_options::value;
@@ -101,7 +103,13 @@ options_description make_options_description() {
     options_description cod("Object Storage");
     cod.add_options()(storage_dir_arg.c_str(),
                       value<std::string>()->default_value("/var/ores/http-server/storage"),
-                      "Root directory for object storage (all buckets live under this path).");
+                      "Root directory for object storage (all buckets live under this path).")(
+        web_dir_arg.c_str(),
+        value<std::string>()->default_value("/var/ores/http-server/web"),
+        "Root directory of the built browser bundle. Empty serves no bundle.")(
+        web_session_name_arg.c_str(),
+        value<std::string>()->default_value("ores_web_session"),
+        "Name of the session cookie, which carries the deployment's environment.");
 
     options_description nod("HTTP service discovery");
     nod.add_options()(http_base_url_arg.c_str(),
@@ -208,6 +216,8 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.nats = nats_configuration::read_options(vm);
     r.http_base_url = vm[http_base_url_arg].as<std::string>();
     r.storage_dir = vm[storage_dir_arg].as<std::string>();
+    r.web_dir = vm[web_dir_arg].as<std::string>();
+    r.web_session_name = vm[web_session_name_arg].as<std::string>();
 
     return r;
 }

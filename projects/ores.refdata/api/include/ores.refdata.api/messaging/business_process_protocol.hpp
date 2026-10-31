@@ -26,11 +26,17 @@
 #define ORES_REFDATA_API_MESSAGING_BUSINESS_PROCESS_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/business_process.hpp"
+#include "ores.refdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::refdata::messaging {
@@ -268,7 +274,737 @@ inline constexpr std::string_view created = "refdata.v1.business_processes_event
 inline constexpr std::string_view updated = "refdata.v1.business_processes_events.updated";
 inline constexpr std::string_view deleted = "refdata.v1.business_processes_events.deleted";
 }
+/**
+ * @brief The members of business_process_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const business_process_key&) {
+    return std::tuple{
+        utility::codec::field{"code", &business_process_key::code},
+        utility::codec::field{"coding_scheme_code", &business_process_key::coding_scheme_code},
+    };
+}
+
+/**
+ * @brief The members of business_process_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const business_process_write&) {
+    return std::tuple{
+        utility::codec::field{"code", &business_process_write::code},
+        utility::codec::field{"coding_scheme_code", &business_process_write::coding_scheme_code},
+        utility::codec::field{"source", &business_process_write::source},
+        utility::codec::field{"description", &business_process_write::description},
+    };
+}
+
+/**
+ * @brief The members of business_process_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const business_process_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &business_process_change::write},
+        utility::codec::field{"precondition", &business_process_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of business_process_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const business_process_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &business_process_removal::key},
+        utility::codec::field{"precondition", &business_process_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of business_process_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const business_process_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &business_process_lookup::key},
+        utility::codec::field{"business_process", &business_process_lookup::business_process},
+    };
+}
+
+/**
+ * @brief The members of business_process_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const business_process_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &business_process_event::event_id},
+        utility::codec::field{"key", &business_process_event::key},
+        utility::codec::field{"action", &business_process_event::action},
+        utility::codec::field{"version", &business_process_event::version},
+        utility::codec::field{"occurred_at", &business_process_event::occurred_at},
+        utility::codec::field{"correlation_id", &business_process_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of business_process_version_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const business_process_version_key&) {
+    return std::tuple{
+        utility::codec::field{"business_process", &business_process_version_key::business_process},
+        utility::codec::field{"version", &business_process_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of business_process_versions_filter, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const business_process_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &business_process_versions_filter::version},
+        utility::codec::field{"from_version", &business_process_versions_filter::from_version},
+        utility::codec::field{"to_version", &business_process_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_business_processes_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_business_processes_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_business_processes_request::offset},
+        utility::codec::field{"limit", &list_business_processes_request::limit},
+        utility::codec::field{"order", &list_business_processes_request::order},
+        utility::codec::field{"as_of", &list_business_processes_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_business_processes_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_business_processes_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_business_processes_response::result},
+        utility::codec::field{"processes", &list_business_processes_response::processes},
+        utility::codec::field{"total", &list_business_processes_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_business_process_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_business_process_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_business_process_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_business_process_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_business_process_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_business_process_response::result},
+        utility::codec::field{"business_process", &get_business_process_response::business_process},
+    };
+}
+
+/**
+ * @brief The members of get_many_business_processes_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_business_processes_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_business_processes_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_business_processes_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_business_processes_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_business_processes_response::result},
+        utility::codec::field{"entries", &get_many_business_processes_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_business_process_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_business_process_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_business_process_request::change},
+        utility::codec::field{"intent", &put_business_process_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_business_process_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_business_process_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_business_process_response::result},
+        utility::codec::field{"business_process", &put_business_process_response::business_process},
+    };
+}
+
+/**
+ * @brief The members of put_many_business_processes_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_business_processes_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_business_processes_request::changes},
+        utility::codec::field{"intent", &put_many_business_processes_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_business_processes_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_business_processes_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_business_processes_response::result},
+        utility::codec::field{"processes", &put_many_business_processes_response::processes},
+    };
+}
+
+/**
+ * @brief The members of delete_business_process_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_business_process_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_business_process_request::removal},
+        utility::codec::field{"intent", &delete_business_process_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_business_process_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_business_process_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_business_process_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_business_processes_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_business_processes_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_business_processes_request::removals},
+        utility::codec::field{"intent", &delete_many_business_processes_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_business_processes_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_business_processes_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_business_processes_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_business_process_versions_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_business_process_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_business_process_versions_request::key},
+        utility::codec::field{"offset", &list_business_process_versions_request::offset},
+        utility::codec::field{"limit", &list_business_process_versions_request::limit},
+        utility::codec::field{"order", &list_business_process_versions_request::order},
+        utility::codec::field{"filter", &list_business_process_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_business_process_versions_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_business_process_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_business_process_versions_response::result},
+        utility::codec::field{"versions", &list_business_process_versions_response::versions},
+        utility::codec::field{"total", &list_business_process_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_business_process_version_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_business_process_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_business_process_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_business_process_version_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_business_process_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_business_process_version_response::result},
+        utility::codec::field{"version", &get_business_process_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::business_process_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::business_process_key& v);
+    static ores::refdata::messaging::business_process_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::business_process_key& v);
+    static ores::refdata::messaging::business_process_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::business_process_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::business_process_write& v);
+    static ores::refdata::messaging::business_process_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::business_process_write& v);
+    static ores::refdata::messaging::business_process_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::business_process_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::business_process_change& v);
+    static ores::refdata::messaging::business_process_change read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::business_process_change& v);
+    static ores::refdata::messaging::business_process_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::business_process_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::business_process_removal& v);
+    static ores::refdata::messaging::business_process_removal read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::business_process_removal& v);
+    static ores::refdata::messaging::business_process_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::business_process_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::business_process_lookup& v);
+    static ores::refdata::messaging::business_process_lookup read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::business_process_lookup& v);
+    static ores::refdata::messaging::business_process_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::business_process_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::business_process_event& v);
+    static ores::refdata::messaging::business_process_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::business_process_event& v);
+    static ores::refdata::messaging::business_process_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::business_process_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::business_process_version_key& v);
+    static ores::refdata::messaging::business_process_version_key read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::business_process_version_key& v);
+    static ores::refdata::messaging::business_process_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::business_process_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::business_process_versions_filter& v);
+    static ores::refdata::messaging::business_process_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::business_process_versions_filter& v);
+    static ores::refdata::messaging::business_process_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_business_processes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_business_processes_request& v);
+    static ores::refdata::messaging::list_business_processes_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_business_processes_request& v);
+    static ores::refdata::messaging::list_business_processes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_business_processes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_business_processes_response& v);
+    static ores::refdata::messaging::list_business_processes_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_business_processes_response& v);
+    static ores::refdata::messaging::list_business_processes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::get_business_process_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::get_business_process_request& v);
+    static ores::refdata::messaging::get_business_process_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_business_process_request& v);
+    static ores::refdata::messaging::get_business_process_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_business_process_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::get_business_process_response& v);
+    static ores::refdata::messaging::get_business_process_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_business_process_response& v);
+    static ores::refdata::messaging::get_business_process_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_many_business_processes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_many_business_processes_request& v);
+    static ores::refdata::messaging::get_many_business_processes_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_many_business_processes_request& v);
+    static ores::refdata::messaging::get_many_business_processes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_many_business_processes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_many_business_processes_response& v);
+    static ores::refdata::messaging::get_many_business_processes_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_many_business_processes_response& v);
+    static ores::refdata::messaging::get_many_business_processes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::put_business_process_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::put_business_process_request& v);
+    static ores::refdata::messaging::put_business_process_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_business_process_request& v);
+    static ores::refdata::messaging::put_business_process_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_business_process_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::put_business_process_response& v);
+    static ores::refdata::messaging::put_business_process_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_business_process_response& v);
+    static ores::refdata::messaging::put_business_process_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_many_business_processes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_many_business_processes_request& v);
+    static ores::refdata::messaging::put_many_business_processes_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_many_business_processes_request& v);
+    static ores::refdata::messaging::put_many_business_processes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_many_business_processes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_many_business_processes_response& v);
+    static ores::refdata::messaging::put_many_business_processes_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_many_business_processes_response& v);
+    static ores::refdata::messaging::put_many_business_processes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_business_process_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_business_process_request& v);
+    static ores::refdata::messaging::delete_business_process_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_business_process_request& v);
+    static ores::refdata::messaging::delete_business_process_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_business_process_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_business_process_response& v);
+    static ores::refdata::messaging::delete_business_process_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_business_process_response& v);
+    static ores::refdata::messaging::delete_business_process_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_many_business_processes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_many_business_processes_request& v);
+    static ores::refdata::messaging::delete_many_business_processes_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_many_business_processes_request& v);
+    static ores::refdata::messaging::delete_many_business_processes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_many_business_processes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_many_business_processes_response& v);
+    static ores::refdata::messaging::delete_many_business_processes_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_many_business_processes_response& v);
+    static ores::refdata::messaging::delete_many_business_processes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_business_process_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_business_process_versions_request& v);
+    static ores::refdata::messaging::list_business_process_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_business_process_versions_request& v);
+    static ores::refdata::messaging::list_business_process_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_business_process_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_business_process_versions_response& v);
+    static ores::refdata::messaging::list_business_process_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_business_process_versions_response& v);
+    static ores::refdata::messaging::list_business_process_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_business_process_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_business_process_version_request& v);
+    static ores::refdata::messaging::get_business_process_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_business_process_version_request& v);
+    static ores::refdata::messaging::get_business_process_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_business_process_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_business_process_version_response& v);
+    static ores::refdata::messaging::get_business_process_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_business_process_version_response& v);
+    static ores::refdata::messaging::get_business_process_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

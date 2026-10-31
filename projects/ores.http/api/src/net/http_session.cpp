@@ -41,6 +41,30 @@ std::string route_path(std::string_view target) {
     return std::string(query == std::string_view::npos ? target : target.substr(0, query));
 }
 
+/// Lowercase, because a header's case is not its meaning.
+std::string lowercase(std::string text) {
+    std::transform(text.begin(), text.end(), text.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
+    return text;
+}
+
+/// Methods that change something, and so need proof of intent.
+bool changes_something(domain::http_method method) {
+    switch (method) {
+        case domain::http_method::post:
+        case domain::http_method::put:
+        case domain::http_method::patch:
+        case domain::http_method::delete_:
+            return true;
+        case domain::http_method::get:
+        case domain::http_method::head:
+        case domain::http_method::options:
+            return false;
+    }
+    return true;
+}
+
 }
 
 namespace beast = boost::beast;
@@ -52,13 +76,19 @@ http_session::http_session(asio::ip::tcp::socket socket,
                            std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier,
                            std::shared_ptr<worker_pool> workers,
                            const http_server_options& options,
-                           session_bytes_callback bytes_callback)
+                           session_bytes_callback bytes_callback,
+                           server_counters* counters,
+                           std::shared_ptr<domain::session_store> sessions,
+                           domain::cookie_settings cookie)
     : stream_(std::move(socket))
     , router_(std::move(router))
     , verifier_(std::move(verifier))
     , workers_(std::move(workers))
     , options_(options)
-    , bytes_callback_(std::move(bytes_callback)) {
+    , bytes_callback_(std::move(bytes_callback))
+    , counters_(counters)
+    , sessions_(std::move(sessions))
+    , cookie_(std::move(cookie)) {
 
     auto endpoint = stream_.socket().remote_endpoint();
     remote_address_ = endpoint.address().to_string();
@@ -128,11 +158,13 @@ asio::awaitable<void> http_session::run() {
                                           std::string_view note) -> asio::awaitable<void> {
                 BOOST_LOG_SEV(lg(), warn) << "Refusing " << subject << ": " << note;
                 auto response = domain::http_response::error(status, std::string(reason));
-                auto beast_resp = convert_response(response, version, false);
-                co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+                co_await write_response(response, version, false, true);
             };
 
-            const auto refuse_too_large = [&refuse](std::uint64_t size) -> asio::awaitable<void> {
+            const auto refuse_too_large = [this,
+                                           &refuse](std::uint64_t size) -> asio::awaitable<void> {
+                if (counters_ != nullptr)
+                    counters_->refused_too_large.fetch_add(1, std::memory_order_relaxed);
                 co_await refuse(domain::http_status::payload_too_large,
                                 "The request body is larger than this route accepts.",
                                 "a body of " + std::to_string(size) + " bytes is past the limit");
@@ -229,6 +261,10 @@ asio::awaitable<void> http_session::run() {
 
             domain_req.body = std::move(content);
             domain_req.body_bytes = byte_count;
+            if (counters_ != nullptr) {
+                counters_->requests.fetch_add(1, std::memory_order_relaxed);
+                counters_->request_bytes.fetch_add(byte_count, std::memory_order_relaxed);
+            }
             co_await handle_request(std::move(domain_req), std::move(route), keep_alive);
             if (sink != nullptr && !sink->published())
                 BOOST_LOG_SEV(lg(), warn)
@@ -343,8 +379,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
         cors_resp.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
         cors_resp.set_header("Access-Control-Max-Age", "86400");
 
-        auto beast_resp = convert_response(cors_resp, version, keep_alive);
-        co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+        co_await write_response(cors_resp, version, keep_alive, true);
         co_return;
     }
 
@@ -355,43 +390,42 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
         BOOST_LOG_SEV(lg(), debug)
             << "No route matched for: " << static_cast<int>(domain_req.method) << " " << path;
         auto not_found = domain::http_response::not_found("Endpoint not found");
-        auto beast_resp = convert_response(not_found, version, keep_alive);
-        co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+        co_await write_response(not_found, version, keep_alive, true);
         co_return;
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Route matched: " << matched->pattern;
 
-    // Check authentication if required
+    /*
+     * One identity, two proofs. A machine client presents a bearer token. A browser
+     * presents the cookie a sign-in gave it, and the store says what that session may
+     * do: its claims were taken when it signed in, so the store is the authority for
+     * it and the token inside is not verified again. The session path is a different
+     * proof and not a cache of the first.
+     */
     if (matched->requires_auth) {
-        auto token = domain_req.get_bearer_token();
-        if (!token) {
-            BOOST_LOG_SEV(lg(), warn) << "Missing authorization token for " << matched->pattern
-                                      << " from " << remote_address_;
-            auto unauthorized = domain::http_response::unauthorized(
-                "Authorization header with Bearer token required");
-            auto beast_resp = convert_response(unauthorized, version, keep_alive);
-            co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
-            co_return;
-        }
+        std::optional<ores::security::jwt::jwt_claims> claims;
+        auto clear_the_cookie = false;
+        auto session_proof = false;
 
-        // A route that requires authentication fails closed. If the server
-        // cannot verify anybody -- no verifier configured, or the public key
-        // failed to load -- it must not serve anybody. There is deliberately no
-        // second verifier to fall back to: one way of being believed.
-        auto* effective = verifier_.get();
-        if (effective == nullptr || !effective->is_configured()) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Route requires authentication but no JWT verifier is "
-                << "configured; refusing " << matched->pattern << " from " << remote_address_;
-            auto unauthorized = domain::http_response::unauthorized(
-                "Authentication is not configured on this server");
-            auto beast_resp = convert_response(unauthorized, version, keep_alive);
-            co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
-            co_return;
-        }
+        if (const auto token = domain_req.get_bearer_token(); token.has_value()) {
+            /*
+             * A route that requires authentication fails closed. If the server
+             * cannot verify anybody -- no verifier configured, or the public key
+             * failed to load -- it must not serve anybody. There is deliberately no
+             * second verifier to fall back to: one way of being believed.
+             */
+            auto* effective = verifier_.get();
+            if (effective == nullptr || !effective->is_configured()) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Route requires authentication but no JWT verifier is "
+                    << "configured; refusing " << matched->pattern << " from " << remote_address_;
+                auto unauthorized = domain::http_response::unauthorized(
+                    "Authentication is not configured on this server");
+                co_await write_response(unauthorized, version, keep_alive, true);
+                co_return;
+            }
 
-        if (effective != nullptr && effective->is_configured()) {
             auto claims_result = effective->validate(*token);
             if (!claims_result) {
                 BOOST_LOG_SEV(lg(), warn)
@@ -399,37 +433,77 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                     << ": " << ores::security::jwt::to_string(claims_result.error());
                 auto unauthorized = domain::http_response::unauthorized(
                     ores::security::jwt::to_string(claims_result.error()));
-                auto beast_resp = convert_response(unauthorized, version, keep_alive);
-                co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+                co_await write_response(unauthorized, version, keep_alive, true);
                 co_return;
             }
+            claims = std::move(claims_result.value());
+        } else if (sessions_ != nullptr) {
+            const auto identifier =
+                domain::session_cookie::read(domain_req.get_header("cookie"), cookie_);
+            if (identifier.has_value()) {
+                if (auto record = sessions_->touch(*identifier); record.has_value()) {
+                    claims = std::move(record->claims);
+                    session_proof = true;
+                } else {
+                    /*
+                     * The browser holds a session this server no longer has, so the
+                     * cookie is worthless and telling the browser to drop it is what
+                     * turns a refusal into a sign-in page rather than a loop.
+                     */
+                    clear_the_cookie = true;
+                }
+            }
+        }
 
-            domain_req.authenticated_user = std::move(claims_result.value());
-            BOOST_LOG_SEV(lg(), debug)
-                << "Authenticated user: " << domain_req.authenticated_user->subject;
+        if (!claims.has_value()) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "No usable credential for " << matched->pattern << " from " << remote_address_;
+            auto unauthorized = domain::http_response::unauthorized(
+                "A bearer token or a session cookie is required");
+            if (clear_the_cookie)
+                unauthorized.set_header("Set-Cookie", domain::session_cookie::clear(cookie_));
+            co_await write_response(unauthorized, version, keep_alive, true);
+            co_return;
+        }
 
-            // Check roles if required
-            if (!matched->required_roles.empty()) {
-                bool has_required_role = false;
-                for (const auto& required : matched->required_roles) {
-                    for (const auto& user_role : domain_req.authenticated_user->roles) {
-                        if (user_role == required) {
-                            has_required_role = true;
-                            break;
-                        }
-                    }
-                    if (has_required_role)
+        domain_req.authenticated_user = std::move(*claims);
+        BOOST_LOG_SEV(lg(), debug)
+            << "Authenticated user: " << domain_req.authenticated_user->subject;
+
+        /*
+         * A bearer token is proof enough of intent: a browser did not attach it by
+         * accident, and a cross-site form cannot set the header that carries it. A
+         * cookie is different, and only a session request is guarded here.
+         */
+        if (session_proof && changes_something(domain_req.method)) {
+            if (const auto refusal = csrf_refusal(domain_req); refusal.has_value()) {
+                BOOST_LOG_SEV(lg(), warn) << "Refusing " << matched->pattern << " from "
+                                          << remote_address_ << ": " << *refusal;
+                auto forbidden = domain::http_response::forbidden(*refusal);
+                co_await write_response(forbidden, version, keep_alive, true);
+                co_return;
+            }
+        }
+
+        if (!matched->required_roles.empty()) {
+            auto has_required_role = false;
+            for (const auto& required : matched->required_roles) {
+                for (const auto& user_role : domain_req.authenticated_user->roles) {
+                    if (user_role == required) {
+                        has_required_role = true;
                         break;
+                    }
                 }
+                if (has_required_role)
+                    break;
+            }
 
-                if (!has_required_role) {
-                    BOOST_LOG_SEV(lg(), warn) << "User " << domain_req.authenticated_user->subject
-                                              << " lacks required role for " << matched->pattern;
-                    auto forbidden = domain::http_response::forbidden("Insufficient permissions");
-                    auto beast_resp = convert_response(forbidden, version, keep_alive);
-                    co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
-                    co_return;
-                }
+            if (!has_required_role) {
+                BOOST_LOG_SEV(lg(), warn) << "User " << domain_req.authenticated_user->subject
+                                          << " lacks required role for " << matched->pattern;
+                auto forbidden = domain::http_response::forbidden("Insufficient permissions");
+                co_await write_response(forbidden, version, keep_alive, true);
+                co_return;
             }
         }
     }
@@ -538,10 +612,38 @@ http::response<http::string_body> http_session::convert_response(const domain::h
     return result;
 }
 
+std::optional<std::string> http_session::csrf_refusal(const domain::http_request& req) const {
+    /*
+     * A form can post cross-site with a cookie attached, so the cookie is not evidence
+     * of intent. Two things a form cannot do are required instead: name an origin it
+     * does not have, and set a header that is not on the form's allowed list.
+     */
+    if (req.get_header("x-ores-request").empty())
+        return "A session request must carry the X-Ores-Request header";
+
+    const auto origin = req.get_header("origin");
+    if (origin.empty())
+        return "A session request must carry an Origin";
+
+    const auto expected =
+        std::string(cookie_.secure ? "https://" : "http://") + lowercase(req.get_header("host"));
+    if (lowercase(origin) != expected)
+        return "The Origin does not match this deployment";
+
+    return std::nullopt;
+}
+
 asio::awaitable<void> http_session::write_response(const domain::http_response& resp,
                                                    unsigned version,
                                                    bool keep_alive,
                                                    bool send_body) {
+    if (counters_ != nullptr) {
+        counters_->record_response(static_cast<unsigned>(resp.status));
+        const auto bytes =
+            resp.body_stream != nullptr ? resp.body_stream->size().value_or(0) : resp.body.size();
+        counters_->response_bytes.fetch_add(bytes, std::memory_order_relaxed);
+    }
+
     if (resp.body_stream == nullptr) {
         auto beast_resp = convert_response(resp, version, keep_alive);
         co_await http::async_write(stream_, beast_resp, asio::use_awaitable);

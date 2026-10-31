@@ -20,10 +20,13 @@
 #ifndef ORES_HTTP_NET_HTTP_SERVER_HPP
 #define ORES_HTTP_NET_HTTP_SERVER_HPP
 
+#include "ores.http.api/domain/session_cookie.hpp"
+#include "ores.http.api/domain/session_store.hpp"
 #include "ores.http.api/export.hpp"
 #include "ores.http.api/net/http_server_options.hpp"
 #include "ores.http.api/net/http_session.hpp"
 #include "ores.http.api/net/router.hpp"
+#include "ores.http.api/net/server_counters.hpp"
 #include "ores.http.api/net/session_bytes_accumulator.hpp"
 #include "ores.http.api/net/worker_pool.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
@@ -47,6 +50,28 @@ public:
     /**
      * @brief Returns the router for registering endpoints.
      */
+    /// The verifier every session authenticates its caller with.
+    [[nodiscard]] const std::shared_ptr<ores::security::jwt::jwt_authenticator>& verifier() const {
+        return verifier_;
+    }
+
+    /**
+     * @brief The sessions this server holds, so a sign-in route can open one.
+     */
+    [[nodiscard]] const std::shared_ptr<domain::session_store>& sessions() const {
+        return sessions_;
+    }
+
+    /// How this deployment names and protects the cookie a session rides in.
+    void set_cookie_settings(domain::cookie_settings settings) {
+        cookie_ = std::move(settings);
+    }
+
+    /// What the server knows about its own traffic, for a metrics route.
+    [[nodiscard]] const server_counters& counters() const {
+        return counters_;
+    }
+
     std::shared_ptr<router> get_router() {
         return router_;
     }
@@ -142,6 +167,13 @@ private:
     std::unique_ptr<boost::asio::ip::tcp::acceptor> acceptor_;
     std::atomic<bool> running_{false};
     std::atomic<std::uint32_t> active_connections_{0};
+    server_counters counters_;
+
+    // The sessions the gateway holds, and how it names their cookie. A server with
+    // no store serves bearer tokens only, which is what a machine-only deployment
+    // wants.
+    std::shared_ptr<domain::session_store> sessions_;
+    domain::cookie_settings cookie_;
     session_bytes_callback bytes_callback_;
 };
 

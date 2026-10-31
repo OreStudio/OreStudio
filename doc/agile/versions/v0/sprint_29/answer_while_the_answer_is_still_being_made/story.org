@@ -37,11 +37,11 @@ sections.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Serve the built bundle from the manifest. |
+| Next          | B3's change stream, once a source can wait without blocking. |
 | Last touched  | 2026-10-31                               |
 
 * Acceptance
@@ -57,18 +57,28 @@ sections.
 - The built bundle is served from the manifest with an immutable cache for hashed
   names, =no-cache= for =index.html=, and the history fallback for a screen route.
 - =/health= and =/metrics= answer from what the server knows about itself.
-- =curl -N= receives an event stream from a route that holds the connection, and the
-  idle keep-alive keeps it open.
+- A route may write its answer in chunks as its source produces them. Holding the
+  connection open for an event stream needs a source that can wait without blocking
+  the loop, which is [[id:BEA32221-8AC6-4B98-B281-027E3ED7D80B][its own task]] and B3's
+  prerequisite.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:B5375542-0026-47CE-A6AD-EA01FF6D838D][Answer from a body source]] | DONE | 2026-10-31 | 2026-10-31 | Give a response a body it reads from in chunks, so a file or a stream costs a buffer and not an object, and use it for the storage download. |
-| [[id:883B6C71-71D8-4F07-AA81-5877BB5DE359][Serve the built bundle]] | BACKLOG | | | Serve the SPA bundle from the built manifest with the cache headers, the history fallback and the compression it offers. |
-| [[id:8837CE16-1FE6-4A85-8695-B33BBBC9E79C][Report health and metrics]] | BACKLOG | | | Answer /health and /metrics from what the server knows about itself, not from a placeholder. |
+| [[id:883B6C71-71D8-4F07-AA81-5877BB5DE359][Serve the built bundle]] | DONE | 2026-10-31 | 2026-10-31 | Serve the SPA bundle from the built manifest with the cache headers, the history fallback and the compression it offers. |
+| [[id:8837CE16-1FE6-4A85-8695-B33BBBC9E79C][Report health and metrics]] | DONE | 2026-10-31 | 2026-10-31 | Answer /health and /metrics from what the server knows about itself, not from a placeholder. |
+| [[id:BEA32221-8AC6-4B98-B281-027E3ED7D80B][Let a body source wait without blocking the loop]] | BACKLOG | | | A body source is read synchronously on the connection's thread, which is right for a file and wrong for an event stream: a source that waits for the next event would stall every connection on that thread. Increment B3 needs the awaitable form. |
 
 * Decisions
+
+- A response carries an optional source rather than a callback: the handler still
+  returns one =http_response=, and whether its body is bytes or chunks is a property
+  of that value.
+- The source is read synchronously on the connection's thread. That is right for a
+  file and wrong for a stream, and the awaitable form is a task rather than a
+  surprise for B3.
 
 - A response carries an optional source, not a callback and not a second handler
   type: the handler still returns one =http_response=, and whether it has a body of

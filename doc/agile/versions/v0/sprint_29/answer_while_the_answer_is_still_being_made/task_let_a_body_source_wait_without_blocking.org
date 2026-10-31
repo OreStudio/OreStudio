@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: BEA32221-8AC6-4B98-B281-027E3ED7D80B
+:END:
+#+title: Task: Let a body source wait without blocking the loop
+#+description: A body source is read synchronously on the connection's thread, which is right for a file and wrong for an event stream: a source that waits for the next event would stall every connection on that thread. Increment B3 needs the awaitable form.
+#+type: task
+#+level: s1
+#+filetags: :answer_while_the_answer_is_still_being_made:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:66DDFAB2-D915-431C-AFEC-9E454373968D][Answer while the answer is still being made]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A response body is read with a plain =read=, on the connection's thread. That is
+right for a file, which is in the page cache and answers in microseconds. It is
+wrong for a stream: a source whose next event has not arrived would hold the thread
+that serves every other connection on that thread, which is the defect A1 removed
+from the handlers.
+
+Increment B3 builds the change stream on this mechanism, so the awaitable form has
+to exist before it starts.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:66DDFAB2-D915-431C-AFEC-9E454373968D][Answer while the answer is still being made]] |
+| Now          | Waiting on B3's need for it; nothing else blocks it. |
+| Waiting on   | Nothing.                               |
+| Next         | An awaitable read, chosen by the source itself. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- A source may be awaited rather than called, and the session writes each piece as
+  it arrives.
+- A source that has nothing to write yields the thread instead of holding it: a
+  test shows another connection answered while one source waits.
+- A file keeps the synchronous form, so the common case pays nothing for it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -77,24 +77,24 @@ select lives_ok(
 
 select throws_like(
     $$select pg_temp.swap('PGTAP-BAD-FREQUENCY', 'Fortnightly', 'ModifiedFollowing', '30/360', null)$$,
-    '%Invalid value Fortnightly for Swap.FixedFrequency%',
+    '%Invalid value Fortnightly for swap_convention.fixed_frequency%',
     'a frequency the ORE parser does not accept is refused, naming the term');
 
 select throws_like(
     $$select pg_temp.swap('PGTAP-BAD-CONVENTION', 'Annual', 'Sideways', '30/360', null)$$,
-    '%Invalid value Sideways for Swap.FixedConvention%',
+    '%Invalid value Sideways for swap_convention.fixed_convention%',
     'a business day convention outside the catalogue is refused');
 
 select throws_like(
     $$select pg_temp.swap('PGTAP-BAD-DAY-COUNTER', 'Annual', 'ModifiedFollowing', 'ACT/999', null)$$,
-    '%Invalid value ACT/999 for Swap.FixedDayCounter%',
+    '%Invalid value ACT/999 for swap_convention.fixed_day_count_fraction%',
     'a day counter outside the catalogue is refused');
 
 select throws_like(
     $$update ores_refdata_swap_conventions_tbl
          set fixed_frequency = 'Fortnightly'
        where id = 'PGTAP-GOOD-SWAP'$$,
-    '%Invalid value Fortnightly for Swap.FixedFrequency%',
+    '%Invalid value Fortnightly for swap_convention.fixed_frequency%',
     'an update of a term column is checked as an insert is');
 
 select ok(

@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 875E96F6-3FC7-4E0B-8E3C-2AC0F8BD488F
 :END:
 #+title: ores.refdata.calendar_rule

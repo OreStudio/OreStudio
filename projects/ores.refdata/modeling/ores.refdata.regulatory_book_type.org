@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 03728847-1C53-4B1D-AFB1-E83B2C3F3E14
 :END:
 #+title: ores.refdata.regulatory_book_type

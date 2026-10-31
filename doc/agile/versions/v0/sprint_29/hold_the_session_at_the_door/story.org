@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 67465051-811E-411C-9F93-AFC61A7E5C4B
+:END:
+#+title: Story: Hold the session at the door
+#+description: A browser holds a bearer token today, so one successful script injection owns the session and no deployment can revoke it. Hold the token server side, hand the browser an opaque cookie, and make sign in and sign out resources of their own.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A browser holds the bearer token today, in a place a script on the page can reach.
+One injection owns the session for its lifetime, no deployment can revoke it, and
+the token itself is the thing that leaks. A machine client should hold a token: that
+is what a token is for. A browser should hold something that means nothing on its own
+and that the server can end.
+
+After this story the browser holds an opaque identifier in an HttpOnly cookie, and the
+token stays in the server's memory, keyed by the identifier's SHA-256 so a dump of
+that memory is not a set of usable credentials. Sign in and sign out are resources of
+their own, =/api/v1/auth/sessions=, and a =me= alias answers who the caller is without
+handing the token back.
+
+This is increment B2 of
+[[id:2E504EF1-F812-4D83-BD21-AE97162A1ABC][One HTTP Server: designing ores.http to replace the web BFF]],
+whose *Session store* and *CSRF* sections state the rules.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Start with the store, which the other three build on. |
+| Last touched  | 2026-10-31                               |
+
+* Acceptance
+
+- The cookie carries a 256-bit identifier and nothing else, and the store keys on its
+  SHA-256.
+- The record holds the bearer token, the party, the tenant, the account, when it was
+  made and when it was last used.
+- Expiry slides on use and the server evicts what expires; signing in mints a new
+  identifier rather than reusing one.
+- =HttpOnly= and =SameSite=Lax= always, =Secure= and the =__Host-= prefix over TLS, and
+  a name with the environment's suffix so two deployments on one host do not collide.
+- =POST /api/v1/auth/sessions= signs in and =DELETE= signs out, and both are resources
+  rather than operations on a component.
+- =GET /api/v1/auth/sessions/me= answers the caller's identity, and no answer carries
+  the token.
+- An unsafe method on a session request carries the deployment's =Origin= and a custom
+  header, or it is refused.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:20CB2B3E-5F2C-4049-B426-5CAB8278DC4D][Store the session server side]] | STARTED | 2026-10-31 | | Keep an opaque identifier in the cookie and the bearer token in memory, keyed by the identifier's SHA-256, with a sliding expiry the server owns. |
+| [[id:897125F5-8B0C-45FB-943F-438E62B2E6E4][Carry the session in a cookie]] | BACKLOG | | | Set the cookie on sign in and resolve a request from it, with HttpOnly, SameSite, Secure over TLS and the per-environment name. |
+| [[id:C72957A3-2954-489C-BFA3-9986CE20A512][Make sign in and out resources]] | BACKLOG | | | POST and DELETE on /api/v1/auth/sessions, and a me alias that answers who the caller is without handing the token back. |
+| [[id:53943BC2-F8E5-45FB-9598-741B29897352][Guard the unsafe methods]] | STARTED | 2026-10-31 | | A cookie is not proof of intent: an unsafe method on a session request must carry the deployment's Origin and a custom header a cross-site form cannot set. |
+
+* Decisions
+
+- The store is in the gateway's memory, not in the database. A session is a fact about
+  a connection's custody and not about the domain, and the design puts it there; the
+  cost is that a restart signs everybody out, which is the correct default for a
+  credential.
+- The identifier is random and opaque, and the store keys on its hash. A dump of the
+  store then yields nothing a caller could present.
+- The cookie is a transport capability, not an identity: a machine client may present
+  it too, and a bearer token keeps working beside it.
+- CSRF is refused by the gateway, before any handler: an unsafe method on a session
+  request must prove intent, and a route should not have to remember to ask.
+* Out of scope
+
+- Delegated NATS calls per session. The port needs them, and they are their own
+  increment.
+- Switching party within a session.
+- A shared stream per session across tabs.

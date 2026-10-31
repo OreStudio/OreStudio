@@ -25,8 +25,6 @@
 #include "ores.dq.api/domain/lei_bic_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
-namespace ores::dq::domain {}
-
 namespace ores::utility::codec {
 
 std::string wire_traits<ores::dq::domain::lei_bic>::write_json(const ores::dq::domain::lei_bic& v) {

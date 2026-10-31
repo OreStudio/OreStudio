@@ -8,11 +8,11 @@
 #+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
 #+owner: marco
 #+branch:
-#+pr: 3826
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
-#+updated: 2026-10-25
+#+updated: 2026-10-30
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A report runs to completion on data the system generates rather than on data
+seeded by hand: a bond book, the counterparties it names and the market data its
+trades need. What the generated data cannot yet express is written down, because
+that gap is what a gather must respect.
 
 * Status
 
@@ -28,10 +31,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Open. No run yet on data the system generates. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-25                               |
+| Next         | Generate a bond book and the market data it needs, point a report definition at it, and run the report. |
+| Last touched | 2026-10-30                               |
 
 * Acceptance
 
@@ -59,6 +62,12 @@ task and name that file in the Command column.
 
 * Notes
 
+- Two PRs merged on a branch named for this task, and neither delivers it: the
+  one that tells one analytic's failure from another's, and the one that
+  collapses a batch's repeated reasons. Both repair how a run's errors are
+  recorded, not how a run is fed, so the task states no PR of its own and stays
+  open.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -74,8 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/3826][#3826]] | [reporting] Tell one analytic's failure from another's |
-| [[https://github.com/OreStudio/OreStudio/pull/3824][#3824]] | [reporting] Collapse a batch's repeated reasons |
+|    | No PR delivers this task yet. |
 
 * Review
 

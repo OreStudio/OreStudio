@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 971124D8-FE93-422C-AE6F-742BAF83FD7A
 :END:
 #+title: ores.refdata.day_counter

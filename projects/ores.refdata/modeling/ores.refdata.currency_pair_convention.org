@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 1B88215B-1FE0-4CAF-B6AB-53F471963CA6
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :ores.cpp.nats-event-cache.enabled: true

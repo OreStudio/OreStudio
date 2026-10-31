@@ -26,11 +26,17 @@
 #define ORES_REFDATA_API_MESSAGING_DEFAULT_CURVE_CONFIG_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/default_curve_config.hpp"
+#include "ores.refdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ores::refdata::messaging {
@@ -273,7 +279,784 @@ inline constexpr std::string_view created = "refdata.v1.default_curve_configs_ev
 inline constexpr std::string_view updated = "refdata.v1.default_curve_configs_events.updated";
 inline constexpr std::string_view deleted = "refdata.v1.default_curve_configs_events.deleted";
 }
+/**
+ * @brief The members of default_curve_config_key, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const default_curve_config_key&) {
+    return std::tuple{
+        utility::codec::field{"id", &default_curve_config_key::id},
+    };
+}
+
+/**
+ * @brief The members of default_curve_config_write, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const default_curve_config_write&) {
+    return std::tuple{
+        utility::codec::field{"id", &default_curve_config_write::id},
+        utility::codec::field{"curve_definition_id",
+                              &default_curve_config_write::curve_definition_id},
+        utility::codec::field{"currency", &default_curve_config_write::currency},
+    };
+}
+
+/**
+ * @brief The members of default_curve_config_change, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const default_curve_config_change&) {
+    return std::tuple{
+        utility::codec::field{"write", &default_curve_config_change::write},
+        utility::codec::field{"precondition", &default_curve_config_change::precondition},
+    };
+}
+
+/**
+ * @brief The members of default_curve_config_removal, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const default_curve_config_removal&) {
+    return std::tuple{
+        utility::codec::field{"key", &default_curve_config_removal::key},
+        utility::codec::field{"precondition", &default_curve_config_removal::precondition},
+    };
+}
+
+/**
+ * @brief The members of default_curve_config_lookup, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const default_curve_config_lookup&) {
+    return std::tuple{
+        utility::codec::field{"key", &default_curve_config_lookup::key},
+        utility::codec::field{"default_curve_config",
+                              &default_curve_config_lookup::default_curve_config},
+    };
+}
+
+/**
+ * @brief The members of default_curve_configs_filter, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const default_curve_configs_filter&) {
+    return std::tuple{
+        utility::codec::field{"id_one_of", &default_curve_configs_filter::id_one_of},
+    };
+}
+
+/**
+ * @brief The members of default_curve_config_event, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const default_curve_config_event&) {
+    return std::tuple{
+        utility::codec::field{"event_id", &default_curve_config_event::event_id},
+        utility::codec::field{"key", &default_curve_config_event::key},
+        utility::codec::field{"action", &default_curve_config_event::action},
+        utility::codec::field{"version", &default_curve_config_event::version},
+        utility::codec::field{"occurred_at", &default_curve_config_event::occurred_at},
+        utility::codec::field{"correlation_id", &default_curve_config_event::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of default_curve_config_version_key, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const default_curve_config_version_key&) {
+    return std::tuple{
+        utility::codec::field{"default_curve_config",
+                              &default_curve_config_version_key::default_curve_config},
+        utility::codec::field{"version", &default_curve_config_version_key::version},
+    };
+}
+
+/**
+ * @brief The members of default_curve_config_versions_filter, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const default_curve_config_versions_filter&) {
+    return std::tuple{
+        utility::codec::field{"version", &default_curve_config_versions_filter::version},
+        utility::codec::field{"from_version", &default_curve_config_versions_filter::from_version},
+        utility::codec::field{"to_version", &default_curve_config_versions_filter::to_version},
+    };
+}
+
+/**
+ * @brief The members of list_default_curve_configs_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_default_curve_configs_request&) {
+    return std::tuple{
+        utility::codec::field{"offset", &list_default_curve_configs_request::offset},
+        utility::codec::field{"limit", &list_default_curve_configs_request::limit},
+        utility::codec::field{"order", &list_default_curve_configs_request::order},
+        utility::codec::field{"filter", &list_default_curve_configs_request::filter},
+        utility::codec::field{"as_of", &list_default_curve_configs_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_default_curve_configs_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_default_curve_configs_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_default_curve_configs_response::result},
+        utility::codec::field{"default_curve_configs",
+                              &list_default_curve_configs_response::default_curve_configs},
+        utility::codec::field{"total", &list_default_curve_configs_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_default_curve_config_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_default_curve_config_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_default_curve_config_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_default_curve_config_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_default_curve_config_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_default_curve_config_response::result},
+        utility::codec::field{"default_curve_config",
+                              &get_default_curve_config_response::default_curve_config},
+    };
+}
+
+/**
+ * @brief The members of get_many_default_curve_configs_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_default_curve_configs_request&) {
+    return std::tuple{
+        utility::codec::field{"keys", &get_many_default_curve_configs_request::keys},
+    };
+}
+
+/**
+ * @brief The members of get_many_default_curve_configs_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_many_default_curve_configs_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_many_default_curve_configs_response::result},
+        utility::codec::field{"entries", &get_many_default_curve_configs_response::entries},
+    };
+}
+
+/**
+ * @brief The members of put_default_curve_config_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_default_curve_config_request&) {
+    return std::tuple{
+        utility::codec::field{"change", &put_default_curve_config_request::change},
+        utility::codec::field{"intent", &put_default_curve_config_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_default_curve_config_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_default_curve_config_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_default_curve_config_response::result},
+        utility::codec::field{"default_curve_config",
+                              &put_default_curve_config_response::default_curve_config},
+    };
+}
+
+/**
+ * @brief The members of put_many_default_curve_configs_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_default_curve_configs_request&) {
+    return std::tuple{
+        utility::codec::field{"changes", &put_many_default_curve_configs_request::changes},
+        utility::codec::field{"intent", &put_many_default_curve_configs_request::intent},
+    };
+}
+
+/**
+ * @brief The members of put_many_default_curve_configs_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const put_many_default_curve_configs_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &put_many_default_curve_configs_response::result},
+        utility::codec::field{"default_curve_configs",
+                              &put_many_default_curve_configs_response::default_curve_configs},
+    };
+}
+
+/**
+ * @brief The members of delete_default_curve_config_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_default_curve_config_request&) {
+    return std::tuple{
+        utility::codec::field{"removal", &delete_default_curve_config_request::removal},
+        utility::codec::field{"intent", &delete_default_curve_config_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_default_curve_config_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_default_curve_config_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_default_curve_config_response::result},
+    };
+}
+
+/**
+ * @brief The members of delete_many_default_curve_configs_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_default_curve_configs_request&) {
+    return std::tuple{
+        utility::codec::field{"removals", &delete_many_default_curve_configs_request::removals},
+        utility::codec::field{"intent", &delete_many_default_curve_configs_request::intent},
+    };
+}
+
+/**
+ * @brief The members of delete_many_default_curve_configs_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const delete_many_default_curve_configs_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &delete_many_default_curve_configs_response::result},
+    };
+}
+
+/**
+ * @brief The members of list_default_curve_config_versions_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_default_curve_config_versions_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &list_default_curve_config_versions_request::key},
+        utility::codec::field{"offset", &list_default_curve_config_versions_request::offset},
+        utility::codec::field{"limit", &list_default_curve_config_versions_request::limit},
+        utility::codec::field{"order", &list_default_curve_config_versions_request::order},
+        utility::codec::field{"filter", &list_default_curve_config_versions_request::filter},
+    };
+}
+
+/**
+ * @brief The members of list_default_curve_config_versions_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const list_default_curve_config_versions_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &list_default_curve_config_versions_response::result},
+        utility::codec::field{"versions", &list_default_curve_config_versions_response::versions},
+        utility::codec::field{"total", &list_default_curve_config_versions_response::total},
+    };
+}
+
+/**
+ * @brief The members of get_default_curve_config_version_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_default_curve_config_version_request&) {
+    return std::tuple{
+        utility::codec::field{"key", &get_default_curve_config_version_request::key},
+    };
+}
+
+/**
+ * @brief The members of get_default_curve_config_version_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(const get_default_curve_config_version_response&) {
+    return std::tuple{
+        utility::codec::field{"result", &get_default_curve_config_version_response::result},
+        utility::codec::field{"version", &get_default_curve_config_version_response::version},
+    };
+}
+
 
 }
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::default_curve_config_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::default_curve_config_key& v);
+    static ores::refdata::messaging::default_curve_config_key read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::default_curve_config_key& v);
+    static ores::refdata::messaging::default_curve_config_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::default_curve_config_write> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::default_curve_config_write& v);
+    static ores::refdata::messaging::default_curve_config_write read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::default_curve_config_write& v);
+    static ores::refdata::messaging::default_curve_config_write
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::default_curve_config_change> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::default_curve_config_change& v);
+    static ores::refdata::messaging::default_curve_config_change read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::default_curve_config_change& v);
+    static ores::refdata::messaging::default_curve_config_change
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::default_curve_config_removal> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::default_curve_config_removal& v);
+    static ores::refdata::messaging::default_curve_config_removal read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::default_curve_config_removal& v);
+    static ores::refdata::messaging::default_curve_config_removal
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::default_curve_config_lookup> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::default_curve_config_lookup& v);
+    static ores::refdata::messaging::default_curve_config_lookup read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::default_curve_config_lookup& v);
+    static ores::refdata::messaging::default_curve_config_lookup
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::default_curve_configs_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::default_curve_configs_filter& v);
+    static ores::refdata::messaging::default_curve_configs_filter read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::default_curve_configs_filter& v);
+    static ores::refdata::messaging::default_curve_configs_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::default_curve_config_event> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::default_curve_config_event& v);
+    static ores::refdata::messaging::default_curve_config_event read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::default_curve_config_event& v);
+    static ores::refdata::messaging::default_curve_config_event
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::default_curve_config_version_key> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::default_curve_config_version_key& v);
+    static ores::refdata::messaging::default_curve_config_version_key
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::default_curve_config_version_key& v);
+    static ores::refdata::messaging::default_curve_config_version_key
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::default_curve_config_versions_filter> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::default_curve_config_versions_filter& v);
+    static ores::refdata::messaging::default_curve_config_versions_filter
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::default_curve_config_versions_filter& v);
+    static ores::refdata::messaging::default_curve_config_versions_filter
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_default_curve_configs_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_default_curve_configs_request& v);
+    static ores::refdata::messaging::list_default_curve_configs_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_default_curve_configs_request& v);
+    static ores::refdata::messaging::list_default_curve_configs_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_default_curve_configs_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_default_curve_configs_response& v);
+    static ores::refdata::messaging::list_default_curve_configs_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_default_curve_configs_response& v);
+    static ores::refdata::messaging::list_default_curve_configs_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_default_curve_config_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_default_curve_config_request& v);
+    static ores::refdata::messaging::get_default_curve_config_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_default_curve_config_request& v);
+    static ores::refdata::messaging::get_default_curve_config_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_default_curve_config_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_default_curve_config_response& v);
+    static ores::refdata::messaging::get_default_curve_config_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_default_curve_config_response& v);
+    static ores::refdata::messaging::get_default_curve_config_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_many_default_curve_configs_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_many_default_curve_configs_request& v);
+    static ores::refdata::messaging::get_many_default_curve_configs_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_many_default_curve_configs_request& v);
+    static ores::refdata::messaging::get_many_default_curve_configs_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_many_default_curve_configs_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_many_default_curve_configs_response& v);
+    static ores::refdata::messaging::get_many_default_curve_configs_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_many_default_curve_configs_response& v);
+    static ores::refdata::messaging::get_many_default_curve_configs_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_default_curve_config_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_default_curve_config_request& v);
+    static ores::refdata::messaging::put_default_curve_config_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_default_curve_config_request& v);
+    static ores::refdata::messaging::put_default_curve_config_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_default_curve_config_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_default_curve_config_response& v);
+    static ores::refdata::messaging::put_default_curve_config_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_default_curve_config_response& v);
+    static ores::refdata::messaging::put_default_curve_config_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_many_default_curve_configs_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_many_default_curve_configs_request& v);
+    static ores::refdata::messaging::put_many_default_curve_configs_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_many_default_curve_configs_request& v);
+    static ores::refdata::messaging::put_many_default_curve_configs_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::put_many_default_curve_configs_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::put_many_default_curve_configs_response& v);
+    static ores::refdata::messaging::put_many_default_curve_configs_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::put_many_default_curve_configs_response& v);
+    static ores::refdata::messaging::put_many_default_curve_configs_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_default_curve_config_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_default_curve_config_request& v);
+    static ores::refdata::messaging::delete_default_curve_config_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_default_curve_config_request& v);
+    static ores::refdata::messaging::delete_default_curve_config_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_default_curve_config_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_default_curve_config_response& v);
+    static ores::refdata::messaging::delete_default_curve_config_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_default_curve_config_response& v);
+    static ores::refdata::messaging::delete_default_curve_config_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_many_default_curve_configs_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_many_default_curve_configs_request& v);
+    static ores::refdata::messaging::delete_many_default_curve_configs_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_many_default_curve_configs_request& v);
+    static ores::refdata::messaging::delete_many_default_curve_configs_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::delete_many_default_curve_configs_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::delete_many_default_curve_configs_response& v);
+    static ores::refdata::messaging::delete_many_default_curve_configs_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::delete_many_default_curve_configs_response& v);
+    static ores::refdata::messaging::delete_many_default_curve_configs_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_default_curve_config_versions_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_default_curve_config_versions_request& v);
+    static ores::refdata::messaging::list_default_curve_config_versions_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_default_curve_config_versions_request& v);
+    static ores::refdata::messaging::list_default_curve_config_versions_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::list_default_curve_config_versions_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::list_default_curve_config_versions_response& v);
+    static ores::refdata::messaging::list_default_curve_config_versions_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::list_default_curve_config_versions_response& v);
+    static ores::refdata::messaging::list_default_curve_config_versions_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_default_curve_config_version_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_default_curve_config_version_request& v);
+    static ores::refdata::messaging::get_default_curve_config_version_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_default_curve_config_version_request& v);
+    static ores::refdata::messaging::get_default_curve_config_version_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_default_curve_config_version_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_default_curve_config_version_response& v);
+    static ores::refdata::messaging::get_default_curve_config_version_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_default_curve_config_version_response& v);
+    static ores::refdata::messaging::get_default_curve_config_version_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

@@ -99,8 +99,8 @@ struct marshal_outcome {
 /**
  * @brief The canonical rows as the newline-delimited CSV the loader reads.
  *
- * The header is =subject_type,subject_id,measure,currency,figure,source=, and a
- * field is quoted only when it holds a comma, a quote or a newline.
+ * The header is =subject_type,subject_id,measure,currency,counterparty_id,figure,source=,
+ * and a field is quoted only when it holds a comma, a quote or a newline.
  */
 [[nodiscard]] ORES_ORE_CORE_EXPORT std::string
 canonical_csv(const std::vector<canonical_row>& rows);

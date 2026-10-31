@@ -1642,6 +1642,178 @@ def validate_cached_by(domain_entity):
             f"{domain_entity.get('entity_singular', '?')}: cached_by requires has_tenant_id")
 
 
+@functools.lru_cache(maxsize=None)
+def _model_type_names(directory):
+    """The names a modeling directory declares, split by where their shape is.
+
+    Classification is the model's own ``#+type:`` line, never its filename: a
+    junction may be called ``ores.refdata.calendar_date.org`` and one is, so a
+    filename suffix would classify it as nothing and its members would reach the
+    compiler with no shape.
+
+    Returns:
+        tuple[frozenset[str], frozenset[str]]: (entity and junction singulars,
+            field group singulars). A group states its shape in its own header,
+            an entity or a junction in the codec header beside it.
+    """
+    names = set()
+    groups = set()
+    for path in sorted(Path(directory).glob("*.org")):
+        text = path.read_text(encoding="utf-8")
+        found = _ORG_TYPE_RE.search(text)
+        kind = found.group(1) if found else ""
+        if kind == "ores.codegen.entity":
+            name = re.search(r"^#\+entity_singular:\s*(\S+)\s*$", text, re.M)
+            if name:
+                names.add(name.group(1))
+        elif kind == "ores.codegen.junction":
+            name = re.search(r"^#\+name_singular:\s*(\S+)\s*$", text, re.M)
+            if name:
+                names.add(name.group(1))
+        elif kind == "ores.codegen.field_group":
+            name = re.search(
+                r"^#\+(?:entity_singular|name_singular):\s*(\S+)\s*$", text,
+                re.M)
+            if name:
+                groups.add(name.group(1))
+    return frozenset(names), frozenset(groups)
+
+
+def _model_member_names(model_path):
+    """The names declared beside this model, or nothing without a path."""
+    if not model_path:
+        return frozenset(), frozenset()
+    return _model_type_names(str(Path(model_path).resolve().parent))
+
+
+def _domain_header(component_include, name, codec=True):
+    """The header that declares a generated domain type.
+
+    The templates spell this path too, so it is stated once here for the units
+    whose includes the generator derives.
+    """
+    suffix = "_codec" if codec else ""
+    return f"{component_include}/domain/{name}{suffix}.hpp"
+
+
+def _member_headers(cpp_types, model_path, domain_entity):
+    """The headers that declare the shape of every type these names hold.
+
+    A type recurses into a member's shape, and the shape is declared in that
+    member's codec header. So a unit that encodes a message or a row holding
+    another generated type has to include the header that declares it, or the
+    compiler reads the recursion as a type with no shape at all.
+
+    A member is named either qualified ("ores::refdata::domain::csa", the
+    message's own field types) or bare ("counterparty_identifier", resolved by a
+    using-declaration, the row's columns). Both forms name the same declaration,
+    so both resolve through one classifier below.
+
+    Args:
+        cpp_types: the C++ member types, as the model states them.
+        model_path: the model file, whose directory names the sibling types.
+        domain_entity: the model being rendered, for its component root.
+
+    Returns:
+        list[str]: include paths, in first-seen order.
+
+    Raises:
+        ValueError: if a member names a namespace shape this generator does not
+            know, rather than guessing an include path for it.
+    """
+    names, groups = _model_member_names(model_path)
+    # The templates spell a header "ores.{{component_include}}/...", so the
+    # root here carries the product prefix too.
+    root = "ores." + (
+        domain_entity.get("component_include") or (
+            f"{domain_entity.get('component')}.{domain_entity.get('subcomponent')}"))
+    out = []
+
+    def add(header):
+        if header not in out:
+            out.append(header)
+
+    def add_named(name, fallback_root):
+        """The header for one name, or its foreign root when it is not ours."""
+        if name in groups:
+            add(_domain_header(root, name, codec=False))
+        elif name in names:
+            add(_domain_header(root, name))
+        elif fallback_root:
+            # Another component's domain types live under its API subcomponent.
+            add(_domain_header(fallback_root, name, codec=False))
+
+    for cpp_type in (str(t) for t in cpp_types):
+        for namespace, name in re.findall(r"((?:\w+::)+)domain::(\w+)", cpp_type):
+            parts = [p for p in namespace.split("::") if p]
+            if len(parts) != 2:
+                raise ValueError(
+                    f"{domain_entity.get('entity_singular', '?')}: member type "
+                    f"'{cpp_type}' names a namespace this generator does not "
+                    f"know ('{namespace}')")
+            # The wire envelope's own types arrive through its header.
+            if parts[1] == "utility":
+                continue
+            add_named(name, f"{parts[0]}.{parts[1]}.api")
+        for name in re.findall(r"(?<![\w:])([a-z][a-z0-9_]*)(?![\w:])", cpp_type):
+            add_named(name, None)
+    return out
+
+
+def _codec_includes(domain_entity, model_path):
+    """The codec headers the types a row holds are declared in."""
+    out = []
+    # A field group states its shape in its own header; it needs no codec header.
+    for group in domain_entity.get("domain_groups") or []:
+        if group.get("header"):
+            header = group["header"].strip('"')
+            if header not in out:
+                out.append(header)
+    if domain_entity.get("has_audit_group"):
+        # "ores::dq::domain::audit_record" -> the group's own header
+        qualified = domain_entity.get("audit_group_qualified", "")
+        parts = [p for p in qualified.split("::") if p and p != "domain"]
+        if len(parts) == 3:
+            header = f"{parts[0]}.{parts[1]}.api/domain/{parts[2]}.hpp"
+            if header not in out:
+                out.append(header)
+
+    columns = (list(domain_entity.get("columns") or [])
+               + list((domain_entity.get("primary_key") or {}).get("columns") or [])
+               + list(domain_entity.get("natural_keys") or []))
+    for header in _member_headers(
+            (col.get("cpp_type", "") for col in columns), model_path, domain_entity):
+        if header not in out:
+            out.append(header)
+    return out
+
+
+def _message_codec_includes(domain_entity, model_path):
+    """The codec headers the types a message holds are declared in.
+
+    A row's members are the ones its columns name, and a message's are not: a
+    composite request carries rows of entities the entity it belongs to never
+    mentions, so the message's own field types are a second source.
+    """
+    types = [f.get("cpp_type", "")
+             for message in domain_entity.get("messages") or []
+             for f in message.get("fields") or []]
+    return _member_headers(types, model_path, domain_entity)
+
+
+# Every archetype address the wire-codec facet renders. One list, because the
+# addresses resolve together: a model that names a single address must still
+# have every one enabled, or it emits a declaration with no definition.
+WIRE_CODEC_ADDRESSES = (
+    "ores.cpp.wire-codec.codec_header", "ores.cpp.wire-codec.codec_impl",
+    "ores.cpp.wire-codec.protocol_codec_impl")
+
+
+def _has_wire_codec(model_path):
+    """Whether this model states its own wire shape."""
+    return _facet_enabled(model_path, "ores.cpp.wire-codec", WIRE_CODEC_ADDRESSES)
+
+
 def _facet_enabled(model_path, facet, addresses):
     """Whether a model enables a facet, after its own overrides.
 
@@ -6199,10 +6371,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Whether this model's types state their own wire shape, which decides
         # whether the protocol header carries the field list and the codec
         # specialisations with it.
-        domain_entity['has_generated_wire_codec'] = _facet_enabled(
-            model_path, "ores.cpp.wire-codec",
-            ("ores.cpp.wire-codec.codec_header", "ores.cpp.wire-codec.codec_impl",
-             "ores.cpp.wire-codec.protocol_codec_impl"))
+        domain_entity['wire_codec_includes'] = _codec_includes(domain_entity, model_path)
+        domain_entity['message_codec_includes'] = _message_codec_includes(
+            domain_entity, model_path)
+        domain_entity['has_generated_wire_codec'] = _has_wire_codec(model_path)
         # The wire-shape function below iterates a message's fields, and a
         # field states its own name, which shadows the message's. The message
         # states its name a second time so the field loop can still reach it.
@@ -6526,10 +6698,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Same two facts as a domain entity: whether its types state their own
         # wire shape, and the name each message states a second time so the
         # field loop can reach it.
-        junction['has_generated_wire_codec'] = _facet_enabled(
-            model_path, "ores.cpp.wire-codec",
-            ("ores.cpp.wire-codec.codec_header", "ores.cpp.wire-codec.codec_impl",
-             "ores.cpp.wire-codec.protocol_codec_impl"))
+        junction['wire_codec_includes'] = _codec_includes(junction, model_path)
+        junction['message_codec_includes'] = _message_codec_includes(junction, model_path)
+        junction['has_generated_wire_codec'] = _has_wire_codec(model_path)
         for _message in junction['messages']:
             _message['struct_name'] = _message['name']
         # The record a caller sends, on the shape rather than on the junction
@@ -6732,6 +6903,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             fg.setdefault('component_include', component)
             fg['component_dir'] = f"ores.{component}"
         fg['component_include_upper'] = fg['component_include'].replace('.', '_').upper()
+        fg['has_generated_wire_codec'] = _has_wire_codec(model_path)
         # Compute include-guard suffix from entity_singular
         if 'entity_singular' in fg:
             fg['entity_singular_upper'] = fg['entity_singular'].upper()

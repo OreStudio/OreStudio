@@ -20,9 +20,12 @@
 #ifndef ORES_HTTP_NET_HTTP_SESSION_HPP
 #define ORES_HTTP_NET_HTTP_SESSION_HPP
 
+#include "ores.http.api/domain/session_cookie.hpp"
+#include "ores.http.api/domain/session_store.hpp"
 #include "ores.http.api/export.hpp"
 #include "ores.http.api/net/http_server_options.hpp"
 #include "ores.http.api/net/router.hpp"
+#include "ores.http.api/net/server_counters.hpp"
 #include "ores.http.api/net/worker_pool.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -66,7 +69,10 @@ public:
                           std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier,
                           std::shared_ptr<worker_pool> workers,
                           const http_server_options& options,
-                          session_bytes_callback bytes_callback = nullptr);
+                          session_bytes_callback bytes_callback = nullptr,
+                          server_counters* counters = nullptr,
+                          std::shared_ptr<domain::session_store> sessions = nullptr,
+                          domain::cookie_settings cookie = {});
 
     /**
      * @brief Starts processing the session.
@@ -121,6 +127,18 @@ private:
     convert_response(const domain::http_response& resp, unsigned version, bool keep_alive);
 
     /**
+     * @brief Why a session request may not change anything, when it may not.
+     *
+     * A cookie is proof of holding a session and not of intending anything: a
+     * cross-site form carries it without asking. So an unsafe method on a session
+     * request must carry an =Origin= naming this deployment and a header that a form
+     * cannot set, and this answers why when it does not.
+     *
+     * @returns nothing when the request may proceed
+     */
+    [[nodiscard]] std::optional<std::string> csrf_refusal(const domain::http_request& req) const;
+
+    /**
      * @brief Writes a response, from its bytes or in chunks from its source.
      *
      * @param send_body false for a HEAD request, which answers the headers that
@@ -151,6 +169,14 @@ private:
     http_server_options options_;
     std::string remote_address_;
     session_bytes_callback bytes_callback_;
+
+    // Counters the server owns and reports. Null in a test that does not want them.
+    server_counters* counters_;
+
+    // The sessions this server holds, and how it names the cookie they ride in.
+    // Null when the server serves no browser session.
+    std::shared_ptr<domain::session_store> sessions_;
+    domain::cookie_settings cookie_;
 };
 
 }

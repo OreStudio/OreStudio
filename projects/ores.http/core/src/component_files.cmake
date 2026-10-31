@@ -20,18 +20,22 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "routes/bundle_manifest.cpp"
     "routes/storage_file_source.cpp"
     "routes/storage_routes.cpp"
     "routes/storage_upload_sink.cpp"
     "routes/variability_routes.cpp"
+    "routes/web_bundle_routes.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/ores.http.core.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/routes/bundle_manifest.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/routes/storage_file_source.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/routes/storage_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/routes/storage_upload_sink.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/routes/variability_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/routes/web_bundle_routes.hpp"
 )

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: D85DDFBD-056B-4857-8C91-6E8D2828B0B7
+:END:
+#+title: Project each analytic's file into canonical rows
+#+description: The compute wrapper projects only npv.csv. Every other analytic writes its own file into the run's archive and none has a projection, so a run of that analytic loads no rows. Add one projection per output file, name each measure from the file's own headings, and prove each with a run.
+#+type: capture
+#+level: cross
+#+filetags: :reporting:ore:results:
+#+created: 2026-10-30
+#+updated: 2026-10-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+The compute wrapper projects only =npv.csv=. That one file gives three measures:
+=npv=, =npv_base= and =notional=. Every other analytic writes its own file into
+the run's archive and none of them has a projection. The ORE examples name files
+such as =flows.csv=, =curves.csv=, =sensitivity.csv=, =scenario.csv=,
+=stresstest.csv=, =var.csv= and =pnl_explain.csv=.
+
+So a run whose configuration switches on cashflow, curves, sensitivity, xva or
+any other analytic loads no rows, and post-processing refuses with "The run's
+rows state no figure, so there is nothing to load." The pipeline is correct and
+the run is honest about it; the gap is that only one analytic is converted.
+
+Add one projection per output file to =ores.ore.core/results/canonical_rows=,
+name each measure from the file's own headings, and test each file in
+=results_canonical_rows_tests=. Prove each projection with a run of that
+analytic, which is the story's "run one report per analytic family" step.

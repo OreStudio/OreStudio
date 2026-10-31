@@ -194,6 +194,9 @@ std::string slot_name(const domain::trade_generation_scope& scope, std::uint32_t
 }
 
 void validate_scope(const domain::trade_generation_scope& scope) {
+    if (!scope.as_of_date.ok())
+        throw trade_population_error("The config states no anchor date, so no trade can be "
+                                     "dated.");
     if (scope.book_ids.empty())
         throw trade_population_error("The config states no book, so the population has nowhere "
                                      "to land.");
@@ -417,7 +420,9 @@ construct_bond_product(const domain::bond_terms& terms,
                        const domain::trade_generation_scope& scope,
                        double notional) {
     namespace tdom = ores::trading::domain;
-    const auto money = [](double value) { return tdom::decimal::from_double(value).value(); };
+    const auto money = [](double value) {
+        return tdom::decimal::from_double(value).value();
+    };
 
     tdom::bond_common_terms common;
     common.issue_id = terms.issue_id;
@@ -581,8 +586,8 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
          * decides which constructor runs, and what a code cannot state it does
          * not fill.
          */
-        auto product = construct_bond_product(
-            terms, entry.trade_type_code, name, slot, scope, entry.notional);
+        auto product =
+            construct_bond_product(terms, entry.trade_type_code, name, slot, scope, entry.notional);
         state_bond_security(terms, entry.currency, entry, product);
         append(entry.instruments, std::move(product));
 

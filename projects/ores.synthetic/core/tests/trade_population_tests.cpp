@@ -127,10 +127,8 @@ domain::trade_generation_scope bond_scope() {
      * A convertible bond states the share it may convert into, so every bond
      * scope needs the equity catalogue the writer loads for it.
      */
-    scope.equity_underlyings = {
-        domain::equity_underlying_reference{.code = "GB0005405286",
-                                            .kind = "share",
-                                            .currency = "GBP"}};
+    scope.equity_underlyings = {domain::equity_underlying_reference{
+        .code = "GB0005405286", .kind = "share", .currency = "GBP"}};
     scope.book_ids = {bond_book, second_book};
     scope.counterparty_ids = {bank, second_bank};
     scope.issuer_ids = {bank, second_bank};
@@ -527,8 +525,7 @@ TEST_CASE("the_same_scope_states_the_same_population_twice", "[trade_population]
     for (std::size_t i = 0; i < once.slots.size(); ++i) {
         REQUIRE(once.slots[i].trade_id == twice.slots[i].trade_id);
         REQUIRE(once.slots[i].internal_identifier == twice.slots[i].internal_identifier);
-        REQUIRE(once.slots[i].bond_issue->security_id ==
-                twice.slots[i].bond_issue->security_id);
+        REQUIRE(once.slots[i].bond_issue->security_id == twice.slots[i].bond_issue->security_id);
         REQUIRE(once.slots[i].notional == twice.slots[i].notional);
         REQUIRE(once.slots[i].trade_date == twice.slots[i].trade_date);
         REQUIRE(once.slots[i].bond_issue_leg_schedules.front().end_date ==
@@ -782,11 +779,37 @@ TEST_CASE("an_fx_population_states_the_row_its_type_routes_to", "[trade_populati
             INFO("start " << row.start_date << " end " << row.end_date);
             CHECK(row.end_date > row.start_date);
             CHECK_FALSE(row.moment_type.empty());
+            CHECK(row.end_date > row.start_date);
         } else {
             REQUIRE(batch.fx_accumulator_instruments.size() == 1u);
             const auto& row = batch.fx_accumulator_instruments.front();
             CHECK_FALSE(row.underlying_code.empty());
             CHECK(row.knock_out_barrier.has_value());
+        }
+    }
+}
+
+TEST_CASE("a_scope_with_no_anchor_is_refused", "[trade_population]") {
+    auto scope = fx_scope();
+    scope.as_of_date = std::chrono::year_month_day{};
+    CHECK_THROWS_AS(plan_of(scope), trade_population_error);
+}
+
+TEST_CASE("a month_end_anchor_still_dates_every_fx_trade", "[trade_population]") {
+    /*
+     * 31 October shifted back a month states 31 September, which is not a date.
+     * The planner clamps it, so every row it states is a date the store
+     * accepts.
+     */
+    auto scope = fx_scope();
+    scope.as_of_date = std::chrono::year{2026} / std::chrono::October / 31;
+    const auto plan = plan_of(scope);
+    for (const auto& slot : plan.slots) {
+        const auto& rows = slot.instruments.fx_variance_swap_instruments;
+        for (const auto& row : rows) {
+            CHECK(row.start_date.ok());
+            CHECK(row.end_date.ok());
+            CHECK(row.end_date > row.start_date);
         }
     }
 }

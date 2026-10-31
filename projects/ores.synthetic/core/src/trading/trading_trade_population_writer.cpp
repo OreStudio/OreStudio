@@ -55,6 +55,7 @@
 #include "ores.trading.api/domain/rate_instruments.hpp"
 #include "ores.trading.api/domain/swaption_instrument.hpp"
 #include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
+#include "ores.trading.api/messaging/bond_issue_protocol.hpp"
 #include "ores.trading.api/messaging/structure_member_protocol.hpp"
 #include "ores.trading.api/messaging/structure_protocol.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
@@ -62,6 +63,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <format>
 #include <optional>
 #include <string>
@@ -165,7 +167,15 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     scope.max_tenor_code = config.max_tenor_code;
     scope.min_notional = config.min_notional.to_double();
     scope.max_notional = config.max_notional.to_double();
-    scope.as_of_date = config.as_of_date;
+    /*
+     * A config may state no anchor, in which case its population is meant to
+     * sit relative to the present. A default-constructed date is not a date: it
+     * encodes as the empty string, so an unstated anchor would reach the store
+     * as a zero date and every term computed from it would be refused.
+     */
+    const auto today = std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now());
+    scope.as_of_date =
+        config.as_of_date.ok() ? config.as_of_date : std::chrono::year_month_day{today};
     scope.seed = config.seed;
     scope.trades_per_book = config.trades_per_book;
     scope.structures_per_book = static_cast<std::uint32_t>(config.structures_per_book);
@@ -401,6 +411,29 @@ void trading_trade_population_writer::ensure_issue(const domain::trade_populatio
     const auto& codec = ores::nats::default_wire_codec();
     const std::string commentary = "Generated trade population.";
     const auto reason = std::string(population_reason);
+
+    /*
+     * A security is named by its currency, its anchor and its term, and not by
+     * a party, so two parties of the tenant can state the same one. Their
+     * product rows differ -- one may draw a callable and the other a plain
+     * bond -- but the issue does not: the first writer states it, and every
+     * later trade references the terms already stored.
+     */
+    {
+        ores::trading::messaging::get_bond_issue_request exists_req;
+        exists_req.key.issue_id = issue_row.issue_id;
+        const auto exists_reply = nats_.authenticated_request(
+            ores::trading::messaging::get_bond_issue_request::nats_subject,
+            codec.encode(exists_req));
+        if (exists_reply.headers.find("X-Error") == exists_reply.headers.end()) {
+            auto exists =
+                codec.decode<ores::trading::messaging::get_bond_issue_response>(exists_reply.data);
+            if (exists && exists->bond_issue) {
+                issues_written_.insert(issue_row.issue_id);
+                return;
+            }
+        }
+    }
 
     /*
      * The plan states the security as the rows the composite write takes, so

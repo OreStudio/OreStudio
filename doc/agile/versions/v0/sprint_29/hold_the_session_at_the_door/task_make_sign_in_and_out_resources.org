@@ -7,9 +7,10 @@
 #+level: s1
 #+filetags: :hold_the_session_at_the_door:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on:
+#+branch: feature/make-sign-in-and-out-resources
+#+pr: 4187
+#+blocked_on: review
+#+blocked_since: 2026-10-31 04:20
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
@@ -55,8 +56,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Session door cases | 3 cases, 18 assertions, all passing | =./ores.http.iam.tests "[auth_session]"= | branch head |
-| =ores.http.iam= test cases | all passing | =./ores.http.iam.tests= | branch head |
+| Session door cases | 3 cases, 18 assertions, all passing | =./ores.http.iam.tests "[auth_session]"= | =#4187= |
+| =ores.http.iam= test cases | all passing | =./ores.http.iam.tests= | =#4187= |
 
 * Notes
 
@@ -84,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#4187](https://github.com/OreStudio/OreStudio/pull/4187) | [iam] Make signing in and out resources of their own |
 
 * Review
 

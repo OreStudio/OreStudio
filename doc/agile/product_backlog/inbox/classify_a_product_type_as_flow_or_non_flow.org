@@ -100,6 +100,8 @@ the queue's figures change without a release.
 
 * See also
 
+- [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] — the story whose queue
+  screen states the division today, and which carries this capture.
 - [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] — the page that states
   what a type is, and what allows it.
 - [[id:4704B1FE-19C5-4EB8-B4DE-3B8F7E255772][Desk-facing product type]] — the finer classification a desk

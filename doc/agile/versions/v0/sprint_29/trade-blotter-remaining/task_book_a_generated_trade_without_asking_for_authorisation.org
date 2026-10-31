@@ -9,7 +9,7 @@
 #+owner: marco
 #+branch: feature/book-a-generated-trade-without-asking-for-authorisation
 #+pr:
-#+blocked_on:
+#+blocked_on: 792166AA-5E00-443C-B236-C42B06FF440A
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
@@ -28,9 +28,9 @@ A booking that is not a real deal asks nobody for authorisation, and the one pla
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Built and tested; the live proof waits on provisioning. |
+| Waiting on   | The subscribe_market_data step, which asks for a market data source nobody serves. |
+| Next         | Re-provision and count the queue once the step is fixed. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -41,9 +41,24 @@ A booking that is not a real deal asks nobody for authorisation, and the one pla
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The trading service already decides this in one place:
+=operational_authorisation_service::raise_if_awaiting= returns nothing unless
+the booking nature is actual, and the summary view reads =not_required= for
+every other nature. Both behaviours are covered by the trading core suite, and
+the ORE import already books a sandbox import as a test.
+
+So the work was to stop lying about the nature and to make the lie impossible
+to reintroduce:
+
+- The population writer states =booking_nature::test=.
+- Its request is built by =book_request_for=, a function separate from the send,
+  so a test reads the terms the population books under without a session.
+- Three cases pin them: the nature, the origin and the person, and the rows the
+  slot carries.
+
+A sandbox book was the alternative and was rejected: the nature is the one place
+that decides, the readers already agree with it, and a book flag would be a
+second, overlapping notion that every reader would have to honour.
 
 * Measurements
 
@@ -57,7 +72,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Writer cases pinning the booking terms | 3 passed, 10 assertions | =ores.synthetic.core.tests "[writer]"= with =.env= loaded | 467bb16f81 |
+| Trading service authorisation rules | 3 passed, 8 assertions | =ores.trading.core.tests= filtered to the three authorisation cases | 467bb16f81 |
+| The queue a provisioned tenant used to arrive with | 127 waiting requests, written 18:30:05 to 18:31:15 on 2026-10-30, one per seeded trade and leg | =compass sql= over =ores_inbox_approval_requests_tbl= grouped by kind and state | before this change |
 
 * Notes
 
@@ -85,3 +102,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A generated trade states the test booking nature, so the trading service raises
+no authorisation request for it, and the trade summary reads =not_required=. The
+one place that decides is the nature, and the population no longer claims an
+actual deal.
+
+The request the population sends is now built by =book_request_for=, separate
+from the send and from the session, and three cases pin it: the nature, the
+origin with the config it names and the person it is entered by, and the rows
+the slot carries.
+
+* What could not be proved
+
+The acceptance asks for a freshly provisioned tenant with an empty queue, and
+that proof stopped at provisioning: the =subscribe_market_data= step asks for a
+market data source nobody serves, so the run aborts at step 7 and the trade
+population never runs. That is recorded as
+[[proj:doc/agile/product_backlog/inbox/provisioning_asks_for_a_market_data_source_nobody_serves.org][Provisioning asks for a market data source nobody serves]];
+the local workaround was refused because the profile belongs to the system
+tenant.
+
+What is proved instead: the writer states the nature, and the service raises a
+request for actual and none for test, both on this tree. The remaining step is
+to provision once the environment can, and count the queue at zero.

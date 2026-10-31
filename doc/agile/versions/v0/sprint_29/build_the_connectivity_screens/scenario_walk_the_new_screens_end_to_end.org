@@ -1,0 +1,194 @@
+:PROPERTIES:
+:ID: 9F2D549B-56AB-46D7-88D1-28DD051B44D4
+:END:
+#+title: Test Scenario: Walk the new screens end to end
+#+description: The Connectivity and Public rates screens against the live catalogue: the trees and records, the arriving fixings, the comparison, and a historical fixings download.
+#+type: test_scenario
+#+level: s1
+#+filetags: :marketdata:test_scenario:screens:connectivity:public_rates:build_the_connectivity_screens:sprint_29:v0:
+#+target_dialog:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: prime_origin
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:1994DF76-4830-4510-96BD-3B524E782ED2][Prove the connectivity screens]] in [[id:4D2D0EF9-986A-49F3-91CD-29DF44548590][Build the Connectivity screens]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+
+* Before you start
+
+The tester opens the client on a ready environment. Do this yourself before handing over.
+
+- The build is green and the services run: =./compass.sh build= then
+  =./compass.sh services start=.
+- The database is provisioned and the catalogue is published: call
+  =ores_marketdata_publish_adapters_from_dq_fn= and
+  =ores_marketdata_publish_suppliers_from_dq_fn= for the marketdata dataset.
+- Terms are accepted for =ecb=, =imf=, =boc= and =tcmb=, so the public rates
+  adapter has demand. Without them the feeds announce and fetch nothing.
+- At least one day of fixings is stored for a public publisher; Public rates
+  shows no data for a publisher that has never delivered.
+- The environment serves the screens at the address =compass services status=
+  prints, on the paths =/market-data/connectivity= and =/market-data/public-rates=.
+- Have a system administrator account, =super_admin= or a tenant administrator
+  who may accept terms, and its password.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:1994DF76-4830-4510-96BD-3B524E782ED2][Prove the connectivity screens]] and [[id:4FF957B8-0B6F-4002-B438-20D929F306B6][Prove the public rates screens]] |
+| Parent story  | [[id:4D2D0EF9-986A-49F3-91CD-29DF44548590][Build the Connectivity screens]]   |
+| Target screen | =/market-data/connectivity= and =/market-data/public-rates= |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading. Its body is a checklist: what to click, what to
+type, and what confirms the step passed. Record the outcome in a =*** Result=
+child as PASS, FAIL or PENDING with one line of evidence.
+
+** Log in as super_admin
+
+- Open the client at the address the environment prints.
+- Log in as =super_admin= with the password from the provisioning run.
+- Confirm the shell opens on the home screen and the Market data area appears.
+
+*** Result
+
+** Open Connectivity
+
+- Choose Market data, then the Connectivity card.
+- Confirm the title reads =Connectivity= and the pane opens on =Delivery overview=.
+- Confirm the rail lists the suppliers and the publishers, and the overview
+  shows five counts.
+- Confirm the counts match the catalogue: 11 publishers, 2 suppliers,
+  2 adapters, 2 sessions and 10 feeds when this was written.
+
+*** Result
+
+** Read the adapter catalogue
+
+- Click =Adapters catalogue= in the rail.
+- Confirm =frankfurter= and =synthetic= are listed with their module versions.
+- Confirm the frankfurter row names the process =ores.marketdata.official=,
+  the class =fx=, the services =end_of_day= and =reference=, the schema fields
+  =url=, =backfill_days= and =poll_minutes=, and one session.
+- Confirm the synthetic row states no schema field.
+
+*** Result
+
+** Read the frankfurter supplier
+
+- Pick =Frankfurter= in the delivery tree.
+- Confirm the dashboard shows its sessions, feeds and publishers, and the
+  services it offers.
+- Confirm the Sessions table lists =frankfurter-eu= as enabled and in
+  =production=.
+- Confirm the Coverage table lists ECB, IMF, BoC and TCMB with class =fx=.
+- Confirm the Contract card states the contract reference and the support
+  address the catalogue holds.
+
+*** Result
+
+** Open the frankfurter-eu session
+
+- Click =frankfurter-eu= in the tree.
+- Confirm supplier =frankfurter=, adapter =frankfurter=, environment
+  =production= and endpoint =https://api.frankfurter.dev=.
+- Confirm the credential reference is stated and the enabled state reads
+  =Enabled=.
+- Confirm the Settings table shows =url=, =backfill_days= and =poll_minutes=
+  with their values, not raw JSON.
+
+*** Result
+
+** Open the ecb-frankfurter feed
+
+- In the Frankfurter session, click the feed =ecb-frankfurter=.
+- Confirm publisher =ecb=, session =frankfurter-eu=, service =end_of_day=,
+  provider key =ECB= and default =Yes=.
+- Confirm the Underlyings table lists the items in scope with class =fx=.
+- Confirm the Routes table names the system party, publisher =ecb= and class
+  =fx=.
+
+*** Result
+
+** Read the public publisher list
+
+- Choose Market data, then Public rates.
+- Confirm the title reads =Public rates= and the four tabs are Publishers,
+  Availability, Compare and Fetch.
+- Confirm the list holds ECB, IMF, BoC and TCMB, each with its routed feed
+  =*-frankfurter=, its supplier =Frankfurter= and its service =end_of_day=.
+- Confirm the Last fixing column states a date, and the freshness is =Fresh=
+  or =Late=, never =No data= for a publisher that has delivered.
+
+*** Result
+
+** Read the ECB publisher
+
+- Click ECB in the list.
+- Confirm the record shows its terms, the series picker and a chart for the
+  chosen pair, and the latest fixings newest first.
+- Confirm a fixing value matches the one the availability tab states for the
+  same pair and date.
+
+*** Result
+
+** Read the availability of a pair
+
+- Choose the Availability tab and the pair =EUR/USD=.
+- Confirm every publisher that fixes the pair is listed with its feed, its
+  supplier, the first and last date and the value count.
+- Confirm a publisher that does not fix the pair is absent rather than shown
+  with zeros.
+
+*** Result
+
+** Compare the publishers on a pair
+
+- Choose the Compare tab and the pair =EUR/USD=.
+- Confirm one line is drawn for each publisher that gives the pair, and each
+  row states how it gives it (Published, Inverted or Crossed).
+- Confirm the values agree with the availability tab for the same date.
+
+*** Result
+
+** Download historical fixings
+
+- Choose the Fetch tab.
+- Pick publisher =ECB=, leave the underlying at =Every item of the class=, and
+  set a range of the last 30 days.
+- Press =Fetch and download=.
+- Confirm the browser saves a file named =ecb-fixings-<from>_<to>.csv=, and
+  the screen states the file name and the number of fixings.
+- Open the file and confirm the header is
+  =publisher,date,pair,item,value=.
+- Spot check three rows against the availability tab; the values must match.
+- Press the button again for the same range and confirm the file holds the
+  same rows, so a second fetch writes no duplicates.
+
+*** Result
+
+** Close the walkthrough
+
+- Confirm no screen shows a console error, a raw JSON payload or a stack trace.
+- Record the counts you saw (publishers, suppliers, adapters, sessions, feeds,
+  public publishers and fixings downloaded) in the Results section.
+
+*** Result
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PENDING |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes
+

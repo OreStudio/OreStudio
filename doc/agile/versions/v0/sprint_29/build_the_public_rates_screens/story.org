@@ -39,10 +39,10 @@ Public rates reads the model: publisher and class rows, the routed feed and supp
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:FEAFA12C-B251-48C2-9E41-1DD5640BA05E][Serve the publisher and class rows]] | BACKLOG | | | The read behind the list: publisher, class, routed feed, supplier, service, last fixing. |
+| [[id:FEAFA12C-B251-48C2-9E41-1DD5640BA05E][Serve the publisher and class rows]] | DONE | | 2026-10-31 | The read behind the list: publisher, class, routed feed, supplier, service, last fixing. |
 | [[id:07C46238-A877-4F20-972B-6028FE0D8665][Derive freshness from the feed schedule]] | BACKLOG | | | Fresh, late, no data and no route, from the last fixing and the feed's rhythm. |
-| [[id:DBCFB382-4116-4E97-80AF-F774B27A7754][Draw the publisher list and record]] | BACKLOG | | | Publisher and class rows, the class on the record, and the routed feed per class. |
-| [[id:22C9796E-4B60-4EB8-B46F-A3B5E9F92024][Draw availability and compare]] | BACKLOG | | | Availability by item and compare by publisher, each naming the routed feed. |
+| [[id:DBCFB382-4116-4E97-80AF-F774B27A7754][Draw the publisher list and record]] | DONE | | 2026-10-31 | Publisher and class rows, the class on the record, and the routed feed per class. |
+| [[id:22C9796E-4B60-4EB8-B46F-A3B5E9F92024][Draw availability and compare]] | DONE | | 2026-10-31 | Availability by item and compare by publisher, each naming the routed feed. |
 | [[id:A56E86ED-4655-4C73-8007-BD887478D523][Make fetch service-aware]] | BACKLOG | | | A range fetch for end_of_day and historical, and a refusal with a health link for real_time. |
 | [[id:4FF957B8-0B6F-4002-B438-20D929F306B6][Prove the Public rates screens]] | BACKLOG | | | A late publisher, a no-data publisher and a supplier alternative read correctly. |
 

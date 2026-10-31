@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -36,7 +35,6 @@ const config: Config = {
     loginAttemptsPerMinute: 100,
 };
 
-/** The environment this file's site configuration serves. */
 const ENVIRONMENT_ID = 'eager_maxwell';
 const SESSION_COOKIE = sessionCookieName(ENVIRONMENT_ID);
 
@@ -87,7 +85,7 @@ function buildTestServer(replies: Readonly<Record<string, unknown>>): {
         tenantId: '44444444-4444-4444-4444-444444444444',
         tenantName: 'Acme',
         mode: 'tenant-administration',
-        version: 'v0.0.25 (test)',
+        version: 'v0.0.29 (test)',
         availableParties: [],
         accessLifetimeSeconds: 1800,
         passwordResetRequired: false,
@@ -108,6 +106,7 @@ function buildTestServer(replies: Readonly<Record<string, unknown>>): {
 const ok = { outcome: 'ok', code: '', message: '' };
 const ECB_USD = '813ae520-d7f0-41b2-adc3-2c7cfc522e35';
 const ECB_GBP = '813ae520-d7f0-41b2-adc3-2c7cfc522e36';
+const FEED = 'f0000000-0000-0000-0000-000000000001';
 
 function provider(code: string, terms: string): Record<string, unknown> {
     return {
@@ -132,6 +131,59 @@ function series(id: string, quote: string): Record<string, unknown> {
     };
 }
 
+/** The catalogue behind every public rates route, with the publisher it holds. */
+function catalogue(extra: Readonly<Record<string, unknown>> = {}): Record<string, unknown> {
+    return {
+        'marketdata.v1.providers.list': {
+            result: ok,
+            providers: [provider('ecb', 'https://ecb.example/terms'), provider('bloomberg', '')],
+        },
+        'marketdata.v1.feeds.list': {
+            result: ok,
+            feeds: [
+                {
+                    id: FEED,
+                    name: 'ecb-frankfurter',
+                    publisher_code: 'ecb',
+                    session_code: 'frankfurter-eu',
+                    service: 'end_of_day',
+                    provider_key: 'ECB',
+                    is_default: true,
+                },
+            ],
+        },
+        'marketdata.v1.feed_scopes.list': {
+            result: ok,
+            scopes: [{ feed_id: FEED, asset_class: 'fx' }],
+        },
+        'marketdata.v1.sessions.list': {
+            result: ok,
+            sessions: [{ code: 'frankfurter-eu', supplier_code: 'frankfurter' }],
+        },
+        'marketdata.v1.suppliers.list': {
+            result: ok,
+            suppliers: [{ code: 'frankfurter', name: 'Frankfurter' }],
+        },
+        'marketdata.v1.market_series.list': {
+            result: ok,
+            market_series: [
+                series(ECB_USD, 'USD'),
+                series(ECB_GBP, 'GBP'),
+                { id: 'x', oresmd_uri: 'oresmd://fx/EUR?type=spot', provider_code: 'ecb' },
+            ],
+        },
+        'marketdata.v1.market_fixings.list': {
+            result: ok,
+            market_fixings: [
+                { series_id: ECB_USD, fixing_date: '2026-10-26', value: '1.16' },
+                { series_id: ECB_USD, fixing_date: '2026-10-27', value: '1.15' },
+                { series_id: ECB_GBP, fixing_date: '2026-10-27', value: '0.86' },
+            ],
+        },
+        ...extra,
+    };
+}
+
 function get(
     server: ReturnType<typeof buildServer>,
     sessionId: string,
@@ -140,84 +192,49 @@ function get(
     return server.inject({ method: 'GET', url, cookies: { [SESSION_COOKIE]: sessionId } });
 }
 
-describe('the official rates routes', () => {
-    it('lists only the providers that state terms, with their feeds and fixing series', async () => {
-        const { server, sessionId } = buildTestServer({
-            'marketdata.v1.providers.list': {
-                result: ok,
-                providers: [
-                    provider('ecb', 'https://ecb.example/terms'),
-                    provider('bloomberg', ''),
-                ],
-            },
-            'marketdata.v1.feeds.list': {
-                result: ok,
-                running_feeds: [
-                    {
-                        id: '1cf1232c-7ce2-54f3-b55f-c57793caf5af',
-                        name: 'ecb-frankfurter',
-                        publisher_code: 'ecb',
-                        session_code: 'frankfurter-eu',
-                        service: 'end_of_day',
-                        provider_key: 'ECB',
-                        is_default: true,
-                        description: 'The rates of the ECB read through Frankfurter.',
-                    },
-                    {
-                        id: 'da7d3d48-48af-5359-938e-9a6f0d7168e2',
-                        name: 'imf-frankfurter',
-                        publisher_code: 'imf',
-                        session_code: 'frankfurter-eu',
-                        service: 'end_of_day',
-                        provider_key: 'IMF',
-                        is_default: true,
-                        description: '',
-                    },
-                ],
-            },
-            'marketdata.v1.market_series.list': {
-                result: ok,
-                market_series: [
-                    series(ECB_USD, 'USD'),
-                    series(ECB_GBP, 'GBP'),
-                    { id: 'x', oresmd_uri: 'oresmd://fx/EUR?type=spot', provider_code: 'ecb' },
-                ],
-            },
-        });
-        const response = await get(server, sessionId, '/api/marketdata/official');
+describe('the public rates routes', () => {
+    it('lists only the publishers that state terms, with their feeds and fixing series', async () => {
+        const { server, sessionId } = buildTestServer(catalogue());
+        const response = await get(server, sessionId, '/api/marketdata/public-rates');
         expect(response.statusCode).toBe(200);
         const providers = response.json().providers;
         expect(providers.map((p: { code: string }) => p.code)).toEqual(['ecb']);
-        expect(providers[0].feeds).toEqual([
-            {
-                id: '1cf1232c-7ce2-54f3-b55f-c57793caf5af',
-                name: 'ecb-frankfurter',
-                publisher_code: 'ecb',
-                session_code: 'frankfurter-eu',
-                service: 'end_of_day',
-                provider_key: 'ECB',
-                is_default: true,
-                description: 'The rates of the ECB read through Frankfurter.',
-            },
-        ]);
+        expect(providers[0].feeds[0]).toMatchObject({
+            name: 'ecb-frankfurter',
+            supplier_code: 'frankfurter',
+            supplier_name: 'Frankfurter',
+            asset_classes: ['fx'],
+        });
         expect(providers[0].series.map((s: { quote: string }) => s.quote)).toEqual(['GBP', 'USD']);
     });
 
-    it('asks for every feed at once, from the feed catalogue', async () => {
-        const { server, sessionId, calls } = buildTestServer({
-            'marketdata.v1.providers.list': {
-                result: ok,
-                providers: [provider('ecb', 'https://ecb.example/terms')],
-            },
-            'marketdata.v1.feeds.list': { result: ok, feeds: [], total: 0 },
-            'marketdata.v1.market_series.list': { result: ok, market_series: [], total: 0 },
+    it('summarises each series for the availability screen', async () => {
+        const { server, sessionId } = buildTestServer(catalogue());
+        const response = await get(server, sessionId, '/api/marketdata/public-rates/coverage');
+        expect(response.statusCode).toBe(200);
+        expect(response.json().series[ECB_USD]).toEqual({
+            first: '2026-10-26',
+            last: '2026-10-27',
+            count: 2,
         });
-        await get(server, sessionId, '/api/marketdata/official');
-        expect(calls.map((call) => call.subject)).toEqual([
-            'marketdata.v1.providers.list',
-            'marketdata.v1.feeds.list',
-            'marketdata.v1.market_series.list',
-        ]);
+    });
+
+    it('downloads a publisher’s fixings as a file for the range asked for', async () => {
+        const { server, sessionId } = buildTestServer(catalogue());
+        const response = await get(
+            server,
+            sessionId,
+            '/api/marketdata/public-rates/fixings.csv?publisher=ecb&from=2026-10-27&to=2026-10-27',
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.headers['content-type']).toContain('text/csv');
+        expect(response.headers['content-disposition']).toContain(
+            'attachment; filename="ecb-fixings-2026-10-27_2026-10-27.csv"',
+        );
+        expect(response.headers['x-fixing-rows']).toBe('2');
+        expect(response.body.split('\n')[0]).toBe('publisher,date,pair,item,value');
+        expect(response.body).toContain('ecb,2026-10-27,EUR/USD');
+        expect(response.body).toContain('ecb,2026-10-27,EUR/GBP');
     });
 
     it('refuses a read of more than twelve series before it asks the service', async () => {
@@ -229,7 +246,7 @@ describe('the official rates routes', () => {
         const response = await get(
             server,
             sessionId,
-            `/api/marketdata/official/fixings?series=${ids.join(',')}`,
+            `/api/marketdata/public-rates/fixings?series=${ids.join(',')}`,
         );
         expect(response.statusCode).toBe(400);
         expect(response.json().code).toBe('invalid-request');
@@ -241,7 +258,7 @@ describe('the official rates routes', () => {
         const response = await get(
             server,
             sessionId,
-            '/api/marketdata/official/fixings?series=ecb-usd',
+            '/api/marketdata/public-rates/fixings?series=ecb-usd',
         );
         expect(response.statusCode).toBe(400);
         expect(calls).toHaveLength(0);
@@ -260,7 +277,7 @@ describe('the official rates routes', () => {
         const response = await get(
             server,
             sessionId,
-            `/api/marketdata/official/fixings?series=${ECB_USD},${ECB_GBP}`,
+            `/api/marketdata/public-rates/fixings?series=${ECB_USD},${ECB_GBP}`,
         );
         expect(response.statusCode).toBe(200);
         expect(response.json().fixings).toEqual({
@@ -285,7 +302,7 @@ describe('the official rates routes', () => {
         });
         const response = await server.inject({
             method: 'POST',
-            url: '/api/marketdata/official/ecb/accept-terms',
+            url: '/api/marketdata/public-rates/ecb/accept-terms',
             payload: { version: 3 },
             cookies: { [SESSION_COOKIE]: sessionId },
         });
@@ -298,7 +315,7 @@ describe('the official rates routes', () => {
         const { server, sessionId, calls } = buildTestServer({});
         const response = await server.inject({
             method: 'POST',
-            url: '/api/marketdata/official/ecb/accept-terms',
+            url: '/api/marketdata/public-rates/ecb/accept-terms',
             payload: {},
             cookies: { [SESSION_COOKIE]: sessionId },
         });
@@ -315,7 +332,7 @@ describe('the official rates routes', () => {
         });
         const response = await server.inject({
             method: 'POST',
-            url: '/api/marketdata/official/ecb/accept-terms',
+            url: '/api/marketdata/public-rates/ecb/accept-terms',
             payload: { version: 2 },
             cookies: { [SESSION_COOKIE]: sessionId },
         });

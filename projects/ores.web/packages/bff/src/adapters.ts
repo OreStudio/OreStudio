@@ -22,6 +22,9 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects } from '@ores/wire-protocol/generated/marketdata/protocol/adapter_operation_protocol';
+import { subjects as feedSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/feed_protocol';
+import { subjects as sessionSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/session_protocol';
+import { readAll } from './refdata-calls.js';
 import { HttpFailure } from './errors.js';
 import type { LiveSession } from './sessions.js';
 
@@ -56,6 +59,11 @@ const adapterSchema = z.looseObject({
     last_tick_age_ms: z.number().default(-1),
     accepted: z.array(z.looseObject({})).default([]),
     rejected: z.array(z.looseObject({})).default([]),
+    /**
+     * What the source is: the environment of the session that serves its feed.
+     * `simulated` is the synthetic generator, `production` a real supplier.
+     */
+    kind: z.string().default(''),
 });
 
 const replySchema = z.looseObject({
@@ -94,8 +102,43 @@ export function registerAdapterRoutes(
         if (!reply.success) {
             throw unavailable(reply.message);
         }
+        /*
+         * The status names one adapter per feed and states nothing about what
+         * the source is. The catalogue does: a feed names its session, and the
+         * session's environment says whether the values are simulated or come
+         * from a supplier. A source the catalogue no longer holds states none.
+         */
+        const [feeds, sessions] = await Promise.all([
+            readAll(session, feedSubjects.list_feeds_request, 'feeds', {
+                filter: null,
+                as_of: null,
+            }),
+            readAll(session, sessionSubjects.list_sessions_request, 'sessions', {
+                filter: null,
+                as_of: null,
+            }),
+        ]);
+        const sessionOfFeed = new Map(
+            feeds.map((row) => {
+                const feed = z
+                    .looseObject({ name: z.string(), session_code: z.string() })
+                    .parse(row);
+                return [feed.name, feed.session_code] as const;
+            }),
+        );
+        const environmentOfSession = new Map(
+            sessions.map((row) => {
+                const entry = z
+                    .looseObject({ code: z.string(), environment: z.string().default('') })
+                    .parse(row);
+                return [entry.code, entry.environment] as const;
+            }),
+        );
         return {
-            adapters: reply.adapters,
+            adapters: reply.adapters.map((adapter) => ({
+                ...adapter,
+                kind: environmentOfSession.get(sessionOfFeed.get(adapter.adapter_id) ?? '') ?? '',
+            })),
             success: reply.success,
             message: reply.message,
         };

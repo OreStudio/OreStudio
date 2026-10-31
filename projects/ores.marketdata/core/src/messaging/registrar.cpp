@@ -22,6 +22,7 @@
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/publish_operation_protocol.hpp"
+#include "ores.marketdata.core/messaging/adapter_registrar.hpp"
 #include "ores.marketdata.core/messaging/composite_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/composite_input_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/composite_input_registrar.hpp"
@@ -76,6 +77,7 @@
 #include "ores.marketdata.core/messaging/subscription_interval_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/subscription_interval_registrar.hpp"
 #include "ores.marketdata.core/messaging/subscription_registrar.hpp"
+#include "ores.marketdata.core/messaging/supplier_registrar.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
 #include <functional>
@@ -118,6 +120,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_market_fixing_handlers(nats, ctx, verifier));
     fold(register_market_observation_handlers(nats, ctx, verifier));
     fold(register_provider_handlers(nats, ctx, verifier));
+    fold(register_adapter_handlers(nats, ctx, verifier));
+    fold(register_supplier_handlers(nats, ctx, verifier));
     fold(register_feed_handlers(nats, ctx, verifier));
     fold(register_feed_scope_handlers(nats, ctx, verifier));
     fold(register_session_handlers(nats, ctx, verifier));

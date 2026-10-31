@@ -208,6 +208,7 @@ The derivation config's version this series was produced under -- =0=
 :PROPERTIES:
 :tablename:            ores_marketdata_market_series_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Checks
@@ -236,6 +237,7 @@ The derivation config's version this series was produced under -- =0=
 
 ** Repository
 :PROPERTIES:
+:system_tenant_visible: true
 :entity_singular_short: market_series
 :entity_plural_short:   market_series
 :entity_singular_words: market series

@@ -25,6 +25,7 @@
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/market_series_json_io.hpp" // IWYU pragma: keep.
@@ -184,8 +185,10 @@ void market_series_repository::write(
 std::vector<domain::market_series> market_series_repository::read_latest(context ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<market_series_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<market_series_entity, domain::market_series>(
@@ -201,9 +204,10 @@ std::vector<domain::market_series> market_series_repository::read_latest(context
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market series. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<market_series_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<market_series_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "id"_c == id && "valid_to"_c == max);
 
     return query_builder::execute_read_query<market_series_entity, domain::market_series>(
         ctx,
@@ -218,9 +222,11 @@ std::vector<domain::market_series> market_series_repository::read_all(context ct
                                                                       const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all market series versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<market_series_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "id"_c == id) |
-                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<market_series_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<market_series_entity, domain::market_series>(
         ctx,
@@ -235,10 +241,11 @@ std::optional<domain::market_series> market_series_repository::read_at_version(
     BOOST_LOG_SEV(lg(), debug) << "Reading market series at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<market_series_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
-        query_builder::limit(1);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<market_series_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "id"_c == id && "version"_c == version) |
+                       query_builder::limit(1);
 
     const auto entities =
         query_builder::execute_read_query<market_series_entity, domain::market_series>(
@@ -296,9 +303,10 @@ market_series_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market series with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<market_series_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<market_series_entity, domain::market_series>(
         ctx,
@@ -318,8 +326,9 @@ std::uint32_t market_series_repository::get_total_market_series_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market series count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<market_series_entity>> |
-                       query_builder::where("tenant_id"_c == tid);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<market_series_entity>(
         ctx,
@@ -336,9 +345,10 @@ market_series_repository::read_latest(context ctx, const std::vector<std::string
         return {};
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<market_series_entity>> |
-        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<market_series_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "id"_c.in(ids) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<market_series_entity, domain::market_series>(
         ctx,
         query,

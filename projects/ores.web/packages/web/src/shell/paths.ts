@@ -58,7 +58,9 @@ export const PATHS = {
     publishedCurves: '/market-data/published-curves',
     curveBlueprints: '/market-data/curve-blueprints',
     subscriptions: '/market-data/subscriptions',
-    officialRates: '/market-data/official-rates',
+    connectivity: '/market-data/connectivity',
+    fixingSeries: '/market-data/fixings',
+    publicRates: '/market-data/public-rates',
     fxFeed: '/market-data/synthetic/fx',
     irFeed: '/market-data/synthetic/ir',
     reporting: '/reporting',
@@ -72,6 +74,11 @@ export const PATHS = {
     cuts: '/reporting/cuts',
     cutTypes: '/refdata/cut-types',
 } as const;
+
+/** The address of one public publisher's record. */
+export function publicRatesPublisherPath(code: string): string {
+    return `${PATHS.publicRates}/${encodeURIComponent(code)}`;
+}
 
 /** The address of the documents of one convention kind. */
 export function conventionPath(family: string): string {

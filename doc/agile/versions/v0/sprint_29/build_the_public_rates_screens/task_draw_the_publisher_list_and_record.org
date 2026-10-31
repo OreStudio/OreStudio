@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F6EA17E9-761E-452B-9ABF-7551B3612383][Build the Public rates screens]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The list and the record follow the signed-off prototype.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F6EA17E9-761E-452B-9ABF-7551B3612383][Build the Public rates screens]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -56,7 +56,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Web suite | 2336 pass | =npm run test -w @ores/web= | 71f401d756 |
+| BFF suite | 1153 pass | =npx vitest run packages/bff= | 71f401d756 |
+| Live read | 200, 4 publishers (ECB 30, IMF 36, BoC 26 series) | =curl .../api/marketdata/public-rates= | 71f401d756 |
+| Live download | 200, 638 rows, attachment ecb-fixings-...csv | =curl .../fixings.csv?publisher=ecb&= | 71f401d756 |
 
 * Notes
 
@@ -84,3 +89,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** Outcome
+
+Public rates replaces the official rates screen. The list states the
+publisher, its base, its terms, the routed feed with its supplier and
+service, the last fixing and freshness. The record keeps the series picker,
+the chart and the latest fixings, and links to Connectivity for the feed.
+Freshness is fresh when the last fixing is today or yesterday, late when it
+is older, and no data when none is stored.

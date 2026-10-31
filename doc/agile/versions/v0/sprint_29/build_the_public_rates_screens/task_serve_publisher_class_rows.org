@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-10-29
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F6EA17E9-761E-452B-9ABF-7551B3612383][Build the Public rates screens]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A read returns the publisher and class rows with the routed feed and supplier.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F6EA17E9-761E-452B-9ABF-7551B3612383][Build the Public rates screens]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance
@@ -56,7 +56,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Web suite | 2336 pass | =npm run test -w @ores/web= | 71f401d756 |
+| BFF suite | 1153 pass | =npx vitest run packages/bff= | 71f401d756 |
+| Live read | 200, 4 publishers (ECB 30, IMF 36, BoC 26 series) | =curl .../api/marketdata/public-rates= | 71f401d756 |
+| Live download | 200, 638 rows, attachment ecb-fixings-...csv | =curl .../fixings.csv?publisher=ecb&= | 71f401d756 |
 
 * Notes
 
@@ -84,3 +89,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** Outcome
+
+The BFF answers the public publishers with their terms, the feeds that carry
+them, each feed's supplier, service and classes, and the fixing series. The
+coverage read summarises each series with its first and last date and its
+value count, so the list can state the last fixing and freshness without a
+second read per row.

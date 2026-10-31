@@ -69,6 +69,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
+| [[id:9F2D549B-56AB-46D7-88D1-28DD051B44D4][Walk the new screens end to end]] | PENDING | Covers both screen areas and the historical fixings download. |
 | [[id:4F3C2423-ED21-446F-9004-E82B51B0853F][Walk the connectivity and public rates screens]] | PENDING | Covers both screen areas and the historical fixings download. |
 |          |       |       |
 

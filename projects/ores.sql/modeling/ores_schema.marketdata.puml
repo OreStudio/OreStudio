@@ -711,7 +711,7 @@ package "marketdata" #E3F2FD {
         * allows_storage : boolean
         * credential_ref : text
         * terms_accepted_digest : text
-        * terms_accepted_by : text
+          terms_accepted_by : text
           terms_accepted_at : timestamptz
         * modified_by : text
         * performed_by : text

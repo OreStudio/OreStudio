@@ -254,6 +254,8 @@ describe('the routes of the application', () => {
         path === '/signup' ||
         path === '/' ||
         path === '/classifications' ||
+        // The fixing series page, which needs the item its address names.
+        path === PATHS.fixingSeries ||
         // The loop that redirects each earlier address to its new one.
         path === 'from';
 

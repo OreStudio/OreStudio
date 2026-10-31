@@ -84,11 +84,15 @@ def requests(headers: list[dict[str, str]]) -> dict[str, Request]:
             for member in members_of(structs.get(reply, ""))
             if "vector<" in structs.get(reply, "").split(member, 1)[0][-60:]
         )
-        found[name] = Request(
+        # Two components can name a request alike, such as a synthetic feed
+        # and a market data feed. The first header holds the one a caller
+        # means when the subject is a constant, so a later duplicate does not
+        # overwrite it.
+        found.setdefault(name, Request(
             filter_type=filter_type,
             as_of=bool(re.search(r"std::optional<[^>]+>\s+as_of\s*;", body)),
             rows=rows,
-        )
+        ))
     return found
 
 

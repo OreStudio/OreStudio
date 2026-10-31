@@ -97,6 +97,8 @@ export interface FeedRow {
     /** The name of the feed, which is the id of its adapter. */
     readonly name: string;
     readonly provider: string;
+    /** What the source is: the environment of the session serving its feed. */
+    readonly kind: string;
     readonly state: string;
     /** The last sign of life the service recorded, as the wire states it. */
     readonly heartbeatAt: string;
@@ -132,6 +134,7 @@ export function feedOf(adapter: AdapterStatus): FeedRow {
     return {
         name: adapter.adapter_id,
         provider: adapter.provider_code,
+        kind: adapter.kind,
         state: adapter.state,
         heartbeatAt: adapter.last_heartbeat_at,
         heartbeatCounter: adapter.heartbeat_counter,

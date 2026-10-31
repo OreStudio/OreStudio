@@ -22,7 +22,6 @@
 
 #include "ores.synthetic.api/domain/trade_population_plan.hpp"
 #include "ores.synthetic.core/export.hpp"
-#include <boost/uuid/uuid.hpp>
 #include <cstdint>
 #include <stdexcept>
 #include <string>
@@ -44,12 +43,6 @@ class ORES_SYNTHETIC_CORE_EXPORT trade_population_error : public std::runtime_er
 public:
     using std::runtime_error::runtime_error;
 };
-
-/**
- * @brief The least a config of @p asset_class_code can state without losing a
- * code, or zero when no planner serves the class.
- */
-ORES_SYNTHETIC_CORE_EXPORT std::size_t routed_code_count(std::string_view asset_class_code);
 
 /**
  * @brief Names the trade type code the bond family states for a plain bond.
@@ -82,16 +75,6 @@ public:
 
     /// The asset class this planner answers for.
     [[nodiscard]] virtual std::string_view asset_class_code() const = 0;
-
-    /**
-     * @brief How many trade types this planner cycles.
-     *
-     * A planner draws its codes by the slot's position, so a population shorter
-     * than this states a prefix of the codes and never reaches the rest. It is
-     * therefore the least a config of the class can state without losing a code,
-     * and a caller that sizes a population states it as its floor.
-     */
-    [[nodiscard]] virtual std::size_t code_count() const = 0;
 };
 
 /**
@@ -107,8 +90,6 @@ public:
     plan(const domain::trade_generation_scope& scope) const override;
 
     [[nodiscard]] std::string_view asset_class_code() const override;
-
-    [[nodiscard]] std::size_t code_count() const override;
 };
 
 /**
@@ -129,8 +110,6 @@ public:
     plan(const domain::trade_generation_scope& scope) const override;
 
     [[nodiscard]] std::string_view asset_class_code() const override;
-
-    [[nodiscard]] std::size_t code_count() const override;
 };
 
 /**
@@ -152,57 +131,6 @@ public:
     plan(const domain::trade_generation_scope& scope) const override;
 
     [[nodiscard]] std::string_view asset_class_code() const override;
-
-    [[nodiscard]] std::size_t code_count() const override;
-};
-
-/**
- * @brief The planner for a scripted population.
- *
- * The four scripted codes route to the scripted table, and a scripted trade's
- * economics are a script's name, the underlyings it observes and the
- * parameters it is given. The planner draws a code per slot, states the script
- * the ORE projection writes that code's element from, and names underlyings the
- * tenant's own catalogue holds.
- *
- * One code is out of scope and named so rather than booked: the projection has
- * no writer for the autocallable's data element, so a trade of it would book
- * and then fail to export. The gap is recorded where the code is listed.
- *
- * The class answers to =scripted=, the refdata taxonomy's name for a payoff
- * stated as a script rather than as a named product, and the planner refuses
- * when the tenant's equity catalogue names nothing to observe.
- */
-class ORES_SYNTHETIC_CORE_EXPORT scripted_trade_planner final : public trade_planner {
-public:
-    [[nodiscard]] domain::trade_population_plan
-    plan(const domain::trade_generation_scope& scope) const override;
-
-    [[nodiscard]] std::string_view asset_class_code() const override;
-
-    [[nodiscard]] std::size_t code_count() const override;
-};
-
-/**
- * @brief The planner for an inflation population.
- *
- * The catalogue routes one code, @c InflationSwap, to the rates family's table,
- * and that code names a published index rather than a benchmark: the fixed
- * side is a rate and the other side accrues the index. The planner draws an
- * index from the curves the tenant holds, so the name a trade states is the
- * name a curve resolves, and states the swap's fixed side and its CPI side.
- *
- * It refuses when the tenant holds no inflation curve, because a trade that
- * named an index nothing resolves would book and then fail to price.
- */
-class ORES_SYNTHETIC_CORE_EXPORT inflation_trade_planner final : public trade_planner {
-public:
-    [[nodiscard]] domain::trade_population_plan
-    plan(const domain::trade_generation_scope& scope) const override;
-
-    [[nodiscard]] std::string_view asset_class_code() const override;
-
-    [[nodiscard]] std::size_t code_count() const override;
 };
 
 /**
@@ -224,8 +152,6 @@ public:
     plan(const domain::trade_generation_scope& scope) const override;
 
     [[nodiscard]] std::string_view asset_class_code() const override;
-
-    [[nodiscard]] std::size_t code_count() const override;
 };
 
 /**
@@ -251,8 +177,6 @@ public:
     plan(const domain::trade_generation_scope& scope) const override;
 
     [[nodiscard]] std::string_view asset_class_code() const override;
-
-    [[nodiscard]] std::size_t code_count() const override;
 };
 
 /**
@@ -264,8 +188,6 @@ public:
     plan(const domain::trade_generation_scope& scope) const override;
 
     [[nodiscard]] std::string_view asset_class_code() const override;
-
-    [[nodiscard]] std::size_t code_count() const override;
 };
 
 /**
@@ -358,23 +280,20 @@ ORES_SYNTHETIC_CORE_EXPORT std::string
 internal_identifier_for(const domain::trade_generation_scope& scope, std::uint32_t slot);
 
 /**
- * @brief The security identifier (ISIN-shaped) of the security one issuer holds
- * for a currency, an original term and a product.
+ * @brief The security identifier (ISIN-shaped) of the security with the given
+ * original term and product.
  *
- * The population draws its trades from a pool of securities, one per issuer,
- * currency, whole year of the tenor band and product. The issuer is part of the
- * name because a bond is its issuer's: each legal entity of a tenant holds its
- * own issuer catalogue, so one currency, anchor, term and product under two
- * issuers is two securities. The product is there for the same reason: a
- * callable bond states the dates its issuer may call it and a plain bond of the
- * same term states none. A security is a fact about its issuer and its terms and
- * never about a book or a trade, so any book that keeps its currency may hold it
- * and every trade of it states the same maturity.
+ * The population draws its trades from a pool of securities, one per currency,
+ * whole year of the tenor band and product. The product is part of the name
+ * because the security's own rows are: a callable bond states the dates its
+ * issuer may call it and a plain bond of the same term states none, so the two
+ * are different securities. A security is a fact about its issuer and its terms
+ * and never about a book or a trade, so any book that keeps its currency may
+ * hold it and every trade of it states the same maturity.
  */
 ORES_SYNTHETIC_CORE_EXPORT std::string security_id_for(const domain::trade_generation_scope& scope,
                                                        std::uint32_t tenor_years,
-                                                       std::string_view product,
-                                                       const boost::uuids::uuid& issuer_id);
+                                                       std::string_view product);
 
 /**
  * @brief The counterparty that issued the security with the given original

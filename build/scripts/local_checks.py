@@ -483,8 +483,9 @@ CATALOGUE: tuple[Check, ...] = (
     ),
     # The classification work needs a list that cannot be short. This reads the
     # routes from the code that registers them, on both surfaces, and fails when
-    # one is answered but absent from the inventory, or the inventory names a
-    # route nobody answers.
+    # one is answered but absent from the inventory, when the inventory names a
+    # route nobody answers, or when a row disagrees with the decisions in
+    # route_classification.
     Check(
         id="route-inventory",
         title="Every HTTP route is in the inventory",
@@ -493,7 +494,8 @@ CATALOGUE: tuple[Check, ...] = (
         paths=("projects/ores.http/*",
                "projects/ores.web/packages/bff/src/*",
                "doc/knowledge/architecture/http_route_inventory.org",
-               "build/scripts/route_inventory.py"),
+               "build/scripts/route_inventory.py",
+               "build/scripts/route_classification.py"),
         fix="Run python3 build/scripts/route_inventory.py --write and commit the "
             "table, or delete the row of a route neither server answers.",
     ),

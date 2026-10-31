@@ -435,7 +435,7 @@ export const AREA_CARDS = {
         'engineSettings',
     ],
     tenants: ['tenants'],
-    trading: ['blotter'],
+    trading: ['blotter', 'authorisationQueue'],
 } as const satisfies Record<string, readonly CardId[]>;
 
 export type CardArea = keyof typeof AREA_CARDS;

@@ -57,9 +57,6 @@ import type { LiveSession } from './sessions.js';
  * states a party a caller could choose.
  */
 
-/** The entity types this module's records are versioned under, for the history route. */
-export const CUT_HISTORY_TYPES = ['ores.reporting.cut', 'ores.reporting.cut_kind'] as const;
-
 /** The fields a kind's form offers, and the only ones a save may change. */
 const kindWriteSchema = z.object({
     name: z.string().max(200),

@@ -61,9 +61,6 @@ import { Notice } from '../../ui/Primitives.js';
 import { RelativeTime } from '../../ui/Time.js';
 import { Absent, StateCell } from './shared.js';
 
-/** The key the list's pages are cached under. */
-export const CUTS_QUERY_KEY = ['cuts', 'list'] as const;
-
 /** The months the month filter offers: this month and the eleven before it. */
 export function recentMonths(now: Date): readonly string[] {
     const months: string[] = [];

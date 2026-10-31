@@ -9,8 +9,6 @@
 #+owner: marco
 #+branch: feature/report-health-and-metrics
 #+pr: 4178
-#+blocked_on: review
-#+blocked_since: 2026-10-31 02:05
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
@@ -28,11 +26,11 @@ tell a healthy server from one that is refusing every request.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:66DDFAB2-D915-431C-AFEC-9E454373968D][Answer while the answer is still being made]] |
-| Now          | Both routes answer from what the server counts. |
+| Now          | Nothing; #4178 is merged. |
 | Waiting on   | Nothing.                               |
-| Next         | Review; the story closes with it.      |
+| Next         | Nothing.                               |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -101,3 +99,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+=/health= states what the server can do — serving, whether a verifier is configured,
+and the connections open — and stays a 200 while the verifier is absent, because a
+check that flaps is worse than a field an operator reads. =/metrics= answers in the
+text exposition format from counters the server keeps: connections, requests,
+answers by status class, refusals by cause, and bytes. Every answer passes one writer,
+so a status is counted once.

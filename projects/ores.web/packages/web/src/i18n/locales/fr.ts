@@ -1617,33 +1617,33 @@ const fr: SourceCatalogue = {
         },
     },
     operations: {
-        sources: {
-            title: 'Sources de données de marché',
+        feeds: {
+            title: 'Flux de données de marché',
             description:
-                "Chaque source que le service de données de marché exécute : l'état de son adaptateur, les identifiants acceptés et refusés, et l'âge de son dernier tick.",
+                "Chaque flux que le service de données de marché exécute : l'état de son adaptateur, les identifiants acceptés et refusés, et l'âge de son dernier tick.",
             updated: 'Lu à {at}',
             tag: {
-                lead: "Une source est silencieuse quand elle sert, que le service lui demande des identifiants, et qu'aucun tick n'est arrivé depuis cinq minutes.",
+                lead: "Un flux est silencieux quand il sert, que le service lui demande des identifiants, et qu'aucun tick n'est arrivé depuis cinq minutes.",
                 noDemand: '{count} sans demande',
-                stale: '{count} périmées',
-                quiet: '{count} silencieuses',
+                stale: '{count} périmés',
+                quiet: '{count} silencieux',
             },
-            alert: '{count} identifiants demandés ne sont pas servis. Lisez les identifiants refusés sous la source, ou vérifiez qu’une partie y est routée.',
+            alert: '{count} identifiants demandés ne sont pas servis. Lisez les identifiants refusés sous le flux, ou vérifiez qu’une partie y est routée.',
             tiles: {
-                sources: 'Sources',
+                feeds: 'Flux',
                 serving: 'En service',
                 routes: 'Routes',
                 ticks: 'Ticks par minute',
-                quiet: 'Silencieuses',
+                quiet: 'Silencieux',
             },
             table: {
-                title: 'Sources',
-                lead: 'La source dont le dernier tick est le plus ancien vient en premier.',
-                empty: 'Le service de données de marché ne suit aucune source pour le moment.',
-                note: 'La tendance dessine les relevés de l’écran pendant qu’il est ouvert, un toutes les cinq secondes. Le service ne garde aucun historique des ticks par minute, et la lecture ne porte pas le type de la source.',
+                title: 'Flux',
+                lead: 'Le flux dont le dernier tick est le plus ancien vient en premier.',
+                empty: 'Le service de données de marché ne suit aucun flux pour le moment.',
+                note: 'La tendance dessine les relevés de l’écran pendant qu’il est ouvert, un toutes les cinq secondes. Le service ne garde aucun historique des ticks par minute, et la lecture ne porte pas le type du flux.',
             },
             columns: {
-                source: 'Source',
+                feed: 'Flux',
                 provider: 'Fournisseur',
                 kind: 'Type',
                 state: 'État',
@@ -1657,14 +1657,14 @@ const fr: SourceCatalogue = {
                 lastTick: 'Dernier tick',
             },
             state: {
-                announced: 'annoncée',
-                ready: 'prête',
+                announced: 'annoncé',
+                ready: 'prêt',
                 serving: 'en service',
-                stale: 'périmée',
-                rejected: 'rejetée',
+                stale: 'périmé',
+                rejected: 'rejeté',
             },
             detail: {
-                title: 'Source · {source}',
+                title: 'Flux \u00b7 {feed}',
                 heartbeatCounter: 'Compteur de battements',
                 notServed: 'Demandés, non servis',
                 served: 'Identifiants connus du catalogue',
@@ -1685,19 +1685,19 @@ const fr: SourceCatalogue = {
             },
             gap: {
                 kind: {
-                    title: 'Le type d’une source',
-                    body: 'L’état de l’adaptateur donne l’état d’une source et non son type. Le type appartient au catalogue, et ce tableau lit une seule source de vérité.',
+                    title: 'Le type d’un flux',
+                    body: 'L’état de l’adaptateur donne l’état d’un flux et non son type. Le type appartient au catalogue, et ce tableau ne lit que cet état.',
                 },
                 drops: {
                     title: 'Les rejets de qualité',
                     body: 'Le service compte les ticks qu’il rejette par motif, et l’état de l’adaptateur ne porte aucun compte.',
                 },
                 parties: {
-                    title: 'Les parties routées vers une source',
-                    body: 'L’état indique combien de routes une source a, et non quelles parties les détiennent.',
+                    title: 'Les parties routées vers un flux',
+                    body: 'L’état indique combien de routes un flux a, et non quelles parties les détiennent.',
                 },
                 history: {
-                    title: 'L’historique de l’état d’une source',
+                    title: 'L’historique de l’état d’un flux',
                     body: 'Rien ne consigne le moment où un adaptateur devient périmé, en service ou rejeté, donc il n’y a pas d’historique à lire.',
                 },
             },
@@ -1733,9 +1733,9 @@ const fr: SourceCatalogue = {
             },
         },
         screens: {
-            sources: 'Sources de données de marché',
-            sourcesBody:
-                'Chaque source que le service de données de marché exécute, l’état de son adaptateur, et ce qu’elle sert et refuse.',
+            feeds: 'Flux de données de marché',
+            feedsBody:
+                'Chaque flux que le service de données de marché exécute, l’état de son adaptateur, et ce qu’il sert et refuse.',
             signIns: 'Connexions',
             signInsBody:
                 'Qui est connecté, les connexions échouées et les événements qui les expliquent.',
@@ -2480,7 +2480,7 @@ const fr: SourceCatalogue = {
             notBuilt: 'Pas encore construit',
         },
         journeys: {
-            sources: 'Maintenir les sources de données de marché en service',
+            feeds: 'Maintenir les flux de données de marché en service',
             services: 'Voir les services en cours',
             logs: 'Lire les journaux de télémétrie',
             grid: 'Surveiller la grille de calcul',
@@ -5112,7 +5112,7 @@ const fr: SourceCatalogue = {
                 provider: 'Fournisseur',
                 pivot: 'Base',
                 terms: 'Conditions',
-                source: 'Source',
+                feed: 'Flux',
                 series: 'Séries',
                 date: 'Date',
                 value: 'Valeur',
@@ -5148,7 +5148,7 @@ const fr: SourceCatalogue = {
         subscriptions: {
             title: 'Souscriptions',
             description:
-                'Les fournisseurs que la partie prend et les droits qu’elle détient, et l’unique source qui sert chaque fournisseur.',
+                'Les fournisseurs que la partie prend et les droits qu’elle détient, et l’unique flux qui sert chaque fournisseur.',
             add: 'Ajouter',
             addTitle: 'Ajouter une souscription',
             addRoute: 'Ajouter une route',
@@ -5158,12 +5158,11 @@ const fr: SourceCatalogue = {
             removeSubscriptionWhat:
                 'La livraison de ce fournisseur s’arrête pour la partie. Les séries et l’historique restent.',
             removeRouteWhat:
-                'La partie garde la souscription et perd la source qui la sert. L’historique reste.',
+                'La partie garde la souscription et perd le flux qui la sert. L’historique reste.',
             cancel: 'Annuler',
             newRecord:
                 'La nouvelle ligne est écrite avec le motif system.new_record. Aucun autre motif ne s’applique à un nouvel enregistrement.',
-            sourceHint:
-                'Une partie a une route par fournisseur. La route nomme la source qui la sert.',
+            feedHint: 'Une partie a une route par fournisseur. La route nomme le flux qui la sert.',
             right: {
                 display: 'affichage',
                 displayMeans: 'Une personne de la partie peut montrer ces données sur un écran.',
@@ -5178,19 +5177,19 @@ const fr: SourceCatalogue = {
                 party: 'Partie',
                 provider: 'Fournisseur',
                 rights: 'Droits',
-                source: 'Source',
+                feed: 'Flux',
             },
             subscriptions: {
                 title: 'Souscriptions',
-                lead: 'Une souscription nomme un fournisseur et ses droits, jamais une source.',
+                lead: 'Une souscription nomme un fournisseur et ses droits, jamais un flux.',
                 empty: 'La partie ne détient aucune souscription pour le moment.',
                 note: 'Le service déduit la partie de la session, donc Supprimer ne s’affiche que sur les lignes de la partie dans laquelle vous agissez.',
             },
             routes: {
                 title: 'Routes',
-                lead: 'Une route choisit la source qui sert la partie pour un fournisseur.',
+                lead: 'Une route choisit le flux qui sert la partie pour un fournisseur.',
                 empty: 'La partie n’a aucune route pour le moment.',
-                note: 'Un changement de source est une route et rien d’autre. Les séries et les consommateurs restent tels quels.',
+                note: 'Un changement de flux est une route et rien d’autre. Les séries et les consommateurs restent tels quels.',
             },
             gap: {
                 suspend: {
@@ -5220,7 +5219,7 @@ const fr: SourceCatalogue = {
             screens: {
                 subscriptions: 'Souscriptions',
                 subscriptionsBody:
-                    'Les fournisseurs qu’une partie prend, avec les droits qu’elle détient, et la source qui sert chacun.',
+                    'Les fournisseurs qu’une partie prend, avec les droits qu’elle détient, et le flux qui sert chacun.',
                 synthetic: 'Synthétique',
                 syntheticBody:
                     'Les flux que la plateforme génère : ce qui tourne par fournisseur, et chaque flux à démarrer et à arrêter.',

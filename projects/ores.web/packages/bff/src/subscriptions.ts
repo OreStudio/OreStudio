@@ -32,12 +32,12 @@ import type { LiveSession } from './sessions.js';
 
 /*
  * What a party takes from the market data service: its subscriptions to the
- * providers, and the one source that serves each of them.
+ * providers, and the one feed that serves each of them.
  *
  * The service owns the party of a subscription and of a route, so the routes
- * here name the provider and never the party. The catalogue read exists because
- * a route names a source by its id, and nothing else the browser can read
- * carries that id.
+ * here name the publisher and never the party. The catalogue read exists because
+ * a route names a feed by its id, and nothing else the browser can read carries
+ * that id.
  */
 
 /**
@@ -60,15 +60,15 @@ const subscriptionSchema = z.looseObject({
 });
 
 /**
- * A route: the one source that serves a party for a provider. The source is
- * named by its id, and its name and kind are read from the catalogue.
+ * A route: the one feed that serves a party for a publisher. The feed is named
+ * by its id, and its name and service are read from the catalogue.
  */
 const routeSchema = z.looseObject({
     version: z.number(),
     id: z.string(),
     party_id: z.string(),
-    provider_code: z.string(),
-    source_id: z.string(),
+    publisher_code: z.string(),
+    feed_id: z.string(),
     modified_by: z.string().default(''),
     performed_by: z.string().default(''),
     change_reason_code: z.string().default(''),
@@ -86,17 +86,16 @@ const providerSchema = z.looseObject({
 });
 
 /**
- * One feed of the catalogue, with the publisher it belongs to.
- *
- * The catalogue renamed its source rows to feeds, so the row carries the publisher as
- * =publisher_code= and the service it runs as =service=. The screen still says source, and
- * this route still answers a =sources= array: the row a person picks there is the feed.
+ * One feed of the catalogue: one publisher's data, on one service, through one
+ * session, with the publisher's own key.
  */
 const feedSchema = z.looseObject({
     id: z.string(),
     name: z.string(),
     publisher_code: z.string(),
+    session_code: z.string().default(''),
     service: z.string().default(''),
+    provider_key: z.string().default(''),
     is_default: z.boolean().default(false),
     description: z.string().default(''),
 });
@@ -113,8 +112,8 @@ const newSubscriptionSchema = rightsSchema.extend({
 });
 
 const newRouteSchema = z.object({
-    provider_code: z.string().trim().min(1).max(100),
-    source_id: z.uuid(),
+    publisher_code: z.string().trim().min(1).max(100),
+    feed_id: z.uuid(),
 });
 
 /** A removal names the row it removes and the reason it goes. */
@@ -159,7 +158,7 @@ export function registerSubscriptionRoutes(
         return { subscriptions: rows.map((row) => subscriptionSchema.parse(row)) };
     });
 
-    /** Every route the session may read: the source that serves each party and provider. */
+    /** Every route the session may read: the feed that serves each party and publisher. */
     server.get('/api/marketdata/routes', async (request) => {
         const session = requireSession(request);
         const rows = await readAll(session, routeSubjects.list_routes_request, 'routes', {
@@ -170,18 +169,18 @@ export function registerSubscriptionRoutes(
     });
 
     /**
-     * The providers and the sources, which are what a subscription and a route
-     * choose from. A route names its source by id, so the screen cannot write one
+     * The providers and the feeds, which are what a subscription and a route
+     * choose from. A route names its feed by id, so the screen cannot write one
      * without this read.
      */
     server.get('/api/marketdata/catalogue', async (request) => {
         const session = requireSession(request);
-        const [providers, sources] = await Promise.all([
+        const [providers, feeds] = await Promise.all([
             readAll(session, providerSubjects.list_providers_request, 'providers', {
                 filter: null,
                 as_of: null,
             }),
-            readAll(session, feedSubjects.list_feeds_request, 'running_feeds', {
+            readAll(session, feedSubjects.list_feeds_request, 'feeds', {
                 filter: null,
                 as_of: null,
             }),
@@ -190,10 +189,14 @@ export function registerSubscriptionRoutes(
             providers: providers
                 .map((row) => providerSchema.parse(row))
                 .sort((left, right) => left.code.localeCompare(right.code)),
-            sources: sources.map((row) => {
-                const feed = feedSchema.parse(row);
-                return { ...feed, provider_code: feed.publisher_code, kind: feed.service };
-            }),
+            feeds: feeds
+                .map((row) => feedSchema.parse(row))
+                .sort(
+                    (left, right) =>
+                        left.publisher_code.localeCompare(right.publisher_code) ||
+                        Number(right.is_default) - Number(left.is_default) ||
+                        left.name.localeCompare(right.name),
+                ),
         };
     });
 
@@ -247,7 +250,7 @@ export function registerSubscriptionRoutes(
         return { provider_code: provider };
     });
 
-    /** Adds a route for the session party, choosing the source that serves a provider. */
+    /** Adds a route for the session party, choosing the feed that serves a publisher. */
     server.post('/api/marketdata/routes', async (request) => {
         const session = requireSession(request);
         const party = sessionParty(session);
@@ -257,8 +260,8 @@ export function registerSubscriptionRoutes(
                 write: {
                     id: randomUUID(),
                     party_id: party,
-                    provider_code: parsed.provider_code,
-                    source_id: parsed.source_id,
+                    publisher_code: parsed.publisher_code,
+                    feed_id: parsed.feed_id,
                 },
                 precondition: { kind: 'must_not_exist', version: null },
             },
@@ -267,21 +270,21 @@ export function registerSubscriptionRoutes(
         if (result.outcome !== 'ok') {
             throw refusal(result);
         }
-        return { provider_code: parsed.provider_code };
+        return { publisher_code: parsed.publisher_code };
     });
 
-    /** Removes the session party's route for one provider, at the version it was read at. */
-    server.delete('/api/marketdata/routes/:provider', async (request) => {
+    /** Removes the session party's route for one publisher, at the version it was read at. */
+    server.delete('/api/marketdata/routes/:publisher', async (request) => {
         const session = requireSession(request);
         sessionParty(session);
-        const provider = input(
+        const publisher = input(
             z.string().trim().min(1).max(100),
-            (request.params as { provider: string }).provider,
+            (request.params as { publisher: string }).publisher,
         );
         const parsed = input(removalSchema, request.body);
         const result = await write(session, routeSubjects.delete_route_request, {
             removal: {
-                key: { provider_code: provider },
+                key: { publisher_code: publisher },
                 precondition: { kind: 'must_match_version', version: parsed.version },
             },
             intent: { reason_code: parsed.reason_code, commentary: parsed.commentary },
@@ -289,6 +292,6 @@ export function registerSubscriptionRoutes(
         if (result.outcome !== 'ok') {
             throw refusal(result);
         }
-        return { provider_code: provider };
+        return { publisher_code: publisher };
     });
 }

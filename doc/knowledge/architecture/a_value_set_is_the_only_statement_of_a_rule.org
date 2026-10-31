@@ -21,12 +21,17 @@ what one value may be. Nothing else in the tree repeats the rule: the part
 tables carry no CHECK constraint on the columns a set governs, and a screen
 decides no rule of its own; it asks the store and draws the answer.
 
+One fact may also be written several ways. ORE reads =NONE= and =Unadjusted= as
+one convention, and a set that listed both as values offered one fact twice, so
+a value row names the form a configuration holds and is a rendering when it
+names one.
+
 * The five tables
 
 | Table | States |
 |-------+--------|
 | =ores_reporting_ore_parameter_value_sets_tbl= | the rule: =source_kind= and =cardinality=, plus =minimum=, =maximum=, =pattern=, =catalogue_code=, =is_ordered= |
-| =ores_reporting_ore_parameter_value_set_values_tbl= | the values of an enumerated set: =value=, =label=, =display_order=, =is_active= |
+| =ores_reporting_ore_parameter_value_set_values_tbl= | the values of an enumerated set: =value=, =label=, =display_order=, =is_active=, =canonical_value= |
 | =ores_reporting_ore_parameter_value_set_catalogues_tbl= | the relation a catalogue set reads, such as =ores_refdata_currency_catalogue_v= |
 | =ores_reporting_ore_parameter_setting_value_sets_tbl= | the link from =(scope, name)= to a set, which is how a parameter finds its rule |
 | =ores_reporting_ore_parameter_vocabularies_tbl= | the link from an ORE leaf's address to a set, which both leaf guards read |
@@ -152,17 +157,45 @@ All three land on the same link table and the same set. That is the point of the
 model: the rule is stated once whether the value arrives from a curve, a product
 or a run.
 
+* A rendering and the form a configuration holds
+
+ORE reads one fact several ways. =NONE=, =INDIFF=, =NotApplicable= and
+=Unadjusted= are one convention, and =A360=, =Actual/360= and =Act/360= are one
+day counter. A set that listed them as values offered the same fact four times,
+and a store that held the rendering it was handed held one fact two ways.
+
+So a value row states both: =canonical_value= names the form a configuration
+holds, and is empty when the row *is* that form. A control offers the rows whose
+column is empty; a write of a row that names one converts it. The set therefore
+answers three questions with one table: which renderings are accepted, what each
+means, and which of them a configuration carries.
+
+#+begin_src sql
+('convention.business_day_convention:NONE', ..., 'NONE', ..., 'Unadjusted', ...),
+('convention.business_day_convention:Unadjusted', ..., 'Unadjusted', ..., null, ...),
+#+end_src
+
+The renderings are not curated: =projects/ores.sql/utility/ore_aliases.py= reads
+them from ORE's own reader and from the parser map that accepts them, so the set
+and the code state one thing while both exist. The file reads two sources because
+each answers a question the other cannot: the reader's table says which renderings
+mean one fact, and the parser map says which renderings a document may write.
+
+Two mismatches between those sources are defects the reader cannot see, and the
+check named both while the sets were built: a rendering the parser accepts and the
+reader's table omits is a document the engine reads and this store refuses, and a
+row the reader holds that the parser never produces is a rule nothing can apply.
+One of each was found and corrected.
+
 * What is not settled
 
 Two gaps are known, and both are changes rather than open questions.
 
-- An alias is a value of its own today. =curve.business_day_convention= is a
-  catalogue set, so the seven stored conventions are what it offers, and the
-  twenty-seven spellings ORE accepts are converted by a C++ table before the
-  value reaches a row. The representation story moves that table into the values:
-  a =canonical_value= column, empty when a value is its own canonical form, so
-  the set states what is accepted, what it means and what a screen offers in one
-  row.
+- The rendering a write emits is still in code. The form a configuration holds is
+  not always a form a document may write — ORE writes =NEAREST= where the store
+  holds =Nearest= — so =day_counter_spellings= and =bdc_spelling= still state a
+  direction the value set does not. The same story carries that direction into
+  data, after which no compiled table holds a rendering.
 - A set code the tables do not hold admits every value
   (=…reporting_ore_parameter_value_validate_fn_create.sql:87=). A guard that
   cannot find a rule cannot refuse, so a dangling link is silent. The shell

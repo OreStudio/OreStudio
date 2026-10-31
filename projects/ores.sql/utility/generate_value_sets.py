@@ -121,7 +121,8 @@ def rows_of(data):
             values.append([
                 q(f"{code}:{value['value']}"), TENANT, "0", q(code), q(value["value"]),
                 q(value["label"]), q(value["description"]), str(value["order"]),
-                q(value.get("is_active", True)), ACTOR, q(SEED)])
+                q(value.get("is_active", True)), q(value.get("canonical_value")),
+                ACTOR, q(SEED)])
     for key, set_code in sorted(data["links"].items()):
         scope, _, name = key.partition("|")
         links.append([
@@ -271,6 +272,17 @@ def validate(data):
             problems.append(f"{code}: names a catalogue that is not registered")
         if kind == "enumerated" and not entry.get("values"):
             problems.append(f"{code}: enumerated with no values")
+        held = {value["value"] for value in entry.get("values", [])}
+        for value in entry.get("values", []):
+            canonical = value.get("canonical_value")
+            if canonical is None:
+                continue
+            if canonical == value["value"]:
+                problems.append(f"{code}: {value['value']} names itself as its "
+                                "canonical form, which states nothing")
+            elif canonical not in held:
+                problems.append(f"{code}: {value['value']} names {canonical} as its "
+                                "canonical form, and the set holds no such value")
     named = set(data["links"].values())
     generated = data.get("generated", set())
     for code in data["sets"]:
@@ -386,7 +398,8 @@ def render(data):
                 "change_commentary", sets, "set")
         + write("Value Set Values", "ores_reporting_ore_parameter_value_set_values_tbl",
                 "code, tenant_id, version, value_set_code, value, label, description, "
-                "display_order, is_active, modified_by, change_reason_code, change_commentary",
+                "display_order, is_active, canonical_value, modified_by, "
+                "change_reason_code, change_commentary",
                 values, "value")
         + write("Setting Value Sets", "ores_reporting_ore_parameter_setting_value_sets_tbl",
                 "code, tenant_id, version, scope, name, value_set_code, modified_by, "

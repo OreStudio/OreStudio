@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/cuts/cut.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+cuts list --limit 1

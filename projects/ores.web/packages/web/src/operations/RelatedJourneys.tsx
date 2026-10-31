@@ -90,10 +90,10 @@ export const JOURNEY_TARGETS: Readonly<Record<JourneyId, JourneyTarget>> = {
         titleKey: 'operations.journeys.audit',
         to: PATHS.signIns,
     },
-    // Keep the market data sources running.
+    // Keep the market data feeds running.
     '986CED57-341F-49DE-8F5D-F186771F10D8': {
-        titleKey: 'operations.journeys.sources',
-        to: PATHS.marketDataSources,
+        titleKey: 'operations.journeys.feeds',
+        to: PATHS.marketDataFeeds,
     },
     // Manage market data subscriptions.
     'D46E4DEF-7431-419B-BA88-476AA7B98D24': {

@@ -139,6 +139,11 @@ begin
     execute format(
         'create or replace trigger %I before insert or update on %I '
         'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
+        'ores_refdata_curve_values_trg', 'ores_refdata_fx_volatility_smiles_tbl', 'fx_volatility_smile');
+
+    execute format(
+        'create or replace trigger %I before insert or update on %I '
+        'for each row execute function ores_refdata_validate_curve_values_fn(%L)',
         'ores_refdata_curve_values_trg', 'ores_refdata_inflation_cap_floor_volatility_configs_tbl', 'inflation_cap_floor_volatility_config');
 
     execute format(

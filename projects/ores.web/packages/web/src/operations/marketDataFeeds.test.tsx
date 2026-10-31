@@ -29,22 +29,22 @@ import { TranslationProvider } from '../i18n/Provider.js';
 import { enFlat } from '../i18n/locales/en.js';
 import { createTranslator } from '../i18n/translate.js';
 import { ADAPTERS_KEY } from '../marketdata/synthetic/adapterStatus.js';
-import { MarketDataSourcesPage, RejectedIds } from './MarketDataSourcesPage.js';
+import { MarketDataFeedsPage, RejectedIds } from './MarketDataFeedsPage.js';
 import {
     QUIET_AFTER_MS,
+    feedFigures,
+    feedOf,
+    feedRows,
     formatTickAge,
     formatVendorId,
-    sourceFigures,
-    sourceOf,
-    sourceRows,
     stateTone,
-} from './marketDataSources.js';
+} from './marketDataFeeds.js';
 
 /**
- * The sources board, as the system administrator reads it.
+ * The feeds board, as the system administrator reads it.
  *
  * What is checked is what the screen promises: every figure is counted from the
- * one adapter status read, the quiet and stale sources are at the top of the
+ * one adapter status read, the quiet and stale feeds are at the top of the
  * table, and a field the status does not carry is a gap rather than a guess.
  */
 
@@ -97,23 +97,23 @@ const stale = adapter({
     routes_seen: 2,
 });
 
-describe('one source', () => {
+describe('one feed', () => {
     it('counts the demanded ids the adapter did not accept', () => {
-        const row = sourceOf(adapter({ demanded_count: 26, accepted: [] }));
+        const row = feedOf(adapter({ demanded_count: 26, accepted: [] }));
 
         expect(row.notServed).toBe(26);
-        expect(sourceOf(adapter()).notServed).toBe(25);
+        expect(feedOf(adapter()).notServed).toBe(25);
     });
 
     it('is quiet when it serves, is demanded, and nothing ticked inside the window', () => {
-        expect(sourceOf(quiet).quiet).toBe(true);
-        expect(sourceOf(adapter()).quiet).toBe(false);
-        expect(sourceOf(adapter({ last_tick_age_ms: -1 })).quiet).toBe(true);
-        expect(sourceOf(adapter({ demanded_count: 0, last_tick_age_ms: -1 })).quiet).toBe(false);
+        expect(feedOf(quiet).quiet).toBe(true);
+        expect(feedOf(adapter()).quiet).toBe(false);
+        expect(feedOf(adapter({ last_tick_age_ms: -1 })).quiet).toBe(true);
+        expect(feedOf(adapter({ demanded_count: 0, last_tick_age_ms: -1 })).quiet).toBe(false);
     });
 
     it('keeps the ids the adapter refused, with the reason for each', () => {
-        expect(sourceOf(quiet).rejectedIds).toEqual([
+        expect(feedOf(quiet).rejectedIds).toEqual([
             {
                 id: { id_scheme: 'lseg', external_id: 'GBP GILT 2030', field: 'MID' },
                 reason: 'not_entitled',
@@ -123,15 +123,15 @@ describe('one source', () => {
 });
 
 describe('the board', () => {
-    const rows = sourceRows([adapter(), quiet, stale]);
+    const rows = feedRows([adapter(), quiet, stale]);
 
-    it('stands the source that ticked longest ago first', () => {
+    it('stands the feed that ticked longest ago first', () => {
         expect(rows.map((row) => row.name)).toEqual(['ore-import', 'lseg-a', 'bloomberg-a']);
     });
 
     it('counts every tile from the same rows', () => {
-        expect(sourceFigures(rows)).toEqual({
-            sources: 3,
+        expect(feedFigures(rows)).toEqual({
+            feeds: 3,
             serving: 2,
             routes: 9,
             ticksPerMinute: 298,
@@ -156,7 +156,7 @@ describe('the board', () => {
         expect(formatTickAge(1500, t)).toBe('2 s');
         expect(formatTickAge(180_000, t)).toBe('3 m');
         expect(formatTickAge(7_200_000, t)).toBe('2 h');
-        expect(sourceOf(stale).lastTickAgeMs).toBe(-1);
+        expect(feedOf(stale).lastTickAgeMs).toBe(-1);
     });
 
     it('names a rejected id in the vendor\u2019s own notation', () => {
@@ -168,13 +168,13 @@ describe('the board', () => {
         );
     });
 
-    it('states the kind of a source as a gap rather than inventing one', () => {
-        const html = render(<MarketDataSourcesPage />);
+    it('states the kind of a feed as a gap rather than inventing one', () => {
+        const html = render(<MarketDataFeedsPage />);
 
-        expect(html).toContain('The kind of a source');
+        expect(html).toContain('The kind of a feed');
         expect(html).toContain('The quality drops');
-        expect(html).toContain('The parties routed to a source');
-        expect(html).toContain('The history of a source');
+        expect(html).toContain('The parties routed to a feed');
+        expect(html).toContain('The history of a feed');
     });
 });
 
@@ -191,31 +191,31 @@ function render(element: ReactNode): string {
     );
 }
 
-describe('the rejected ids of a source', () => {
+describe('the rejected ids of a feed', () => {
     it('names each id and the reason the adapter gave', () => {
-        const html = render(<RejectedIds row={sourceOf(quiet)} />);
+        const html = render(<RejectedIds row={feedOf(quiet)} />);
 
         expect(html).toContain('lseg:GBP GILT 2030 MID');
         expect(html).toContain('not_entitled');
     });
 
     it('says so when the adapter refused nothing', () => {
-        const html = render(<RejectedIds row={sourceOf(adapter())} />);
+        const html = render(<RejectedIds row={feedOf(adapter())} />);
 
         expect(html).toContain('The adapter refused no id in its last demand.');
     });
 });
 
-describe('the sources board on a server', () => {
+describe('the feeds board on a server', () => {
     it('draws the tiles, the alert, the table and the detail panel', () => {
-        const html = render(<MarketDataSourcesPage />);
+        const html = render(<MarketDataFeedsPage />);
 
-        expect(html).toContain('Market data sources');
-        expect(html).toContain('Sources');
+        expect(html).toContain('Market data feeds');
+        expect(html).toContain('Feeds');
         expect(html).toContain('29 demanded ids are not being served');
         expect(html).toContain('ore-import');
         expect(html).toContain('lseg-a');
-        expect(html).toContain('Source · ore-import');
+        expect(html).toContain('Feed · ore-import');
         expect(html).toContain('never');
     });
 });

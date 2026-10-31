@@ -23,7 +23,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
     api,
     type MarketDataCatalogue,
-    type MarketDataSource,
+    type MarketDataFeed,
     type RouteRow,
     type SubscriptionRow,
 } from '../api/client.js';
@@ -32,8 +32,8 @@ import {
  * What a party takes from the market data service, from
  * doc/knowledge/journeys/market_data/journey_manage-market-data-subscriptions.org.
  *
- * A subscription names a provider and its rights. A route names the one source
- * that serves the party for a provider. Neither names the party: the service
+ * A subscription names a provider and its rights. A route names the one feed
+ * that serves the party for a publisher. Neither names the party: the service
  * states it from the session, so the screen reads the party of each row and
  * never writes one.
  */
@@ -62,17 +62,22 @@ export function providerName(catalogue: MarketDataCatalogue | undefined, code: s
     return catalogue?.providers.find((provider) => provider.code === code)?.name ?? code;
 }
 
-/** The source one route names, or nothing when the catalogue does not hold it. */
-export function routeSource(
+/** The feed one route names, or nothing when the catalogue does not hold it. */
+export function routeFeed(
     catalogue: MarketDataCatalogue | undefined,
     route: RouteRow,
-): MarketDataSource | undefined {
-    return catalogue?.sources.find((source) => source.id === route.source_id);
+): MarketDataFeed | undefined {
+    return catalogue?.feeds.find((feed) => feed.id === route.feed_id);
 }
 
-/** The name of one source, or its id when the catalogue does not name it. */
-export function sourceName(catalogue: MarketDataCatalogue | undefined, route: RouteRow): string {
-    return routeSource(catalogue, route)?.name ?? route.source_id;
+/** The name of one feed, or its id when the catalogue does not name it. */
+export function feedName(catalogue: MarketDataCatalogue | undefined, route: RouteRow): string {
+    return routeFeed(catalogue, route)?.name ?? route.feed_id;
+}
+
+/** The provider one row names: a subscription states it, a route states its publisher. */
+export function rowProvider(row: SubscriptionRow | RouteRow): string {
+    return 'publisher_code' in row ? row.publisher_code : row.provider_code;
 }
 
 /** The name of one party, or the id the service stated when the parties list does not hold it. */
@@ -96,14 +101,18 @@ export function providersToTake(
         .map((provider) => ({ code: provider.code, name: provider.name }));
 }
 
-/** The sources that may serve a party for one provider: the provider's own, its default first. */
-export function sourcesForProvider(
+/** The feeds a publisher offers a party: its own, its default first. */
+export function feedsForPublisher(
     catalogue: MarketDataCatalogue | undefined,
-    providerCode: string,
-): readonly MarketDataSource[] {
-    return (catalogue?.sources ?? [])
-        .filter((source) => source.provider_code === providerCode)
-        .sort((left, right) => Number(right.is_default) - Number(left.is_default));
+    publisherCode: string,
+): readonly MarketDataFeed[] {
+    return (catalogue?.feeds ?? [])
+        .filter((feed) => feed.publisher_code === publisherCode)
+        .sort(
+            (left, right) =>
+                Number(right.is_default) - Number(left.is_default) ||
+                left.name.localeCompare(right.name),
+        );
 }
 
 /** The providers a party holds a subscription to and has not routed yet. */
@@ -113,7 +122,7 @@ export function providersToRoute(
     partyId: string,
 ): readonly string[] {
     const routed = new Set(
-        routes.filter((route) => route.party_id === partyId).map((route) => route.provider_code),
+        routes.filter((route) => route.party_id === partyId).map((route) => route.publisher_code),
     );
     return subscriptions
         .filter((row) => row.party_id === partyId && !routed.has(row.provider_code))
@@ -130,7 +139,7 @@ export function useRoutes() {
     return useQuery({ queryKey: ROUTES_KEY, queryFn: api.marketDataRoutes });
 }
 
-/** The providers and the sources both tables choose from. */
+/** The providers and the feeds both tables choose from. */
 export function useCatalogue() {
     return useQuery({ queryKey: CATALOGUE_KEY, queryFn: api.marketDataCatalogue });
 }

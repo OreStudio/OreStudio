@@ -35,6 +35,7 @@ drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_default_cur
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_equity_curve_configs_tbl;
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_equity_volatility_configs_tbl;
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_fx_volatility_configs_tbl;
+drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_fx_volatility_smiles_tbl;
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_inflation_cap_floor_volatility_configs_tbl;
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_inflation_curve_configs_tbl;
 drop trigger if exists ores_refdata_curve_values_trg on ores_refdata_intraday_power_curve_configs_tbl;

@@ -39,6 +39,7 @@ create table if not exists "ores_reporting_ore_parameter_value_set_values_tbl" (
     "description" text not null,
     "display_order" integer not null,
     "is_active" boolean not null,
+    "canonical_value" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

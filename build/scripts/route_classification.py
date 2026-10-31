@@ -280,13 +280,13 @@ RULES = (
     Rule("the market data catalogue",
          ("exact", "GET /api/marketdata/catalogue"),
          BFF, COMPOSED, "market-data",
-         "The providers and the sources that serve them in one answer, two collection reads,"
-         " so a subscription or a route can name a source by id."),
+         "The providers and the feeds that serve them in one answer, two collection reads,"
+         " so a subscription or a route can name a feed by id."),
     Rule("the official providers",
          ("exact", "GET /api/marketdata/official"),
          BFF, COMPOSED, "market-data",
-         "Every official provider with its terms, its sources and the fixing series it fills,"
-         " the providers read first and the sources and market series read together after."),
+         "Every official provider with its terms, its feeds and the fixing series it fills,"
+         " the providers read first and the feeds and market series read together after."),
     Rule("the report health",
          ("exact", "GET /api/reporting/report-health"),
          BFF, COMPOSED, "reporting",
@@ -379,7 +379,7 @@ RULES = (
     Rule("the market data subscriptions",
          ("regex", r"^(GET|POST|DELETE) /api/marketdata/(subscriptions|routes)"),
          BFF, RESOURCE, "market-data",
-         "A subscription or a route the session party holds, with the source that serves it,"
+         "A subscription or a route the session party holds, with the feed that serves it,"
          " read as a page and written or removed one at a time."),
     Rule("the market data adapters",
          ("exact", "GET /api/marketdata/adapters"),
@@ -1076,11 +1076,11 @@ VIEWS = {
         "ETag on the whole view, stale after 5 min"),
     "the market data catalogue": (
         "ores.marketdata",
-        "the providers and the sources that serve them, two collection reads",
+        "the providers and the feeds that serve them, two collection reads",
         "ETag on the whole view, stale after 5 min"),
     "the official providers": (
         "ores.marketdata",
-        "the providers first, then the sources and the market series joined onto them",
+        "the providers first, then the feeds and the market series joined onto them",
         "ETag on the whole view, stale after 5 min"),
     "a report configuration": (
         "ores.reporting",

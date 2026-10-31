@@ -254,6 +254,7 @@ describe('adding a leg', () => {
         const answer = await send(server, sessionId, `/api/structures/${STRUCTURE}/legs`, {
             tradeId: FREE_TRADE,
             role: 'leg',
+            commentary: 'Hedging the bond with its own repo.',
         });
 
         expect(answer.statusCode).toBe(201);
@@ -267,6 +268,9 @@ describe('adding a leg', () => {
             change: {
                 write: { trade_id: FREE_TRADE, structure_id: STRUCTURE, sequence_number: 2 },
             },
+            // The reason the person gave is the record, not a sentence the route
+            // makes up on their behalf.
+            intent: { commentary: 'Hedging the bond with its own repo.' },
         });
     });
 
@@ -289,6 +293,7 @@ describe('adding a leg', () => {
         const answer = await send(server, sessionId, `/api/structures/${STRUCTURE}/legs`, {
             tradeId: FREE_TRADE,
             role: 'leg',
+            commentary: 'Hedging the bond with its own repo.',
         });
 
         expect(answer.statusCode).toBe(409);
@@ -329,6 +334,60 @@ describe('the add-a-leg picker', () => {
     });
 });
 
+describe('the reason a leg moves', () => {
+    it('refuses a leg added with no reason, and writes nothing', async () => {
+        const { server, sessionId, calls } = buildTestServer(repliesWith());
+        const answer = await send(server, sessionId, `/api/structures/${STRUCTURE}/legs`, {
+            tradeId: FREE_TRADE,
+            role: 'leg',
+        });
+
+        expect(answer.statusCode).toBe(400);
+        expect(calls.some((call) => call.subject === lists.putMember)).toBe(false);
+    });
+
+    it('refuses a leg taken out with no reason, and deletes nothing', async () => {
+        const { server, sessionId, calls } = buildTestServer(repliesWith());
+        const answer = await send(
+            server,
+            sessionId,
+            `/api/structures/${STRUCTURE}/legs/${FREE_TRADE}`,
+            {},
+            'DELETE',
+        );
+
+        expect(answer.statusCode).toBe(400);
+        expect(calls.some((call) => call.subject === lists.deleteMember)).toBe(false);
+    });
+
+    it('states the reason the person gave when it takes a leg out', async () => {
+        const { server, sessionId, calls } = buildTestServer(
+            repliesWith({
+                [lists.members]: {
+                    result: ok,
+                    members: [
+                        { trade_id: LEG, structure_id: STRUCTURE, role: 'leg', sequence_number: 1 },
+                    ],
+                },
+                [lists.deleteMember]: { result: ok },
+            }),
+        );
+        const answer = await send(
+            server,
+            sessionId,
+            `/api/structures/${STRUCTURE}/legs/${LEG}`,
+            { commentary: 'The desk unwound the hedge.' },
+            'DELETE',
+        );
+
+        expect(answer.statusCode).toBe(204);
+        const removed = calls.find((call) => call.subject === lists.deleteMember);
+        expect(removed?.body).toMatchObject({
+            intent: { commentary: 'The desk unwound the hedge.' },
+        });
+    });
+});
+
 describe('what the routes refuse', () => {
     it("refuses to unlink a trade that is another structure's leg", async () => {
         const { server, sessionId, calls } = buildTestServer(
@@ -350,7 +409,7 @@ describe('what the routes refuse', () => {
             server,
             sessionId,
             `/api/structures/${STRUCTURE}/legs/${FREE_TRADE}`,
-            undefined,
+            { commentary: 'The desk unwound the hedge.' },
             'DELETE',
         );
 

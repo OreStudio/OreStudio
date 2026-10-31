@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 96F5D072-CFCA-4E74-AED9-487BE080CF45
+:END:
+#+title: Price a structure from a market snapshot
+#+description: The structure page's Price tab states that pricing is not read yet. The prototype reads a market snapshot, says when it was read, names the shifts that were applied, and refuses to tick; nothing in the product prices a trade, so the tab cannot meet its own design.
+#+type: capture
+#+level: cross
+#+filetags: :trading:web:pricing:structure:snapshot:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The structure page's Price tab states, in the tab itself, that pricing is not
+read yet. The signed-off prototype asks more of it: read a market snapshot, say
+when it was read, name the shifts that were applied to it, and price the deal
+from it — as a whole for a structure, leg by leg for a package. It explicitly
+does not tick: the price is indicative, and Refresh is what reads a newer
+snapshot.
+
+Nothing in the product prices a trade. The reporting side runs ORE over a
+report, which is a different question: a batch, a run, a set of results. The
+structure page needs one number for one deal, against a named market, with the
+snapshot it used.
+
+* Why
+
+The tab is the last part of the structure page's design and the only one that
+cannot be built from what the store holds. Leaving a notice in its place is
+honest but it is also the end of the line: no later task in the arc makes a
+price appear.
+
+It is also the first place the product would answer a question a trader asks
+about a deal they are looking at. The blotter, the structure page and the trade
+page all draw what a deal *is*; none of them says what it is *worth*.
+
+* Shape of the work
+
+Not designed here. The pieces that appear necessary:
+
+- A market snapshot with an identity and an as-of, so a price can name the
+  market it was struck against. The curve snapshot read exists for published
+  curves; a trade needs the set of curves, surfaces and fixings its instruments
+  take, which is a selection rather than a lookup.
+- A pricing call that answers one deal against that snapshot, and states the
+  shifts applied to it.
+- The page: the figure, when the snapshot was read, and Refresh reading a newer
+  one without ticking.
+- A decision about what is priced: a structure as a whole, and a package leg by
+  leg, which the prototype already distinguishes.
+
+* What done looks like
+
+The Price tab states a number, the market snapshot it came from and when that
+snapshot was read, and Refresh reads a newer one. A package states one figure per
+leg and the sum the customer is quoted.
+
+* References
+
+- [[proj:doc/prototypes/trades/structure-page.org][The structure view]] — the signed-off prototype and its Price tab.
+
+* See also
+
+- [[id:3D378FE8-743B-4057-859D-961369D90845][Build the structure page]] — the page whose Price tab waits on this.

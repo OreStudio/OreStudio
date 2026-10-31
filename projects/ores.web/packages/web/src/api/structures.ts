@@ -253,10 +253,14 @@ export const structures = {
     },
 
     /** Takes a trade out of the structure: the trade stays, the leg goes. */
-    async unlink(key: string, tradeId: string): Promise<void> {
+    async unlink(key: string, tradeId: string, commentary: string): Promise<void> {
         await request(
             `/api/structures/${encodeURIComponent(key)}/legs/${encodeURIComponent(tradeId)}`,
-            { method: 'DELETE' },
+            {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ commentary }),
+            },
         );
     },
 
@@ -334,11 +338,11 @@ export const structures = {
     },
 
     /** Adds a trade to the deal, in the role the desk gives it. */
-    async addLeg(key: string, tradeId: string, role: string): Promise<void> {
+    async addLeg(key: string, tradeId: string, role: string, commentary: string): Promise<void> {
         await request(`/api/structures/${encodeURIComponent(key)}/legs`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tradeId, role }),
+            body: JSON.stringify({ tradeId, role, commentary }),
         });
     },
 };

@@ -408,12 +408,22 @@ function VerdictCard({ record }: { readonly record: StructurePageRecord }): Reac
  * because a deal's legs arrive with the deal: there is no page to ask a server
  * for.
  */
-function LegsTable({ record }: { readonly record: StructurePageRecord }): ReactNode {
+function LegsTable({
+    record,
+    reason,
+    mayUnlink = true,
+}: {
+    readonly record: StructurePageRecord;
+    /** Why the person is taking a leg out, stated above the table. */
+    readonly reason: string;
+    /** Whether the table offers taking a leg out. The deal's own tab reads them. */
+    readonly mayUnlink?: boolean;
+}): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
     const key = record.reference === '' ? record.id : record.reference;
     const unlink = useMutation({
-        mutationFn: (tradeId: string) => structures.unlink(key, tradeId),
+        mutationFn: (tradeId: string) => structures.unlink(key, tradeId, reason),
         onSuccess: async () => {
             await queries.invalidateQueries({ queryKey: ['structure'] });
             await queries.invalidateQueries({ queryKey: ['structures'] });
@@ -497,20 +507,25 @@ function LegsTable({ record }: { readonly record: StructurePageRecord }): ReactN
                         cell: (leg) =>
                             leg.external_version === null ? '—' : `ext ${leg.external_version}`,
                     },
-                    {
-                        id: 'unlink',
-                        header: '',
-                        cell: (leg) => (
-                            <Button
-                                type="button"
-                                variant="secondary"
-                                pending={unlink.isPending}
-                                onClick={() => unlink.mutate(leg.trade_id)}
-                            >
-                                {t('trading.structure.unlink')}
-                            </Button>
-                        ),
-                    },
+                    ...(mayUnlink
+                        ? [
+                              {
+                                  id: 'unlink',
+                                  header: '',
+                                  cell: (leg: StructureLeg) => (
+                                      <Button
+                                          type="button"
+                                          variant="secondary"
+                                          pending={unlink.isPending}
+                                          disabled={reason.trim() === ''}
+                                          onClick={() => unlink.mutate(leg.trade_id)}
+                                      >
+                                          {t('trading.structure.unlink')}
+                                      </Button>
+                                  ),
+                              },
+                          ]
+                        : []),
                 ]}
             />
         </div>
@@ -568,7 +583,7 @@ function DetailsTab({ record }: { readonly record: StructurePageRecord }): React
                         ? t('trading.structure.tradesProseOne')
                         : t('trading.structure.tradesProseLegs')}
                 </p>
-                <LegsTable record={record} />
+                <LegsTable record={record} reason="" mayUnlink={false} />
             </Card>
         </div>
     );
@@ -579,6 +594,10 @@ function MembersTab({ record }: { readonly record: StructurePageRecord }): React
     const queries = useQueryClient();
     const [tradeId, setTradeId] = useState('');
     const [role, setRole] = useState(record.roles[0] ?? '');
+    /* One reason serves the act the person takes: grouping a leg in, or taking
+     * one out. It is what the deal's history records, so neither happens
+     * without it. */
+    const [reason, setReason] = useState('');
     const key = record.reference === '' ? record.id : record.reference;
 
     const candidates = useQuery({
@@ -587,7 +606,7 @@ function MembersTab({ record }: { readonly record: StructurePageRecord }): React
     });
     const roles = record.roles.length > 0 ? record.roles : ['leg'];
     const add = useMutation({
-        mutationFn: () => structures.addLeg(key, tradeId, role),
+        mutationFn: () => structures.addLeg(key, tradeId, role, reason.trim()),
         onSuccess: async () => {
             setTradeId('');
             await queries.invalidateQueries({ queryKey: ['structure'] });
@@ -598,7 +617,16 @@ function MembersTab({ record }: { readonly record: StructurePageRecord }): React
     const rows = candidates.data ?? [];
     return (
         <div className="space-y-4">
-            <LegsTable record={record} />
+            <Field label={t('trading.structure.reason')}>
+                <textarea
+                    value={reason}
+                    onChange={(event) => setReason(event.target.value)}
+                    rows={2}
+                    className="w-full rounded-md border border-line bg-surface px-2 py-1.5 text-sm"
+                    placeholder={t('trading.structure.reasonPlaceholder')}
+                />
+            </Field>
+            <LegsTable record={record} reason={reason} />
             <section className="space-y-3 rounded-md border border-line bg-surface-raised p-4">
                 <h2 className="text-sm font-medium text-ink">{t('trading.structure.addLeg')}</h2>
                 <p className="text-sm text-ink-muted">{t('trading.structure.addLegLead')}</p>
@@ -635,7 +663,7 @@ function MembersTab({ record }: { readonly record: StructurePageRecord }): React
                     type="button"
                     variant="primary"
                     pending={add.isPending}
-                    disabled={tradeId === '' || role === ''}
+                    disabled={tradeId === '' || role === '' || reason.trim() === ''}
                     onClick={() => add.mutate()}
                 >
                     {t('trading.structure.addLegSubmit')}

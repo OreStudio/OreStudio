@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/build-the-structure-page
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-24
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Build the structure page from doc/prototypes/trades/structure-page.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-21                               |
+| Now          | Built, less the Price tab, which waits on pricing. |
+| Waiting on   | [[id:96F5D072-CFCA-4E74-AED9-487BE080CF45][Price a structure from a market snapshot]] for the Price tab. |
+| Next         | Raise the PR.                          |
+| Last touched | 2026-10-31                               |
 
 * Acceptance
 
@@ -41,9 +41,20 @@ Build the structure page from doc/prototypes/trades/structure-page.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Most of the page was already built: the tree, the identity card, the legs
+table, the members picker and the history. What the acceptance still asked for
+was the reason, and the price.
+
+The reason was the real gap. Both leg writes carried a sentence the route made
+up on the person's behalf, so the deal's history recorded that a leg moved and
+never why. The page now states one reason above the legs, and both the link and
+the unlink carry it: the route refuses either write without one, so the sentence
+in the history is always the person's.
+
+The price cannot be built. Nothing in the product prices a trade, and the tab
+says so in its own words; the work it needs is
+[[id:96F5D072-CFCA-4E74-AED9-487BE080CF45][Price a structure from a market snapshot]]. The tab states the gap
+rather than a figure nobody computed.
 
 * Measurements
 
@@ -57,7 +68,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| A leg moves for a stated reason | 10 cases in the structures route, including a write with no reason refused before anything is read, and the reason the person gave reaching the store | =npm test --workspace @ores/bff -- --run src/structures.test.ts= | this branch |
+| The history carries it | a member write names =:bump_parent_version: true=, so the deal's own history holds the change | =grep bump_parent_version projects/ores.trading/modeling/ores.trading.structure_member.org= | this branch |
+| The suites | BFF 1191 cases, web 2384 of 2385 | =npm test --workspace @ores/bff=, =npm test --workspace @ores/web= | this branch |
+| The web case that fails | =src/journeys/parts.test.tsx= "the tenant form > opens as a summary…", which fails on the tree without this branch's work | =npm test --workspace @ores/web -- --run src/journeys/parts.test.tsx= with the branch stashed | this branch |
 
 * Notes
 
@@ -85,3 +99,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The Members tab links and unlinks a leg with a reason, and both reach the deal's
+history.
+
+| What changed | Where |
+|--------------|-------|
+| The reason is the person's | =legBodySchema= and =unlinkBodySchema= carry a commentary the route no longer invents |
+| The page asks for it | one reason field above the legs, and neither action is enabled without it |
+| The booking path states its own | a leg booked with its trade names the deal it joins |
+
+The unlink column left the deal's own tab: taking a leg out is its own act with
+its own reason, and two buttons for it in two tabs would mean two reasons.
+
+* What is not done
+
+The Price tab states that pricing is not read yet, which is true and is not the
+acceptance line. Reading a market snapshot and pricing a deal from it is
+[[id:96F5D072-CFCA-4E74-AED9-487BE080CF45][Price a structure from a market snapshot]], and no part of the
+product prices a trade today.
+
+* What the tree did
+
+=src/journeys/parts.test.tsx= fails on "opens as a summary, and asks for no
+settings, when the profile states its own". It fails on the tree without this
+branch's work too, so it belongs to the tenant form change that landed beside
+this one.

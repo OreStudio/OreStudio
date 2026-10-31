@@ -8,7 +8,7 @@
 #+filetags: :let-the-model-state-how-the-store-keeps-a-column:sprint_29:v0:
 #+owner: marco
 #+branch: feature/add-a-store-transform-to-the-mapper
-#+pr: 4193
+#+pr: 4196
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -26,11 +26,11 @@ Make the convention normalisation a property of the model, so a regeneration kee
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0B2C266E-6A32-4495-950E-44DE8054A6D7][Let the model state how the store keeps a column]] |
-| Now          | Suites, tests and drift are green.     |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the gates, then raise the PR.      |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -92,6 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4196][#4196]] | [agile] Close the store transform story |
 | [[https://github.com/OreStudio/OreStudio/pull/4193][#4193]] | [codegen,refdata] Let the model state how the store keeps a column |
 
 * Review
@@ -99,6 +100,13 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The three column shapes each need the call, and the convention columns are the already-optional shape | =cpp_domain_type_mapper.cpp.mustache= | Fixed before the PR | The first two branches took the transform and the third did not, which the regenerated output showed |
+| 2 | A codegen change renders the whole estate, so the gate also reads what main carries drifted | two generated files | Accepted, separate task | Closed by the sibling task in this story |
 
 * Result
 
@@ -109,3 +117,6 @@ regeneration against the tree changes nothing.
 
 The document round trip and the ORE example suite both pass, so the store keeps
 the seven codes while the documents keep the spellings they state.
+
+Merged as PR #4193, together with the sibling task that repaired the two
+generated files main carried drifted.

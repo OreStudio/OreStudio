@@ -26,11 +26,11 @@ Close the open part of the May import plan. A real import books into a real book
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Built: the gate holds and the plan is named by the document. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR.                          |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

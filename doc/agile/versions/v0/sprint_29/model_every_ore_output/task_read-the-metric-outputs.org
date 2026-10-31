@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :model_every_ore_output:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/read-the-metric-outputs
+#+pr: 4218
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-30
@@ -26,11 +26,11 @@ Every metric family is read by one declaration-driven reader into rows of subjec
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | Not yet started. |
+| Now          | Nothing. |
 | Waiting on   | The column roles, so a reader knows what a heading is. |
-| Next         | Read the metric families through the declaration the catalogue gives them. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31 |
 
 * Acceptance
@@ -43,7 +43,17 @@ Every metric family is read by one declaration-driven reader into rows of subjec
 
 * Plan
 
-The reader walks the heading, asks the catalogue which role each column has, and emits one metric for each measure column on each row. A variant is not a case: an extra column is another metric when it is a figure and another qualifier when it is not, and a missing open measure is not an error. The observation date is the row's own date or time step, never the run's priced date.
+One reader, driven by the roles the catalogue states. It checks that every
+required column is present and refuses the file if one is not; it takes each
+measure column and emits one metric named by that heading; it carries the
+qualifiers and promotes the subject and the observation date out of the keys.
+
+Three rules are the corpus's, not the design's. A figure the engine states as
+its null string is not a metric and not a refusal. A heading the catalogue does
+not state is a measure in an open family and a refusal in a closed one. And a
+row's key can be empty: the corpus states a netting-set total with no trade id,
+so the subject is chosen for each row from the keys it does state, and the
+figure is kept.
 
 * Measurements
 
@@ -57,11 +67,24 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Metric families whose sample reads whole | 55 of 55, with no refusal | =ores.ore.core.tests "[metric_reader]"= | MEASURED |
+| Test cases and assertions | 11 cases, 158 assertions | =ores.ore.core.tests "[metric_reader]"= | MEASURED |
+| The whole ore core suite | 446 cases, 483 462 assertions | =ores.ore.core.tests= | MEASURED |
 
 * Notes
 
 The reader is generic on purpose. ORE declares its columns imperatively and adds them in loops over the configuration, so a family's shape is not a fixed list; a reader per family would be sixty readers that disagree with each other and with the samples.
+
+* Notes
+
+- The reader refuses only what it cannot read. A null figure, a row without its
+  trade id and a stale subset of a family are all things the corpus states, so
+  they are read rather than rejected.
+- A family with no measure columns is not a metric family: the calibration
+  report states text beside a key, and it is market state, which the marketdata
+  task stores.
+- The five payload families (the scenario dumps and the cubes) are left to the
+  marketdata task; this reader is not the right one for a 789-column file.
 
 * Test Scenarios
 
@@ -78,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4218][#4218]] | [ore] Read the metric families with one reader |
 
 * Review
 
@@ -87,3 +110,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+One reader serves every metric family, and a sample of each reads whole: 55
+families, no refusal, 158 assertions over 11 cases.
+
+What the corpus taught the reader, and therefore what the record now says:
+
+- A null figure is not a metric and not an error. The engine writes =#N/A=, and
+  a second test proves a row with one null measure keeps its other three.
+- A row's key can be empty. =xva.csv= states a netting-set total with no trade
+  id, so the subject is chosen for each row from the keys it states, and the
+  figure survives as a netting-set metric.
+- An open family accepts a heading the samples never showed: a new curve is
+  just another measure. A closed family refuses one, and names it.
+- A file that omits a required column is refused before a row is read.
+
+The three child-row families and the five payload families are excluded on
+purpose, and the record says which task takes each.

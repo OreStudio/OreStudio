@@ -229,25 +229,40 @@ def set_of(term, parsers, element=None):
     if parser and parser in parsers:
         return parser_set_code(parser), parser_set(parser, parsers[parser])
     if kind in WITHOUT_LIST:
-        stated = schema_rule(term)
-        if stated == "enumerated":
-            return schema_enum_set(term) if is_drawn(term) else ("text", None)
+        stated = schema_set(term)
         if stated:
-            return TYPE_SETS[SCHEMA_TYPE_SETS[stated]], None
+            return stated
         return WITHOUT_LIST[kind], None
     raise ValueError(f"{term['source_ref']}: {term['name']} is read by {term['parser']}, "
                      f"which states no list, and its kind {kind} names no set")
 
 
-def schema_rule(term):
-    """The kind the ORE schema declares for a term the parser read as a string.
+def schema_set(term):
+    """The set the ORE schema states for one term, and its row when generated.
 
-    The parser says what the engine accepts and is the first authority. Where it
-    reads a term as a plain string without saying more, the schema still declares
-    a type, and a term declared xs:integer or bool is not free text.
+    A built-in type is one of the sets this family already holds. A named simple
+    type the schema restricts states more: the values it enumerates, the pattern a
+    value must match, or the bounds it allows. Such a set is generated only for a
+    term a mapper carries, because a set nothing names and no row carries is dead
+    data.
     """
     found = schema_types.rule("conventions.xsd", address_of(term))
-    return found[0] if found else None
+    if not found:
+        return None
+    kind, type_name = found
+    stated = schema_types.restriction(type_name)
+    # A kind the family already holds a set for takes that set unless the schema
+    # narrows it further with bounds: a flag is a flag, and the static set accepts
+    # the Y and N that ORE also writes.
+    bounded = bool(stated and (stated.get("minimum") is not None
+                               or stated.get("maximum") is not None))
+    if kind in SCHEMA_TYPE_SETS and not bounded:
+        return TYPE_SETS[SCHEMA_TYPE_SETS[kind]], None
+    if not stated:
+        return None
+    if not is_drawn(term):
+        return ("text", None)
+    return schema_types.stated_set(kind, type_name, "convention.")
 
 
 def address_of(term):
@@ -256,29 +271,6 @@ def address_of(term):
     if term.get("list_item"):
         leaf = f"{term['name']}/{term['list_item']}"
     return "/Conventions/" + "/".join(term["path"] + [leaf])
-
-
-def schema_enum_set(term):
-    """The enumerated set the ORE schema states for one term's type."""
-    _, type_name = schema_types.rule("conventions.xsd", address_of(term))
-    values, file, line = schema_types.enumeration(type_name)
-    # The schema lists the empty string where a leaf may be left unset. The guard
-    # treats a value that is not written as absent rather than as a choice, so the
-    # set states the choices and the unset case stays an empty field.
-    values = [value for value in values if value != ""]
-    code = "convention." + re.sub(r"(?<!^)(?=[A-Z])", "_", type_name).lower()
-    return code, {
-        "name": words(type_name),
-        "description": f"The values the ORE schema states for {type_name}, from "
-                       f"external/ore/xsd/{file}:{line}.",
-        "source_kind": "enumerated",
-        "is_ordered": False,
-        "values": [{"value": value, "label": value,
-                    "description": f"{value} is one of the values the ORE schema "
-                                   f"states for {type_name}.",
-                    "order": order}
-                   for order, value in enumerate(values)],
-    }
 
 
 def set_of_leaf(term, element):

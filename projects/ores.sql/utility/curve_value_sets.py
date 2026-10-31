@@ -249,11 +249,11 @@ LIST_ITEM = {
                   "wildcard *, so no one rule holds of an item yet.",
     },
     "PillarDates": {
-        "kind": None,
+        "kind": "date_list",
         "source": "ore_code",
         "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
-        "reason": "A pillar date is a date, and this tree states no rule for one "
-                  "yet.",
+        "reason": "A pillar date is a date the ORE date parser accepts, and the "
+                  "schema states the pattern.",
     },
 }
 
@@ -264,6 +264,7 @@ TYPE_SETS = {
     "period": "curve.period",
     "number_list": "curve.number_list",
     "period_list": "curve.period_list",
+    "date_list": "curve.date_list",
     "list": "curve.list",
 }
 
@@ -313,6 +314,16 @@ OWN_SETS = {
                        "the ORE code reads into one vector.",
         "source_kind": "regex",
         "pattern": PERIOD_PATTERN,
+        "cardinality": "many",
+        "is_ordered": True,
+    },
+    "curve.date_list": {
+        "name": "Dates",
+        "description": "A comma separated list of dates, in a form the ORE schema "
+                       "and the ORE date parser accept.",
+        "source_kind": "regex",
+        "pattern": schema_types.restriction("date") and (
+            "^(" + schema_types.restriction("date")["pattern"] + ")$"),
         "cardinality": "many",
         "is_ordered": True,
     },
@@ -449,51 +460,44 @@ def set_of(term, curated, parsers, section):
             if stated:
                 return stated, None
         return TYPE_SETS[term["type"]], None
-    stated = schema_rule(term)
-    if stated == "enumerated":
-        return schema_enum_set(term) if is_drawn(term) else ("text", None)
+    stated = schema_set(term)
     if stated:
-        return TYPE_SETS[SCHEMA_TYPE_SETS[stated]], None
+        return stated
     return "text", None
 
 
-def schema_enum_set(term):
-    """The enumerated set the ORE schema states for one leaf's type.
+def schema_set(term):
+    """The set the ORE schema states for one leaf, and its row when generated.
 
-    The schema lists the values a simple type accepts, so the rule is a set of
-    them rather than a shape one value must have, and a screen draws a combo from
-    it without a person writing the list twice.
-    """
-    _, type_name = schema_types.rule(SCHEMA, "/CurveConfiguration/" + "/".join(term["path"]))
-    values, file, line = schema_types.enumeration(type_name)
-    # The schema lists the empty string where a leaf may be left unset. The guard
-    # treats a value that is not written as absent rather than as a choice, so the
-    # set states the choices and the unset case stays an empty field.
-    values = [value for value in values if value != ""]
-    code = "curve." + re.sub(r"(?<!^)(?=[A-Z])", "_", type_name).lower()
-    return code, {
-        "name": words(type_name),
-        "description": f"The values the ORE schema states for {type_name}, from "
-                       f"external/ore/xsd/{file}:{line}.",
-        "source_kind": "enumerated",
-        "is_ordered": False,
-        "values": [{"value": value, "label": value,
-                    "description": f"{value} is one of the values the ORE schema "
-                                   f"states for {type_name}.",
-                    "order": order}
-                   for order, value in enumerate(values)],
-    }
-
-
-def schema_rule(term):
-    """The kind the ORE schema declares for a leaf the parser read as a string.
-
-    The parser says what the engine accepts and is the first authority. Where it
-    reads a leaf as a plain string without saying more, the schema still declares
-    a type, and a leaf declared xs:integer is not free text.
+    A built-in type is one of the sets this family already holds. A named simple
+    type the schema restricts states more: the values it enumerates, the pattern a
+    value must match, or the bounds it allows. Such a set is generated only for a
+    leaf a column carries, because a set nothing names and no row carries is dead
+    data.
     """
     found = schema_types.rule(SCHEMA, "/CurveConfiguration/" + "/".join(term["path"]))
-    return found[0] if found else None
+    if not found:
+        return None
+    kind, type_name = found
+    stated = schema_types.restriction(type_name)
+    # A kind the family already holds a set for takes that set unless the schema
+    # narrows it further with bounds: a flag is a flag, and the static set accepts
+    # the Y and N that ORE also writes.
+    bounded = bool(stated and (stated.get("minimum") is not None
+                               or stated.get("maximum") is not None))
+    if kind in SCHEMA_TYPE_SETS and not bounded:
+        return TYPE_SETS[SCHEMA_TYPE_SETS[kind]], None
+    if not stated:
+        return None
+    if not is_drawn(term):
+        return ("text", None)
+    return schema_types.stated_set(kind, type_name, "curve.")
+
+
+def schema_enum_set(term):
+    """The enumerated set the ORE schema states for one leaf's type."""
+    _, type_name = schema_types.rule(SCHEMA, "/CurveConfiguration/" + "/".join(term["path"]))
+    return schema_types.stated_set("enumerated", type_name, "curve.")
 
 
 def item_set_of(term):

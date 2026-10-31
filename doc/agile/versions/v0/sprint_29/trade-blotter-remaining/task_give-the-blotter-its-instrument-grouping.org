@@ -28,10 +28,10 @@ Read the same rows by asset class, beside the portfolio tree and the counterpart
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Built and green; the PR is up and waits on review. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-30                               |
+| Next         | Merge on approval.                     |
+| Last touched | 2026-10-31                               |
 
 * Acceptance
 
@@ -57,9 +57,21 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Web package suite | 2333 passed, 0 failed, 186 files | =npm test --workspace @ores/web= in =projects/ores.web= | be4c27ce15 |
+| BFF package suite | 1150 passed, 0 failed, 84 files | =npm test --workspace @ores/bff= in =projects/ores.web= | be4c27ce15 |
+| The rail for ACME Corporation UK plc | Bond 2, Commodity 21, Credit 1, Equity 13, FX 4, Interest Rate 4 — 45 classed rows of 57 | =tools/ui-tests/specs/blotter.spec.ts=, which walks the three groupings and writes =shots/blotter-instrument.png= | 89ec35d5b6 |
 
 * Notes
+
+The class names come from =ores_refdata_asset_class_codes_tbl= and the colours
+from the house tokens in =marketdata/assetClassColour.ts=, so the rail reads like
+the market data screens. Nothing reads the data-quality badge catalogue, which
+also holds an =asset_class_*= row for each class: it files those rows under a
+=severity_code=, a data-quality judgement that means nothing for a class. Two
+captures record the questions this task does not settle —
+[[proj:doc/agile/product_backlog/inbox/an_asset_class_is_not_a_data_quality_severity.org][An asset class is not a data-quality severity]]
+and
+[[proj:doc/agile/product_backlog/inbox/one_spelling_for_an_asset_class_code.org][One spelling for an asset class code]].
 
 * Test Scenarios
 
@@ -70,7 +82,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:72748A21-F7A2-4B40-B258-123AB7115A36][Verify the trade blotter]] | PASSED | *Read the rows by asset class* is the step this task adds |
 
 * PRs
 
@@ -85,3 +97,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The blotter reads its third way. The rail offers *Asset class* beside *Portfolio
+tree* and *Counterparty*, and choosing it redraws the same rows under the classes
+they fall into, each node carrying the class's own name, the house colour dot and
+its count. Choosing a class narrows the list to it.
+
+The class comes from the instrument's trade type, through the instrument code
+catalogue the read already fetches: no model change, no second read. A structure
+has no class, so the rail counts the classed trades and its nodes add up to that
+figure, which is why a party's 57 rows show 45 under six classes.
+
+The read serves the grouping in one pass — the same rows, resliced — and the
+screen caches the rail separately from the list, so switching views draws at once
+instead of waiting or showing the previous grouping's nodes.
+
+Two questions were left open rather than answered inside the blotter, and both
+are captured in the inbox: whether the data-quality badge catalogue should be the
+one source for a class's colour when it files classes under a severity that means
+nothing, and the three spellings the same class code has today.

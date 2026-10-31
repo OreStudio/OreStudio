@@ -57,16 +57,20 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Session door cases | 3 cases, 18 assertions, all passing | =./ores.http.iam.tests "[auth_session]"= | =#4187= |
-| =ores.http.iam= test cases | all passing | =./ores.http.iam.tests= | =#4187= |
+| =ores.http.iam= test cases | 34 cases, 285 assertions, one skipped | =./ores.http.iam.tests= | =#4188= |
 
 * Notes
 
 - =me= and signing out are proven without IAM, because neither needs it: =me= reads
   the claims the session already resolved, and signing out closes a session the test
   opened. Both are cases in =ores.http.iam.tests=.
-- Signing in is not proven. It needs a live IAM over NATS with a known account, so
-  the cases here cover its wiring and its refusals, and the round trip is the
-  outstanding item the state row names.
+- Signing in has a case of its own, and it has not run: it signs in against the
+  running fleet with the demo account the checkout's =.env= names, and the fleet is
+  stopped. With no fleet it skips rather than passes or fails, so the suite is honest
+  either way and the round trip stays the outstanding item the state row names.
+- To run it: =compass services start= (which asks for =db recreate= when the schema
+  moved), then =./ores.http.iam.tests "[live]"= from the preset's =publish/bin= with
+  the environment file loaded.
 - The cookie's name comes from =--web-session-name= and its =Secure= from the
   deployment's TLS flag, so one deployment cannot read another's session.
 

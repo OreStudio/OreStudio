@@ -1309,6 +1309,85 @@ struct get_series_ticks_response {
     std::vector<double> values;
 };
 
+/**
+ * @brief Asks marketdata to keep the market state a run priced against.
+ *
+ * The state is the output files the run left in its output archives, and those
+ * files are far too large for a message: a cube states a column for every curve
+ * and tenor the run built. The caller therefore names the archives and lends the
+ * token that reads them — the run's own, the same one the run's other steps use
+ * — and this reads the files rather than receiving them.
+ *
+ * The archives are named by their storage location, so this learns no other
+ * component's layout. A file whose family is not a market state is left alone:
+ * the run's results belong to reporting.
+ */
+struct store_market_state_request {
+    using response_type = struct store_market_state_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.store_market_state";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief The party that owns the run, so every payload carries it.
+     */
+    std::string party_id;
+    /**
+     * @brief The run that priced against this state.
+     */
+    std::string report_instance_id;
+    /**
+     * @brief The report the run came from.
+     */
+    std::string report_definition_id;
+    /**
+     * @brief The date the run priced at, as an ISO 8601 date.
+     *
+     * It is the observation date of the state, and the time column of the table.
+     */
+    std::string as_of;
+    /**
+     * @brief The run's storage token, which reads the archives it names.
+     *
+     * Scoped to the one run and short-lived, like the token a workunit is
+     * assigned with. It is carried here rather than minted, because the run's
+     * grant is the reporting service's to hold.
+     */
+    std::string storage_token;
+    /**
+     * @brief Where each archive of the run's output is, as bucket and key.
+     */
+    std::vector<std::string> output_uris;
+};
+
+/**
+ * @brief What was stored, and what was left alone.
+ */
+struct store_market_state_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The families a payload was stored for, in the order they were read.
+     */
+    std::vector<std::string> families;
+    /**
+     * @brief The files whose family states a market state and which were read.
+     */
+    int payloads = 0;
+    /**
+     * @brief The compressed size of what was stored, so a caller can account for it.
+     */
+    long long payload_bytes = 0;
+    /**
+     * @brief The files the run wrote that are not market state, so the caller
+     * can see that they were not forgotten.
+     */
+    std::vector<std::string> left_alone;
+};
+
 }
 
 #endif

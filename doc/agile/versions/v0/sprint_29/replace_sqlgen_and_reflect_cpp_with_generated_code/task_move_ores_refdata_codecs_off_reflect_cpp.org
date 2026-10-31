@@ -195,6 +195,32 @@ So the test asserts behaviour that nothing implements. The remedy belongs to the
 story that introduced it: either the mapping layer canonicalises, which is what
 its commit says it does, or the test stops expecting it.
 
+** The generated JSON leaves reflect-cpp (2026-10-31)
+
+Two of the three generated families that named the reflector now go through the
+generated codec, each behind the model's own opt-in so a component that has not
+opted in is untouched.
+
+- **The changed-event headers**, 168 of them. A notification carries the row's key
+  as JSON, and the key is a generated message, so the codec reads it. The header
+  no longer includes =rfl/json.hpp= or the reflectors at all. The read still
+  tolerates a key this build cannot parse, which is what the reflector-backed read
+  did: an unreadable key leaves the event's default rather than dropping the
+  notification.
+- **The domain =json_io= units**, 168 of them, which exist to print a row.
+  =operator<<= now writes the codec's JSON instead of the reflector's. =dq='s
+  units regenerate with it, because the template is shared and dq has opted in.
+
+What is left in the component, measured after these two:
+
+| Family | Files | What it needs |
+|--------+-------+---------------|
+| =*_entity.cpp= in =repository/= | 168 | The storage entity has no generated shape. Either it states one, or the =operator<<= goes. |
+| =convention_family_*=.cpp | 26 | Hand-written; they hold a convention's payload as a document. |
+| =options.cpp=, =application.cpp= | 2 | Hand-written configuration printing. |
+| the seven hand-written domain headers | 7 | No generated shape at all; they need the =dataset_dependency= treatment. |
+| core tests | ~170 | They compare against reflect-cpp on purpose, so they stay. |
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

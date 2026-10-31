@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_29:v0:
 #+created: 2026-10-24
-#+updated: 2026-10-25
+#+updated: 2026-10-30
 #+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -23,10 +23,10 @@ The ACME report definition runs to completion against the compute grid from an i
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The run is witnessed on a database built from nothing, the failed-job path records a failed result, and the seed task is closed. One task remains open: whether the seeded analytic switches are the engine's own.                       |
-| Waiting on    | A run per analytic family, or a mapping from each platform analytic code to the ORE type it becomes.                               |
-| Next          | Run one report per analytic family and record the engine's verdict for each code.            |
-| Last touched  | 2026-10-25                               |
+| Now           | The run is witnessed on a database built from nothing, and the result rows pipeline is built: the node projects the engine's npv.csv into canonical rows, post-processing loads them into the result rows hypertable, and the screens read that table. Two tasks stay open: a run on generated trades and market data, and a run per analytic family. |
+| Waiting on    | A run per analytic family, and a projection for each analytic's output file. |
+| Next          | Run one report per analytic family and record the engine's verdict for each code. |
+| Last touched  | 2026-10-30                               |
 
 * Acceptance
 
@@ -59,9 +59,9 @@ The ACME report definition runs to completion against the compute grid from an i
 | [[id:9B64F464-EC3D-4B3F-B2B7-4DF1E7F321EA][Group books under their portfolios]] | DONE | | 2026-10-26 | The book level states each portfolio's rolled-up figure above the books it holds. |
 | [[id:EF671389-BF56-4635-A154-5FF2BC19BF57][Nest the portfolios into a tree]] | DONE | | 2026-10-26 | The book level reads as a tree: a global portfolio over banking books over the ports and books beneath them, each row rolled up from what it holds. |
 | [[id:4010067E-6BEB-4A54-9183-8736D264BFC7][Draw the plots the run can answer]] | DONE | | 2026-10-27 | The results screen draws a donut of each book's share of the run, and a donut of the run's problems by scope, each with its figures beside it. |
-| [[id:0A905105-F500-44C7-ACF1-E8517B778E11][Add the report result rows table]] | BACKLOG | | | A hypertable of one row per subject, measure and currency at the run's priced date, with the security, indexes and retention the market data ticks use. |
-| [[id:7D867B23-569E-47FC-A3E1-003F94B787F0][Post-process a run's results into rows]] | BACKLOG | | | A post-processing step after retrieval, one reader per analytic, rows written in one transaction per run, and the run stating what was written. |
-| [[id:E2B1C2B1-3E73-4B85-B42F-C4392750DDAE][Marshal the engine's output into result rows]] | BACKLOG | | | The compute wrapper writes one canonical result file from the engine's own files, a projection of their headings rather than a parse, before it uploads. |
+| [[id:0A905105-F500-44C7-ACF1-E8517B778E11][Add the report result rows table]] | DONE | 2026-10-27 | 2026-10-27 | A hypertable of one row per subject, measure and currency at the run's priced date, with the security, indexes and retention the market data ticks use. |
+| [[id:7D867B23-569E-47FC-A3E1-003F94B787F0][Post-process a run's results into rows]] | DONE | 2026-10-27 | 2026-10-27 | A post-processing step after retrieval, one reader per analytic, rows written in one transaction per run, and the run stating what was written. |
+| [[id:E2B1C2B1-3E73-4B85-B42F-C4392750DDAE][Marshal the engine's output into result rows]] | DONE | 2026-10-27 | 2026-10-27 | The compute wrapper writes one canonical result file from the engine's own files, a projection of their headings rather than a parse, before it uploads. |
 | [[id:77CC92BD-4F9E-42A6-84F8-45265F2DAA91][Run a report from its page and read its rows]] | DONE | 2026-10-27 | 2026-10-27 | A report definition runs on demand from its own page, the run is followed to the grid and its jobs, and the results the screen draws are the rows the post-processor loaded rather than the archive it used to parse. |
 | [[id:7904CF60-DE60-4E1B-8A29-7271D0F2DFD3][Complete the result row's generation]] | DONE | 2026-10-28 | 2026-10-28 | The result row entity's generated layers were never committed, and its repository was hand-edited to add read_by_run. Regeneration now wins: the layers are committed, the run read goes through the generated filter, and the read is paged and permission-checked. |
 | [[id:5CA7780D-0085-4D51-9D76-4F2AD86CAF26][Restore the engine log work]] | DONE | 2026-10-28 | 2026-10-28 | Four commits that read the engine's log in one place, wrote it beside a run's rows and loaded it in reporting were merged as part of #3929 and are not on main: the branch that PR merged was rebuilt and left them behind. They are restored here, adapted to today's tree, before the duplicate parser is deleted. |
@@ -101,6 +101,18 @@ The ACME report definition runs to completion against the compute grid from an i
   reporting= therefore fails on main, and the drift job did not see it because
   it does not watch =projects/ores.reporting/modeling/=. The model must state
   the layers it does not generate, or the job must watch the model.
+- 2026-10-30: The decision above no longer holds. The generated layers are
+  committed, and =check_component_drift.py --component reporting= reports no
+  drift at =55e53d5c56=. The drift job watches =projects/*/modeling/**=.
+- 2026-10-30: The table, the node's projection and the post-processing step all
+  landed inside #3916, and the PR was recorded on the post-processing task
+  alone. The three tasks are closed now. The load-bearing fact — only =npv.csv=
+  is projected, so a run of any other analytic loads no rows however many
+  analytic codes are seeded — is written on the two tasks it changes.
+- 2026-10-30: The result rows table keeps its rows indefinitely. It declares no
+  =:hypertable_retention_interval:=, and no Timescale retention job runs on any
+  table in this environment. The interval is not settled, and it is filed as a
+  capture rather than claimed by a task that is closed.
 
 * Out of scope
 

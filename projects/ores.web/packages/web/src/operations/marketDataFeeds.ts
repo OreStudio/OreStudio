@@ -26,23 +26,23 @@ import type { Translator } from '../i18n/translate.js';
 import { ADAPTERS_EVERY_MS, ADAPTERS_KEY } from '../marketdata/synthetic/adapterStatus.js';
 
 /**
- * The board the system administrator reads to keep the market data sources
+ * The board the system administrator reads to keep the market data feeds
  * running, from
  * doc/knowledge/journeys/operations/journey_keep-the-market-data-feeds-running.org.
  *
- * One adapter is one source. The market data service's status is the truth of
- * what a source serves, and it is the only read this screen makes: everything
+ * One adapter is one feed. The market data service's status is the truth of
+ * what a feed serves, and it is the only read this screen makes: everything
  * below is that reply, counted and named. What the reply does not carry is
  * stated as a gap rather than filled from another screen's data.
  */
 
 /**
- * How long a serving source may go without a tick before the board calls it
+ * How long a serving feed may go without a tick before the board calls it
  * quiet, in milliseconds.
  *
- * The journey defines quiet against the interval a source's demand implies, and
+ * The journey defines quiet against the interval a feed's demand implies, and
  * the status does not carry that interval, so the board states one window for
- * every source and says so in its note.
+ * every feed and says so in its note.
  */
 export const QUIET_AFTER_MS = 300_000;
 
@@ -51,19 +51,19 @@ export const QUIET_AFTER_MS = 300_000;
  * ores.marketdata.service/app/adapter_registry.hpp. The tuple is the union a new
  * state must join, so a state the read gains is a compile error here.
  */
-export const SOURCE_STATES = ['announced', 'ready', 'serving', 'stale', 'rejected'] as const;
-export type SourceState = (typeof SOURCE_STATES)[number];
+export const FEED_STATES = ['announced', 'ready', 'serving', 'stale', 'rejected'] as const;
+export type FeedState = (typeof FEED_STATES)[number];
 
 /** The tone one state is painted with, for every state the registry emits. */
-export type SourceTone = 'up' | 'muted' | 'warn' | 'down';
+export type FeedTone = 'up' | 'muted' | 'warn' | 'down';
 
 /** The state the read emitted, or nothing for a word the registry does not emit. */
-export function knownState(state: string): SourceState | undefined {
-    return SOURCE_STATES.find((known) => known === state);
+export function knownState(state: string): FeedState | undefined {
+    return FEED_STATES.find((known) => known === state);
 }
 
-/** A serving source ticks; one the registry calls stale or rejected is the trouble the board is for. */
-export function stateTone(state: string): SourceTone {
+/** A serving feed ticks; one the registry calls stale or rejected is the trouble the board is for. */
+export function stateTone(state: string): FeedTone {
     switch (knownState(state)) {
         case 'serving':
             return 'up';
@@ -92,16 +92,16 @@ export interface RejectedId {
     readonly reason: string;
 }
 
-/** One source as the board reads it: the adapter, its state, and the counts of its last demand. */
-export interface SourceRow {
-    /** The name of the source, which is the id of its adapter. */
+/** One feed as the board reads it: the adapter, its state, and the counts of its last demand. */
+export interface FeedRow {
+    /** The name of the feed, which is the id of its adapter. */
     readonly name: string;
     readonly provider: string;
     readonly state: string;
     /** The last sign of life the service recorded, as the wire states it. */
     readonly heartbeatAt: string;
     readonly heartbeatCounter: number;
-    /** How many routes the service holds for this source. */
+    /** How many routes the service holds for this feed. */
     readonly routes: number;
     /** How many ids the service demanded of it. */
     readonly demanded: number;
@@ -121,13 +121,13 @@ export interface SourceRow {
     readonly notServed: number;
 }
 
-/** How the board orders a source: the one that ticked longest ago stands first. */
+/** How the board orders a feed: the one that ticked longest ago stands first. */
 function ageForOrder(lastTickAgeMs: number): number {
     return lastTickAgeMs < 0 ? Number.POSITIVE_INFINITY : lastTickAgeMs;
 }
 
-/** One source, read from one adapter. */
-export function sourceOf(adapter: AdapterStatus): SourceRow {
+/** One feed, read from one adapter. */
+export function feedOf(adapter: AdapterStatus): FeedRow {
     const lastTickAgeMs = adapter.last_tick_age_ms;
     return {
         name: adapter.adapter_id,
@@ -155,30 +155,30 @@ export function sourceOf(adapter: AdapterStatus): SourceRow {
     };
 }
 
-/** Every source, the one that ticked longest ago first, so the quiet one is at the top. */
-export function sourceRows(adapters: readonly AdapterStatus[]): readonly SourceRow[] {
+/** Every feed, the one that ticked longest ago first, so the quiet one is at the top. */
+export function feedRows(adapters: readonly AdapterStatus[]): readonly FeedRow[] {
     return adapters
-        .map(sourceOf)
+        .map(feedOf)
         .sort((left, right) => ageForOrder(right.lastTickAgeMs) - ageForOrder(left.lastTickAgeMs));
 }
 
 /** The figures the tiles state, every one of them counted from the same rows. */
-export interface SourceFigures {
-    readonly sources: number;
+export interface FeedFigures {
+    readonly feeds: number;
     readonly serving: number;
     readonly routes: number;
     readonly ticksPerMinute: number;
     readonly quiet: number;
     /** Demanded ids no adapter accepted: what the alert is for. */
     readonly notServed: number;
-    /** Sources the service demands nothing of, so they publish nothing. */
+    /** Feeds the service demands nothing of, so they publish nothing. */
     readonly withoutDemand: number;
     readonly stale: number;
 }
 
-export function sourceFigures(rows: readonly SourceRow[]): SourceFigures {
+export function feedFigures(rows: readonly FeedRow[]): FeedFigures {
     return {
-        sources: rows.length,
+        feeds: rows.length,
         serving: rows.filter((row) => row.state === 'serving').length,
         routes: rows.reduce((count, row) => count + row.routes, 0),
         ticksPerMinute: rows.reduce((count, row) => count + row.ticksPerMinute, 0),
@@ -190,7 +190,7 @@ export function sourceFigures(rows: readonly SourceRow[]): SourceFigures {
 }
 
 /**
- * How long ago a source ticked, in the units a person reads.
+ * How long ago a feed ticked, in the units a person reads.
  *
  * The status states an age rather than an instant, so the board cannot draw it
  * as a timestamp with the exact value on hover; it states the age the service
@@ -198,20 +198,20 @@ export function sourceFigures(rows: readonly SourceRow[]): SourceFigures {
  */
 export function formatTickAge(ms: number, t: Translator['t']): string {
     if (ms < 0) {
-        return t('operations.sources.age.never');
+        return t('operations.feeds.age.never');
     }
     if (ms < 1000) {
-        return t('operations.sources.age.millis', { millis: ms });
+        return t('operations.feeds.age.millis', { millis: ms });
     }
     const seconds = Math.round(ms / 1000);
     if (seconds < 90) {
-        return t('operations.sources.age.seconds', { seconds });
+        return t('operations.feeds.age.seconds', { seconds });
     }
     const minutes = Math.round(seconds / 60);
     if (minutes < 90) {
-        return t('operations.sources.age.minutes', { minutes });
+        return t('operations.feeds.age.minutes', { minutes });
     }
-    return t('operations.sources.age.hours', { hours: Math.round(minutes / 60) });
+    return t('operations.feeds.age.hours', { hours: Math.round(minutes / 60) });
 }
 
 /** One vendor id as a person reads it: the vendor's scheme, then the id and its field. */
@@ -220,7 +220,7 @@ export function formatVendorId(id: VendorId): string {
     return id.field === '' ? named : `${named} ${id.field}`;
 }
 
-/** The adapter status of every source, read again while the screen is open. */
+/** The adapter status of every feed, read again while the screen is open. */
 export function useAdapterStatuses() {
     return useQuery({
         queryKey: ADAPTERS_KEY,
@@ -233,7 +233,7 @@ export function useAdapterStatuses() {
 const TREND_POINTS = 24;
 
 /**
- * The ticks per minute each source published while the screen was open.
+ * The ticks per minute each feed published while the screen was open.
  *
  * The status states one minute at a time and keeps no history, so a trend is
  * the board's own readings and starts empty when the screen opens. It says

@@ -729,15 +729,15 @@ const subscriptionRowSchema = z.object({
 export type SubscriptionRow = z.infer<typeof subscriptionRowSchema>;
 
 /**
- * A route: the one source that serves a party for a provider. The source is
- * named by its id, and its name and kind come from the catalogue.
+ * A route: the one feed that serves a party for a publisher. The feed is named
+ * by its id, and its name and service come from the catalogue.
  */
 const routeRowSchema = z.object({
     version: z.number(),
     id: z.string(),
     party_id: z.string(),
-    provider_code: z.string(),
-    source_id: z.string(),
+    publisher_code: z.string(),
+    feed_id: z.string(),
     modified_by: z.string().default(''),
     performed_by: z.string().default(''),
     change_reason_code: z.string().default(''),
@@ -747,7 +747,19 @@ const routeRowSchema = z.object({
 
 export type RouteRow = z.infer<typeof routeRowSchema>;
 
-/** The providers and the sources a subscription and a route choose from. */
+/** One feed of the catalogue: one publisher's data, on one service, through one session. */
+const feedRowSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    publisher_code: z.string(),
+    session_code: z.string().default(''),
+    service: z.string().default(''),
+    provider_key: z.string().default(''),
+    is_default: z.boolean().default(false),
+    description: z.string().default(''),
+});
+
+/** The providers and the feeds a subscription and a route choose from. */
 const marketDataCatalogueSchema = z.object({
     providers: z.array(
         z.object({
@@ -758,16 +770,7 @@ const marketDataCatalogueSchema = z.object({
             display_order: z.number().default(0),
         }),
     ),
-    sources: z.array(
-        z.object({
-            id: z.string(),
-            name: z.string(),
-            provider_code: z.string(),
-            kind: z.string().default(''),
-            is_default: z.boolean().default(false),
-            description: z.string().default(''),
-        }),
-    ),
+    feeds: z.array(feedRowSchema),
 });
 
 export type MarketDataCatalogue = z.infer<typeof marketDataCatalogueSchema>;
@@ -790,7 +793,7 @@ const officialProviderSchema = z.object({
     terms_accepted: z.boolean(),
     terms_accepted_by: z.string(),
     terms_accepted_at: z.string().nullable(),
-    sources: z.array(z.object({ id: z.string(), name: z.string(), kind: z.string() })),
+    feeds: z.array(feedRowSchema),
     series: z.array(officialSeriesSchema),
 });
 
@@ -810,8 +813,8 @@ export type OfficialFixings = z.infer<typeof officialFixingsSchema>['fixings'];
 /** One provider of the catalogue, as a selector names it. */
 export type MarketDataProvider = MarketDataCatalogue['providers'][number];
 
-/** One source of the catalogue, as a route names it. */
-export type MarketDataSource = MarketDataCatalogue['sources'][number];
+/** One feed of the catalogue, as a route names it. */
+export type MarketDataFeed = MarketDataCatalogue['feeds'][number];
 
 /** What narrows the feeds a screen lists; every part is optional. */
 export interface FeedFilter {
@@ -2284,14 +2287,14 @@ export const api = {
             .parse(await request('/api/marketdata/subscriptions', { method: 'GET' })).subscriptions;
     },
 
-    /** The routes the session may read: the one source that serves each party and provider. */
+    /** The routes the session may read: the one feed that serves each party and publisher. */
     async marketDataRoutes(): Promise<readonly RouteRow[]> {
         return z
             .object({ routes: z.array(routeRowSchema) })
             .parse(await request('/api/marketdata/routes', { method: 'GET' })).routes;
     },
 
-    /** The official providers, with their terms, their sources and their fixing series. */
+    /** The official providers, with their terms, their feeds and their fixing series. */
     async officialRates(): Promise<readonly OfficialProvider[]> {
         return officialRatesSchema.parse(
             await request('/api/marketdata/official', { method: 'GET' }),
@@ -2316,7 +2319,7 @@ export const api = {
         });
     },
 
-    /** The providers and the sources, which are what a subscription and a route choose from. */
+    /** The providers and the feeds, which are what a subscription and a route choose from. */
     async marketDataCatalogue(): Promise<MarketDataCatalogue> {
         return marketDataCatalogueSchema.parse(
             await request('/api/marketdata/catalogue', { method: 'GET' }),
@@ -2357,10 +2360,10 @@ export const api = {
         });
     },
 
-    /** Adds the session party's route to one source, for one provider. */
+    /** Adds the session party's route to one feed, for one publisher. */
     async addRoute(input: {
-        readonly provider_code: string;
-        readonly source_id: string;
+        readonly publisher_code: string;
+        readonly feed_id: string;
     }): Promise<void> {
         await request('/api/marketdata/routes', {
             method: 'POST',
@@ -2369,16 +2372,16 @@ export const api = {
         });
     },
 
-    /** Removes the session party's route for a provider, at the version it was read at. */
+    /** Removes the session party's route for a publisher, at the version it was read at. */
     async removeRoute(
-        providerCode: string,
+        publisherCode: string,
         input: {
             readonly version: number;
             readonly reasonCode: string;
             readonly commentary: string;
         },
     ): Promise<void> {
-        await request(`/api/marketdata/routes/${encodeURIComponent(providerCode)}`, {
+        await request(`/api/marketdata/routes/${encodeURIComponent(publisherCode)}`, {
             method: 'DELETE',
             headers: JSON_HEADERS,
             body: JSON.stringify({

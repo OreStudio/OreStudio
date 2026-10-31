@@ -1598,33 +1598,33 @@ export const en: SourceCatalogue = {
         },
     },
     operations: {
-        sources: {
-            title: 'Market data sources',
+        feeds: {
+            title: 'Market data feeds',
             description:
-                'Every source the market data service runs: its adapter state, the ids it accepted and refused, and how long ago it last ticked.',
+                'Every feed the market data service runs: its adapter state, the ids it accepted and refused, and how long ago it last ticked.',
             updated: 'Read {at}',
             tag: {
-                lead: 'A source is quiet when it serves, the service demands ids of it, and nothing ticked in the last five minutes.',
+                lead: 'A feed is quiet when it serves, the service demands ids of it, and nothing ticked in the last five minutes.',
                 noDemand: '{count} with no demand',
                 stale: '{count} stale',
                 quiet: '{count} quiet',
             },
-            alert: '{count} demanded ids are not being served. Read the rejected ids under the source, or check that a party routes to it.',
+            alert: '{count} demanded ids are not being served. Read the rejected ids under the feed, or check that a party routes to it.',
             tiles: {
-                sources: 'Sources',
+                feeds: 'Feeds',
                 serving: 'Serving',
                 routes: 'Routes',
                 ticks: 'Ticks per minute',
                 quiet: 'Quiet',
             },
             table: {
-                title: 'Sources',
-                lead: 'The source that ticked longest ago stands first.',
-                empty: 'The market data service tracks no source yet.',
-                note: 'The trend draws the board’s own readings while the screen is open, one every five seconds. The service keeps no history of ticks per minute, and the read carries no source kind.',
+                title: 'Feeds',
+                lead: 'The feed that ticked longest ago stands first.',
+                empty: 'The market data service tracks no feed yet.',
+                note: 'The trend draws the board\u2019s own readings while the screen is open, one every five seconds. The service keeps no history of ticks per minute, and the read carries no feed kind.',
             },
             columns: {
-                source: 'Source',
+                feed: 'Feed',
                 provider: 'Provider',
                 kind: 'Kind',
                 state: 'State',
@@ -1645,7 +1645,7 @@ export const en: SourceCatalogue = {
                 rejected: 'rejected',
             },
             detail: {
-                title: 'Source · {source}',
+                title: 'Feed \u00b7 {feed}',
                 heartbeatCounter: 'Heartbeat counter',
                 notServed: 'Demanded, not served',
                 served: 'Ids the catalogue holds',
@@ -1666,19 +1666,19 @@ export const en: SourceCatalogue = {
             },
             gap: {
                 kind: {
-                    title: 'The kind of a source',
-                    body: 'The adapter status states the state of a source and not its kind. The kind is the catalogue’s, and this board reads one source of truth.',
+                    title: 'The kind of a feed',
+                    body: 'The adapter status states the state of a feed and not its kind. The kind belongs to the catalogue, and this board reads that status alone.',
                 },
                 drops: {
                     title: 'The quality drops',
                     body: 'The service counts the ticks it drops by reason, and the adapter status carries no count.',
                 },
                 parties: {
-                    title: 'The parties routed to a source',
-                    body: 'The status states how many routes a source has, and not which parties hold them.',
+                    title: 'The parties routed to a feed',
+                    body: 'The status states how many routes a feed has, and not which parties hold them.',
                 },
                 history: {
-                    title: 'The history of a source’s state',
+                    title: 'The history of a feed\u2019s state',
                     body: 'Nothing records when an adapter became stale, serving or rejected, so there is no history to read.',
                 },
             },
@@ -1714,9 +1714,9 @@ export const en: SourceCatalogue = {
             },
         },
         screens: {
-            sources: 'Market data sources',
-            sourcesBody:
-                'Every source the market data service runs, the state of its adapter, and what it serves and refuses.',
+            feeds: 'Market data feeds',
+            feedsBody:
+                'Every feed the market data service runs, the state of its adapter, and what it serves and refuses.',
             signIns: 'Sign-ins',
             signInsBody:
                 'Who is signed in now, the sign-ins that failed, and the events behind them.',
@@ -2456,7 +2456,7 @@ export const en: SourceCatalogue = {
             notBuilt: 'Not built yet',
         },
         journeys: {
-            sources: 'Keep the market data sources running',
+            feeds: 'Keep the market data feeds running',
             services: 'See the running services',
             logs: 'Read the telemetry logs',
             grid: 'Watch the compute grid',
@@ -5043,7 +5043,7 @@ export const en: SourceCatalogue = {
                 provider: 'Provider',
                 pivot: 'Base',
                 terms: 'Terms',
-                source: 'Source',
+                feed: 'Feed',
                 series: 'Series',
                 date: 'Date',
                 value: 'Value',
@@ -5079,7 +5079,7 @@ export const en: SourceCatalogue = {
         subscriptions: {
             title: 'Subscriptions',
             description:
-                'The providers the party takes and the rights it holds, and the one source that serves each provider.',
+                'The providers the party takes and the rights it holds, and the one feed that serves each provider.',
             add: 'Add',
             addTitle: 'Add a subscription',
             addRoute: 'Add a route',
@@ -5089,12 +5089,12 @@ export const en: SourceCatalogue = {
             removeSubscriptionWhat:
                 'Delivery from this provider stops for the party. The series and the history stay.',
             removeRouteWhat:
-                'The party keeps the subscription and loses the source that serves it. The history stays.',
+                'The party keeps the subscription and loses the feed that serves it. The history stays.',
             cancel: 'Cancel',
             newRecord:
                 'The new row is written with the reason system.new_record. No other reason applies to a new record.',
-            sourceHint:
-                'A party has one route for each provider. The route names the source that serves it.',
+            feedHint:
+                'A party has one route for each provider. The route names the feed that serves it.',
             right: {
                 display: 'display',
                 displayMeans: 'A person of the party may show this data on a screen.',
@@ -5109,19 +5109,19 @@ export const en: SourceCatalogue = {
                 party: 'Party',
                 provider: 'Provider',
                 rights: 'Rights',
-                source: 'Source',
+                feed: 'Feed',
             },
             subscriptions: {
                 title: 'Subscriptions',
-                lead: 'A subscription names a provider and its rights, and never a source.',
+                lead: 'A subscription names a provider and its rights, and never a feed.',
                 empty: 'The party holds no subscription yet.',
                 note: 'The service states the party from the session, so Delete stands only on the rows of the party you act in.',
             },
             routes: {
                 title: 'Routes',
-                lead: 'A route picks the source that serves the party for one provider.',
+                lead: 'A route picks the feed that serves the party for one provider.',
                 empty: 'The party has no route yet.',
-                note: 'A source switch is one route and nothing else. The series and the consumers stay as they are.',
+                note: 'A feed switch is one route and nothing else. The series and the consumers stay as they are.',
             },
             gap: {
                 suspend: {

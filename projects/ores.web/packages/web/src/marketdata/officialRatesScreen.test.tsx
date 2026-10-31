@@ -44,7 +44,18 @@ function provider(
         terms_accepted: accepted,
         terms_accepted_by: accepted ? 'super_admin' : '',
         terms_accepted_at: accepted ? '2026-10-28 09:00:00Z' : null,
-        sources: [{ id: `${code}-source`, name: `${code}-frankfurter`, kind: 'vendor' }],
+        feeds: [
+            {
+                id: `${code}-feed`,
+                name: `${code}-frankfurter`,
+                publisher_code: code,
+                session_code: 'frankfurter-eu',
+                service: 'end_of_day',
+                provider_key: code.toUpperCase(),
+                is_default: true,
+                description: '',
+            },
+        ],
         series: quotes.map((quote) => ({
             id: `${code}-${quote}`,
             oresmd_uri: `oresmd://fx/${pivot}?type=fixing&index=fx&source=${code.toUpperCase()}&ccy=${quote}`,

@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 6BE6A380-05E2-4FD4-A737-7155A027C8A2
+:END:
+#+title: Story: Describe every product type on one page
+#+description: The catalogue holds the product types a tenant can book, and the screens name them one trade at a time. There is no page a person can read to see the whole set, what each one is, where its documentation lives, and which books and permissions allow it. Add the catalogue's own page.
+#+type: story
+#+level: s2
+#+filetags: :trading:refdata:web:sprint_29:v0:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+One page a person can read to find out what a product type is before they book
+it: every type the tenant may book, what each one means, where its documentation
+lives, and which books and permissions allow it.
+
+Today the catalogue is stated in rows a screen reads one deal at a time. A
+trader who has never booked a =BondOption= has no page to open, and an
+operations person who is asked why a book refuses a type has no page to quote.
+The knowledge corpus describes the families in prose, one document per family,
+and nothing joins that prose to the catalogue the store holds.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-31                               |
+
+* Acceptance
+
+- A page lists every product type the catalogue holds, by the name a desk uses
+  and the code the store holds.
+- Each type states what it is, the asset class it belongs to, and where its
+  documentation is: the ORE product page, the knowledge document, or both.
+- Each type states what allows it: the books a tenant has enabled for it, and
+  the permission a person needs to book one.
+- A type the catalogue holds and no page can describe is listed as undescribed
+  rather than hidden, so the gap is visible.
+
+* What the work will have to settle
+
+- Whether the page is a catalogue page or a knowledge page. A list of types with
+  their books and permissions is reference data and belongs on a screen; the
+  prose of what a cap/floor is belongs in the knowledge corpus, and the page
+  links to it rather than restating it.
+- Where "which books allow this type" comes from. If no rule exists yet, the
+  page states what it can and the story carries the gap.
+- Whether documentation is read from ORE's own product pages at build time or
+  written once by hand. Reading it keeps it true; writing it is what the corpus
+  already does for the families.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -17,9 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/boost_severity.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.core/service/cut_read_service.hpp"
 #include "ores.reporting.core/service/cut_state.hpp"
+#include "test_suite.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -34,6 +38,7 @@
 // a store to state: a month is a range the caller's clock decides, and the body
 // that replaced a cut is the earliest later body a run may price from.
 
+using namespace ores::logging;
 using namespace ores::reporting;
 using ores::platform::time::datetime;
 
@@ -73,6 +78,8 @@ const auto second = a_cut("22222222-2222-4222-8222-222222222222", "2026-10-07T16
 }
 
 TEST_CASE("a month is a range the caller's clock decides", "[cut_read_service]") {
+
+    auto lg(make_logger(test_suite));
     const auto [from, to] = service::cut_window_of("2026-10");
 
     REQUIRE(datetime::to_iso8601_utc(from) == "2026-10-01 00:00:00.000000Z");
@@ -80,6 +87,8 @@ TEST_CASE("a month is a range the caller's clock decides", "[cut_read_service]")
 }
 
 TEST_CASE("a month that ends a year reads into the next one", "[cut_read_service]") {
+
+    auto lg(make_logger(test_suite));
     const auto [from, to] = service::cut_window_of("2026-12");
 
     REQUIRE(datetime::to_iso8601_utc(from) == "2026-12-01 00:00:00.000000Z");
@@ -87,6 +96,8 @@ TEST_CASE("a month that ends a year reads into the next one", "[cut_read_service
 }
 
 TEST_CASE("a month a person stated wrongly is refused by name", "[cut_read_service]") {
+
+    auto lg(make_logger(test_suite));
     REQUIRE_THROWS_AS(service::cut_window_of("2026-13"), std::invalid_argument);
     REQUIRE_THROWS_AS(service::cut_window_of("October"), std::invalid_argument);
     REQUIRE_THROWS_AS(service::cut_window_of("2026-1"), std::invalid_argument);
@@ -102,6 +113,8 @@ TEST_CASE("a month a person stated wrongly is refused by name", "[cut_read_servi
 }
 
 TEST_CASE("an empty month reads everything the store holds", "[cut_read_service]") {
+
+    auto lg(make_logger(test_suite));
     const auto [from, to] = service::cut_window_of("");
 
     REQUIRE(datetime::to_iso8601_utc(from) == "1970-01-01 00:00:00.000000Z");
@@ -110,6 +123,8 @@ TEST_CASE("an empty month reads everything the store holds", "[cut_read_service]
 
 TEST_CASE("the body that replaced a cut is the earliest later body a run may price from",
           "[cut_read_service]") {
+
+    auto lg(make_logger(test_suite));
     const auto later = authorised(a_cut("33333333-3333-4333-8333-333333333333",
                                         "2026-10-08T16:00:00Z"));
     const auto later_still = authorised(
@@ -124,11 +139,15 @@ TEST_CASE("the body that replaced a cut is the earliest later body a run may pri
 }
 
 TEST_CASE("a cut no later body holds a place for is replaced by nothing", "[cut_read_service]") {
+
+    auto lg(make_logger(test_suite));
     REQUIRE_FALSE(service::replacement_of(authorised(second), {first}));
     REQUIRE_FALSE(service::replacement_of(authorised(second), {}));
 }
 
 TEST_CASE("a later body that waits on a person holds no place", "[cut_read_service]") {
+
+    auto lg(make_logger(test_suite));
     // Taken, and the kind demands a signature nobody gave: a run may not price
     // from it, so it replaced nothing.
     auto waiting = a_cut("33333333-3333-4333-8333-333333333333", "2026-10-08T16:00:00Z");
@@ -140,6 +159,8 @@ TEST_CASE("a later body that waits on a person holds no place", "[cut_read_servi
 }
 
 TEST_CASE("a later body of another kind, scope or centre holds no place", "[cut_read_service]") {
+
+    auto lg(make_logger(test_suite));
     REQUIRE_FALSE(service::replacement_of(
         first, {authorised(a_cut("33333333-3333-4333-8333-333333333333",
                                  "2026-10-08T16:00:00Z",
@@ -158,6 +179,8 @@ TEST_CASE("a later body of another kind, scope or centre holds no place", "[cut_
 }
 
 TEST_CASE("a supersession leaves the body's other states as they were", "[cut_read_service]") {
+
+    auto lg(make_logger(test_suite));
     // The rule the list leans on: supersession moves a usable body and leaves
     // every other state alone.
     auto refused = a_cut("33333333-3333-4333-8333-333333333333", "2026-10-05T16:00:00Z");

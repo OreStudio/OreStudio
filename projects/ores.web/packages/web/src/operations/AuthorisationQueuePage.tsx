@@ -64,12 +64,16 @@ import {
 /**
  * The states, in the order a person works them, with the colour each is drawn in.
  *
- * The colour is the state's meaning and not decoration: a pastel wash on the row
- * and a stronger edge on its left so a queue of forty deals can be read by
- * colour before it is read by word. The choices are deliberate -- butter for a
- * deal that waits, lilac for one that moved, sky for one parked, mint for one
- * approved and blush for one refused -- because those are the readings a person
- * already has of them.
+ * The colour is the state's meaning and not decoration: a tint on the row and a
+ * solid edge on its left, so a queue of forty deals reads by colour before it is
+ * read by word.
+ *
+ * The palette is a desk's, not a rainbow's: low-chroma hues that survive a dark
+ * surface, each one a reading a person already has. Amber for a deal that waits
+ * on somebody, indigo for one that moved and needs re-reading, steel for one
+ * parked by a query, teal for one settled and oxide for one refused. Saturated
+ * pastels were tried and read as highlighting rather than as state, which is the
+ * wrong signal in a screen where nothing is an error merely by being new.
  */
 const GROUPS: readonly {
     readonly key: QueueGroup;
@@ -81,37 +85,37 @@ const GROUPS: readonly {
     {
         key: 'awaiting',
         label: 'Awaiting authorisation',
-        wash: 'rgba(255, 255, 186, 0.16)',
-        edge: '#ffffba',
-        ink: '#ffffba',
+        wash: 'rgba(216, 162, 74, 0.08)',
+        edge: '#d8a24a',
+        ink: '#e6c48e',
     },
     {
         key: 'changed',
         label: 'Changed since requested',
-        wash: 'rgba(255, 223, 186, 0.16)',
-        edge: '#ffdfba',
-        ink: '#ffdfba',
+        wash: 'rgba(154, 138, 214, 0.08)',
+        edge: '#9a8ad6',
+        ink: '#c3b8ee',
     },
     {
         key: 'held',
         label: 'Held over',
-        wash: 'rgba(186, 225, 255, 0.16)',
-        edge: '#bae1ff',
-        ink: '#bae1ff',
+        wash: 'rgba(111, 159, 196, 0.08)',
+        edge: '#6f9fc4',
+        ink: '#a8c8e0',
     },
     {
         key: 'authorised',
         label: 'Authorised',
-        wash: 'rgba(186, 255, 201, 0.16)',
-        edge: '#baffc9',
-        ink: '#baffc9',
+        wash: 'rgba(95, 168, 127, 0.08)',
+        edge: '#5fa87f',
+        ink: '#9bccb2',
     },
     {
         key: 'denied',
         label: 'Denied',
-        wash: 'rgba(255, 179, 186, 0.16)',
-        edge: '#ffb3ba',
-        ink: '#ffb3ba',
+        wash: 'rgba(194, 94, 99, 0.08)',
+        edge: '#c25e63',
+        ink: '#e0a0a3',
     },
 ];
 
@@ -298,7 +302,7 @@ export function AuthorisationQueuePage(): ReactNode {
                                 aria-pressed={on}
                                 className="rounded-full border px-3 py-1 text-[13px]"
                                 style={{
-                                    backgroundColor: on ? entry.wash : 'transparent',
+                                    backgroundColor: on ? `${entry.edge}22` : 'transparent',
                                     borderColor: on ? entry.edge : 'var(--line, #30363d)',
                                     color: on ? entry.ink : undefined,
                                     opacity: on ? 1 : 0.6,

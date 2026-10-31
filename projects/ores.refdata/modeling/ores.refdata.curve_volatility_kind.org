@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: 2D6A4F18-7C3E-4B95-9A21-5E8D3C07B4F6
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.refdata.curve_volatility_kind
 #+description: Codegen entity model for the refdata curve_volatility_kind row: one kind of one volatility entry, with the terms every kind states.

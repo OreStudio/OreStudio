@@ -273,7 +273,12 @@
 #include "ores.refdata.core/messaging/curve_volatility_curve_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_volatility_delta_surface_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_volatility_kind_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_volatility_moneyness_surface_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_volatility_proxy_surface_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_volatility_smile_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_volatility_smile_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_volatility_smile_parameter_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_volatility_smile_parameter_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_volatility_strike_surface_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/day_count_fraction_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/day_counter_history_provider_registrar.hpp"
@@ -844,6 +849,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_swaption_proxy_config_history_provider(hist_registry);
         register_fx_volatility_smile_history_provider(hist_registry);
         register_inflation_cap_floor_volatility_strikes_history_provider(hist_registry);
+        register_curve_volatility_smile_history_provider(hist_registry);
+        register_curve_volatility_smile_parameter_history_provider(hist_registry);
+        register_curve_volatility_smile_history_provider(hist_registry);
+        register_curve_volatility_smile_parameter_history_provider(hist_registry);
+        register_curve_volatility_moneyness_surface_history_provider(hist_registry);
 
         subs.push_back(ores::history::messaging::register_history_handlers(
             nats, hist_registry, "refdata", registrar_queue_group, ctx, verifier));

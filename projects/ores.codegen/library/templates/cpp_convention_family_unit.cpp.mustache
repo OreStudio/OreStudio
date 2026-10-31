@@ -5,7 +5,13 @@
 #include "conventions_row_helpers.hpp"
 #include "ores.refdata.core/repository/{{entity}}_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+{{#has_wire_codec}}
+#include "{{codec_include}}"
+#include "ores.utility/codec/json_codec.hpp"
+{{/has_wire_codec}}
+{{^has_wire_codec}}
 #include <rfl/json.hpp>
+{{/has_wire_codec}}
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -15,7 +21,12 @@ namespace ores::refdata::service::convention_family {
 void apply_{{key}}(const ores::database::context& ctx,
                    const std::string& payload,
                    {{^is_world}}[[maybe_unused]] {{/is_world}}conventions_apply_result& result) {
+{{#has_wire_codec}}
+    const auto decoded = ores::utility::codec::json::try_read<{{domain_type}}>(payload);
+{{/has_wire_codec}}
+{{^has_wire_codec}}
     const auto decoded = rfl::json::read<{{domain_type}}>(payload);
+{{/has_wire_codec}}
     if (!decoded)
         throw std::runtime_error(
             "Staged conventions payload for family "
@@ -40,7 +51,8 @@ void apply_{{key}}(const ores::database::context& ctx,
 std::vector<std::string> read_{{key}}_payloads(const ores::database::context& ctx) {
     std::vector<std::string> payloads;
     for (const auto& row : ores::refdata::repository::{{entity}}_repository().read_latest(ctx))
-        payloads.push_back(rfl::json::write(row));
+        payloads.push_back(
+            {{#has_wire_codec}}ores::utility::codec::json::write(row){{/has_wire_codec}}{{^has_wire_codec}}rfl::json::write(row){{/has_wire_codec}});
     return payloads;
 }
 

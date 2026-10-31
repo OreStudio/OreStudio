@@ -1,0 +1,182 @@
+:PROPERTIES:
+:ID: DB2C3AFB-777A-405F-A208-B97B25B9C93C
+:END:
+#+title: Task: Model the volatility smile configuration and the moneyness surface
+#+description: The volatility split leaves three things out: ParametricSmileConfiguration, which both surface types state as an optional element and no part carries; the moneyness surface, which has no part and which the projection refuses; and a shell address for each of the ten parts, whose permissions are seeded with no caller.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-design:modeling:refdata:codegen:split_the_types_that_carry_too_many_columns:sprint_29:v0:
+#+owner: marco
+#+branch: feature/model-the-volatility-smile-configuration-and-the-moneyness-surface
+#+pr: 4270
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A volatility entry states a =ParametricSmileConfiguration= inside its
+=StrikeSurface=, =DeltaSurface= and =MoneynessSurface=, and a
+=MoneynessSurface= at all. The split models neither: the projection refuses a
+moneyness surface, and it refuses the smile configuration wherever it appears,
+so a document that states either does not import. This task models both, and
+gives the ten parts the shell address the last split left out.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- A document that states a =ParametricSmileConfiguration= on a strike, delta or
+  moneyness surface imports, round trips through the store, and exports the
+  element back where it was.
+- A document that states a =MoneynessSurface= imports and exports the same way.
+- The smile row is keyed by the kind, because the kind is what the parts share:
+  one smile per kind, whichever surface kind it is.
+- A parameter is a row of its own, ordered, because the parameters are a list
+  the document writes in order.
+- Every one of the twelve parts has a shell command, and the seeded permissions
+  have a caller.
+
+* Plan
+
+** The parametric smile belongs to the kind, not to a surface
+
+The kind row is the key the parts share: a strike surface, a delta surface and a
+moneyness surface are each one kind of one entry. So the smile is one part keyed
+by =curve_volatility_kind_id=, and it serves every kind that can state one
+rather than being copied into three surfaces. A kind that states no smile has
+no row, which is the conditional the schema cannot state.
+
+- =curve_volatility_parametric_smile=: the calibration's three fields
+  (=max_calibration_attempts=, =exit_early_error_threshold=,
+  =max_acceptable_error=) and the optional =residual_correction_dimension=, one
+  of =AbsoluteStrike=, =StrikeMinusForward=, =StrikeOverForward=.
+- =curve_volatility_parametric_smile_parameter=: =name=, =initial_value=,
+  =calibration= and =position=, keyed by the smile row.
+
+The =curve_parametric_smile= entity that already exists is keyed by a curve
+definition, which is a different owner: an entry holds several kinds and each
+kind may state its own smile.
+
+** The moneyness surface is a sixth kind
+
+=volatilityMoneynessSurfaceConfig= states =MoneynessType=, =MoneynessLevels=,
+=Expiries=, the two interpolations, the three extrapolations, the future price
+correction and the calendar -- the grid the strike and delta surfaces share, with
+moneyness in place of strikes or deltas. It becomes
+=curve_volatility_moneyness_surface=, keyed by the kind row like its siblings,
+and =MoneynessSurface= joins the kinds the projection reads and writes.
+
+** Wiring, as the split did it
+
+The document model gains a vector per new entity, the service writes, reads and
+removes them, the projection imports and exports them, the component file lists
+and the create and drop aggregators are regenerated, the registrars are composed,
+the permissions are seeded, and the shell commands and recipes are generated.
+
+** Shell addresses
+
+Each of the ten parts, and the three this task adds, gets a generated shell
+command with its recipe, so the seeded permissions have a caller.
+
+* Result
+
+All three items are done.
+
+** The parametric smile
+
+=curve_volatility_smile= holds the calibration and the optional residual
+correction dimension, keyed by the kind. =curve_volatility_smile_parameter=
+holds the named parameters with their place in the list, keyed by the smile. The
+projection reads the element wherever a strike, delta or moneyness surface states
+it and writes it back under the same element, and a database round trip of a
+strike surface that states one proves the path.
+
+The name is =curve_volatility_smile= and not =curve_volatility_parametric_smile=
+for two reasons: the curve entity of that name already exists with a different
+owner, and the longer name overflowed the identifier length the store keeps, so
+PostgreSQL truncated the parameter table's name while the generated repository
+asked for the full one.
+
+** The moneyness surface
+
+=curve_volatility_moneyness_surface= is the strike surface's grid with moneyness
+in place of strikes, keyed by the kind. =MoneynessSurface= now imports, round
+trips through the store and exports, and the projection no longer refuses it.
+=ApoFutureSurface= is still refused, and is not part of this task.
+
+** The shell addresses
+
+Thirteen generated command units with their recipes: the ten parts the split
+left, the two new smile parts and the moneyness part. The seeded permissions now
+have a caller, and the refdata menu registers all thirteen.
+
+** A guard the tests found
+
+The value guard trimmed only spaces, so the corpus's three-line =SwapTenors=
+failed the set it is held to: the item arrived with a tab and a newline in front
+of it. It now trims every whitespace character the layout may leave. That
+failure belongs to the guard and not to this branch: it appeared when the store
+began enforcing the value sets.
+
+** What is still red, and whose it is
+
+=check_component_drift --component refdata= names twenty-six
+=convention_family_*.cpp= files that =main= hand-edited to carry the generated
+codec. Regenerating them would undo that edit, so this branch leaves them alone
+and the gate stays red until the generator renders what those files hold. It
+names nothing this branch produced.
+
+Verified: =./compass.sh build= exits 0; the refdata, ore and shell refdata suites
+pass, including two new database round trips; the codegen suite passes 1793
+tests; =compass db recreate= applies the schema and the seeds; the ER diagrams,
+=compass lint= and the ER check pass.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Members the smile part carries | 7 | `python3 build/scripts/inventory_entity_columns.py \| awk -F'\t' '$3=="curve_volatility_smile"'` | `4d7c3c01d2` |
+| Members the smile parameter part carries | 7 | same, for `curve_volatility_smile_parameter` | `4d7c3c01d2` |
+| Members the moneyness part carries | 13 | same, for `curve_volatility_moneyness_surface` | `e5e8787a4e` |
+| Generated shell command units the parts add | 13 | `projects/ores.codegen/scripts/check_shell_command_composition.py` | `99c56f839a` |
+| Refdata files the drift gate names, all of them =main='s convention family hand edits | 26 | `projects/ores.codegen/scripts/check_component_drift.py --component refdata --dry-run` | `99c56f839a` |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4270][#4270]] | [refdata] Model the volatility smile configuration and the moneyness surface |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |

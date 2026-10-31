@@ -191,18 +191,36 @@ export function countsOf(
     return counts;
 }
 
+/**
+ * How many requests the queue reads in one call.
+ *
+ * The screen filters and counts across the rows it holds, so it reads a window
+ * rather than a page. The window is stated here and the read says when the
+ * store holds more, because a queue that quietly stops at a hundred reads as a
+ * queue that emptied.
+ *
+ * Paging the watch itself needs the count of each group from the server, which
+ * the inbox does not answer yet: `doc/agile/product_backlog/inbox/page_the_authorisation_queue.org`.
+ */
+export const QUEUE_READ_LIMIT = 250;
+
 export const authorisationQueue = {
     /**
-     * The queue in one read.
-     *
-     * A tenant's queue is the deals awaiting one control, so it is read whole
-     * rather than paged: a page would hide the count the rail states, and the
-     * count is what tells a person whether the queue moved.
+     * The queue in one read: the requests waiting, the answered tail, and how
+     * many are waiting in all.
      */
-    async read(): Promise<{ items: readonly QueueRow[]; answered: readonly QueueRow[] }> {
-        const params = new URLSearchParams({ offset: '0', limit: '100' });
+    async read(): Promise<{
+        readonly items: readonly QueueRow[];
+        readonly answered: readonly QueueRow[];
+        readonly total: number;
+    }> {
+        const params = new URLSearchParams({ offset: '0', limit: String(QUEUE_READ_LIMIT) });
         return pageSchema.parse(
             await request(`/api/queue/authorisations?${params.toString()}`, { method: 'GET' }),
-        ) as { items: readonly QueueRow[]; answered: readonly QueueRow[] };
+        ) as {
+            readonly items: readonly QueueRow[];
+            readonly answered: readonly QueueRow[];
+            readonly total: number;
+        };
     },
 };

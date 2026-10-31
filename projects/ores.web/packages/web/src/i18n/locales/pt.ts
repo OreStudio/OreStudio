@@ -1674,6 +1674,7 @@ const pt: SourceCatalogue = {
                 deny: 'Recusar',
             },
             reading: 'A ler o pedido…',
+            readWindow: 'Este ecrã lê os {shown} pedidos mais recentes de {waiting} em espera.',
             notFound:
                 'Nenhum pedido {requestId} aguarda nesta fila. Pode ter sido decidido e ter saído da cauda de pedidos respondidos.',
             backToQueue: 'Voltar à fila',

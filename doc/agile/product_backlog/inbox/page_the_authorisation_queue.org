@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 8276D0CF-A711-4FED-B073-574821E13167
+:END:
+#+title: Page the authorisation queue and count it on the server
+#+description: The queue screen reads a window of 250 requests because it filters and counts the rows it holds, and the inbox has no read that pages the queue while stating how many rows each state and class holds. Paging it needs those counts from the server; until then the screen says when its window is shorter than the queue.
+#+type: capture
+#+level: cross
+#+filetags: :web:operations:queue:paging:inbox:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The queue screen reads a window of requests rather than a page, because it does
+three things the wire cannot do a page at a time yet: it filters by class and by
+state, it counts each group for the figures on the buttons, and it orders the
+open requests and the answered tail as one list.
+
+Every record list in the web reads one page from the server and states the
+server's total. The queue states its own window instead: it asks for 250 rows and
+warns above the table when the store holds more waiting. That is honest, and it
+is not the standard.
+
+* Why
+
+The standard exists so that a list never silently stops. Reading a window keeps
+the count truthful only as long as the queue is shorter than the window, and a
+tenant working a large book can pass 250 without noticing that the warning was
+the only sign.
+
+The wire can nearly do it already. =GET /api/queue/authorisations= takes an
+offset and a limit, and the inbox answers a page of open requests with the total
+open count. What it cannot answer is the figure on each button: the number of
+requests in each state, in each class, across the whole queue. Those figures are
+what a person reads to decide whether the queue moved, so they cannot be dropped
+to gain paging.
+
+* Shape of the work
+
+Not designed here. The pieces that appear necessary:
+
+- A count read: per state, per class, and per class within state, for the
+  requests this person may decide. It is the aggregate of the rows the screen
+  counts today.
+- A queue read that pages the open requests and the answered tail as one ordered
+  list, filtered by the class and the states the person chose, so the buttons
+  become a server filter rather than a local one.
+- The screen drawn from a server source, with the pager the other lists use, and
+  the group filter passed in the address as every other list filter is.
+- The answered tail needs its own total, or a stated window of its own, since a
+  decision that aged out is not part of the count of what is waiting.
+
+* What done looks like
+
+A tenant with ten thousand requests in the queue pages through them, the figures
+on the buttons match the store, and the screen says how many requests the filter
+matches in all rather than how many it happened to read.
+
+* References
+
+- =GET /api/queue/authorisations= — the read that pages open requests and carries
+  the open total.
+- [[proj:doc/knowledge/domain/operational_authorisation_queue.org][The operational authorisation queue]] — how the queue is organised and
+  what the figures mean.
+
+* See also
+
+- [[id:3E7A494E-F80D-41D4-AAEC-ACB3DA044ED3][Build the authorisation queue screen]] — the screen this serves.
+- [[id:73921707-CE11-41AD-923D-ED5B36D7FF09][Classify a product type as flow or non-flow]] — the other read
+  the queue's division depends on.

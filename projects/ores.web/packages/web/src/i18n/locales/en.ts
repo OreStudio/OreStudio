@@ -1662,6 +1662,7 @@ export const en: SourceCatalogue = {
                 deny: 'Deny',
             },
             reading: 'Reading the request…',
+            readWindow: 'This screen reads the newest {shown} of {waiting} requests waiting.',
             notFound:
                 'No request {requestId} waits in this queue. It may have been decided and aged out of the answered tail.',
             backToQueue: 'Back to the queue',

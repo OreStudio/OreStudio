@@ -1682,6 +1682,8 @@ const fr: SourceCatalogue = {
                 deny: 'Refuser',
             },
             reading: 'Lecture de la demande…',
+            readWindow:
+                'Cet écran lit les {shown} demandes les plus récentes sur {waiting} en attente.',
             notFound:
                 'Aucune demande {requestId} n’attend dans cette file. Elle a peut-être été décidée et est sortie de la fin de file des demandes répondues.',
             backToQueue: 'Retour à la file',

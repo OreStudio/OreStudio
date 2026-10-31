@@ -34,7 +34,12 @@ import {
 import { api, type HoldReason } from '../api/client.js';
 import { Button, cx, Detail, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { AccountPicture } from '../ui/Images.js';
-import { localSource, RecordList, type ListColumn } from '../refdata/RecordList.js';
+import {
+    localSource,
+    RecordList,
+    type ListColumn,
+    type ListSource,
+} from '../refdata/RecordList.js';
 import { AreaTrail, useAreaRoot } from '../shell/AreaTrail.js';
 import { PersonRef, usePeopleDirectory } from '../access/PersonRef.js';
 import { useTranslation } from '../i18n/Provider.js';
@@ -291,7 +296,7 @@ export function AuthorisationQueuePage(): ReactNode {
         },
     ];
 
-    const source = localSource<QueueRow>({
+    const held = localSource<QueueRow>({
         key: 'queue-authorisations',
         rows,
         // The rows change under the screen when a decision is taken.
@@ -300,6 +305,30 @@ export function AuthorisationQueuePage(): ReactNode {
             `${row.reference} ${row.tradeType} ${row.counterparty} ${row.book} ${row.tradeDate}`,
         orderOf: (left, right) => right.requestedAt.localeCompare(left.requestedAt),
     });
+
+    /*
+     * The read is a window, so the list says when the window is not the queue.
+     * A silent stop at the read's limit would draw a queue that had emptied.
+     */
+    const waiting = queue.data?.total ?? 0;
+    const source: ListSource<QueueRow> =
+        waiting > open.length
+            ? {
+                  ...held,
+                  read: async (page) => ({
+                      ...(await held.read(page)),
+                      notes: [
+                          {
+                              tone: 'warn',
+                              text: t('operations.authorisationQueue.readWindow', {
+                                  shown: open.length,
+                                  waiting,
+                              }),
+                          },
+                      ],
+                  }),
+              }
+            : held;
 
     return (
         <RecordList

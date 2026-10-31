@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/move-ores-refdata-hand-written-json-off-reflect-cpp
-#+pr: 4236
+#+pr: 4259
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -258,7 +258,7 @@ So the printer is used after all, and the three ways forward are:
 Whichever is chosen is generator-wide work with an estate-wide build, not a
 refdata-only edit, so it does not belong inside this task's remaining five
 hand-written sites. The five are unaffected by it.
-=======
+
 ** A storage row prints from its own column list (2026-10-31)
 
 The storage entity already states its columns: =columns()= names each one and
@@ -293,6 +293,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4259][#4259]] | [codegen] Print a storage row from the columns it already states |
 | [[https://github.com/OreStudio/OreStudio/pull/4236][#4236]] | [docs] Record why the storage entity printer cannot be deleted |
 | [[https://github.com/OreStudio/OreStudio/pull/4234][#4234]] | [refdata] Carry the convention payloads through the generated codec |
 | [[https://github.com/OreStudio/OreStudio/pull/4204][#4204]] | [refdata] Read and print through the generated codec, not the reflector |

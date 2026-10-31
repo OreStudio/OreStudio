@@ -53,6 +53,9 @@ export interface QueueRow {
     /** The trade's own reference, which is what a person recognises it by. */
     readonly reference: string;
     readonly classCode: QueueClass;
+    /** The entities the row links to: the book and the counterparty it faces. */
+    readonly bookId: string;
+    readonly counterpartyId: string;
     readonly tradeType: string;
     readonly book: string;
     readonly counterparty: string;
@@ -75,6 +78,8 @@ const rowSchema = z.object({
     tradeId: z.string().default(''),
     reference: z.string().default(''),
     classCode: z.enum(['flow', 'non-flow']).default('non-flow'),
+    bookId: z.string().default(''),
+    counterpartyId: z.string().default(''),
     tradeType: z.string().default(''),
     book: z.string().default(''),
     counterparty: z.string().default(''),

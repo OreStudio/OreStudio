@@ -396,6 +396,8 @@ async function dealtWithByRequests(
             tradeType,
             classCode: classOf(tradeType),
             tradeVersion: Number(trade['version'] ?? 0),
+            bookId,
+            counterpartyId,
             book: bookNameOf.get(bookId) ?? '',
             counterparty: counterpartyNameOf.get(counterpartyId) ?? '',
             tradeDate: text(summary?.['trade_date']),
@@ -507,6 +509,8 @@ async function queueRows(
                 // so and leaves the row open rather than taking a lease on it.
                 changed: tradeVersion > subject.tradeVersion,
                 classCode: String(fact?.['classCode'] ?? 'non-flow'),
+                bookId: String(fact?.['bookId'] ?? ''),
+                counterpartyId: String(fact?.['counterpartyId'] ?? ''),
                 tradeType: String(fact?.['tradeType'] ?? ''),
                 book: String(fact?.['book'] ?? ''),
                 counterparty: String(fact?.['counterparty'] ?? ''),

@@ -179,6 +179,11 @@ export function structurePath(reference: string): string {
 }
 
 /** The page of one trade. */
+/** The page of one authorisation request: the deal and the decision it awaits. */
+export function authorisationRequestPath(requestId: string): string {
+    return `/operations/authorisation-queue/${encodeURIComponent(requestId)}`;
+}
+
 export function tradePath(id: string): string {
     return `/trading/trades/${encodeURIComponent(id)}`;
 }

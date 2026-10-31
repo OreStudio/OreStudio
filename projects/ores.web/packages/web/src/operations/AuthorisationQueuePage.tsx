@@ -21,7 +21,7 @@
 
 import { useMemo, useState, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import {
     authorisationQueue,
     countsOf,
@@ -31,18 +31,25 @@ import {
     type QueueRow,
 } from '../api/queue.js';
 import { api, type HoldReason } from '../api/client.js';
-import { Button, cx, Fact, Notice, PageHeader, Tag } from '../ui/Primitives.js';
+import { Button, cx, Detail, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
+import { PersonRef } from '../access/PersonRef.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { tradePath } from '../shell/paths.js';
+import {
+    authorisationRequestPath,
+    bookPath,
+    counterpartyPath,
+    PATHS,
+    tradePath,
+} from '../shell/paths.js';
 
 /**
- * The Operations queue.
+ * The Operations queue and the page of one authorisation.
  *
  * A deal waits here once it is live, and an operator decides it. The queue has
  * two divisions over the same rows — how much work the deal is, and the state
- * its authorisation is in — and both are in the rail, because a person working
- * the queue moves between them without losing the other.
+ * its authorisation is in — and both are in the rail. Opening a row leaves the
+ * queue for the request's own page, where the deal is read and decided.
  *
  * The screen is drawn from the signed-off prototype at
  * doc/prototypes/operations/operational-authorisation-queue.
@@ -94,6 +101,18 @@ function stateWord(row: QueueRow): string {
     }
 }
 
+/** A link that is drawn as the house draws one. */
+function EntityLink({ to, children }: { readonly to: string; readonly children: ReactNode }) {
+    return (
+        <Link
+            to={to}
+            className="underline decoration-line-strong underline-offset-2 hover:decoration-accent"
+        >
+            {children}
+        </Link>
+    );
+}
+
 /** One node of the rail: its label and its figure, on one line. */
 function RailNode({
     label,
@@ -125,169 +144,26 @@ function RailNode({
     );
 }
 
-/**
- * The detail of one deal, and the decision it is waiting for.
- *
- * Every decision carries a comment, authorisation included: the comment is what
- * the control is audited by. A hold additionally names a reason, because a
- * parked deal without a reason is a deal nobody can pick up.
- */
-function DealPanel({
-    row,
-    onDecided,
-}: {
-    readonly row: QueueRow;
-    readonly onDecided: () => void;
-}): ReactNode {
-    const [comment, setComment] = useState('');
-    const [holdReason, setHoldReason] = useState('');
-    const [failure, setFailure] = useState('');
-    const [busy, setBusy] = useState(false);
-    const reasons = useQuery({ queryKey: ['hold-reasons'], queryFn: () => api.holdReasons() });
-
-    const decided = row.stateCode === 'approved' || row.stateCode === 'refused' || row.stateCode === 'cancelled';
-    const canComment = comment.trim().length > 0;
-
-    const decide = async (decisionCode: 'approve' | 'refuse' | 'hold') => {
-        setBusy(true);
-        setFailure('');
-        try {
-            await api.decideRequest(row.requestId, {
-                version: row.requestVersion,
-                decisionCode,
-                comment: comment.trim(),
-                ...(decisionCode === 'hold' && { holdReasonCode: holdReason }),
-            });
-            setComment('');
-            setHoldReason('');
-            onDecided();
-        } catch (error) {
-            setFailure(error instanceof Error ? error.message : String(error));
-        } finally {
-            setBusy(false);
-        }
-    };
-
-    return (
-        <div className="flex flex-col gap-4">
-            <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                    <div className="font-mono text-sm">{row.reference}</div>
-                    <div className="truncate text-sm text-ink-dim">{row.tradeType}</div>
-                </div>
-                <Tag small tone={stateTone(row)}>
-                    {stateWord(row)}
-                </Tag>
-            </div>
-
-            {row.changed && (
-                <Notice tone="warn">
-                    The deal moved after this request was raised: version {row.tradeVersion} now,
-                    against {row.requestTradeVersion} when it arrived. The row is not locked, and a
-                    decision on the version you have read is the decision recorded.
-                </Notice>
-            )}
-
-            <dl className="grid grid-cols-[8rem_1fr] gap-x-3 gap-y-2">
-                <Fact label="Counterparty" value={row.counterparty} />
-                <Fact label="Book" value={row.book} />
-                <Fact label="Trade date" value={row.tradeDate} />
-                <Fact label="Status" value={row.status} />
-                <Fact label="Raised by" value={row.requestedBy} />
-                <Fact label="Raised at" value={row.requestedAt} />
-            </dl>
-
-            <Link
-                to={tradePath(row.tradeId)}
-                className="w-fit text-sm underline decoration-line-strong underline-offset-2 hover:decoration-accent"
-            >
-                Open the deal
-            </Link>
-
-            {failure !== '' && <Notice tone="error">{failure}</Notice>}
-
-            {decided ? (
-                <Notice tone="info">
-                    This deal is decided. Undoing a decision is not offered here yet.
-                </Notice>
-            ) : (
-                <>
-                    <label className="flex flex-col gap-1">
-                        <span className="text-xs uppercase tracking-wide text-ink-faint">
-                            Comment, required
-                        </span>
-                        <textarea
-                            value={comment}
-                            onChange={(event) => setComment(event.target.value)}
-                            rows={3}
-                            className="rounded-md border border-line bg-surface px-2 py-1.5 text-sm"
-                            placeholder="What did you check, and what did you find?"
-                        />
-                    </label>
-
-                    {row.stateCode !== 'held' && (
-                        <label className="flex flex-col gap-1">
-                            <span className="text-xs uppercase tracking-wide text-ink-faint">
-                                Hold reason, required to hold over
-                            </span>
-                            <select
-                                value={holdReason}
-                                onChange={(event) => setHoldReason(event.target.value)}
-                                className="rounded-md border border-line bg-surface px-2 py-1.5 text-sm"
-                            >
-                                <option value="">Choose a reason</option>
-                                {(reasons.data?.reasons ?? []).map((reason: HoldReason) => (
-                                    <option key={reason.code} value={reason.code}>
-                                        {reason.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-                    )}
-
-                    <div className="flex flex-wrap gap-2">
-                        <Button
-                            disabled={!canComment || busy}
-                            onClick={() => void decide('approve')}
-                        >
-                            Authorise
-                        </Button>
-                        {row.stateCode !== 'held' && (
-                            <Button
-                                disabled={!canComment || !holdReason || busy}
-                                onClick={() => void decide('hold')}
-                            >
-                                Hold over
-                            </Button>
-                        )}
-                        <Button disabled={!canComment || busy} onClick={() => void decide('refuse')}>
-                            Deny
-                        </Button>
-                    </div>
-                </>
-            )}
-        </div>
-    );
+/** The queue read, shared by the list and the page. */
+function useQueue() {
+    return useQuery({
+        queryKey: ['queue', 'authorisations'],
+        queryFn: () => authorisationQueue.read(),
+    });
 }
 
 export function AuthorisationQueuePage(): ReactNode {
     const { t } = useTranslation();
-    const queryClient = useQueryClient();
+    const navigate = useNavigate();
     const [klass, setKlass] = useState<QueueClass | 'all'>('all');
     const [group, setGroup] = useState<QueueGroup>('awaiting');
-    const [selected, setSelected] = useState('');
 
-    const queue = useQuery({
-        queryKey: ['queue', 'authorisations'],
-        queryFn: () => authorisationQueue.read(),
-    });
-
+    const queue = useQueue();
     const open = queue.data?.items ?? [];
     const answered = queue.data?.answered ?? [];
     const all = useMemo(() => [...open, ...answered], [open, answered]);
     const rows = useMemo(() => rowsOf(all, klass, group), [all, klass, group]);
     const counts = useMemo(() => countsOf(all, klass), [all, klass]);
-    const chosen = rows.find((row) => row.requestId === selected) ?? rows[0];
 
     return (
         <section className="flex flex-col gap-4">
@@ -301,7 +177,7 @@ export function AuthorisationQueuePage(): ReactNode {
 
             {queue.isError && <Notice tone="error">The queue could not be read.</Notice>}
 
-            <div className="flex min-h-[32rem] gap-4">
+            <div className="flex min-h-[28rem] gap-4">
                 <aside className="w-56 shrink-0 border-r border-line pr-2" aria-label="Read by">
                     <div className="px-2 py-1 text-xs uppercase tracking-wide text-ink-faint">
                         Class
@@ -359,16 +235,17 @@ export function AuthorisationQueuePage(): ReactNode {
                                 {rows.map((row) => (
                                     <tr
                                         key={`${row.requestId}:${row.tradeId}`}
-                                        className={cx(
-                                            'cursor-pointer border-b border-line-soft align-top',
-                                            row.requestId === chosen?.requestId
-                                                ? 'bg-accent/10'
-                                                : 'hover:bg-surface-2',
-                                        )}
-                                        onClick={() => setSelected(row.requestId)}
+                                        className="cursor-pointer border-b border-line-soft align-top hover:bg-surface-2"
+                                        onClick={() =>
+                                            navigate(authorisationRequestPath(row.requestId))
+                                        }
                                     >
                                         <td className="whitespace-nowrap px-2 py-2 font-mono text-xs">
-                                            {row.reference}
+                                            <EntityLink
+                                                to={authorisationRequestPath(row.requestId)}
+                                            >
+                                                {row.reference}
+                                            </EntityLink>
                                         </td>
                                         <td className="px-2 py-2">
                                             {row.tradeType}
@@ -396,28 +273,235 @@ export function AuthorisationQueuePage(): ReactNode {
                         </table>
                     )}
                 </div>
-
-                <aside className="w-[24rem] shrink-0 border-l border-line pl-4" aria-label="The deal">
-                    {chosen === undefined ? (
-                        <p className="py-8 text-sm text-ink-faint">Choose a deal to work it.</p>
-                    ) : (
-                        <DealPanel
-                            key={chosen.requestId}
-                            row={chosen}
-                            onDecided={() =>
-                                void queryClient.invalidateQueries({
-                                    queryKey: ['queue', 'authorisations'],
-                                })
-                            }
-                        />
-                    )}
-                </aside>
             </div>
 
             <p className="text-xs text-ink-faint">
                 A decision tells the person who raised the request. The queue is read whole, so
                 the figures state the tenant's queue and not a page of it.
             </p>
+        </section>
+    );
+}
+
+/**
+ * One authorisation request, as its own page: the deal it names, the person who
+ * raised it, and the decision it waits for.
+ *
+ * Every decision carries a comment, authorisation included: the comment is what
+ * the control is audited by. A hold additionally names a reason, because a
+ * parked deal without a reason is a deal nobody can pick up.
+ */
+export function AuthorisationRequestPage(): ReactNode {
+    const { requestId = '' } = useParams();
+    const { t } = useTranslation();
+    const queryClient = useQueryClient();
+    const queue = useQueue();
+
+    const [comment, setComment] = useState('');
+    const [holdReason, setHoldReason] = useState('');
+    const [failure, setFailure] = useState('');
+    const [busy, setBusy] = useState(false);
+    const reasons = useQuery({ queryKey: ['hold-reasons'], queryFn: () => api.holdReasons() });
+
+    const all = [...(queue.data?.items ?? []), ...(queue.data?.answered ?? [])];
+    const row = all.find((one) => one.requestId === requestId);
+    const decided =
+        row !== undefined &&
+        (row.stateCode === 'approved' ||
+            row.stateCode === 'refused' ||
+            row.stateCode === 'cancelled');
+    const canComment = comment.trim().length > 0;
+
+    const decide = async (decisionCode: 'approve' | 'refuse' | 'hold') => {
+        if (row === undefined) return;
+        setBusy(true);
+        setFailure('');
+        try {
+            await api.decideRequest(row.requestId, {
+                version: row.requestVersion,
+                decisionCode,
+                comment: comment.trim(),
+                ...(decisionCode === 'hold' && { holdReasonCode: holdReason }),
+            });
+            setComment('');
+            setHoldReason('');
+            await queryClient.invalidateQueries({ queryKey: ['queue', 'authorisations'] });
+        } catch (error) {
+            setFailure(error instanceof Error ? error.message : String(error));
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    if (queue.isPending) {
+        return <p className="text-sm text-ink-faint">Reading the request…</p>;
+    }
+
+    if (row === undefined) {
+        return (
+            <section className="flex flex-col gap-4">
+                <AreaTrail area="operations" screen={t('operations.screens.authorisationQueue')} />
+                <Notice tone="warn">
+                    No request {requestId} waits in this queue. It may have been decided and aged
+                    out of the answered tail.
+                </Notice>
+                <Link to={PATHS.authorisationQueue} className="text-sm underline">
+                    Back to the queue
+                </Link>
+            </section>
+        );
+    }
+
+    return (
+        <section className="flex flex-col gap-4">
+            <div>
+                <AreaTrail area="operations" screen={t('operations.screens.authorisationQueue')} />
+                <PageHeader
+                    title={`Authorisation · ${row.reference}`}
+                    description={`${row.tradeType}, raised by the operations queue`}
+                    actions={
+                        <Link to={PATHS.authorisationQueue} className="text-sm underline">
+                            Back to the queue
+                        </Link>
+                    }
+                />
+            </div>
+
+            {row.changed && (
+                <Notice tone="warn">
+                    The deal moved after this request was raised: version {row.tradeVersion} now,
+                    against {row.requestTradeVersion} when it arrived. The row is not locked, and a
+                    decision on the version you have read is the decision recorded.
+                </Notice>
+            )}
+
+            {failure !== '' && <Notice tone="error">{failure}</Notice>}
+
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+                <div className="card space-y-4 p-6">
+                    <h2 className="text-lg font-medium">The deal</h2>
+                    <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <Detail
+                            label="Deal"
+                            value={<EntityLink to={tradePath(row.tradeId)}>{row.reference}</EntityLink>}
+                            mono
+                        />
+                        <Detail label="Type" value={row.tradeType} />
+                        <Detail
+                            label="Counterparty"
+                            value={
+                                row.counterpartyId === '' ? (
+                                    row.counterparty
+                                ) : (
+                                    <EntityLink to={counterpartyPath(row.counterpartyId)}>
+                                        {row.counterparty}
+                                    </EntityLink>
+                                )
+                            }
+                        />
+                        <Detail
+                            label="Book"
+                            value={
+                                row.bookId === '' ? (
+                                    row.book
+                                ) : (
+                                    <EntityLink to={bookPath(row.bookId)}>{row.book}</EntityLink>
+                                )
+                            }
+                        />
+                        <Detail label="Trade date" value={row.tradeDate} mono />
+                        <Detail
+                            label="Status"
+                            value={
+                                <Tag small tone="muted">
+                                    {row.status === '' ? 'unknown' : row.status}
+                                </Tag>
+                            }
+                        />
+                    </dl>
+                </div>
+
+                <div className="card space-y-4 p-6">
+                    <h2 className="text-lg font-medium">The request</h2>
+                    <dl className="space-y-4">
+                        <Detail
+                            label="State"
+                            value={
+                                <Tag small tone={stateTone(row)}>
+                                    {stateWord(row)}
+                                </Tag>
+                            }
+                        />
+                        <Detail label="Raised by" value={<PersonRef who={row.requestedBy} />} />
+                        <Detail label="Raised at" value={row.requestedAt} mono />
+                        <Detail label="Reason" value={row.reason} />
+                    </dl>
+                </div>
+            </div>
+
+            <div className="card space-y-4 p-6">
+                <h2 className="text-lg font-medium">The decision</h2>
+                {decided ? (
+                    <Notice tone="info">
+                        This deal is decided. Undoing a decision is not offered here yet.
+                    </Notice>
+                ) : (
+                    <>
+                        <label className="flex flex-col gap-1">
+                            <span className="text-xs uppercase tracking-wide text-ink-faint">
+                                Comment, required
+                            </span>
+                            <textarea
+                                value={comment}
+                                onChange={(event) => setComment(event.target.value)}
+                                rows={3}
+                                className="rounded-md border border-line bg-surface px-2 py-1.5 text-sm"
+                                placeholder="What did you check, and what did you find?"
+                            />
+                        </label>
+
+                        {row.stateCode !== 'held' && (
+                            <label className="flex max-w-sm flex-col gap-1">
+                                <span className="text-xs uppercase tracking-wide text-ink-faint">
+                                    Hold reason, required to hold over
+                                </span>
+                                <select
+                                    value={holdReason}
+                                    onChange={(event) => setHoldReason(event.target.value)}
+                                    className="rounded-md border border-line bg-surface px-2 py-1.5 text-sm"
+                                >
+                                    <option value="">Choose a reason</option>
+                                    {(reasons.data?.reasons ?? []).map((reason: HoldReason) => (
+                                        <option key={reason.code} value={reason.code}>
+                                            {reason.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                        )}
+
+                        <div className="flex flex-wrap gap-2">
+                            <Button
+                                disabled={!canComment || busy}
+                                onClick={() => void decide('approve')}
+                            >
+                                Authorise
+                            </Button>
+                            {row.stateCode !== 'held' && (
+                                <Button
+                                    disabled={!canComment || !holdReason || busy}
+                                    onClick={() => void decide('hold')}
+                                >
+                                    Hold over
+                                </Button>
+                            )}
+                            <Button disabled={!canComment || busy} onClick={() => void decide('refuse')}>
+                                Deny
+                            </Button>
+                        </div>
+                    </>
+                )}
+            </div>
         </section>
     );
 }

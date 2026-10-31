@@ -232,6 +232,8 @@ interface Row {
     readonly requestId: string;
     readonly reference: string;
     readonly classCode: string;
+    readonly bookId: string;
+    readonly counterpartyId: string;
     readonly book: string;
     readonly counterparty: string;
     readonly tradeType: string;
@@ -258,6 +260,11 @@ describe('the Operations queue', () => {
         expect(rows.map((row) => [row.book, row.counterparty])).toEqual([
             ['GBP Vanilla Swaps', 'Deutsche Bank AG'],
             ['GBP Equity Derivatives', 'A Pension Fund'],
+        ]);
+        // The ids travel with the names, so a screen can link to the entity.
+        expect(rows.map((row) => [row.bookId, row.counterpartyId])).toEqual([
+            [RATES_BOOK, BANK],
+            [EQUITY_BOOK, FUND],
         ]);
     });
 

@@ -67,7 +67,10 @@ import { GridReportRunPage } from './operations/GridReportRunPage.js';
 import { GridJobPage } from './operations/GridJobPage.js';
 import { GridPage } from './operations/GridPage.js';
 import { LogsPage } from './operations/LogsPage.js';
-import { AuthorisationQueuePage } from './operations/AuthorisationQueuePage.js';
+import {
+    AuthorisationQueuePage,
+    AuthorisationRequestPage,
+} from './operations/AuthorisationQueuePage.js';
 import { ServicesPage } from './operations/ServicesPage.js';
 import { MarketDataFeedsPage } from './operations/MarketDataFeedsPage.js';
 import { VersionsPage } from './operations/VersionsPage.js';
@@ -686,6 +689,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <AuthorisationQueuePage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.authorisationQueue}/:requestId`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <AuthorisationRequestPage />
                     ),
                     'workspace',
                 )}

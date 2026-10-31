@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 5D31F9D8-143A-43AA-8AE3-F75D17F6822E
+:END:
+#+title: Story: Let the area come from the model
+#+description: The generated route template writes /api/v1/<component>/<plural>, which leaks an internal component name into a published contract. Let an entity model declare its HTTP area, resolve it once, default it to the component so nothing moves yet, and gate a declared area against the published list.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+An entity's HTTP area is a declaration on its model, resolved in one place, so a URL can outlive a component rename.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-31                               |
+
+* Acceptance
+
+- An entity that declares #+http_area: renders its routes under that area.
+- An entity that declares no area renders under its component, so no existing URL moves.
+- A declared area that is not in the published list fails a check.
+- A codegen test covers both cases.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F33D9250-B3C6-4799-8C44-54FFD517C8B9][Scaffold story: Let the area come from the model]] | STARTED | 2026-10-31 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8C19A708-C930-4DC5-8DB6-3FCCF03A5BCB][Declare an entity's HTTP area]] | BACKLOG | | | Initial task for: Let the area come from the model |
+
+* Decisions
+
+* Out of scope
+
+-

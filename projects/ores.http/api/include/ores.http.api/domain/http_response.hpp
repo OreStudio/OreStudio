@@ -20,6 +20,7 @@
 #ifndef ORES_HTTP_DOMAIN_HTTP_RESPONSE_HPP
 #define ORES_HTTP_DOMAIN_HTTP_RESPONSE_HPP
 
+#include "ores.http.api/domain/awaitable_body_source.hpp"
 #include "ores.http.api/domain/body_source.hpp"
 #include "ores.http.api/domain/http_status.hpp"
 #include "ores.http.api/export.hpp"
@@ -58,6 +59,15 @@ struct ORES_HTTP_API_EXPORT http_response final {
      * because a source may be shared with whatever produced it.
      */
     std::shared_ptr<body_source> body_stream;
+
+    /**
+     * @brief The body read as it is written by a source that may have to wait.
+     *
+     * A response names one of this or =body_stream=, never both: the source that
+     * waits is the one whose next piece is not ready, and the session takes the
+     * loop that suits it.
+     */
+    std::shared_ptr<awaitable_body_source> body_awaitable;
 
     /**
      * @brief Content type header value.

@@ -26,11 +26,11 @@ family a figure came from.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | The two stores and the read model are built and fed: the metric and cashflow tables take what the readers read out of the run's own output archive, and the run result view serves the screen in its own words. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | Prove a whole run through the grid, which is the story it belongs to. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31 |
 
 * Acceptance

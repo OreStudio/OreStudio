@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
 :ID: 4C4D6135-7ECB-44CD-82C1-06002AEAAAB4
 :END:
 #+title: ores.refdata.curve_volatility_delta_surface

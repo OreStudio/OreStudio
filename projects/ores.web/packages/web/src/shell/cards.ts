@@ -246,6 +246,14 @@ export const CARDS = {
         permission: 'iam::accounts:lock',
         screenTitleKey: 'rescue.title',
     },
+    authorisationQueue: {
+        titleKey: 'operations.screens.authorisationQueue',
+        bodyKey: 'operations.screens.authorisationQueueBody',
+        to: PATHS.authorisationQueue,
+        icon: 'record',
+        permission: 'trading::trade_summaries:read',
+        screenTitleKey: 'operations.authorisationQueue.title',
+    },
     services: {
         titleKey: 'operations.screens.services',
         bodyKey: 'operations.screens.servicesBody',
@@ -432,7 +440,16 @@ export const AREA_CARDS = {
         'publishedCurves',
         'curveEvolution',
     ],
-    operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions', 'marketDataFeeds'],
+    operations: [
+        'authorisationQueue',
+        'services',
+        'grid',
+        'bus',
+        'logs',
+        'signIns',
+        'versions',
+        'marketDataFeeds',
+    ],
     reporting: [
         'reports',
         'cuts',

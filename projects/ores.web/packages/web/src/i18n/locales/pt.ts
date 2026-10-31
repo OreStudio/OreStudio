@@ -1609,6 +1609,9 @@ const pt: SourceCatalogue = {
         },
     },
     operations: {
+        authorisationQueue: {
+            title: 'Fila de autorização operacional',
+        },
         feeds: {
             title: 'Fluxos de dados de mercado',
             description:
@@ -1725,6 +1728,9 @@ const pt: SourceCatalogue = {
             },
         },
         screens: {
+            authorisationQueue: 'Fila de autorização operacional',
+            authorisationQueueBody:
+                'As operações que aguardam as operações de mercado, segundo o trabalho que dão e o estado da sua autorização.',
             feeds: 'Fluxos de dados de mercado',
             feedsBody:
                 'Cada fluxo que o serviço de dados de mercado executa, o estado do seu adaptador, e o que serve e recusa.',

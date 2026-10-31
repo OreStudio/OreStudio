@@ -418,6 +418,7 @@ async function queueRows(
     session: LiveSession,
     requests: readonly {
         readonly id: string;
+        readonly version: number;
         readonly stateCode: string;
         readonly kindCode: string;
         readonly requestedBy: string;
@@ -493,6 +494,7 @@ async function queueRows(
             const tradeVersion = Number(fact?.['tradeVersion'] ?? 0);
             rows.push({
                 requestId: request.id,
+                requestVersion: request.version,
                 stateCode: request.stateCode,
                 requestedBy: request.requestedBy,
                 requestedAt: request.requestedAt,

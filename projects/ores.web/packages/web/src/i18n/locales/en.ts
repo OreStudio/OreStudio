@@ -1598,6 +1598,9 @@ export const en: SourceCatalogue = {
         },
     },
     operations: {
+        authorisationQueue: {
+            title: 'Operational authorisation queue',
+        },
         feeds: {
             title: 'Market data feeds',
             description:
@@ -1714,6 +1717,9 @@ export const en: SourceCatalogue = {
             },
         },
         screens: {
+            authorisationQueue: 'Operational authorisation queue',
+            authorisationQueueBody:
+                'The deals that await Operations, read by how much work they are and by the state their authorisation is in.',
             feeds: 'Market data feeds',
             feedsBody:
                 'Every feed the market data service runs, the state of its adapter, and what it serves and refuses.',

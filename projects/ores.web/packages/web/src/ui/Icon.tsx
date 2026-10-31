@@ -21,6 +21,9 @@
 
 import type { ReactNode } from 'react';
 import add from '../assets/icons/ic_fluent_add_20_regular.svg';
+import brightnessHigh from '../assets/icons/ic_fluent_brightness_high_20_regular.svg';
+import darkTheme from '../assets/icons/ic_fluent_dark_theme_20_regular.svg';
+import globe from '../assets/icons/ic_fluent_globe_20_regular.svg';
 import alert from '../assets/icons/ic_fluent_alert_20_regular.svg';
 import arrowClockwise from '../assets/icons/ic_fluent_arrow_clockwise_20_regular.svg';
 import arrowExport from '../assets/icons/ic_fluent_arrow_export_20_regular.svg';
@@ -84,8 +87,10 @@ const ICONS = {
     filter,
     history,
     import: arrowImport,
+    language: globe,
     locked: lockClosed,
     log,
+    moon: darkTheme,
     pairs: arrowSync,
     party,
     people,
@@ -97,6 +102,7 @@ const ICONS = {
     save,
     search,
     server,
+    sun: brightnessHigh,
     trend: arrowTrending,
     unlock,
 } as const;

@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: A6E6653D-40FD-464B-A7F7-DC3D05FBFAEF
+:END:
+#+title: Story: Switch the interface between light and dark, and choose the language from the header
+#+description: The interface has one palette, a dark one, because a terminal is read for long sessions; a person who needs a light screen has no way to ask for one. The language is chosen from a select inside the account menu, which is where a person looks for their own pages and not for a setting about reading. Give the header two controls with the icons the icon set already uses for them: one that switches the palette and says which one it will switch to, and one that opens the three languages.
+#+type: story
+#+level: s2
+#+filetags: :web:ui:i18n:sprint_29:v0:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-31                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7B061404-E8C9-45FB-A546-556EEC1179CF][Put the theme and the language in the header]] | DONE | 2026-10-31 | 2026-10-31 | A light palette beside the dark one, a button that switches between them with the sun and the moon the icon set draws, and a globe that opens the three languages. The language leaves the account menu. |
+
+* Decisions
+
+* Out of scope
+
+-

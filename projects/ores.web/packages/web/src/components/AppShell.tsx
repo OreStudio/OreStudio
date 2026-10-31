@@ -26,10 +26,9 @@ import type { Account, MyParty, SessionMode } from '@ores/wire-protocol/browser'
 import type { EnvironmentView } from '@ores/contracts';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { LANGUAGE_INFO, isLanguage } from '../i18n/languages.js';
 import { headerMark } from '../assets/brand.js';
 import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
-import { Button, Dialog, Notice, Select } from '../ui/Primitives.js';
+import { Button, Dialog, Notice } from '../ui/Primitives.js';
 import { PartyChoice } from '../ui/PartyChoice.js';
 import { useDismiss } from '../ui/useDismiss.js';
 import { useHeld } from '../access/holds.js';
@@ -37,6 +36,8 @@ import { displayName } from '../access/names.js';
 import { NotificationBell } from '../inbox/NotificationBell.js';
 import { AccessNotice } from '../shell/AccessNotice.js';
 import { MENU, modeKey, offered } from '../shell/areas.js';
+import { LanguageMenu } from '../shell/LanguageMenu.js';
+import { ThemeToggle } from '../shell/ThemeToggle.js';
 import { SHELL_WIDTHS, type ShellWidth } from '../shell/layout.js';
 import { VersionFooter } from './VersionFooter.js';
 
@@ -162,7 +163,16 @@ export function AppShell({
                             </NavLink>
                         ))}
                     </nav>
+                    {/*
+                     * Two settings about reading rather than about the records:
+                     * the palette the screen is in and the language it is read
+                     * in. Both are the header's, beside the bell, because a
+                     * person who cannot read the page will not find the
+                     * language behind their own picture.
+                     */}
                     <div className="ml-auto flex items-center gap-2">
+                        <ThemeToggle />
+                        <LanguageMenu />
                         <NotificationBell />
                         <AccountMenu
                             username={username}
@@ -241,7 +251,7 @@ function AccountMenu({
     readonly onSignOut: () => void;
     readonly self: Account | null | undefined;
 }): ReactNode {
-    const { t, language, setLanguage, languages } = useTranslation();
+    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const [changing, setChanging] = useState(false);
     const [failure, setFailure] = useState('');
@@ -324,26 +334,6 @@ function AccountMenu({
                     <Link to="/security" role="menuitem" className={item} onClick={close}>
                         {t('nav.security')}
                     </Link>
-                </div>
-                <div className="border-b border-line px-2 py-1.5">
-                    <label className="block text-xs text-ink-faint">
-                        {t('shell.menu.language')}
-                        <Select
-                            className="mt-1 py-1"
-                            value={language}
-                            onChange={(event) => {
-                                if (isLanguage(event.target.value)) {
-                                    setLanguage(event.target.value);
-                                }
-                            }}
-                        >
-                            {languages.map((code) => (
-                                <option key={code} value={code}>
-                                    {LANGUAGE_INFO[code].name}
-                                </option>
-                            ))}
-                        </Select>
-                    </label>
                 </div>
                 {mayChange && (
                     <div className="border-b border-line py-1.5">

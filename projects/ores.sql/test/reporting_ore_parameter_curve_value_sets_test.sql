@@ -28,15 +28,18 @@
  * - Every link a curve leaf has names a value set that exists
  * - Every documented curve leaf has a link
  * - Every vocabulary a curve leaf uses is a curve vocabulary
- * - Every curve set has at least one leaf
+ * - Every curve set is named by a setting
  * - Every catalogue a curve set draws on is registered
+ * - A leaf whose type the schema enumerates takes the values the schema states
+ * - The set lists every value the schema enumerates for it
+ * - A value the schema does not enumerate is refused
  *
  * Run with: pg_prove -d <database> test/reporting_ore_parameter_curve_value_sets_test.sql
  */
 
 begin;
 
-select plan(6);
+select plan(10);
 
 create temporary table t_documented on commit drop as
 select d.scope, d.name
@@ -55,6 +58,18 @@ from ores_reporting_ore_parameter_setting_value_sets_tbl l
 join t_documented d on l.code = d.scope || ':' || d.name
 where l.valid_to = ores_utility_infinity_timestamp_fn()
   and l.tenant_id = ores_utility_system_tenant_id_fn();
+
+-- Every link a curve setting holds, whether or not the contract documents the
+-- leaf. A curve leaf the ORE source reads takes a set and the contract does not
+-- describe it, so reading only the documented leaves would call a used set an
+-- orphan.
+create temporary table t_curve_links on commit drop as
+select l.code, l.value_set_code
+from ores_reporting_ore_parameter_setting_value_sets_tbl l
+where l.valid_to = ores_utility_infinity_timestamp_fn()
+  and l.tenant_id = ores_utility_system_tenant_id_fn()
+  and (starts_with(l.value_set_code, 'curve.')
+       or exists (select 1 from t_links d where d.value_set_code = l.value_set_code));
 
 -- The curve sets, whether or not a leaf uses them, plus any set a curve leaf
 -- wrongly uses. Reading only the referenced sets would make the orphan test
@@ -98,7 +113,8 @@ select is_empty(
 
 select is_empty(
     $$select s.code from t_sets s
-      where not exists (select 1 from t_links l where l.value_set_code = s.code)$$,
+      where not exists (select 1 from t_curve_links l
+                        where l.value_set_code = s.code)$$,
     'every curve set has at least one leaf');
 
 select is_empty(
@@ -110,6 +126,34 @@ select is_empty(
               and c.valid_to = ores_utility_infinity_timestamp_fn()
               and c.tenant_id = ores_utility_system_tenant_id_fn())$$,
     'every catalogue a curve set draws on is registered');
+
+-- The schema enumerates the values of a simple type, so the rule is a set of
+-- them rather than a shape one value must have.
+select is(
+    (select value_set_code
+       from ores_reporting_ore_parameter_vocabularies_tbl
+      where xpath = '/CurveConfiguration/Correlations/Correlation/Dimension'
+        and valid_to = ores_utility_infinity_timestamp_fn()),
+    'curve.dimension_type',
+    'a leaf whose type the schema enumerates takes the values the schema states');
+
+select is(
+    (select count(*)::int
+       from ores_reporting_ore_parameter_value_set_values_tbl
+      where value_set_code = 'curve.dimension_type'
+        and valid_to = ores_utility_infinity_timestamp_fn()),
+    4,
+    'the set lists every value the schema enumerates for it');
+
+select is(
+    ores_reporting_value_in_set_fn('curve.dimension_type', 'Smile'),
+    true,
+    'a value the schema enumerates is in the set');
+
+select is(
+    ores_reporting_value_in_set_fn('curve.dimension_type', 'Sideways'),
+    false,
+    'a value the schema does not enumerate is refused');
 
 select * from finish();
 

@@ -375,8 +375,31 @@ def curated_for(curated, section, name):
     return curated.get(f"{section}|{name}") or curated.get(f"*|{name}")
 
 
+_DRAWN = None
+
+
+def is_drawn(term):
+    """Whether the projection carries this leaf, so a set generated for it is used.
+
+    The schema enumerates a type for many leaves the projection does not carry, and
+    a set nothing names and no row carries is dead data. A set the schema states is
+    therefore generated only for a leaf a column actually holds.
+    """
+    global _DRAWN
+    if _DRAWN is None:
+        import generate_curve_column_guards as guards
+        _DRAWN = {row["xpath"] for row in guards.rows()}
+    return "/CurveConfiguration/" + "/".join(term["path"]) in _DRAWN
+
+
 def set_of(term, curated, parsers, section):
-    """The set code of one leaf, and the parser whose list it is, if any."""
+    """The set one leaf takes, and the set's row when this module generates it.
+
+    A set the parser or the schema states is built here, because its values come
+    from a source rather than from a person: the parser's map, or the values a
+    schema simple type enumerates. The row travels with the code so the caller
+    seeds it without deriving the same answer a second time.
+    """
     name = term["name"]
     entry = curated_for(curated, section, name)
     if entry:
@@ -386,7 +409,7 @@ def set_of(term, curated, parsers, section):
         if link not in parsers:
             raise ValueError(f"{name}: the curation links to {link}, which no ORE source "
                              "states a list for; correct the entry or drop it")
-        return parser_set_code(link), link
+        return parser_set_code(link), parser_set(link, parsers[link])
     if name in VALUE_SET_OF:
         value_set = VALUE_SET_OF[name]
         return ("text" if catalogue_of(value_set) is None else value_set), None
@@ -397,9 +420,39 @@ def set_of(term, curated, parsers, section):
                 return stated, None
         return TYPE_SETS[term["type"]], None
     stated = schema_rule(term)
+    if stated == "enumerated":
+        return schema_enum_set(term) if is_drawn(term) else ("text", None)
     if stated:
         return TYPE_SETS[SCHEMA_TYPE_SETS[stated]], None
     return "text", None
+
+
+def schema_enum_set(term):
+    """The enumerated set the ORE schema states for one leaf's type.
+
+    The schema lists the values a simple type accepts, so the rule is a set of
+    them rather than a shape one value must have, and a screen draws a combo from
+    it without a person writing the list twice.
+    """
+    _, type_name = schema_types.rule(SCHEMA, "/CurveConfiguration/" + "/".join(term["path"]))
+    values, file, line = schema_types.enumeration(type_name)
+    # The schema lists the empty string where a leaf may be left unset. The guard
+    # treats a value that is not written as absent rather than as a choice, so the
+    # set states the choices and the unset case stays an empty field.
+    values = [value for value in values if value != ""]
+    code = "curve." + re.sub(r"(?<!^)(?=[A-Z])", "_", type_name).lower()
+    return code, {
+        "name": words(type_name),
+        "description": f"The values the ORE schema states for {type_name}, from "
+                       f"external/ore/xsd/{file}:{line}.",
+        "source_kind": "enumerated",
+        "is_ordered": False,
+        "values": [{"value": value, "label": value,
+                    "description": f"{value} is one of the values the ORE schema "
+                                   f"states for {type_name}.",
+                    "order": order}
+                   for order, value in enumerate(values)],
+    }
 
 
 def schema_rule(term):
@@ -462,11 +515,13 @@ def data():
     import generate_curve_column_guards as curves
 
     projected = {row["xpath"] for row in curves.rows()}
-    codes = {}
+    codes, built = {}, set()
     for section, term in terms():
-        code, parser = set_of(term, curated, parsers, section)
-        if parser and code not in sets:
-            sets[code] = parser_set(parser, parsers[parser])
+        code, generated = set_of(term, curated, parsers, section)
+        if generated:
+            built.add(code)
+            if code not in sets:
+                sets[code] = generated
         key = f"{section}|{term['name']}"
         address = "/CurveConfiguration/" + "/".join(term["path"])
         found = codes.setdefault(key, {})
@@ -491,7 +546,7 @@ def data():
     catalogues = {code: entry for code, entry in CATALOGUES.items()
                   if any(s.get("catalogue_code") == code for s in sets.values())}
     return {"catalogues": catalogues, "sets": sets, "links": links,
-            "conflicted": conflicted}
+            "conflicted": conflicted, "generated": built}
 
 
 def set_of_leaf(term, section=None):

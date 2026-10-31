@@ -28,9 +28,9 @@ One table states which ORE element a leaf column is and which value set states i
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
-| Now          | The map states the rule each leaf's parser gives it, a set says how many values a document writes, and both guards read the map. |
+| Now          | The map states the rule the ORE parser or the ORE schema gives each leaf, a set says what one value is and how many, and both guards read the map. |
 | Waiting on   | Nothing.                               |
-| Next         | The 5 leaves no authority types, and the setting link that cannot hold two leaves of one name. |
+| Next         | The 4 leaves no authority types, and the setting link that cannot hold two leaves of one name. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -507,6 +507,38 @@ missing piece, and it is the next one.
 
 The seeded corpus holds real tenor and strike lists, and it publishes under the
 new rules unchanged, which is what proves the item rule is not too narrow.
+
+* The schema states the values it enumerates
+
+An enumerated simple type in the schema names its values, so the rule for a leaf
+of that type is a set of them and not a shape one value must have. The schema
+states 142 such types, and 33 mapped leaves had text where one of them applied:
+=Dimension= with 4 values, =VolatilityType= with 3, =Extrapolation= with 4, the
+commodity future weekday with 7, the default curve's =Type= with 8, and the
+segment types of a yield curve.
+
+=ore_schema_types.py= now reads them, and =curve_value_sets.py= and
+=convention_value_sets.py= generate one enumerated set per type, named
+=curve.<type>= or =convention.<type>=, with the values in the schema's order and
+the file and line the schema states them at.
+
+Two rules keep the sets honest. A set the schema states is generated only for a
+leaf a column carries, because a set nothing names and no row carries is dead
+data; that is what the curve value-set test's orphan assertion catches. And the
+schema lists the empty string where a leaf may be left unset, which the guard
+treats as absent rather than as a choice, so the set states the choices and the
+unset case stays an empty field.
+
+| | Before | After |
+|---+--------+-------|
+| leaves that state a rule | 273 | 306 |
+| text, and the ORE source says why | 207 | 174 |
+| text, because no ORE source read names the leaf | 5 | 4 |
+| sets | 229 | 245 |
+
+The scheme also closed one of the five untyped leaves: =DefaultCurve/Type= is
+declared =defaultCurveType= in the schema, which enumerates eight values, so the
+map states them without any ORE source reading the leaf.
 
 * Plan
 

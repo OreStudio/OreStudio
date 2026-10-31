@@ -272,8 +272,9 @@ def validate(data):
         if kind == "enumerated" and not entry.get("values"):
             problems.append(f"{code}: enumerated with no values")
     named = set(data["links"].values())
+    generated = data.get("generated", set())
     for code in data["sets"]:
-        if code not in named:
+        if code not in named and code not in generated:
             problems.append(f"{code}: no setting names it")
     for key, set_code in data["links"].items():
         if set_code not in data["sets"]:
@@ -304,6 +305,7 @@ def add_conventions(data):
     for code, entry in extra["sets"].items():
         data["sets"].setdefault(code, entry)
     data["links"].update(extra["links"])
+    data.setdefault("generated", set()).update(extra["generated"])
     return problems
 
 
@@ -329,6 +331,7 @@ def add_curves(data):
     for code, entry in extra["sets"].items():
         data["sets"].setdefault(code, entry)
     data["links"].update(extra["links"])
+    data.setdefault("generated", set()).update(extra["generated"])
     return problems
 
 

@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 73921707-CE11-41AD-923D-ED5B36D7FF09
+:END:
+#+title: Classify a product type as flow or non-flow
+#+description: The authorisation queue divides deals into flow and non-flow, and the division is a hand-written set of trade type codes in the BFF. It is a property of the product type, and desks disagree about where the line falls, so the store should carry it: on the trade type row for a tenant, with a party-level override where a party draws the line elsewhere.
+#+type: capture
+#+level: cross
+#+filetags: :trading:refdata:product:classification:junction:authorisation:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Whether a deal is flow or non-flow is a property of its product type, and it is
+configuration rather than a constant. The queue divides work by it: a flow deal
+is signed off in the queue a few rows at a time, and a non-flow deal is the
+structured one that gets the closer look.
+
+Nothing in the store holds the division. [[proj:doc/prototypes/operations/operational-authorisation-queue.org][Work the authorisation queue]]
+names the two classes, and the read behind the screen states them from a set of
+eight trade type codes written into the BFF: =CashPosition=, =CapFloor=,
+=FxAverageForward=, =FxDigitalOption=, =FxForward=, =FxOption=, =FxSwap= and
+=Swap= are flow, and every other code the catalogue holds is non-flow. A code the
+catalogue does not hold also reads as non-flow, which is the safe direction but
+still a guess.
+
+That set is a stand-in, and it is wrong in both directions. It treats every
+=Swap= as flow, including the cross-currency, callable and balance-guaranteed
+types where the work is not flow at all, and it treats a =Swaption= as non-flow
+however plain it is.
+
+* Why
+
+The catalogue already carries the trade types per tenant, so the classification
+has a home that needs no new concept. =ores_trading_trade_types_tbl= holds 121
+rows for each tenant with the code, the description, the asset class, whether the
+type has options and whether it has an extension. A classification column there
+is configured by a tenant admin, inherited by every party in the tenant, and
+read by the queue without a constant.
+
+Two facts push against leaving it as code:
+
+- Desks draw the line in different places. An operations desk that treats listed
+  options as flow and an exotic as non-flow is not making the same call as one
+  that treats every option as structured.
+- The line moves. A type a desk called structured becomes routine, or the other
+  way round, and changing it is a configuration edit rather than a release.
+
+The category also has more than two values in the way desks speak: flow,
+structured, and a third for a type the desk does not book at all. Settling that
+is part of the work rather than its premise.
+
+* Shape of the work
+
+Not designed here. The pieces that appear necessary:
+
+- A classification on the trade type row, with a defined value for a type
+  nobody has classified, so an unconfigured tenant still gets a queue rather than
+  an empty one.
+- A party-level override where a party in the tenant draws the line elsewhere,
+  which is the junction against the trade type table: party, trade type code,
+  classification.
+- The seed for both tenants and for the ACME parties, so a fresh database
+  arrives with a usable division rather than a column to fill in.
+- The read that answers the classification with the rest of the trade type, so
+  the queue's read stops carrying its own copy.
+- A screen to edit the classification, under the configuration standard the
+  other lookup screens follow.
+
+* Open questions
+
+- One level or two. If the trade type row is already per tenant, a classification
+  column there is tenant configuration and no junction is needed. The junction
+  only earns its place once a party may differ, so the question is whether the
+  first cut is tenant-only.
+- Whether a deal's class is fixed when it is booked or read at the time it is
+  decided. Reading it live means a configuration change re-groups deals already
+  in the queue, which is what a desk expects and what makes the audit trail
+  harder to explain.
+- Whether the classification belongs to the product type the catalogue names or
+  to the desk-facing product type that
+  [[id:4704B1FE-19C5-4EB8-B4DE-3B8F7E255772][Desk-facing product type]] proposes. If the
+  desk-facing product type is built, it is the better owner, since a type may be
+  flow in one configuration and structured in another.
+
+* What done looks like
+
+The queue's read states a deal's class from the store, and no trade type code
+appears in the BFF. A tenant that has not classified its types gets the seeded
+division, and a tenant admin can move a type from one class to the other and see
+the queue's figures change without a release.
+
+* References
+
+- =ores_trading_trade_types_tbl= — 121 rows for each tenant, with the code, the
+  description, the asset class and the two flags. The row the classification
+  belongs on.
+
+* See also
+
+- [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] — the page that states
+  what a type is, and what allows it.
+- [[id:4704B1FE-19C5-4EB8-B4DE-3B8F7E255772][Desk-facing product type]] — the finer classification a desk
+  uses, many-to-one onto the trade type, which would carry this division if it
+  were built.
+- [[id:71723C7B-9533-40A4-BBE8-344C04B58A9D][Implement allowed-currency/allowed-product-type lists for book]] —
+  the other junction proposed against the product types.
+- [[id:3E7A494E-F80D-41D4-AAEC-ACB3DA044ED3][Build the authorisation queue screen]] — the screen that reads this
+  division today.

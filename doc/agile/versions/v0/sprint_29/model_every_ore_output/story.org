@@ -119,6 +119,21 @@ Every output family ORE writes is named in one catalogue, read by ores.ore from 
   engine's headings once — =NPV= is =npv= — and reads the counterparty out of
   the qualifiers. The result-row table it replaces held the same figures under
   the same names, so keeping it would have been two stores of one fact.
+- 2026-10-31: A market-state cube is stored as the file the engine wrote, not as
+  rows. =stress_scenarios.csv= states a column for every curve and tenor the run
+  built — 829 in the family's union, 789 in the widest file — so a row per value
+  would be millions of rows per run and a read that needs one factor would unpack
+  all of them. The payload is one compressed blob with an index beside it: the
+  headings, the row count, and the distinct values of each key the catalogue
+  names, capped and flagged when a key states more.
+- 2026-10-31: The index is the distinct values of the family's *key* columns, not
+  a list of known column names. The catalogue already says which columns are keys,
+  so the dates, scenarios, factors and market objects an index names are the keys
+  of the family, and a family whose keys change needs no change here.
+- 2026-10-31: The payload is held as base64 text rather than a binary column,
+  because the store's columns are text and a binary column would be a second way
+  to hold a blob. The compression happens first, so the cost is a third of the
+  compressed size and not of the file.
 - 2026-10-30: The tests read the checked-in expected outputs; the sample suite
   does not run. At this commit the corpus is 473 files under 192 file names,
   which group into 66 family shapes by name, and the widest file states 789

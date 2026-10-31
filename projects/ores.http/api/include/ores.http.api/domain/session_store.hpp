@@ -21,6 +21,7 @@
 #define ORES_HTTP_DOMAIN_SESSION_STORE_HPP
 
 #include "ores.http.api/export.hpp"
+#include "ores.security/jwt/jwt_claims.hpp"
 #include <chrono>
 #include <cstddef>
 #include <functional>
@@ -41,14 +42,14 @@ struct ORES_HTTP_API_EXPORT session_record final {
     /// The bearer token the gateway presents to the services on this caller's behalf.
     std::string token;
 
-    /// The account the caller signed in as.
-    std::string account;
-
-    /// The tenant the session is scoped to.
-    std::string tenant;
-
-    /// The party the session acts for, when it acts for one.
-    std::string party;
+    /**
+     * @brief What the caller may do, as the token stated it when they signed in.
+     *
+     * The account is =claims.subject=, the tenant =claims.tenant_id= and the party
+     * =claims.party_id=, so a handler reads the same claims a bearer token would have
+     * carried and does not learn where the proof came from.
+     */
+    ores::security::jwt::jwt_claims claims;
 
     /// When the session was opened.
     std::chrono::system_clock::time_point created;

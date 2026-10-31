@@ -18,6 +18,8 @@
  *
  */
 #include "ores.http.api/domain/http_response.hpp"
+#include "ores.http.api/domain/session_cookie.hpp"
+#include "ores.http.api/domain/session_store.hpp"
 #include "ores.http.api/net/http_server.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "test_suite.hpp"
@@ -114,6 +116,42 @@ std::optional<http::response<http::string_body>> metrics_send(std::uint16_t port
     return res;
 }
 
+/// Sends a request with an extra header and returns the answer.
+std::optional<http::response<http::string_body>> metrics_send_with(std::uint16_t port,
+                                                                   http::verb verb,
+                                                                   const std::string& target,
+                                                                   const std::string& cookie) {
+    asio::io_context io;
+    beast::tcp_stream stream(io);
+    beast::error_code ec;
+    stream.expires_after(std::chrono::seconds(5));
+
+    const auto address = asio::ip::make_address("127.0.0.1", ec);
+    if (ec)
+        return std::nullopt;
+    stream.connect(asio::ip::tcp::endpoint(address, port), ec);
+    if (ec)
+        return std::nullopt;
+
+    http::request<http::string_body> req{verb, target, 11};
+    req.set(http::field::host, "127.0.0.1");
+    if (!cookie.empty())
+        req.set(http::field::cookie, cookie);
+    req.prepare_payload();
+    http::write(stream, req, ec);
+    if (ec)
+        return std::nullopt;
+
+    beast::flat_buffer buffer;
+    http::response<http::string_body> res;
+    http::read(stream, buffer, res, ec);
+    if (ec)
+        return std::nullopt;
+
+    stream.socket().shutdown(asio::ip::tcp::socket::shutdown_both, ec);
+    return res;
+}
+
 /// The value of one exposition line, or zero when it is not there.
 std::uint64_t metric_value(const std::string& text, const std::string& name) {
     const auto at = text.find("\n" + name + " ");
@@ -142,6 +180,81 @@ TEST_CASE("health_reports_what_the_server_can_do", "[http_metrics]") {
     // No verifier is set on this server, so it can believe nobody.
     REQUIRE(answered->body().find(R"("verifier":"absent")") != std::string::npos);
     REQUIRE(answered->body().find(R"("status":"ready")") != std::string::npos);
+}
+
+TEST_CASE("a_session_cookie_authenticates_a_request_without_a_token",
+          "[session_cookie][http_metrics]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that the cookie is a credential and not a cache";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+
+    metrics_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(router->get("/private")
+                          .summary("Something a signed-in caller may read")
+                          .auth_required()
+                          .handler([](const http_request& req) -> asio::awaitable<http_response> {
+                              co_return http_response::json(
+                                  R"({"subject":")" + req.authenticated_user->subject + R"("})");
+                          })
+                          .build());
+
+    cookie_settings settings;
+    settings.name = "ores_web_session_test";
+    fixture.server().set_cookie_settings(settings);
+
+    session_record record;
+    record.token = "the-token";
+    record.claims.subject = "the-account";
+    record.claims.roles = {"reader"};
+    const auto identifier = fixture.server().sessions()->open(record);
+    const auto cookie_header = settings.name + "=" + identifier;
+
+    const auto answered =
+        metrics_send_with(fixture.port(), http::verb::get, "/private", cookie_header);
+
+    REQUIRE(answered.has_value());
+    REQUIRE(answered->result_int() == 200);
+    REQUIRE(answered->body().find(R"("subject":"the-account")") != std::string::npos);
+    // The token is the server's, and never travels in the answer.
+    REQUIRE(answered->body().find("the-token") == std::string::npos);
+}
+
+TEST_CASE("a_session_the_server_does_not_know_is_refused_and_the_cookie_cleared",
+          "[session_cookie][http_metrics]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a dead cookie becomes a sign-in, not a loop";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+
+    metrics_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(router->get("/private")
+                          .summary("Something a signed-in caller may read")
+                          .auth_required()
+                          .handler([](const http_request&) -> asio::awaitable<http_response> {
+                              co_return http_response::json(R"({"ok":true})");
+                          })
+                          .build());
+
+    cookie_settings settings;
+    settings.name = "ores_web_session_test";
+    fixture.server().set_cookie_settings(settings);
+
+    const auto answered = metrics_send_with(
+        fixture.port(), http::verb::get, "/private", settings.name + "=an-identifier-nobody-holds");
+
+    REQUIRE(answered.has_value());
+    REQUIRE(answered->result_int() == 401);
+    // The browser is told to drop what it holds.
+    REQUIRE((*answered)[http::field::set_cookie].find("Max-Age=0") != std::string::npos);
 }
 
 TEST_CASE("metrics_count_what_the_server_answered", "[http_metrics]") {

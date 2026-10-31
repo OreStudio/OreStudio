@@ -56,6 +56,9 @@ http_server::http_server(asio::io_context& io_ctx, const http_server_options& op
               accumulator->add(session_id, start_time, bytes_sent, bytes_received);
           }) {
 
+    sessions_ = std::make_shared<domain::session_store>(
+        std::chrono::hours(12), [] { return std::chrono::system_clock::now(); });
+
     BOOST_LOG_SEV(lg(), info) << "HTTP server initializing with options: " << options_;
 
     // No credential is built from these options. The verifier arrives from the
@@ -187,8 +190,15 @@ asio::awaitable<void> http_server::accept_connections() {
             BOOST_LOG_SEV(lg(), debug) << "Active connections: " << active_connections_.load();
 
             // Create and run session
-            auto session = std::make_shared<http_session>(
-                std::move(socket), router_, verifier_, workers_, options_, accumulate_, &counters_);
+            auto session = std::make_shared<http_session>(std::move(socket),
+                                                          router_,
+                                                          verifier_,
+                                                          workers_,
+                                                          options_,
+                                                          accumulate_,
+                                                          &counters_,
+                                                          sessions_,
+                                                          cookie_);
 
             asio::co_spawn(
                 io_ctx_,

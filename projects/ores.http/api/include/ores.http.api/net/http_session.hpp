@@ -20,6 +20,8 @@
 #ifndef ORES_HTTP_NET_HTTP_SESSION_HPP
 #define ORES_HTTP_NET_HTTP_SESSION_HPP
 
+#include "ores.http.api/domain/session_cookie.hpp"
+#include "ores.http.api/domain/session_store.hpp"
 #include "ores.http.api/export.hpp"
 #include "ores.http.api/net/http_server_options.hpp"
 #include "ores.http.api/net/router.hpp"
@@ -68,7 +70,9 @@ public:
                           std::shared_ptr<worker_pool> workers,
                           const http_server_options& options,
                           session_bytes_callback bytes_callback = nullptr,
-                          server_counters* counters = nullptr);
+                          server_counters* counters = nullptr,
+                          std::shared_ptr<domain::session_store> sessions = nullptr,
+                          domain::cookie_settings cookie = {});
 
     /**
      * @brief Starts processing the session.
@@ -156,6 +160,11 @@ private:
 
     // Counters the server owns and reports. Null in a test that does not want them.
     server_counters* counters_;
+
+    // The sessions this server holds, and how it names the cookie they ride in.
+    // Null when the server serves no browser session.
+    std::shared_ptr<domain::session_store> sessions_;
+    domain::cookie_settings cookie_;
 };
 
 }

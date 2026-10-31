@@ -20,6 +20,8 @@
 #ifndef ORES_HTTP_NET_HTTP_SERVER_HPP
 #define ORES_HTTP_NET_HTTP_SERVER_HPP
 
+#include "ores.http.api/domain/session_cookie.hpp"
+#include "ores.http.api/domain/session_store.hpp"
 #include "ores.http.api/export.hpp"
 #include "ores.http.api/net/http_server_options.hpp"
 #include "ores.http.api/net/http_session.hpp"
@@ -48,6 +50,18 @@ public:
     /**
      * @brief Returns the router for registering endpoints.
      */
+    /**
+     * @brief The sessions this server holds, so a sign-in route can open one.
+     */
+    [[nodiscard]] const std::shared_ptr<domain::session_store>& sessions() const {
+        return sessions_;
+    }
+
+    /// How this deployment names and protects the cookie a session rides in.
+    void set_cookie_settings(domain::cookie_settings settings) {
+        cookie_ = std::move(settings);
+    }
+
     /// What the server knows about its own traffic, for a metrics route.
     [[nodiscard]] const server_counters& counters() const {
         return counters_;
@@ -149,6 +163,12 @@ private:
     std::atomic<bool> running_{false};
     std::atomic<std::uint32_t> active_connections_{0};
     server_counters counters_;
+
+    // The sessions the gateway holds, and how it names their cookie. A server with
+    // no store serves bearer tokens only, which is what a machine-only deployment
+    // wants.
+    std::shared_ptr<domain::session_store> sessions_;
+    domain::cookie_settings cookie_;
     session_bytes_callback bytes_callback_;
 };
 

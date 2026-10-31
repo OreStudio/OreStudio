@@ -8,8 +8,9 @@
 #+filetags: :hold_the_session_at_the_door:sprint_29:v0:
 #+owner: marco
 #+branch: feature/store-the-session-server-side
-#+pr:
-#+blocked_on:
+#+pr: 4183
+#+blocked_on: review
+#+blocked_since: 2026-10-31 02:40
 #+blocked_since:
 #+created: 2026-10-31
 #+updated: 2026-10-31
@@ -55,8 +56,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Store cases | 7 cases, 28 assertions, all passing | =./ores.http.api.tests "[session_store]"= | branch head |
-| =ores.http.api= test cases | 114 cases, 374 assertions, all passing | =./ores.http.api.tests= | branch head |
+| Store cases | 7 cases, 28 assertions, all passing | =./ores.http.api.tests "[session_store]"= | =#4183= |
+| =ores.http.api= test cases | 114 cases, 374 assertions, all passing | =./ores.http.api.tests= | =#4183= |
 
 * Notes
 
@@ -86,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#4183](https://github.com/OreStudio/OreStudio/pull/4183) | [http] Hold the session server side |
 
 * Review
 

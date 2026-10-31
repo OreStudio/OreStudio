@@ -4005,6 +4005,9 @@ export const en: SourceCatalogue = {
                 calendarsBody: 'Rules, exceptions and events, and the business days they produce.',
                 tenors: 'Resolve a tenor',
                 tenorsBody: 'What date a tenor gives on a calendar, under a convention.',
+                cutTypes: 'Cut types',
+                cutTypesBody:
+                    'The kinds of cut a report may select, with who signs one and how long its cuts are kept.',
             },
         },
         tenors: {
@@ -4292,6 +4295,9 @@ export const en: SourceCatalogue = {
                 pillars: 'Pillars',
                 check: 'Check',
                 sets: 'Published sets',
+                body: 'The body',
+                authorisation: 'Authorisation',
+                cuts: 'Cuts',
             },
         },
         fields: {
@@ -6438,6 +6444,164 @@ export const en: SourceCatalogue = {
         true: 'true',
         false: 'false',
     },
+    cuts: {
+        title: 'Cuts',
+        lead: 'The bodies a run prices from: the deal population, the market data, the reference data and the engine, fixed at one instant.',
+        readerNote:
+            'A cut is read here. Taking one by hand is not offered on this screen yet: the take flow, the authorisation it raises and the LIVE mint are later work.',
+        partialPage:
+            'This is the newest page of the cuts the filters match. Narrow by month or by type to read the rest.',
+        labelMissing: 'The kind of this cut is not in the store',
+        indicative: 'Indicative',
+        monthHeading: '{month}',
+        cutCount: '{count} cuts',
+        columns: {
+            cut: 'Cut',
+            type: 'Type',
+            name: 'Name',
+            family: 'Family',
+            signed: 'Signed',
+            indicative: 'Values',
+            retention: 'Retention',
+            cutsHeld: 'Cuts',
+            month: 'Month',
+            kind: 'Kind',
+            timepoint: 'Timepoint',
+            state: 'State',
+            taker: 'Taker',
+            authoriser: 'Authoriser',
+            runs: 'Runs',
+            scope: 'Scope',
+            centre: 'Centre',
+        },
+        filter: {
+            allKinds: 'Every kind',
+            allStates: 'Every state',
+            allMonths: 'Every month',
+        },
+        states: {
+            draft: 'Draft',
+            incomplete: 'Incomplete',
+            taken: 'Taken',
+            in_use: 'In use',
+            authorised: 'Authorised',
+            refused: 'Refused',
+            superseded: 'Superseded',
+        },
+        basis: {
+            draft: 'The attempt is saved and no take holds yet.',
+            incomplete: 'The body could not be assembled; the gaps say what would close it.',
+            taken: 'The body is fixed and waits on a person.',
+            inUse: 'Its kind requires no authorisation, so it was usable when taken.',
+            authorised: 'The authorisation is recorded.',
+            authorisedBy: 'Authorised by {who}.',
+            refused: 'The authorisation was refused, which is terminal for this body.',
+            superseded: 'A later cut of the same kind and scope holds its place.',
+        },
+        notice: {
+            blocked:
+                '{count} cuts of this scope may not be priced from, and their states are: {states}.',
+            noSignature:
+                '{count} cuts are in use with no signature, because their kind requires none.',
+        },
+        types: {
+            title: 'Cut types',
+            lead: 'The kinds of cut a report may select, with who signs one, whether its values are indicative, the rule it resolves by and how long its cuts are kept.',
+            readerNote:
+                'A type is read here. Creating a new one is not offered yet: its retention destination is a tier the store knows by a check, and no lookup states the tiers.',
+            partialCounts:
+                'The cut counts are of the newest cuts the list could read, so a type may hold more than it says.',
+            unsigned: 'No signature',
+            official: 'Official',
+            months: '{count} months',
+            destination: 'to {destination}',
+            rules: 'Its rules',
+            approvalsRequired: 'Approvals required',
+            resolutionRule: 'Resolution rule',
+            legalHold: 'Legal hold',
+            held: 'Held when taken',
+            notHeld: 'Not held',
+            order: 'Display order',
+            description: 'What it is for',
+            indicativeValues: 'Its values are indicative',
+            retentionMonths: 'Retention in months',
+            legalHoldOnTake: 'A cut of this type starts under legal hold',
+            destinationNote:
+                'The retention destination keeps the tier the type already holds: no lookup states the tiers, so this form offers none.',
+            copyNote:
+                'A cut copies its type’s authorisation and retention when it is taken, so a later change to the type does not move the body already fixed.',
+            editTitle: 'Change the cut type {code}',
+            removeTitle: 'Remove the cut type {code}',
+            removeWarning:
+                'A type a cut was taken under cannot be removed while that cut stands, because the cut’s label reads the type’s family.',
+            noCuts: 'No cut of this type has been taken under this party.',
+        },
+        body: {
+            identity: 'The identity',
+            identityLead:
+                'The label a person quotes is derived from the kind, the scope and the instant, and is never typed.',
+            label: 'Label',
+            takeOrdinal: 'Take',
+            cutTime: 'Named cut time',
+            retention: 'Retention',
+            retentionValue: '{months} months, to {destination}',
+            legalHold: 'Legal hold',
+            held: 'Held',
+            notHeld: 'Not held',
+            deals: 'The deals',
+            dealsLead:
+                'The population is a copy of what the trade store held at the instant, so a rerun replays it rather than querying the store again.',
+            population: 'Deal population',
+            dealCount: 'Deals held',
+            dealCountGap:
+                'No read returns the deals a population holds yet, so the page states the reference the cut records.',
+            marketData: 'The market data',
+            marketDataLead:
+                'The fixed snapshot that resolved every market role at the instant, with the published sets it names.',
+            snapshot: 'Snapshot',
+            sets: 'Published sets',
+            setsGap:
+                'No read returns the sets a snapshot fixed yet, so the page states the reference the cut records.',
+            referenceData: 'The reference data',
+            referenceDataLead:
+                'The versions of the conventions, the calendars, the settings and the curve configurations the valuation read.',
+            version: 'Version',
+            engine: 'The engine and the code',
+            engineLead: 'What computed the result, so a reproduction is a comparison of one body.',
+            engineVersion: 'Engine version',
+            codeVersion: 'Code version',
+            record: 'The record',
+            recordLead: 'Who wrote the row, when, and under which change reason.',
+            modifiedBy: 'Modified by',
+            performedBy: 'Performed by',
+            recordedAt: 'Recorded',
+            notFixed: 'Not fixed in this body',
+        },
+        gaps: {
+            title: 'The gaps ({count})',
+            lead: 'Every part the assembly could not fill. A body with a gap is incomplete rather than smaller, and the take raises no request while one stands.',
+            part: 'Part',
+            item: 'Item',
+            reason: 'Why it stands',
+        },
+        auth: {
+            required: 'A {kind} cut is signed before a run may price from it.',
+            notRequired:
+                '{kind} requires no authorisation: the basis is a fact of the kind, not an absence to explain.',
+            acts: 'The acts',
+            taken: 'Taken',
+            decision: 'Decision',
+            refusedAt: 'Refused on {when}',
+            pending: 'Waiting on a person',
+            request: 'Approval request',
+            decider: 'Who decides',
+            refusal: 'The refusal says: {reason}. A refusal is terminal for this body, so the remedy is a new take.',
+            fourEyes:
+                'Four eyes is the inbox’s rule: a decision by the person who asked is refused, and one person counts once.',
+            inboxGap:
+                'Raising and deciding an authorisation from this screen is not offered yet. The request lives in the inbox, and its own page is where a decider answers it.',
+        },
+    },
     reporting: {
         run: {
             start: 'Run',
@@ -6562,6 +6726,9 @@ export const en: SourceCatalogue = {
                 reports: 'Reports',
                 reportsBody:
                     'The definitions the parties you work in run, and the health of each latest run.',
+                cuts: 'Cuts',
+                cutsBody:
+                    'The bodies a run prices from, with the state each one is in and the runs that used it.',
             },
         },
         title: 'Reports',
@@ -6796,6 +6963,10 @@ export const en: SourceCatalogue = {
         sensitivityTemplatesRead: 'see the sensitivity templates',
         sensitivityTemplatesWrite: 'change the sensitivity templates',
         sensitivityTemplatesDelete: 'remove the sensitivity templates',
+        cutsRead: 'see the cuts of your parties, and the cut a run priced from',
+        cutKindsRead: 'see the kinds of cut a report may select',
+        cutKindsWrite: 'change the kinds of cut',
+        cutKindsDelete: 'remove kinds of cut',
     },
 
     unavailable: {
@@ -6849,6 +7020,7 @@ export const en: SourceCatalogue = {
         continue: 'Continue',
         retry: 'Retry',
         cancel: 'Cancel',
+        save: 'Save',
     },
     curveConfiguration: {
         title: 'Curve configurations',

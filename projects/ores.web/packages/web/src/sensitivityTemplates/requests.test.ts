@@ -176,6 +176,7 @@ describe('the place of the screen', () => {
     it('sits in the reporting area, beside product pricing and the engine run settings', () => {
         expect(AREA_CARDS.reporting).toEqual([
             'reports',
+            'cuts',
             'pricingEngines',
             'sensitivityTemplates',
             'curveConfigurations',

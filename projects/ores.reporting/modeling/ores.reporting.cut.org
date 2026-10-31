@@ -580,11 +580,76 @@ The rates centre the scope's books revalue against.
 :entity_plural_words:   cuts
 :END:
 
+*** read_for_party_in_window
+:PROPERTIES:
+:ID: 5B0E7C34-9A62-4F18-8D53-2C7E9B41F0A6
+:END:
+
+Reads one party's cuts whose timepoint falls in an instant window, of one kind
+or of every kind, newest instant first. The cuts list and a kind's own page both
+read here: the window is the month a person reads, and an empty kind is the
+list's own reading, where the person filters by type afterwards.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::cut>
+read_for_party_in_window(context ctx, const boost::uuids::uuid& party_id,
+                         const std::string& kind_code,
+                         std::chrono::system_clock::time_point from,
+                         std::chrono::system_clock::time_point to);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#include <vector>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::cut>
+cut_repository::read_for_party_in_window(context ctx, const boost::uuids::uuid& party_id,
+                                         const std::string& kind_code,
+                                         std::chrono::system_clock::time_point from,
+                                         std::chrono::system_clock::time_point to) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading cuts of a party in a window.";
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto party = boost::uuids::to_string(party_id);
+    if (kind_code.empty()) {
+        const auto query =
+            query_builder::read<std::vector<cut_entity>> |
+            query_builder::where("tenant_id"_c == tid && "party_id"_c == party &&
+                                 "timepoint"_c >= from && "timepoint"_c < to &&
+                                 "valid_to"_c == max) |
+            query_builder::order_by("timepoint"_c.desc());
+
+        return query_builder::execute_read_query<cut_entity, domain::cut>(
+            ctx,
+            query,
+            [](const auto& entities) { return cut_mapper::map(entities); },
+            lg(),
+            "Reading the cuts of a party in a window.");
+    }
+
+    const auto query = query_builder::read<std::vector<cut_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "party_id"_c == party &&
+                             "kind_code"_c == kind_code && "timepoint"_c >= from &&
+                             "timepoint"_c < to && "valid_to"_c == max) |
+                       query_builder::order_by("timepoint"_c.desc());
+
+    return query_builder::execute_read_query<cut_entity, domain::cut>(
+        ctx,
+        query,
+        [](const auto& entities) { return cut_mapper::map(entities); },
+        lg(),
+        "Reading the cuts of a party, a kind and a window.");
+}
+#+end_src
+
 *** read_by_kind_and_month
 :PROPERTIES:
 :ID: 8E52C410-7B93-4A6D-8F1C-25D9E7B04A63
 :END:
-
 Reads the cuts of one kind whose timepoint falls in an instant window, newest
 first. The window is the month a person picked on the cuts list, and the read
 takes it as a range so the caller's clock decides what a month is rather than

@@ -212,6 +212,12 @@ public:
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 
+    std::vector<domain::cut> read_for_party_in_window(context ctx,
+                                                      const boost::uuids::uuid& party_id,
+                                                      const std::string& kind_code,
+                                                      std::chrono::system_clock::time_point from,
+                                                      std::chrono::system_clock::time_point to);
+
     std::vector<domain::cut> read_by_kind_and_month(context ctx,
                                                     const std::string& kind_code,
                                                     std::chrono::system_clock::time_point from,

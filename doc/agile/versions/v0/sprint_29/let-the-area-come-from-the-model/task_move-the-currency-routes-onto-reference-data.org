@@ -60,14 +60,16 @@ generated collections.
 | Generated test assertions on the new path | 20 | =grep -c "reference-data/currencies" projects/ores.http/refdata/tests/currency_routes_tests.cpp= | this branch |
 | Hurl scripts regenerated | 10 | =git status --short projects/ores.http/scripts/library/currencies | wc -l= | this branch |
 | Sources still naming the old path | 0 | =grep -rn "api/v1/refdata/currencies" projects doc build/scripts= | this branch |
+| Generated route tests | 2 cases, 41 assertions, all passing | =./ores.http.refdata.tests= from the preset's =publish/bin= | this branch |
 
 * Notes
 
-- The build of =ores.http.refdata.tests= was started and did not finish inside fifty
-  minutes, and it was cancelled. What stands in its place is weaker than a run: the generated
-  test file carries the new path 20 times and the old path none, and the change to the
-  compiled unit is the same string literal in a route registration. A stale binary from
-  before the move would test the old paths, so it was not run either.
+- The first attempt to build =ores.http.refdata.tests= was piped through =tail=, which
+  prints nothing until the build ends, so fifty minutes of compiling looked like a hang and
+  the job was cancelled. The second attempt ran bare and finished: the version manifest had
+  moved, so it rebuilt 319 targets on the way to the test binary. The lesson is the one this
+  repository already writes down for compass commands, that a build's progress belongs on
+  the terminal and not behind a filter.
 - The tangle gate fails on an uncommitted tree by construction, because it compares the
   recipe with the committed scripts. It passes once the change is committed.
 - The design's route-table sample named the old path. It now names the new one, so the plan
@@ -76,6 +78,7 @@ generated collections.
 * Result
 
 The currency collection answers on =/api/v1/reference-data/currencies=. Ten routes, ten hurl
-scripts, the generated tests, the recipe page and the inventory all state that path, and no
-source in the tree names the old one. The chain works, and the remaining generated
-collections can follow it one component at a time.
+scripts, the generated tests, the recipe page and the inventory all state that path, no
+source in the tree names the old one, and the generated tests run green against the built
+unit: 2 cases, 41 assertions. The chain works, and the remaining generated collections can
+follow it one component at a time.

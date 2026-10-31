@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 560D4814-B8AB-4136-A9C8-48B87FC3488B
+:END:
+#+title: A merge took an old tree over two merged increments
+#+description: Merging PR #4293 deleted 174 files from main and 37k lines, including two increments that had just merged, because the branch's tree predated them and the merge resolved whole files to the older side. The build still passes, so nothing announced it.
+#+type: capture
+#+level: cross
+#+filetags: :incident: :merge: :process:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The merge of PR #4293 (=hotfix/let-the-rate-visit-state-the-inflation-row=,
+merged as =9e500a223f=) states one intent: restore three files of the synthetic
+trade population planner that an earlier merge dropped. Measured against its
+first parent it deletes 174 files and 37113 lines, and adds 1877:
+
+#+begin_src text
+$ git diff --shortstat 9e500a223f^1 9e500a223f
+ 295 files changed, 1877 insertions(+), 37113 deletions(-)
+$ git diff --diff-filter=D --name-only 9e500a223f^1 9e500a223f | wc -l
+174
+#+end_src
+
+What went with it, among the rest:
+
+- Both increments of the streaming story, merged minutes earlier in #4287 and
+  #4289: =change_feed=, the collection-shaped change, the ticker wiring and the
+  session door's verifier. Restored by
+  =hotfix/restore-the-feed-and-the-door=.
+- The volatility smile domain, protocol and recipe files.
+- The trade operations service and its modelling page.
+
+* Why
+
+The branch was cut before those merges, and the merge resolved each conflicting
+file to the branch's side, which is the older tree. Nothing in the flow refuses
+that: the result compiles, the suites that matter to the new files still pass,
+and the deletions appear only in a diff nobody reads once the PR is green.
+
+Two properties make this quiet and expensive:
+
+- A file that main added and the branch never had is deleted by such a merge, and
+  no test names it.
+- The build still passes, because the deleted work was not referenced by the
+  files that survived. A build that fails would have been the cheaper outcome.
+
+The checks that would catch it are the ones that compare a whole tree: the drift
+sweep, the inventories, the route table. They read a diff of paths, and a
+deletion of a file no catalogue names is not drift to them.
+
+* Candidate guards
+
+- A merge that deletes files the branch never touched is suspect by construction:
+  refuse it, or make the PR say so.
+- A post-merge check that every file present on the first parent is either still
+  present or was deleted by a commit that says it deleted it. Cheap, and it names
+  the loss.
+- A pull-request body that states the file count and the delete count, so a
+  one-line hotfix that changes 295 files reads as what it is.
+
+* References
+
+- =9e500a223f=, the merge, and =1398383538=, the commit it brought.
+- [[id:2E504EF1-F812-4D83-BD21-AE97162A1ABC][One HTTP Server: designing ores.http to replace the web BFF]], whose increments
+  were the part restored here.
+
+* See also

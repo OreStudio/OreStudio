@@ -28,6 +28,8 @@
 #include "ores.http.core/routes/storage_routes.hpp"
 #include "ores.http.core/routes/variability_routes.hpp"
 #include "ores.http.core/routes/web_bundle_routes.hpp"
+#include "ores.http.core/stream/change_feed.hpp"
+#include "ores.http.core/stream/change_ticker.hpp"
 #include "ores.http.server/messaging/registrar.hpp"
 #include "ores.http/routes/assets/assets_routes.hpp"
 #include "ores.http/routes/iam/auth_session_routes.hpp"
@@ -177,8 +179,13 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     session_cookie.secure = cfg.server.enable_ssl;
     server.set_cookie_settings(session_cookie);
 
+    /*
+     * The door finds the verifier when a sign-in needs it. The runner installs the
+     * verifier from IAM's public key after the routes are built, so a door that kept
+     * the one it was given would keep an empty one and refuse every sign-in.
+     */
     http::routes::iam::auth_session_routes auth_sessions(
-        service_nats, server.sessions(), server.verifier(), session_cookie);
+        service_nats, server.sessions(), [&server] { return server.verifier(); }, session_cookie);
     auth_sessions.register_routes(router, registry);
 
     routes::storage_routes storage(cfg.storage_dir, auth_service, cfg.server.max_body_size);
@@ -190,8 +197,19 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
      * needs to see on a quiet market.
      */
     auto changes = std::make_shared<http::stream::change_hub>();
+    auto gathered = std::make_shared<http::stream::change_coalescer>();
     routes::change_routes change_stream(changes, std::chrono::milliseconds(15000));
     change_stream.register_routes(router, registry);
+
+    /*
+     * A window short enough that a screen does not notice it, and long enough that a
+     * bulk import arrives as one frame per collection rather than one per row. The
+     * feed fills the window from what the stores announce, so both ends of the
+     * stream now exist.
+     */
+    auto ticker = std::make_shared<http::stream::change_ticker>(
+        *gathered, *changes, std::chrono::milliseconds(150));
+    http::stream::change_feed feed(*gathered);
 
     /*
      * Last, because the bundle answers what no other route claimed: a screen path
@@ -217,7 +235,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
         io_ctx,
         nats,
         service_name,
-        [&http_base_url, &server](auto& n, auto verifier) {
+        [&http_base_url, &server, &feed](auto& n, auto verifier) {
             if (!verifier)
                 throw std::runtime_error(
                     "JWT verifier is required to register HTTP server handlers.");
@@ -226,20 +244,27 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
             server.set_verifier(
                 std::make_shared<ores::security::jwt::jwt_authenticator>(*verifier));
             return ores::http::server::messaging::registrar::register_handlers(
-                n, std::move(*verifier), http_base_url);
+                n, std::move(*verifier), http_base_url, feed);
         },
-        [&](asio::io_context& ioc) {
+        [&, ticker](asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
                 std::string(service_name), std::string(service_version), nats);
             asio::co_spawn(ioc, [hb]() { return hb->run(); }, asio::detached);
             asio::co_spawn(
                 ioc,
+                [ticker, executor = ioc.get_executor()]() -> asio::awaitable<void> {
+                    co_await ticker->run(executor);
+                },
+                asio::detached);
+            asio::co_spawn(
+                ioc,
                 [&server]() -> asio::awaitable<void> { co_await server.run(); },
                 asio::detached);
         },
-        [&]() {
+        [&, ticker]() {
             server.stop();
             event_source.stop();
+            ticker->stop();
         });
     co_return;
 }

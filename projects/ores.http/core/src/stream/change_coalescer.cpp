@@ -19,19 +19,17 @@
  */
 #include "ores.http.core/stream/change_coalescer.hpp"
 
-#include <utility>
-
 namespace ores::http::stream {
 
 void change_coalescer::record(const change_event& event) {
-    if (event.entity.empty() || event.id.empty())
+    if (event.tenant.empty() || event.entity.empty())
         return;
     const std::lock_guard lock(mu_);
-    dirty_[{event.tenant, event.party, event.entity}].insert(event.id);
+    dirty_.emplace(event.tenant, event.party, event.component, event.entity);
 }
 
 std::vector<coalesced_frame> change_coalescer::drain() {
-    std::map<key, std::set<std::string>> taken;
+    std::set<key> taken;
     {
         const std::lock_guard lock(mu_);
         taken.swap(dirty_);
@@ -39,13 +37,13 @@ std::vector<coalesced_frame> change_coalescer::drain() {
 
     std::vector<coalesced_frame> frames;
     frames.reserve(taken.size());
-    for (auto& [key, ids] : taken) {
-        const auto& [tenant, party, entity] = key;
+    for (const auto& entry : taken) {
+        const auto& [tenant, party, component, entity] = entry;
         frames.push_back({
             .tenant = tenant,
             .party = party,
+            .component = component,
             .entity = entity,
-            .ids = {ids.begin(), ids.end()},
         });
     }
     return frames;
@@ -53,10 +51,7 @@ std::vector<coalesced_frame> change_coalescer::drain() {
 
 std::size_t change_coalescer::pending() const {
     const std::lock_guard lock(mu_);
-    std::size_t total = 0;
-    for (const auto& [key, ids] : dirty_)
-        total += ids.size();
-    return total;
+    return dirty_.size();
 }
 
 }

@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: 692E58A3-E3E1-4C4F-B399-328C5827DD3E
+:END:
+#+title: Task: Let the door reach the verifier
+#+description: The session door is built before the service runner installs the verifier, so it keeps an empty one and every sign-in answers 'Authentication is not configured'. Ask for the verifier when the door needs it, refuse before asking IAM what it cannot check, and prove that a verifier installed after construction is the one the door uses.
+#+type: task
+#+level: s1
+#+filetags: :hold_the_session_at_the_door:sprint_29:v0:
+#+owner: marco
+#+branch: feature/let-the-door-reach-the-verifier
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:67465051-811E-411C-9F93-AFC61A7E5C4B][Hold the session at the door]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A door that is opened before the lock is fitted still works once the lock is in place. The door asks for the verifier at each sign-in instead of keeping the one it was handed at construction, and refuses to ask IAM for a token it could not check.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:67465051-811E-411C-9F93-AFC61A7E5C4B][Hold the session at the door]] |
+| Now          | Nothing. |
+| Waiting on   | The build on main: see =* Notes=. |
+| Next         | Nothing. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+- The door takes a way to find the verifier, not a verifier, so a verifier installed after the door is built is the one it uses.
+- A sign-in refuses before it asks IAM when no verifier is configured, because a token it cannot check is not a session.
+- A case proves the door refuses while no verifier is configured and stops refusing once one is installed.
+- A running deployment signs in a browser user and sets the session cookie.
+
+* Plan
+
+- The door takes a =std::function<shared_ptr<jwt_authenticator>()>= instead of the
+  verifier. One caller exists, the application, and it passes a lambda over the
+  server, so the door reads whatever the runner installed.
+- The verifier check moves to the top of =sign_in=, before IAM is asked. A token
+  that cannot be checked is not a session, and asking for one spends a request to
+  answer a refusal that reads like the caller's fault.
+- The cases that build the door with no verifier use one named finder, so the
+  meaning of =nullptr= in those three places becomes a name.
+- A new case installs a verifier after construction and proves the door stops
+  refusing. It cannot reach IAM, so what it asserts is that the refusal is gone.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| IAM suite assertions | 300 | =ores.http.iam.tests= | =f32ce6b39f= |
+| IAM suite cases | 35 | =ores.http.iam.tests= | =f32ce6b39f= |
+| Live sign-in assertions | 10 | =ores.http.iam.tests "[live]"= | =f32ce6b39f= |
+
+* Notes
+
+*History: the deployment could not be rebuilt on main at first.* =ores.iam.core= fails to compile against the tree at
+=19ba10eb8a=:
+
+#+begin_src text
+projects/ores.iam/core/include/ores.iam.core/messaging/tenant_provisioning_handler.hpp:1659:50:
+  error: no member named 'routed_code_count' in namespace 'ores::synthetic::service'
+projects/ores.iam/core/include/ores.iam.core/messaging/tenant_provisioning_handler.hpp:1655:9:
+  error: no matching function for call to 'apply_population_knobs'
+#+end_src
+
+=routed_code_count= appears nowhere in the tree, so the handler calls a function
+that was never committed. The server binary links =ores.iam.core=, so no rebuilt
+deployment exists to sign in to. The work is not mine and is being fixed on main.
+
+What is proven without a deployment:
+
+- The door looks for the verifier on every sign-in, by the new case.
+- The sign-in round trip against the running fleet, by
+  =ores.http.iam.tests "[live]"=: IAM mints a token, the door verifies it with the
+  fleet's public key, and the session is stored. That case builds the door itself,
+  so it proves the run-time path and not the application's wiring; the wiring is
+  the one line this task changes, and no case covers the application.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The door no longer keeps a verifier it was handed before there was one. It takes
+a way to find the verifier and asks on every sign-in, so the one the service
+runner installs is the one that checks the token. The application passes a lambda
+over the server, which is where the runner puts it.
+
+The check also moved ahead of the request to IAM. A gateway that cannot check a
+token no longer spends a round trip to fetch one, and a misconfigured deployment
+answers the same refusal whether or not IAM is up.
+
+Proven on the deployment once main compiled again: a sign-in over HTTP answers
+=200= with the principal and a session cookie, where it answered
+=Authentication is not configured= before.
+
+#+begin_src text
+$ curl -s -c tmp/ck.txt -X POST http://127.0.0.1:21601/api/v1/auth/sessions \
+    -H 'Content-Type: application/json' \
+    -d '{"principal":"tenant_admin@acme_corporation","password":"…"}'
+{"subject":"01a18ff5-167d-778a-b5d6-3b8c8b0ba0ce","tenant":"55ae77e3-…",…}
+#+end_src
+
+The same cookie then opened =/api/v1/changes=, which is the client the defect was
+blocking.
+

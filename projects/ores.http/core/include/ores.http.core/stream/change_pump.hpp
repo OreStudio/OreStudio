@@ -32,10 +32,10 @@ namespace ores::http::stream {
 /**
  * @brief One coalesced frame as an event-stream message.
  *
- * The event name is the entity, so a client can subscribe by name and read the data
- * without parsing the payload to find out what changed. The payload is JSON with the
- * tenant, the party and the identifiers, written here rather than by a codec because
- * it is the envelope the stream states and not a domain object.
+ * The event name is the component and the collection, so a client can listen for the
+ * one collection it draws and read nothing else. The payload is JSON with the tenant,
+ * the party and the same two names, written here rather than by a codec because it is
+ * the envelope the stream states and not a domain object.
  */
 ORES_HTTP_CORE_EXPORT std::string frame_text(const coalesced_frame& frame);
 

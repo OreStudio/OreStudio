@@ -35,6 +35,11 @@ namespace asio = boost::asio;
 
 namespace {
 
+/// A door that has no verifier at all, which is a deployment that never got one.
+const auto no_verifier = [] {
+    return std::shared_ptr<ores::security::jwt::jwt_authenticator>();
+};
+
 domain::cookie_settings cookie_named(std::string name) {
     domain::cookie_settings settings;
     settings.name = std::move(name);
@@ -73,7 +78,7 @@ TEST_CASE("the_session_door_registers_its_three_routes", "[auth_session]") {
     auto router = std::make_shared<net::router>();
     auto registry = std::make_shared<openapi::endpoint_registry>();
     auto store = std::make_shared<domain::session_store>(std::chrono::hours(1));
-    auth_session_routes routes(session, store, nullptr, cookie_named("ores_web_session_test"));
+    auth_session_routes routes(session, store, no_verifier, cookie_named("ores_web_session_test"));
 
     routes.register_routes(router, registry);
 
@@ -106,7 +111,7 @@ TEST_CASE("me_answers_the_principal_and_never_the_token", "[auth_session]") {
 
     ores::nats::service::nats_client session;
     auto store = std::make_shared<domain::session_store>(std::chrono::hours(1));
-    auth_session_routes routes(session, store, nullptr, cookie_named("ores_web_session_test"));
+    auth_session_routes routes(session, store, no_verifier, cookie_named("ores_web_session_test"));
 
     domain::http_request req;
     domain::http_response unauthenticated = routes.me(req);
@@ -135,7 +140,7 @@ TEST_CASE("signing_out_closes_the_session_and_clears_the_cookie", "[auth_session
     ores::nats::service::nats_client session;
     auto store = std::make_shared<domain::session_store>(std::chrono::hours(1));
     const auto settings = cookie_named("ores_web_session_test");
-    auth_session_routes routes(session, store, nullptr, settings);
+    auth_session_routes routes(session, store, no_verifier, settings);
 
     domain::session_record record;
     record.token = "the-token";
@@ -153,4 +158,38 @@ TEST_CASE("signing_out_closes_the_session_and_clears_the_cookie", "[auth_session
     const auto clearing = answered.headers.find("Set-Cookie");
     REQUIRE(clearing != answered.headers.end());
     REQUIRE(clearing->second.find("Max-Age=0") != std::string::npos);
+}
+
+TEST_CASE("a_verifier_installed_after_the_door_is_built_is_the_one_it_uses", "[auth_session]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that the door looks for the verifier it needs";
+
+    /*
+     * The runner installs the verifier after the routes are built, so the door has to
+     * ask for it at each sign-in. A door that copied it at construction kept an empty
+     * one, and every browser was refused with "Authentication is not configured".
+     */
+    std::shared_ptr<ores::security::jwt::jwt_authenticator> installed;
+    ores::nats::service::nats_client session;
+    auto store = std::make_shared<domain::session_store>(std::chrono::hours(1));
+    auth_session_routes routes(
+        session, store, [&installed] { return installed; }, cookie_named("ores_web_session"));
+    REQUIRE(store->size() == 0);
+
+    domain::http_request req;
+    req.method = domain::http_method::post;
+    req.body = R"({"principal":"tenant_admin@acme_corporation","password":"a-password"})";
+
+    const auto before = run(routes.sign_in(req));
+    REQUIRE(before.status == domain::http_status::unauthorized);
+    REQUIRE(before.body.find("Authentication is not configured") != std::string::npos);
+
+    installed = std::make_shared<ores::security::jwt::jwt_authenticator>(
+        ores::security::jwt::jwt_authenticator::create_hs256("a-secret-at-the-door"));
+
+    const auto after = run(routes.sign_in(req));
+    // It reaches IAM now, which this case cannot talk to, and either way the refusal
+    // it answered before is gone.
+    REQUIRE(after.body.find("Authentication is not configured") == std::string::npos);
+    REQUIRE(store->size() == 0);
 }

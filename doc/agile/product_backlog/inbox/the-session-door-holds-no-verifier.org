@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 7550D48A-AD0F-49C8-90FE-38B351DAD237
+:END:
+#+title: The session door holds no verifier
+#+description: Signing in over HTTP answers 'Authentication is not configured' on a running deployment, because the door copies the server's verifier before the service runner installs it. Every browser session, and so the only client of the change stream, is blocked until the door asks for the verifier when it needs it.
+#+type: capture
+#+level: cross
+#+filetags:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The application builds the session door with =server.verifier()= before the service
+runner installs the verifier, so the door keeps an empty one for the life of the
+process. Every sign-in refuses itself with =Authentication is not configured=, and
+a browser can therefore never hold a session. The startup log shows the two facts
+beside each other: =Fetched JWKS public key from IAM= and =JWT authenticator
+configured with RS256 verifier=, and then, on the first sign-in, =no verifier is
+configured=.
+
+* Why
+
+The change stream has one client, a browser, and a browser reaches it through a
+session. Until this is fixed the stream can be tested in pieces and not as a
+deployment, so the defect blocks the acceptance of the streaming story as well as
+every screen behind the door.
+
+* References
+
+- The work under way: [[id:692E58A3-E3E1-4C4F-B399-328C5827DD3E][Let the door reach the verifier]].
+- =projects/ores.http/server/src/app/application.cpp=, where the door is built.
+- =projects/ores.http/api/include/ores.http.api/net/http_server.hpp=, where the
+  verifier is installed.
+
+* See also
+
+- [[id:67465051-811E-411C-9F93-AFC61A7E5C4B][Hold the session at the door]].

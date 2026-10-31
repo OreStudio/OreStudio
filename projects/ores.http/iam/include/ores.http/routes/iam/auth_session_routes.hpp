@@ -30,6 +30,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <boost/asio/awaitable.hpp>
+#include <functional>
 #include <memory>
 #include <string_view>
 
@@ -45,9 +46,20 @@ namespace ores::http::routes::iam {
  */
 class auth_session_routes final {
 public:
+    /**
+     * @brief The verifier, found when a sign-in needs it.
+     *
+     * The service runner installs the verifier after the routes are built, because
+     * the public key it verifies against arrives with the runner. A route that took
+     * the verifier by value therefore kept an empty one for the life of the process,
+     * and every sign-in refused itself. A route asks for it at each sign-in instead.
+     */
+    using verifier_finder =
+        std::function<std::shared_ptr<ores::security::jwt::jwt_authenticator>()>;
+
     auth_session_routes(ores::nats::service::nats_client& session,
                         std::shared_ptr<http::domain::session_store> sessions,
-                        std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier,
+                        verifier_finder find_verifier,
                         http::domain::cookie_settings cookie);
 
     void register_routes(std::shared_ptr<http::net::router> router,
@@ -75,7 +87,7 @@ private:
 
     ores::nats::service::nats_client& session_;
     std::shared_ptr<http::domain::session_store> sessions_;
-    std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier_;
+    verifier_finder find_verifier_;
     http::domain::cookie_settings cookie_;
 };
 

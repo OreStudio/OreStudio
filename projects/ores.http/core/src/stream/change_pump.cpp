@@ -18,10 +18,18 @@
  *
  */
 #include "ores.http.core/stream/change_pump.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::http::stream {
 
+using namespace ores::logging;
+
 namespace {
+
+inline auto& pump_lg() {
+    static auto instance = ores::logging::make_logger("ores.http.stream.change_pump");
+    return instance;
+}
 
 /// Escapes the few characters JSON cannot carry as they are.
 std::string json_string(std::string_view value) {
@@ -38,17 +46,12 @@ std::string json_string(std::string_view value) {
 }
 
 std::string frame_text(const coalesced_frame& frame) {
-    auto text = std::string("event: ") + frame.entity + "\n";
+    auto text = std::string("event: ") + frame.component + '.' + frame.entity + "\n";
     text += "data: {\"tenant\":" + json_string(frame.tenant);
     text += ",\"party\":" + json_string(frame.party);
+    text += ",\"component\":" + json_string(frame.component);
     text += ",\"entity\":" + json_string(frame.entity);
-    text += ",\"ids\":[";
-    for (std::size_t index = 0; index < frame.ids.size(); ++index) {
-        if (index > 0)
-            text += ',';
-        text += json_string(frame.ids[index]);
-    }
-    text += "]}\n\n";
+    text += "}\n\n";
     return text;
 }
 
@@ -58,6 +61,9 @@ std::size_t change_pump::pump() {
         hub_.publish(frame_text(frame));
         ++published;
     }
+    if (published > 0)
+        BOOST_LOG_SEV(pump_lg(), debug)
+            << "Published " << published << " coalesced frame(s) to every open stream";
     return published;
 }
 

@@ -324,37 +324,71 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
     var CUT_TYPES = [
         { code: 'EOD', name: 'End of day', family: 'End of day', freq: 'daily',
           desc: 'The body one valuation reads, fixed at the centre\u2019s close of the day.',
-          auth: 'Signed by Finance', indicative: false, resolution: 'same_day_close',
+          approval_kind: 'reporting.eod_cut_authorisation', indicative: false,
+          resolution: 'same_day_close',
           months: 25, dest: 'warm', hold: false, order: 10 },
         { code: 'EOM', name: 'Month end', family: 'End of day', freq: 'monthly',
           desc: 'The same body as the end of day cut, fixed on the month\u2019s last business day ' +
                 'and kept for the monthly reports and their auditors.',
-          auth: 'Signed by Finance', indicative: false,
+          approval_kind: 'reporting.eod_cut_authorisation', indicative: false,
           resolution: 'last_business_day_of_month_close',
           months: 84, dest: 'archive', hold: false, order: 11 },
         { code: 'EOY', name: 'Year end', family: 'End of day', freq: 'yearly',
           desc: 'The same body as the end of day cut, fixed on the year\u2019s last business day ' +
                 'and kept longest of all.',
-          auth: 'Signed by Finance', indicative: false,
+          approval_kind: 'reporting.eod_cut_authorisation', indicative: false,
           resolution: 'last_business_day_of_year_close',
           months: 120, dest: 'archive', hold: true, order: 12 },
         { code: 'SOD', name: 'Start of day', family: 'Start of day', freq: 'daily',
           desc: 'The previous close carried forward to the centre\u2019s open.',
-          auth: 'Not signed', indicative: false, resolution: 'same_day_open',
+          approval_kind: null, indicative: false, resolution: 'same_day_open',
           months: 25, dest: 'warm', hold: false, order: 20 },
         { code: 'IPV', name: 'Independent verification', family: 'Verification', freq: 'daily',
           desc: 'The end of day body with selected values replaced by values the firm did not produce.',
-          auth: 'Signed by Market Risk', indicative: false, resolution: 'cut_it_is_built_on',
+          approval_kind: 'reporting.ipv_cut_authorisation', indicative: false,
+          resolution: 'cut_it_is_built_on',
           months: 84, dest: 'archive', hold: false, order: 30 },
         { code: 'FLASH', name: 'Flash', family: 'Intraday', freq: 'on-demand',
           desc: 'An indicative view taken at an instant a process names while the day moves.',
-          auth: 'Not signed', indicative: true, resolution: 'the_cut_named',
+          approval_kind: null, indicative: true, resolution: 'the_cut_named',
           months: 3, dest: 'warm', hold: false, order: 40 },
         { code: 'LIVE', name: 'Live', family: 'Consumer', freq: 'on-demand',
           desc: 'The body at the instant a run starts; the run mints the cut and its values are indicative.',
-          auth: 'Not signed', indicative: true, resolution: 'run_instant',
+          approval_kind: null, indicative: true, resolution: 'run_instant',
           months: 1, dest: 'warm', hold: false, order: 50 }
     ];
+
+    /* The approval kinds, the inbox's own lookup. A type points at one of these
+       by code, and the words a screen draws come from the row it points at. */
+    var APPROVAL_KINDS = {
+        'reporting.eod_cut_authorisation': {
+            name: 'End of day cut authorisation',
+            decide: 'inbox::approvals:decide_finance', approvals: 1 },
+        'reporting.ipv_cut_authorisation': {
+            name: 'Verification cut authorisation',
+            decide: 'inbox::approvals:decide_market_risk', approvals: 1 }
+    };
+
+    function approvalKindOf(t) {
+        return t && t.approval_kind ? APPROVAL_KINDS[t.approval_kind] || null : null;
+    }
+
+    /* The function a decide permission belongs to, read from the permission's
+       own last word: inbox::approvals:decide_market_risk is Market Risk. */
+    function deciderWord(d) {
+        if (!d) return '';
+        var tail = d.split(':').pop().replace(/^decide_/, '').replace(/_/g, ' ');
+        return tail.replace(/\b[a-z]/g, function (ch) { return ch.toUpperCase(); });
+    }
+
+    /* The label a screen draws for a type's authorisation: derived from the
+       approval kind it points at, and never stored on the type. */
+    function authLabel(t, long) {
+        var k = approvalKindOf(t);
+        if (!k) return 'Not required';
+        return long ? k.name + ' \u00b7 ' + deciderWord(k.decide)
+                    : deciderWord(k.decide);
+    }
 
     function typeByCode(code) {
         var found = null;
@@ -406,7 +440,13 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
        fixture names no kind. A cut in use carries the declaration it was
        admitted under. */
     function decl(c) {
-        return KIND_DECL[(c && c.code) || 'EOD'] || KIND_DECL.EOD;
+        var code = (c && c.code) || 'EOD';
+        var t = typeByCode(code) || {};
+        var known = KIND_DECL[code] || {};
+        return { name: t.name || known.name || code,
+                 requires_auth: !!t.approval_kind,
+                 indicative: !!t.indicative,
+                 resolves: known.resolves || '' };
     }
 
     /* Whether a result priced from the cut carries the indicative mark: the
@@ -1575,6 +1615,7 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
                 '<td class="key">' + esc(k) + '<span class="sub">' + esc(d.name) + '</span></td>' +
                 '<td>' + esc(d.resolves) + '</td>' +
                 '<td>' + (d.requires_auth ? badge('Signed', 'pending') : badge('Not signed', 'inactive')) +
+                '<span class="sub">' + esc(authLabel(typeByCode(k))) + '</span>' +
                 (d.indicative ? ' ' + badge('Indicative', 'indicative') : '') + '</td></tr>';
         }).join('');
         var cuts = CUTS.filter(function (c) { return c.state !== 'draft'; }).slice(0, 5).map(function (c) {
@@ -1877,7 +1918,8 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
             return '<tr class="pick" data-type="' + t.code + '">' +
                 '<td class="key">' + esc(t.code) + '<span class="sub">' + esc(t.name) + '</span></td>' +
                 '<td>' + esc(t.family) + '</td>' +
-                '<td class="dim">' + esc(t.auth) + '</td>' +
+                '<td>' + (t.approval_kind ? badge('Signed', 'pending') : badge('Not signed', 'inactive')) +
+                '<span class="sub">' + esc(authLabel(t)) + '</span></td>' +
                 '<td>' + (t.indicative ? badge('Indicative', 'indicative')
                     : badge('Official', 'inactive')) + '</td>' +
                 '<td class="num">' + t.months + ' months<span class="sub">' + esc(t.dest) + '</span></td>' +
@@ -1895,8 +1937,9 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
             'consumer. A family fixes the body rule and where the instant comes from; a type inside it ' +
             'fixes the rest. The three end of day types share one body and differ in their occasion and ' +
             'their retention.</p>' +
-            '<div class="gap"><b>Gap.</b> No cut type lookup exists: these six rules live in a knowledge ' +
-            'page and in this fixture. Nothing reads them at a take, at a resolution or at an archive.</div>');
+            '<div class="gap"><b>Gap.</b> No cut type lookup exists, and no FK points at the inbox ' +
+            'approval kinds from one. The rules live in a knowledge page and in this fixture, and nothing ' +
+            'reads them at a take, at a resolution or at an archive.</div>');
     }
 
     function typesFrame(body) {
@@ -1957,7 +2000,9 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
             '<div class="facts">' +
             fact('Family', esc(t.family)) +
             fact('Repeats', esc(t.freq)) +
-            fact('Authorisation', esc(t.auth)) +
+            fact('Authorisation', t.approval_kind
+                ? badge('Signed', 'pending') + ' ' + esc(authLabel(t, true))
+                : badge('Not signed', 'inactive')) +
             fact('Values', t.indicative ? 'Indicative' : 'Official') +
             fact('Resolution rule', '<span class="mono" style="word-break:break-all">' +
                 esc(t.resolution) + '</span>') +
@@ -1977,6 +2022,13 @@ code{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
             (t.freq === 'daily' ? 'by month' : (t.freq === 'monthly' ? 'by year'
                 : (t.freq === 'yearly' ? 'as one group' : 'by day'))) + '.</p>' +
             body +
+            '<p class="sentence"><b>The authorisation is a foreign key.</b> ' + (t.approval_kind
+                ? 'The type points at <span class="mono">' + esc(t.approval_kind) +
+                  '</span> in the inbox approval kinds, whose decider needs ' +
+                  '<span class="mono">' + esc(approvalKindOf(t).decide) + '</span>. The words above ' +
+                  'are derived from that row and stored nowhere.'
+                : 'The column is null, so a cut of this type raises no approval request and no screen ' +
+                  'can print a signer for it.') + '</p>' +
             '<div class="gap"><b>Gap.</b> The type is a fixture. No lookup holds the rules, and nothing ' +
             'reads a type\u2019s retention when a cut is taken or archived.</div>';
     }

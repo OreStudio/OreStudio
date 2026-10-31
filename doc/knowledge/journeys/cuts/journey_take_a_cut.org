@@ -325,7 +325,7 @@ own: the model, then the store, then the operations, and the screens last.
 | Steps 8 to 10, the assembly | Assemble the body, answer every part and every gap, and write nothing | =reporting.v1.ops.preview_cut= | missing |
 | Step 10, the draft | Save an incomplete body and its gaps | =reporting.v1.cuts.put= | missing |
 | Step 14, the take | Freeze the body and, where the kind requires it, raise the authorisation in the same act | =reporting.v1.ops.take_cut= | missing |
-| Step 14, the request | Raise an approval request of the cut's kind, with the cut's detail row | =inbox.v1.ops.raise_approval=, with the kind =reporting.cut_authorisation= | exists; the kind and the detail row are missing |
+| Step 14, the request | Raise an approval request of the inbox kind the cut's type names, with the cut's detail row | =inbox.v1.ops.raise_approval=, with the kind read from the type's =approval_kind_code= | exists; the types' approval kinds and the detail row are missing |
 | Steps 16 to 18, the queue | Read the requests the caller may decide | =inbox.v1.approval_requests.list= | exists |
 | Steps 16 to 18, the decision | Approve, refuse or hold a request, with a comment | =inbox.v1.ops.decide_approval= | exists |
 | Step 17, the apply | Write the cut's authorisation when the request reaches approved | (the reporting service would reconcile on the request's change event) | missing |
@@ -369,11 +369,11 @@ record, the rules and the queue, so neither reimplements the other.
    take and the gate turn on: whether a kind requires an authorisation, and
    whether its values are indicative. A kind held as a code in a populated list,
    with those two columns, is the smaller change.
-   *And the inbox kind is not seeded.* =reporting.cut_authorisation= exists in no
-   seed, so the take has nothing to raise even where the kind requires it. The
-   row is small — a code, the decide permission, one approval, no hold, no
-   expiry, no apply workflow — and the queue and the request page take it without
-   a change of their own.
+   *And the approval kinds the types name are not seeded.* =reporting.eod_cut_authorisation=
+   and =reporting.ipv_cut_authorisation= exist in no seed, so a type that names one has
+   nothing to raise. Each row is small — a code, a decide permission, one approval, no
+   hold, no expiry, no apply workflow — and the queue and the request page take it
+   without a change of their own.
 7. *No route and no screen.* No BFF route serves reporting, and no reporting screen
    exists in the web application, so the cuts list, the take flow and the record
    are all new.

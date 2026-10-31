@@ -97,7 +97,7 @@ a report resolves it, and how long its cuts are kept.
 |--------+---------------+----------------------|
 | =code=, =name=, =description= | The kind's identity, in the reference data's own words | A person selects it by code, and a person new to the team reads what it means |
 | =family_code= | The family the kind belongs to: =end_of_day=, =start_of_day=, =verification=, =intraday=, =consumer= | The family fixes the body rule and the source of the instant; a kind inside it fixes the rest |
-| =requires_authorisation= | Whether a cut of the kind raises an approval request | The end of day and the verification are signed; the open, the intraday view and the live view are not |
+| =approval_kind_code= | A nullable foreign key to =ores_inbox_approval_kinds_tbl=: the inbox kind that authorises a cut of this type, or null where none does | The end of day types point at a kind whose decider is Finance, the verification at one whose decider is Market Risk, and the open, the intraday and the live views point at nothing. The column is the whole of the authorisation rule; the signed-or-not a screen draws is derived from it and stored nowhere |
 | =output_is_indicative= | Whether a result priced from a cut of the kind carries the indicative mark | The intraday and the live views are indicative; the close and the open are official |
 | =resolution_rule_code= | The rule by which a report resolves a selection of this kind to a cut | [[*The resolution][The resolution]] states the rules; the kind names one |
 | =retention_months= | How long a cut of the kind is kept before it leaves the warm tier | [[*Retention][Retention]] states the rule |
@@ -105,6 +105,26 @@ a report resolves it, and how long its cuts are kept.
 | =legal_hold_default= | Whether a cut of the kind starts under legal hold | A held cut is never removed, whatever its retention says |
 | =display_order= | The order a person reads the kinds in | The take and the selection both read it |
 | =version=, =valid_from=, =valid_to= | The bitemporal window every reference row keeps | A changed rule is a version a person can read, and no rule is silently overwritten |
+
+The authorisation is a foreign key and not a phrase. =approval_kind_code= points at
+=ores_inbox_approval_kinds_tbl=, the lookup the inbox already holds, and a null means
+the type requires no authorisation at all. A check on the column is a plain foreign
+key to the approval kinds; the constraint the schema needs beyond it is that a cut
+minted under a type with a null FK raises no request, which the take enforces rather
+than the database, because the take is where the request would be written.
+
+Each type names its own inbox kind, so the kinds differ where the deciding function
+differs: the end of day types point at =reporting.eod_cut_authorisation=, whose
+=decide_permission_code= is =inbox::approvals:decide_finance=, and the verification
+points at =reporting.ipv_cut_authorisation=, whose decider is Market Risk. The two
+rows name the same subject — a cut of that occasion — and differ in who answers.
+
+** Nothing a screen prints about authorisation is stored.** The type list and the
+type record draw the words from the foreign key's target: the approval kind's name
+and the permission a decider needs, such as *Finance · decide_finance*, and a dash
+where the key is null. A firm that gives the close to another function changes one
+approval kind and no type, and every screen that drew the old words draws the new
+ones.
 
 The kind is held by the reporting component, because reporting both resolves a
 selection and draws the cuts, and no cut component exists. A cut component would
@@ -227,7 +247,7 @@ cut adds a detail table and a descriptor.
 |--------------------+----------------+---------------|
 | The record of the ask, the decision and the wait | An =ores.inbox= approval request: its kind, state, asker, reason, decision and expiry | [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] |
 | What the request is about | A detail table in the reporting component, keyed by =request_id=: the cut and the counts of the body's parts | [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] |
-| Whether a cut needs one at all | The cut kind's =requires_authorisation=, and the take raises nothing where it says no | [[*The kind is reference data][The kind is reference data]] |
+| Whether a cut needs one at all | The cut kind's =approval_kind_code=, and the take raises nothing where it is null | [[*The kind is reference data][The kind is reference data]] |
 | Who may decide | The inbox kind's =decide_permission_code= | [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] |
 | How many approvals close it | The inbox kind's =approvals_required=; one for a cut | [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] |
 | Four eyes | A rule of the schema: a decision by the asker is refused, and one person counts once | [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] |
@@ -290,9 +310,10 @@ may cause a LIVE cut, and that is =reporting::report_instances:write=. The run
 writes the taking identity as itself acting for the run's account, so the cut's
 page names a system account and the run that minted it.
 
-**One permission decides every cut that needs a signature.** A cut body is signed
-by one function whatever the occasion that produced it, so the inbox kind carries
-one decide permission and every authorising cut kind names that same kind.
+**The permission is the approval kind's, and a type names its own.** A cut body is
+signed by the function its occasion belongs to, so the end of day types name the
+Finance kind and the verification names the Market Risk one. The permission is read
+from the approval kind the type points at, never from the type.
 
 * The identity
 
@@ -611,11 +632,12 @@ position, and the kind is where it sets them. Whether a cut may be retained *sho
 than its kind by a person with a stronger permission is open; this page treats
 retention as a floor.
 
-**One inbox kind, or one for each occasion.** This page takes one inbox kind,
-=reporting.cut_authorisation=, whose detail row names the cut and therefore the
-occasion. The alternative is a kind per occasion, which buys a decide permission per
-occasion and a queue grouped by occasion, at the price of a seeded kind for every
-kind of cut.
+**Which kinds the firm seeds.** The link is settled — a type names its approval kind
+— and what remains is how many kinds a firm seeds. Two are enough here, one decided
+by Finance and one by Market Risk. A firm may seed more, one per desk or one per
+occasion, and seed a type against whichever it means. A type whose approval kind is
+retired cannot be taken until it names another, which is the one consequence of the
+link a person has to manage.
 
 **The apply.** The decision is applied by reconciliation, as a role grant is. The
 alternative is an apply workflow, which the inbox already offers a kind through

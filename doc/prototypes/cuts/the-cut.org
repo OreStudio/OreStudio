@@ -214,8 +214,8 @@ and the versions that changed.
 
 Step 4 draws what the press did, not a success message, and it has two shapes. A
 cut whose kind requires an authorisation draws the body frozen at an instant, the
-request raised of the kind =reporting.cut_authorisation= in the queue of the
-permission that decides it, the cut in *Taken*, and the statement that the taker
+request raised of the kind the type's =approval_kind_code= names, in the queue of
+the permission that decides it, the cut in *Taken*, and the statement that the taker
 cannot authorise it — with the button not drawn, which is the standard's rule for
 an action a person may not take. A cut whose kind requires none draws the same
 frozen body, the cut in *In use*, the sentence that no request was raised and why,
@@ -453,11 +453,10 @@ card.
 one cut of the group, or from a composition of the cuts of its books, is the
 decision note's open question and the screen does not answer it.
 
-*One inbox kind, or one for each occasion.* The two authorising kinds raise the
-same kind, =reporting.cut_authorisation=, so the queue groups both under one row and
-one decide permission. A firm that wants the verification decided by another
-function than the close needs a kind per occasion, and the request page would draw
-the same detail either way. The screen does not answer it.
+*Which approval kinds the firm seeds.* The type names its approval kind, so the
+prototype draws the close and the month and year ends pointing at one kind decided by
+Finance and the verification at another decided by Market Risk. How many kinds a firm
+seeds is its own choice, and the screen reads whatever the type points at.
 
 *Where the selection is drawn on the create flow.* The prototype draws it on the
 report's *Definition* tab and says that create asks for it; it does not draw the

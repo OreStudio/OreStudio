@@ -3977,7 +3977,7 @@ const fr: SourceCatalogue = {
             legCount: '{count} jambes',
             treeMeta: '{inner} structures internes · racine {root}',
             priceNotRead:
-                "Le prix n'est pas encore lu. Un rapport de P&L initial est le travail qui vient d'abord.",
+                'Cette opération n’a pas été valorisée. Le produit n’a pas encore de valorisation, il n’y a donc pas de montant à afficher.',
             pickerTruncated: 'Affichage de {shown} sur {total} transactions.',
         },
         booking: {

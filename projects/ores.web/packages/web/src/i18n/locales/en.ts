@@ -3928,7 +3928,7 @@ export const en: SourceCatalogue = {
             legCount: '{count} legs',
             treeMeta: '{inner} inner structures · root {root}',
             priceNotRead:
-                'Pricing is not read yet. An inception P&L report is the work that comes first.',
+                'This deal has not been valued. The product has no valuation yet, so there is no figure to show.',
             pickerTruncated: 'Showing {shown} of {total} trades.',
         },
         booking: {

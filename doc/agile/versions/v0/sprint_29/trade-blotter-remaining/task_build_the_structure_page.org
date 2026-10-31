@@ -26,18 +26,21 @@ Build the structure page from doc/prototypes/trades/structure-page.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Built, less the Price tab, which waits on pricing. |
-| Waiting on   | [[id:96F5D072-CFCA-4E74-AED9-487BE080CF45][Price a structure from a market snapshot]] for the Price tab. |
-| Next         | Raise the PR.                          |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
 
 - The Members tab links and unlinks a trade with a reason.
-- The Price tab reads a market snapshot and says when it was read.
 - Each change appears in the history.
+
+The prototype's Price tab was a third line here. It is a valuation of the deal,
+and the product has none, so it is not this task's:
+[[id:68E6BDD5-0A2D-4D3A-82C8-96EA52E70571][Value a trade against a market snapshot]] carries it.
 
 * Plan
 
@@ -51,10 +54,12 @@ never why. The page now states one reason above the legs, and both the link and
 the unlink carry it: the route refuses either write without one, so the sentence
 in the history is always the person's.
 
-The price cannot be built. Nothing in the product prices a trade, and the tab
-says so in its own words; the work it needs is
-[[id:96F5D072-CFCA-4E74-AED9-487BE080CF45][Price a structure from a market snapshot]]. The tab states the gap
-rather than a figure nobody computed.
+The price was a third acceptance line and it is not this task's. The prototype's
+Price tab is a valuation of the deal against a market snapshot, and the product
+has no valuation at all — not for a trade, a leg, a structure or a portfolio. The
+line moved to
+[[id:68E6BDD5-0A2D-4D3A-82C8-96EA52E70571][Value a trade against a market snapshot]], and the tab states
+that the deal has not been valued rather than a figure nobody computed.
 
 * Measurements
 
@@ -114,10 +119,9 @@ its own reason, and two buttons for it in two tabs would mean two reasons.
 
 * What is not done
 
-The Price tab states that pricing is not read yet, which is true and is not the
-acceptance line. Reading a market snapshot and pricing a deal from it is
-[[id:96F5D072-CFCA-4E74-AED9-487BE080CF45][Price a structure from a market snapshot]], and no part of the
-product prices a trade today.
+The Price tab states that the deal has not been valued. Valuation is not a screen
+problem and this task does not pretend to solve it:
+[[id:68E6BDD5-0A2D-4D3A-82C8-96EA52E70571][Value a trade against a market snapshot]] holds the work.
 
 * What the tree did
 

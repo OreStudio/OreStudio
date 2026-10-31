@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 68E6BDD5-0A2D-4D3A-82C8-96EA52E70571
+:END:
+#+title: Value a trade against a market snapshot
+#+description: The structure page's Price tab is a valuation, and the product has none: nothing values a trade, a leg or a structure, so the tab states the gap. When valuation arrives it answers a figure, the market snapshot the figure was struck against and when that snapshot was read, for a structure as a whole and for a package leg by leg.
+#+type: capture
+#+level: cross
+#+filetags: :trading:web:valuation:pricing:structure:snapshot:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The Price tab of the structure page is a valuation of one deal: what the deal is
+worth against a market as it stands, read on demand rather than streamed.
+
+The signed-off prototype asks it for four things. A figure for the deal, read
+against a market snapshot, with the snapshot's own time stated so a person knows
+how fresh it is. The shifts applied to that snapshot named, so the figure is
+traceable. No ticking: the number is indicative and Refresh is what reads a newer
+snapshot. And a structure valued as a whole while a package is valued leg by leg
+and summed, because that is how each is held.
+
+None of that exists. The product has no valuation: nothing values a trade, a leg,
+a structure or a portfolio. The reporting side runs ORE over a report, which
+answers a different question — a batch of deals, a run, a set of result rows —
+and it is not a figure for the deal in front of a person.
+
+* Why
+
+The tab exists, is signed off, and says in its own words that it reads nothing.
+That is the honest state and it is also a dead end: no later task in the arc makes
+a number appear, so the tab stays a notice for as long as valuation is absent.
+
+It is also the first question a trader asks about a deal they are looking at. The
+blotter, the structure page and the trade page all state what a deal is; none of
+them says what it is worth.
+
+* Shape of the work
+
+Not designed here, and it is bigger than a tab. It needs a valuation capability
+before a screen can show one:
+
+- A market snapshot with an identity and a time, so a figure can name the market
+  it was struck against. Published curves have a snapshot read; a deal needs the
+  curves, surfaces and fixings its own instruments take, which is a selection
+  rather than a lookup.
+- A valuation of one deal against that snapshot, with the shifts applied to it.
+- A decision about what is valued: the deal as a whole, or its legs and their sum,
+  which the prototype already distinguishes by kind.
+- Then the tab: the figure, the snapshot and its time, and Refresh reading a newer
+  one.
+
+* What done looks like
+
+The Price tab states a figure, the market it was struck against and when that
+market was read. A package states one figure per leg and the sum the customer is
+quoted. Refresh reads a newer snapshot; nothing ticks.
+
+* References
+
+- [[proj:doc/prototypes/trades/structure-page.org][The structure view]] — the signed-off prototype and its Price tab.
+
+* See also
+
+- [[id:3D378FE8-743B-4057-859D-961369D90845][Build the structure page]] — the page whose Price tab waits on this.

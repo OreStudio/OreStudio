@@ -1598,33 +1598,33 @@ export const en: SourceCatalogue = {
         },
     },
     operations: {
-        sources: {
-            title: 'Market data sources',
+        feeds: {
+            title: 'Market data feeds',
             description:
-                'Every source the market data service runs: its adapter state, the ids it accepted and refused, and how long ago it last ticked.',
+                'Every feed the market data service runs: its adapter state, the ids it accepted and refused, and how long ago it last ticked.',
             updated: 'Read {at}',
             tag: {
-                lead: 'A source is quiet when it serves, the service demands ids of it, and nothing ticked in the last five minutes.',
+                lead: 'A feed is quiet when it serves, the service demands ids of it, and nothing ticked in the last five minutes.',
                 noDemand: '{count} with no demand',
                 stale: '{count} stale',
                 quiet: '{count} quiet',
             },
-            alert: '{count} demanded ids are not being served. Read the rejected ids under the source, or check that a party routes to it.',
+            alert: '{count} demanded ids are not being served. Read the rejected ids under the feed, or check that a party routes to it.',
             tiles: {
-                sources: 'Sources',
+                feeds: 'Feeds',
                 serving: 'Serving',
                 routes: 'Routes',
                 ticks: 'Ticks per minute',
                 quiet: 'Quiet',
             },
             table: {
-                title: 'Sources',
-                lead: 'The source that ticked longest ago stands first.',
-                empty: 'The market data service tracks no source yet.',
-                note: 'The trend draws the board’s own readings while the screen is open, one every five seconds. The service keeps no history of ticks per minute, and the read carries no source kind.',
+                title: 'Feeds',
+                lead: 'The feed that ticked longest ago stands first.',
+                empty: 'The market data service tracks no feed yet.',
+                note: 'The trend draws the board\u2019s own readings while the screen is open, one every five seconds. The service keeps no history of ticks per minute, and the read carries no feed kind.',
             },
             columns: {
-                source: 'Source',
+                feed: 'Feed',
                 provider: 'Provider',
                 kind: 'Kind',
                 state: 'State',
@@ -1645,7 +1645,7 @@ export const en: SourceCatalogue = {
                 rejected: 'rejected',
             },
             detail: {
-                title: 'Source · {source}',
+                title: 'Feed \u00b7 {feed}',
                 heartbeatCounter: 'Heartbeat counter',
                 notServed: 'Demanded, not served',
                 served: 'Ids the catalogue holds',
@@ -1666,19 +1666,19 @@ export const en: SourceCatalogue = {
             },
             gap: {
                 kind: {
-                    title: 'The kind of a source',
-                    body: 'The adapter status states the state of a source and not its kind. The kind is the catalogue’s, and this board reads one source of truth.',
+                    title: 'The kind of a feed',
+                    body: 'The adapter status states the state of a feed and not its kind. The kind belongs to the catalogue, and this board reads that status alone.',
                 },
                 drops: {
                     title: 'The quality drops',
                     body: 'The service counts the ticks it drops by reason, and the adapter status carries no count.',
                 },
                 parties: {
-                    title: 'The parties routed to a source',
-                    body: 'The status states how many routes a source has, and not which parties hold them.',
+                    title: 'The parties routed to a feed',
+                    body: 'The status states how many routes a feed has, and not which parties hold them.',
                 },
                 history: {
-                    title: 'The history of a source’s state',
+                    title: 'The history of a feed\u2019s state',
                     body: 'Nothing records when an adapter became stale, serving or rejected, so there is no history to read.',
                 },
             },
@@ -1714,9 +1714,9 @@ export const en: SourceCatalogue = {
             },
         },
         screens: {
-            sources: 'Market data sources',
-            sourcesBody:
-                'Every source the market data service runs, the state of its adapter, and what it serves and refuses.',
+            feeds: 'Market data feeds',
+            feedsBody:
+                'Every feed the market data service runs, the state of its adapter, and what it serves and refuses.',
             signIns: 'Sign-ins',
             signInsBody:
                 'Who is signed in now, the sign-ins that failed, and the events behind them.',
@@ -2456,7 +2456,7 @@ export const en: SourceCatalogue = {
             notBuilt: 'Not built yet',
         },
         journeys: {
-            sources: 'Keep the market data sources running',
+            feeds: 'Keep the market data feeds running',
             services: 'See the running services',
             logs: 'Read the telemetry logs',
             grid: 'Watch the compute grid',

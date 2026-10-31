@@ -1617,33 +1617,33 @@ const fr: SourceCatalogue = {
         },
     },
     operations: {
-        sources: {
-            title: 'Sources de données de marché',
+        feeds: {
+            title: 'Flux de données de marché',
             description:
-                "Chaque source que le service de données de marché exécute : l'état de son adaptateur, les identifiants acceptés et refusés, et l'âge de son dernier tick.",
+                "Chaque flux que le service de données de marché exécute : l'état de son adaptateur, les identifiants acceptés et refusés, et l'âge de son dernier tick.",
             updated: 'Lu à {at}',
             tag: {
-                lead: "Une source est silencieuse quand elle sert, que le service lui demande des identifiants, et qu'aucun tick n'est arrivé depuis cinq minutes.",
+                lead: "Un flux est silencieux quand il sert, que le service lui demande des identifiants, et qu'aucun tick n'est arrivé depuis cinq minutes.",
                 noDemand: '{count} sans demande',
-                stale: '{count} périmées',
-                quiet: '{count} silencieuses',
+                stale: '{count} périmés',
+                quiet: '{count} silencieux',
             },
-            alert: '{count} identifiants demandés ne sont pas servis. Lisez les identifiants refusés sous la source, ou vérifiez qu’une partie y est routée.',
+            alert: '{count} identifiants demandés ne sont pas servis. Lisez les identifiants refusés sous le flux, ou vérifiez qu’une partie y est routée.',
             tiles: {
-                sources: 'Sources',
+                feeds: 'Flux',
                 serving: 'En service',
                 routes: 'Routes',
                 ticks: 'Ticks par minute',
-                quiet: 'Silencieuses',
+                quiet: 'Silencieux',
             },
             table: {
-                title: 'Sources',
-                lead: 'La source dont le dernier tick est le plus ancien vient en premier.',
-                empty: 'Le service de données de marché ne suit aucune source pour le moment.',
-                note: 'La tendance dessine les relevés de l’écran pendant qu’il est ouvert, un toutes les cinq secondes. Le service ne garde aucun historique des ticks par minute, et la lecture ne porte pas le type de la source.',
+                title: 'Flux',
+                lead: 'Le flux dont le dernier tick est le plus ancien vient en premier.',
+                empty: 'Le service de données de marché ne suit aucun flux pour le moment.',
+                note: 'La tendance dessine les relevés de l’écran pendant qu’il est ouvert, un toutes les cinq secondes. Le service ne garde aucun historique des ticks par minute, et la lecture ne porte pas le type du flux.',
             },
             columns: {
-                source: 'Source',
+                feed: 'Flux',
                 provider: 'Fournisseur',
                 kind: 'Type',
                 state: 'État',
@@ -1657,14 +1657,14 @@ const fr: SourceCatalogue = {
                 lastTick: 'Dernier tick',
             },
             state: {
-                announced: 'annoncée',
-                ready: 'prête',
+                announced: 'annoncé',
+                ready: 'prêt',
                 serving: 'en service',
-                stale: 'périmée',
-                rejected: 'rejetée',
+                stale: 'périmé',
+                rejected: 'rejeté',
             },
             detail: {
-                title: 'Source · {source}',
+                title: 'Flux \u00b7 {feed}',
                 heartbeatCounter: 'Compteur de battements',
                 notServed: 'Demandés, non servis',
                 served: 'Identifiants connus du catalogue',
@@ -1685,19 +1685,19 @@ const fr: SourceCatalogue = {
             },
             gap: {
                 kind: {
-                    title: 'Le type d’une source',
-                    body: 'L’état de l’adaptateur donne l’état d’une source et non son type. Le type appartient au catalogue, et ce tableau lit une seule source de vérité.',
+                    title: 'Le type d’un flux',
+                    body: 'L’état de l’adaptateur donne l’état d’un flux et non son type. Le type appartient au catalogue, et ce tableau ne lit que cet état.',
                 },
                 drops: {
                     title: 'Les rejets de qualité',
                     body: 'Le service compte les ticks qu’il rejette par motif, et l’état de l’adaptateur ne porte aucun compte.',
                 },
                 parties: {
-                    title: 'Les parties routées vers une source',
-                    body: 'L’état indique combien de routes une source a, et non quelles parties les détiennent.',
+                    title: 'Les parties routées vers un flux',
+                    body: 'L’état indique combien de routes un flux a, et non quelles parties les détiennent.',
                 },
                 history: {
-                    title: 'L’historique de l’état d’une source',
+                    title: 'L’historique de l’état d’un flux',
                     body: 'Rien ne consigne le moment où un adaptateur devient périmé, en service ou rejeté, donc il n’y a pas d’historique à lire.',
                 },
             },
@@ -1733,9 +1733,9 @@ const fr: SourceCatalogue = {
             },
         },
         screens: {
-            sources: 'Sources de données de marché',
-            sourcesBody:
-                'Chaque source que le service de données de marché exécute, l’état de son adaptateur, et ce qu’elle sert et refuse.',
+            feeds: 'Flux de données de marché',
+            feedsBody:
+                'Chaque flux que le service de données de marché exécute, l’état de son adaptateur, et ce qu’il sert et refuse.',
             signIns: 'Connexions',
             signInsBody:
                 'Qui est connecté, les connexions échouées et les événements qui les expliquent.',
@@ -2480,7 +2480,7 @@ const fr: SourceCatalogue = {
             notBuilt: 'Pas encore construit',
         },
         journeys: {
-            sources: 'Maintenir les sources de données de marché en service',
+            feeds: 'Maintenir les flux de données de marché en service',
             services: 'Voir les services en cours',
             logs: 'Lire les journaux de télémétrie',
             grid: 'Surveiller la grille de calcul',

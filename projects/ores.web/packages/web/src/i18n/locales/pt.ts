@@ -1609,33 +1609,33 @@ const pt: SourceCatalogue = {
         },
     },
     operations: {
-        sources: {
-            title: 'Fontes de dados de mercado',
+        feeds: {
+            title: 'Fluxos de dados de mercado',
             description:
-                'Cada fonte que o serviço de dados de mercado executa: o estado do seu adaptador, os identificadores aceites e recusados, e há quanto tempo deu o último tick.',
+                'Cada fluxo que o serviço de dados de mercado executa: o estado do seu adaptador, os identificadores aceites e recusados, e há quanto tempo deu o último tick.',
             updated: 'Lido às {at}',
             tag: {
-                lead: 'Uma fonte está silenciosa quando serve, o serviço lhe pede identificadores e nada deu tick nos últimos cinco minutos.',
+                lead: 'Um fluxo está silencioso quando serve, o serviço lhe pede identificadores e nada deu tick nos últimos cinco minutos.',
                 noDemand: '{count} sem procura',
-                stale: '{count} obsoletas',
-                quiet: '{count} silenciosas',
+                stale: '{count} obsoletos',
+                quiet: '{count} silenciosos',
             },
-            alert: '{count} identificadores pedidos não estão a ser servidos. Leia os identificadores recusados sob a fonte, ou verifique se uma parte lhe está encaminhada.',
+            alert: '{count} identificadores pedidos não estão a ser servidos. Leia os identificadores recusados sob o fluxo, ou verifique se uma parte lhe está encaminhada.',
             tiles: {
-                sources: 'Fontes',
+                feeds: 'Fluxos',
                 serving: 'A servir',
                 routes: 'Rotas',
                 ticks: 'Ticks por minuto',
-                quiet: 'Silenciosas',
+                quiet: 'Silenciosos',
             },
             table: {
-                title: 'Fontes',
-                lead: 'A fonte que deu o último tick há mais tempo aparece primeiro.',
-                empty: 'O serviço de dados de mercado ainda não segue nenhuma fonte.',
-                note: 'A tendência desenha as leituras do próprio ecrã enquanto está aberto, uma a cada cinco segundos. O serviço não guarda histórico de ticks por minuto, e a leitura não traz o tipo da fonte.',
+                title: 'Fluxos',
+                lead: 'O fluxo que deu o último tick há mais tempo aparece primeiro.',
+                empty: 'O serviço de dados de mercado ainda não segue nenhum fluxo.',
+                note: 'A tendência desenha as leituras do próprio ecrã enquanto está aberto, uma a cada cinco segundos. O serviço não guarda histórico de ticks por minuto, e a leitura não traz o tipo do fluxo.',
             },
             columns: {
-                source: 'Fonte',
+                feed: 'Fluxo',
                 provider: 'Fornecedor',
                 kind: 'Tipo',
                 state: 'Estado',
@@ -1649,14 +1649,14 @@ const pt: SourceCatalogue = {
                 lastTick: 'Último tick',
             },
             state: {
-                announced: 'anunciada',
-                ready: 'pronta',
+                announced: 'anunciado',
+                ready: 'pronto',
                 serving: 'a servir',
-                stale: 'obsoleta',
-                rejected: 'recusada',
+                stale: 'obsoleto',
+                rejected: 'recusado',
             },
             detail: {
-                title: 'Fonte · {source}',
+                title: 'Fluxo \u00b7 {feed}',
                 heartbeatCounter: 'Contador de batimentos',
                 notServed: 'Pedidos, não servidos',
                 served: 'Identificadores no catálogo',
@@ -1677,19 +1677,19 @@ const pt: SourceCatalogue = {
             },
             gap: {
                 kind: {
-                    title: 'O tipo de uma fonte',
-                    body: 'O estado do adaptador diz o estado de uma fonte e não o seu tipo. O tipo é do catálogo, e este quadro lê uma só fonte de verdade.',
+                    title: 'O tipo de um fluxo',
+                    body: 'O estado do adaptador diz o estado de um fluxo e não o seu tipo. O tipo é do catálogo, e este quadro lê esse estado apenas.',
                 },
                 drops: {
                     title: 'As perdas de qualidade',
                     body: 'O serviço conta os ticks que descarta por motivo, e o estado do adaptador não traz contagens.',
                 },
                 parties: {
-                    title: 'As partes encaminhadas para uma fonte',
-                    body: 'O estado diz quantas rotas uma fonte tem, e não que partes as detêm.',
+                    title: 'As partes encaminhadas para um fluxo',
+                    body: 'O estado diz quantas rotas um fluxo tem, e não que partes as detêm.',
                 },
                 history: {
-                    title: 'O histórico do estado de uma fonte',
+                    title: 'O histórico do estado de um fluxo',
                     body: 'Nada registra quando um adaptador ficou obsoleto, a servir ou recusado, por isso não há histórico para ler.',
                 },
             },
@@ -1725,9 +1725,9 @@ const pt: SourceCatalogue = {
             },
         },
         screens: {
-            sources: 'Fontes de dados de mercado',
-            sourcesBody:
-                'Cada fonte que o serviço de dados de mercado executa, o estado do seu adaptador, e o que serve e recusa.',
+            feeds: 'Fluxos de dados de mercado',
+            feedsBody:
+                'Cada fluxo que o serviço de dados de mercado executa, o estado do seu adaptador, e o que serve e recusa.',
             signIns: 'Entradas',
             signInsBody:
                 'Quem está ligado agora, as entradas que falharam e os eventos por trás delas.',
@@ -2472,7 +2472,7 @@ const pt: SourceCatalogue = {
             notBuilt: 'Ainda não construído',
         },
         journeys: {
-            sources: 'Manter as fontes de dados de mercado a funcionar',
+            feeds: 'Manter os fluxos de dados de mercado a funcionar',
             services: 'Ver os serviços em execução',
             logs: 'Ler os registos de telemetria',
             grid: 'Vigiar a grelha de cálculo',

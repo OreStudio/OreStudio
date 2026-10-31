@@ -26,21 +26,21 @@
 using namespace ores::http::stream;
 using namespace ores::logging;
 
-TEST_CASE("a_frame_names_its_entity_and_carries_its_identifiers", "[change_pump]") {
+TEST_CASE("a_frame_names_its_collection_and_carries_its_tenancy", "[change_pump]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing the event-stream message a frame becomes";
 
     const coalesced_frame frame{
         .tenant = "acme",
         .party = "ops",
+        .component = "iam",
         .entity = "book",
-        .ids = {"b1", "b2"},
     };
 
     REQUIRE(frame_text(frame) ==
-            "event: book\n"
-            "data: {\"tenant\":\"acme\",\"party\":\"ops\",\"entity\":\"book\","
-            "\"ids\":[\"b1\",\"b2\"]}\n\n");
+            "event: iam.book\n"
+            "data: {\"tenant\":\"acme\",\"party\":\"ops\",\"component\":\"iam\","
+            "\"entity\":\"book\"}\n\n");
 }
 
 TEST_CASE("a_pump_gives_every_open_stream_the_window", "[change_pump]") {
@@ -53,8 +53,7 @@ TEST_CASE("a_pump_gives_every_open_stream_the_window", "[change_pump]") {
     auto second = hub.subscribe();
     change_pump pump(coalescer, hub);
 
-    coalescer.record({.tenant = "acme", .party = "ops", .entity = "book", .id = "b1"});
-    coalescer.record({.tenant = "acme", .party = "ops", .entity = "book", .id = "b2"});
+    coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
 
     REQUIRE(pump.pump() == 1);
 
@@ -87,7 +86,7 @@ TEST_CASE("a_stream_that_ended_is_not_given_the_next_window", "[change_pump]") {
     change_pump pump(coalescer, hub);
 
     ended->close();
-    coalescer.record({.tenant = "acme", .party = "ops", .entity = "book", .id = "b1"});
+    coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
 
     REQUIRE(pump.pump() == 1);
     REQUIRE(ended->size() == 0);
@@ -95,12 +94,16 @@ TEST_CASE("a_stream_that_ended_is_not_given_the_next_window", "[change_pump]") {
     REQUIRE(hub.open_streams() == 1);
 }
 
-TEST_CASE("a_frame_with_no_identifiers_still_builds_its_message", "[change_pump]") {
+TEST_CASE("a_change_with_no_party_builds_its_message", "[change_pump]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing an empty identifier list";
+    BOOST_LOG_SEV(lg, info) << "Testing a change that concerns the whole tenant";
 
     const coalesced_frame frame{
-        .tenant = "acme", .party = "ops", .entity = "book", .ids = {}};
+        .tenant = "acme",
+        .party = "",
+        .component = "iam",
+        .entity = "book",
+    };
 
-    REQUIRE(frame_text(frame).find("\"ids\":[]") != std::string::npos);
+    REQUIRE(frame_text(frame).find("\"party\":\"\"") != std::string::npos);
 }

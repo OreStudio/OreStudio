@@ -28,45 +28,42 @@ using namespace ores::logging;
 
 namespace {
 
-change_event event(std::string party, std::string entity, std::string id) {
+change_event event(std::string party, std::string entity) {
     return {
         .tenant = "acme",
         .party = std::move(party),
+        .component = "iam",
         .entity = std::move(entity),
-        .id = std::move(id),
     };
 }
 
 }
 
-TEST_CASE("a_burst_of_rows_becomes_one_frame_per_entity", "[change_coalescer]") {
+TEST_CASE("a_burst_of_rows_becomes_one_frame_per_collection", "[change_coalescer]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that a burst is coalesced into one frame";
 
     change_coalescer coalescer;
     for (auto index = 0; index < 1000; ++index)
-        coalescer.record(event("ops", "book", "b" + std::to_string(index)));
+        coalescer.record(event("ops", "book"));
 
-    REQUIRE(coalescer.pending() == 1000);
+    REQUIRE(coalescer.pending() == 1);
 
     const auto frames = coalescer.drain();
 
     REQUIRE(frames.size() == 1);
+    REQUIRE(frames.front().component == "iam");
     REQUIRE(frames.front().entity == "book");
-    REQUIRE(frames.front().ids.size() == 1000);
-    // A client compares ticks, so the identifiers are ordered.
-    REQUIRE(frames.front().ids.front() == "b0");
-    REQUIRE(frames.front().ids.back() == "b999");
     REQUIRE(coalescer.pending() == 0);
 }
 
-TEST_CASE("two_entities_in_one_window_become_two_frames", "[change_coalescer]") {
+TEST_CASE("two_collections_in_one_window_become_two_frames", "[change_coalescer]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that each entity gets its own frame";
+    BOOST_LOG_SEV(lg, info) << "Testing that each collection gets its own frame";
 
     change_coalescer coalescer;
-    coalescer.record(event("ops", "book", "b1"));
-    coalescer.record(event("ops", "portfolio", "p1"));
+    coalescer.record(event("ops", "book"));
+    coalescer.record(event("ops", "portfolio"));
 
     const auto frames = coalescer.drain();
 
@@ -80,20 +77,33 @@ TEST_CASE("a_change_is_never_folded_into_another_party", "[change_coalescer]") {
     BOOST_LOG_SEV(lg, info) << "Testing that one party's change stays its own";
 
     change_coalescer coalescer;
-    coalescer.record(event("ops", "book", "b1"));
-    coalescer.record(event("sales", "book", "b2"));
+    coalescer.record(event("ops", "book"));
+    coalescer.record(event("sales", "book"));
 
     const auto frames = coalescer.drain();
 
     REQUIRE(frames.size() == 2);
     for (const auto& frame : frames) {
         REQUIRE(frame.tenant == "acme");
-        REQUIRE(frame.ids.size() == 1);
-        if (frame.party == "ops")
-            REQUIRE(frame.ids.front() == "b1");
-        else
-            REQUIRE(frame.ids.front() == "b2");
+        REQUIRE(frame.entity == "book");
     }
+    REQUIRE(frames[0].party == "ops");
+    REQUIRE(frames[1].party == "sales");
+}
+
+TEST_CASE("a_collection_name_is_the_component_s_own", "[change_coalescer]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that two components may name one collection";
+
+    change_coalescer coalescer;
+    coalescer.record({.tenant = "acme", .party = "", .component = "iam", .entity = "orders"});
+    coalescer.record({.tenant = "acme", .party = "", .component = "trading", .entity = "orders"});
+
+    const auto frames = coalescer.drain();
+
+    REQUIRE(frames.size() == 2);
+    REQUIRE(frames[0].component == "iam");
+    REQUIRE(frames[1].component == "trading");
 }
 
 TEST_CASE("a_second_window_emits_only_what_changed_in_it", "[change_coalescer]") {
@@ -101,39 +111,38 @@ TEST_CASE("a_second_window_emits_only_what_changed_in_it", "[change_coalescer]")
     BOOST_LOG_SEV(lg, info) << "Testing that a drained change is not repeated";
 
     change_coalescer coalescer;
-    coalescer.record(event("ops", "book", "b1"));
+    coalescer.record(event("ops", "book"));
     REQUIRE(coalescer.drain().size() == 1);
 
     REQUIRE(coalescer.drain().empty());
 
-    coalescer.record(event("ops", "book", "b2"));
+    coalescer.record(event("ops", "portfolio"));
     const auto frames = coalescer.drain();
 
     REQUIRE(frames.size() == 1);
-    REQUIRE(frames.front().ids == std::vector<std::string>{"b2"});
+    REQUIRE(frames.front().entity == "portfolio");
 }
 
-TEST_CASE("the_same_row_written_twice_is_one_dirty_identifier", "[change_coalescer]") {
+TEST_CASE("the_same_collection_written_twice_is_one_frame", "[change_coalescer]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a repeated change is one identifier";
+    BOOST_LOG_SEV(lg, info) << "Testing that a repeated change is one frame";
 
     change_coalescer coalescer;
-    coalescer.record(event("ops", "book", "b1"));
-    coalescer.record(event("ops", "book", "b1"));
+    coalescer.record(event("ops", "book"));
+    coalescer.record(event("ops", "book"));
 
     const auto frames = coalescer.drain();
 
     REQUIRE(frames.size() == 1);
-    REQUIRE(frames.front().ids.size() == 1);
 }
 
-TEST_CASE("a_change_with_no_identifier_is_not_queued", "[change_coalescer]") {
+TEST_CASE("a_change_with_no_tenant_or_no_collection_is_not_queued", "[change_coalescer]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an unnamed change is refused";
+    BOOST_LOG_SEV(lg, info) << "Testing that a change nobody could be shown is refused";
 
     change_coalescer coalescer;
-    coalescer.record({.tenant = "acme", .party = "ops", .entity = "book", .id = ""});
-    coalescer.record({.tenant = "acme", .party = "ops", .entity = "", .id = "b1"});
+    coalescer.record({.tenant = "", .party = "ops", .component = "iam", .entity = "book"});
+    coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = ""});
 
     REQUIRE(coalescer.pending() == 0);
     REQUIRE(coalescer.drain().empty());

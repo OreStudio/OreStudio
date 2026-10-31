@@ -26,11 +26,11 @@ A person browses the cut types and their rules, lists the cuts and reads one, wi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | The two-axis review's findings are closed. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The selection work takes the trigger's resolution fields. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

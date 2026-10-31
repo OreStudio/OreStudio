@@ -176,7 +176,7 @@ const detail = () => {
     const canAuthorise = s !== "denied" && comment;
     const canHold = (s === "unseen" || s === "amendment") && comment && state.holdReason;
     const canDeny = s !== "denied" && s !== "authorised" && comment;
-    const canUnAuthorise = s === "authorised" && comment;
+    const canUnAuthorise = (s === "authorised" || s === "denied") && comment;
 
     const fact = (label, key, value) =>
         `<dt>${label}</dt><dd class="${t.changed && t.changed.includes(key) ? "changed" : ""}">${value}</dd>`;
@@ -239,8 +239,8 @@ const detail = () => {
   </div>` : ""}
 
   <div class="actions">
-    ${s === "authorised"
-            ? `<button class="act primary" data-act="un-authorise" ${canUnAuthorise ? "" : "disabled"}>Un-authorise</button>`
+    ${s === "authorised" || s === "denied"
+            ? `<button class="act primary" data-act="un-authorise" ${canUnAuthorise ? "" : "disabled"}>${s === "denied" ? "Un-authorise the denial" : "Un-authorise"}</button>`
             : `<button class="act primary" data-act="authorise" ${canAuthorise ? "" : "disabled"}>Authorise</button>`}
     ${s === "unseen" || s === "amendment" ? `<button class="act" data-act="hold" ${canHold ? "" : "disabled"}>Hold over</button>` : ""}
     ${s === "denied" || s === "authorised" ? "" : `<button class="act danger" data-act="deny" ${canDeny ? "" : "disabled"}>Deny</button>`}

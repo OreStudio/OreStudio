@@ -55,9 +55,10 @@ drawn as a select with the handover entries last, not as a free-text box.
 ** A denial cannot become an authorisation
 
 The denied deal opens with its reason, the Authorise button is not drawn, and
-the notice says why: un-authorise it with a reason, then authorise the new
-version. Attempting it from a keyboard raises the exception rather than
-quietly succeeding.
+the notice says why. The one action it offers is the undo: un-authorise the
+denial with a reason, which returns it to unseen and leaves a new version to be
+authorised if it is right. A keyboard attempt at the transition raises the
+exception rather than quietly succeeding.
 
 ** An amendment says what changed
 

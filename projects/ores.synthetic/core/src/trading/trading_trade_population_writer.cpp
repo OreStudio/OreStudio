@@ -462,23 +462,21 @@ void trading_trade_population_writer::ensure_issue(const domain::trade_populatio
     issues_written_.insert(issue_row.issue_id);
 }
 
-void trading_trade_population_writer::write_trade(const domain::trade_population_slot& slot,
+ores::trading::messaging::book_trade_request
+trading_trade_population_writer::book_request_for(const domain::trade_population_slot& slot,
                                                   const domain::trade_generation_scope& scope) {
-    const auto& codec = ores::nats::default_wire_codec();
-    /*
-     * The security is in place before the trade is booked. A run cut short in
-     * the issue then leaves no trade, so the next run writes the issue again
-     * and not a booked trade that no run revisits.
-     */
-    ensure_issue(slot);
-
     ores::trading::messaging::book_trade_request book_req;
     book_req.anchor.id = slot.trade_id;
     book_req.anchor.party_id = scope.party_id;
     book_req.anchor.counterparty_id = slot.counterparty_id;
     book_req.anchor.trade_type = slot.trade_type_code;
     book_req.anchor.counterparty_scope = ores::trading::domain::counterparty_scope::external;
-    book_req.anchor.booking_nature = ores::trading::domain::booking_nature::actual;
+    /*
+     * A generated trade is nobody's deal, so it states the nature that asks
+     * nobody to authorise it. The trading service raises a request only for an
+     * actual booking, and the trade summary reads not_required for the rest.
+     */
+    book_req.anchor.booking_nature = ores::trading::domain::booking_nature::test;
     book_req.anchor.entry_channel = ores::trading::domain::entry_channel::stp;
     /*
      * The population states its own origin and the config it came from, so a
@@ -709,9 +707,25 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             "The slot states no rows this writer knows how to book.");
     }
 
+    return book_req;
+}
+
+void trading_trade_population_writer::write_trade(const domain::trade_population_slot& slot,
+                                                  const domain::trade_generation_scope& scope) {
+    const auto& codec = ores::nats::default_wire_codec();
     /*
-     * The booking is the person's, not the run's: the trade states its author and the
-     * authorisation request the booking raises is theirs.
+     * The security is in place before the trade is booked. A run cut short in
+     * the issue then leaves no trade, so the next run writes the issue again
+     * and not a booked trade that no run revisits.
+     */
+    ensure_issue(slot);
+
+    const auto book_req = book_request_for(slot, scope);
+
+    /*
+     * The booking is the person's, not the run's: the trade states the person it
+     * was entered by. No authorisation request follows, because a generated
+     * trade states no actual booking.
      */
     auto& booker = booker_ ? booker_(slot) : nats_;
     const auto reply = booker.authenticated_request(

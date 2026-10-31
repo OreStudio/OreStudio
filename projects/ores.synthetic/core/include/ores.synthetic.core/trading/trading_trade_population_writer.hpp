@@ -23,6 +23,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include "ores.synthetic.core/service/trade_population_writer.hpp"
+#include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include <functional>
 #include <map>
 #include <optional>
@@ -51,10 +52,9 @@ class ORES_SYNTHETIC_CORE_EXPORT trading_trade_population_writer final
     /**
      * @brief The client that books one trade, in the session of the person the trade is entered as.
      *
-     * A booking is written by a person and not by the run: the trade states its author and the
-     * authorisation request the booking raises is that person's. The caller answers with a client
-     * whose session is the slot's trader, so the rows the booking writes and the request it raises
-     * name them and not whatever principal carries the generator.
+     * A booking is written by a person and not by the run: the trade states its author. The caller
+     * answers with a client whose session is the slot's trader, so the rows the booking writes name
+     * them and not whatever principal carries the generator.
      */
     using booking_client =
         std::function<ores::nats::service::nats_client&(const domain::trade_population_slot& slot)>;
@@ -95,6 +95,17 @@ public:
     void write_structure_member(const boost::uuids::uuid& structure_id,
                                 const domain::trade_population_slot& slot) override;
 
+    /**
+     * @brief The request that books one generated trade.
+     *
+     * It is built before anything is sent, so the terms the population books
+     * under -- its booking nature, its origin and the person it is entered by --
+     * are stated in one place that a test can read without a session.
+     */
+    [[nodiscard]] static ores::trading::messaging::book_trade_request book_request_for(
+        const domain::trade_population_slot& slot,
+        const domain::trade_generation_scope& scope);
+
 private:
     /**
      * @brief Creates the trade's security with the security operation.
@@ -104,6 +115,7 @@ private:
      * is taken as present.
      */
     void ensure_issue(const domain::trade_population_slot& slot);
+
 
     ores::nats::service::nats_client& nats_;
     booking_client booker_;

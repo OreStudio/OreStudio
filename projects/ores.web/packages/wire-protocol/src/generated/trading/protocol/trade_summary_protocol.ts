@@ -44,6 +44,8 @@ export interface TradeSummariesFilter {
     status: string | null | null;
     authorisation_status: string | null;
     trade_date: string | null | null;
+    structure_id: string | null | null;
+    is_leg: boolean | null;
     id_one_of: string[] | null;
     row_kind_one_of: string[] | null;
     party_id_one_of: string[] | null;
@@ -53,6 +55,8 @@ export interface TradeSummariesFilter {
     status_one_of: string[] | null;
     authorisation_status_one_of: string[] | null;
     trade_date_one_of: string[] | null;
+    structure_id_one_of: string[] | null;
+    is_leg_one_of: boolean[] | null;
     trade_date_from: string | null;
     trade_date_to: string | null;
     search: string | null;

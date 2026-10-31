@@ -28,10 +28,10 @@ Close the open part of the May import plan. A real import books into a real book
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Built: the gate holds and the plan is named by the document. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-21                               |
+| Next         | Raise the PR.                          |
+| Last touched | 2026-10-31                               |
 
 * Acceptance
 
@@ -43,9 +43,29 @@ Close the open part of the May import plan. A real import books into a real book
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The gate came first, as the acceptance asks, and the plan was where it broke:
+the planner drew a fresh uuid for every portfolio, book and trade on every run,
+so a second run built a second tree of books and booked the whole document into
+it. The trades were new rows because they were new ids.
+
+So the plan names what it plans. Every id it mints is a name-based UUID over the
+party, the sandbox when there is one, and the thing itself: a node's path in the
+directory tree for a portfolio or book, and the file plus the trade's own id
+there for a trade. The unpacked directory differs between runs, so the file is
+stated relative to the import's root.
+
+With that, a second run plans the same ids. The store refuses a trade it already
+holds, the run reports each refusal against its file and trade id, and nothing
+is booked twice. That is also the mechanism behind the second acceptance line: a
+row is either booked whole or reported, because the import closes the booking it
+had already written before it moves on.
+
+The third line needs no work of its own: the import books through =book_trade=,
+which raises the request, and a sandbox trade is booked as a test, which raises
+none.
+
+The fourth is a sentence the sandbox page was missing, and it now states both
+rules.
 
 * Measurements
 
@@ -59,7 +79,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The plan is the same plan twice | 11 cases, 292 assertions, including one that plans the same directory twice and checks every trade id matches and no two collide | =./publish/bin/ores.ore.core.tests "[import_planner]"= | this branch |
+| The request per booking | 230 cases, 1450 assertions in the trading suite, including the case that books an actual trade live and finds one request | =./publish/bin/ores.trading.core.tests= | this branch |
+| The service builds | the trading service links with the execute subject registered | =ninja ores.trading.service= | this branch |
+| The generated twin | the model's TypeScript protocol is regenerated and the drift gate is clean | =check_component_drift.py --component trading-cpp= | this branch |
+| The handler's permission | 1307 permission codes seeded; no new code invented | =check_handler_permissions.py= | this branch |
 
 * Notes
 
@@ -87,3 +111,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The gate holds: the plan is named by the document set, so the same import run
+twice names the same portfolios, books and trades, and the second run's bookings
+are refused and reported rather than landing as new rows.
+
+* What the work found
+
+Two things were wrong with the plan rather than with the booking path.
+
+- The ids were random. Every portfolio, book, parent portfolio and trade was
+  drawn fresh on every run, which is why a re-run was not refused: it was a
+  different import as far as the store could tell.
+- The file's name had to be derived. The import unpacks into a directory of its
+  own, so a file's absolute path differs between runs and cannot be part of the
+  id; the path relative to the import root can.
+
+The booking path itself needed nothing: it books an actual trade into a real
+book, which raises the operational authorisation request, and a sandbox import
+books a test, which raises none. A failed row is closed again and reported with
+its source file and trade id, which is the second acceptance line and was
+already built.
+
+* What was restored on the way
+
+=origin/main= lost this arc's execute work and its duplicate rule to
+=1398383538=, a commit that restored three synthetic files from before a merge
+and swept up files it did not own. The execute operation, its protocol, its
+handler, its cases and the one-request rule are restored here, and the trading
+suite proves them.

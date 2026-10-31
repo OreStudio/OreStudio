@@ -33,7 +33,7 @@ fixed level.
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
 | Now          | Building the three variants under =doc/prototypes/market_data/calibrate-a-generator/=. |
 | Waiting on   | Nothing.                               |
-| Next         | Review the page with the owner, pick a variant, then hand the decision to the build task. |
+| Next         | Signed off; the decisions are handed to the policy model and the build. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -123,6 +123,24 @@ The design note is
 [[file:../../../../../prototypes/market_data/calibrate-a-generator.org][calibrate-a-generator.org]]. The decision taken here belongs in
 [[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]], and the data it reads in
 [[id:818D388A-04FA-4C83-BC08-B5E0B9A94DE0][Model the market calibration policy]], before either starts.
+
+* Result
+
+Signed off on 2026-10-31. The prototype settled:
+
+- The list is the landing and is just a list: a class switch, a one-line
+  policy summary with a link, the counts, the filters and every feed. Rows open
+  their detail; there is no Open button.
+- Calibration is per asset class, with one policy and one list per class behind
+  the class switch.
+- A feed's detail has two tabs: *Feed record* (start, candidates, measures,
+  exceptions) and *Flow* (how it resolved, read-only).
+- The policy is its own class-level screen, not a feed tab.
+- Automatic by default: no policy is needed, and a custom class policy, a feed
+  pin or an explicit list are optional and reversible.
+- The measures are shown with every start; only the realised volatility
+  calibrates today, the rest are recorded for later.
+- The action is *Calibrate all*, and it leaves a calibration record.
 
 * Test Scenarios
 

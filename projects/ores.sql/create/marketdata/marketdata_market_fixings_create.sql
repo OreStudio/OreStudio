@@ -131,6 +131,8 @@ end $$;
 
 -- =============================================================================
 -- Row-level security: tenant isolation for Market Fixing
+-- Every session reads its own rows and the system tenant's rows; writes
+-- stay the current tenant's.
 -- =============================================================================
 alter table ores_marketdata_market_fixings_tbl enable row level security;
 
@@ -141,6 +143,7 @@ create policy market_fixings_tbl_tenant_isolation_policy
 on ores_marketdata_market_fixings_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()

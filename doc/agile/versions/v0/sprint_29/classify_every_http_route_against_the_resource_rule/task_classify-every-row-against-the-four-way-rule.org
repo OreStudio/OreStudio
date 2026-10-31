@@ -29,7 +29,7 @@ routes that should not survive are named.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:7470D277-F9BB-4DB1-95CD-20F3D4138395][Classify every HTTP route against the resource rule]] |
-| Now          | All 402 rows are decided, and the area map and the composed views' obligations are emitted beside them. |
+| Now          | All 408 rows are decided, and the area map and the composed views' obligations are emitted beside them. |
 | Waiting on   | Review of the judgements, not of the plumbing. |
 | Next         | Close after review, then the port works from this table. |
 | Last touched | 2026-10-31                               |
@@ -60,12 +60,12 @@ in that family inherits it instead of failing the gate for a decision already ta
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Rows decided | 402 of 402, none unclassified | =python3 build/scripts/route_inventory.py --check= | this branch |
-| Kinds | resource 325, composed view 26, not an API 28, transport capability 23 | same | this branch |
-| Decisions | 170 rules, 3 exceptions, 24 composed views | =python3 -c "import route_classification as r; print(len(r.RULES), len(r.EXCEPTIONS), len(r.VIEWS))"= | this branch |
+| Rows decided | 408 of 408, none unclassified | =python3 build/scripts/route_inventory.py --check= | this branch |
+| Kinds | resource 332, composed view 25, not an API 28, transport capability 23 | same | this branch |
+| Decisions | 175 rules, 3 exceptions, 24 composed views | =python3 -c "import route_classification as r; print(len(r.RULES), len(r.EXCEPTIONS), len(r.VIEWS))"= | this branch |
 | Published areas | 17, of which 9 are new beside the design's list | =sed -n "/area map/,/composed views/p" doc/knowledge/architecture/http_route_inventory.org= | this branch |
-| Distinct notes over rows | 173 notes for 402 rows | =python3 -c "import route_inventory as i; rows=i.read_inventory(); print(len({r["note"] for r in rows.values()}), len(rows))"= | this branch |
-| Rules that decide one route | 101 of 173 | =python3 -c "..."= (distribution counted in review) | this branch |
+| Distinct notes over rows | 177 notes for 408 rows | =python3 -c "import route_inventory as i; rows=i.read_inventory(); print(len({r["note"] for r in rows.values()}), len(rows))"= | this branch |
+| Rules that decide one route | 106 of 177 | =python3 -c "..."= (distribution counted in review) | this branch |
 | Gate check | =route-inventory=, 0.2 s | =./compass.sh check --only route-inventory= | this branch |
 
 * Notes
@@ -93,6 +93,15 @@ in that family inherits it instead of failing the gate for a decision already ta
   resources with a derived-read note; the seven form option bundles are not-an-API
   because a CLI would never ask for a pick-list keyed by control name; and the 20
   =iam/ops= verbs are resources whose verb names the read or write.
+- Six routes were missing from the first version of this table, and an independent
+  verifier found them by counting registrations against rows. The scanner read one line
+  at a time, so a registration whose path literal sat on the next line was invisible, and
+  the gate built its missing set with the same scanner. The scanners now read whole files,
+  a guard counts the registrations either surface declares, and the table holds 408 rows.
+  The same review corrected four judgements: retrying a run is a command on it and not
+  the run's progress view, the engine settings documentation is one collection reshaped,
+  the tenant lookups keep their badge code as a stored fact, and the report configuration
+  page reads five collections so it is a view.
 - The rules layer was reviewed against the alternative and kept. 101 of the 173 rules
   decide exactly one route, which is close to transcription, but the 72 rules that
   decide more than one carry the note that would otherwise repeat in the table, and a

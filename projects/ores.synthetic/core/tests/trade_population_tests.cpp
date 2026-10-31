@@ -1099,6 +1099,12 @@ TEST_CASE("a_planned_fx_variance_swap_ends_after_it_starts", "[trade_population]
     scope.max_tenor_code = "2Y";
     scope.trades_per_book = 16;
     scope.seed = 44;
+    /*
+     * The day a run anchors on is the day the population draws its months back
+     * from, so the thirty-first is the anchor that has no such day in every
+     * month. It is the anchor a run actually takes.
+     */
+    scope.as_of_date = std::chrono::year{2026} / std::chrono::October / 31;
 
     const auto plan = plan_of(scope);
 

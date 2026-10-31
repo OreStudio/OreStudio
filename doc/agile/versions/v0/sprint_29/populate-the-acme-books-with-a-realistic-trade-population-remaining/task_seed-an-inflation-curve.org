@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-30
 #+updated: 2026-10-30
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,24 +26,45 @@ A provisioned tenant holds an inflation curve with an index a trade can name, an
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Scoped; nothing seeded yet.            |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Decide the index, then seed its curve. |
-| Last touched | 2026-10-30                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-31                               |
 
 * Acceptance
 
 - The tenant holds at least one inflation curve config with its curve definition and the conventions it needs.
-- A trade naming that index resolves it, and the engine reads its fixings.
+- A trade naming that index resolves it. The trade itself is the family's task; this one states the curve the trade names.
 - The seed is idempotent and arrives with the ACME profile, not by hand.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+State the index, then the curve, in the document the tenant already reads.
+
+The index is the one the refdata catalogue names for the book's currency:
+UKRPIX for GBP, USCPIA for USD and BECPIHL for EUR. It is stated once, in the
+seeder's configuration generator, and the curve definitions are derived from it,
+so a currency whose catalogue row changes index changes in one place.
+
+The curve travels as a =ZeroInflation= curve definition inside the curve
+configuration artefact, which is the document the tenant's publish step already
+reads for its discount curves. Its conventions column states
+=<INDEX>_INFLATIONSWAP=, a row the tenant's 110 inflation swap conventions
+already carry, so the curve resolves through a convention that exists rather than
+through one the seed invents.
+
+Two things the seed states negatively, because the store refuses a guess:
+
+- No extrapolation. The =curve.flag= value set arrives empty at publish time, so
+  the guard refuses every value, and a curve that states none takes the engine's
+  default.
+- No seasonality factors and no fixings. They are the family's own market data,
+  and the story's rule is that a class whose market data is absent still books;
+  the family's task says what it cannot prove yet. Recorded as the capture
+  *The seeded inflation curve states its index, its conventions and no
+  fixings*.
 
 * Measurements
 
@@ -85,3 +106,35 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The tenant holds ten zero coupon inflation curves, one per entity and currency
+whose index the refdata catalogue carries: UKRPIX for GBP, USCPIA for USD and
+BECPIHL for EUR, published as curve definitions inside the same curve
+configuration document as the discount curves, through the artefact the tenant
+already reads. Each names the inflation swap convention its index holds. A curve
+states no extrapolation, because the =curve.flag= value set arrives empty and the
+guard refuses every value; a curve that states none takes the engine's default
+rather than a guessed word.
+
+Two defects blocked the run that measures them, and both are fixed on main by
+their own tasks: the planner's month arithmetic invented the 31st of September
+and the wire wrote it as the absent date, which is *A generated date is a real
+date*; and two bond products of one term claimed one issue, which is *A security
+is named by its product*. With both, the provisioning run completes.
+
+Measured on a fresh tenant:
+
+| What | Value | Command |
+|------+-------+---------|
+| Inflation curve definitions the tenant holds | 10, in the =InflationCurves= section | =select count(*) from ores_refdata_curve_definitions_tbl where section_code='InflationCurves'= |
+| The indices they state | UKRPIX three times, USCPIA four, BECPIHL three, across the four entities | =select d.curve_id, d.section_code, ic.inflation_type, ic.conventions from ores_refdata_inflation_curve_configs_tbl ic join ores_refdata_curve_definitions_tbl d on d.id = ic.curve_definition_id order by d.curve_id= |
+| What the conventions column holds | =UKRPIX_INFLATIONSWAP=, =USCPIA_INFLATIONSWAP=, =BECPIHL_INFLATIONSWAP=, each a row the tenant's 110 inflation swap conventions carry | the same query |
+| The provisioning run | completed, all nine steps, including =generate_trades= | the provisioning script, run ba3100ec |
+| The population the run wrote | 178 trades | =select count(distinct id) from ores_trading_trades_tbl= |
+| Inflation swaps the population books | 0 | =select count(*) from ores_trading_inflation_swap_instruments_tbl= |
+
+The inflation family itself still books nothing: it has no planner, which is the
+task *Populate the inflation family*, and the curves are what that task needs.
+The curves state no fixings and no seasonality factors, so pricing an inflation
+swap has nothing to read yet; that is captured as *The seeded inflation curve
+states its index, its conventions and no fixings* rather than guessed at here.

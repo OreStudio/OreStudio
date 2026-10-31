@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 624B1770-2694-4868-9E21-87E31E13AECD
+:END:
+#+title: The seeded inflation curve states its index, its conventions…
+#+description: The seeded inflation curve states its index, its conventions and its calendar, and states no fixings: the market data series identity view holds zero rows for inflation and the seasonality factors table is empty. An inflation swap that names the index therefore resolves the curve and cannot be priced, because the engine has no fixing series to read and no seasonality to apply. Seed a fixing series per index — monthly values against the currency's calendar, the last fixing the curve's use_last_fixing_date points at — and the seasonality factors the index's convention names, so the family's trades price rather than only book.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

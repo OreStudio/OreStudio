@@ -105,3 +105,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The first layer is done and the other two are not.
+
+The run now normalises the shares it is given: a mix that does not sum to a
+hundred is scaled to the total the operator states, by the largest-remainder
+rule, so the classes together state exactly the total. A mix of ninety-nine is
+not the mix of a hundred — the class whose share dropped takes 24 of 99 rather
+than 25 of 100 — so what the run promises is proportion, within the one-trade
+rounding each config is counted in, and the test states exactly that.
+
+Two mistakes remain refusals, because they are not arithmetic: a mix that names
+no share at all, and a mix that names a class the run records no config for. A
+class whose share cannot hold its codes is refused with the smallest total that
+would, and that refusal now scales with the shares the operator stated rather
+than with a percentage.
+
+Measured: the knob suite is 8 cases and 51 assertions, and iam.core is green at
+1190 assertions in 316 cases.
+
+Still to come, and recorded in the plan: the form's population section with its
+presets, and the preview read that runs this arithmetic before the run starts.

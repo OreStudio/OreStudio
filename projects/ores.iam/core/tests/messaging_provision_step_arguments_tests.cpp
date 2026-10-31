@@ -25,6 +25,7 @@
 #include <chrono>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -600,12 +601,27 @@ TEST_CASE("a mix that does not sum to a hundred is scaled, not refused", "[popul
 
     CHECK(everyone(exact) == 1000);
     CHECK(everyone(scaled) == 1000);
-    for (const auto* asset_class :
-         {"bond", "commodity", "credit", "equity", "fx", "inflation", "interest_rates", "scripted"}) {
-        const auto exact_total = class_total(exact, asset_class);
-        const auto scaled_total = class_total(scaled, asset_class);
-        CHECK(scaled_total + 1 >= exact_total);
-        CHECK(scaled_total <= exact_total + 1);
+
+    /*
+     * A mix of ninety-nine is not the mix of a hundred: the class whose share
+     * dropped now takes 24 of 99 rather than 25 of 100. So the claim is not
+     * that the two books are equal, it is that each class takes its share of
+     * the total, within the one-trade rounding each config is counted in.
+     */
+    for (const auto& [asset_class, share, configs] :
+         std::vector<std::tuple<std::string, std::uint32_t, std::uint32_t>>{
+             {"bond", 4, 4},
+             {"commodity", 5, 1},
+             {"credit", 6, 1},
+             {"equity", 12, 1},
+             {"fx", 24, 4},
+             {"inflation", 3, 1},
+             {"interest_rates", 42, 3},
+             {"scripted", 3, 1}}) {
+        const auto expected = 1000.0 * static_cast<double>(share) / 99.0;
+        const auto actual = static_cast<double>(class_total(scaled, asset_class));
+        CHECK(actual >= expected - static_cast<double>(configs));
+        CHECK(actual <= expected + static_cast<double>(configs));
     }
 }
 

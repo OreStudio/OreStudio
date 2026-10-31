@@ -8,7 +8,7 @@
 #+filetags: :draw_a_trades_status_as_its_badge:sprint_29:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 4255
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4255][#4255]] | [agile] Open the trade status badge story |
 
 * Review
 

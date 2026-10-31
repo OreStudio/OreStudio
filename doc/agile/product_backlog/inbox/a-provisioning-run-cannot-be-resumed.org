@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: EB891445-0FD2-49E0-917B-543F40780157
+:END:
+#+title: A provisioning run that dies cannot be resumed
+#+description: When a tenant provisioning run fails or stalls, provision tenant refuses because the code exists and db reset-tenant only re-arms the GUI wizard, so the only headless way forward is recreating the whole database.
+#+type: capture
+#+level: cross
+#+filetags: :code:ops:provisioning:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A tenant provisioning run is a workflow whose steps publish bundles, import a
+registry hierarchy, create parties and load staff. If it dies part way — a service
+it needs is down, a step fails — nothing picks it up again. `provision tenant`
+refuses with "A tenant with the code 'acme_corporation' already exists", and
+`compass db reset-tenant` re-arms the *browser's* wizard rather than a headless
+run. The only headless way forward is `compass db recreate`, which throws away
+every other tenant in the database to finish one.
+
+* Why
+
+The work a tenant provisioning run does is worth minutes, not seconds, and a
+database worth recreating holds other tenants, sessions and runs. A run that fails
+at step 8 of 8 leaves a tenant in `bootstrapping` with its accounts loaded — a
+state no command can move forward and no command can cleanly restart.
+
+Measured on 2026-10-31 in this worktree:
+
+| Step | Outcome |
+|------+---------|
+| `bootstrap setup … --profile acme_demo` | reached `generate_trades` (step 8 of 8), then failed |
+| tenant status | `bootstrapping`, 294 accounts loaded |
+| `provision tenant --tenant-code acme_corporation` | refused: code already exists |
+| `compass db reset-tenant -t acme_corporation -y` | reset done; its message says the *wizard* fires on next login |
+| `reset-tenant` then `provision tenant` | still refused: the tenant row is preserved by design |
+
+Two shapes would fix it. A `provision tenant --resume` that starts the profile's
+remaining steps on a tenant in `bootstrapping`, or a `compass db reset-tenant
+--delete` that removes the tenant row and its provisioned data so the ordinary
+command can run again. The first is the better one: the run already records which
+steps completed, so the information needed to resume is on hand.
+
+* References
+
+- `projects/ores.shell/application/src/app/commands/provision_commands.cpp`,
+  `process_tenant` (the guard).
+- `projects/ores.compass/src/compass_smoke.py`, `_provision`, which chooses between
+  `bootstrap setup` and `provision tenant` and has no third case.
+- `projects/ores.iam/core/include/ores.iam.core/service/tenant_provisioning_service.hpp`.
+
+* See also
+
+- Capture: a service binary older than its libraries crashes with a lie — the
+  failure that stalled the first run and produced the state above.

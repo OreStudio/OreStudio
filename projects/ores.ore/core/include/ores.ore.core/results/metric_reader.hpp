@@ -59,7 +59,18 @@ struct metric {
      */
     std::string currency;
     /**
-     * @brief The context of the figure, in the order the file states it.
+     * @brief The scenario the figure was produced under, empty when the row states none.
+     *
+     * The stress and scenario families state it as a column of its own, and a
+     * screen filters on it, so it is not one qualifier among many.
+     */
+    std::string scenario;
+    /**
+     * @brief The risk factor the figure is a sensitivity to, empty when the row states none.
+     */
+    std::string factor;
+    /**
+     * @brief Every other qualifier of the figure, in the order the file states it.
      */
     std::vector<std::pair<std::string, std::string>> qualifiers;
     /**

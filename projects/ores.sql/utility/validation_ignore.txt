@@ -285,16 +285,24 @@ TENANT_002 ores_marketdata_market_fixings_tbl
 TENANT_002 ores_marketdata_ticks_tbl
 TENANT_002 ores_marketdata_tick_coords_tbl
 
-# Report result rows -- a TimescaleDB hypertable on as_of. A run writes each row
+# Report metrics -- a TimescaleDB hypertable on as_of. A run writes each figure
 # once and never edits it; a correction is a new run. The primary key is
 # (id, as_of) because TimescaleDB requires the partition column in it, so GIST
 # exclusion and tenant_id in the key are out, and the rows carry no audit
 # columns: the run records who asked and why.
-TEMPORAL_003 ores_reporting_report_result_rows_tbl
-TEMPORAL_004 ores_reporting_report_result_rows_tbl
-TEMPORAL_005 ores_reporting_report_result_rows_tbl
-TEMPORAL_006 ores_reporting_report_result_rows_tbl
-TENANT_002 ores_reporting_report_result_rows_tbl
+TEMPORAL_003 ores_reporting_report_metrics_tbl
+TEMPORAL_004 ores_reporting_report_metrics_tbl
+TEMPORAL_005 ores_reporting_report_metrics_tbl
+TEMPORAL_006 ores_reporting_report_metrics_tbl
+TENANT_002 ores_reporting_report_metrics_tbl
+
+# Report cashflows -- the same shape and the same reason: a TimescaleDB
+# hypertable on as_of, written once by the run that produced the payment.
+TEMPORAL_003 ores_reporting_report_cashflows_tbl
+TEMPORAL_004 ores_reporting_report_cashflows_tbl
+TEMPORAL_005 ores_reporting_report_cashflows_tbl
+TEMPORAL_006 ores_reporting_report_cashflows_tbl
+TENANT_002 ores_reporting_report_cashflows_tbl
 
 # =============================================================================
 # Workflow instances table - tenant_id present but not in PK by design.

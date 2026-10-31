@@ -4055,6 +4055,9 @@ const fr: SourceCatalogue = {
                 calendars: 'Calendriers de jours fériés',
                 tenors: 'Résoudre un ténor',
                 tenorsBody: 'Quelle date un ténor donne sur un calendrier, sous une convention.',
+                cutTypes: 'Types de coupure',
+                cutTypesBody:
+                    'Les types de coupure qu’un rapport peut choisir, avec qui signe l’un et combien de temps ses coupures sont conservées.',
                 calendarsBody:
                     'Règles, exceptions et événements, et les jours ouvrés qui en résultent.',
             },
@@ -4353,6 +4356,10 @@ const fr: SourceCatalogue = {
                 pillars: 'Piliers',
                 check: 'Contrôle',
                 sets: 'Ensembles publiés',
+                body: 'Le corps',
+                authorisation: 'Autorisation',
+                runs: 'Runs',
+                cuts: 'Coupures',
             },
         },
         fields: {
@@ -6536,6 +6543,205 @@ const fr: SourceCatalogue = {
         true: 'vrai',
         false: 'faux',
     },
+    cuts: {
+        title: 'Coupures',
+        lead: 'Les corps sur lesquels un run price : la population de transactions, les données de marché, les données de référence et le moteur, figés à un instant.',
+        readerNote:
+            'Une coupure se lit ici. Prendre une coupure à la main n’est pas encore offert sur cet écran : le parcours de prise, l’autorisation qu’il lève et la coupure LIVE sont un travail ultérieur.',
+        partialPage:
+            'Ceci est la page la plus récente des coupures que les filtres retiennent. Affinez par mois ou par type pour lire le reste.',
+        labelKindGone:
+            'Le magasin ne détient pas le type {code} sous lequel cette coupure a été prise, elle n’a donc pas de libellé. Les faits que la coupure a copiés de son type sont ceux ci-dessous.',
+        labelMissing: 'Le type de cette coupure n’est pas dans le magasin',
+        indicative: 'Indicatif',
+        cutCount: '{count} coupures',
+        group: {
+            year: 'Année {year}',
+            day: '{day} {month} {year}',
+            everyYear: 'Toutes les années',
+        },
+        frequency: {
+            daily: 'Quotidien',
+            monthly: 'Mensuel',
+            yearly: 'Annuel',
+            onDemand: 'À la demande',
+        },
+        columns: {
+            cut: 'Coupure',
+            type: 'Type',
+            name: 'Nom',
+            family: 'Famille',
+            signed: 'Signée',
+            indicative: 'Valeurs',
+            retention: 'Conservation',
+            cutsHeld: 'Coupures',
+            kind: 'Type',
+            timepoint: 'Instant',
+            state: 'État',
+            taker: 'Preneur',
+            authoriser: 'Autorisateur',
+            runs: 'Runs',
+            scope: 'Périmètre',
+            centre: 'Centre',
+        },
+        filter: {
+            allKinds: 'Tous les types',
+            allStates: 'Tous les états',
+        },
+        states: {
+            draft: 'Brouillon',
+            incomplete: 'Incomplète',
+            taken: 'Prise',
+            in_use: 'En usage',
+            authorised: 'Autorisée',
+            refused: 'Refusée',
+            superseded: 'Remplacée',
+        },
+        basis: {
+            draft: 'La tentative est enregistrée et aucune prise ne tient encore.',
+            incomplete:
+                'Le corps n’a pas pu être assemblé ; les manques disent ce qui le fermerait.',
+            taken: 'Le corps est figé et attend une personne.',
+            inUse: 'Son type n’exige aucune autorisation, elle était donc utilisable dès la prise.',
+            authorised: 'L’autorisation est enregistrée.',
+            authorisedBy: 'Autorisée par {who}.',
+            refused:
+                'L’autorisation a été refusée, ce qui est définitif pour ce corps.',
+            supersededAuthorised:
+                'Autorisée avant qu’une coupure ultérieure ne la remplace.',
+            supersededInUse:
+                'En usage jusqu’à ce qu’une coupure ultérieure la remplace.',
+            replacedBy: 'Remplacée par {label}.',
+        },
+        notice: {
+            blocked:
+                '{count} coupures de ce périmètre ne peuvent pas servir à un run, et leurs états sont : {states}.',
+            noSignature:
+                '{count} coupures sont en usage sans signature, parce que leur type n’en exige aucune.',
+        },
+        types: {
+            title: 'Types de coupure',
+            lead: 'Les types de coupure qu’un rapport peut choisir, avec qui signe l’une, si ses valeurs sont indicatives, la règle qui la résout et combien de temps ses coupures sont conservées.',
+            readerNote:
+                'Un type se lit ici. En créer un n’est pas encore offert : sa destination de conservation est un palier que le magasin connaît par une contrainte, et aucune liste ne nomme les paliers.',
+            partialCounts:
+                'Les décomptes portent sur les coupures les plus récentes que la liste a pu lire, un type peut donc en détenir davantage.',
+            unsigned: 'Aucune signature',
+            official: 'Officiel',
+            months: '{count} mois',
+            destination: 'vers {destination}',
+            rules: 'Ses règles',
+            repeats: 'Fréquence',
+            resolutionRule: 'Règle de résolution',
+            legalHold: 'Blocage juridique',
+            held: 'Bloquée dès la prise',
+            notHeld: 'Non bloquée',
+            order: 'Ordre d’affichage',
+            description: 'À quoi elle sert',
+            indicativeValues: 'Ses valeurs sont indicatives',
+            retentionMonths: 'Conservation en mois',
+            legalHoldOnTake:
+                'Une coupure de ce type commence sous blocage juridique',
+            destinationNote:
+                'La destination de conservation garde le palier que le type détient déjà : aucune liste ne nomme les paliers, ce formulaire n’en propose donc aucun.',
+            copyNote:
+                'Une coupure copie l’autorisation et la conservation de son type au moment de la prise, un changement ultérieur du type ne déplace donc pas le corps déjà figé.',
+            unsignedHelp:
+                'Un type qui ne nomme aucun type d’approbation ne lève aucune demande : un run peut pricer sur ses coupures dès qu’elles sont prises.',
+            grouping:
+                'Les coupures sont groupées par la période d’un cran au-dessus d’un type {frequency} : un type quotidien par mois, un type mensuel par année, un type annuel en un seul groupe et un type à la demande par jour.',
+            editTitle: 'Modifier le type de coupure {code}',
+            removeTitle: 'Supprimer le type de coupure {code}',
+            removeWarning:
+                'Un type sous lequel une coupure a été prise ne peut pas être supprimé tant que cette coupure existe, car le libellé de la coupure lit la famille du type.',
+            noCuts: 'Aucune coupure de ce type n’a été prise sous cette partie.',
+        },
+        body: {
+            identity: 'L’identité',
+            identityLead:
+                'Le libellé qu’une personne cite est dérivé du type, du périmètre et de l’instant, il n’est jamais saisi.',
+            label: 'Libellé',
+            takeOrdinal: 'Prise',
+            cutTime: 'Heure de coupure nommée',
+            retention: 'Conservation',
+            retentionValue: '{months} mois, vers {destination}',
+            legalHold: 'Blocage juridique',
+            held: 'Bloquée',
+            notHeld: 'Non bloquée',
+            deals: 'Les transactions',
+            dealsLead:
+                'La population est une copie de ce que le magasin de transactions détenait à l’instant, une réexécution la rejoue donc au lieu d’interroger le magasin de nouveau.',
+            population: 'Population de transactions',
+            dealCount: 'Transactions détenues',
+            dealCountGap:
+                'Aucune lecture ne rend encore les transactions d’une population, la page énonce donc la référence que la coupure enregistre.',
+            marketData: 'Les données de marché',
+            marketDataLead:
+                'L’instantané figé qui a résolu chaque rôle de marché à l’instant, avec les ensembles publiés qu’il nomme.',
+            snapshot: 'Instantané',
+            sets: 'Ensembles publiés',
+            setsGap:
+                'Aucune lecture ne rend encore les ensembles qu’un instantané fige, la page énonce donc la référence que la coupure enregistre.',
+            referenceData: 'Les données de référence',
+            referenceDataLead:
+                'Les versions des conventions, des calendriers, des réglages et des configurations de courbe que la valorisation a lues.',
+            version: 'Version',
+            engine: 'Le moteur et le code',
+            engineLead:
+                'Ce qui a calculé le résultat, pour qu’une reproduction soit la comparaison d’un seul corps.',
+            engineVersion: 'Version du moteur',
+            codeVersion: 'Version du code',
+            record: 'L’enregistrement',
+            recordLead: 'Qui a écrit la ligne, quand, et sous quel motif de changement.',
+            modifiedBy: 'Modifié par',
+            performedBy: 'Exécuté par',
+            recordedAt: 'Enregistré',
+            notFixed: 'Non figé dans ce corps',
+        },
+        gaps: {
+            title: 'Les manques ({count})',
+            lead: 'Chaque partie que l’assemblage n’a pas pu remplir. Un corps avec un manque est incomplet et non plus petit, et la prise ne lève aucune demande tant qu’un manque tient.',
+            part: 'Partie',
+            item: 'Élément',
+            reason: 'Pourquoi il tient',
+        },
+        auth: {
+            required: 'Une coupure {kind} est signée avant qu’un run puisse la prendre pour base.',
+            notRequired:
+                '{kind} n’exige aucune autorisation : le fondement est un fait du type, et non une absence à expliquer.',
+            acts: 'Les actes',
+            taken: 'Prise',
+            decision: 'Décision',
+            refusedAt: 'Refusée le {when}',
+            pending: 'En attente d’une personne',
+            openRequest: 'Ouvrir la demande',
+            request: 'Demande d’approbation',
+            decider: 'Qui décide',
+            refusal:
+                'Le refus dit : {reason}. Un refus est définitif pour ce corps, le remède est donc une nouvelle prise.',
+            fourEyes:
+                'Les quatre yeux sont la règle de la boîte de réception : une décision de la personne qui a demandé est refusée, et une personne ne compte qu’une fois.',
+            inboxGap:
+                'Lever et décider une autorisation depuis cet écran n’est pas encore offert. La demande vit dans la boîte de réception, et sa propre page est là où un décideur y répond.',
+        },
+        runs: {
+            title: 'Les runs qui ont pricé sur cette coupure',
+            lead: 'Chaque run qui a résolu la sélection de son rapport sur ce corps, le départ le plus récent d’abord. Un run refusé avant le moteur n’y est pas, une refus n’étant pas un résultat.',
+            run: 'Run',
+            report: 'Rapport',
+            state: 'État',
+            started: 'Départ',
+            priced: 'Pricé le',
+            none: 'Aucun run n’a encore pricé sur cette coupure.',
+            notConsumable:
+                'Aucun run ne peut pricer sur un corps qui n’est pas figé, ou qui attend une signature, ou qui a été refusé : cette coupure n’en a donc aucun.',
+            superseded:
+                '{count} runs reposent sur ce corps. Une coupure ultérieure l’a remplacé, et chacun d’eux se reproduit encore depuis cette coupure : aucun ne nomme le corps ultérieur.',
+            aLaterCut: 'une coupure ultérieure du même type et périmètre',
+            comparisonGap:
+                'Comparer un run de cette coupure avec un autre est le travail du parcours d’audit, qui lit les résultats des deux runs. Cet onglet nomme les runs et ouvre celui qu’une personne choisit.',
+        },
+    },
     reporting: {
         run: {
             start: 'Lancer',
@@ -6660,6 +6866,9 @@ const fr: SourceCatalogue = {
                 reports: 'Rapports',
                 reportsBody:
                     "Les définitions qu'exécutent les parties où vous travaillez, et l'état de leur dernière exécution.",
+                cuts: 'Coupures',
+                cutsBody:
+                    'Les corps sur lesquels un run price, avec l’état de chacun et les runs qui l’ont utilisé.',
             },
         },
         title: 'Rapports',
@@ -6896,6 +7105,10 @@ const fr: SourceCatalogue = {
         sensitivityTemplatesRead: 'voir les modèles de sensibilité',
         sensitivityTemplatesWrite: 'modifier les modèles de sensibilité',
         sensitivityTemplatesDelete: 'supprimer les modèles de sensibilité',
+        cutsRead: 'voir les coupures de vos parties, et la coupure qu’un run a prise pour base',
+        cutKindsRead: 'voir les types de coupure qu’un rapport peut choisir',
+        cutKindsWrite: 'modifier les types de coupure',
+        cutKindsDelete: 'supprimer les types de coupure',
     },
 
     unavailable: {
@@ -6950,6 +7163,7 @@ const fr: SourceCatalogue = {
         continue: 'Continuer',
         retry: 'Réessayer',
         cancel: 'Annuler',
+        save: 'Enregistrer',
     },
     curveConfiguration: {
         title: 'Configurations de courbes',

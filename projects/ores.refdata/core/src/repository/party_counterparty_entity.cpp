@@ -24,14 +24,13 @@
  */
 
 #include "ores.refdata.core/repository/party_counterparty_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.database/query_builder/json.hpp"
 #include <ostream>
-#include <rfl/json/write.hpp>
 
 namespace ores::refdata::repository {
 
 std::ostream& operator<<(std::ostream& s, const party_counterparty_entity& v) {
-    rfl::json::write(v, s);
+    s << ores::database::query_builder::write_json(v);
     return s;
 }
 

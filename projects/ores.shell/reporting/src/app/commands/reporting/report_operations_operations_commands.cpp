@@ -229,6 +229,21 @@ void report_operations_operations_commands::register_commands(cli::Menu& root_me
         "[--preview <v>] [--market_data_snapshot_id <v>] [--deal_population_id <v>] "
         "[--reference_data_version <v>] [--engine_version <v>] [--code_version <v>]");
 
+    menu->Insert(
+        "list-cut-rows",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_list_cut_rows(std::ref(out), std::ref(session), std::move(args));
+        },
+        "list-cut-rows [--kind_code <v>] [--month <v>] [--search <v>] [--state <v>] [--offset <v>] "
+        "[--limit <v>]");
+
+    menu->Insert(
+        "get-cut-record",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_get_cut_record(std::ref(out), std::ref(session), std::move(args));
+        },
+        "get-cut-record <cut_id>");
+
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
@@ -1288,6 +1303,134 @@ void report_operations_operations_commands::process_resolve_cut(
             out, session, std::string(req.nats_subject), req);
     } else {
         result = do_request<ores::reporting::messaging::resolve_cut_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void report_operations_operations_commands::process_list_cut_rows(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating list-cut-rows request.";
+
+    using request_type = ores::reporting::messaging::list_cut_rows_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run list-cut-rows." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "kind_code", .requires_value = true, .default_value = ""},
+        {.name = "month", .requires_value = true, .default_value = ""},
+        {.name = "search", .requires_value = true, .default_value = ""},
+        {.name = "state", .requires_value = true, .default_value = ""},
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 0;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    try {
+        if (const auto& raw_kind_code = parsed->flag("kind_code"); !raw_kind_code.empty()) {
+            req.kind_code = raw_kind_code;
+        }
+        if (const auto& raw_month = parsed->flag("month"); !raw_month.empty()) {
+            req.month = raw_month;
+        }
+        if (const auto& raw_search = parsed->flag("search"); !raw_search.empty()) {
+            req.search = raw_search;
+        }
+        if (const auto& raw_state = parsed->flag("state"); !raw_state.empty()) {
+            req.state = raw_state;
+        }
+        if (const auto& raw_offset = parsed->flag("offset"); !raw_offset.empty()) {
+            req.offset = ores::shell::app::from_token<std::uint32_t>(raw_offset, "offset");
+        }
+        if (const auto& raw_limit = parsed->flag("limit"); !raw_limit.empty()) {
+            req.limit = ores::shell::app::from_token<std::uint32_t>(raw_limit, "limit");
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::reporting::messaging::list_cut_rows_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::reporting::messaging::list_cut_rows_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::reporting::messaging::list_cut_rows_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void report_operations_operations_commands::process_get_cut_record(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get-cut-record request.";
+
+    using request_type = ores::reporting::messaging::get_cut_record_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run get-cut-record." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 1;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.cut_id =
+            ores::shell::app::from_token<boost::uuids::uuid>(parsed->positionals[next++], "cut_id");
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::reporting::messaging::get_cut_record_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::reporting::messaging::get_cut_record_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::reporting::messaging::get_cut_record_response>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

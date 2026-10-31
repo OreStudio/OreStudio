@@ -78,10 +78,20 @@ derive_state(const domain::cut& cut, int open_gap_count);
 derive_state(const domain::cut& cut, int open_gap_count, bool later_cut_holds_its_place);
 
 /**
- * @brief Whether a later cut of the same kind, party, scope and centre replaced this one.
+ * @brief Whether one body stands in another's place.
  *
- * Only a later body a run may price from holds a place: a later cut that waits on
- * a person, or one that was refused, holds nothing.
+ * The two facts are the same wherever they are read: the body is later, it is of
+ * the same kind, party, scope and centre, and a run may price from it. A later
+ * cut that waits on a person, or one that was refused, holds nothing.
+ *
+ * @param later The body whose place is in question.
+ * @param cut The body it would replace.
+ */
+[[nodiscard]] ORES_REPORTING_CORE_EXPORT bool
+stands_in_the_place_of(const domain::cut& later, const domain::cut& cut);
+
+/**
+ * @brief Whether a later cut of the same kind, party, scope and centre replaced this one.
  *
  * @param cut The record whose place is in question.
  * @param candidates The cuts read for the same scope, in any order.

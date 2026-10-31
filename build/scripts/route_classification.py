@@ -491,6 +491,25 @@ RULES = (
          "The pricing engine configuration: the collection and its party names, one"
          " configuration with its bound reports, its history, and its ORE document as a file."),
 
+    Rule("the kinds of cut",
+         ("regex", r"^(GET|PUT|DELETE) /api/reporting/cut-kinds"),
+         BFF, COMPOSED, "reporting",
+         "The kinds of cut a report may select: the collection, one kind with the cuts the"
+         " party holds of it, and a write or removal. A kind is one collection with three"
+         " keys resolved — its family's name, its resolution rule's name and the approval"
+         " kind that signs a cut of it, with the permission that decider needs — so one"
+         " answer states words where the row holds codes."),
+    Rule("the lookups a cut kind names",
+         ("exact", "GET /api/reporting/cut-kind-choices"),
+         BFF, COMPOSED, "reporting",
+         "The families, the resolution rules and the inbox's approval kinds, three"
+         " collections read so a form offers what a save will accept."),
+    Rule("the cuts",
+         ("regex", r"^GET /api/reporting/cuts"),
+         BFF, COMPOSED, "reporting",
+         "The cuts a party holds, and one cut's record: the body's facts, the state and the"
+         " label the reporting service derives, the kind the body was taken under, the gaps"
+         " the assembly could not fill and the runs that priced from it."),
     Rule("a grid artefact",
          ("regex", r"^GET /api/operations/grid/jobs/(workunits/:id/input|results/:id/output)"),
          BFF, RESOURCE, "grid",
@@ -1075,6 +1094,22 @@ VIEWS = {
         "ores.workflow",
         "the run's status, the step executing and one summary per step",
         "ETag on the whole view, stale after 5 s"),
+    "the kinds of cut": (
+        "ores.reporting",
+        "the cut kinds with their family and resolution rule names, the approval kinds "
+        "the kinds point at, and one cut read for the counts, four reads",
+        "ETag on the whole view, stale after 60 s"),
+    "the lookups a cut kind names": (
+        "ores.reporting",
+        "the cut families, the cut resolution rules and the inbox approval kinds, three "
+        "collection reads",
+        "ETag on the whole view, stale after 5 min"),
+    "the cuts": (
+        "ores.reporting",
+        "the cuts of the session's party with the derived state, label and run tally the "
+        "reporting service answers, or one cut with its kind and the gaps the assembly "
+        "could not fill",
+        "ETag on the whole view, stale after 15 s"),
     "the tenor catalogue": (
         "ores.refdata",
         "the tenors with their conventions and schedules, three collection reads",

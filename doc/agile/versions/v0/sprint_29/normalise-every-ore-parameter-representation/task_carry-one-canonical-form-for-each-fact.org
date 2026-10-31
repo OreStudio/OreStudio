@@ -380,6 +380,23 @@ as data before the codec can stop. That is the next slice: a column on the value
 row for the form an export writes, or a writer that reads the set. Until then the
 compiled tables have a reason to exist, and slice 4 waits on it.
 
+** What slice 2 changed for the database round trips
+
+Slice 2 made the store hold one form of each vocabulary value, and five
+database round-trip cases compared the export against the document that went in.
+They read the canonical form as a defect. They now state the round trip on what
+the store returns, and every count assertion stays.
+
+The same run found a list rule that refused a good list: a value written across
+several lines carries the newline and tab around each item, and =btrim= trims
+spaces alone, so a multi-line list of periods was refused. The guard now trims
+the whitespace around an item and still refuses an item that is nothing but
+whitespace.
+
+Three eventing cases in =ores.refdata.core.tests= fail on a synthetic day counter
+code (=A365-0=) that the guard refuses. The generator invents the code, and the
+guard states the set; they fail on main too and are not this task's work.
+
 ** What the next slice needs
 
 Slice 2 adds =ores_reporting_canonical_value_fn(set_code, value)= and calls it

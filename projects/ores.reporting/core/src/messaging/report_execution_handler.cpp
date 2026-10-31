@@ -27,13 +27,13 @@
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include "ores.reporting.api/domain/report_result_row.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
+#include "ores.reporting.core/repository/report_cashflow_repository.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
-#include "ores.reporting.core/repository/report_result_row_repository.hpp"
+#include "ores.reporting.core/repository/report_metric_repository.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
 #include "ores.reporting.core/results/canonical_log_reader.hpp"
-#include "ores.reporting.core/results/canonical_reader.hpp"
+#include "ores.reporting.core/results/run_output_reader.hpp"
 #include "ores.reporting.core/service/engine_log_row.hpp"
 #include "ores.reporting.core/service/execution_storage_plan.hpp"
 #include "ores.reporting.core/service/report_error_recorder.hpp"
@@ -42,13 +42,18 @@
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage.api/net/object_keys.hpp"
 #include "ores.storage.api/net/storage_paths.hpp"
+#include "ores.storage.core/filesystem/archiver.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <chrono>
+#include <filesystem>
 #include <format>
+#include <fstream>
+#include <map>
 #include <rfl/json.hpp>
 #include <string_view>
 
@@ -920,89 +925,142 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
             return;
         }
 
-        results::read_outcome outcome;
+        // One result is one run of the engine, and its output archive is the
+        // whole of what the engine wrote. The readers know each file's family,
+        // so this downloads the archive and reads it rather than asking the
+        // node to project the figures it happens to know about.
+        const auto as_of = instance->priced_at.value_or(std::chrono::system_clock::now());
+        const results::run_stamp run{.party_id = instance->party_id,
+                                     .report_instance_id = sg(req.report_instance_id),
+                                     .report_definition_id = instance->definition_id,
+                                     .priced_at = as_of};
+
+        results::run_output_outcome output;
         ores::storage::net::storage_transfer transfer(http_base_url_, run_token_value);
         for (const auto& result_id : result_ids) {
-            const auto uri = ores::compute::net::compute_storage::results_path(result_id);
+            const auto uri = ores::compute::net::compute_storage::output_path(result_id);
             std::string bucket;
             std::string key;
             if (!ores::storage::net::storage_paths::split_object_path(uri, bucket, key)) {
-                refuse(std::format("The result {} names no readable rows location.", result_id));
+                refuse(std::format("The result {} names no readable output location.", result_id));
                 return;
             }
-            std::vector<char> body;
+            std::vector<char> archive;
             try {
-                body = transfer.download_blob(bucket, key);
+                archive = transfer.download_blob(bucket, key);
             } catch (const std::exception& read) {
-                refuse(
-                    std::format("The rows of result {} were not read: {}", result_id, read.what()));
+                refuse(std::format(
+                    "The output of result {} was not read: {}", result_id, read.what()));
                 return;
             }
-            auto read_rows =
-                results::read_canonical_csv(std::string_view(body.data(), body.size()));
-            if (!read_rows.refusals.empty()) {
-                refuse("The run's rows were refused: " + reasons_of(read_rows.refusals));
+
+            const auto staging = std::filesystem::temp_directory_path() /
+                                 boost::uuids::to_string(boost::uuids::random_generator()());
+            const auto unload = [&staging]() {
+                std::error_code ignored;
+                std::filesystem::remove_all(staging, ignored);
+            };
+            std::vector<results::output_file> files;
+            try {
+                std::filesystem::create_directories(staging);
+                const auto archive_path = staging / "output.tar.gz";
+                {
+                    std::ofstream out(archive_path, std::ios::binary | std::ios::trunc);
+                    out.write(archive.data(), static_cast<std::streamsize>(archive.size()));
+                }
+                const auto unpacked = staging / "output";
+                std::filesystem::create_directories(unpacked);
+                ores::storage::filesystem::archiver::extract(archive_path, unpacked);
+
+                // Sorted, so a run reads the same whichever order the archive
+                // happens to hold its entries in.
+                std::vector<std::filesystem::path> paths;
+                for (const auto& entry : std::filesystem::recursive_directory_iterator(unpacked)) {
+                    if (entry.is_regular_file() && entry.path().extension() == ".csv")
+                        paths.push_back(entry.path());
+                }
+                std::ranges::sort(paths);
+                for (const auto& path : paths) {
+                    std::ifstream in(path, std::ios::binary);
+                    std::string body{std::istreambuf_iterator<char>(in),
+                                     std::istreambuf_iterator<char>()};
+                    files.push_back(results::output_file{.name = path.filename().string(),
+                                                         .body = std::move(body)});
+                }
+            } catch (const std::exception& read) {
+                unload();
+                refuse(std::format(
+                    "The output of result {} was not unpacked: {}", result_id, read.what()));
                 return;
             }
-            outcome.rows.insert(outcome.rows.end(),
-                                std::make_move_iterator(read_rows.rows.begin()),
-                                std::make_move_iterator(read_rows.rows.end()));
+            unload();
+
+            auto read = results::read_run_outputs(files, run);
+            if (!read.refusals.empty()) {
+                refuse("The run's output was refused: " + reasons_of(read.refusals));
+                return;
+            }
+            for (const auto& name : read.files_not_modelled) {
+                BOOST_LOG_SEV(lg(), warn) << "The run wrote a file no family states, so it was "
+                                             "left in its archive: "
+                                          << name;
+            }
+            BOOST_LOG_SEV(lg(), info)
+                << "Read " << read.files_read.size() << " output file(s) of "
+                << "result " << result_id << ": " << read.metrics.size() << " metric(s), "
+                << read.cashflows.size() << " cashflow figure(s)";
+            output.metrics.insert(output.metrics.end(),
+                                  std::make_move_iterator(read.metrics.begin()),
+                                  std::make_move_iterator(read.metrics.end()));
+            output.cashflows.insert(output.cashflows.end(),
+                                    std::make_move_iterator(read.cashflows.begin()),
+                                    std::make_move_iterator(read.cashflows.end()));
         }
 
-        if (outcome.rows.empty()) {
-            refuse("The run's rows state no figure, so there is nothing to load.");
+        if (output.metrics.empty() && output.cashflows.empty()) {
+            refuse("The run's output states no figure, so there is nothing to load.");
             return;
         }
 
-        const auto as_of = instance->priced_at.value_or(std::chrono::system_clock::now());
-        std::vector<domain::report_result_row> rows;
-        rows.reserve(outcome.rows.size());
-        for (const auto& row : outcome.rows) {
-            boost::uuids::uuid subject;
-            try {
-                subject = sg(row.subject_id);
-            } catch (const std::exception&) {
-                refuse(std::format("The run's rows state a subject '{}' that is not a record id.",
-                                   row.subject_id));
-                return;
+        // One write for each family, because that is the shape of the tables and
+        // because a statement per row would cost a round trip per figure.
+        const auto load_metrics = [&] {
+            std::map<std::string, std::vector<domain::report_metric>> by_family;
+            for (auto& metric : output.metrics)
+                by_family[metric.family].push_back(std::move(metric));
+            repository::report_metric_repository repo;
+            for (auto& [family, rows] : by_family) {
+                BOOST_LOG_SEV(lg(), info)
+                    << "Loading " << rows.size() << " " << family << " metric(s)";
+                repo.insert(tenant_ctx, rows);
             }
-            boost::uuids::uuid counterparty{};
-            if (!row.counterparty_id.empty()) {
-                try {
-                    counterparty = sg(row.counterparty_id);
-                } catch (const std::exception&) {
-                    refuse(std::format(
-                        "The run's rows state a counterparty '{}' that is not a record id.",
-                        row.counterparty_id));
-                    return;
-                }
+        };
+        const auto load_cashflows = [&] {
+            std::map<std::string, std::vector<domain::report_cashflow>> by_family;
+            for (auto& cashflow : output.cashflows)
+                by_family[cashflow.family].push_back(std::move(cashflow));
+            repository::report_cashflow_repository repo;
+            for (auto& [family, rows] : by_family) {
+                BOOST_LOG_SEV(lg(), info)
+                    << "Loading " << rows.size() << " " << family << " cashflow figure(s)";
+                repo.insert(tenant_ctx, rows);
             }
-            rows.push_back(
-                domain::report_result_row{.id = boost::uuids::random_generator()(),
-                                          .party_id = instance->party_id,
-                                          .report_instance_id = sg(req.report_instance_id),
-                                          .as_of = as_of,
-                                          .subject_type = row.subject_type,
-                                          .subject_id = subject,
-                                          .measure = row.measure,
-                                          .currency = row.currency,
-                                          .report_definition_id = instance->definition_id,
-                                          .counterparty_id = counterparty,
-                                          .figure = row.figure,
-                                          .source = row.source});
-        }
+        };
+        load_metrics();
+        load_cashflows();
 
-        repository::report_result_row_repository repo;
-        repo.insert(tenant_ctx, rows);
+        const auto loaded = output.metrics.size() + output.cashflows.size();
 
         post_process_results_result result;
         result.success = true;
-        result.rows_loaded = static_cast<int>(rows.size());
-        result.message =
-            std::format("Loaded {} rows for run {}", rows.size(), req.report_instance_id);
+        result.rows_loaded = static_cast<int>(loaded);
+        result.message = std::format("Loaded {} metrics and {} cashflow figures for run {}",
+                                     output.metrics.size(),
+                                     output.cashflows.size(),
+                                     req.report_instance_id);
 
         BOOST_LOG_SEV(lg(), info) << "post_process_results complete | instance="
-                                  << req.report_instance_id << " rows=" << rows.size();
+                                  << req.report_instance_id << " rows=" << loaded;
 
         wf->complete(rfl::json::write(result));
         ack.accept();

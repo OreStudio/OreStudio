@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 7C1F3B52-9D64-4A18-8E27-5B0FA2C6D914
+:END:
+#+title: ores.reporting.run_result
+#+description: Codegen entity model for the run result read model: the figures of a run, at the keys and measures the screen reads.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: One figure of a run, at the keys and the measure the result screen reads.
+#+entity_singular: run_result
+#+entity_plural: run_results
+#+entity_title: Run Result
+#+created: 2026-10-31
+#+updated: 2026-10-31
+
+The read model the result screen reads: one figure of a run, at the trade it is
+about, named by the measure the screen shows. It is a view over
+=ores_reporting_report_metrics_tbl=, so the figures a run produced are stored
+once, in the shape the readers write, and the screen's shape is a projection of
+them.
+
+The view is where the engine's headings meet the screen's words, and it is the
+only place that knows either. The engine names the figure =NPV=, =NPV(Base)= and
+=Notional=; the screen asks for =npv=, =npv_base= and =notional=. A screen that
+learned the headings would break the day a configuration renamed a column, and a
+screen that joined the tables itself would state the same rollup twice.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:has_tenant_id: true
+:profile:       read-model
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+The metric this row stands for.
+
+** party_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:filterable:   true
+:END:
+
+The party that owns the run.
+
+** report_instance_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:filterable:   true
+:END:
+
+The run that produced the figure.
+
+** report_definition_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:filterable:   true
+:END:
+
+The report the run came from.
+
+** as_of
+:PROPERTIES:
+:type:         timestamp with time zone
+:cpp_type:     std::chrono::system_clock::time_point
+:END:
+
+The observation date the figure belongs to.
+
+** subject_type
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:filterable:   true
+:END:
+
+The kind of record the figure is about: a trade, a netting set, a portfolio.
+
+** subject_id
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:filterable:   true
+:END:
+
+The engine's own identifier for that record. It is text because the engine names
+its records with strings, not with uuids.
+
+** measure
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:filterable:   true
+:END:
+
+The name the screen knows the figure by: npv, npv_base, notional. The view states
+which heading each one is.
+
+** currency
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:filterable:   true
+:END:
+
+The currency the figure is stated in, empty when it states none.
+
+** counterparty_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     std::optional<boost::uuids::uuid>
+:nullable:     true
+:filterable:   true
+:END:
+
+The counterparty the engine stated, when it stated one as a record id.
+
+** figure
+:PROPERTIES:
+:type:         double precision
+:cpp_type:     double
+:END:
+
+The figure, as the engine stated it and never formatted.
+
+** source
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:END:
+
+The family the figure came from, for provenance.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_run_results_vw
+:END:
+
+** View
+
+The figures of the =npv= family, at the measures the screen reads. A metric of any
+other family is not a result row: the screen shows the portfolio's value, and the
+other families answer other questions.
+
+The counterparty the engine states is a key of its row, and the view reads it out
+of the qualifiers the post-processor stored, keeping it only when it is a record
+id, because the screen joins it to the counterparty list.
+
+#+begin_src sql :name select
+select m.tenant_id,
+       m.id,
+       m.party_id,
+       m.report_instance_id,
+       m.report_definition_id,
+       m.as_of,
+       m.subject_type,
+       m.subject_id,
+       case m.measure
+           when 'NPV' then 'npv'
+           when 'NPV(Base)' then 'npv_base'
+           when 'Notional' then 'notional'
+           else m.measure
+       end as measure,
+       m.currency,
+       case
+           when (m.qualifiers::jsonb ->> 'CounterParty') ~
+                '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+           then (m.qualifiers::jsonb ->> 'CounterParty')::uuid
+           else null
+       end as counterparty_id,
+       m.value as figure,
+       m.source
+  from ores_reporting_report_metrics_tbl m
+ where m.family = 'npv'
+   and m.valid_to = ores_utility_infinity_timestamp_fn()
+#+end_src
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:  api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: result
+:entity_plural_short:   results
+:entity_singular_words: run result
+:entity_plural_words:   run results
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Table display
+
+| column     | header     |
+|------------+------------|
+| subject_id | Trade      |
+| measure    | Measure    |
+| currency   | Currency   |
+| figure     | Figure     |

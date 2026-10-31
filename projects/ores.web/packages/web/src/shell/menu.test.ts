@@ -95,8 +95,8 @@ describe('the menu', () => {
 
 /**
  * An area is drawn for a person who holds the read that one of its screens
- * needs, and for nobody else. Reporting is one such area: any of its four
- * screens opens its door.
+ * needs, and for nobody else. Reporting is one such area: any of its screens
+ * opens its door.
  */
 describe('the Reporting area', () => {
     const reportRead = 'reporting::report_definitions:read';
@@ -104,12 +104,13 @@ describe('the Reporting area', () => {
     const templatesRead = 'analytics::sensitivity_templates:read';
     const settingsRead = 'reporting::engine_settings:read';
     const curvesRead = 'refdata::curve_configurations:read';
+    const cutsRead = 'reporting::cuts:read';
     const entry = entryAt('/reporting');
 
     it('is in the menu, guarded by the read of each of its screens', () => {
         expect(entry.to).toBe('/reporting');
         expect([entry.permission].flat().sort()).toEqual(
-            [curvesRead, pricingRead, templatesRead, settingsRead, reportRead].sort(),
+            [curvesRead, pricingRead, templatesRead, settingsRead, reportRead, cutsRead].sort(),
         );
     });
 
@@ -117,6 +118,7 @@ describe('the Reporting area', () => {
         expect(offered(entry, (code) => code === reportRead)).toBe(true);
         expect(offered(entry, (code) => code === pricingRead)).toBe(true);
         expect(offered(entry, (code) => code === templatesRead)).toBe(true);
+        expect(offered(entry, (code) => code === cutsRead)).toBe(true);
     });
 
     it('is not drawn for a person who does not hold it', () => {

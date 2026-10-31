@@ -23,6 +23,7 @@ set(files
     "change_coalescer_tests.cpp"
     "change_pump_tests.cpp"
     "change_stream_tests.cpp"
+    "change_ticker_tests.cpp"
     "main.cpp"
     "storage_upload_end_to_end_tests.cpp"
     "storage_upload_sink_tests.cpp"

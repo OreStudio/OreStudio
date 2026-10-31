@@ -29,6 +29,7 @@ set(files
     "routes/web_bundle_routes.cpp"
     "stream/change_coalescer.cpp"
     "stream/change_pump.cpp"
+    "stream/change_ticker.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -45,4 +46,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/stream/change_coalescer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/stream/change_hub.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/stream/change_pump.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/stream/change_ticker.hpp"
 )

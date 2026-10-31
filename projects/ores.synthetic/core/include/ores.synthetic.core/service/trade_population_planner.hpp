@@ -46,6 +46,12 @@ public:
 };
 
 /**
+ * @brief The least a config of @p asset_class_code can state without losing a
+ * code, or zero when no planner serves the class.
+ */
+ORES_SYNTHETIC_CORE_EXPORT std::size_t routed_code_count(std::string_view asset_class_code);
+
+/**
  * @brief Names the trade type code the bond family states for a plain bond.
  */
 inline constexpr std::string_view bond_trade_type_code = "Bond";
@@ -76,6 +82,16 @@ public:
 
     /// The asset class this planner answers for.
     [[nodiscard]] virtual std::string_view asset_class_code() const = 0;
+
+    /**
+     * @brief How many trade types this planner cycles.
+     *
+     * A planner draws its codes by the slot's position, so a population shorter
+     * than this states a prefix of the codes and never reaches the rest. It is
+     * therefore the least a config of the class can state without losing a code,
+     * and a caller that sizes a population states it as its floor.
+     */
+    [[nodiscard]] virtual std::size_t code_count() const = 0;
 };
 
 /**
@@ -91,6 +107,8 @@ public:
     plan(const domain::trade_generation_scope& scope) const override;
 
     [[nodiscard]] std::string_view asset_class_code() const override;
+
+    [[nodiscard]] std::size_t code_count() const override;
 };
 
 /**
@@ -111,6 +129,8 @@ public:
     plan(const domain::trade_generation_scope& scope) const override;
 
     [[nodiscard]] std::string_view asset_class_code() const override;
+
+    [[nodiscard]] std::size_t code_count() const override;
 };
 
 /**
@@ -132,6 +152,8 @@ public:
     plan(const domain::trade_generation_scope& scope) const override;
 
     [[nodiscard]] std::string_view asset_class_code() const override;
+
+    [[nodiscard]] std::size_t code_count() const override;
 };
 
 /**
@@ -157,6 +179,8 @@ public:
     plan(const domain::trade_generation_scope& scope) const override;
 
     [[nodiscard]] std::string_view asset_class_code() const override;
+
+    [[nodiscard]] std::size_t code_count() const override;
 };
 
 /**
@@ -177,6 +201,8 @@ public:
     plan(const domain::trade_generation_scope& scope) const override;
 
     [[nodiscard]] std::string_view asset_class_code() const override;
+
+    [[nodiscard]] std::size_t code_count() const override;
 };
 
 /**
@@ -198,6 +224,8 @@ public:
     plan(const domain::trade_generation_scope& scope) const override;
 
     [[nodiscard]] std::string_view asset_class_code() const override;
+
+    [[nodiscard]] std::size_t code_count() const override;
 };
 
 /**
@@ -223,6 +251,8 @@ public:
     plan(const domain::trade_generation_scope& scope) const override;
 
     [[nodiscard]] std::string_view asset_class_code() const override;
+
+    [[nodiscard]] std::size_t code_count() const override;
 };
 
 /**
@@ -234,6 +264,8 @@ public:
     plan(const domain::trade_generation_scope& scope) const override;
 
     [[nodiscard]] std::string_view asset_class_code() const override;
+
+    [[nodiscard]] std::size_t code_count() const override;
 };
 
 /**

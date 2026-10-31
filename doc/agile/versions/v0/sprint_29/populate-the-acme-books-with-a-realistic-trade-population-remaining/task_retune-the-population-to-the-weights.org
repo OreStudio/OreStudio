@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: 8E34C710-6367-46C9-9F65-015FD9B824AE
+:END:
+#+title: Task: Trade Population Weights states a trade-count mix: interest …
+#+description: Trade Population Weights states a trade-count mix: interest rates 42%, fx 25%, equity 12%, credit 6%, commodity 5%, bonds 4%, inflation and scripted 3% each. Each class books one trade per routed code, which is what coverage needs and not what a weighted mix needs. Measured on a fresh tenant at the close of the family tasks: 190 trades, rates 27 (14%), fx 64 (34%), equity 17 (9%), credit 5 (3%), commodity 25 (13%), bonds 40 (21%), inflation 6 (3%) and scripted 6 (3%).
+#+type: task
+#+level: s1
+#+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/retune-the-population-to-the-weights
+#+pr: 4264
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-31
+#+updated: 2026-10-31
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Trade Population Weights states a trade-count mix: interest rates 42%, fx 25%, equity 12%, credit 6%, commodity 5%, bonds 4%, inflation and scripted 3% each. The seeded configs were never sized to it. On a fresh tenant the mix is rates 27 of 162 (17%), fx 64 (40%), equity 17 (10%), credit 5 (3%), commodity 25 (15%), bonds 24 (15%); inflation and scripted book nothing at all. Each class books one trade per routed code, which is what coverage needs, and a weighted population needs a different rule: the weights set the counts, and the codes are drawn within those counts. Doing that changes the seeded configs for every class at once and needs the weights page's tolerance stated, so it is its own task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-31                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+The weights set the counts; the codes are drawn within them.
+
+Today every family states one trade per routed code, which is what coverage
+needs: a config shorter than its code list stops at a prefix, and that was the
+defect the family tasks fixed. A weighted population needs the other rule. The
+config states a count per class, and the planner cycles its codes inside that
+count, so coverage survives and the mix matches the page.
+
+Two things this task must settle before it changes anything:
+
+- The tolerance. A page that states 42 per cent and a population of 190 cannot
+  hit it exactly: 42 per cent of 190 is 79.8 trades, and the family routes nine
+  codes, so the count is a multiple of nine near 80. The page states a tolerance
+  or this task states one and records it.
+- Which number moves. The seeded configs size every class at once, so a retune
+  changes the population of every family together. A class that gains trades
+  must not lose a code, and the smallest class cannot go below one trade per
+  code without dropping coverage.
+
+The measure is a fresh provisioning run: the family counts over the total, and
+each one against its weight within the tolerance.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The population a fresh tenant holds | 1000 trades | =select count(distinct id) from ores_trading_trades_tbl= | branch head |
+| The mix | rates 420 (42%), fx 250 (25%), equity 120 (12%), credit 60 (6%), commodity 50 (5%), bonds 40 (4%), inflation 30 (3%), scripted 30 (3%) | the trades grouped by type and mapped to their class, or the family tables counted by distinct trade id | branch head |
+| Codes per family | rates 48+45 across the nine codes, fx 14-16 across sixteen, equity 7-8 across seventeen, credit 12 across five, commodity 2 across twenty-five, bonds 4 across ten, scripted 10 across three | =select trade_type, count(distinct id) from ores_trading_trades_tbl group by 1= | branch head |
+| The provisioning run | completed all nine steps in five and a half minutes | =time compass shell -l .../how_do_i_provision_...ores= | branch head |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4264][#4264]] | [refdata] Size the population to the weights the page states |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Every class is its weight of a thousand trades, and every routed code still
+appears.
+
+Measured on a fresh tenant: 1000 trades — interest rates 420 (42%), FX 250
+(25%), equity 120 (12%), credit 60 (6%), commodity 50 (5%), bonds 40 (4%),
+inflation 30 (3%) and scripted 30 (3%). Each family's codes carry 2 to 16 trades
+apiece, so the mix moved without any code losing its first trade.
+
+The two rules decide the total, and that is the decision worth keeping:
+
+- A class's count cannot fall below the number of codes its planner cycles. The
+  planner draws codes by the slot's position, so a short config states a prefix
+  and drops the codes past it.
+- A class's share of the total cannot fall below that floor either. Commodity
+  routes twenty-five codes and weighs five per cent, so a thousand trades is the
+  smallest round population where its floor is also its weight; and bond trades
+  are ten per book across four entities, which is exactly four per cent of a
+  thousand.
+
+Nothing smaller satisfies both. At 190 the commodity floor was ten per cent of
+the population, and at 500 the four bond books were eight per cent. So the
+tolerance this task settles is exactness at a thousand: every class states its
+weight because the total was chosen to let it.
+
+The cost is the run: five and a half minutes for the provisioning script, against
+two for the population of 190. That is the price of a mix that matches the page.

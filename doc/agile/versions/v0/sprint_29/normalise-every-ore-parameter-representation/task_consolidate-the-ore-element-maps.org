@@ -28,9 +28,9 @@ One table states which ORE element a leaf column is and which value set states i
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] |
-| Now          | Measured and designed. The three maps are read, the numbers are in Discovery, and the target shape is in Design. |
-| Waiting on   | Nothing.                               |
-| Next         | Slice 1: the child table, the seed, and both guards reading the map. |
+| Now          | Slice 1a landed: the map and its child table are seeded from the tree. The guards still read the contract, because switching them needs a decision this slice uncovered. |
+| Waiting on   | A decision on how a catalogue set reads reference data for the tenant of the row being written. |
+| Next         | Slice 1b: switch both guards to the map once that is settled. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -163,6 +163,40 @@ migration.
 The canonical rendering of a value (next task), the screen that shows a leaf, and
 any change to what a value set states. This task moves where a leaf's set is
 found, not what the set says.
+
+* What slice 1a found
+
+The map and its child are seeded, and the switches are built, but two things had
+to be settled before the guards could read them.
+
+** The curve column map on the trunk was stale
+
+Regenerating it added six =business_day_convention= columns that the projection
+had gained and the committed seed had not. They were unguarded on the trunk, and
+=generate_curve_column_guards.py --check= failed there before this task touched
+it. The regeneration is in this slice, so the trunk's check goes green.
+
+** An element-keyed map guards leaves that were silent, and one of them fails
+
+The old guards matched a column's =xpath= against the contract, so a column whose
+path the contract did not hold was never checked. The map is keyed by the element,
+so it guards every column that carries a leaf, including those. That is the point
+of the change, and it surfaced this: a =Currency= column on the yield curve
+configs table publishes =EUR= and the guard refuses it, because
+=ores_refdata_currency_catalogue_v= returns no rows for the tenant the publisher
+is writing as. =ores_reporting_value_in_set_fn= is a definer function, but the
+view under it meets row level security with the caller's tenant.
+
+So a catalogue set does not necessarily resolve for the tenant of the row being
+written. That is a fact about the catalogue reads, not about this map, and the
+fix belongs there: the verdict should read the catalogue for the row's tenant.
+Until it does, switching the guards would refuse values that today are accepted,
+so slice 1b waits on it.
+
+The switch itself is written and was exercised: with it in place the curve column
+suite passed unchanged and the convention suite failed only on its expected error
+text, which the map's key changes from =Swap.FixedFrequency= to
+=swap_convention.fixed_frequency=. Both are recorded here rather than lost.
 
 * Plan
 

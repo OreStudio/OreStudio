@@ -572,7 +572,7 @@ const takeCutReplySchema = z.looseObject({
  */
 async function takeCutReply(
     session: LiveSession,
-    request: z.infer<typeof takeCutRequestSchema>,
+    request: z.infer<typeof cutTakeRequestSchema>,
 ): Promise<Record<string, unknown>> {
     const reply = await session.client.callAuthenticated(
         operationSubjects.take_cut_request,

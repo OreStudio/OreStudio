@@ -7136,7 +7136,8 @@ export const en: SourceCatalogue = {
             consumerNote:
                 'LIVE is not offered here: its instant comes from the run that consumes it, so there is no take to press.',
             timepoint: 'Timepoint',
-            timepointHint: 'An instant that has happened. A body cannot be fixed at a time yet to come.',
+            timepointHint:
+                'An instant that has happened. A body cannot be fixed at a time yet to come.',
             date: 'Date',
             time: 'Time',
             timezone: 'Timezone',
@@ -7150,7 +7151,8 @@ export const en: SourceCatalogue = {
             reasonHint: 'The reason a decider reads. A sale of a signed kind needs one.',
             label: 'Label',
             labelPending: 'Chosen from the kind, the scope and the date',
-            labelLead: 'The label is derived from the kind, the scope and the date, and never typed.',
+            labelLead:
+                'The label is derived from the kind, the scope and the date, and never typed.',
             assemble: 'Assemble the body',
             bodyTitle: 'The body',
             bodyLead:
@@ -7165,8 +7167,7 @@ export const en: SourceCatalogue = {
             gapLead:
                 'A gap stops the press. A decider would be asked to sign a body that does not meet the definition, so the attempt is kept as a draft and the take resumes once the gaps are closed.',
             remedy: 'What closes it',
-            noGaps:
-                'Every part of the body closed: {deals} deals at the instant, {sets} published sets in use. The take raises the authorisation its kind names, where it names one.',
+            noGaps: 'Every part of the body closed: {deals} deals at the instant, {sets} published sets in use. The take raises the authorisation its kind names, where it names one.',
             toReview: 'Review the body',
             reviewTitle: 'The review',
             reviewLead:
@@ -7192,7 +7193,8 @@ export const en: SourceCatalogue = {
             fourEyes:
                 'The take cannot authorise the body the taker fixed: the inbox refuses a decision by the person who raised the request.',
             indicative: 'Every result priced from this body carries the indicative mark.',
-            retention: 'Kept {months} months in the {destination} tier, copied from its kind at the take.',
+            retention:
+                'Kept {months} months in the {destination} tier, copied from its kind at the take.',
             savedDraft:
                 'The body could not be assembled, so it was saved as a draft with {count} gap(s). No approval request was raised, and no run may price from it until the gaps are closed.',
             toList: 'Back to the cuts',

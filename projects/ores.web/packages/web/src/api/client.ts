@@ -4341,8 +4341,8 @@ export const api = {
      * answers gaps is a successful call: the gaps are what the person reads, and
      * the sentence that refuses a take arrives in `refusal`.
      */
-    async takeCut(request: CutTakeRequest): Promise<CutTake> {
-        const body = cutTakeRequestSchema.parse(request);
+    async takeCut(asked: CutTakeRequest): Promise<CutTake> {
+        const body = cutTakeRequestSchema.parse(asked);
         return cutTakeSchema.parse(
             await request('/api/reporting/cuts/take', {
                 method: 'POST',

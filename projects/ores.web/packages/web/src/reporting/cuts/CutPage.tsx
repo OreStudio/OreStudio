@@ -389,7 +389,9 @@ function AuthorisationTab({ record }: { readonly record: CutRecord }): ReactNode
                             <dt className="text-xs text-ink-faint">{t('cuts.auth.applied')}</dt>
                             <dd className="mt-0.5 text-sm">
                                 {record.detail.appliedAt === null ? (
-                                    <span className="text-ink-muted">{t('cuts.auth.notApplied')}</span>
+                                    <span className="text-ink-muted">
+                                        {t('cuts.auth.notApplied')}
+                                    </span>
                                 ) : (
                                     <span className="flex flex-col">
                                         <span>{record.detail.appliedBy}</span>

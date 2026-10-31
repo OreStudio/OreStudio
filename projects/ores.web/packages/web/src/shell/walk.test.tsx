@@ -232,6 +232,8 @@ describe('the routes of the application', () => {
         PATHS.groupStructures,
         '/development',
         PATHS.reporting,
+        // Opened from the cuts list's own Take button, so no card leads to it.
+        PATHS.cutsTake,
         // Opened from an oresmd URL, so no card leads to it.
         '/market-data/series',
         // The Import steps, opened from the kind's list's Import (RS-ORE-05).

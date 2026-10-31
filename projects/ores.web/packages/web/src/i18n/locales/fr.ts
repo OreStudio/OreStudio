@@ -7247,7 +7247,8 @@ const fr: SourceCatalogue = {
             date: 'Date',
             time: 'Heure',
             timezone: 'Fuseau horaire',
-            timezoneHint: 'L’horloge du centre, pour que l’instant dise de quelle clôture il s’agit.',
+            timezoneHint:
+                'L’horloge du centre, pour que l’instant dise de quelle clôture il s’agit.',
             scope: 'Portée',
             scopeHint: 'Le code qu’une personne cite dans le libellé, tel que ACME-LONDON.',
             centre: 'Centre de taux',
@@ -7274,8 +7275,7 @@ const fr: SourceCatalogue = {
             gapLead:
                 'Un écart arrête la presse. Un décideur serait invité à signer un corps qui ne satisfait pas la définition : la tentative est donc gardée comme brouillon et la prise reprend une fois les écarts fermés.',
             remedy: 'Ce qui le ferme',
-            noGaps:
-                'Chaque partie du corps est fermée : {deals} transactions à l’instant, {sets} ensembles publiés en vigueur. La prise lève l’autorisation que son type nomme, là où il en nomme une.',
+            noGaps: 'Chaque partie du corps est fermée : {deals} transactions à l’instant, {sets} ensembles publiés en vigueur. La prise lève l’autorisation que son type nomme, là où il en nomme une.',
             toReview: 'Revoir le corps',
             reviewTitle: 'La revue',
             reviewLead:

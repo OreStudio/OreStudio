@@ -149,7 +149,7 @@ function Rail({
 }
 
 /** What the server answered about the body, part by part. */
-function BodyTable({ answer }: { readonly answer: CutTake }): ReactNode {
+export function BodyTable({ answer }: { readonly answer: CutTake }): ReactNode {
     const { t } = useTranslation();
     return (
         <section className="rounded-md border border-line bg-surface-raised p-4">
@@ -185,7 +185,9 @@ function BodyTable({ answer }: { readonly answer: CutTake }): ReactNode {
                             </td>
                             <td className="py-1 font-mono text-xs break-all">
                                 {part.reference === '' ? (
-                                    <span className="text-ink-faint">{t('cuts.take.noReference')}</span>
+                                    <span className="text-ink-faint">
+                                        {t('cuts.take.noReference')}
+                                    </span>
                                 ) : (
                                     part.reference
                                 )}
@@ -199,7 +201,7 @@ function BodyTable({ answer }: { readonly answer: CutTake }): ReactNode {
 }
 
 /** The parts the body could not close, with what closes each one. */
-function GapTable({ answer }: { readonly answer: CutTake }): ReactNode {
+export function GapTable({ answer }: { readonly answer: CutTake }): ReactNode {
     const { t } = useTranslation();
     if (answer.gaps.length === 0) {
         return (
@@ -245,12 +247,14 @@ function GapTable({ answer }: { readonly answer: CutTake }): ReactNode {
 }
 
 /** What the press did, in the shape the kind decides it takes. */
-function PressResult({ answer }: { readonly answer: CutTake }): ReactNode {
+export function PressResult({ answer }: { readonly answer: CutTake }): ReactNode {
     const { t } = useTranslation();
     if (answer.gaps.length > 0) {
         return (
             <div className="space-y-3">
-                <Notice tone="warn">{t('cuts.take.savedDraft', { count: String(answer.gaps.length) })}</Notice>
+                <Notice tone="warn">
+                    {t('cuts.take.savedDraft', { count: String(answer.gaps.length) })}
+                </Notice>
                 <Link to={cutPath(answer.cutId)} className="text-sm text-accent">
                     {answer.cutLabel}
                 </Link>
@@ -390,8 +394,12 @@ export function TakeCutPage(): ReactNode {
                                 <th className="py-1 pr-3 font-medium">{t('cuts.columns.kind')}</th>
                                 <th className="py-1 pr-3 font-medium">{t('cuts.take.family')}</th>
                                 <th className="py-1 pr-3 font-medium">{t('cuts.take.basis')}</th>
-                                <th className="py-1 pr-3 font-medium">{t('cuts.take.retentionShort')}</th>
-                                <th className="py-1 font-medium">{t('cuts.take.indicativeShort')}</th>
+                                <th className="py-1 pr-3 font-medium">
+                                    {t('cuts.take.retentionShort')}
+                                </th>
+                                <th className="py-1 font-medium">
+                                    {t('cuts.take.indicativeShort')}
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -493,7 +501,9 @@ export function TakeCutPage(): ReactNode {
                     <div className="text-sm text-ink-muted">
                         {t('cuts.take.label')}{' '}
                         <span className="font-mono text-xs">
-                            {kindCode === '' ? t('cuts.take.labelPending') : `${kindCode}.${scopeCode === '' ? '…' : scopeCode}.${date}`}
+                            {kindCode === ''
+                                ? t('cuts.take.labelPending')
+                                : `${kindCode}.${scopeCode === '' ? '…' : scopeCode}.${date}`}
                         </span>
                     </div>
                     {chosen !== undefined && (
@@ -547,10 +557,7 @@ export function TakeCutPage(): ReactNode {
                             />
                             <Line label={t('cuts.columns.scope')} value={scopeCode} />
                             <Line label={t('cuts.columns.centre')} value={centreCode} />
-                            <Line
-                                label={t('cuts.take.deals')}
-                                value={String(answer.dealCount)}
-                            />
+                            <Line label={t('cuts.take.deals')} value={String(answer.dealCount)} />
                             <Line
                                 label={t('cuts.take.sets')}
                                 value={String(answer.marketDataSetCount)}
@@ -559,10 +566,7 @@ export function TakeCutPage(): ReactNode {
                                 label={t('cuts.take.referenceData')}
                                 value={answer.referenceDataVersion}
                             />
-                            <Line
-                                label={t('cuts.take.engine')}
-                                value={answer.engineVersion}
-                            />
+                            <Line label={t('cuts.take.engine')} value={answer.engineVersion} />
                             <Line
                                 label={t('cuts.take.codeVersion')}
                                 value={
@@ -572,7 +576,9 @@ export function TakeCutPage(): ReactNode {
                                 }
                             />
                         </dl>
-                        <p className="mt-3 text-xs text-ink-muted">{t('cuts.take.reviewSentences')}</p>
+                        <p className="mt-3 text-xs text-ink-muted">
+                            {t('cuts.take.reviewSentences')}
+                        </p>
                     </section>
                     <div className="flex flex-wrap items-center justify-between gap-2">
                         <Button variant="secondary" onClick={() => setStep('body')}>

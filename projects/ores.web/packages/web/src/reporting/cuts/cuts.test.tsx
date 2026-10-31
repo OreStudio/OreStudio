@@ -30,6 +30,7 @@ import type {
     CutKindRow,
     CutRecord,
     CutRow,
+    CutTake,
 } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../../i18n/Provider.js';
 import { FIRST_PAGE, pageKey } from '../../refdata/RecordList.js';
@@ -39,6 +40,7 @@ import { CutPage } from './CutPage.js';
 import { CutTypePage, formRowOf, specsOf } from './CutTypePage.js';
 import { CutTypesPage } from './CutTypesPage.js';
 import { CutsPage, PageSummary } from './CutsPage.js';
+import { BodyTable, GapTable, PressResult, TakeCutPage } from './TakeCutPage.js';
 import { frequencyOf, groupsOf, useGroupHeading } from './shared.js';
 
 /**
@@ -245,6 +247,16 @@ function cutRecord(over: Partial<CutRecord> = {}): CutRecord {
         kind: KIND,
         gaps: [],
         runCount: 4,
+        detail: {
+            id: '8f2a4c19-0000-4000-8000-000000000004',
+            requestId: '8f2a4c19-0000-4000-8000-000000000003',
+            cutId: AUTHORISED.id,
+            dealCount: 1284,
+            marketDataSetCount: 7,
+            gapCount: 0,
+            appliedBy: '',
+            appliedAt: null,
+        },
         ...over,
     };
 }
@@ -261,6 +273,7 @@ function render(path: string, seed: (client: QueryClient) => void): string {
                         <Route path="/refdata/cut-types/:code" element={<CutTypePage />} />
                         <Route path="/reporting/cuts" element={<CutsPage />} />
                         <Route path="/reporting/cuts/:id" element={<CutPage />} />
+                        <Route path="/reporting/cuts/take" element={<TakeCutPage />} />
                     </Routes>
                 </MemoryRouter>
             </TranslationProvider>
@@ -626,15 +639,222 @@ describe('the cuts list', () => {
         expect(html).toContain('placeholder="Search…"');
     });
 
-    it('names the four things it does not offer', () => {
+    it('names the two things it still does not offer', () => {
         const html = render('/reporting/cuts', (client) => {
             seedCuts(client, [AUTHORISED]);
         });
         const page = textOf(html);
-        expect(page).toContain('the take flow');
-        expect(page).toContain('the authorisation the take raises');
+        // The take is here now, so the note names what is left and not it.
+        expect(page).toContain('it is taken from here');
         expect(page).toContain('the report’s selection of this cut');
         expect(page).toContain('the LIVE mint');
+    });
+
+    it('offers the take only to a person who may take a cut', () => {
+        const offered = render('/reporting/cuts', (client) => {
+            seedCuts(client, [AUTHORISED]);
+            client.setQueryData(
+                ['my-access'],
+                access(['reporting::cuts:read', 'reporting::cuts:take']),
+            );
+        });
+        expect(textOf(offered)).toContain('Take a cut');
+
+        const refused = render('/reporting/cuts', (client) => {
+            seedCuts(client, [AUTHORISED]);
+            client.setQueryData(['my-access'], access(['reporting::cuts:read']));
+        });
+        expect(textOf(refused)).not.toContain('Take a cut');
+    });
+});
+
+describe('the take flow', () => {
+    /** The kinds and their choices, as the flow's first step reads them. */
+    function seedTake(client: QueryClient): void {
+        client.setQueryData(['cuts', 'types', 'take'], {
+            rows: [KIND, { ...KIND, code: 'LIVE', name: 'Live cut', familyCode: 'consumer' }],
+            total: 2,
+            partial: false,
+        });
+        client.setQueryData(['cuts', 'take-choices'], {
+            families: [{ code: 'end_of_day', name: 'End of day' }],
+            resolutionRules: [{ code: 'same_day_close', name: 'The close of the day' }],
+            approvalKinds: [
+                { code: 'reporting.eod_cut_authorisation', name: 'End of day cut authorisation' },
+            ],
+            retentionDestinations: ['cold'],
+            businessCentres: [
+                { code: 'GBLO', name: 'London' },
+                { code: 'USNY', name: 'New York' },
+            ],
+        });
+        client.setQueryData(
+            ['my-access'],
+            access(['reporting::cuts:read', 'reporting::cuts:take']),
+        );
+    }
+
+    it('offers the kinds a person takes, and says why LIVE is not one', () => {
+        const html = render('/reporting/cuts/take', seedTake);
+        const page = textOf(html);
+        expect(page).toContain('The kind, the instant and the scope');
+        expect(page).toContain('End of day');
+        expect(page).toContain('inbox::approvals:decide_finance');
+        // LIVE's instant comes from the run that consumes it, so the step says
+        // so instead of offering a take nobody presses.
+        expect(page).toContain('LIVE is not offered here');
+        expect(page).toContain('Rates centre');
+        expect(page).not.toContain('Live cut');
+    });
+
+    it('draws every part with the state it reached, and the gaps beneath them', () => {
+        const answer: CutTake = {
+            cutId: '',
+            cutLabel: 'EOD.ACME-LONDON.2026-10-06',
+            cutState: '',
+            requiresAuthorisation: true,
+            outputIsIndicative: false,
+            retentionMonths: 25,
+            retentionDestinationCode: 'cold',
+            approvalRequestId: '',
+            approvalKindCode: 'reporting.eod_cut_authorisation',
+            approvalKindName: 'End of day cut authorisation',
+            decidePermissionCode: 'inbox::approvals:decide_finance',
+            parts: [
+                {
+                    partCode: 'kind',
+                    state: 'closed',
+                    summary: 'EOD · End of day cut',
+                    reference: '',
+                    item: '',
+                    reason: '',
+                    remedy: '',
+                    snapshotNote: 'kept 25 months in the cold tier',
+                },
+                {
+                    partCode: 'deal_population',
+                    state: 'gapped',
+                    summary: '',
+                    reference: '',
+                    item: 'the deal population',
+                    reason: 'The store holds no deal at the instant.',
+                    remedy: 'Correct the deal population.',
+                    snapshotNote: '',
+                },
+            ],
+            gaps: [
+                {
+                    id: '8f2a4c19-0000-4000-8000-000000000005',
+                    partCode: 'deal_population',
+                    item: 'the deal population',
+                    reason: 'The store holds no deal at the instant.',
+                },
+            ],
+            dealCount: 0,
+            marketDataSetCount: 7,
+            referenceDataVersion: '',
+            engineVersion: 'ORE 1.8.15',
+            codeVersion: '',
+            refusal: '',
+        };
+        const page = textOf(
+            renderToStaticMarkup(
+                <TranslationProvider>
+                    <BodyTable answer={answer} />
+                    <GapTable answer={answer} />
+                </TranslationProvider>,
+            ),
+        );
+        expect(page).toContain('kept 25 months in the cold tier');
+        expect(page).toContain('Closed');
+        expect(page).toContain('Gap');
+        expect(page).toContain('the deal population');
+        // The remedy is the flow's own: the gap row says what closes it.
+        expect(page).toContain('Correct the deal population.');
+    });
+
+    it('says what the press left, whether it raised a request or not', () => {
+        const raised = textOf(
+            renderToStaticMarkup(
+                <TranslationProvider>
+                    <MemoryRouter>
+                        <PressResult
+                            answer={
+                                {
+                                    cutId: AUTHORISED.id,
+                                    cutLabel: 'EOD.ACME-LONDON.2026-10-06',
+                                    cutState: 'taken',
+                                    requiresAuthorisation: true,
+                                    outputIsIndicative: false,
+                                    retentionMonths: 25,
+                                    retentionDestinationCode: 'cold',
+                                    approvalRequestId: '8f2a4c19-0000-4000-8000-000000000003',
+                                    approvalKindCode: 'reporting.eod_cut_authorisation',
+                                    approvalKindName: 'End of day cut authorisation',
+                                    decidePermissionCode: 'inbox::approvals:decide_finance',
+                                    parts: [],
+                                    gaps: [],
+                                    dealCount: 1284,
+                                    marketDataSetCount: 7,
+                                    referenceDataVersion: '',
+                                    engineVersion: '',
+                                    codeVersion: '',
+                                    refusal: '',
+                                } satisfies CutTake
+                            }
+                        />
+                    </MemoryRouter>
+                </TranslationProvider>,
+            ),
+        );
+        expect(raised).toContain('is frozen, and the request is with the deciders');
+        expect(raised).toContain('inbox::approvals:decide_finance');
+        expect(raised).toContain(
+            'the inbox refuses a decision by the person who raised the request',
+        );
+
+        const draft = textOf(
+            renderToStaticMarkup(
+                <TranslationProvider>
+                    <MemoryRouter>
+                        <PressResult
+                            answer={
+                                {
+                                    cutId: AUTHORISED.id,
+                                    cutLabel: 'EOD.ACME-LONDON.2026-10-06',
+                                    cutState: 'incomplete',
+                                    requiresAuthorisation: true,
+                                    outputIsIndicative: false,
+                                    retentionMonths: 25,
+                                    retentionDestinationCode: 'cold',
+                                    approvalRequestId: '',
+                                    approvalKindCode: 'reporting.eod_cut_authorisation',
+                                    approvalKindName: 'End of day cut authorisation',
+                                    decidePermissionCode: 'inbox::approvals:decide_finance',
+                                    parts: [],
+                                    gaps: [
+                                        {
+                                            id: '8f2a4c19-0000-4000-8000-000000000005',
+                                            partCode: 'deal_population',
+                                            item: 'the deal population',
+                                            reason: 'The store holds no deal at the instant.',
+                                        },
+                                    ],
+                                    dealCount: 0,
+                                    marketDataSetCount: 7,
+                                    referenceDataVersion: '',
+                                    engineVersion: '',
+                                    codeVersion: '',
+                                    refusal: '',
+                                } satisfies CutTake
+                            }
+                        />
+                    </MemoryRouter>
+                </TranslationProvider>,
+            ),
+        );
+        expect(draft).toContain('saved as a draft with 1 gap(s)');
+        expect(draft).toContain('No approval request was raised');
     });
 });
 
@@ -719,9 +939,12 @@ describe('one cut', () => {
         expect(page).toContain('End of day cut authorisation');
         expect(page).toContain('inbox::approvals:decide_finance');
         expect(page).toContain('Four eyes is the inbox’s rule');
-        expect(page).toContain(
-            'Raising and deciding an authorisation from this screen is not offered yet',
-        );
+        // The subject the request is about, read from the detail row the take
+        // wrote, so a decider reads the counts of the body it signs.
+        expect(page).toContain('The body the request names');
+        expect(page).toContain('1284');
+        expect(page).toContain('Published sets in use');
+        expect(page).not.toContain('Raising and deciding an authorisation');
     });
 
     it('says a cut whose kind requires no authorisation was usable when taken', () => {

@@ -7195,8 +7195,7 @@ const pt: SourceCatalogue = {
             scope: 'Âmbito',
             scopeHint: 'O código que uma pessoa cita no rótulo, tal como ACME-LONDON.',
             centre: 'Centro de taxas',
-            centreHint:
-                'O centro contra cujos dados de mercado os livros do âmbito se reavaliam.',
+            centreHint: 'O centro contra cujos dados de mercado os livros do âmbito se reavaliam.',
             chooseCentre: 'Escolher um centro',
             reason: 'Porquê',
             reasonHint: 'A razão que um decisor lê. Uma tomada de um tipo assinado exige uma.',
@@ -7217,8 +7216,7 @@ const pt: SourceCatalogue = {
             gapLead:
                 'Uma lacuna trava a prensa. Um decisor seria convidado a assinar um corpo que não cumpre a definição, pelo que a tentativa fica como rascunho e a tomada retoma quando as lacunas fecharem.',
             remedy: 'O que a fecha',
-            noGaps:
-                'Todas as partes do corpo fecharam: {deals} negócios no instante, {sets} conjuntos publicados em uso. A tomada levanta a autorização que o seu tipo nomeia, onde nomeia uma.',
+            noGaps: 'Todas as partes do corpo fecharam: {deals} negócios no instante, {sets} conjuntos publicados em uso. A tomada levanta a autorização que o seu tipo nomeia, onde nomeia uma.',
             toReview: 'Rever o corpo',
             reviewTitle: 'A revisão',
             reviewLead:

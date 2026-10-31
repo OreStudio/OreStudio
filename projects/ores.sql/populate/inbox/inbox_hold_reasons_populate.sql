@@ -23,9 +23,11 @@
  *
  * Seeds the reasons a decider parks a request with. The list is the
  * operational authorisation queue's: the questions an operator waits on, the
- * handover markers between regional teams the queue doubles as a follow-the-sun
- * workflow for, and the four exception flags that cause a hold. This script is
- * idempotent.
+ * four exception flags that cause a hold, and, last, the handover markers
+ * between regional teams the queue doubles as a follow-the-sun workflow for.
+ * The handover markers come last because a handover is a different act from a
+ * hold: it moves the request to another desk rather than parking it here. This
+ * script is idempotent.
  */
 
 \echo '--- Hold Reasons ---'
@@ -46,33 +48,33 @@ insert into ores_inbox_hold_reasons_tbl (
      'Awaiting an amendment',
      'The operator waits on an amendment to the terms before answering', 30,
      current_user, current_user, 'system.initial_load', 'Initial population of hold reasons'),
-    (ores_utility_system_tenant_id_fn(), 'handover.asia_to_authorise', 0,
-     'Asia to authorise',
-     'The request is handed to Asia, which answers it in its own session', 40,
-     current_user, current_user, 'system.initial_load', 'Initial population of hold reasons'),
-    (ores_utility_system_tenant_id_fn(), 'handover.london_to_follow', 0,
-     'London to follow',
-     'The request is handed to London, which follows it up', 50,
-     current_user, current_user, 'system.initial_load', 'Initial population of hold reasons'),
-    (ores_utility_system_tenant_id_fn(), 'handover.new_york_order', 0,
-     'New York order',
-     'The request is handed to New York, which answers it in the order it arrived', 60,
-     current_user, current_user, 'system.initial_load', 'Initial population of hold reasons'),
     (ores_utility_system_tenant_id_fn(), 'exception.late', 0,
      'Late',
-     'The deal was saved or executed past a cut-off', 70,
+     'The deal was saved or executed past a cut-off', 40,
      current_user, current_user, 'system.initial_load', 'Initial population of hold reasons'),
     (ores_utility_system_tenant_id_fn(), 'exception.off_premises', 0,
      'Off-premises',
-     'The deal was executed somewhere other than the trader agreed location', 80,
+     'The deal was executed somewhere other than the trader agreed location', 50,
      current_user, current_user, 'system.initial_load', 'Initial population of hold reasons'),
     (ores_utility_system_tenant_id_fn(), 'exception.out_of_hours', 0,
      'Out of hours',
-     'The deal was executed outside regional business hours, at a weekend or on a public holiday', 90,
+     'The deal was executed outside regional business hours, at a weekend or on a public holiday', 60,
      current_user, current_user, 'system.initial_load', 'Initial population of hold reasons'),
     (ores_utility_system_tenant_id_fn(), 'exception.unconfirmed', 0,
      'Unconfirmed',
-     'The deal is not confirmed, or was confirmed too late', 100,
+     'The deal is not confirmed, or was confirmed too late', 70,
+     current_user, current_user, 'system.initial_load', 'Initial population of hold reasons'),
+    (ores_utility_system_tenant_id_fn(), 'handover.asia_to_authorise', 0,
+     'Asia to authorise',
+     'The request is handed to Asia, which answers it in its own session', 80,
+     current_user, current_user, 'system.initial_load', 'Initial population of hold reasons'),
+    (ores_utility_system_tenant_id_fn(), 'handover.london_to_follow', 0,
+     'London to follow',
+     'The request is handed to London, which follows it up', 90,
+     current_user, current_user, 'system.initial_load', 'Initial population of hold reasons'),
+    (ores_utility_system_tenant_id_fn(), 'handover.new_york_order', 0,
+     'New York order',
+     'The request is handed to New York, which answers it in the order it arrived', 100,
      current_user, current_user, 'system.initial_load', 'Initial population of hold reasons')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

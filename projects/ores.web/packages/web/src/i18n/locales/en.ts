@@ -1598,6 +1598,80 @@ export const en: SourceCatalogue = {
         },
     },
     operations: {
+        authorisationQueue: {
+            title: 'Operational authorisation queue',
+            allStates: 'All states',
+            classes: {
+                all: 'All deals',
+                flow: 'Flow',
+                nonFlow: 'Non-flow',
+            },
+            groups: {
+                awaiting: 'Awaiting authorisation',
+                changed: 'Changed since requested',
+                held: 'Held over',
+                authorised: 'Authorised',
+                denied: 'Denied',
+                closed: 'Closed',
+            },
+            state: {
+                awaiting: 'Awaiting',
+                changed: 'Changed',
+                held: 'Held over',
+                authorised: 'Authorised',
+                applyFailed: 'Approved, not applied',
+                denied: 'Denied',
+                withdrawn: 'Withdrawn',
+                expired: 'Expired',
+                unknown: 'Awaiting',
+            },
+            columns: {
+                deal: 'Deal',
+                instrument: 'Instrument',
+                counterparty: 'Counterparty',
+                book: 'Book',
+                tradeDate: 'Trade date',
+                raised: 'Raised',
+            },
+            deal: {
+                title: 'The deal',
+                reference: 'Deal',
+                type: 'Type',
+                counterparty: 'Counterparty',
+                book: 'Book',
+                tradeDate: 'Trade date',
+                status: 'Status',
+                statusUnknown: 'unknown',
+            },
+            request: {
+                title: 'The request',
+                state: 'State',
+                raisedBy: 'Raised by',
+                raisedAt: 'Raised at',
+                reason: 'Reason',
+            },
+            decision: {
+                title: 'The decision',
+                decided: 'This deal is decided. Undoing a decision is not offered here yet.',
+                denied: 'Authorisation is refused: a denied deal cannot become authorised. Undoing the denial is not offered here yet, and the fix is a new version raised for authorisation.',
+                comment: 'Comment, required',
+                commentPlaceholder: 'What did you check, and what did you find?',
+                holdReason: 'Hold reason, required to hold over',
+                chooseReason: 'Choose a reason',
+                authorise: 'Authorise',
+                hold: 'Hold over',
+                deny: 'Deny',
+            },
+            reading: 'Reading the request…',
+            readWindow: 'This screen reads the newest {shown} of {waiting} requests waiting.',
+            notFound:
+                'No request {requestId} waits in this queue. It may have been decided and aged out of the answered tail.',
+            backToQueue: 'Back to the queue',
+            pageTitle: 'Authorisation · {reference}',
+            pageDescription: '{type}, raised by the operations queue',
+            changedNotice:
+                'The deal moved after this request was raised: version {tradeVersion} now, against {requestTradeVersion} when it arrived. The row is not locked, and a decision on the version you have read is the decision recorded.',
+        },
         feeds: {
             title: 'Market data feeds',
             description:
@@ -1714,6 +1788,9 @@ export const en: SourceCatalogue = {
             },
         },
         screens: {
+            authorisationQueue: 'Operational authorisation queue',
+            authorisationQueueBody:
+                'The deals that await Operations, read by how much work they are and by the state their authorisation is in.',
             feeds: 'Market data feeds',
             feedsBody:
                 'Every feed the market data service runs, the state of its adapter, and what it serves and refuses.',

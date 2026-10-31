@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-authorisation-queue-screen
-#+pr: 4245
+#+pr: 4251
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -28,10 +28,10 @@ Build the queue screen that the Operational authorisation queue page specifies: 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Prototype drawn, awaiting sign-off.    |
-| Waiting on   | Nothing.                               |
-| Next         | Settle the variant, then build it.     |
-| Last touched | 2026-10-21                               |
+| Now          | Built, and the review's first three passes are closed. |
+| Waiting on   | Marco's look at the UI.                               |
+| Next         | Merge when he says so.                               |
+| Last touched | 2026-10-31                               |
 
 * Acceptance
 
@@ -84,6 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4251][#4251]] | [web] Work the authorisation queue on the Operations screen |
 | [[https://github.com/OreStudio/OreStudio/pull/4245][#4245]] | [prototype] Draw the authorisation queue two ways |
 
 * Review
@@ -92,21 +93,80 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The queue's read | 5 cases: one row per authorisation request with its kind, the other kinds dropped; book and counterparty named with their ids; the type's name from the catalogue; class from the type, with a code the catalogue does not hold read as non-flow; a deal that moved marked changed | =npm test --workspace @ores/bff -- --run src/queue.test.ts= | this branch |
+| The queue's grouping | 6 cases: state to group over the seven states the inbox holds, the three endings that are neither a yes nor a no read as closed, an unknown state read as awaiting, a moved deal drawn as a change, the figures per class, and the narrowing newest first | =npm test --workspace @ores/web -- --run src/operations/authorisationQueue.test.ts= | this branch |
+| The labels | The three catalogues hold the same keys once the screen's strings moved out of the code | =npm test --workspace @ores/web -- --run src/i18n= | this branch |
+| The suites | 2376 web cases in 189 files, 1184 BFF cases in 86 files, all passing | =npm test --workspace @ores/web=, =npm test --workspace @ores/bff= | this branch |
+| The route over HTTP | =GET /api/queue/authorisations= answers a request raised against a live trade with its reference, book, counterparty, class =non-flow= and versions 8/8 | curl against 127.0.0.1:20802 with a tenant_admin session | this branch |
+| A decision | =POST /api/requests/:id/decision= answers 204 and the row moves to the answered tail as =approved=, request version 2 | curl, same session | this branch |
+
 * Result
 
-The prototype is drawn and the task is not closed: this unit was the drawing,
-and the screen follows once a variant is chosen.
+The prototype and the screen are both built, and the screen is the rail variant's
+content with the rail's divisions moved to buttons above the list: the class as a
+segmented control and the state as toggle buttons, each carrying its figure, with
+the deal opening its own page rather than a pane beside the list.
 
-[[proj:doc/prototypes/operations/operational-authorisation-queue.org][Work the authorisation queue]]
-puts the queue's two divisions side by side — class and state as a rail, with
-the deal in a fixed pane, or as tabs over a full-width table with the deal in a
-drawer — over mock data. Both variants hold what the knowledge page states: a
-deal not exercised and close to expiry is pinned in red with a banner, every
-decision needs a comment and a hold needs a reason from the fixed list, an
-amendment marks the fields that changed and carries the operational error flag,
-a new version is announced without locking the row, and a denied deal offers
-only its undo.
+* The screen
 
-What it does not settle, and what the build waits for: which variant, whether
-the queue is its own screen or a tab of Operations, and the two reports the
-knowledge page names.
+[[proj:projects/ores.web/packages/web/src/operations/AuthorisationQueuePage.tsx][AuthorisationQueuePage]]
+sits at =/operations/authorisation-queue= and is offered as a card in the
+Operations area, and in Trading beside the blotter. The buttons carry the class
+and the state with a figure on each; the table states the deal's reference, its
+type and class, the counterparty, the book, the trade date and when it was
+raised; opening a row leaves the queue for the request's own page, where the deal
+is read and decided. A row is tinted and edged in its state's colour, so a queue
+of forty deals reads by colour before it is read by word.
+
+The read behind it, =GET /api/queue/authorisations=, joins each request the person
+may decide to the trade it names and states the book, the counterparty, the
+deal's status, its type's name from the catalogue and the version it is at now.
+The class is derived from the trade type rather than the asset class, because the
+queue divides by how much work a deal is: a plain swap is flow and a package is
+not. The eight codes the catalogue actually holds are the flow set; a code the
+catalogue does not hold reads as non-flow, which is the safe direction.
+
+A decision carries a comment, which the page requires before any button is
+enabled, and a hold additionally names a reason from the lookup. Whether a hold
+is offered at all is the kind's own rule, which the row carries. A deal that
+moved after its request was raised is drawn in its own group and says so on its
+page, and the row stays open: nothing takes a lease on a deal. A denied request
+offers no decision, because a denial cannot become an authorisation.
+
+* What the walk proved, and what it did not
+
+A request raised against a live bond trade was read through the route and decided
+through the same call: the row arrived with the deal's own reference, book,
+counterparty and class, and after =approve= it left the open queue and appeared
+in the answered tail as =approved= at request version 2.
+
+No browser was available to this session, so the screen was not drawn on a
+screen: the read, the decision and the grouping are proved, the pixels are not.
+The grouping it depends on is tested as a function, and the label set is tested
+for parity across the three languages.
+
+* What is not offered yet
+
+Three things the signed-off prototype draws need data the read does not carry,
+and each is recorded rather than half-drawn:
+
+- [[id:C3830177-46FC-46A1-83A0-1660C4742E82][Finish the authorisation queue's specification]] — the expiry a deal is
+  pinned by, the operational error flag, the fields an amendment changed with
+  their previous values, the legs of a package, and the person and time the row
+  last moved.
+- [[id:8276D0CF-A711-4FED-B073-574821E13167][Page the authorisation queue and count it on the server]] — the screen
+  reads a window of 250 requests and says when the store holds more, because the
+  inbox does not yet answer the counts each button states.
+- [[id:73921707-CE11-41AD-923D-ED5B36D7FF09][Classify a product type as flow or non-flow]] — the division is a set of
+  trade type codes in the BFF today; it belongs on the trade type, configured by
+  a tenant and overridden by a party.
+
+Undoing a decision is not offered either: the design calls for an un-authorise
+carrying a reason, and the inbox's four decisions do not include it, so an
+authorised or denied row says so rather than drawing a button that would fail.
+The two reports the knowledge page names -- time held, and what stayed overnight
+-- are absent.

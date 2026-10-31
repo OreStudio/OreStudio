@@ -1,0 +1,226 @@
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+ * Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ *
+ */
+
+import { z } from 'zod';
+import { request } from './transport.js';
+
+/**
+ * The Operations queue: the authorisation requests a person may decide, each
+ * with the deal it names.
+ *
+ * The request is the unit of work and the deal is what the person reads. The
+ * server joins them, because the inbox states a request and never what it is
+ * about; the screen only divides the rows it is given.
+ */
+
+/** The state a request is in, as the inbox spells it. */
+export type QueueState = 'waiting' | 'held' | 'approved' | 'refused' | 'cancelled' | string;
+
+/**
+ * How much work a deal is.
+ *
+ * The division is the queue's own and not the deal's asset class: a plain swap
+ * and a package can be the same class and are not the same work.
+ */
+export type QueueClass = 'flow' | 'non-flow';
+
+export interface QueueRow {
+    readonly requestId: string;
+    readonly requestVersion: number;
+    /** The kind of request, which is what its rules are stated by. */
+    readonly kindCode: string;
+    readonly stateCode: string;
+    readonly requestedBy: string;
+    readonly requestedAt: string;
+    readonly reason: string;
+    readonly tradeId: string;
+    /** The trade's own reference, which is what a person recognises it by. */
+    readonly reference: string;
+    readonly classCode: QueueClass;
+    /** The entities the row links to: the book and the counterparty it faces. */
+    readonly bookId: string;
+    readonly counterpartyId: string;
+    readonly tradeType: string;
+    /** The type's own name, as the catalogue states it. */
+    readonly tradeTypeName: string;
+    readonly book: string;
+    readonly counterparty: string;
+    readonly tradeDate: string;
+    readonly status: string;
+    /** The version the request was raised against, and the version now. */
+    readonly requestTradeVersion: number;
+    readonly tradeVersion: number;
+    /** The deal moved after its request was raised. The row is still open. */
+    readonly changed: boolean;
+}
+
+const rowSchema = z.object({
+    requestId: z.string().default(''),
+    requestVersion: z.int().nonnegative().default(0),
+    kindCode: z.string().default(''),
+    stateCode: z.string().default(''),
+    requestedBy: z.string().default(''),
+    requestedAt: z.string().default(''),
+    reason: z.string().default(''),
+    tradeId: z.string().default(''),
+    reference: z.string().default(''),
+    classCode: z.enum(['flow', 'non-flow']).default('non-flow'),
+    bookId: z.string().default(''),
+    counterpartyId: z.string().default(''),
+    tradeType: z.string().default(''),
+    tradeTypeName: z.string().default(''),
+    book: z.string().default(''),
+    counterparty: z.string().default(''),
+    tradeDate: z.string().default(''),
+    status: z.string().default(''),
+    requestTradeVersion: z.int().nonnegative().default(0),
+    tradeVersion: z.int().nonnegative().default(0),
+    changed: z.boolean().default(false),
+});
+
+const pageSchema = z.object({
+    items: z.array(rowSchema).default([]),
+    answered: z.array(rowSchema).default([]),
+    total: z.int().nonnegative().default(0),
+});
+
+/** The states the queue groups by, in the order a person works them. */
+export const QUEUE_GROUPS = [
+    'awaiting',
+    'changed',
+    'held',
+    'authorised',
+    'denied',
+    'closed',
+] as const;
+export type QueueGroup = (typeof QUEUE_GROUPS)[number] | 'all';
+
+/**
+ * Every request state the inbox holds, read into the group a person works it in.
+ *
+ * The states are the ones `ores_inbox_approval_request_states_tbl` carries, and
+ * the list is exhaustive on purpose: a state nobody has named reads as awaiting,
+ * which is the direction that keeps a deal in front of a person rather than
+ * quietly filing it.
+ *
+ * `closed` is where a request ends without the deal being authorised or denied:
+ * the asker took it back, nobody decided before it expired, or it was approved
+ * and the owning component could not apply it. None of the three is a denial,
+ * and drawing one as a denial would put a deal in the queue's history that
+ * nobody refused.
+ */
+const GROUP_OF_STATE: Readonly<Record<string, QueueGroup>> = {
+    waiting: 'awaiting',
+    held: 'held',
+    approved: 'authorised',
+    apply_failed: 'closed',
+    refused: 'denied',
+    withdrawn: 'closed',
+    expired: 'closed',
+};
+
+/**
+ * Which group a row is drawn in.
+ *
+ * A deal that moved after its request was raised is drawn as a change, because
+ * that is the work it is now: the person re-reads the deal rather than deciding
+ * it for the first time. Everything else follows its request's state.
+ */
+export function groupOf(row: QueueRow): QueueGroup {
+    if (row.changed) return 'changed';
+    return GROUP_OF_STATE[row.stateCode] ?? 'awaiting';
+}
+
+/**
+ * The rows of one class in the states a person asked for, newest request first.
+ *
+ * The states are a choice rather than a mode: a person working the queue wants
+ * the held deals and the changes at once and not the waiting ones. An empty
+ * choice draws nothing, which is what a person who unticked every box asked
+ * for, and `all` is stated by the screen as every group.
+ */
+export function rowsOf(
+    rows: readonly QueueRow[],
+    klass: QueueClass | 'all',
+    states: readonly QueueGroup[],
+): readonly QueueRow[] {
+    const wanted = new Set(states);
+    return rows
+        .filter((row) => (klass === 'all' || row.classCode === klass) && wanted.has(groupOf(row)))
+        .slice()
+        .sort((left, right) => right.requestedAt.localeCompare(left.requestedAt));
+}
+
+/** How many rows one class holds in each group, for the rail's figures. */
+export function countsOf(
+    rows: readonly QueueRow[],
+    klass: QueueClass | 'all',
+): Readonly<Record<QueueGroup, number>> {
+    const counts = {
+        awaiting: 0,
+        held: 0,
+        changed: 0,
+        authorised: 0,
+        denied: 0,
+        closed: 0,
+        all: 0,
+    } as Record<QueueGroup, number>;
+    for (const row of rows) {
+        if (klass !== 'all' && row.classCode !== klass) continue;
+        counts.all += 1;
+        counts[groupOf(row)] += 1;
+    }
+    return counts;
+}
+
+/**
+ * How many requests the queue reads in one call.
+ *
+ * The screen filters and counts across the rows it holds, so it reads a window
+ * rather than a page. The window is stated here and the read says when the
+ * store holds more, because a queue that quietly stops at a hundred reads as a
+ * queue that emptied.
+ *
+ * Paging the watch itself needs the count of each group from the server, which
+ * the inbox does not answer yet: `doc/agile/product_backlog/inbox/page_the_authorisation_queue.org`.
+ */
+export const QUEUE_READ_LIMIT = 250;
+
+export const authorisationQueue = {
+    /**
+     * The queue in one read: the requests waiting, the answered tail, and how
+     * many are waiting in all.
+     */
+    async read(): Promise<{
+        readonly items: readonly QueueRow[];
+        readonly answered: readonly QueueRow[];
+        readonly total: number;
+    }> {
+        const params = new URLSearchParams({ offset: '0', limit: String(QUEUE_READ_LIMIT) });
+        return pageSchema.parse(
+            await request(`/api/queue/authorisations?${params.toString()}`, { method: 'GET' }),
+        ) as {
+            readonly items: readonly QueueRow[];
+            readonly answered: readonly QueueRow[];
+            readonly total: number;
+        };
+    },
+};

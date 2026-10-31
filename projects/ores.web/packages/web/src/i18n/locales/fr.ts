@@ -1617,6 +1617,82 @@ const fr: SourceCatalogue = {
         },
     },
     operations: {
+        authorisationQueue: {
+            title: 'File d’autorisation opérationnelle',
+            allStates: 'Tous les états',
+            classes: {
+                all: 'Toutes les opérations',
+                flow: 'Flux',
+                nonFlow: 'Non-flux',
+            },
+            groups: {
+                awaiting: 'En attente d’autorisation',
+                changed: 'Modifié depuis la demande',
+                held: 'Mis en attente',
+                authorised: 'Autorisé',
+                denied: 'Refusé',
+                closed: 'Clos',
+            },
+            state: {
+                awaiting: 'En attente',
+                changed: 'Modifié',
+                held: 'Mis en attente',
+                authorised: 'Autorisé',
+                applyFailed: 'Approuvé, non appliqué',
+                denied: 'Refusé',
+                withdrawn: 'Retiré',
+                expired: 'Expiré',
+                unknown: 'En attente',
+            },
+            columns: {
+                deal: 'Opération',
+                instrument: 'Instrument',
+                counterparty: 'Contrepartie',
+                book: 'Livre',
+                tradeDate: 'Date de négociation',
+                raised: 'Demandé le',
+            },
+            deal: {
+                title: 'L’opération',
+                reference: 'Opération',
+                type: 'Type',
+                counterparty: 'Contrepartie',
+                book: 'Livre',
+                tradeDate: 'Date de négociation',
+                status: 'Statut',
+                statusUnknown: 'inconnu',
+            },
+            request: {
+                title: 'La demande',
+                state: 'État',
+                raisedBy: 'Demandé par',
+                raisedAt: 'Demandé à',
+                reason: 'Motif',
+            },
+            decision: {
+                title: 'La décision',
+                decided:
+                    'Cette opération est décidée. Annuler une décision n’est pas encore proposé ici.',
+                denied: 'L’autorisation est refusée : une opération refusée ne peut pas devenir autorisée. Annuler le refus n’est pas encore proposé ici, et la correction est une nouvelle version soumise à autorisation.',
+                comment: 'Commentaire, obligatoire',
+                commentPlaceholder: 'Qu’avez-vous vérifié, et qu’avez-vous constaté ?',
+                holdReason: 'Motif de mise en attente, obligatoire pour mettre en attente',
+                chooseReason: 'Choisir un motif',
+                authorise: 'Autoriser',
+                hold: 'Mettre en attente',
+                deny: 'Refuser',
+            },
+            reading: 'Lecture de la demande…',
+            readWindow:
+                'Cet écran lit les {shown} demandes les plus récentes sur {waiting} en attente.',
+            notFound:
+                'Aucune demande {requestId} n’attend dans cette file. Elle a peut-être été décidée et est sortie de la fin de file des demandes répondues.',
+            backToQueue: 'Retour à la file',
+            pageTitle: 'Autorisation · {reference}',
+            pageDescription: '{type}, demandé par la file des opérations',
+            changedNotice:
+                'L’opération a changé après la création de cette demande : version {tradeVersion} maintenant, contre {requestTradeVersion} à son arrivée. La ligne n’est pas verrouillée, et une décision sur la version que vous avez lue est la décision enregistrée.',
+        },
         feeds: {
             title: 'Flux de données de marché',
             description:
@@ -1733,6 +1809,9 @@ const fr: SourceCatalogue = {
             },
         },
         screens: {
+            authorisationQueue: 'File d’autorisation opérationnelle',
+            authorisationQueueBody:
+                'Les opérations en attente des opérations de marché, selon la charge de travail et l’état de leur autorisation.',
             feeds: 'Flux de données de marché',
             feedsBody:
                 'Chaque flux que le service de données de marché exécute, l’état de son adaptateur, et ce qu’il sert et refuse.',

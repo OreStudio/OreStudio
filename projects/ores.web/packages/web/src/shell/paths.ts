@@ -54,6 +54,7 @@ export const PATHS = {
     operations: '/operations',
     signIns: '/operations/sign-ins',
     marketDataFeeds: '/operations/market-data-feeds',
+    authorisationQueue: '/operations/authorisation-queue',
     synthetic: '/market-data/synthetic',
     publishedCurves: '/market-data/published-curves',
     curveBlueprints: '/market-data/curve-blueprints',
@@ -171,17 +172,14 @@ export function gridNodePath(hostId: string): string {
     return `/operations/grid/nodes/${encodeURIComponent(hostId)}`;
 }
 
-/**
- * The address of one report definition's page.
- *
- * The definition is named by its id, because its name is not unique: the record
- * is unique on (tenant, name, party), so a person who works in several parties
- * sees several definitions of one name. The id is the primary key, so the
- * address names one record exactly.
- */
 /** The page of one structure, named by its reference so a link carries what a person reads. */
 export function structurePath(reference: string): string {
     return `${PATHS.structures}/${encodeURIComponent(reference)}`;
+}
+
+/** The page of one authorisation request: the deal and the decision it awaits. */
+export function authorisationRequestPath(requestId: string): string {
+    return `${PATHS.authorisationQueue}/${encodeURIComponent(requestId)}`;
 }
 
 /** The page of one trade. */

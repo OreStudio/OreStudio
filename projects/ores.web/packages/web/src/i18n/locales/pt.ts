@@ -1609,6 +1609,81 @@ const pt: SourceCatalogue = {
         },
     },
     operations: {
+        authorisationQueue: {
+            title: 'Fila de autorização operacional',
+            allStates: 'Todos os estados',
+            classes: {
+                all: 'Todas as operações',
+                flow: 'Fluxo',
+                nonFlow: 'Não-fluxo',
+            },
+            groups: {
+                awaiting: 'A aguardar autorização',
+                changed: 'Alterado desde o pedido',
+                held: 'Em espera',
+                authorised: 'Autorizado',
+                denied: 'Recusado',
+                closed: 'Fechado',
+            },
+            state: {
+                awaiting: 'A aguardar',
+                changed: 'Alterado',
+                held: 'Em espera',
+                authorised: 'Autorizado',
+                applyFailed: 'Aprovado, não aplicado',
+                denied: 'Recusado',
+                withdrawn: 'Retirado',
+                expired: 'Expirado',
+                unknown: 'A aguardar',
+            },
+            columns: {
+                deal: 'Operação',
+                instrument: 'Instrumento',
+                counterparty: 'Contraparte',
+                book: 'Livro',
+                tradeDate: 'Data da operação',
+                raised: 'Pedido em',
+            },
+            deal: {
+                title: 'A operação',
+                reference: 'Operação',
+                type: 'Tipo',
+                counterparty: 'Contraparte',
+                book: 'Livro',
+                tradeDate: 'Data da operação',
+                status: 'Estado',
+                statusUnknown: 'desconhecido',
+            },
+            request: {
+                title: 'O pedido',
+                state: 'Estado',
+                raisedBy: 'Pedido por',
+                raisedAt: 'Pedido em',
+                reason: 'Motivo',
+            },
+            decision: {
+                title: 'A decisão',
+                decided:
+                    'Esta operação está decidida. Anular uma decisão ainda não é oferecido aqui.',
+                denied: 'A autorização foi recusada: uma operação recusada não pode passar a autorizada. Anular a recusa ainda não é oferecido aqui, e a correção é uma nova versão submetida a autorização.',
+                comment: 'Comentário, obrigatório',
+                commentPlaceholder: 'O que verificou, e o que encontrou?',
+                holdReason: 'Motivo de espera, obrigatório para colocar em espera',
+                chooseReason: 'Escolher um motivo',
+                authorise: 'Autorizar',
+                hold: 'Colocar em espera',
+                deny: 'Recusar',
+            },
+            reading: 'A ler o pedido…',
+            readWindow: 'Este ecrã lê os {shown} pedidos mais recentes de {waiting} em espera.',
+            notFound:
+                'Nenhum pedido {requestId} aguarda nesta fila. Pode ter sido decidido e ter saído da cauda de pedidos respondidos.',
+            backToQueue: 'Voltar à fila',
+            pageTitle: 'Autorização · {reference}',
+            pageDescription: '{type}, pedido pela fila de operações',
+            changedNotice:
+                'A operação mudou depois de este pedido ter sido criado: versão {tradeVersion} agora, contra {requestTradeVersion} quando chegou. A linha não está bloqueada, e uma decisão sobre a versão que leu é a decisão registada.',
+        },
         feeds: {
             title: 'Fluxos de dados de mercado',
             description:
@@ -1725,6 +1800,9 @@ const pt: SourceCatalogue = {
             },
         },
         screens: {
+            authorisationQueue: 'Fila de autorização operacional',
+            authorisationQueueBody:
+                'As operações que aguardam as operações de mercado, segundo o trabalho que dão e o estado da sua autorização.',
             feeds: 'Fluxos de dados de mercado',
             feedsBody:
                 'Cada fluxo que o serviço de dados de mercado executa, o estado do seu adaptador, e o que serve e recusa.',

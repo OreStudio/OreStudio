@@ -327,6 +327,28 @@ def area_map(found):
     return lines
 
 
+CLIENT_ROOTS = (ROOT / "projects/ores.web/packages",)
+
+
+def called_by(route_path):
+    """The first client module that names @p route_path, or nothing.
+
+    A composed view earns its place by answering a question a screen asks, so the table
+    says which screen asks it. The scan stops at the first parameter, because a client
+    builds those from values rather than naming them.
+    """
+    literal = route_path.split(":")[0]
+    if len(literal) < 6:
+        return ""
+    for root in CLIENT_ROOTS:
+        for path in sorted(root.rglob("*.ts")):
+            if "/bff/" in path.as_posix() or path.name.endswith((".test.ts", ".d.ts")):
+                continue
+            if literal in path.read_text(errors="replace"):
+                return path.relative_to(root).as_posix()
+    return ""
+
+
 def composed_views(found):
     """The composed views section, one row per view, or nothing when there are none."""
     views = {}
@@ -346,13 +368,20 @@ def composed_views(found):
     lines.append("answer it after the port, which is not always the one that answers it")
     lines.append("today.")
     lines.append("")
-    lines.append("| View | Routes | Owner | Computation | Cache policy |")
-    lines.append("|------+--------+-------+-------------+--------------|")
+    lines.append("Every route here is one a screen calls now, and the =Called by= column says")
+    lines.append("which client module calls it, so the port can prove a view with the same")
+    lines.append("request against either server. A view keeps its current route until the")
+    lines.append("cutover for that reason: moving it to the published namespace is a versioned")
+    lines.append("change of its own, not part of the port.")
+    lines.append("")
+    lines.append("| View | Routes today | Called by | Owner | Computation | Cache policy |")
+    lines.append("|------+--------------+-----------+-------+-------------+--------------|")
     for name in sorted(views):
         entry = views[name]
         owner, computation, cache = VIEWS.get(name, ("", "", ""))
         routes = ", ".join(sorted(entry["routes"]))
-        lines.append(f"| {name} | {routes} | {owner} | {computation} | {cache} |")
+        caller = called_by(entry["routes"][0].split(" ", 1)[1]) or "no client calls it"
+        lines.append(f"| {name} | {routes} | {caller} | {owner} | {computation} | {cache} |")
     lines.append("")
     return lines
 

@@ -89,32 +89,38 @@ own; the schema is K1's to generate; the owner is the component that must
 answer it after the port, which is not always the one that answers it
 today.
 
-| View | Routes | Owner | Computation | Cache policy |
-|------+--------+-------+-------------+--------------|
-| a report configuration | GET /api/reporting/configurations/:id | ores.reporting | the configuration, the names of its type and parties, its analytics and their names, and its market data bindings, five reads | ETag on the whole view, stale after 60 s |
-| one subject's story | GET /api/timeline | ores.workflow | every component's rows for one subject, each source read under its owner's permission and a refused source reported as a gap | ETag on the whole view, stale after 30 s |
-| the approval inbox | GET /api/requests | ores.workflow | every kind of request this person may decide, gathered into one queue with each kind's subject | ETag on the whole view, stale after 15 s |
-| the blotter | GET /api/blotter | ores.trading | one page of trades with the rail that groups them: books, portfolios, structures, counterparties, trade types, instrument codes and asset classes, eight collection reads before the page | ETag on the whole view, stale after 30 s |
-| the book tree | GET /api/books/tree | ores.trading | every portfolio and every book, two collection reads woven into the tree | ETag on the whole view, stale after 60 s |
-| the bootstrap status | GET /api/bootstrap | ores.iam | the IAM account and tenant answer, plus a variability settings read that may fail without failing the answer | ETag on the whole view, stale after 5 s |
-| the deployment overview | GET /api/overview | ores.iam | the tenant roster counted by status, its first page, and the newest setups, each count a separate list read | ETag on the whole view, stale after 15 s |
-| the grid series | GET /api/operations/grid/series | ores.compute | the counters per bucket joined to one row of buckets per node and the host registry, two reads | ETag on the whole view, stale after 10 s |
-| the grid summary | GET /api/operations/grid | ores.compute | the stored summary, the host registry with its hardware rows, and the service roster, three reads | ETag on the whole view, stale after 10 s |
-| the grid usage | GET /api/operations/grid/usage | ores.compute | the results grouped by tenant or by party with each group's share, and the party names beside them | ETag on the whole view, stale after 30 s |
-| the image map | GET /api/image-map | ores.assets | which image every flagged record uses: currencies, countries, calendars and business centres in one code to image map, five reads, with a country fallback and a placeholder | ETag on the whole view, stale after 5 min |
-| the market data catalogue | GET /api/marketdata/catalogue | ores.marketdata | the providers and the sources that serve them, two collection reads | ETag on the whole view, stale after 5 min |
-| the market trace | GET /api/synthetic/market-trace | ores.synthetic | the scheduler's recent decisions: every tick with the gap its law drew and the wall gap it took, every regime turn and pin, and every change of the feeds | ETag on the whole view, stale after 10 s |
-| the message bus | GET /api/operations/bus | ores.telemetry | the NATS server samples over a window, and one read per stream because no operation lists the streams | ETag on the whole view, stale after 10 s |
-| the official providers | GET /api/marketdata/official | ores.marketdata | the providers first, then the sources and the market series joined onto them | ETag on the whole view, stale after 5 min |
-| the principal's ways to hold | GET /api/me/ways-to-hold | ores.iam | the role catalogue and what each role grants against the grants the person already holds | ETag on the whole view, stale after 5 min |
-| the report health | GET /api/reporting/report-health | ores.reporting | each report definition with the row the list would draw and the reads that failed, so a failed read is not read as never having run | ETag on the whole view, stale after 60 s |
-| the request checks | GET /api/requests/:id/checks | ores.workflow | each proposed line run through the real write against the record as it stands | ETag on the whole view, stale after 30 s |
-| the request story | GET /api/requests/:id/changes, GET /api/requests/:id/story | ores.workflow | the request's versions, the decisions taken on it, the roles it asked for and the notices, or the change lines of its kind beside the live record | ETag on the whole view, stale after 15 s |
-| the run's progress | GET /api/workflow/:instanceId | ores.workflow | the run's status, the step executing and one summary per step | ETag on the whole view, stale after 5 s |
-| the sprint board | GET /api/agile/board | no service, X1 decides | one sprint's work items and their states, read from the sprint file and the documents under it | ETag on the whole view, stale after 60 s |
-| the sprint charts | GET /api/agile/charts | no service, X1 decides | one sprint's scope and the work remaining per day, computed from the sprint file and the state changes under it | ETag on the whole view, stale after 60 s |
-| the synthetic folder tree | GET /api/synthetic/feed-folders | ores.synthetic | the folders and the feeds under each, at any depth, with the count of each kind so no screen reads the feeds | ETag on the whole view, stale after 60 s |
-| the tenor catalogue | GET /api/tenors/catalogue | ores.refdata | the tenors with their conventions and schedules, three collection reads | ETag on the whole view, stale after 5 min |
+Every route here is one a screen calls now, and the =Called by= column says
+which client module calls it, so the port can prove a view with the same
+request against either server. A view keeps its current route until the
+cutover for that reason: moving it to the published namespace is a versioned
+change of its own, not part of the port.
+
+| View | Routes today | Called by | Owner | Computation | Cache policy |
+|------+--------------+-----------+-------+-------------+--------------|
+| a report configuration | GET /api/reporting/configurations/:id | web/src/api/client.ts | ores.reporting | the configuration, the names of its type and parties, its analytics and their names, and its market data bindings, five reads | ETag on the whole view, stale after 60 s |
+| one subject's story | GET /api/timeline | web/src/api/client.ts | ores.workflow | every component's rows for one subject, each source read under its owner's permission and a refused source reported as a gap | ETag on the whole view, stale after 30 s |
+| the approval inbox | GET /api/requests | web/src/api/client.ts | ores.workflow | every kind of request this person may decide, gathered into one queue with each kind's subject | ETag on the whole view, stale after 15 s |
+| the blotter | GET /api/blotter | web/src/api/blotter.ts | ores.trading | one page of trades with the rail that groups them: books, portfolios, structures, counterparties, trade types, instrument codes and asset classes, eight collection reads before the page | ETag on the whole view, stale after 30 s |
+| the book tree | GET /api/books/tree | web/src/api/books.ts | ores.trading | every portfolio and every book, two collection reads woven into the tree | ETag on the whole view, stale after 60 s |
+| the bootstrap status | GET /api/bootstrap | web/src/api/client.ts | ores.iam | the IAM account and tenant answer, plus a variability settings read that may fail without failing the answer | ETag on the whole view, stale after 5 s |
+| the deployment overview | GET /api/overview | web/src/api/client.ts | ores.iam | the tenant roster counted by status, its first page, and the newest setups, each count a separate list read | ETag on the whole view, stale after 15 s |
+| the grid series | GET /api/operations/grid/series | web/src/api/client.ts | ores.compute | the counters per bucket joined to one row of buckets per node and the host registry, two reads | ETag on the whole view, stale after 10 s |
+| the grid summary | GET /api/operations/grid | web/src/api/client.ts | ores.compute | the stored summary, the host registry with its hardware rows, and the service roster, three reads | ETag on the whole view, stale after 10 s |
+| the grid usage | GET /api/operations/grid/usage | web/src/api/client.ts | ores.compute | the results grouped by tenant or by party with each group's share, and the party names beside them | ETag on the whole view, stale after 30 s |
+| the image map | GET /api/image-map | web/src/api/client.ts | ores.assets | which image every flagged record uses: currencies, countries, calendars and business centres in one code to image map, five reads, with a country fallback and a placeholder | ETag on the whole view, stale after 5 min |
+| the market data catalogue | GET /api/marketdata/catalogue | web/src/api/client.ts | ores.marketdata | the providers and the sources that serve them, two collection reads | ETag on the whole view, stale after 5 min |
+| the market trace | GET /api/synthetic/market-trace | web/src/api/client.ts | ores.synthetic | the scheduler's recent decisions: every tick with the gap its law drew and the wall gap it took, every regime turn and pin, and every change of the feeds | ETag on the whole view, stale after 10 s |
+| the message bus | GET /api/operations/bus | web/src/api/client.ts | ores.telemetry | the NATS server samples over a window, and one read per stream because no operation lists the streams | ETag on the whole view, stale after 10 s |
+| the official providers | GET /api/marketdata/official | web/src/api/client.ts | ores.marketdata | the providers first, then the sources and the market series joined onto them | ETag on the whole view, stale after 5 min |
+| the principal's ways to hold | GET /api/me/ways-to-hold | web/src/api/client.ts | ores.iam | the role catalogue and what each role grants against the grants the person already holds | ETag on the whole view, stale after 5 min |
+| the report health | GET /api/reporting/report-health | web/src/api/client.ts | ores.reporting | each report definition with the row the list would draw and the reads that failed, so a failed read is not read as never having run | ETag on the whole view, stale after 60 s |
+| the request checks | GET /api/requests/:id/checks | web/src/api/client.ts | ores.workflow | each proposed line run through the real write against the record as it stands | ETag on the whole view, stale after 30 s |
+| the request story | GET /api/requests/:id/changes, GET /api/requests/:id/story | web/src/api/client.ts | ores.workflow | the request's versions, the decisions taken on it, the roles it asked for and the notices, or the change lines of its kind beside the live record | ETag on the whole view, stale after 15 s |
+| the run's progress | GET /api/workflow/:instanceId | web/src/api/client.ts | ores.workflow | the run's status, the step executing and one summary per step | ETag on the whole view, stale after 5 s |
+| the sprint board | GET /api/agile/board | web/src/api/agile.ts | no service, X1 decides | one sprint's work items and their states, read from the sprint file and the documents under it | ETag on the whole view, stale after 60 s |
+| the sprint charts | GET /api/agile/charts | web/src/api/agile.ts | no service, X1 decides | one sprint's scope and the work remaining per day, computed from the sprint file and the state changes under it | ETag on the whole view, stale after 60 s |
+| the synthetic folder tree | GET /api/synthetic/feed-folders | web/src/api/client.ts | ores.synthetic | the folders and the feeds under each, at any depth, with the count of each kind so no screen reads the feeds | ETag on the whole view, stale after 60 s |
+| the tenor catalogue | GET /api/tenors/catalogue | web/src/api/tenors.ts | ores.refdata | the tenors with their conventions and schedules, three collection reads | ETag on the whole view, stale after 5 min |
 
 * The inventory
 

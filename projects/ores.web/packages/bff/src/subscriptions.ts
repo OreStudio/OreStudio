@@ -274,17 +274,17 @@ export function registerSubscriptionRoutes(
     });
 
     /** Removes the session party's route for one publisher, at the version it was read at. */
-    server.delete('/api/marketdata/routes/:provider', async (request) => {
+    server.delete('/api/marketdata/routes/:publisher', async (request) => {
         const session = requireSession(request);
         sessionParty(session);
-        const provider = input(
+        const publisher = input(
             z.string().trim().min(1).max(100),
-            (request.params as { provider: string }).provider,
+            (request.params as { publisher: string }).publisher,
         );
         const parsed = input(removalSchema, request.body);
         const result = await write(session, routeSubjects.delete_route_request, {
             removal: {
-                key: { provider_code: provider },
+                key: { publisher_code: publisher },
                 precondition: { kind: 'must_match_version', version: parsed.version },
             },
             intent: { reason_code: parsed.reason_code, commentary: parsed.commentary },
@@ -292,6 +292,6 @@ export function registerSubscriptionRoutes(
         if (result.outcome !== 'ok') {
             throw refusal(result);
         }
-        return { provider_code: provider };
+        return { publisher_code: publisher };
     });
 }

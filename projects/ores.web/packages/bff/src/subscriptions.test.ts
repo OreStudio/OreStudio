@@ -191,6 +191,7 @@ const LIST_ROUTES = 'marketdata.v1.routes.list';
 const PUT_SUBSCRIPTION = 'marketdata.v1.subscriptions.put';
 const DELETE_SUBSCRIPTION = 'marketdata.v1.subscriptions.delete';
 const PUT_ROUTE = 'marketdata.v1.routes.put';
+const DELETE_ROUTE = 'marketdata.v1.routes.delete';
 const LIST_PROVIDERS = 'marketdata.v1.providers.list';
 const LIST_FEEDS = 'marketdata.v1.feeds.list';
 
@@ -419,5 +420,24 @@ describe('adding a route', () => {
         });
         expect(response.statusCode).toBe(400);
         expect(calls).toHaveLength(0);
+    });
+});
+
+describe('removing a route', () => {
+    it('names the publisher the route is keyed by, at the version the screen read', async () => {
+        const { server, sessionId, calls } = buildTestServer({ [DELETE_ROUTE]: ok });
+        const response = await send(
+            server,
+            sessionId,
+            'DELETE',
+            '/api/marketdata/routes/bloomberg',
+            { version: 1, reason_code: 'common.superseded' },
+        );
+        expect(response.statusCode).toBe(200);
+        const body = calls[0]?.body as {
+            removal: { key: { publisher_code: string }; precondition: { kind: string } };
+        };
+        expect(body.removal.key).toEqual({ publisher_code: 'bloomberg' });
+        expect(body.removal.precondition).toEqual({ kind: 'must_match_version', version: 1 });
     });
 });
